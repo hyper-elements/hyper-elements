@@ -159,11 +159,8 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
   return `- **${name(c.type)}**: ${parts.join(" ")}`;
 }
 
-/**
- * GUIDE.md: how a template is written, the README's template (`example`, as an author imports it), a social card
- * (`card`, social-card-example.tsx, the same way), and each component on a line.
- */
-export function primitivesGuide(example: string, card: string): string {
+/** GUIDE.md: how a template is written, the README's template (`example`, as an author imports it), and each component on a line. */
+export function primitivesGuide(example: string): string {
   return [
     "# Writing templates with the new components (`@hyper-elements/react`)",
     "",
@@ -171,7 +168,7 @@ export function primitivesGuide(example: string, card: string): string {
     "",
     "Everything needed to write a template, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).",
     "",
-    guide(example, card),
+    guide(example),
   ].join("\n");
 }
 
@@ -184,7 +181,7 @@ const SKILL_DESCRIPTION =
  * guide, as GUIDE.md has it, under the frontmatter a skill needs and a few lines for projects with Unlayer Elements'
  * components. An agent given the guide before writing a template gets it right on the first try far more often.
  */
-export function primitivesSkill(example: string, card: string): string {
+export function primitivesSkill(example: string): string {
   return [
     "---",
     "name: hyper-elements",
@@ -206,7 +203,7 @@ export function primitivesSkill(example: string, card: string): string {
     "- Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.",
     "- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these components and checks each against its original.",
     "",
-    guide(example, card),
+    guide(example),
   ].join("\n");
 }
 
@@ -227,7 +224,7 @@ const { image, diagnostics } = await renderImage(
 );`;
 
 /** The guide itself, from "How a template is written" on: the same in GUIDE.md and the skill. */
-function guide(example: string, card: string): string {
+function guide(example: string): string {
   const all = describeComponents();
   const named = glossary(all);
   const placed = new Set<string>();
@@ -272,15 +269,6 @@ function guide(example: string, card: string): string {
     "",
     "```tsx",
     CANVAS_EXAMPLE,
-    "```",
-    "",
-    "## Social cards",
-    "",
-    "- An image under the content: a `Layer` (there's no `backgroundImage`), an `Image` first, the rest over it. Its `height` crops the image to cover it; `alignItems: \"end\"` puts the rest at the bottom.",
-    "- A bar down one edge: a `Column` around the rest, with `border: { left: \"16px solid #f97316\" }`.",
-    "",
-    "```tsx",
-    card.trim(),
     "```",
     "",
     "## Components",
