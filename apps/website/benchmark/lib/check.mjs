@@ -1,4 +1,4 @@
-// The shared quality bar. Every condition (Hyper Elements, React Email, hand-written HTML) is checked by
+// The shared quality bar. Every condition (Hyper Elements, React Email, MJML, hand-written HTML) is checked by
 // this same script against out/email.html, in headless Chromium, at a desktop and a phone width.
 //
 //   node tools/check.mjs            prints PASS/FAIL per check, exits 1 on any failure
