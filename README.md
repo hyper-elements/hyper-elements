@@ -80,7 +80,7 @@ In our agent benchmark, Hyper Elements reached a passing email **2.2× faster th
   </a>
 </p>
 
-Five email briefs, the same Chromium checks at desktop and mobile widths, and 16 runs per approach. Measured with Claude Code and Claude Sonnet 5 on November 6, 2026, using Hyper Elements 0.3 before release. All 48 runs eventually passed. Token figures measure output tokens; they do not imply lower total token usage or cost.
+Five email briefs, the same Chromium checks at desktop and mobile widths, and 16 runs per approach. Measured with Claude Code and Claude Sonnet 5 on November 6, 2026, using Hyper Elements 0.3. All 48 runs eventually passed. Token figures measure output tokens; they do not imply lower total token usage or cost.
 
 [Results and methodology](https://hyperelements.dev/docs/benchmark) · [Harness, briefs, and raw results](./apps/website/benchmark)
 
