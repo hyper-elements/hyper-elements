@@ -41,7 +41,7 @@ npm run report -- results/<stamp>.jsonl
 
 ## 2026-11-08 (`results/2026-11-08-sonnet.jsonl`)
 
-Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), Hyper Elements 0.3.0 before release (this
+Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), Hyper Elements 0.3.0 (this
 repository at 23e3b258, `@hyper-elements/react` with `GUIDE.md`), MJML 5.4.1, React Email components 1.0.12.
 All four kits ran in one interleaved batch: 16 runs per kit, three per brief plus one pilot launch email
 each. Every run reached the bar.
@@ -87,7 +87,7 @@ were recounted from their transcripts.
 
 ## 2026-11-06 (`results/2026-11-06-sonnet.jsonl`)
 
-Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), Hyper Elements 0.3 (before release), React Email
+Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), Hyper Elements 0.3, React Email
 components 1.0.12. These runs imported the components from `@hyper-elements/react/primitives`, and the guide
 was `PRIMITIVES.md`: the engine's names before it was merged. The kit now uses `@hyper-elements/react` and `GUIDE.md`. 16 runs per kit: three per brief, plus one pilot launch email each. Every run reached
 the bar.

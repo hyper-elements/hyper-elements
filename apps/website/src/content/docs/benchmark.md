@@ -53,6 +53,6 @@ Each run started in a fresh directory with the brief, a `CLAUDE.md` of conventio
 
 - One agent and one model. Other agents and models may differ.
 - Short, fully specified emails. A vague brief or a long email may change the picture.
-- Hyper Elements 0.3 before its release, MJML 5.4.1 and React Email components 1.0.12.
+- Hyper Elements 0.3, MJML 5.4.1 and React Email components 1.0.12.
 
 The harness, the briefs, the checks and every run's numbers are in the repository, in [`apps/website/benchmark`](https://github.com/hyper-elements/hyper-elements/tree/main/apps/website/benchmark). Run it yourself with your own agent.
