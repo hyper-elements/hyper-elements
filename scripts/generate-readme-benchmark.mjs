@@ -28,27 +28,27 @@ const groups = [
   };
 });
 
-// Match the website's neutral palette and use its actual brand mark.
+// Match the website's neutral palette, mint success color, and actual brand mark.
 const logoSource = readFileSync(new URL("../apps/website/src/components/Logo.astro", import.meta.url), "utf8");
 const logoPath = /<path[^>]*\bd="([^"]+)"/.exec(logoSource)?.[1];
 if (!logoPath) throw new Error("Could not read the website logo.");
-const colors = { bg: "#0a0a0a", surface: "#111111", line: "#272727", ink: "#ededed", muted: "#a1a1a1", dim: "#6e6e6e" };
+const colors = { bg: "#0a0a0a", surface: "#101a15", border: "#284a36", accent: "#7ee2a8", line: "#272727", ink: "#ededed", muted: "#a1a1a1", dim: "#6e6e6e" };
 const escape = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const text = (x, y, value, size = 24, fill = colors.ink, extra = "") =>
   `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" ${extra}>${escape(value)}</text>`;
 const mono = 'font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"';
 const label = (x, y, value) => text(x, y, value, 18, colors.muted, `${mono} letter-spacing="1.5"`);
-const number = (x, y, value) => text(x, y, value, 40, colors.ink, 'font-weight="500" letter-spacing="-1"');
+const number = (x, y, value, active) => text(x, y, value, 40, active ? colors.accent : colors.ink, 'font-weight="500" letter-spacing="-1"');
 const format = (value) => Math.round(value).toLocaleString("en-US");
 const speed = (groups[2].seconds / groups[0].seconds).toFixed(1);
 const tokens = (groups[2].tokens / groups[0].tokens).toFixed(1);
 
 const bar = (x, y, value, max, active) => `
   <rect x="${x}" y="${y}" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="${x}" y="${y}" width="${(324 * value / max).toFixed(3)}" height="10" rx="3" fill="${active ? colors.ink : "#737373"}"/>
+  <rect x="${x}" y="${y}" width="${(324 * value / max).toFixed(3)}" height="10" rx="3" fill="${active ? colors.accent : "#737373"}"/>
 `;
 const passes = (x, y, count, active) => Array.from({ length: 16 }, (_, i) =>
-  `<rect x="${x + i * 20}" y="${y}" width="12" height="12" rx="3" fill="${i < count ? (active ? colors.ink : "#737373") : "#292929"}"/>`
+  `<rect x="${x + i * 20}" y="${y}" width="12" height="12" rx="3" fill="${i < count ? (active ? colors.accent : "#737373") : "#292929"}"/>`
 ).join("\n");
 
 const rows = groups.map((group, i) => {
@@ -56,14 +56,14 @@ const rows = groups.map((group, i) => {
   const active = group.kit === "he";
   return `
   <g id="row-${group.kit}">
-    ${active ? `<rect x="52" y="${top}" width="1696" height="138" rx="14" fill="${colors.surface}" stroke="#353535"/>` : ""}
+    ${active ? `<rect x="52" y="${top}" width="1696" height="138" rx="14" fill="${colors.surface}" stroke="${colors.border}"/>` : ""}
     ${text(80, top + 62, group.label, 32, active ? colors.ink : "#c2c2c2", `font-weight="${active ? 600 : 400}" letter-spacing="-0.6"`)}
     ${active ? text(80, top + 100, "Best across all three measures", 20, colors.muted) : ""}
-    ${number(500, top + 62, `${Math.round(group.seconds)}s`)}
+    ${number(500, top + 62, `${Math.round(group.seconds)}s`, active)}
     ${bar(500, top + 96, group.seconds, 80, active)}
-    ${number(930, top + 62, format(group.tokens))}
+    ${number(930, top + 62, format(group.tokens), active)}
     ${bar(930, top + 96, group.tokens, 6000, active)}
-    ${number(1360, top + 62, `${group.firstPasses} / 16`)}
+    ${number(1360, top + 62, `${group.firstPasses} / 16`, active)}
     ${passes(1360, top + 95, group.firstPasses, active)}
   </g>
   ${i === 1 ? '<path d="M72 822H1728" stroke="#222222"/>' : ""}
@@ -92,15 +92,15 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1140" 
   ${text(80, 386, "16 runs per approach", 25, colors.muted)}
   ${text(80, 426, "Same tasks. Same checks.", 23, colors.muted)}
 
-  ${text(500, 352, `${speed}×`, 88, colors.ink, 'font-weight="600" letter-spacing="-4"')}
+  ${text(500, 352, `${speed}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
   ${text(500, 410, "faster to pass", 27, colors.ink)}
   ${text(500, 445, "vs. React Email", 22, colors.muted)}
 
-  ${text(930, 352, `${tokens}×`, 88, colors.ink, 'font-weight="600" letter-spacing="-4"')}
+  ${text(930, 352, `${tokens}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
   ${text(930, 410, "fewer output tokens", 27, colors.ink)}
   ${text(930, 445, "vs. React Email", 22, colors.muted)}
 
-  ${text(1360, 352, `${groups[0].firstPasses}/16`, 88, colors.ink, 'font-weight="600" letter-spacing="-4"')}
+  ${text(1360, 352, `${groups[0].firstPasses}/16`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
   ${text(1360, 410, "passed on first check", 27, colors.ink)}
   ${text(1360, 445, "Hyper Elements", 22, colors.muted)}
 

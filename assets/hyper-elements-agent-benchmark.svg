@@ -17,15 +17,15 @@
   <text x="80" y="386" font-size="25" fill="#a1a1a1" >16 runs per approach</text>
   <text x="80" y="426" font-size="23" fill="#a1a1a1" >Same tasks. Same checks.</text>
 
-  <text x="500" y="352" font-size="88" fill="#ededed" font-weight="600" letter-spacing="-4">2.2×</text>
+  <text x="500" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">2.2×</text>
   <text x="500" y="410" font-size="27" fill="#ededed" >faster to pass</text>
   <text x="500" y="445" font-size="22" fill="#a1a1a1" >vs. React Email</text>
 
-  <text x="930" y="352" font-size="88" fill="#ededed" font-weight="600" letter-spacing="-4">2.4×</text>
+  <text x="930" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">2.4×</text>
   <text x="930" y="410" font-size="27" fill="#ededed" >fewer output tokens</text>
   <text x="930" y="445" font-size="22" fill="#a1a1a1" >vs. React Email</text>
 
-  <text x="1360" y="352" font-size="88" fill="#ededed" font-weight="600" letter-spacing="-4">11/16</text>
+  <text x="1360" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">11/16</text>
   <text x="1360" y="410" font-size="27" fill="#ededed" >passed on first check</text>
   <text x="1360" y="445" font-size="22" fill="#a1a1a1" >Hyper Elements</text>
 
@@ -35,31 +35,31 @@
   <text x="1360" y="501" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">FIRST-CHECK PASSES</text>
 
   <g id="row-he">
-    <rect x="52" y="526" width="1696" height="138" rx="14" fill="#111111" stroke="#353535"/>
+    <rect x="52" y="526" width="1696" height="138" rx="14" fill="#101a15" stroke="#284a36"/>
     <text x="80" y="588" font-size="32" fill="#ededed" font-weight="600" letter-spacing="-0.6">Hyper Elements</text>
     <text x="80" y="626" font-size="20" fill="#a1a1a1" >Best across all three measures</text>
-    <text x="500" y="588" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">35s</text>
+    <text x="500" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">35s</text>
 
   <rect x="500" y="622" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="500" y="622" width="139.780" height="10" rx="3" fill="#ededed"/>
+  <rect x="500" y="622" width="139.780" height="10" rx="3" fill="#7ee2a8"/>
 
-    <text x="930" y="588" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">2,346</text>
+    <text x="930" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">2,346</text>
 
   <rect x="930" y="622" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="930" y="622" width="126.684" height="10" rx="3" fill="#ededed"/>
+  <rect x="930" y="622" width="126.684" height="10" rx="3" fill="#7ee2a8"/>
 
-    <text x="1360" y="588" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">11 / 16</text>
-    <rect x="1360" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1380" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1400" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1420" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1440" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1460" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1480" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1500" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1520" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1540" y="621" width="12" height="12" rx="3" fill="#ededed"/>
-<rect x="1560" y="621" width="12" height="12" rx="3" fill="#ededed"/>
+    <text x="1360" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">11 / 16</text>
+    <rect x="1360" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1380" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1400" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1420" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1440" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1460" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1480" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1500" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1520" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1540" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1560" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
 <rect x="1580" y="621" width="12" height="12" rx="3" fill="#292929"/>
 <rect x="1600" y="621" width="12" height="12" rx="3" fill="#292929"/>
 <rect x="1620" y="621" width="12" height="12" rx="3" fill="#292929"/>
