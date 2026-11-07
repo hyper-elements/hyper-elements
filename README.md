@@ -155,7 +155,7 @@ if (report.valid) {
 | [One invoice, multiple outputs](./examples/content-workflows) | A runnable email, web, and PDF workflow with email-provider integrations |
 | [Next.js example](./examples/nextjs-app-router) | Rendering in Server Components and route handlers |
 | [PDF output](./packages/react/docs/render-pdf.md) · [Image output](./packages/react/docs/render-image.md) | Optional dependencies, fonts, assets, and format limits |
-| [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Upgrade from Elements 0.2](./packages/react/docs/migrating-from-0.2.md) | Convert existing templates and check the results |
+| [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Move from Unlayer Elements](./packages/react/docs/migrating-from-unlayer-elements.md) | Convert existing templates and check the results |
 | [Visual editing](./packages/react/docs/visual-editing.md) | Hand code-authored templates to the Unlayer editor and read edits back |
 
 Hyper Elements works independently of the Unlayer platform. The visual-editor integration is optional.
