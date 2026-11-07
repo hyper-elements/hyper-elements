@@ -1,6 +1,6 @@
-# Components reference (`@unlayer/react-elements`)
+# Components reference (`@hyper-elements/react`)
 
-<!-- Written from the component definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @unlayer/react-elements test reference -->
+<!-- Written from the component definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
 
 Every component, what it holds, and every prop and style it takes, with its default and what it does. [GUIDE.md](./GUIDE.md) shows how a template is written; `validate()` checks one against what's here.
 
@@ -33,7 +33,7 @@ What a property takes, where it says *kind*:
 
 ## Roots
 
-A template is one of these, and the root decides the output: `render()` writes an Email's HTML, a Page's HTML, and a Document's print HTML. `renderPdf()` (`@unlayer/react-elements/pdf`) writes a Document's PDF, and `renderImage()` (`@unlayer/react-elements/image`) a Canvas's PNG or SVG (`render()` writes a Canvas's HTML, to look at).
+A template is one of these, and the root decides the output: `render()` writes an Email's HTML, a Page's HTML, and a Document's print HTML. `renderPdf()` (`@hyper-elements/react/pdf`) writes a Document's PDF, and `renderImage()` (`@hyper-elements/react/image`) a Canvas's PNG or SVG (`render()` writes a Canvas's HTML, to look at).
 
 ### Email
 
@@ -97,7 +97,7 @@ Props:
 
 ### Document
 
-A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @unlayer/react-elements/pdf.
+A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf.
 
 Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter. Drawn in: page.
 
@@ -128,7 +128,7 @@ Props:
 
 ### Canvas
 
-An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @unlayer/react-elements/image.
+An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
 
 Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
 
@@ -154,7 +154,6 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 - `padding`: *insets*
-- `border`: *border*. Lines inside its edges, as CSS border: "8px solid #f97316", or one side only ({ left: "12px solid #f97316" }: a quote card's bar).
 - `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
 
 `mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`, `padding`.
@@ -372,7 +371,6 @@ Props:
 - `backgroundColor`: *color*
 - `border`: *border*
 - `borderRadius`: *radius*
-- `alignSelf`: one of "start", "center", "end". Where it sits in its stack, whatever the stack's alignItems: set, it's as wide as its text (a pill, a badge), not its stack's width.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
@@ -404,7 +402,6 @@ Props:
 - `backgroundColor`: *color*
 - `border`: *border*
 - `borderRadius`: *radius*
-- `alignSelf`: one of "start", "center", "end". Where it sits in its stack, whatever the stack's alignItems: set, it's as wide as its text (a pill, a badge), not its stack's width.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
