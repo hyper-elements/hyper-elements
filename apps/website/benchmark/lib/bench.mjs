@@ -1,7 +1,7 @@
 // Runs a coding agent (Claude Code, headless) on each brief with each kit, and records what it cost to
 // reach the shared quality bar (tools/check.mjs): wall time, turns, tokens, dollars, and whether it got there.
 //
-//   node lib/bench.mjs --kits he,react-email,html --briefs reset,launch --reps 2 --model sonnet --concurrency 3
+//   node lib/bench.mjs --kits he,react-email,mjml,html --briefs reset,launch --reps 2 --model sonnet --concurrency 3
 //
 // Each run gets a fresh directory (runs/<stamp>/<kit>__<brief>__<rep>/) and the same prompt. The agent's
 // whole transcript is kept there (transcript.jsonl), and one row per run is appended to results/<stamp>.jsonl.
@@ -19,7 +19,7 @@ const arg = (name, def) => {
   return i > -1 ? process.argv[i + 1] : def;
 };
 const allBriefs = (await readdir(join(bench, "briefs"))).filter((f) => f.endsWith(".json")).map((f) => f.slice(0, -5)).sort();
-const kits = arg("kits", "he,react-email,html").split(",");
+const kits = arg("kits", "he,react-email,mjml,html").split(",");
 const briefs = arg("briefs", "all") === "all" ? allBriefs : arg("briefs").split(",");
 const reps = Number(arg("reps", "1"));
 const model = arg("model", "sonnet");
@@ -73,7 +73,8 @@ async function one(kit, brief, rep) {
     .filter((c) => c.type === "tool_use").map((c) => ({ id: c.id, name: c.name, cmd: c.input?.command ?? "" }));
   const toolResults = new Map(events.flatMap((e) => (e.type === "user" && Array.isArray(e.message?.content) ? e.message.content : []))
     .filter((c) => c.type === "tool_result").map((c) => [c.tool_use_id, c]));
-  const checks = commands.filter((c) => c.name === "Bash" && c.cmd.includes("tools/check.mjs"));
+  // A command that runs the checker, not one that only reads it (`cat tools/check.mjs`).
+  const checks = commands.filter((c) => c.name === "Bash" && /\bnode\s+(\S*\/)?tools\/check\.mjs/.test(c.cmd));
   const firstCheck = checks[0] ? toolResults.get(checks[0].id) : null;
   const firstCheckPassed = firstCheck ? !firstCheck.is_error && /All \d+ checks passed/.test(JSON.stringify(firstCheck.content)) : null;
 
@@ -81,7 +82,7 @@ async function one(kit, brief, rep) {
   let check = {};
   try { check = JSON.parse(verdict.out.trim().split("\n").pop()); } catch { check = { pass: false, error: verdict.err.slice(0, 400) }; }
 
-  const src = kit === "html" ? join(dir, "out/email.html") : join(dir, "emails/email.tsx");
+  const src = join(dir, { html: "out/email.html", mjml: "emails/email.mjml" }[kit] ?? "emails/email.tsx");
   const source = existsSync(src) ? await readFile(src, "utf8") : "";
   const u = final.usage ?? {};
   const row = {
@@ -91,7 +92,7 @@ async function one(kit, brief, rep) {
     wallMs: wall, durationMs: final.duration_ms, apiMs: final.duration_api_ms, turns: final.num_turns, costUsd: final.total_cost_usd,
     inputTokens: u.input_tokens ?? 0, cacheWriteTokens: u.cache_creation_input_tokens ?? 0, cacheReadTokens: u.cache_read_input_tokens ?? 0, outputTokens: u.output_tokens ?? 0,
     toolCalls: commands.length, checkRuns: checks.length, firstCheckPassed,
-    renderRuns: commands.filter((c) => c.name === "Bash" && c.cmd.includes("tools/render.mjs")).length,
+    renderRuns: commands.filter((c) => c.name === "Bash" && /\bnode\s+(\S*\/)?tools\/render\.mjs/.test(c.cmd)).length,
     sourceTokens: enc.encode(source).length, sourceChars: source.length,
     modelUsage: final.modelUsage,
   };
