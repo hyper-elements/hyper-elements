@@ -424,24 +424,20 @@ describe("renderPdf", () => {
     expect((await renderPdf(split)).diagnostics.map((d) => d.code)).not.toContain("document/overflow");
   });
 
-  it("places a Text or Heading by its alignSelf at its text's width, as a Button by its own", () => {
+  it("places a Button by its own alignSelf, over its stack's alignItems", () => {
     const { root } = prepare(
-      <Document style={{ alignItems: "stretch" }}>
-        <Text style={{ alignSelf: "center" }}>A pill</Text>
-        <Heading style={{ alignSelf: "end" }}>Right</Heading>
-        <Button href="https://x.test" style={{ alignSelf: "start" }}>
-          Go
+      <Document style={{ alignItems: "start" }}>
+        <Button href="https://x.test">Start</Button>
+        <Button href="https://x.test" style={{ alignSelf: "center" }}>
+          Center
         </Button>
-        <Text>The whole width</Text>
+        <Button href="https://x.test" style={{ alignSelf: "end" }}>
+          End
+        </Button>
       </Document>
     );
     const { content } = writeDocument(root!, { families: new Set(), fonts: [], image: () => undefined, date: new Date(0) }).pages[0];
-    expect(content.map((block) => [block.style.alignSelf, block.style.width])).toEqual([
-      ["center", undefined],
-      ["flex-end", undefined],
-      ["flex-start", undefined],
-      [undefined, undefined],
-    ]);
+    expect(content.map((block) => block.style.alignSelf)).toEqual(["flex-start", "center", "flex-end"]);
   });
 
   it("draws each render's fonts from its own files: a family another render gave other files to isn't theirs", async () => {

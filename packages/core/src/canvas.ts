@@ -1,6 +1,6 @@
 /**
  * Images: a Canvas is a fixed-size root, its children laid out in it as on a page, written as an
- * image by @unlayer/react-elements/image (and as HTML by render(), to look at); an Svg draws shapes (Rect, Circle, Ellipse,
+ * image by @hyper-elements/react/image (and as HTML by render(), to look at); an Svg draws shapes (Rect, Circle, Ellipse,
  * Line, Polygon, Path) in a box of its own, on a page, in a Canvas and in a PDF. An email can't show one: Gmail and
  * Outlook drop inline SVG.
  */
@@ -16,19 +16,14 @@ const size = (label: string) => prop(number({ min: 0 }), { support: WRITTEN, lab
 export const Canvas = defineComponent({
   type: "Canvas",
   label: "Canvas",
-  description: "An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @unlayer/react-elements/image.",
+  description: "An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.",
   categories: ["root"],
   props: {
     width: prop(length(["px"], { min: 16 }), { support: WRITTEN, label: "Width", description: "The image's width, in px.", default: 1200 }),
     height: prop(length(["px"], { min: 16 }), { support: WRITTEN, label: "Height", description: "The image's height, in px: what's past it is cut.", default: 630 }),
     ...ROOT_PROPS,
   },
-  style: {
-    ...ROOT_STYLE,
-    padding: boxStyle.padding,
-    border: { kind: boxStyle.border.kind, label: boxStyle.border.label, support: boxStyle.border.support, description: 'Lines inside its edges, as CSS border: "8px solid #f97316", or one side only ({ left: "12px solid #f97316" }: a quote card\'s bar).' },
-    justifyContent: layoutStyle.justifyContent,
-  },
+  style: { ...ROOT_STYLE, padding: boxStyle.padding, justifyContent: layoutStyle.justifyContent },
   defaultStyle: ROOT_DEFAULT_STYLE,
   children: { categories: ["section", "layout", "block"] },
   sizing: "none",

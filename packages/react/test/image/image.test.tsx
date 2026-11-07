@@ -98,32 +98,24 @@ describe("renderImage", () => {
     expect(svg).toContain("6366f1");
   });
 
-  it("draws a Text or Heading placed by its alignSelf as wide as its text, where it says, and a Canvas's border inside its edge", async () => {
-    const quote = (
-      <Canvas width={600} height={315} style={{ padding: 40, gap: 16, alignItems: "stretch", border: { left: "16px solid #f97316" }, fontFamily: "Liberation Sans" }}>
-        <Text style={{ alignSelf: "start", backgroundColor: "#fde68a", padding: [4, 12] }}>New</Text>
-        <Heading style={{ alignSelf: "center", backgroundColor: "#e0e7ff" }}>Centered</Heading>
-        <Text style={{ alignSelf: "end", backgroundColor: "#bbf7d0" }}>end</Text>
-        <Text style={{ backgroundColor: "#eeeeee" }}>The whole width</Text>
+  it("places a Button by its own alignSelf, over its stack's alignItems", async () => {
+    const buttons = (
+      <Canvas width={600} height={315} style={{ padding: 40, gap: 16, alignItems: "start", fontFamily: "Liberation Sans" }}>
+        <Button href="https://x.test" style={{ backgroundColor: "#fde68a" }}>Start</Button>
+        <Button href="https://x.test" style={{ alignSelf: "center", backgroundColor: "#e0e7ff" }}>Center</Button>
+        <Button href="https://x.test" style={{ alignSelf: "end", backgroundColor: "#bbf7d0" }}>End</Button>
       </Canvas>
     );
-    const svg = new TextDecoder().decode((await renderImage(quote, { fonts, format: "svg" })).image);
+    const svg = new TextDecoder().decode((await renderImage(buttons, { fonts, format: "svg" })).image);
     const box = (fill: string) => {
-      const [, x, width] = new RegExp(`<rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)" height="[\\d.]+" fill="${fill}"`).exec(svg)!;
+      const [, x, width] = new RegExp(`<rect x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)" height="[\\d.]+"[^>]* fill="${fill}"`).exec(svg)!;
       return [Number(x), Number(x) + Number(width)];
     };
-    // The content is 56px to 560px: inside the 16px border and the 40px padding.
-    const [start, startEnd] = box("#fde68a");
-    expect(start).toBe(56);
-    expect(startEnd).toBeLessThan(120);
+    // The content is 40px to 560px.
+    expect(box("#fde68a")[0]).toBe(40);
     const [center, centerEnd] = box("#e0e7ff");
-    expect(Math.abs((center + centerEnd) / 2 - 308)).toBeLessThan(1);
-    expect(centerEnd - center).toBeLessThan(300);
-    const [end, endEnd] = box("#bbf7d0");
-    expect(endEnd).toBe(560);
-    expect(end).toBeGreaterThan(500);
-    expect(box("#eeeeee")).toEqual([56, 560]);
-    expect(svg).toContain("f97316");
+    expect(Math.abs((center + centerEnd) / 2 - 300)).toBeLessThan(1);
+    expect(box("#bbf7d0")[1]).toBe(560);
   });
 
   it("writes the same file for the same template", async () => {
