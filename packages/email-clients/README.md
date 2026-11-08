@@ -60,4 +60,15 @@ Each file carries a runtime: email-renderer's models of the clients (`src/runtim
 the commit `RUNTIME_SOURCE` pins) and the lifecycle around them (`src/runtime/`), bundled into one script
 (`src/runtime.generated.ts`, committed, so the package builds without email-renderer). To move the pin: copy the
 modules from the new commit, update `RUNTIME_SOURCE`, run `pnpm build:runtime`, and show the new scores in the PR.
-`pnpm build` fails if the generated runtime isn't what its sources build.
+`pnpm build` fails if the generated runtime isn't what its sources build. The open fonts in `fonts/` come from the same
+email-renderer checkout: `pnpm build:fonts /path/to/email-renderer`.
+
+## Releases
+
+The package follows `@hyper-elements/react`'s minor: each of its minors works with the core releases of the same minor
+from its peer floor up (`^0.3.1`, the first with `render()`'s `blockMap`), and its patches are its own (a pin move, a
+re-capture, a new finding). `publish.yml` releases it on its own, tagged `email-clients-v<version>`, after core when
+both change; a core release outside its range fails until the range is raised in the same change. Its first version is
+published by hand after core 0.3.1, tagged `email-clients-v0.3.0`, and then npm's trusted publishing is set up for it.
+Each release records in the changelog the email-renderer commit its runtime comes from and the captures it was scored
+against.
