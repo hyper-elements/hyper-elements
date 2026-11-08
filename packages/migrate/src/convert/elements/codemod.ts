@@ -519,27 +519,30 @@ export async function migrateElements(source: string, options: MigrateElementsOp
 
   // ─── Writing the new JSX ───────────────────────────────────────────────────
 
-  /** Marks a component's style entries and its phone entries until element() writes them as one style. */
+  /** Marks a component's style entries, its phone entries and its hover entries until element() writes them as one style. */
   const STYLE_PART = "\u0000style:";
   const PHONE_PART = "\u0000mobile:";
+  const HOVER_PART = "\u0000hover:";
+  const PARTS = [STYLE_PART, PHONE_PART, HOVER_PART];
 
   const element = (component: string, attributes: Array<string | false | undefined>, children: string[] = []) => {
     used.add(component);
     const tag = nameOf(component);
-    const attrs = withPhoneInStyle(attributes.filter((a): a is string => !!a)).join(" ");
+    const attrs = withBlocksInStyle(attributes.filter((a): a is string => !!a)).join(" ");
     return children.length ? `<${tag}${attrs ? ` ${attrs}` : ""}>${children.join("")}</${tag}>` : `<${tag}${attrs ? ` ${attrs}` : ""} />`;
   };
   /**
-   * A component's style, its phone styles in it: styleAttr() and mobileAttr() hand element() their entries (marked, not
-   * written yet), and it writes one style={{ …, mobile: { … } }} of them.
+   * A component's style, its phone and hover styles in it: styleAttr(), mobileAttr() and hoverAttr() hand element() their
+   * entries (marked, not written yet), and it writes one style={{ …, mobile: { … }, hover: { … } }} of them.
    */
-  const withPhoneInStyle = (attributes: string[]): string[] => {
-    const own = attributes.find((a) => a.startsWith(STYLE_PART))?.slice(STYLE_PART.length);
-    const phone = attributes.find((a) => a.startsWith(PHONE_PART))?.slice(PHONE_PART.length);
-    const style = [own, phone && `mobile: { ${phone} }`].filter(Boolean).join(", ");
+  const withBlocksInStyle = (attributes: string[]): string[] => {
+    const part = (marker: string) => attributes.find((a) => a.startsWith(marker))?.slice(marker.length);
+    const phone = part(PHONE_PART);
+    const hover = part(HOVER_PART);
+    const style = [part(STYLE_PART), phone && `mobile: { ${phone} }`, hover && `hover: { ${hover} }`].filter(Boolean).join(", ");
     let written = false;
     return attributes.flatMap((a) => {
-      if (!a.startsWith(STYLE_PART) && !a.startsWith(PHONE_PART)) return [a];
+      if (!PARTS.some((marker) => a.startsWith(marker))) return [a];
       if (written) return [];
       written = true;
       return [`style={{ ${style} }}`];
@@ -644,6 +647,11 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   const mobileAttr = (entries: Array<[string, Value | undefined]>) => {
     const value = entriesOf(entries);
     return value && `${PHONE_PART}${value}`;
+  };
+  /** Styles on hover (style={{ hover: { … } }}), where any is given. */
+  const hoverAttr = (entries: Array<[string, Value | undefined]>) => {
+    const value = entriesOf(entries);
+    return value && `${HOVER_PART}${value}`;
   };
   /**
    * A text block's words as today's draw them: a Paragraph's children, else its `text` (plain text: markup in it
@@ -1128,6 +1136,8 @@ export async function migrateElements(source: string, options: MigrateElementsOp
         ["borderRadius", radiusOf(radius, node)],
       ]),
       mobileAttr([["width", isLiteral(m.get("autoWidth")) && (m.get("autoWidth") as { literal: unknown }).literal === true ? undefined : n(m.get("width"))], ["fontSize", n(m.get("fontSize"))], ["lineHeight", lineHeightOf(m.get("lineHeight"), node)], ["padding", n(m.get("padding"))]]),
+      // Today's hover colors (buttonColors' hoverColor and hoverBackgroundColor) are the new Button's hover styles.
+      hoverAttr([["backgroundColor", color(props, "hoverBackgroundColor")], ["color", color(props, "hoverColor")]]),
     ], textChildren(node, props, node, "Button"));
     if (!href) report.push(`${where(node)}: this Button has no href: it links to "#"`);
     return wrapped(props, block, align(props, "textAlign", "center"), node);
