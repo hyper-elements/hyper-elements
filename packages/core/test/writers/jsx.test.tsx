@@ -59,7 +59,7 @@ describe("phone and hover styles in the writers' JSX", () => {
     const td = withStylesheet(sheet, () => String(<td align="center" hover={{ color: "#000000" }} phone={{ padding: 4 }} class={[undefined, "own"]} style={{ color: "#ff0000" }} />));
     const [hover, phone] = /class="(e\w{5}) (e\w{5}) own"/.exec(td)!.slice(1);
     expect(td).toBe(`<td align="center" class="${hover} ${phone} own" style="color:#f00"></td>`);
-    expect(sheet.css("@media (max-width: 1px)", "@media (min-width: 2px)")).toBe(`.${hover}:hover{color:#000!important}@media (max-width: 1px){.${phone}{padding:4px!important}}`);
+    expect(sheet.css("@media (max-width: 1px)", "@media (min-width: 2px)")).toBe(`.${hover}:hover,.${hover}:focus-visible{color:#000!important}@media (max-width: 1px){.${phone}{padding:4px!important}}`);
     // Nothing to write, no class.
     expect(withStylesheet(sheet, () => String(<td phone={{ padding: undefined }} hover={undefined} class={[]} />))).toBe("<td></td>");
     expect(() => String(<td phone={{ padding: 4 }} />)).toThrow(/withStylesheet/);
