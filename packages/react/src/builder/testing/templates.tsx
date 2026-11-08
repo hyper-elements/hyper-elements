@@ -42,7 +42,7 @@ export const sample = (
       </Heading>
       <Text>
         Hello{" "}
-        <Link href="https://x.test" hover={{ color: "#0000ff" }}>
+        <Link href="https://x.test" style={{ hover: { color: "#0000ff" } }}>
           link
         </Link>
         <Span style={{ fontWeight: 700 }}> bold</Span>
@@ -52,7 +52,7 @@ export const sample = (
           <Text>A</Text>
         </Column>
         <Column>
-          <Button href="https://b.test" hover={{ backgroundColor: "#333333" }}>
+          <Button href="https://b.test" style={{ hover: { backgroundColor: "#333333" } }}>
             Go
           </Button>
         </Column>
@@ -75,12 +75,12 @@ export const everyTool = (
       </Heading>
       <Text style={{ fontSize: 15, lineHeight: 1.6 }}>
         Text with a{" "}
-        <Link href={{ href: "https://x.test", target: "_self" }} hover={{ color: "#0000ff" }}>
+        <Link href={{ href: "https://x.test", target: "_self" }} style={{ hover: { color: "#0000ff" } }}>
           link
         </Link>{" "}
         and <MergeTag name="first_name" />
       </Text>
-      <Button href="https://x.test/go" style={{ backgroundColor: "#111111", color: "#ffffff", borderRadius: 6, padding: [12, 24, 12, 24] }} hover={{ backgroundColor: "#333333" }}>
+      <Button href="https://x.test/go" style={{ backgroundColor: "#111111", color: "#ffffff", borderRadius: 6, padding: [12, 24, 12, 24], hover: { backgroundColor: "#333333" } }}>
         Button
       </Button>
       <Link href="https://x.test/image">
@@ -161,7 +161,7 @@ export const text = (
       </ListItem>
     </List>
     <Text style={{ backgroundColor: "#eef2ff", border: { left: "4px solid #6366f1" }, padding: 12, borderRadius: 4, maxWidth: 400 }}>A boxed note</Text>
-    <Text style={{ textAlign: "center", lineHeight: "24px" }} mobile={{ fontSize: 13, textAlign: "left" }}>
+    <Text style={{ textAlign: "center", lineHeight: "24px", mobile: { fontSize: 13, textAlign: "left" } }}>
       Centered
     </Text>
     <Html html='<table role="presentation"><tr><td>Raw cell</td></tr></table>' text="Raw cell" />
@@ -172,10 +172,10 @@ export const text = (
 export const blocks = (
   <Page width={800} style={{ backgroundColor: "#ffffff" }}>
     <Column style={{ alignItems: "center", gap: 16, padding: 24 }}>
-      <Button href={{ href: "https://x.test/buy", target: "_blank" }} title="Buy it" style={{ width: 240, textAlign: "left", border: { top: "2px solid #000000", bottom: "2px solid #000000" }, fontStyle: "italic" }} mobile={{ padding: 8 }}>
+      <Button href={{ href: "https://x.test/buy", target: "_blank" }} title="Buy it" style={{ width: 240, textAlign: "left", border: { top: "2px solid #000000", bottom: "2px solid #000000" }, fontStyle: "italic", mobile: { padding: 8 } }}>
         Buy <Span style={{ fontWeight: 700 }}>now</Span>
       </Button>
-      <Image src={{ src: "https://example.com/wide.png", width: 1200, height: 400 }} alt="Wide" style={{ width: 300, border: { top: "1px solid #dddddd" } }} mobile={{ width: "100%" }} />
+      <Image src={{ src: "https://example.com/wide.png", width: 1200, height: 400 }} alt="Wide" style={{ width: 300, border: { top: "1px solid #dddddd" }, mobile: { width: "100%" } }} />
       <Image src="https://example.com/no-size.png" alt="No size" style={{ width: "100%" }} />
       <Divider style={{ width: 200, borderTop: "3px dotted #ff0000", padding: [4, 0, 4, 0] }} />
       <Video src="https://vimeo.com/76979871" title="Launch" style={{ maxWidth: 400 }} />

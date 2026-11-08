@@ -33,14 +33,14 @@ export default function LandingPage() {
         <Text style={{ fontSize: 13, fontWeight: 700, color: "#6d5efc", backgroundColor: "#eeecff", borderRadius: 999, padding: [6, 14] }}>
           New · Orbit 2.0
         </Text>
-        <Heading level={1} style={{ fontSize: 60, lineHeight: 1.04, letterSpacing: -2, maxWidth: 760 }} mobile={{ fontSize: 38 }}>
+        <Heading level={1} style={{ fontSize: 60, lineHeight: 1.04, letterSpacing: -2, maxWidth: 760, mobile: { fontSize: 38 } }}>
           Ship every surface from one codebase.
         </Heading>
         <Text style={{ fontSize: 19, lineHeight: 1.55, color: "#475569", maxWidth: 600 }}>
           Live previews, typed templates and one-click deploys for the team that owns your product's every pixel.
         </Text>
         <Row style={{ gap: 12, justifyContent: "center" }}>
-          <Button href="https://example.com/signup" style={{ backgroundColor: "#6d5efc", borderRadius: 10, padding: [14, 24], fontSize: 16, fontWeight: 700, flex: "none" }} hover={{ backgroundColor: "#5a4bf0" }}>
+          <Button href="https://example.com/signup" style={{ backgroundColor: "#6d5efc", borderRadius: 10, padding: [14, 24], fontSize: 16, fontWeight: 700, flex: "none", hover: { backgroundColor: "#5a4bf0" } }}>
             Start for free
           </Button>
           <Button href="https://example.com/demo" style={{ backgroundColor: "#ffffff", color: "#0f172a", border: "1px solid #d7dbe3", borderRadius: 10, padding: [14, 24], fontSize: 16, fontWeight: 700, flex: "none" }}>

@@ -19,4 +19,4 @@ Props:
 - `maxWidth`: a length (a number of px, %)
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `width`, `maxWidth`.
+`style.mobile` (on phones): `width`, `maxWidth`.

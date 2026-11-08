@@ -30,7 +30,7 @@ const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSpacing: 
 /** The rail: a part's label at the left, under a rule, and its content beside it (above it on phones). */
 const RAIL = 136;
 const railed = (name: string, content: ReactNode) => (
-  <Row style={{ gap: 24, padding: [14, 0, 0], border: { top: `1px solid ${INK}` } }} mobile={{ gap: 20 }}>
+  <Row style={{ gap: 24, padding: [14, 0, 0], border: { top: `1px solid ${INK}` }, mobile: { gap: 20 } }}>
     <Column style={{ width: RAIL }}>
       <Text style={{ ...label, color: INK }}>{name}</Text>
     </Column>
@@ -75,7 +75,7 @@ export const oyenLaunch = (
     ]}
     style={{ backgroundColor: PAPER, color: INK, fontFamily: SANS, fontSize: 16, lineHeight: 1.6 }}
   >
-    <Section style={{ padding: [36, 48, 72], gap: 64 }} mobile={{ padding: [28, 24, 56], gap: 48 }}>
+    <Section style={{ padding: [36, 48, 72], gap: 64, mobile: { padding: [28, 24, 56], gap: 48 } }}>
       {/* Masthead */}
       <Row stackOnMobile={false} style={{ alignItems: "end", padding: [0, 0, 14], border: { bottom: `1px solid ${INK}` } }}>
         <Column style={{ width: 120 }}>
@@ -91,22 +91,20 @@ export const oyenLaunch = (
       </Row>
 
       {/* The announcement */}
-      <Column style={{ gap: 28 }} mobile={{ gap: 24 }}>
+      <Column style={{ gap: 28, mobile: { gap: 24 } }}>
         <Column style={{ gap: 20 }}>
           <Text style={label}>New instrument — FR-2</Text>
-          <Heading level={1} style={{ fontSize: 62, lineHeight: 1, letterSpacing: -2.6, fontWeight: 500 }} mobile={{ fontSize: 44, letterSpacing: -1.8 }}>
+          <Heading level={1} style={{ fontSize: 62, lineHeight: 1, letterSpacing: -2.6, fontWeight: 500, mobile: { fontSize: 44, letterSpacing: -1.8 } }}>
             Record the room you’re in.
           </Heading>
         </Column>
-        <Text style={{ fontSize: 19, lineHeight: 1.5, maxWidth: 400 }} mobile={{ fontSize: 17 }}>
+        <Text style={{ fontSize: 19, lineHeight: 1.5, maxWidth: 400, mobile: { fontSize: 17 } }}>
           FR-2 is a pocket recorder with two capsules that turn, one dial, and nothing to set before you press record.
         </Text>
-        <Row style={{ alignItems: "center", gap: 20 }} mobile={{ gap: 14 }}>
+        <Row style={{ alignItems: "center", gap: 20, mobile: { gap: 14 } }}>
           <Button
             href={`${SITE}/fr-2`}
-            style={{ width: 184, backgroundColor: SIGNAL, color: INK, fontSize: 15, fontWeight: 600, padding: [16, 0], borderRadius: 2 }}
-            hover={{ backgroundColor: SIGNAL_DOWN }}
-            mobile={{ width: "100%" }}
+            style={{ width: 184, backgroundColor: SIGNAL, color: INK, fontSize: 15, fontWeight: 600, padding: [16, 0], borderRadius: 2, mobile: { width: "100%" }, hover: { backgroundColor: SIGNAL_DOWN } }}
           >
             Pre-order FR-2
           </Button>
@@ -115,7 +113,7 @@ export const oyenLaunch = (
       </Column>
 
       {/* The drawing: the whole plate on a desktop, the two views larger on a phone */}
-      <Column style={{ gap: 12 }} mobile={{ gap: 10 }}>
+      <Column style={{ gap: 12, mobile: { gap: 10 } }}>
         <Image src={{ src: "gallery/oyen/fr2-drawing.png", width: 1020, height: 900 }} alt={DRAWING} style={{ width: "100%" }} />
         <Text style={label}>Fig. 1 — FR-2, front and side</Text>
       </Column>
@@ -145,7 +143,7 @@ export const oyenLaunch = (
       {railed(
         "From the field",
         <Column style={{ gap: 16 }}>
-          <Text style={{ fontSize: 24, lineHeight: 1.32, letterSpacing: -0.6 }} mobile={{ fontSize: 22 }}>
+          <Text style={{ fontSize: 24, lineHeight: 1.32, letterSpacing: -0.6, mobile: { fontSize: 22 } }}>
             “I left it on a fence post through nine hours of rain. It kept recording, and so did the birds.”
           </Text>
           <Text style={label}>Maren Achterberg, sound recordist</Text>
@@ -154,20 +152,19 @@ export const oyenLaunch = (
     </Section>
 
     {/* Closing band */}
-    <Section style={{ backgroundColor: SIGNAL, padding: [44, 48, 48] }} mobile={{ padding: [36, 24] }}>
-      <Row style={{ alignItems: "end", gap: 24 }} mobile={{ gap: 28 }}>
+    <Section style={{ backgroundColor: SIGNAL, padding: [44, 48, 48], mobile: { padding: [36, 24] } }}>
+      <Row style={{ alignItems: "end", gap: 24, mobile: { gap: 28 } }}>
         <Column style={{ gap: 14 }}>
           <Text style={{ ...label, color: INK }}>First run · 2,000 instruments</Text>
-          <Heading level={2} style={{ fontSize: 96, lineHeight: 0.9, letterSpacing: -4.5, fontWeight: 500 }} mobile={{ fontSize: 80, letterSpacing: -3.6 }}>
+          <Heading level={2} style={{ fontSize: 96, lineHeight: 0.9, letterSpacing: -4.5, fontWeight: 500, mobile: { fontSize: 80, letterSpacing: -3.6 } }}>
             €349
           </Heading>
           <Text style={{ fontSize: 15, lineHeight: 1.5 }}>Ships 2 December. Charged when it ships.</Text>
         </Column>
-        <Column style={{ width: 168 }} mobile={{ width: "100%" }}>
+        <Column style={{ width: 168, mobile: { width: "100%" } }}>
           <Button
             href={`${SITE}/fr-2`}
-            style={{ width: "100%", backgroundColor: INK, color: PAPER, fontSize: 15, fontWeight: 600, padding: [16, 20], borderRadius: 2 }}
-            hover={{ backgroundColor: "#3A3833" }}
+            style={{ width: "100%", backgroundColor: INK, color: PAPER, fontSize: 15, fontWeight: 600, padding: [16, 20], borderRadius: 2, hover: { backgroundColor: "#3A3833" } }}
           >
             Pre-order FR-2
           </Button>
@@ -176,8 +173,8 @@ export const oyenLaunch = (
     </Section>
 
     {/* Footer */}
-    <Section style={{ padding: [32, 48, 56] }} mobile={{ padding: [28, 24, 44] }}>
-      <Row style={{ gap: 24 }} mobile={{ gap: 12 }}>
+    <Section style={{ padding: [32, 48, 56], mobile: { padding: [28, 24, 44] } }}>
+      <Row style={{ gap: 24, mobile: { gap: 12 } }}>
         <Column style={{ width: RAIL }}>
           <Text style={{ fontSize: 13, fontWeight: 700, letterSpacing: 4 }}>OYEN</Text>
         </Column>

@@ -6,6 +6,7 @@
 import { COMPONENTS } from "./components";
 import { TARGETS, type ComponentDefinition, type PropSpecs, type Target, type TargetSupport } from "./define";
 import type { OutputOf } from "./kinds";
+import type { Diagnostic } from "./diagnostics";
 import type { Json } from "./model";
 import { placementStyle } from "./styles";
 
@@ -30,6 +31,8 @@ export interface ExpandContext {
   style: Record<string, Json>;
   /** Whether the template has phones (an Email or a Page): what's hidden on phones is only hidden there. */
   responsive: boolean;
+  /** A problem found while expanding that doesn't stop it (a warning or a note), said once at the expansion's place. */
+  report(diagnostic: Diagnostic): void;
 }
 
 export interface CustomDefinition<P extends PropSpecs = PropSpecs> extends ComponentDefinition<P, typeof placementStyle> {

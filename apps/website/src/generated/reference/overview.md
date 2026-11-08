@@ -10,8 +10,9 @@ Every component, what it holds, and every prop and style it takes, with its defa
 Every component also takes:
 
 - `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).
-- `mobile={{ … }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`mobile`".
-- `hover={{ … }}`: styles on hover, for the ones listed under "`hover`".
+- `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`style.mobile`".
+- `style={{ hover: { … } }}`: styles on hover, for the ones listed under "`style.hover`".
+- `mobile={{ … }}` and `hover={{ … }}` as props are deprecated (a warning) and will be removed: they do the same as those blocks until then. `npx @hyper-elements/migrate style-blocks <files> --write` rewrites them.
 - `hidden={{ mobile: true }}` or `hidden={{ desktop: true }}`: shown on one only.
 - `id`: an id of your own, written into the HTML.
 

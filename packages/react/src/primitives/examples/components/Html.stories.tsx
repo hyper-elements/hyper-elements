@@ -56,7 +56,7 @@ const SANS_TYPE = `font-family:'Hanken Grotesk','Helvetica Neue',Helvetica,Arial
 /** `Html` is markup written as it is, for what no component says. */
 export const YourOwnHtml = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [44, 32, 48], gap: 18 }} mobile={{ padding: [32, 24, 36], gap: 16 }}>
+    <Section style={{ padding: [44, 32, 48], gap: 18, mobile: { padding: [32, 24, 36], gap: 16 } }}>
       <Text style={label}>Your highlight of the week</Text>
       <Html
         html={`<div>
@@ -74,7 +74,7 @@ export const YourOwnHtml = story((Root) => (
 /** A card with a gradient and a shadow, which `style` doesn't have. */
 export const GradientCard = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [44, 32, 52], gap: 18 }} mobile={{ padding: [28, 20, 36] }}>
+    <Section style={{ padding: [44, 32, 52], gap: 18, mobile: { padding: [28, 20, 36] } }}>
       <Html
         html={`<div style="${SERIF_TYPE};padding:40px 36px 36px;border-radius:6px;color:#FBF2E4;background:linear-gradient(155deg,#5F1D1A 0%,#8E3A28 62%,#B4623A 100%);box-shadow:0 22px 34px -22px rgba(62,20,14,.75)">
   <div style="${SANS_TYPE};color:#EBCBAA;font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase">Your year in books</div>
@@ -99,9 +99,9 @@ const bar = (title: string, percent: number, color: string) => `<div style="marg
 /** Progress bars, next to a heading that's a component: `Html` is one block among others. */
 export const ProgressBars = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [40, 24, 44] }} mobile={{ padding: [20, 12, 28] }}>
-      <Column style={{ backgroundColor: SHEET, borderRadius: 4, padding: [36, 36, 16], gap: 24 }} mobile={{ padding: [28, 22, 8], gap: 20 }}>
-        <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.4 }} mobile={{ fontSize: 28 }}>
+    <Section style={{ padding: [40, 24, 44], mobile: { padding: [20, 12, 28] } }}>
+      <Column style={{ backgroundColor: SHEET, borderRadius: 4, padding: [36, 36, 16], gap: 24, mobile: { padding: [28, 22, 8], gap: 20 } }}>
+        <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.4, mobile: { fontSize: 28 } }}>
           On your nightstand
         </Heading>
         <Html html={`<div>${bar("The Salt Road", 82, OXBLOOD)}${bar("Winter Orchards", 46, OXBLOOD)}${bar("A Short History of Rope", 12, OXBLOOD)}</div>`} />
@@ -119,8 +119,8 @@ const SO_FAR = "41 books, 11,208 pages, 63 nights in a row";
 /** A table of figures in markup every mail client reads: `text` says what it reads as in the plain-text version. */
 export const PlainTextVersion = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [44, 32, 48], gap: 20 }} mobile={{ padding: [28, 20, 36], gap: 16 }}>
-      <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.4 }} mobile={{ fontSize: 28 }}>
+    <Section style={{ padding: [44, 32, 48], gap: 20, mobile: { padding: [28, 20, 36], gap: 16 } }}>
+      <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.4, mobile: { fontSize: 28 } }}>
         Your year, so far
       </Heading>
       <Html

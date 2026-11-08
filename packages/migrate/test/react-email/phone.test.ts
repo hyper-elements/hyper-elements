@@ -72,14 +72,14 @@ describe("phone styles", () => {
     expect(codemod.report.notes.filter(n => n.reason === "tailwind class not inlined").map(n => n.detail)).toEqual(["hover:text-red-500"]);
     for (const code of codes) {
       // The stacked columns' phone padding.
-      expect(code.match(/<Column[^>]*mobile=\{\{ padding: "[^"]*16px[^"]*" \}\}/g)?.length).toBeGreaterThanOrEqual(2);
+      expect(code.match(/<Column[^>]*mobile: \{ padding: "[^"]*16px[^"]*" \}/g)?.length).toBeGreaterThanOrEqual(2);
       // The editor can't hide a column: the spacer stacks with no height instead, holding only an invisible divider.
       expect(code).toMatch(/<Column[^>]*>\s*<Divider style=\{\{ borderTop: "0px solid #BBBBBB", padding: 0 \}\} \/>\s*<\/Column>/);
       expect(code).not.toMatch(/<Column[^>]*hidden=/);
-      expect(code).toMatch(/mobile=\{\{\s*padding: "0px 8px 0px 8px",\s*fontSize: 14,\s*lineHeight: 1\.2,\s*textAlign: "center",?\s*\}\}\s*>\s*First phone text/);
-      expect(code).toMatch(/mobile=\{\{ padding: "8px 0px 4px 0px" \}\}\s*>\s*Second phone text/);
-      expect(code).toMatch(/alt="Landscape"[^>]*mobile=\{\{ width: "100%"/);
-      expect(code).toMatch(/mobile=\{\{ padding: "4px 8px 4px 8px" \}\}\s*>\s*Open/);
+      expect(code).toMatch(/mobile: \{\s*padding: "0px 8px 0px 8px",\s*fontSize: 14,\s*lineHeight: 1\.2,\s*textAlign: "center",?\s*\},?\s*\}\}\s*>\s*First phone text/);
+      expect(code).toMatch(/mobile: \{ padding: "8px 0px 4px 0px" \},?\s*\}\}\s*>\s*Second phone text/);
+      expect(code).toMatch(/<Image(?=[^>]*alt="Landscape")[^>]*mobile: \{ width: "100%"/);
+      expect(code).toMatch(/mobile: \{ padding: "4px 8px 4px 8px" \},?\s*\}\}\s*>\s*Open/);
       expect(code).toMatch(/hidden=\{\{ mobile: true \}\}\s*>\s*Desktop only/);
     }
   });
@@ -120,7 +120,7 @@ describe("phone styles", () => {
     const { codemod } = await convertBoth(source);
     // Both columns stack on phones (\`max-sm:!block\` survives), and the one stacked second gets 32px above.
     expect(codemod.code).not.toContain("noStackMobile");
-    expect(codemod.code.match(/mobile=\{\{ padding: "32px/g)?.length).toBe(2);
+    expect(codemod.code.match(/mobile: \{ padding: "32px/g)?.length).toBe(2);
   });
 
   it("keeps a card's edge on rows that stack, and the gaps a column's phone margin makes", async () => {
@@ -164,7 +164,7 @@ describe("phone styles", () => {
     // Padding shrinks with the row (20px × 375 / 660), then the text size makes up the rest.
     expect(codemod.intermediate).toMatch(/mobile=\{\{ containerPadding: "0px 11px 0px 0px", fontSize: "1[0-3]px" \}\}/);
     expect(codemod.intermediate.match(/fontSize: "/g)).toHaveLength(1);
-    expect(codemod.code).toMatch(/mobile=\{\{ padding: "0px 11px 0px 0px", fontSize: 1[0-3] \}\}/);
+    expect(codemod.code).toMatch(/mobile: \{ padding: "0px 11px 0px 0px", fontSize: 1[0-3] \}/);
     for (const design of designs) {
       const items = JSON.stringify(design);
       expect(items.match(/"mobile":\{[^}]*"fontSize"/g)).toHaveLength(1);
@@ -197,7 +197,7 @@ describe("phone styles", () => {
         <Button href="https://example.com/start" className="bg-indigo-600 px-[20px] py-[12px] text-white max-sm:block max-sm:text-center">Start planning</Button>
       </Container></Body></Html></Tailwind>; }`;
     const { codemod, codes } = await convertBoth(source);
-    for (const code of codes) expect(code).toMatch(/mobile=\{\{[^}]*width: "100%"[^}]*\}\}\s*>\s*Start planning/);
+    for (const code of codes) expect(code).toMatch(/mobile: \{[^}]*width: "100%"[^}]*\},?\s*\}\}\s*>\s*Start planning/);
     expect(codemod.report.notes.filter((n) => n.reason === "tailwind class not inlined")).toEqual([]);
   });
 
@@ -209,8 +209,8 @@ describe("phone styles", () => {
       </Container></Body></Html></Tailwind>; }`;
     const { codes, designs } = await convertBoth(source);
     for (const code of codes) {
-      expect(code).toMatch(/<Section hidden=\{\{ mobile: true \}\}>\s*<Column mobile=\{\{ padding: "0px 16px 0px 16px" \}\}>/);
-      expect(code).toMatch(/padding: "32px 32px 32px 32px" \}\}\s*mobile=\{\{ padding: "8px 8px 8px 8px" \}\}\s*>\s*<Text[^>]*>\s*Nested section/);
+      expect(code).toMatch(/<Section hidden=\{\{ mobile: true \}\}>\s*<Column style=\{\{ mobile: \{ padding: "0px 16px 0px 16px" \} \}\}>/);
+      expect(code).toMatch(/padding: "32px 32px 32px 32px",\s*mobile: \{ padding: "8px 8px 8px 8px" \},?\s*\}\}\s*>\s*<Text[^>]*>\s*Nested section/);
     }
     // The visual editor hides the row on phones too.
     for (const design of designs) {

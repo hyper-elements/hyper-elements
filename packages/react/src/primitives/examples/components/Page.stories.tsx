@@ -54,9 +54,9 @@ const title = { fontFamily: DISPLAY, fontWeight: 500, lineHeight: 1.06, letterSp
 export const Width = showing(
   "Page",
   <Page width={480} fonts={FONTS} style={{ backgroundColor: PARCHMENT, color: INK, fontFamily: SANS, fontSize: 17, lineHeight: 1.55 }}>
-    <Section style={{ backgroundColor: NIGHT, color: PARCHMENT, padding: [56, 24], gap: 14 }} mobile={{ padding: [44, 24] }}>
+    <Section style={{ backgroundColor: NIGHT, color: PARCHMENT, padding: [56, 24], gap: 14, mobile: { padding: [44, 24] } }}>
       <Text style={{ ...kicker, color: BRASS }}>Tonight’s sky</Text>
-      <Heading level={2} style={{ ...title, fontSize: 44 }} mobile={{ fontSize: 36 }}>
+      <Heading level={2} style={{ ...title, fontSize: 44, mobile: { fontSize: 36 } }}>
         Jupiter rises at 18:40
       </Heading>
       <Text>Look east from the car park. It’s the brightest thing up there until the moon clears the ridge, a little after nine.</Text>
@@ -73,11 +73,10 @@ export const InheritedText = showing(
   <Page
     width={640}
     fonts={[{ family: "Cormorant Garamond", src: "https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2", format: "woff2", weight: "300 700" }, MONO_FONT]}
-    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: SERIF, fontSize: 24, lineHeight: 1.45, textAlign: "center" }}
-    mobile={{ fontSize: 21 }}
+    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: SERIF, fontSize: 24, lineHeight: 1.45, textAlign: "center", mobile: { fontSize: 21 } }}
   >
-    <Section style={{ padding: [72, 40, 64], gap: 18 }} mobile={{ padding: [52, 24, 44] }}>
-      <Heading level={1} style={{ fontSize: 54, fontWeight: 500, lineHeight: 1.02 }} mobile={{ fontSize: 42 }}>
+    <Section style={{ padding: [72, 40, 64], gap: 18, mobile: { padding: [52, 24, 44] } }}>
+      <Heading level={1} style={{ fontSize: 54, fontWeight: 500, lineHeight: 1.02, mobile: { fontSize: 42 } }}>
         Bring a coat.
       </Heading>
       <Text>It’s colder on the hill than you’ll think it is, and the dome has to stay open to the night.</Text>
@@ -90,15 +89,15 @@ export const InheritedText = showing(
 export const GapAndAlignment = showing(
   "Page",
   <Page width={560} fonts={FONTS} style={{ backgroundColor: PARCHMENT, color: INK, fontFamily: SANS, fontSize: 16, lineHeight: 1.5, gap: 16, alignItems: "center", textAlign: "center" }}>
-    <Heading level={2} style={{ ...title, fontSize: 40, padding: [44, 20, 8] }} mobile={{ fontSize: 34, padding: [32, 20, 4] }}>
+    <Heading level={2} style={{ ...title, fontSize: 40, padding: [44, 20, 8], mobile: { fontSize: 34, padding: [32, 20, 4] } }}>
       A public night
     </Heading>
-    <Column style={{ width: 360, padding: [24, 24, 26], gap: 6, backgroundColor: SHEET, border: `1px solid #DDD3BE` }} mobile={{ width: 320 }}>
+    <Column style={{ width: 360, padding: [24, 24, 26], gap: 6, backgroundColor: SHEET, border: `1px solid #DDD3BE`, mobile: { width: 320 } }}>
       <Text style={{ ...kicker, color: BRASS_DOWN }}>Saturday 14 November</Text>
       <Text style={{ fontFamily: DISPLAY, fontSize: 28, lineHeight: 1.15 }}>Doors at 19:30</Text>
       <Text style={{ fontSize: 15, color: QUIET }}>Dome opens at nine. £8, children free.</Text>
     </Column>
-    <Button href={`${SITE}/book`} style={{ backgroundColor: INK, color: PARCHMENT, fontSize: 15, fontWeight: 500, padding: [14, 30], borderRadius: 2 }} hover={{ backgroundColor: "#2C3640" }}>
+    <Button href={`${SITE}/book`} style={{ backgroundColor: INK, color: PARCHMENT, fontSize: 15, fontWeight: 500, padding: [14, 30], borderRadius: 2, hover: { backgroundColor: "#2C3640" } }}>
       Book a place
     </Button>
     <Text style={{ fontSize: 14, color: QUIET, padding: [0, 24] }}>If it’s cloudy, we’ll write by four and refund you.</Text>
@@ -113,14 +112,14 @@ const DESCRIPTION = "See Saturn through a brass telescope from 1889. Public nigh
 export const TitleAndDescription = showing(
   "Page",
   <Page width={560} title={TITLE} description={DESCRIPTION} lang="en" fonts={FONTS} style={{ backgroundColor: PARCHMENT, color: INK, fontFamily: SANS, fontSize: 16, lineHeight: 1.5 }}>
-    <Section style={{ padding: [44, 24, 44], gap: 24 }} mobile={{ padding: [32, 20, 36], gap: 20 }}>
-      <Heading level={2} style={{ ...title, fontSize: 36 }} mobile={{ fontSize: 30 }}>
+    <Section style={{ padding: [44, 24, 44], gap: 24, mobile: { padding: [32, 20, 36], gap: 20 } }}>
+      <Heading level={2} style={{ ...title, fontSize: 36, mobile: { fontSize: 30 } }}>
         What a stranger sees first
       </Heading>
       <Column style={{ gap: 8 }}>
         <Text style={caption(QUIET)}>title, on a browser's tab</Text>
         <Column style={{ backgroundColor: "#E1D8C5", padding: [10, 10, 0] }}>
-          <Text style={{ width: 300, backgroundColor: SHEET, padding: [8, 14], borderRadius: [8, 8, 0, 0], fontSize: 13, lineHeight: 1.3 }} mobile={{ width: "100%" }}>
+          <Text style={{ width: 300, backgroundColor: SHEET, padding: [8, 14], borderRadius: [8, 8, 0, 0], fontSize: 13, lineHeight: 1.3, mobile: { width: "100%" } }}>
             {TITLE}
           </Text>
         </Column>
@@ -145,10 +144,10 @@ export const TitleAndDescription = showing(
 /** A number from the Arabic page, over what it counts: the first in the Row sits on the right. */
 const fact = (figure: string, what: string) => (
   <Column style={{ gap: 2, padding: [12, 0, 0], border: { top: `1px solid ${RULE_DARK}` } }}>
-    <Text style={{ fontFamily: ARABIC_DISPLAY, fontSize: 28, lineHeight: 1.3, color: BRASS }} mobile={{ fontSize: 24 }}>
+    <Text style={{ fontFamily: ARABIC_DISPLAY, fontSize: 28, lineHeight: 1.3, color: BRASS, mobile: { fontSize: 24 } }}>
       {figure}
     </Text>
-    <Text style={{ fontSize: 14, color: MIST }} mobile={{ fontSize: 13 }}>
+    <Text style={{ fontSize: 14, color: MIST, mobile: { fontSize: 13 } }}>
       {what}
     </Text>
   </Column>
@@ -167,12 +166,11 @@ export const RightToLeft = showing(
       { family: "Noto Naskh Arabic", src: "https://fonts.gstatic.com/s/notonaskharabic/v44/RrQKbpV-9Dd1b1OAGA6M9PkyDuVBeN2DHV2mLXgzTrc.woff2", format: "woff2", weight: "400 700" },
       MONO_FONT,
     ]}
-    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: ARABIC, fontSize: 18, lineHeight: 1.8 }}
-    mobile={{ fontSize: 17 }}
+    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: ARABIC, fontSize: 18, lineHeight: 1.8, mobile: { fontSize: 17 } }}
   >
-    <Section style={{ padding: [52, 32, 48], gap: 18, alignItems: "start" }} mobile={{ padding: [36, 24, 36], gap: 16 }}>
+    <Section style={{ padding: [52, 32, 48], gap: 18, alignItems: "start", mobile: { padding: [36, 24, 36], gap: 16 } }}>
       <Text style={{ fontSize: 15, fontWeight: 600, color: BRASS }}>مرصد تل الصقر</Text>
-      <Heading level={1} style={{ fontFamily: ARABIC_DISPLAY, fontSize: 52, fontWeight: 700, lineHeight: 1.25 }} mobile={{ fontSize: 40 }}>
+      <Heading level={1} style={{ fontFamily: ARABIC_DISPLAY, fontSize: 52, fontWeight: 700, lineHeight: 1.25, mobile: { fontSize: 40 } }}>
         ليلة تحت السماء المفتوحة
       </Heading>
       <Text>نفتح القبة كل يوم سبت عند التاسعة مساءً. تعال لترى حلقات زحل بعينيك، واحضر معطفًا دافئًا.</Text>
@@ -180,10 +178,10 @@ export const RightToLeft = showing(
         <ListItem>تفتح الأبواب عند السابعة والنصف</ListItem>
         <ListItem>الدخول مجاني للأطفال</ListItem>
       </List>
-      <Button href={`${SITE}/ar/book`} style={{ backgroundColor: BRASS, color: NIGHT, fontSize: 17, fontWeight: 700, padding: [12, 30], borderRadius: 2 }} hover={{ backgroundColor: BRASS_DOWN }}>
+      <Button href={`${SITE}/ar/book`} style={{ backgroundColor: BRASS, color: NIGHT, fontSize: 17, fontWeight: 700, padding: [12, 30], borderRadius: 2, hover: { backgroundColor: BRASS_DOWN } }}>
         احجز مكانك
       </Button>
-      <Row stackOnMobile={false} style={{ gap: 20, padding: [14, 0, 0] }} mobile={{ gap: 14 }}>
+      <Row stackOnMobile={false} style={{ gap: 20, padding: [14, 0, 0], mobile: { gap: 14 } }}>
         {fact("٩ مساءً", "تفتح القبة")}
         {fact("٨ جنيهات", "ثمن التذكرة")}
         {fact("٤٠ سم", "قطر المنظار")}
@@ -213,23 +211,23 @@ const FEATURES = [
 export const Landing = showing(
   "Page",
   <Page width={760} title="Kestrel Hill Observatory" fonts={FONTS} style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: SANS, fontSize: 17, lineHeight: 1.55 }}>
-    <Section style={{ padding: [64, 24, 24], gap: 18, alignItems: "center", textAlign: "center" }} mobile={{ padding: [44, 24, 16], gap: 14 }}>
+    <Section style={{ padding: [64, 24, 24], gap: 18, alignItems: "center", textAlign: "center", mobile: { padding: [44, 24, 16], gap: 14 } }}>
       <Text style={{ ...kicker, color: BRASS }}>Kestrel Hill Observatory</Text>
-      <Heading level={1} style={{ ...title, fontSize: 68, lineHeight: 1 }} mobile={{ fontSize: 46 }}>
+      <Heading level={1} style={{ ...title, fontSize: 68, lineHeight: 1, mobile: { fontSize: 46 } }}>
         See Saturn with your own eyes
       </Heading>
-      <Text style={{ fontSize: 19, color: MIST, maxWidth: 480 }} mobile={{ fontSize: 17 }}>
+      <Text style={{ fontSize: 19, color: MIST, maxWidth: 480, mobile: { fontSize: 17 } }}>
         A public observatory on a dark hill, open on clear Saturdays since 1924.
       </Text>
-      <Button href={`${SITE}/book`} style={{ backgroundColor: BRASS, color: NIGHT, fontSize: 15, fontWeight: 600, padding: [14, 30], borderRadius: 2 }} hover={{ backgroundColor: BRASS_DOWN }}>
+      <Button href={`${SITE}/book`} style={{ backgroundColor: BRASS, color: NIGHT, fontSize: 15, fontWeight: 600, padding: [14, 30], borderRadius: 2, hover: { backgroundColor: BRASS_DOWN } }}>
         Book a place, £8
       </Button>
     </Section>
     <Section>
       <Image src={THE_HILL} alt="The observatory's dome on its hill at night, its shutter open in brass, under a constellation" style={{ width: "100%" }} />
     </Section>
-    <Section style={{ backgroundColor: PANEL, padding: [48, 24, 56] }} mobile={{ padding: [36, 24, 40] }}>
-      <Grid columns={3} style={{ gap: 28 }} mobile={{ gap: 24 }}>
+    <Section style={{ backgroundColor: PANEL, padding: [48, 24, 56], mobile: { padding: [36, 24, 40] } }}>
+      <Grid columns={3} style={{ gap: 28, mobile: { gap: 24 } }}>
         {FEATURES.map(([name, line]) => (
           <Column key={name} style={{ gap: 8, padding: [16, 0, 0], border: { top: `1px solid ${BRASS}` } }}>
             <Heading level={3} style={{ fontFamily: DISPLAY, fontSize: 25, fontWeight: 500, lineHeight: 1.15 }}>
@@ -240,8 +238,8 @@ export const Landing = showing(
         ))}
       </Grid>
     </Section>
-    <Section style={{ padding: [56, 24, 64], gap: 8, textAlign: "center" }} mobile={{ padding: [44, 24, 48] }}>
-      <Text style={{ fontFamily: DISPLAY, fontSize: 32, fontStyle: "italic", lineHeight: 1.2 }} mobile={{ fontSize: 26 }}>
+    <Section style={{ padding: [56, 24, 64], gap: 8, textAlign: "center", mobile: { padding: [44, 24, 48] } }}>
+      <Text style={{ fontFamily: DISPLAY, fontSize: 32, fontStyle: "italic", lineHeight: 1.2, mobile: { fontSize: 26 } }}>
         The sky’s free.
         <LineBreak />
         The tea is £1.

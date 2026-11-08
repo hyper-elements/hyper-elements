@@ -41,7 +41,7 @@ const reading = { fontFamily: SANS, fontSize: 16, lineHeight: 1.55, color: QUIET
 
 /** The band each story is drawn in. */
 const band = (children: ReactNode, style: SectionProps["style"] = {}) => (
-  <Section style={{ padding: [28, 44, 44], gap: 20, ...style }} mobile={{ padding: [20, 22, 32] }}>
+  <Section style={{ padding: [28, 44, 44], gap: 20, ...style, mobile: { padding: [20, 22, 32] } }}>
     {children}
   </Section>
 );
@@ -76,7 +76,7 @@ const story = asEmailAndPage;
 
 /** A heading on the specimen sheet: its level and size at the left, and the heading beside it. */
 const specimen = (level: 1 | 2 | 3 | 4 | 5 | 6, size: number, heading: ReactNode) => (
-  <Row style={{ gap: 12, padding: [14, 0, 16], ...(level > 1 && { border: { top: `1px solid ${RULE}` } }) }} mobile={{ gap: 6 }}>
+  <Row style={{ gap: 12, padding: [14, 0, 16], ...(level > 1 && { border: { top: `1px solid ${RULE}` } }), mobile: { gap: 6 } }}>
     <Column style={{ width: 72 }}>
       <Text style={{ ...note, lineHeight: "18px" }}>
         level {level}
@@ -117,12 +117,12 @@ export const Styles = story((Root) => (
           <Heading level={2} style={{ fontFamily: SANS, fontSize: 13, letterSpacing: 2, textTransform: "uppercase", color: QUIET }}>
             This issue’s long read
           </Heading>
-          <Heading level={2} style={{ fontSize: 72, fontWeight: 800, lineHeight: 0.98, letterSpacing: -3 }} mobile={{ fontSize: 52, letterSpacing: -2 }}>
+          <Heading level={2} style={{ fontSize: 72, fontWeight: 800, lineHeight: 0.98, letterSpacing: -3, mobile: { fontSize: 52, letterSpacing: -2 } }}>
             The kelp
             <LineBreak />
             is leaving.
           </Heading>
-          <Heading level={2} style={{ fontSize: 28, fontWeight: 300, lineHeight: 1.2, letterSpacing: -0.4 }} mobile={{ fontSize: 24 }}>
+          <Heading level={2} style={{ fontSize: 28, fontWeight: 300, lineHeight: 1.2, letterSpacing: -0.4, mobile: { fontSize: 24 } }}>
             Why the forests off the south-west are thinning, and who’s counting them.
           </Heading>
         </Column>
@@ -150,13 +150,13 @@ export const Alignment = story((Root) => (
       <>
         {masthead("Tide tables")}
         <Column style={{ gap: 4, padding: [20, 0, 12] }}>
-          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "left" }} mobile={{ fontSize: 36 }}>
+          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "left", mobile: { fontSize: 36 } }}>
             Out at six,
           </Heading>
-          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "center" }} mobile={{ fontSize: 36 }}>
+          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "center", mobile: { fontSize: 36 } }}>
             slack at noon,
           </Heading>
-          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "right", color: GLASS }} mobile={{ fontSize: 36 }}>
+          <Heading level={2} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1, letterSpacing: -1, textAlign: "right", color: GLASS, mobile: { fontSize: 36 } }}>
             back by dusk.
           </Heading>
         </Column>
@@ -178,13 +178,13 @@ export const LinksAndMergeTags = story((Root) => (
       <>
         {masthead()}
         <Column style={{ gap: 12, padding: [16, 0, 0] }}>
-          <Heading level={2} style={{ fontSize: 38, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.8 }} mobile={{ fontSize: 32 }}>
+          <Heading level={2} style={{ fontSize: 38, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.8, mobile: { fontSize: 32 } }}>
             Good morning, <MergeTag name="first_name" />
           </Heading>
           <Text style={reading}>Your copy left the printer on Tuesday, and it should be on your mat by Saturday. While you wait, it’s all online:</Text>
         </Column>
         <Heading level={2} style={{ fontSize: 26, fontWeight: 500, lineHeight: 1.2, padding: [18, 0, 0], border: { top: `1px solid ${RULE}` } }}>
-          <Link href={`${SITE}/14/the-kelp-is-leaving`} style={{ color: GLASS, textDecoration: "none" }} hover={{ textDecoration: "underline" }}>
+          <Link href={`${SITE}/14/the-kelp-is-leaving`} style={{ color: GLASS, textDecoration: "none", hover: { textDecoration: "underline" } }}>
             The kelp is leaving, and other stories from Winter
           </Link>
         </Heading>
@@ -224,7 +224,7 @@ export const Boxes = story((Root) => (
           </Heading>
           <Text style={reading}>Turnstones on the slip at low water, and a purple sandpiper on the outer rocks, if you’re lucky and it’s cold.</Text>
         </Column>
-        <Heading level={3} style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, padding: [18, 16], backgroundColor: GLASS, color: WHITE, textAlign: "center" }} mobile={{ fontSize: 19 }}>
+        <Heading level={3} style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, padding: [18, 16], backgroundColor: GLASS, color: WHITE, textAlign: "center", mobile: { fontSize: 19 } }}>
           No. 15 ships on the spring tide
         </Heading>
         <Text style={note}>A background and corners; a line under it; a band, its text in the center</Text>
@@ -239,13 +239,13 @@ export const OnPhones = story((Root) => (
     {band(
       <>
         {masthead()}
-        <Heading level={1} style={{ fontSize: 54, fontWeight: 500, lineHeight: 1.02, letterSpacing: -1.8, padding: [24, 0, 4] }} mobile={{ fontSize: 34, textAlign: "center", padding: [12, 0, 0] }}>
+        <Heading level={1} style={{ fontSize: 54, fontWeight: 500, lineHeight: 1.02, letterSpacing: -1.8, padding: [24, 0, 4], mobile: { fontSize: 34, textAlign: "center", padding: [12, 0, 0] } }}>
           The last bench on the harbour wall
         </Heading>
-        <Text style={reading} mobile={{ textAlign: "center" }}>
+        <Text style={{ ...reading, mobile: { textAlign: "center" } }}>
           Forty years of watching the same water, from the same plank, with the same flask.
         </Text>
-        <Text style={note} mobile={{ textAlign: "center" }}>
+        <Text style={{ ...note, mobile: { textAlign: "center" } }}>
           fontSize: 54; on phones 34, centered, with less padding
         </Text>
       </>

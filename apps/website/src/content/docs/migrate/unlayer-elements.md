@@ -109,8 +109,8 @@ The new template draws what the old one drew. Unlayer Elements' components fille
 | `Html` | `Html` in a `Column` with its padding |
 | `Table`'s `headers` and `data`, or the `values` it can read | A `Table` of `TableRow`s and `TableCell`s |
 | `Document`'s `documentSize`, `documentOrientation`, `documentMargin`; a `PageBreak` | `size`, `orientation`, `margin`; a `PageBreak` between `Section`s |
-| `Button`'s `buttonColors` | Its `color` and `backgroundColor` in `style`. The hover colors are left out and noted: add them as `hover={{ … }}` |
-| `mobile={{ ... }}`, `hideOnMobile`, `hideOnDesktop` | `mobile={{ ... }}` with the new names, `hidden={{ mobile: true }}` |
+| `Button`'s `buttonColors` | Its `color` and `backgroundColor` in `style`. The hover colors are left out and noted: add them as `style={{ hover: { … } }}` |
+| `mobile={{ ... }}`, `hideOnMobile`, `hideOnDesktop` | `style={{ mobile: { ... } }}` with the new names, `hidden={{ mobile: true }}` |
 | `Social`'s `{ name, url }`; `Menu`'s `linkColor` and `textColor` | `{ name, href }`; `color` and `separatorColor` |
 
 ## What it notes

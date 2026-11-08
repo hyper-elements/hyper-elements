@@ -16,7 +16,7 @@ const { html } = await render(
         <Text hidden={{ mobile: true }}>Compare every plan side by side.</Text>
       </Column>
       <Column>
-        <Button href="/buy" hover={{ backgroundColor: "#374151" }}>Buy</Button>
+        <Button href="/buy" style={{ hover: { backgroundColor: "#374151" } }}>Buy</Button>
       </Column>
     </Row>
   </Page>,

@@ -42,20 +42,28 @@ export const airbnb = (() => {
     return (
       <Section style={{ backgroundColor: "#FFFFFF" }}>
         <Row
-          style={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
-          mobile={{ border: { bottom: "none" } }}
+          style={{
+            border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` },
+            mobile: { border: { bottom: "none" } },
+          }}
         >
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text style={{ padding: 10, fontSize: 14, color: MUTED, lineHeight: "140%" }}>
               {label}
             </Text>
           </Column>
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text
               style={{
@@ -476,20 +484,28 @@ export const mercury = (() => {
     return (
       <Section style={{ backgroundColor: CARD }}>
         <Row
-          style={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
-          mobile={{ border: { bottom: "none" } }}
+          style={{
+            border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` },
+            mobile: { border: { bottom: "none" } },
+          }}
         >
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text style={{ padding: 10, fontSize: 14, color: MUTED, lineHeight: "140%" }}>
               {label}
             </Text>
           </Column>
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text
               style={{
@@ -1483,20 +1499,28 @@ export const stripe = (() => {
     return (
       <Section style={{ backgroundColor: "#FFFFFF" }}>
         <Row
-          style={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
-          mobile={{ border: { bottom: "none" } }}
+          style={{
+            border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` },
+            mobile: { border: { bottom: "none" } },
+          }}
         >
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text style={{ padding: 10, fontSize: 14, color: MUTED, lineHeight: "140%" }}>
               {label}
             </Text>
           </Column>
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text
               style={{
@@ -1715,20 +1739,28 @@ export const warby = (() => {
     return (
       <Section style={{ backgroundColor: CARD }}>
         <Row
-          style={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
-          mobile={{ border: { bottom: "none" } }}
+          style={{
+            border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` },
+            mobile: { border: { bottom: "none" } },
+          }}
         >
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text style={{ padding: 10, fontSize: 14, color: MUTED, lineHeight: "140%" }}>
               {label}
             </Text>
           </Column>
           <Column
-            style={{ width: "50%", padding: "14px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "14px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text
               style={{
@@ -1761,12 +1793,17 @@ export const warby = (() => {
     return (
       <Section style={{ backgroundColor: CARD }}>
         <Row
-          style={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
-          mobile={{ border: { bottom: "none" } }}
+          style={{
+            border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` },
+            mobile: { border: { bottom: "none" } },
+          }}
         >
           <Column
-            style={{ width: "50%", padding: "16px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "16px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text style={{ padding: 10, fontSize: 15, color: INK, lineHeight: "150%" }}>
               <Span style={{ fontWeight: 700 }}>{name}</Span>
@@ -1776,8 +1813,11 @@ export const warby = (() => {
             </Text>
           </Column>
           <Column
-            style={{ width: "50%", padding: "16px 0" }}
-            mobile={{ border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } }}
+            style={{
+              width: "50%",
+              padding: "16px 0",
+              mobile: { border: { bottom: `${last ? "0px" : "1px"} solid ${LINE}` } },
+            }}
           >
             <Text
               style={{

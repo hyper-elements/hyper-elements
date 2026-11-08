@@ -37,7 +37,7 @@ const headline = { fontFamily: DISPLAY, fontWeight: 500, lineHeight: 1.1 } as co
 
 /** The band each story is drawn in. */
 const band = (children: ReactNode, style: SectionProps["style"] = {}) => (
-  <Section style={{ padding: [28, 44, 44], gap: 20, ...style }} mobile={{ padding: [20, 22, 36] }}>
+  <Section style={{ padding: [28, 44, 44], gap: 20, ...style, mobile: { padding: [20, 22, 36] } }}>
     {children}
   </Section>
 );
@@ -134,7 +134,7 @@ export const Widths = story((Root) => (
   <Root {...root}>
     {band(
       <>
-        <Text style={{ fontFamily: DISPLAY, fontSize: 26, fontStyle: "italic", lineHeight: 1.3 }} mobile={{ fontSize: 22 }}>
+        <Text style={{ fontFamily: DISPLAY, fontSize: 26, fontStyle: "italic", lineHeight: 1.3, mobile: { fontSize: 22 } }}>
           “Nobody plants a pear tree for themselves. You plant it for whoever’s left.”
         </Text>
         <Text style={{ ...kicker, color: QUIET, padding: [0, 0, 16] }}>Mary Holloway, Bredon Hill Farm</Text>
@@ -160,7 +160,7 @@ export const Spacing = story((Root) => (
         <Text>The trees are older than the farmhouse. Some of them went in when Victoria was a girl, and they’ve outlived every Holloway who planted them.</Text>
         <Divider style={{ borderTop: `1px solid ${RULE}`, padding: [24, 0] }} />
         <Text>What Mary’s heirs will inherit is less clear. The last perry mill in the county closed in the spring, so this autumn she pressed the harvest herself.</Text>
-        <Divider style={{ borderTop: `2px solid ${TOMATO}`, width: "50%", padding: [32, 0] }} mobile={{ width: "100%", padding: [16, 0] }} />
+        <Divider style={{ borderTop: `2px solid ${TOMATO}`, width: "50%", padding: [32, 0], mobile: { width: "100%", padding: [16, 0] } }} />
         <Text>It came to four hundred litres, in a borrowed press, in her own barn.</Text>
         <Text style={{ ...note, padding: [24, 0, 0] }}>No gap here: each line’s own padding spaces it. On phones the red one runs the whole width, with less space.</Text>
       </>,

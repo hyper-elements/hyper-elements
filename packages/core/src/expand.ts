@@ -104,13 +104,17 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       return undefined;
     }
     let raw: unknown;
+    const reported: Diagnostic[] = [];
     try {
       const style = { ...(definition.defaultStyle as Record<string, Json> | undefined), ...node.style } as Record<string, Json>;
-      raw = definition.expand(propsWithDefaults(definition, node.props) as never, { register: (custom) => registry.add(custom), style, responsive });
+      raw = definition.expand(propsWithDefaults(definition, node.props) as never, { register: (custom) => registry.add(custom), style, responsive, report: (diagnostic) => reported.push(diagnostic) });
     } catch (error) {
       d.error("custom/render", `${node.type} failed to render: ${error instanceof Error ? error.message : String(error)}`, path, node.id);
       return undefined;
     }
+    // What its render said that doesn't stop it, at its place: "root.mobile" in it is "root.children[2](acme.Card).mobile".
+    const at = `${path}(${node.type})`;
+    for (const diagnostic of reported) d.list.push({ ...diagnostic, path: diagnostic.path === "root" || diagnostic.path.startsWith("root.") ? at + diagnostic.path.slice(4) : at });
     if (Array.isArray(raw) || typeof raw !== "object" || raw === null) {
       d.error("custom/render", `${node.type} renders one component (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
       return undefined;

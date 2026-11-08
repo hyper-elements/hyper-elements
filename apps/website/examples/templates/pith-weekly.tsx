@@ -38,7 +38,7 @@ const doubleRule = (
 
 /** One of the week's shorter pieces: its number, its headline, a line about it. */
 const brief = (n: string, title: string, about: string, href: string) => (
-  <Row stackOnMobile={false} style={{ gap: 20, padding: [18, 0], border: { top: rule } }} mobile={{ gap: 14 }}>
+  <Row stackOnMobile={false} style={{ gap: 20, padding: [18, 0], border: { top: rule }, mobile: { gap: 14 } }}>
     <Column style={{ width: 36 }}>
       <Text style={{ fontFamily: DISPLAY, fontSize: 34, lineHeight: 1, color: TOMATO }}>{n}</Text>
     </Column>
@@ -70,7 +70,7 @@ export default function PithWeekly() {
       style={{ backgroundColor: PAPER, color: INK, fontFamily: TEXT, fontSize: 17, lineHeight: 1.62 }}
     >
       {/* Nameplate */}
-      <Section style={{ padding: [36, 48, 0], gap: 14 }} mobile={{ padding: [24, 20, 0], gap: 12 }}>
+      <Section style={{ padding: [36, 48, 0], gap: 14, mobile: { padding: [24, 20, 0], gap: 12 } }}>
         <Row stackOnMobile={false} style={{ padding: [0, 0, 10], border: { bottom: `1px solid ${INK}` } }}>
           <Column>
             <Text style={{ ...kicker, color: INK }}>No. 112</Text>
@@ -79,24 +79,24 @@ export default function PithWeekly() {
             <Text style={{ ...kicker, color: INK, textAlign: "right" }}>5 November 2026</Text>
           </Column>
         </Row>
-        <Heading level={1} style={{ fontFamily: DISPLAY, fontSize: 92, fontWeight: 500, fontStyle: "italic", lineHeight: 1, letterSpacing: -2, textAlign: "center" }} mobile={{ fontSize: 68 }}>
+        <Heading level={1} style={{ fontFamily: DISPLAY, fontSize: 92, fontWeight: 500, fontStyle: "italic", lineHeight: 1, letterSpacing: -2, textAlign: "center", mobile: { fontSize: 68 } }}>
           <Link href={SITE} style={{ color: INK, textDecoration: "none" }}>
             Pith
           </Link>
         </Heading>
-        <Text style={{ fontStyle: "italic", fontSize: 16, color: QUIET, textAlign: "center", padding: [0, 0, 2] }} mobile={{ fontSize: 14 }}>
+        <Text style={{ fontStyle: "italic", fontSize: 16, color: QUIET, textAlign: "center", padding: [0, 0, 2], mobile: { fontSize: 14 } }}>
           A weekly letter about food, and where it comes from
         </Text>
         {doubleRule}
       </Section>
 
       {/* The long read */}
-      <Section style={{ padding: [40, 48, 0], gap: 18 }} mobile={{ padding: [32, 20, 0], gap: 16 }}>
+      <Section style={{ padding: [40, 48, 0], gap: 18, mobile: { padding: [32, 20, 0], gap: 16 } }}>
         <Text style={kicker}>This week’s long read</Text>
-        <Heading level={2} style={{ fontFamily: DISPLAY, fontSize: 42, fontWeight: 600, lineHeight: 1.08, letterSpacing: -0.6 }} mobile={{ fontSize: 32 }}>
+        <Heading level={2} style={{ fontFamily: DISPLAY, fontSize: 42, fontWeight: 600, lineHeight: 1.08, letterSpacing: -0.6, mobile: { fontSize: 32 } }}>
           The last perry pears of the Vale of Evesham
         </Heading>
-        <Text style={{ fontSize: 20, fontStyle: "italic", lineHeight: 1.45, color: QUIET }} mobile={{ fontSize: 18 }}>
+        <Text style={{ fontSize: 20, fontStyle: "italic", lineHeight: 1.45, color: QUIET, mobile: { fontSize: 18 } }}>
           Perry pears once grew on four thousand acres here. Mary Holloway farms the last forty, and she isn’t sure who will farm them next.
         </Text>
         <Text style={{ fontSize: 14, color: QUIET }}>By Tom Ashworth · A nine-minute read</Text>
@@ -116,9 +116,9 @@ export default function PithWeekly() {
       </Section>
 
       {/* Pull quote */}
-      <Section style={{ padding: [36, 48, 0] }} mobile={{ padding: [28, 20, 0] }}>
+      <Section style={{ padding: [36, 48, 0], mobile: { padding: [28, 20, 0] } }}>
         <Column style={{ gap: 12, padding: [24, 0], border: { top: `1px solid ${INK}`, bottom: `1px solid ${INK}` } }}>
-          <Text style={{ fontFamily: DISPLAY, fontSize: 28, fontStyle: "italic", lineHeight: 1.22, letterSpacing: -0.3, textAlign: "center" }} mobile={{ fontSize: 23 }}>
+          <Text style={{ fontFamily: DISPLAY, fontSize: 28, fontStyle: "italic", lineHeight: 1.22, letterSpacing: -0.3, textAlign: "center", mobile: { fontSize: 23 } }}>
             “Nobody plants a pear tree for themselves. You plant it for whoever’s left.”
           </Text>
           <Text style={{ ...kicker, color: QUIET, textAlign: "center" }}>Mary Holloway, Bredon Hill Farm</Text>
@@ -126,7 +126,7 @@ export default function PithWeekly() {
       </Section>
 
       {/* The rest of the week */}
-      <Section style={{ padding: [40, 48, 0], gap: 14 }} mobile={{ padding: [32, 20, 0] }}>
+      <Section style={{ padding: [40, 48, 0], gap: 14, mobile: { padding: [32, 20, 0] } }}>
         <Text style={kicker}>Also this week</Text>
         <Column style={{ border: { bottom: rule } }}>
           {brief("2", "A field guide to winter squash", "Twelve of them, from crown prince to delicata: which to roast, which to soup, and which to leave on the windowsill until March.", `${SITE}/112/squash`)}
@@ -136,16 +136,16 @@ export default function PithWeekly() {
       </Section>
 
       {/* The recipe */}
-      <Section style={{ padding: [40, 48, 0] }} mobile={{ padding: [32, 20, 0] }}>
-        <Column style={{ gap: 20, padding: [28, 32, 32], border: `1px solid ${INK}` }} mobile={{ padding: [22, 18, 24] }}>
+      <Section style={{ padding: [40, 48, 0], mobile: { padding: [32, 20, 0] } }}>
+        <Column style={{ gap: 20, padding: [28, 32, 32], border: `1px solid ${INK}`, mobile: { padding: [22, 18, 24] } }}>
           <Column style={{ gap: 8 }}>
             <Text style={kicker}>The recipe</Text>
-            <Heading level={2} style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, lineHeight: 1.12 }} mobile={{ fontSize: 22 }}>
+            <Heading level={2} style={{ fontFamily: DISPLAY, fontSize: 28, fontWeight: 600, lineHeight: 1.12, mobile: { fontSize: 22 } }}>
               Pears poached in perry, with bay and black pepper
             </Heading>
             <Text style={{ fontSize: 14, color: QUIET }}>Serves 4 · An hour, mostly waiting</Text>
           </Column>
-          <Row style={{ gap: 28, padding: [20, 0, 0], border: { top: rule } }} mobile={{ gap: 18 }}>
+          <Row style={{ gap: 28, padding: [20, 0, 0], border: { top: rule }, mobile: { gap: 18 } }}>
             <Column style={{ width: 196, gap: 8 }}>
               <Text style={{ ...kicker, color: INK, fontSize: 11 }}>You’ll need</Text>
               <List style={{ fontSize: 15, lineHeight: 1.5, gap: 4, indent: 16 }}>
@@ -171,7 +171,7 @@ export default function PithWeekly() {
       </Section>
 
       {/* Sign-off and footer */}
-      <Section style={{ padding: [40, 48, 48], gap: 24 }} mobile={{ padding: [32, 20, 40], gap: 20 }}>
+      <Section style={{ padding: [40, 48, 48], gap: 24, mobile: { padding: [32, 20, 40], gap: 20 } }}>
         <Text style={{ fontStyle: "italic", fontSize: 18 }}>
           Until next Thursday,
           <LineBreak />

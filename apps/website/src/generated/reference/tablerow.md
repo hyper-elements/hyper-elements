@@ -26,4 +26,4 @@ Props:
 - `backgroundColor`: *color*
 - `height`: a length (a number of px)
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.

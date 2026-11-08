@@ -522,8 +522,18 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   const element = (component: string, attributes: Array<string | false | undefined>, children: string[] = []) => {
     used.add(component);
     const tag = nameOf(component);
-    const attrs = attributes.filter(Boolean).join(" ");
+    const attrs = withPhoneInStyle(attributes.filter((a): a is string => !!a)).join(" ");
     return children.length ? `<${tag}${attrs ? ` ${attrs}` : ""}>${children.join("")}</${tag}>` : `<${tag}${attrs ? ` ${attrs}` : ""} />`;
+  };
+  /** Phone styles in the component's style (`style={{ …, mobile: { … } }}`), where the mobile={…} prop was written. */
+  const withPhoneInStyle = (attributes: string[]): string[] => {
+    const phone = attributes.findIndex((a) => a.startsWith("mobile={{") && a.endsWith("}}"));
+    if (phone < 0) return attributes;
+    const block = attributes[phone].slice("mobile={".length, -1);
+    const style = attributes.findIndex((a) => a.startsWith("style={{") && a.endsWith("}}"));
+    if (style < 0) return attributes.map((a, i) => (i === phone ? `style={{ mobile: ${block} }}` : a));
+    const own = attributes[style].slice("style={{".length, -2).trim();
+    return attributes.flatMap((a, i) => (i === phone ? [] : i === style ? [`style={{ ${own ? `${own}, ` : ""}mobile: ${block} }}`] : [a]));
   };
   const attr = (name: string, value: Value | undefined) =>
     value && (isLiteral(value) && value.code === undefined && typeof value.literal === "string" && !/["\\&{}\n]/.test(value.literal) ? `${name}="${value.literal}"` : `${name}={${code(value)}}`);

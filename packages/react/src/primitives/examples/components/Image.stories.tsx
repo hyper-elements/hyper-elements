@@ -96,7 +96,7 @@ const EWE = drawing(
 /** `src` has the file's size; `style.width` sets the size shown. In a `Link`, the image is the link. */
 export const Sizes = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [36, 24, 44], gap: 20 }} mobile={{ padding: [24, 20, 32], gap: 18 }}>
+    <Section style={{ padding: [36, 24, 44], gap: 20, mobile: { padding: [24, 20, 32], gap: 18 } }}>
       <Row stackOnMobile={false} style={{ alignItems: "end" }}>
         <Column>
           <Text style={{ ...title, fontSize: 28, lineHeight: 1 }}>Greyfold</Text>
@@ -139,14 +139,14 @@ const shaped = (image: JSX.Element, name: string, written: string) => (
 /** `borderRadius` and `border` shape it: round corners, a circle for a face or a logo, an outline, the top corners only. */
 export const Shapes = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [44, 24, 48], gap: 28 }} mobile={{ padding: [32, 28, 36], gap: 24 }}>
-      <Heading level={2} style={{ ...title, fontSize: 32, textAlign: "center" }} mobile={{ fontSize: 28 }}>
+    <Section style={{ padding: [44, 24, 48], gap: 28, mobile: { padding: [32, 28, 36], gap: 24 } }}>
+      <Heading level={2} style={{ ...title, fontSize: 32, textAlign: "center", mobile: { fontSize: 28 } }}>
         One mill, three cuts
       </Heading>
-      <Row style={{ gap: 20 }} mobile={{ gap: 28 }}>
-        {shaped(<Image src={cloth(340, 292, CHEVIOT)} alt="A square of the Cheviot check, with round corners" style={{ width: "100%", borderRadius: 12 }} mobile={{ width: 240 }} />, "The swatch", "borderRadius: 12")}
+      <Row style={{ gap: 20, mobile: { gap: 28 } }}>
+        {shaped(<Image src={cloth(340, 292, CHEVIOT)} alt="A square of the Cheviot check, with round corners" style={{ width: "100%", borderRadius: 12, mobile: { width: 240 } }} />, "The swatch", "borderRadius: 12")}
         {shaped(<Image src={EWE} alt="Greyfold's mark, a white Cheviot ewe on moss green, in a circle" style={{ width: 140, borderRadius: 70, border: `3px solid ${CARD}` }} />, "The mark", "borderRadius: 70")}
-        {shaped(<Image src={cloth(340, 292, SOLWAY)} alt="A tag of the Solway stripe, with only its top corners round and a thin outline" style={{ width: "100%", borderRadius: [16, 16, 0, 0], border: `1px solid ${QUIET}` }} mobile={{ width: 240 }} />, "The tag", "[16, 16, 0, 0]")}
+        {shaped(<Image src={cloth(340, 292, SOLWAY)} alt="A tag of the Solway stripe, with only its top corners round and a thin outline" style={{ width: "100%", borderRadius: [16, 16, 0, 0], border: `1px solid ${QUIET}`, mobile: { width: 240 } }} />, "The tag", "[16, 16, 0, 0]")}
       </Row>
     </Section>
   </Root>
@@ -166,8 +166,8 @@ const bolt = (alignItems: "start" | "center" | "end", textAlign: "left" | "cente
 /** The stack around an image says where it sits: `alignItems` on a `Column` puts it on the left, in the center or on the right. */
 export const Alignment = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [40, 24, 44], gap: 24 }} mobile={{ padding: [28, 20, 32], gap: 20 }}>
-      <Heading level={2} style={{ ...title, fontSize: 32 }} mobile={{ fontSize: 28 }}>
+    <Section style={{ padding: [40, 24, 44], gap: 24, mobile: { padding: [28, 20, 32], gap: 20 } }}>
+      <Heading level={2} style={{ ...title, fontSize: 32, mobile: { fontSize: 28 } }}>
         Three weights, for three kinds of cold
       </Heading>
       {bolt("start", "left", SOLWAY, "The Solway stripe, on the left", "Solway", "280 g, for a spare room")}
@@ -182,7 +182,7 @@ const card = { gap: 14, padding: 16, backgroundColor: CARD, border: `1px solid $
 /** An image in a card, as for a product or an article: the `Column` has the box, and `width: "100%"` fills it. */
 export const InACard = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [36, 24, 44] }} mobile={{ padding: [20, 20, 28] }}>
+    <Section style={{ padding: [36, 24, 44], mobile: { padding: [20, 20, 28] } }}>
       <Row style={{ gap: 16 }}>
         <Column style={card}>
           <Image src={blanket(CHEVIOT)} alt="The Cheviot blanket, folded once, moss green with gold lines and a red label" style={{ width: "100%", borderRadius: 3 }} />
@@ -208,20 +208,20 @@ export const InACard = story((Root) => (
 /** `mobile` has its size and its place on phones: choose "phone" under width to see it. */
 export const OnPhones = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [36, 24, 44], gap: 22 }} mobile={{ padding: [24, 20, 32], gap: 18 }}>
+    <Section style={{ padding: [36, 24, 44], gap: 22, mobile: { padding: [24, 20, 32], gap: 18 } }}>
       <Column style={{ gap: 6 }}>
         <Text style={label}>The Cheviot check</Text>
-        <Heading level={2} style={{ ...title, fontSize: 32 }} mobile={{ fontSize: 28 }}>
+        <Heading level={2} style={{ ...title, fontSize: 32, mobile: { fontSize: 28 } }}>
           The same cloth, on any window
         </Heading>
       </Column>
       <Column style={{ gap: 8 }}>
-        <Image src={cloth(552, 230, CHEVIOT)} alt="The Cheviot check, 240px wide, the whole width on phones" style={{ width: 240 }} mobile={{ width: "100%" }} />
+        <Image src={cloth(552, 230, CHEVIOT)} alt="The Cheviot check, 240px wide, the whole width on phones" style={{ width: 240, mobile: { width: "100%" } }} />
         <Text style={note}>width: 240, the whole width on phones</Text>
       </Column>
       <Column style={{ alignItems: "start", gap: 8 }}>
-        <Image src={EWE} alt="Greyfold's mark, on the left, in the center on phones" style={{ width: 96, borderRadius: 48 }} mobile={{ alignSelf: "center" }} />
-        <Text style={note} mobile={{ textAlign: "center" }}>
+        <Image src={EWE} alt="Greyfold's mark, on the left, in the center on phones" style={{ width: 96, borderRadius: 48, mobile: { alignSelf: "center" } }} />
+        <Text style={{ ...note, mobile: { textAlign: "center" } }}>
           On the left, in the center on phones
         </Text>
       </Column>

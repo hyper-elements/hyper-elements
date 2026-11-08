@@ -2,10 +2,10 @@
 "title": "Layer"
 "group": "Sections and layout"
 "order": 9
-"summary": "Its children over each other, in one box as tall as the tallest: an image with words on it. In an email, an Image with one child over it."
+"summary": "Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it."
 ---
 
-Its children over each other, in one box as tall as the tallest: an image with words on it. In an email, an Image with one child over it.
+Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
 Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
 
@@ -30,4 +30,4 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `justifyItems`: one of "start", "center", "end", "stretch" (default `"stretch"`). Where its children sit across its width, as CSS justify-items: stretched to it by default.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
