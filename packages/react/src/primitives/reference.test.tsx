@@ -61,11 +61,11 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
     expect(guide).toMatch(/## Common mistakes\n[\s\S]*A `Menu`'s items are `\{ text, href \}`[\s\S]*## A whole template/);
   });
 
-  it("says how to set a project up, how to write a PDF and what to check on a phone", () => {
+  it("says how to start (a starter, the preview), how to write a PDF and what to check on a phone", () => {
     const guide = read("GUIDE.md");
-    expect(guide).toMatch(/## Setup\n[\s\S]*satori @resvg\/resvg-js[\s\S]*@react-pdf\/renderer[\s\S]*"type": "module"[\s\S]*"jsx": "react-jsx"[\s\S]*## How a template is written/);
+    expect(guide).toMatch(/## Start here\n[\s\S]*npx hyper-elements new[\s\S]*larder-receipt[\s\S]*npx hyper-elements preview[\s\S]*satori @resvg\/resvg-js[\s\S]*@react-pdf\/renderer[\s\S]*"type": "module"[\s\S]*"jsx": "react-jsx"[\s\S]*## How a template is written/);
     expect(guide).toMatch(/## A Document as a PDF\n[\s\S]*renderPdf\(/);
-    expect(guide).toMatch(/## On a phone\n[\s\S]*&nbsp;[\s\S]*stackOnMobile=\{false\}/);
+    expect(guide).toMatch(/## On a phone\n[\s\S]*stackOnMobile=\{false\}/);
   });
 
   it("keeps the guide short enough to read whole before writing a template", () => {

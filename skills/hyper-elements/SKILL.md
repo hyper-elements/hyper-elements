@@ -18,11 +18,12 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.
 - Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these components and checks each against its original.
 
-## Setup
+## Start here
 
-- `npm install @hyper-elements/react react react-dom`. For images also `satori @resvg/resvg-js`, for PDFs `@react-pdf/renderer`: without them `/image` and `/pdf` throw "Cannot find package".
-- A template is a `.tsx` file; run one with `npx tsx render.tsx`. Rendering is async: set `"type": "module"` in package.json for top-level `await`.
-- JSX needs `"jsx": "react-jsx"` in tsconfig.json, or it throws `React is not defined`: `{ "compilerOptions": { "jsx": "react-jsx", "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "strict": true } }`. Every `.tsx` file you run must be inside its `include` (or leave `include` out).
+- `npm install @hyper-elements/react @hyper-elements/cli react react-dom`.
+- Start from the starter nearest the brief: `npx hyper-elements new <starter> email.tsx` copies one (`npx hyper-elements new` lists them; they're in `node_modules/@hyper-elements/react/templates/`). Welcome: `quarry-welcome`. Receipt or order: `larder-receipt`. Shipped: `tarn-shipped`. Sign-in code or password reset: `keel-sign-in-code`. Launch or promotion: `oyen-launch`. Newsletter: `pith-weekly`. Invitation or event: `saltworks-invitation`. Invoice PDF: `pell-ashby-invoice`. Ticket: `shipwright-ticket`. Web page: `casa-albero-page`. Social card: `slow-signals-card`. Then make its brand, copy and layout the brief's.
+- Preview with `npx hyper-elements preview email.tsx`: it renders the file's default export (a component), writes its HTML and plain text, takes desktop and phone screenshots, and lists what to fix (and `report.txt`). No tsconfig or `"type": "module"` needed. Write, preview, fix what it lists, and look at the phone screenshot.
+- Rendering in your own code instead: images also need `satori @resvg/resvg-js` and PDFs `@react-pdf/renderer`; set `"type": "module"` for top-level `await`; JSX needs `"jsx": "react-jsx"` in tsconfig.json (else `React is not defined`), with every `.tsx` you run inside its `include`.
 
 ## How a template is written
 
@@ -52,12 +53,10 @@ Each of these made an agent's first try fail:
 
 ## On a phone
 
-On a phone a `Row` stacks and the `mobile` styles apply. Look at an email 375px wide before you finish. These made designs look broken there:
+On a phone a `Row` stacks and the `mobile` styles apply (the preview's phone screenshot is 375px wide). These made designs look broken there:
 
 - A heading wraps onto three lines: give it a smaller phone size (`style={{ fontSize: 32, mobile: { fontSize: 24 } }}`).
-- A phone number breaks in the middle: join its parts with `&nbsp;` (`+1&nbsp;415&nbsp;555&nbsp;0199`).
 - In a `Row stackOnMobile={false}` each `Column` gets a share of the phone's width, so a logo shrinks and text wraps: let it stack, or give the Column a phone width (`style={{ mobile: { width: 120 } }}`).
-- A `Table` keeps every column on a phone, so four columns squeeze their text: give line items two, the item with its quantity and unit price under its name, the amount on the right.
 
 ## A whole template
 
