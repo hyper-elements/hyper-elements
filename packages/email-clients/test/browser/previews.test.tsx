@@ -165,10 +165,19 @@ describe("what a preview lists, and when it's incomplete", () => {
     expect(findings.missing).toEqual([{ kind: "image", src: "https://example.test/hero.png" }]);
     const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
     const box = await frame.evaluate(() => {
-      const el = document.querySelector('[role="img"][aria-label="Hero"]') as HTMLElement;
-      return { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height, background: getComputedStyle(el).backgroundColor };
+      const img = document.querySelector('img[alt="Hero"]') as HTMLImageElement;
+      return { width: img.getBoundingClientRect().width, height: img.getBoundingClientRect().height, gray: img.src.startsWith("data:image/svg+xml") && img.src.includes("d0d7de"), missing: img.getAttribute("data-email-client-missing") };
     });
-    expect(box).toEqual({ width: 600, height: 300, background: "rgb(208, 215, 222)" });
+    expect(box).toEqual({ width: 600, height: 300, gray: true, missing: "https://example.test/hero.png" });
+    await page.close();
+  });
+
+  it("keeps the gray box in classic Outlook too, whose rules size images as Word does", async () => {
+    const { previews } = await renderInEmailClients(email, { emailClients: ["outlook"] });
+    const { page, findings } = await open("missing-image-outlook.html", previews[0]!.html, { images: "missing" });
+    expect(findings.missing).toEqual([{ kind: "image", src: "https://example.test/hero.png" }]);
+    const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
+    expect(await frame.evaluate(() => (document.querySelector('img[alt="Hero"]') as HTMLImageElement).getBoundingClientRect().height)).toBe(300);
     await page.close();
   });
 

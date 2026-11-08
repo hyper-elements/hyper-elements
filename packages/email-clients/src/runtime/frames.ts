@@ -50,7 +50,8 @@ export async function loadFaces(doc: Document, faces: readonly string[], deadlin
 
 /**
  * Waits for every image to load or fail; one that failed, or is still loading at the deadline, is drawn as a gray box
- * of its size. Returns their sources.
+ * of its size: the same <img>, its source a gray SVG, so its layout (and classic Outlook's rules, which size images
+ * as Word does) stay as they were. Returns their sources.
  */
 export async function settleImages(doc: Document, deadline: number): Promise<string[]> {
   const images = [...doc.images];
@@ -60,19 +61,19 @@ export async function settleImages(doc: Document, deadline: number): Promise<str
   });
   await until(Promise.all(images.map(done)), deadline, []);
   const missing: string[] = [];
+  const replaced: HTMLImageElement[] = [];
   for (const img of images) {
     if (img.complete && img.naturalWidth > 0) continue;
     missing.push(img.getAttribute("src") ?? "");
-    const box = doc.createElement("span");
     const rect = img.getBoundingClientRect();
-    const width = img.getAttribute("width") ? `${img.getAttribute("width")}px` : `${Math.round(rect.width)}px`;
-    const height = img.getAttribute("height") ? `${img.getAttribute("height")}px` : `${Math.round(rect.height)}px`;
-    box.setAttribute("style", `${img.getAttribute("style") ?? ""};display:${styleOf(img).display === "inline" ? "inline-block" : styleOf(img).display};width:${width};max-width:100%;height:${height};background:#d0d7de`);
-    box.setAttribute("role", "img");
-    box.setAttribute("aria-label", img.getAttribute("alt") ?? "");
-    for (const name of ["data-el-path", "id", "class"]) if (img.hasAttribute(name)) box.setAttribute(name, img.getAttribute(name)!);
-    img.replaceWith(box);
+    const width = Number(img.getAttribute("width")) || Math.round(rect.width) || 1;
+    const height = Number(img.getAttribute("height")) || Math.round(rect.height) || 1;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="100%" height="100%" fill="#d0d7de"/></svg>`;
+    img.setAttribute("data-email-client-missing", img.getAttribute("src") ?? "");
+    img.setAttribute("src", `data:image/svg+xml,${encodeURIComponent(svg)}`);
+    replaced.push(img);
   }
+  await until(Promise.all(replaced.map((img) => img.decode().catch(() => undefined))), deadline, []);
   return missing;
 }
 
