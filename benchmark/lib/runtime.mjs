@@ -1,6 +1,6 @@
 // Runtime facts per image kit, measured once from the reference solutions (no agent, no API):
 //
-//   HYPER_ELEMENTS_PACKAGE=../../../packages/react node lib/runtime.mjs [--runs 20] [--warm 50]
+//   HYPER_ELEMENTS_PACKAGE=../packages/react node lib/runtime.mjs [--runs 20] [--warm 50]
 //
 // - install: what `npm install` of the kit's packages adds (bytes on disk, packages, any native binary). Hyper Elements is
 //   installed from `npm pack` of the built checkout, with its peers, as a user would install it from npm.

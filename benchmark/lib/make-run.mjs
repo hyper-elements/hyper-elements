@@ -10,8 +10,8 @@ import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const bench = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-// The images the email briefs use are the site's own (public/img), served to the checker as assets.orbit.dev.
-export const ASSETS = join(bench, "..", "public", "img");
+// The images the email briefs use are the website's own (apps/website/public/img), served to the checker as assets.orbit.dev.
+export const ASSETS = join(bench, "..", "apps", "website", "public", "img");
 
 export async function suiteOf(suite) {
   const dir = join(bench, "suites", suite);

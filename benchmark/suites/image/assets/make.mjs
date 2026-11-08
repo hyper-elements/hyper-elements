@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { PNG } from "pngjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const site = join(here, "../../../../public/img");
+const site = join(here, "../../../../apps/website/public/img");
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
 const mix = (a, b, t) => a.map((x, i) => Math.round(x + (b[i] - x) * t));

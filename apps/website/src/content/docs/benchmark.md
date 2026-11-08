@@ -94,6 +94,6 @@ The shared checker reads a rendering trace to verify exact text, font files, wei
 
 These results use Hyper Elements 0.3.0, Playwright 1.60.0 and `@napi-rs/canvas` 1.0.13. They measure one agent and model on five fully specified images. They measure the agent's work through a passing result, including repairs, rather than render speed alone.
 
-The chart uses the [final 60-run batch](https://github.com/hyper-elements/hyper-elements/blob/main/apps/website/benchmark/results/2026-11-08b-image-sonnet.jsonl). It excludes the earlier batch, which was rerun after the kit instructions and TypeScript import settings were made consistent. See the [image benchmark notes](https://github.com/hyper-elements/hyper-elements/tree/main/apps/website/benchmark#image-2026-11-08-results2026-11-08b-image-sonnetjsonl) for the per-brief results and rerun details.
+The chart uses the [final 60-run batch](https://github.com/hyper-elements/hyper-elements/blob/main/benchmark/results/2026-11-08b-image-sonnet.jsonl). It excludes the earlier batch, which was rerun after the kit instructions and TypeScript import settings were made consistent. See the [image benchmark notes](https://github.com/hyper-elements/hyper-elements/tree/main/benchmark#image-2026-11-08-results2026-11-08b-image-sonnetjsonl) for the per-brief results and rerun details.
 
-The harness, the briefs, the checks and every run's numbers are in the repository, in [`apps/website/benchmark`](https://github.com/hyper-elements/hyper-elements/tree/main/apps/website/benchmark). Run it yourself with your own agent.
+The harness, the briefs, the checks and every run's numbers are in the repository's [`benchmark/`](https://github.com/hyper-elements/hyper-elements/tree/main/benchmark) folder. Run it yourself with your own agent.
