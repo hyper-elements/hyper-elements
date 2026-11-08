@@ -61,9 +61,16 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
     expect(guide).toMatch(/## Common mistakes\n[\s\S]*A `Menu`'s items are `\{ text, href \}`[\s\S]*## A whole template/);
   });
 
+  it("says how to set a project up, how to write a PDF and what to check on a phone", () => {
+    const guide = read("GUIDE.md");
+    expect(guide).toMatch(/## Setup\n[\s\S]*satori @resvg\/resvg-js[\s\S]*@react-pdf\/renderer[\s\S]*"type": "module"[\s\S]*"jsx": "react-jsx"[\s\S]*## How a template is written/);
+    expect(guide).toMatch(/## A Document as a PDF\n[\s\S]*renderPdf\(/);
+    expect(guide).toMatch(/## On a phone\n[\s\S]*&nbsp;[\s\S]*stackOnMobile=\{false\}/);
+  });
+
   it("keeps the guide short enough to read whole before writing a template", () => {
-    expect(read("GUIDE.md").length).toBeLessThan(20_000);
-    expect(read(SKILL).length).toBeLessThan(22_000);
+    expect(read("GUIDE.md").length).toBeLessThan(24_000);
+    expect(read(SKILL).length).toBeLessThan(26_000);
   });
 });
 
@@ -72,6 +79,10 @@ describe("the README's template", () => {
     expect(read("README.md")).toContain(example().trim());
     expect(read("GUIDE.md")).toContain(example().trim());
     expect(read(SKILL)).toContain(example().trim());
+  });
+
+  it("greets with a name, not a merge tag, so an agent copying it doesn't ship a raw {{tag}}", () => {
+    expect(example()).not.toContain("MergeTag");
   });
 
   it("renders with no errors or warnings (notes about Outlook are fine)", async () => {

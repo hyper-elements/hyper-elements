@@ -15,7 +15,7 @@ pnpm add @hyper-elements/react
 Import from `@hyper-elements/react`. A template has one root, its styles go in `style={{ }}`, and the space between blocks is their parent's `gap`.
 
 ```tsx
-import { Button, Column, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
+import { Button, Column, Email, Heading, Image, Link, List, ListItem, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
 
 export default function Receipt() {
   return (
@@ -23,7 +23,7 @@ export default function Receipt() {
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
       <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
         <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
-          Thanks for your order, <MergeTag name="first_name" />
+          Thanks for your order, Ada
         </Heading>
         <Text>
           Order <Span style={{ fontWeight: 700 }}>#10482</Span> ships tomorrow. <Link href="https://example.com/orders/10482">Track it</Link>.

@@ -18,6 +18,12 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.
 - Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these components and checks each against its original.
 
+## Setup
+
+- `npm install @hyper-elements/react react react-dom`. For images also `satori @resvg/resvg-js`, for PDFs `@react-pdf/renderer`: without them `/image` and `/pdf` throw "Cannot find package".
+- A template is a `.tsx` file; run one with `npx tsx render.tsx`. Rendering is async: set `"type": "module"` in package.json for top-level `await`.
+- JSX needs `"jsx": "react-jsx"` in tsconfig.json, or it throws `React is not defined`: `{ "compilerOptions": { "jsx": "react-jsx", "module": "esnext", "moduleResolution": "bundler", "target": "es2022", "strict": true } }`. Every `.tsx` file you run must be inside its `include` (or leave `include` out).
+
 ## How a template is written
 
 - Import from `@hyper-elements/react`. A template has one root: `Email`, `Page`, `Document` or `Canvas`.
@@ -25,10 +31,12 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - There are no margins: space between blocks is their parent's `gap` (`<Column style={{ gap: 16 }}>`), space inside a box its `padding`.
 - A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.
 - Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
-- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
+- A `MergeTag` shows as `{{name}}` until a sending service fills it in, and a reader of the design sees a placeholder: write one in visible text only when the brief asks for it. A marketing email's unsubscribe link can take the service's tag in its `href`, where it doesn't show (`<Link href="{{unsubscribe_url}}">Unsubscribe</Link>`); leave out what the brief doesn't give, such as a postal address.
+- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown. Give every image alt text that says what it shows, a product thumbnail included (its name): mail apps that block images show it instead.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
-- `await render(element)` gives `{ html, text, diagnostics }`; a template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.
+- `await render(element)` gives an Email's, a Page's or a Document's `{ html, text, diagnostics }`; `renderPdf()` (`/pdf`) writes a Document as a PDF and `renderImage()` (`/image`) a Canvas as a PNG, below. A template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.
+- `info` diagnostics are notes, not problems to fix: `email/outlook-degraded` says what classic Outlook draws otherwise (square corners), once per element.
 
 ## Common mistakes
 
@@ -42,10 +50,19 @@ Each of these made an agent's first try fail:
 - `<Image src="https://example.com/logo.png">` → `src={{ src: "https://example.com/logo.png", width: 240, height: 80 }}`, the file's size. Without it Outlook shows the image at its file's size, and Hyper Elements warns.
 - `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.
 
+## On a phone
+
+On a phone a `Row` stacks and the `mobile` styles apply. Look at an email 375px wide before you finish. These made designs look broken there:
+
+- A heading wraps onto three lines: give it a smaller phone size (`style={{ fontSize: 32, mobile: { fontSize: 24 } }}`).
+- A phone number breaks in the middle: join its parts with `&nbsp;` (`+1&nbsp;415&nbsp;555&nbsp;0199`).
+- In a `Row stackOnMobile={false}` each `Column` gets a share of the phone's width, so a logo shrinks and text wraps: let it stack, or give the Column a phone width (`style={{ mobile: { width: 120 } }}`).
+- A `Table` keeps every column on a phone, so four columns squeeze their text: give line items two, the item with its quantity and unit price under its name, the amount on the right.
+
 ## A whole template
 
 ```tsx
-import { Button, Column, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
+import { Button, Column, Email, Heading, Image, Link, List, ListItem, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
 
 export default function Receipt() {
   return (
@@ -53,7 +70,7 @@ export default function Receipt() {
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
       <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
         <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
-          Thanks for your order, <MergeTag name="first_name" />
+          Thanks for your order, Ada
         </Heading>
         <Text>
           Order <Span style={{ fontWeight: 700 }}>#10482</Span> ships tomorrow. <Link href="https://example.com/orders/10482">Track it</Link>.
@@ -110,6 +127,30 @@ const { image, diagnostics } = await renderImage(
     images: { "https://example.com/logo.png": await readFile("logo.png") },
   }
 );
+```
+
+## A Document as a PDF
+
+`renderPdf(element, options)` (`@hyper-elements/react/pdf`) writes a `Document` as a PDF and gives `{ pdf, diagnostics }`, `pdf` the file's bytes. As for an image, nothing is fetched: `fonts` gives each font file by family and weight (TTF, OTF or WOFF; a family not given is drawn in Helvetica, without a warning), `images` each PNG or JPEG by its `src`. Size type for paper: body text 11 or more and nothing under 9; a short document reads better in larger type than with its lower half empty. On an invoice or a receipt, in a PDF or an email, the amount due is the largest figure.
+
+```tsx
+import { readFile, writeFile } from "node:fs/promises";
+import { Document, Heading, Text } from "@hyper-elements/react";
+import { renderPdf } from "@hyper-elements/react/pdf";
+
+const { pdf, diagnostics } = await renderPdf(
+  <Document size="A4" style={{ fontFamily: "Inter", gap: 12 }}>
+    <Heading level={1}>Invoice INV-1042</Heading>
+    <Text>Due 1 December</Text>
+  </Document>,
+  {
+    fonts: [
+      { family: "Inter", src: await readFile("Inter-Regular.ttf"), weight: 400 },
+      { family: "Inter", src: await readFile("Inter-Bold.ttf"), weight: 700 },
+    ],
+  }
+);
+await writeFile("invoice.pdf", pdf);
 ```
 
 ## Components
