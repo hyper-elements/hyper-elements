@@ -16,12 +16,11 @@ Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), 16 runs per approa
 | Passed the checks the first time they ran | **16 of 16** | **16 of 16** | 6 of 16 | 12 of 16 |
 | Median turns | 9 | 9 | 8.5 | 18 |
 | Median tokens in all, context included | 594k | 527k | 501k | 1,000k |
-| Median cost | $0.44 | $0.40 | $0.43 | $0.64 |
 
 - **Fastest.** Hyper Elements was 1.3× faster than MJML, 1.8× faster than hand-written HTML and 2.6× faster than React Email at the median, and the fastest on four of the five briefs (MJML was faster on the launch email). Within a brief it was faster in 40 of 52 pairings with MJML (one-sided Mann–Whitney, p < 0.01), 48 of 52 with HTML and 51 of 52 with React Email (p < 0.001 for each).
 - **Fewest tokens written.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short template; the engine writes the tables.
 - **Right the first time.** Every Hyper Elements and MJML email passed the first time the agent ran the checks, against 6 of 16 hand-written HTML emails and 12 of 16 React Email ones.
-- **Not cheaper in all.** The guide is in the agent's context on every turn (cached), so the tokens in all, and the cost, are about the same as MJML's and hand-written HTML's, and lower than React Email's.
+- **Not the fewest tokens in all.** The guide is in the agent's context on every turn (cached), so the tokens in all are a little more than MJML's and hand-written HTML's, and fewer than React Email's.
 
 ## The emails
 
