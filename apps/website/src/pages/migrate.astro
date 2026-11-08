@@ -9,13 +9,25 @@ import after from "../generated/migrate/after.tsx?raw";
 
 const guide = "/docs/migrate/react-email";
 
-// From the 106-template benchmark in the guide.
-const facts = [
-  { k: "Converted", v: "106 of 106", s: "real React Email templates", href: `${guide}#how-well-it-works` },
-  { k: "Content lost", v: "None", s: "words, links, images and alt text", href: `${guide}#how-well-it-works` },
-  { k: "Editable", v: "98.4%", s: "of their content, on average", href: `${guide}#how-well-it-works` },
-  { k: "Writes", v: "Nothing", s: "until you pass --write", href: `${guide}#safe-writes` },
+// From the agent benchmark (benchmark/README.md, 2026-11-08): Claude Code with Claude Sonnet 5 built the same
+// five emails with React Email and with Hyper Elements, 16 runs each, every run held to the same checks.
+const bench = "/docs/benchmark";
+const wins = [
+  { k: "Time to a passing email", v: "2.6× faster", before: 86, after: 33, unit: "s" },
+  { k: "Output tokens", v: "3.4× fewer", before: 6215, after: 1831, unit: "" },
+  { k: "Turns", v: "Half as many", before: 18, after: 9, unit: "" },
+  { k: "Passed the first check", v: "16 of 16", before: 12, after: 16, unit: " of 16" },
 ];
+const n = (x: number, unit: string) => `${x.toLocaleString("en-US")}${unit}`;
+const briefs = [
+  { t: "Event invite", before: 138, after: 35 },
+  { t: "Product launch", before: 109, after: 44 },
+  { t: "Order receipt", before: 92, after: 42 },
+  { t: "Newsletter", before: 74, after: 32 },
+  { t: "Password reset", before: 36, after: 25 },
+];
+const briefMax = Math.max(...briefs.map((b) => b.before));
+const pct = (x: number, max: number) => `width: ${((x / max) * 100).toFixed(1)}%`;
 
 const content = [
   "Every word, in order, with numbers, currency and percentages",
@@ -47,11 +59,11 @@ const more = [
   { t: "From code", d: "Convert a template from an agent, a build step or a server, and get its HTML and design.", code: "convertReactEmail(Welcome)", href: `${guide}#from-code` },
 ];
 ---
-<Base title="Migrate from React Email" description="Move React Email templates to Hyper Elements in one command. Each template is converted, then checked against the original.">
+<Base title="Migrate from React Email" description="Move React Email templates to Hyper Elements in one command, and your agent writes emails 2.6× faster with 3.4× fewer output tokens. Each template is checked against the original.">
   <section class="m-hero">
     <div class="wrap m-hero-inner">
       <h1 class="h-page"><span class="grad">Migrate from React Email</span></h1>
-      <p class="lede">One command converts your templates, keeps their props, loops and conditions, and checks each one against the original. It writes nothing until you ask.</p>
+      <p class="lede">With Hyper Elements, a coding agent writes the same email 2.6× faster and with 3.4× fewer output tokens than with React Email. One command moves your templates over, keeps their props, loops and conditions, and checks each one against the original.</p>
       <div class="m-cta">
         <Cmd text={`${site.migrate} src/emails`} />
         <a class="btn btn-ghost" href={guide}>Read the guide <span class="arrow">→</span></a>
@@ -59,31 +71,15 @@ const more = [
     </div>
   </section>
 
-  <section class="facts">
-    <div class="wrap facts-row">
-      {facts.map((f) => (
-        <a class="fact" href={f.href}>
-          <span class="fact-k">{f.k}</span>
-          <span class="fact-v">{f.v}</span>
-          <span class="fact-s">{f.s}</span>
-        </a>
-      ))}
-    </div>
-  </section>
-
-  <section class="section">
+  <section class="section ba-section">
     <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">Before and after</h2>
-        <p class="sec-sub">A real template and what the migration wrote. The style objects became typed styles on each block, margins became padding, and the container became the email's width.</p>
-      </div>
       <div class="ba reveal">
         <div class="ba-side">
-          <p class="ba-label">React Email</p>
+          <p class="ba-label"><span class="ba-name">React Email</span> <a class="ba-stats was" href={bench} title="Median time and output tokens for a coding agent to write a passing email with React Email"><span>{n(wins[0].before, "s")}</span><span>{n(wins[1].before, " tokens")}</span></a></p>
           <CodeBlock code={before.trim()} file="emails/welcome.tsx" />
         </div>
         <div class="ba-side">
-          <p class="ba-label">Hyper Elements</p>
+          <p class="ba-label"><span class="ba-name">Hyper Elements</span> <a class="ba-stats now" href={bench} title="Median time and output tokens for a coding agent to write a passing email with Hyper Elements"><span>{n(wins[0].after, "s")}</span><span>{n(wins[1].after, " tokens")}</span></a></p>
           <CodeBlock code={after.trim()} file="emails/welcome.tsx" />
         </div>
       </div>
@@ -94,6 +90,61 @@ const more = [
 
 1 template: 1 migrated and checked. <span class="d">Nothing written: pass --write or --out &lt;dir&gt; to write the migrated templates.</span></pre>
       </div>
+    </div>
+  </section>
+
+  <section class="section why">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <p class="eyebrow">Why migrate</p>
+        <h2 class="h-section">Your agent spends less time on every email</h2>
+        <p class="sec-sub">We gave Claude Code the same five emails to build with React Email and with Hyper Elements, 16 runs each. A run was done when its email passed the same checks in Chromium, on desktop and on a phone.</p>
+      </div>
+      <div class="wins">
+        {wins.map((w) => {
+          const max = Math.max(w.before, w.after);
+          return (
+            <a class="win reveal" href={bench}>
+              <span class="win-k">{w.k}</span>
+              <span class="win-v">{w.v}</span>
+              <div class="pair">
+                <div class="pair-row was">
+                  <span class="pair-name">React Email</span>
+                  <span class="pair-n">{n(w.before, w.unit)}</span>
+                  <span class="bar" aria-hidden="true"><i style={pct(w.before, max)}></i></span>
+                </div>
+                <div class="pair-row now">
+                  <span class="pair-name">Hyper Elements</span>
+                  <span class="pair-n">{n(w.after, w.unit)}</span>
+                  <span class="bar" aria-hidden="true"><i style={pct(w.after, max)}></i></span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+      <div class="briefs reveal">
+        <div class="briefs-head">
+          <h3>Median seconds to a passing email, per brief</h3>
+          <div class="legend" aria-hidden="true">
+            <span class="was"><i></i>React Email</span>
+            <span class="now"><i></i>Hyper Elements</span>
+          </div>
+        </div>
+        <ul class="brief-rows">
+          {briefs.map((b) => (
+            <li class="brief">
+              <span class="brief-t">{b.t}</span>
+              <span class="brief-bars">
+                <span class="brief-bar was"><span class="bar" aria-hidden="true"><i style={pct(b.before, briefMax)}></i></span><span class="brief-n"><span class="sr">React Email </span>{b.before}s</span></span>
+                <span class="brief-bar now"><span class="bar" aria-hidden="true"><i style={pct(b.after, briefMax)}></i></span><span class="brief-n"><span class="sr">Hyper Elements </span>{b.after}s</span></span>
+              </span>
+              <span class="brief-x">{(b.before / b.after).toFixed(1)}× faster</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <p class="why-note reveal">Medians, Claude Code 2.1.238 with Claude Sonnet 5, November 8, 2026. Every run reached a passing email. Output tokens are what the agent wrote; the engine writes the tables. MJML and hand-written HTML were measured too. <a href={bench}>The full benchmark →</a></p>
     </div>
   </section>
 
@@ -178,28 +229,64 @@ const more = [
   .m-hero-inner, .final-inner { grid-template-columns: minmax(0, 1fr); }
   .m-cta :global(.cmd), .final-inner :global(.cmd) { max-width: 100%; min-width: 0; }
 
-  /* The numbers, ruled like the home page's. */
-  .facts { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: 96px; }
-  .facts-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .fact { display: grid; gap: 6px; align-content: start; padding: 22px 24px; border-left: 1px solid var(--line); min-width: 0; color: inherit; text-decoration: none; }
-  .fact:first-child { border-left: 0; padding-left: 0; }
-  .fact:last-child { padding-right: 0; }
-  .fact-k { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
-  .fact-k::after { content: " →"; opacity: 0; transition: opacity 0.15s; }
-  .fact:hover .fact-k::after, .fact:focus-visible .fact-k::after { opacity: 1; }
-  .fact-v { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.03em; line-height: 1.15; margin-top: 4px; }
-  .fact:hover .fact-v { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-  .fact-s { font-size: 13.5px; color: var(--text-3); line-height: 1.45; }
+  /* Why migrate: the agent benchmark, React Email before and Hyper Elements after. */
+  .why { padding-top: 0; }
+  .eyebrow { margin: 0 0 14px; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
+  .wins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+  .win { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 24px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s; }
+  .win:hover, .win:focus-visible { border-color: var(--line-3); }
+  .win-k { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
+  .win-v { font-size: 30px; font-weight: 600; letter-spacing: -0.035em; line-height: 1.1; color: var(--text); margin-top: 4px; }
+  .pair { display: grid; gap: 14px; margin-top: 22px; }
+  .pair-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 7px; column-gap: 8px; align-items: baseline; }
+  .pair-name { font-size: 13px; color: var(--text-2); }
+  .pair-n { font: 500 13px var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+  .was .pair-n { color: var(--text-2); }
+  .pair-row .bar { grid-column: 1 / -1; }
+  /* Bars: a thin track, the value's end rounded, anchored at the left. */
+  .bar { display: block; height: 8px; min-width: 0; }
+  .bar i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--text); }
+  .was .bar i { background: var(--text-3); opacity: 0.55; }
+
+  .briefs { margin-top: 20px; padding: 28px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-1); }
+  .briefs-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px 24px; margin-bottom: 22px; }
+  .briefs-head h3 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+  .legend { display: flex; gap: 18px; font-size: 13px; color: var(--text-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 14px; height: 8px; border-radius: 0 4px 4px 0; background: var(--text); }
+  .legend .was i { background: var(--text-3); opacity: 0.55; }
+  .brief-rows { list-style: none; margin: 0; padding: 0; display: grid; }
+  .brief { display: grid; grid-template-columns: 150px minmax(0, 1fr) 96px; align-items: center; gap: 20px; padding: 14px 0; border-top: 1px solid var(--line); }
+  .brief-t { font-size: 15px; color: var(--text); }
+  .brief-bars { display: grid; gap: 4px; min-width: 0; }
+  .brief-bar { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .brief-bar .bar { flex: 1 1 auto; display: flex; }
+  .brief-bar .bar i { flex: none; }
+  .brief-n { flex: none; width: 44px; font: 500 12.5px var(--mono); color: var(--text); font-variant-numeric: tabular-nums; }
+  .brief-bar.was .brief-n { color: var(--text-3); }
+  .brief-x { justify-self: end; font: 500 13px var(--mono); color: var(--text); white-space: nowrap; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .why-note { margin: 20px auto 0; max-width: 760px; text-align: center; font-size: 13.5px; line-height: 1.55; color: var(--text-3); }
+  .why-note a { color: var(--text-2); text-decoration: none; white-space: nowrap; }
+  .why-note a:hover { color: var(--text); }
+
 
   .sec-head { text-align: center; margin: 0 auto 56px; max-width: 680px; }
   .sec-head .h-section { margin: 0; }
   .sec-sub { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
 
-  /* Before and after, then the run that wrote it. */
+  /* Before and after, then the run that wrote it, straight under the hero. */
+  .ba-section { padding-top: 72px; }
   .ba { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
   .ba-side { min-width: 0; }
   .ba-side :global(pre) { max-height: 560px; }
-  .ba-label { margin: 0 0 10px; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
+  .ba-label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 0 0 14px; }
+  .ba-name { font-size: 22px; font-weight: 650; letter-spacing: -0.025em; line-height: 1.2; color: var(--text); }
+  .ba-stats { display: inline-flex; gap: 6px; text-decoration: none; }
+  .ba-stats span { height: 28px; padding: 0 12px; display: inline-grid; place-items: center; border-radius: 999px; font: 600 13.5px var(--mono); font-variant-numeric: tabular-nums; border: 1px solid currentColor; }
+  .ba-stats.was { color: var(--err); }
+  .ba-stats.now { color: var(--ok); }
+  .ba-stats span { background: color-mix(in srgb, currentColor 10%, transparent); border-color: color-mix(in srgb, currentColor 35%, transparent); }
   .term { margin-top: 20px; overflow: hidden; background: #0e0e0e; }
   .term-bar { display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--hover); font: 500 12.5px var(--mono); color: var(--text-3); }
   .term pre { margin: 0; padding: 18px 20px; overflow-x: auto; font: 400 13.5px/1.7 var(--mono); color: var(--text); white-space: pre; }
@@ -244,20 +331,19 @@ const more = [
   .final-inner .m-cta { margin-top: 0; }
 
   @media (max-width: 1000px) {
-    .facts { margin-top: 72px; }
-    .facts-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .fact:nth-child(3) { border-left: 0; padding-left: 0; }
-    .fact:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .wins { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .sec-head { margin-bottom: 44px; }
     .ba, .checks { grid-template-columns: minmax(0, 1fr); }
     .more { grid-template-columns: minmax(0, 1fr); }
     .opts-row { grid-template-columns: 160px minmax(0, 1fr); }
   }
   @media (max-width: 640px) {
-    .facts { margin-top: 56px; }
-    .facts-row { grid-template-columns: minmax(0, 1fr); }
-    .fact, .fact:nth-child(3) { border-left: 0; padding: 16px 0; }
-    .fact + .fact { border-top: 1px solid var(--line); }
+    .wins { grid-template-columns: minmax(0, 1fr); }
+    .win, .briefs { padding: 22px; }
+    .brief { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t x" "b b"; gap: 10px 12px; }
+    .brief-t { grid-area: t; }
+    .brief-x { grid-area: x; }
+    .brief-bars { grid-area: b; }
     .sec-head { margin-bottom: 32px; }
     .tile { padding: 22px; }
     .opts-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
