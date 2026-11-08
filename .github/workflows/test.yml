@@ -126,15 +126,17 @@ jobs:
           fi
           echo "✅ /builder bundle within budget"
 
-      # The email client previews (@hyper-elements/email-clients, dist/index.js): the
-      # function, the preview shell and the runtime each file carries. Core isn't in
-      # it (external). Raise it on purpose, with what grew.
+      # The email client previews (@hyper-elements/email-clients, dist/index.js): about
+      # 63KB unminified ESM, nearly all of it the runtime each preview file carries
+      # (email-renderer's modules and the lifecycle, minified, about 60KB), the rest the
+      # function and the preview shell. Core isn't in it (external). Raise it on
+      # purpose, with what grew.
       - name: Check email client previews bundle size
         run: |
           BUNDLE="packages/email-clients/dist/index.js"
           test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=7000
+          MAX_SIZE=70000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -371,6 +373,11 @@ jobs:
       # with the same font file: pixel by pixel, the edges of shapes and letters aside (packages/react/test/image/browser).
       - name: Image drawn as its Canvas's HTML
         run: pnpm --filter @hyper-elements/react test:browser test/image
+
+      # The email client previews opened in Chromium: each client's file draws the email with every block's path,
+      # says it's done, and runs none of the email's scripts, handlers or navigation (packages/email-clients/test/browser).
+      - name: Email client previews in Chromium
+        run: pnpm --filter @hyper-elements/email-clients test:browser
 
       # ── Migration fidelity smoke test ───────────────────────────
       # Converts the committed fixture templates both ways (codemod and

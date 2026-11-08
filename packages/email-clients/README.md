@@ -30,3 +30,11 @@ says so.
 
 The package builds on `@hyper-elements/react`'s public API, which it needs at ^0.3.1 (`render()`'s `blockMap`). With an
 older one it throws `email-clients/version-mismatch`, with the command to install a matching pair.
+
+## How the previews are made
+
+Each file carries a runtime: email-renderer's models of the clients (`src/runtime/renderer/`, copied unchanged from
+the commit `RUNTIME_SOURCE` pins) and the lifecycle around them (`src/runtime/`), bundled into one script
+(`src/runtime.generated.ts`, committed, so the package builds without email-renderer). To move the pin: copy the
+modules from the new commit, update `RUNTIME_SOURCE`, run `pnpm build:runtime`, and show the new scores in the PR.
+`pnpm build` fails if the generated runtime isn't what its sources build.
