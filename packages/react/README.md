@@ -340,6 +340,23 @@ const { element, code, report: read } = fromDesign(saved, { displayMode: "email"
 
 The design holds no Hyper Elements data. A style or prop a builder tool has no field for is a hidden property of that tool, kept in the design under its own name and drawn by Hyper Elements, with no editor in the builder yet. What the builder can't arrange comes back with the same look, flatter: a Section around several Rows as a Section each, a box's padding on its blocks, a Grid as Rows of Columns. What no tool shows (a Layer, an Svg, a Table, a box nested in a column, your own `component()`) goes as an HTML block of the new engine's markup, and comes back as an `Html` block, as the builder's own HTML blocks do. A design's markup comes back as it is: where designs can hold untrusted content, pass your sanitizer, `fromDesign(saved, { toSafeHtml })`. A line height goes in the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px is `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet: a `PageNumber` goes as its token, which the editor's PDF prints as it is, and `report` says so.
 
+## What each root takes
+
+Not everything goes in every root: an `Svg` isn't in an Email, a `PageNumber` is only in a Document, and phone styles are only in an Email or a Page. `@hyper-elements/react/inspect` says which, as data, for an agent or an editor: before writing a template, what a root takes; after, whether each part of it is allowed where it is.
+
+```tsx
+import { describeComponent, describeComponents, inspect } from "@hyper-elements/react/inspect";
+
+describeComponents({ root: "Email" });          // the components an Email takes, each prop and style with its kind, group and default
+describeComponent("Svg", { root: "Email" });     // undefined: an Email doesn't take one
+describeComponent("Svg").roots;                  // ["Page", "Document", "Canvas"]
+
+const { valid, nodes } = inspect(<Welcome />);
+// nodes: each component, in order: { path, type, roots, allowed, given: ["style.padding", "mobile.padding"], problems }
+```
+
+`inspect()` checks what `validate()` checks, without rendering, and puts each problem on the component it's on. Your own components (`component()`) are described with the built-in ones: `describeComponents({ components: [ProductCard] })`.
+
 ## Task guides and runnable examples
 
 - [Transactional email in React](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/transactional-email.md): render HTML and plain text, then send a receipt.
