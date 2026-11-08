@@ -1,9 +1,9 @@
 ---
 title: "Styles, phones and hover"
-description: "Style components with style={{ }} using CSS names, set phone styles with mobile, show blocks on one size with hidden, add hover colors, and load fonts."
+description: "Style components with style={{ }} using CSS names, set phone and hover styles in its mobile and hover blocks, set where a Page's phones start, show blocks on one size with hidden, and load fonts."
 ---
 
-Every component takes its styles in `style={{ }}`, with CSS's property names and values. Phone styles go in `mobile`, hover styles in `hover`, and `hidden` shows a block on one size only.
+Every component takes its styles in `style={{ }}`, with CSS's property names and values. Inside it, the `mobile` block holds its styles on phones and the `hover` block its styles under the pointer. `hidden` shows a block on one size only.
 
 ```tsx
 <Heading level={1} style={{ fontSize: 32, color: "#111827", mobile: { fontSize: 24, textAlign: "center" } }}>
@@ -72,7 +72,7 @@ There are no margins. Space between blocks is their parent's `gap`, and space in
 
 ## mobile
 
-`mobile` holds a component's styles on phones, in an Email or a Page:
+The `mobile` block of a component's `style` holds its styles on phones, in an Email or a Page:
 
 ```tsx
 <Column style={{ padding: 32, mobile: { padding: 16 } }}>
@@ -80,9 +80,23 @@ There are no margins. Space between blocks is their parent's `gap`, and space in
 </Column>
 ```
 
-Each component takes a short list of phone styles, mostly sizes, spacing and alignment: `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`, `alignSelf`. A style that isn't on the list is an error (`mobile/not-allowed`), and so are phone styles in a Document or a Canvas, which have no phone width (`mobile/not-supported`).
+Each component takes a short list of phone styles, mostly sizes, spacing and alignment: `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`, `alignSelf`. The block is typed to the component's list, so TypeScript flags a style that isn't on it; `validate()` says so too (`mobile/not-allowed`). Phone styles in a Document or a Canvas, which have no phone width, are an error (`mobile/not-supported`).
 
-Phones are at or below the content width plus 20px in an email, and at or below 480px on a page. Rows also stack on phones; see [Layout](/docs/layout#stacking-on-phones).
+Where an output takes a phone style but doesn't show it, `validate()` warns: a Page's own phone text styles (set them on its Sections or Columns), a stacking Grid's `rowGap` (its children are its phone `gap` apart), and in an email an Image's or a TableCell's phone `border`, and a phone `lineHeight` of `"normal"`.
+
+Rows also stack on phones; see [Layout](/docs/layout#stacking-on-phones).
+
+### Where phones start
+
+In an email, phones are at or below the content width plus 20px. On a page, they're at or below 480px, or the page's own `breakpoints.mobile`:
+
+```tsx
+<Page width={1200} breakpoints={{ mobile: 600 }}>
+  <Column style={{ padding: 32, mobile: { padding: 16 } }}>…</Column>
+</Page>
+```
+
+Phone styles and `hidden={{ mobile: true }}` apply at and below it. It's a whole number of px from 240; one as wide as the page's content or wider is a warning (`page/phone-width`), since phone styles would then apply where the content is at full width.
 
 ## hidden
 
@@ -97,7 +111,7 @@ Hidden on both, a block never shows, and `validate()` warns (`hidden/everywhere`
 
 ## hover
 
-`hover` holds a link's or a button's styles under the pointer:
+The `hover` block holds a link's or a button's styles under the pointer:
 
 ```tsx
 <Button href="https://example.com/buy" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>
@@ -111,7 +125,9 @@ Hidden on both, a block never shows, and `validate()` warns (`hidden/everywhere`
 </Text>
 ```
 
-A Button takes `color` and `backgroundColor` on hover. A Link takes `color`, `textDecoration` and `backgroundColor`. A PDF and an image can't show hover, and say so.
+A Button takes `color` and `backgroundColor` on hover. A Link takes `color`, `textDecoration` and `backgroundColor`. Other components take no `hover` block. Keyboard focus gets the same styles, so a link or button reached with Tab shows its hover colors.
+
+In an email, `validate()` notes that hover doesn't show everywhere: classic Outlook for Windows and some apps and webmail leave the colors as they are. A PDF and an image can't show hover, and say so.
 
 ## Fonts
 
