@@ -3,6 +3,7 @@ export * from "./diagnostics";
 export * from "./email-clients";
 export * from "./kinds";
 export * from "./define";
+export * from "./conditions";
 export * from "./styles";
 export * from "./components";
 export * from "./composites";

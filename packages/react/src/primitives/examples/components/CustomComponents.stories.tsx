@@ -138,7 +138,7 @@ const template = (
 );`,
   (Root) => (
     <Root width={560} {...root}>
-      <Section style={{ padding: [28, 32, 44], gap: 32 }} mobile={{ padding: [20, 20, 32], gap: 28 }}>
+      <Section style={{ padding: [28, 32, 44], gap: 32, mobile: { padding: [20, 20, 32], gap: 28 } }}>
         {masthead("This week")}
         <Countdown />
         <Divider style={{ borderTop: `1px solid ${RULE}` }} />
@@ -227,7 +227,7 @@ const template = (
 );`,
   (Root) => (
     <Root width={640} {...root}>
-      <Section style={{ padding: [28, 24, 40], gap: 20 }} mobile={{ padding: [20, 16, 32] }}>
+      <Section style={{ padding: [28, 24, 40], gap: 20, mobile: { padding: [20, 16, 32] } }}>
         {masthead("New this week")}
         <Row style={{ gap: 16 }}>
           <BookCard jacket={LOW_WATER} title="Low Water" blurb="Six stories from the Severn, where the tide comes in faster than a man can run." price="£14" href={`${SITE}/low-water`} />
@@ -301,7 +301,7 @@ const template = (
 );`,
   (Root) => (
     <Root width={560} {...root}>
-      <Section style={{ padding: [28, 44, 44], gap: 24 }} mobile={{ padding: [20, 22, 32] }}>
+      <Section style={{ padding: [28, 44, 44], gap: 24, mobile: { padding: [20, 22, 32] } }}>
         {masthead("What readers said")}
         <Column style={{ gap: 8 }}>
           <Rating score={5} size="large" />
@@ -329,9 +329,9 @@ const Hero = component({
     background: prop.color({ label: "Background", default: INK }),
   },
   render: ({ title, kicker, background }) => (
-    <Section style={{ backgroundColor: background, color: CARD, padding: [52, 24, 56], gap: 10, textAlign: "center" }} mobile={{ padding: [40, 20, 44] }}>
+    <Section style={{ backgroundColor: background, color: CARD, padding: [52, 24, 56], gap: 10, textAlign: "center", mobile: { padding: [40, 20, 44] } }}>
       <Text style={{ ...label, color: DIM }}>{kicker}</Text>
-      <Heading level={1} style={{ ...serif(60), fontStyle: "italic" }} mobile={{ fontSize: 48 }}>
+      <Heading level={1} style={{ ...serif(60), fontStyle: "italic", mobile: { fontSize: 48 } }}>
         {title}
       </Heading>
     </Section>
@@ -371,7 +371,7 @@ const template = (
   (Root) => (
     <Root width={560} {...root}>
       <Hero title="New arrivals" />
-      <Section style={{ padding: [36, 44], gap: 10 }} mobile={{ padding: [28, 22] }}>
+      <Section style={{ padding: [36, 44], gap: 10, mobile: { padding: [28, 22] } }}>
         <Text style={{ ...serif(24), fontWeight: 400, lineHeight: 1.3, letterSpacing: 0, textAlign: "center" }}>Eleven books came in this week, three of them first novels, and one that Maud has already put aside for herself.</Text>
         <Text style={{ ...note, textAlign: "center" }}>The band above and the one below are each one Hero: it goes where a Section goes.</Text>
       </Section>

@@ -93,7 +93,7 @@ export const Sizes = story((Root) => (
     <Section style={{ padding: [36, 24], gap: 28, textAlign: "center" }}>
       <Column style={{ gap: 12 }}>
         <Text style={{ ...VOICE, fontSize: 26 }}>Come and find us.</Text>
-        <Social icons={ICONS} size={48} style={{ gap: 20 }} mobile={{ gap: 8 }} />
+        <Social icons={ICONS} size={48} style={{ gap: 20, mobile: { gap: 8 } }} />
         <Text style={CAPTION}>size: 48 · gap: 20 · on phones, gap: 8</Text>
       </Column>
       <Column style={{ gap: 10, padding: [24, 0, 0], border: { top: LINE } }}>
@@ -135,7 +135,7 @@ export const Alignment = story((Root) => (
 export const Footer = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ padding: [36, 24], gap: 8, textAlign: "center" }}>
-      <Heading level={2} style={{ ...VOICE, fontSize: 28 }} mobile={{ fontSize: 24 }}>
+      <Heading level={2} style={{ ...VOICE, fontSize: 28, mobile: { fontSize: 24 } }}>
         Read anything good lately?
       </Heading>
       <Text style={{ color: QUIET }}>Tell us. We’ll put it in the window.</Text>

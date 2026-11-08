@@ -40,9 +40,10 @@ describe("printing", () => {
     expect(code).toContain("autoWidth: true");
     expect(code).toContain("hideOnMobile={true}");
     const moved = (await treeToNewComponents(tree)).code;
-    expect(moved).toContain('mobile={{ padding: "8px 16px" }}');
+    expect(moved).toContain('mobile: { padding: "8px 16px" }');
     expect(moved).toContain("hidden={{ mobile: true }}");
-    expect(moved).toMatch(/mobile=\{\{ width: "100%"/);
+    expect(moved).toMatch(/mobile: \{ width: "100%"/);
+    expect(moved).not.toContain("mobile={");
   });
 
   it("renames components that clash with other imports", () => {

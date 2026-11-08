@@ -47,29 +47,39 @@ import {
   type PropsInput,
   type InputOf,
   type StyleInput,
+  type StyleSpecs,
 } from "@unlayer-internal/elements-core";
 import { collectingPrimitives, recordPrimitive } from "./collect";
 
 /** The props of a primitive: its semantic props, plus its style, phone and hover styles, and children. */
-export type PrimitiveProps<D> = D extends ComponentDefinition<infer P, infer S> ? PropsInput<P> & Extras<StyleInput<S>> : never;
+export type PrimitiveProps<D> = D extends ComponentDefinition<infer P, infer S, any> ? PropsInput<P> & Extras<StyleInput<S>, ConditionStyles<D>> : never;
+
+/** The styles that may be set on phones: those whose definition says `mobile: true`. */
+type MobileKeys<S extends StyleSpecs> = { [K in keyof S]-?: S[K] extends { mobile: true } ? K : never }[keyof S];
+
+/** A condition's block of the styles `K`; where it takes none, nothing can be set in it. */
+type Block<S extends StyleSpecs, K> = [K] extends [never] ? never : { [Q in K & keyof S]?: InputOf<S[Q]["kind"]> };
+
+/**
+ * A component's condition blocks in `style`: `mobile` with the styles it takes on phones, `hover` with its hover
+ * styles (from its definition's list). Where a component takes none, the block is `never`: no value but `undefined`.
+ */
+export type ConditionStyles<D> = D extends ComponentDefinition<any, infer S, infer H> ? { mobile?: Block<S, MobileKeys<S>>; hover?: Block<S, H[number]> } : never;
 
 /** What every primitive takes beside its own props. */
-interface Extras<Style> {
+interface Extras<Style, Conditions> {
   /** Stable id; one is assigned in document order when it's left out. */
   id?: string;
-  style?: Style;
-  /** Style on phones (in an Email or Page). */
-  mobile?: Style;
-  /** Style while the pointer is over it, where the component has one. */
-  hover?: Style;
+  /** Its style, and inside it its styles on phones (`mobile`) and on hover (`hover`), where it takes them. */
+  style?: Style & Conditions;
   hidden?: { mobile?: boolean; desktop?: boolean };
   children?: React.ReactNode;
 }
 
 // Each component's props and style have names of their own (HeadingProps, HeadingStyle), so a type error names them
 // ("'marginBottom' does not exist in type 'HeadingStyle'") rather than spelling out every style the component takes.
-type StyleOf<D> = D extends ComponentDefinition<any, infer S> ? { [K in keyof S]?: InputOf<S[K]["kind"]> } : never;
-type PropsOf<D, Style> = D extends ComponentDefinition<infer P, any> ? PropsInput<P> & Extras<Style> : never;
+type StyleOf<D> = D extends ComponentDefinition<any, infer S, any> ? { [K in keyof S]?: InputOf<S[K]["kind"]> } : never;
+type PropsOf<D, Style> = D extends ComponentDefinition<infer P, any, any> ? PropsInput<P> & Extras<Style, ConditionStyles<D>> : never;
 
 /** Marks a primitive's component type. */
 export const PRIMITIVE = Symbol.for("@hyper-elements/react/primitive");

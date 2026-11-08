@@ -32,7 +32,7 @@ const label = { fontSize: 12, fontWeight: 600, letterSpacing: 1.6, textTransform
 
 /** A line of the visit's details: what, beside its answer. */
 const detail = (name: string, value: ReactNode) => (
-  <Row style={{ gap: 24, padding: [14, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 4 }}>
+  <Row style={{ gap: 24, padding: [14, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 4 } }}>
     <Column style={{ width: 132 }}>
       <Text style={{ ...label, color: QUIET, lineHeight: "24px" }}>{name}</Text>
     </Column>
@@ -44,7 +44,7 @@ const detail = (name: string, value: ReactNode) => (
 
 /** An event in the show's run. */
 const event = (date: string, time: string, what: string) => (
-  <Row stackOnMobile={false} style={{ gap: 20, padding: [16, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 14 }}>
+  <Row stackOnMobile={false} style={{ gap: 20, padding: [16, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 14 } }}>
     <Column style={{ width: 84 }}>
       <Text style={{ fontFamily: DISPLAY, fontSize: 20, fontWeight: 700, lineHeight: 1.1, color: BLUE }}>
         {date}
@@ -73,7 +73,7 @@ export default function SaltworksInvitation() {
       style={{ backgroundColor: SALT, color: INK, fontFamily: SANS, fontSize: 16, lineHeight: 1.6 }}
     >
       {/* The poster */}
-      <Section style={{ backgroundColor: BLUE, color: "#FFFFFF", padding: [36, 48, 44], gap: 40 }} mobile={{ padding: [24, 24, 32], gap: 32 }}>
+      <Section style={{ backgroundColor: BLUE, color: "#FFFFFF", padding: [36, 48, 44], gap: 40, mobile: { padding: [24, 24, 32], gap: 32 } }}>
         <Row stackOnMobile={false} style={{ alignItems: "center" }}>
           <Column>
             <Text style={{ ...label, color: "#FFFFFF" }}>
@@ -88,23 +88,23 @@ export default function SaltworksInvitation() {
         </Row>
         <Column style={{ gap: 14 }}>
           <Text style={{ ...label, color: PALE }}>You’re invited to a private view</Text>
-          <Heading level={1} style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 800, lineHeight: 0.9, letterSpacing: -4 }} mobile={{ fontSize: 64, letterSpacing: -2.5 }}>
+          <Heading level={1} style={{ fontFamily: DISPLAY, fontSize: 96, fontWeight: 800, lineHeight: 0.9, letterSpacing: -4, mobile: { fontSize: 64, letterSpacing: -2.5 } }}>
             Low
             <LineBreak />
             Water
           </Heading>
-          <Text style={{ fontSize: 22, lineHeight: 1.3 }} mobile={{ fontSize: 19 }}>
+          <Text style={{ fontSize: 22, lineHeight: 1.3, mobile: { fontSize: 19 } }}>
             New drawings by Ines Kerr
           </Text>
         </Column>
-        <Row style={{ alignItems: "end", gap: 20, padding: [20, 0, 0], border: { top: `1px solid ${PALE}` } }} mobile={{ gap: 16 }}>
+        <Row style={{ alignItems: "end", gap: 20, padding: [20, 0, 0], border: { top: `1px solid ${PALE}` }, mobile: { gap: 16 } }}>
           <Column style={{ width: 280 }}>
-            <Text style={{ fontFamily: DISPLAY, fontSize: 116, fontWeight: 800, lineHeight: 0.8, letterSpacing: -5 }} mobile={{ fontSize: 96, letterSpacing: -4 }}>
+            <Text style={{ fontFamily: DISPLAY, fontSize: 116, fontWeight: 800, lineHeight: 0.8, letterSpacing: -5, mobile: { fontSize: 96, letterSpacing: -4 } }}>
               20
             </Text>
           </Column>
           <Column style={{ gap: 2 }}>
-            <Text style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 700, lineHeight: 1.05 }} mobile={{ fontSize: 24 }}>
+            <Text style={{ fontFamily: DISPLAY, fontSize: 26, fontWeight: 700, lineHeight: 1.05, mobile: { fontSize: 24 } }}>
               Thursday
               <LineBreak />
               November
@@ -117,7 +117,7 @@ export default function SaltworksInvitation() {
       </Section>
 
       {/* The drawing, hung like a print, with its label */}
-      <Section style={{ padding: [48, 48, 0], gap: 12 }} mobile={{ padding: [32, 24, 0], gap: 10 }}>
+      <Section style={{ padding: [48, 48, 0], gap: 12, mobile: { padding: [32, 24, 0], gap: 10 } }}>
         <Image
           src={{ src: "https://hyperelements.dev/img/gallery/saltworks/low-water.png", width: 1200, height: 680 }}
           alt="A drawing of a mudflat at low tide: dozens of fine blue lines running to the horizon, closer together as they go, with a low sun on the horizon."
@@ -129,8 +129,8 @@ export default function SaltworksInvitation() {
       </Section>
 
       {/* About the show, and the visit */}
-      <Section style={{ padding: [40, 48, 0], gap: 28 }} mobile={{ padding: [32, 24, 0], gap: 24 }}>
-        <Text style={{ fontSize: 19, lineHeight: 1.55 }} mobile={{ fontSize: 17 }}>
+      <Section style={{ padding: [40, 48, 0], gap: 28, mobile: { padding: [32, 24, 0], gap: 24 } }}>
+        <Text style={{ fontSize: 19, lineHeight: 1.55, mobile: { fontSize: 17 } }}>
           For a year, Ines walked out onto the Stour estuary at every low tide she could reach before work, and drew what the water left behind. These are thirty-one of those drawings, shown
           together for the first time.
         </Text>
@@ -147,12 +147,10 @@ export default function SaltworksInvitation() {
           {detail("Getting here", "Six minutes’ walk from Harwich Town station. The last train to London is at 22:04.")}
           {detail("Access", "Step-free throughout, with an accessible toilet on the ground floor.")}
         </Column>
-        <Row style={{ alignItems: "center", gap: 24 }} mobile={{ gap: 16 }}>
+        <Row style={{ alignItems: "center", gap: 24, mobile: { gap: 16 } }}>
           <Button
             href={`${SITE}/low-water/rsvp`}
-            style={{ width: 200, backgroundColor: BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [16, 0], borderRadius: 0 }}
-            hover={{ backgroundColor: BLUE_DOWN }}
-            mobile={{ width: "100%" }}
+            style={{ width: 200, backgroundColor: BLUE, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [16, 0], borderRadius: 0, mobile: { width: "100%" }, hover: { backgroundColor: BLUE_DOWN } }}
           >
             Reply to say you’ll come
           </Button>
@@ -165,7 +163,7 @@ export default function SaltworksInvitation() {
       </Section>
 
       {/* The run */}
-      <Section style={{ padding: [48, 48, 0], gap: 6 }} mobile={{ padding: [40, 24, 0] }}>
+      <Section style={{ padding: [48, 48, 0], gap: 6, mobile: { padding: [40, 24, 0] } }}>
         <Text style={{ ...label, color: QUIET, padding: [0, 0, 8] }}>During the show, until 18 January</Text>
         <Column style={{ border: { bottom: `1px solid ${RULE}` } }}>
           {event("22 Nov", "2pm", "Ines in conversation with Dafydd Rees, who has kept the Harwich tide gauge for thirty years.")}
@@ -174,7 +172,7 @@ export default function SaltworksInvitation() {
         </Column>
       </Section>
 
-      <Section style={{ padding: [48, 48, 56] }} mobile={{ padding: [40, 24, 44] }}>
+      <Section style={{ padding: [48, 48, 56], mobile: { padding: [40, 24, 44] } }}>
         <Text style={{ fontSize: 13, lineHeight: 1.6, color: QUIET }}>
           The Saltworks is open Wednesday to Sunday, 11am to 5pm, and free. You’re getting this because you’re on our list for openings.{" "}
           <Link href={`${SITE}/unsubscribe`} style={{ color: QUIET }}>

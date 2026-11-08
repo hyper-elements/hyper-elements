@@ -73,23 +73,23 @@ const DAWN = fells(1200, 920, "#EFD9B4", `<circle cx="850" cy="500" r="104" fill
 /** Words and a button over a picture: `height` is the box's, and the picture covers it. */
 export const WordsOverAPicture = story((Root) => (
   <Root {...root}>
-    <Section style={{ gap: 12 }} mobile={{ gap: 10 }}>
+    <Section style={{ gap: 12, mobile: { gap: 10 } }}>
       <Layer style={{ height: 460, alignItems: "start" }}>
         <Image src={DAWN} alt="Four ridges of fell, one behind another, under a low rust-coloured sun" style={{ width: "100%" }} />
-        <Column style={{ padding: [44, 44, 0], gap: 14, alignItems: "start" }} mobile={{ padding: [32, 24, 0] }}>
+        <Column style={{ padding: [44, 44, 0], gap: 14, alignItems: "start", mobile: { padding: [32, 24, 0] } }}>
           <Text style={label}>Wayfell maps, autumn</Text>
-          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 60, fontWeight: 400, lineHeight: 1, letterSpacing: -0.5 }} mobile={{ fontSize: 46 }}>
+          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 60, fontWeight: 400, lineHeight: 1, letterSpacing: -0.5, mobile: { fontSize: 46 } }}>
             Into the hills
           </Heading>
-          <Text style={{ fontSize: 17, lineHeight: 1.45, maxWidth: 340 }} mobile={{ fontSize: 16 }}>
+          <Text style={{ fontSize: 17, lineHeight: 1.45, maxWidth: 340, mobile: { fontSize: 16 } }}>
             Forty-one routes for the short days, each walked twice before we drew it.
           </Text>
-          <Button href={`${SITE}/routes`} style={{ backgroundColor: PINE, color: BONE, fontSize: 15, fontWeight: 600, padding: [13, 24], borderRadius: 2 }} hover={{ backgroundColor: RUST }}>
+          <Button href={`${SITE}/routes`} style={{ backgroundColor: PINE, color: BONE, fontSize: 15, fontWeight: 600, padding: [13, 24], borderRadius: 2, hover: { backgroundColor: RUST } }}>
             Find a route
           </Button>
         </Column>
       </Layer>
-      <Text style={{ ...caption(QUIET), padding: [0, 0, 16] }} mobile={{ padding: [0, 24, 16] }}>
+      <Text style={{ ...caption(QUIET), padding: [0, 0, 16], mobile: { padding: [0, 24, 16] } }}>
         height: 460, and the picture covers it
       </Text>
     </Section>
@@ -106,7 +106,7 @@ const NORTH_RIDGE = fells(1104, 560, "#D8DED2", `<circle cx="440" cy="136" r="58
 /** One fact about a route: its number over what it counts. */
 const fact = (figure: string, what: string) => (
   <Column style={{ gap: 2 }}>
-    <Text style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1.1 }} mobile={{ fontSize: 24 }}>
+    <Text style={{ fontFamily: SERIF, fontSize: 28, lineHeight: 1.1, mobile: { fontSize: 24 } }}>
       {figure}
     </Text>
     <Text style={{ fontSize: 13, color: QUIET }}>{what}</Text>
@@ -116,8 +116,8 @@ const fact = (figure: string, what: string) => (
 /** A caption along the bottom, on a band of its own, with the Layer's corners rounded. */
 export const Caption = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [40, 24, 44] }} mobile={{ padding: [20, 12, 28] }}>
-      <Column style={{ backgroundColor: CARD, borderRadius: 16, padding: 24, gap: 22 }} mobile={{ padding: 16, gap: 18 }}>
+    <Section style={{ padding: [40, 24, 44], mobile: { padding: [20, 12, 28] } }}>
+      <Column style={{ backgroundColor: CARD, borderRadius: 16, padding: 24, gap: 22, mobile: { padding: 16, gap: 18 } }}>
         <Layer style={{ height: 280, alignItems: "end", borderRadius: 12 }}>
           <Image src={NORTH_RIDGE} alt="Harrow Fell's north ridge, grey-green under a pale morning sun" style={{ width: "100%" }} />
           <Text style={{ padding: [10, 16], backgroundColor: PINE, color: BONE, fontSize: 14, lineHeight: 1.4 }}>Harrow Fell from the north, last April</Text>
@@ -165,7 +165,7 @@ const hour = (picture: { src: string; width: number; height: number }, alt: stri
           <Span style={{ fontFamily: SANS, fontSize: 14 }}> {time}</Span>
         </Text>
       </Column>
-      <Column style={{ width: 170 }} mobile={{ width: 142 }}>
+      <Column style={{ width: 170, mobile: { width: 142 } }}>
         <Text style={{ ...caption(color), textAlign: "right" }}>alignItems: "{alignItems}"</Text>
       </Column>
     </Row>
@@ -175,8 +175,8 @@ const hour = (picture: { src: string; width: number; height: number }, alt: stri
 /** `alignItems` is where its children sit in its height: at the top, in the middle, at the bottom. */
 export const Alignment = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [40, 0, 44], gap: 18 }} mobile={{ padding: [28, 0, 32] }}>
-      <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1 }} mobile={{ fontSize: 28, padding: [0, 20] }}>
+    <Section style={{ padding: [40, 0, 44], gap: 18, mobile: { padding: [28, 0, 32] } }}>
+      <Heading level={2} style={{ fontFamily: SERIF, fontSize: 32, fontWeight: 400, lineHeight: 1.1, mobile: { fontSize: 28, padding: [0, 20] } }}>
         One day on Harrow Fell
       </Heading>
       <Column style={{ gap: 6 }}>
@@ -205,15 +205,15 @@ const NIGHT = fells(1200, 560, "#12211D", STARS + MOON, [
 export const OnPhones = story((Root) => (
   <Root {...root}>
     <Section style={{ gap: 12 }}>
-      <Layer style={{ height: 280, alignItems: "center", color: BONE, fontFamily: SERIF, fontSize: 44, lineHeight: 1.08 }} mobile={{ fontSize: 30, textAlign: "center" }}>
+      <Layer style={{ height: 280, alignItems: "center", color: BONE, fontFamily: SERIF, fontSize: 44, lineHeight: 1.08, mobile: { fontSize: 30, textAlign: "center" } }}>
         <Image src={NIGHT} alt="Black ridges under a clear, starry night" style={{ width: "100%" }} />
-        <Text style={{ padding: [0, 44] }} mobile={{ padding: [0, 28] }}>
+        <Text style={{ padding: [0, 44], mobile: { padding: [0, 28] } }}>
           Walk until the map
           <LineBreak />
           runs out.
         </Text>
       </Layer>
-      <Text style={{ ...caption(QUIET), padding: [0, 0, 16] }} mobile={{ padding: [0, 24, 16], textAlign: "center" }}>
+      <Text style={{ ...caption(QUIET), padding: [0, 0, 16], mobile: { padding: [0, 24, 16], textAlign: "center" } }}>
         fontSize: 44, on phones 30 and centered
       </Text>
     </Section>

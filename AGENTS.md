@@ -52,7 +52,10 @@ Email / Page / Document / Canvas   (the root: which output render() writes)
 ```
 
 A root, a `Section` and a `Column` stack what they hold. Styles go in `style` (typed; a number is px), phone styles
-in `mobile`, hover styles in `hover`. There are no margins: space between blocks is the parent's `gap`. Every
+in its `mobile` block and hover styles in its `hover` block: `style={{ padding: 24, mobile: { padding: 16 } }}`. The
+conditions are one list in `packages/core/src/conditions.ts`, each with its support per output. A Page's phone width is
+its `breakpoints={{ mobile }}` (480px where it isn't set); an Email's is its width + 20px. There are no margins: space
+between blocks is the parent's `gap`. Every
 component and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
 writes from the definitions. Don't edit them by hand.
 
@@ -196,8 +199,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 250,500 bytes,
-  `dist/builder.js` 414,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 261,000 bytes,
+  `dist/builder.js` 425,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.

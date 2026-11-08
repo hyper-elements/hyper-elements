@@ -10,8 +10,8 @@ Every component, what it holds, and every prop and style it takes, with its defa
 Every component also takes:
 
 - `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).
-- `mobile={{ … }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`mobile`".
-- `hover={{ … }}`: styles on hover, for the ones listed under "`hover`".
+- `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`style.mobile`".
+- `style={{ hover: { … } }}`: styles on hover, for the ones listed under "`style.hover`".
 - `hidden={{ mobile: true }}` or `hidden={{ desktop: true }}`: shown on one only.
 - `id`: an id of your own, written into the HTML.
 

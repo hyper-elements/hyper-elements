@@ -75,11 +75,13 @@ jobs:
       # unminified ESM output as a proxy for code volume; they still flag
       # accidental dependency bundling (any real dep is 10KB+).
 
-      # The main entry (the components, dist/primitives.js): about 250KB
+      # The main entry (the components, dist/primitives.js): about 260KB
       # unminified ESM. Its core (the components' definitions, validation, layout,
-      # about 115KB), its writers (email, page, print HTML and plain text, about
+      # the conditions a style can be set for (phones, hover) with their support per
+      # output and the blocks of style they're read from, and the hints for a condition
+      # written another library's way (_hover, md), about 125KB), its writers (email, page, print HTML and plain text, about
       # 97KB), its email client checks (EMAIL_CLIENTS, the emailClients filter, the
-      # Html block CSS checks, about 6KB), its JSX API (about 17KB) and the render
+      # Html block CSS checks, about 6.5KB), its JSX API (about 17KB) and the render
       # that collects a template (about 5KB). Raise it on purpose, with what grew.
       - name: Check main entry bundle size
         run: |
@@ -87,7 +89,7 @@ jobs:
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=250500
+          MAX_SIZE=261000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -96,11 +98,11 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 414KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 425KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, the email client
-      # checks among them (about 216KB); the main
+      # checks among them (about 226KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
@@ -110,7 +112,7 @@ jobs:
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=414500
+          MAX_SIZE=425000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

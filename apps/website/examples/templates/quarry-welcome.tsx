@@ -41,7 +41,7 @@ const typed = (command: string) => (
 
 /** One of the three steps: its number, what to do, and why. */
 const step = (n: string, title: string, body: ReactNode) => (
-  <Row stackOnMobile={false} style={{ gap: 20, padding: [20, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 14 }}>
+  <Row stackOnMobile={false} style={{ gap: 20, padding: [20, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 14 } }}>
     <Column style={{ width: 32 }}>
       <Text style={{ ...mono, fontSize: 14, color: LIME, lineHeight: "24px" }}>{n}</Text>
     </Column>
@@ -60,7 +60,7 @@ const code = (text: string) => <Span style={{ fontFamily: MONO, fontSize: 14, co
 /** A figure of the free tier. */
 const figure = (value: string, unit: string, what: string) => (
   <Column style={{ gap: 4 }}>
-    <Text style={{ fontFamily: MONO, fontSize: 28, fontWeight: 500, lineHeight: 1.1, letterSpacing: -0.5 }} mobile={{ fontSize: 22 }}>
+    <Text style={{ fontFamily: MONO, fontSize: 28, fontWeight: 500, lineHeight: 1.1, letterSpacing: -0.5, mobile: { fontSize: 22 } }}>
       {value}
       <Span style={{ fontSize: 15, color: QUIET }}> {unit}</Span>
     </Text>
@@ -83,7 +83,7 @@ export default function QuarryWelcome() {
       ]}
       style={{ backgroundColor: NIGHT, color: TEXT, fontFamily: SANS, fontSize: 16, lineHeight: 1.6 }}
     >
-      <Section style={{ padding: [40, 48, 56], gap: 48 }} mobile={{ padding: [28, 24, 40], gap: 36 }}>
+      <Section style={{ padding: [40, 48, 56], gap: 48, mobile: { padding: [28, 24, 40], gap: 36 } }}>
         <Row stackOnMobile={false} style={{ alignItems: "center" }}>
           <Column style={{ width: 120 }}>
             <Text style={{ fontFamily: MONO, fontSize: 18, fontWeight: 500, letterSpacing: -0.3 }}>
@@ -99,18 +99,18 @@ export default function QuarryWelcome() {
 
         <Column style={{ gap: 20 }}>
           <Text style={{ ...mono, color: QUIET }}>Welcome, Priya.</Text>
-          <Heading level={1} style={{ fontSize: 44, fontWeight: 500, lineHeight: 1.08, letterSpacing: -1.4 }} mobile={{ fontSize: 31, letterSpacing: -0.9 }}>
+          <Heading level={1} style={{ fontSize: 44, fontWeight: 500, lineHeight: 1.08, letterSpacing: -1.4, mobile: { fontSize: 31, letterSpacing: -0.9 } }}>
             Your first database
             <LineBreak />
             is running.
           </Heading>
-          <Text style={{ fontSize: 18, lineHeight: 1.55, color: QUIET, maxWidth: 470 }} mobile={{ fontSize: 16 }}>
+          <Text style={{ fontSize: 18, lineHeight: 1.55, color: QUIET, maxWidth: 470, mobile: { fontSize: 16 } }}>
             It’s called <Span style={{ color: TEXT }}>north-ledger</Span>, it lives in Frankfurt, and it’s yours to break. Four commands take you from an empty schema to a shell.
           </Text>
         </Column>
 
-        <Column style={{ backgroundColor: PANEL, border: `1px solid ${RULE}`, borderRadius: 6, padding: [20, 24] }} mobile={{ padding: [16, 16] }}>
-          <Text style={{ ...mono, color: TEXT }} mobile={{ fontSize: 12 }}>
+        <Column style={{ backgroundColor: PANEL, border: `1px solid ${RULE}`, borderRadius: 6, padding: [20, 24], mobile: { padding: [16, 16] } }}>
+          <Text style={{ ...mono, color: TEXT, mobile: { fontSize: 12 } }}>
             {typed("curl -fsSL quarry.example/i | sh")}
             {typed("quarry login")}
             {typed("quarry link north-ledger")}
@@ -126,12 +126,10 @@ export default function QuarryWelcome() {
           {step("03", "Ask it something", <>Open the console and run the query we left in it. It finds the busiest docking station before 9am, in about forty milliseconds.</>)}
         </Column>
 
-        <Row style={{ alignItems: "center", gap: 24 }} mobile={{ gap: 16 }}>
+        <Row style={{ alignItems: "center", gap: 24, mobile: { gap: 16 } }}>
           <Button
             href={`${SITE}/console/north-ledger`}
-            style={{ width: 200, backgroundColor: LIME, color: NIGHT, fontSize: 15, fontWeight: 600, padding: [15, 0], borderRadius: 4 }}
-            hover={{ backgroundColor: LIME_DOWN }}
-            mobile={{ width: "100%" }}
+            style={{ width: 200, backgroundColor: LIME, color: NIGHT, fontSize: 15, fontWeight: 600, padding: [15, 0], borderRadius: 4, mobile: { width: "100%" }, hover: { backgroundColor: LIME_DOWN } }}
           >
             Open the console
           </Button>
@@ -144,7 +142,7 @@ export default function QuarryWelcome() {
 
         <Column style={{ gap: 20, padding: [28, 0, 0], border: { top: `1px solid ${RULE}` } }}>
           <Text style={{ ...mono, fontSize: 12, color: QUIET, letterSpacing: 0.5 }}>WHAT THE FREE TIER HOLDS</Text>
-          <Grid columns={3} stackOnMobile={false} style={{ gap: 24 }} mobile={{ gap: 12 }}>
+          <Grid columns={3} stackOnMobile={false} style={{ gap: 24, mobile: { gap: 12 } }}>
             {figure("10", "GB", "of storage")}
             {figure("1", "bn", "row reads a month")}
             {figure("3", "", "branches to try ideas on")}

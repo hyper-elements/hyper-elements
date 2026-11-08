@@ -28,4 +28,4 @@ Holds: TableRow. Drawn in: email, page.
 - `borderCollapse`: one of "separate", "collapse". Whether cells side by side draw a border each (separate) or share one (collapse).
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.

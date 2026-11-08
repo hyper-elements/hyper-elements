@@ -173,7 +173,7 @@ A [`Layer`](/docs/components/layer) puts its children over each other, in one bo
 </Column>
 ```
 
-A Button can place itself with `alignSelf` (`"start"`, `"center"` or `"end"`), whatever its stack's `alignItems`, and somewhere else on phones with `mobile={{ alignSelf }}`.
+A Button can place itself with `alignSelf` (`"start"`, `"center"` or `"end"`), whatever its stack's `alignItems`, and somewhere else on phones with `style={{ mobile: { alignSelf } }}`.
 
 > **Note:** `justifyContent: "space-between"` isn't possible in a Row in an email. Its children start at the left, and `validate()` warns (`email/unsupported`).
 

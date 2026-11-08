@@ -20,7 +20,7 @@ export default function LaunchEmail() {
       <Section style={{ padding: [0, 16] }}>
         <Column style={{ backgroundColor: "#ffffff", borderRadius: 16, padding: [36, 36, 32, 36], gap: 18 }}>
           <Text style={{ fontSize: 12, fontWeight: 700, letterSpacing: 2, color: "#6d5efc" }}>INTRODUCING ORBIT 2.0</Text>
-          <Heading level={1} style={{ fontSize: 34, lineHeight: 1.12, letterSpacing: -0.5 }} mobile={{ fontSize: 28 }}>
+          <Heading level={1} style={{ fontSize: 34, lineHeight: 1.12, letterSpacing: -0.5, mobile: { fontSize: 28 } }}>
             Ship every surface from one codebase.
           </Heading>
           <Text style={{ fontSize: 16, lineHeight: 1.6, color: "#475569" }}>
@@ -33,8 +33,7 @@ export default function LaunchEmail() {
           />
           <Button
             href="https://example.com/orbit-2"
-            style={{ backgroundColor: "#6d5efc", borderRadius: 10, padding: [14, 26], fontSize: 15, fontWeight: 700 }}
-            hover={{ backgroundColor: "#5a4bf0" }}
+            style={{ backgroundColor: "#6d5efc", borderRadius: 10, padding: [14, 26], fontSize: 15, fontWeight: 700, hover: { backgroundColor: "#5a4bf0" } }}
           >
             Try Orbit 2.0
           </Button>

@@ -50,7 +50,7 @@ describe("a Row hidden somewhere, in a Section", () => {
 const everyHidden = [
   <Email key="email" title="Welcome" lang="en" fonts={[{ family: "Inter", src: "https://fonts.test/inter.woff2", format: "woff2", weight: 400 }]}>
     <Section style={{ backgroundColor: "#eeeeee", border: "1px solid #cccccc" }}>
-      <Text style={{ fontStyle: "italic", textTransform: "uppercase", textDecoration: "underline", backgroundColor: "#ffffff", border: "1px solid #000000", borderRadius: 4, width: 300, maxWidth: 400, padding: 8 }} mobile={{ maxWidth: 200 }}>
+      <Text style={{ fontStyle: "italic", textTransform: "uppercase", textDecoration: "underline", backgroundColor: "#ffffff", border: "1px solid #000000", borderRadius: 4, width: 300, maxWidth: 400, padding: 8, mobile: { maxWidth: 200 } }}>
         Boxed
       </Text>
       <List style={{ indent: 30, gap: 6 }}>

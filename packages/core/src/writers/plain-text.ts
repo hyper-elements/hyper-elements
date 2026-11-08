@@ -7,6 +7,7 @@
  * items as "- " or "1. " (nested ones indented), a table's rows a line each,
  * its cells apart by " | "; a Row that wraps (a Menu) a line of what's in it.
  */
+import { shownAnywhere } from "../conditions";
 import { htmlText } from "../markup";
 import { linkParts, type LinkValue } from "../kinds";
 import type { ResolvedDocument, ResolvedNode } from "../resolve";
@@ -24,7 +25,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
     node.children
       .map((child) => {
         if (typeof child === "string") return upper ? child.toUpperCase() : child;
-        if (child.hidden?.mobile && child.hidden?.desktop) return "";
+        if (!shownAnywhere(child)) return "";
         switch (child.type) {
           case "LineBreak":
             return "\n";
@@ -54,7 +55,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
 
   const blocks = (node: ResolvedNode): string[] =>
     node.children.flatMap((child): string[] => {
-      if (typeof child === "string" || (child.hidden?.mobile && child.hidden?.desktop)) return [];
+      if (typeof child === "string" || !shownAnywhere(child)) return [];
       switch (child.type) {
         case "Heading":
           return [tidy(inline(child, Number(child.props.level) <= 2))];
@@ -94,7 +95,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
       }
     });
 
-  const shown = (node: ResolvedNode) => !(node.hidden?.mobile && node.hidden?.desktop);
+  const shown = (node: ResolvedNode) => shownAnywhere(node);
 
   const list = (node: ResolvedNode, indent: string): string =>
     node.children

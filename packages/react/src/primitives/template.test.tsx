@@ -21,7 +21,7 @@ const welcome = (
         <Text>Left</Text>
       </Column>
       <Column>
-        <Button id="cta" href="https://example.com" hover={{ backgroundColor: "#000" }}>
+        <Button id="cta" href="https://example.com" style={{ hover: { backgroundColor: "#000" } }}>
           Get started
         </Button>
       </Column>
@@ -79,7 +79,10 @@ describe("render()", () => {
     // An id of other characters stays refused.
     expect(primitives.validate(<Email><Text {...compat({ anyId: true })} id="odd id">Words</Text></Email>).diagnostics.map((d) => d.code)).toContain("id/invalid");
     const Custom = primitives.component({ type: "acme.Own", label: "Own", props: {}, render: () => <Text {...compat({ className: "from-custom" })}>Custom</Text> });
-    await expect(render(<Email><Custom /></Email>)).rejects.toThrow("compat isn't a prop of a template");
+    // Inside a custom component's render it's said at the component's place, and the render goes on.
+    const inCustom = await render(<Email><Custom /></Email>);
+    expect(inCustom.html).not.toContain("from-custom");
+    expect(inCustom.diagnostics).toContainEqual(expect.objectContaining({ code: "jsx/compat", severity: "warning", path: "root.children[0](acme.Own)" }));
   });
 
   it("rejects with the template's problems", async () => {
@@ -363,7 +366,7 @@ describe("validate()", () => {
   });
 
   it("draws an image at its width on phones, in place of a share of its column on desktop", async () => {
-    const { html } = await render(<Email><Image src={{ src: "https://example.com/a.png", width: 96, height: 30 }} alt="" style={{ width: "16%", maxWidth: 96 }} mobile={{ width: 96 }} /></Email>);
+    const { html } = await render(<Email><Image src={{ src: "https://example.com/a.png", width: 96, height: 30 }} alt="" style={{ width: "16%", maxWidth: 96, mobile: { width: 96 } }} /></Email>);
     const rule = /@media[^{]*\{([^}]*\{[^}]*\})\}/.exec(html)?.[1];
     expect(rule).toContain("width:96px!important");
     expect(rule).toMatch(/[{;]width:96px!important/);

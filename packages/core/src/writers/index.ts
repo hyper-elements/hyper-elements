@@ -9,12 +9,12 @@ import { renderEmail, type EmailOptions } from "./email";
 import { emailSupport } from "./email/support";
 import { overflow, pagedSupport } from "./shared/paged";
 import { support } from "./shared/support";
-import { renderPage, type PageOptions } from "./page";
+import { pageBreakpoints, renderPage, type PageOptions } from "./page";
 import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
 
 export { renderEmail, EMAIL_PHONE_MARGIN, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, type EmailHtml, type EmailOptions } from "./email";
-export { renderPage, PAGE_PHONE_WIDTH, type PageHtml, type PageOptions } from "./page";
+export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
 export { renderText, type TextOptions } from "./plain-text";
 export { emailSupport } from "./email/support";
 export { support } from "./shared/support";
@@ -87,7 +87,7 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
     diagnostics.push({ code: "output/unavailable", severity: "error", message: output?.later ?? `A ${root} can't be rendered yet`, path: "root" });
     return { resolved: null, target: null, diagnostics };
   }
-  const expanded = expandDocument(checked.document, registry);
+  const expanded = expandDocument(checked.document, registry, output.target);
   diagnostics.push(...expanded.diagnostics);
   if (failed()) return { resolved: null, target: output.target, diagnostics };
   diagnostics.push(...checkTargetExpanded(expanded.document, output.target, registry, expanded.paths));
@@ -98,9 +98,11 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
   if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
-  diagnostics.push(...inTemplate(resolved, root === "Email" ? forEmailClients(found, options.emailClients) : found));
+  found.push(...pageBreakpoints(resolved.root));
+  diagnostics.push(...inTemplate(resolved, found));
   if (root !== "Email" && options.emailClients) diagnostics.push({ code: "email/clients-ignored", severity: "info", message: `emailClients is for an Email; a ${root} isn't checked for email clients`, path: "root" });
-  return { resolved: failed() ? null : resolved, target: output.target, diagnostics };
+  // An Email's problems with email clients, for the clients asked for (expansion's too: a condition's notes).
+  return { resolved: failed() ? null : resolved, target: output.target, diagnostics: root === "Email" ? forEmailClients(diagnostics, options.emailClients) : diagnostics };
 }
 
 /** Diagnostics found on the tree as laid out, at their places in the template (a Grid's children, a custom component's). */

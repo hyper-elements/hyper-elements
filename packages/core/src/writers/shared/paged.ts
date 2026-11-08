@@ -9,6 +9,7 @@
  * isn't measured yet (RFC 0002), so its height is an estimate from its length and size, and only content that looks
  * clearly taller is said, as an estimate.
  */
+import { blockOf, CONDITIONS, shownAnywhere } from "../../conditions";
 import { assetParts, type Asset } from "../../kinds";
 import { documentPages, pageBox } from "../../document";
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
@@ -23,9 +24,9 @@ export function pagedSupport(root: ResolvedNode, output: "pdf" | "image"): Diagn
   const d = new Diagnostics();
   const where = OUTPUT[output];
   const visit = (node: ResolvedNode) => {
-    if (node.hidden?.desktop && node.hidden?.mobile) return;
-    if (node.hover && Object.keys(node.hover).length) {
-      d.warning(`${output}/unsupported`, `A hover isn't possible in ${where}: nothing points at it. The ${node.type} shows its own colors`, `${node.path}.hover`, node.id);
+    if (!shownAnywhere(node)) return;
+    for (const condition of CONDITIONS) {
+      if (condition.paged && blockOf(node, condition)) d.warning(`${output}/unsupported`, condition.paged(node, where), `${node.path}.${condition.name}`, node.id);
     }
     if (node.type === "Video") {
       const shows = output === "pdf" ? "its thumbnail (where its file is given) or its title, linked to it" : "its title";

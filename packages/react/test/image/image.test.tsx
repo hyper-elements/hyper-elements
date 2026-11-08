@@ -149,7 +149,7 @@ describe("renderImage", () => {
   it("says what an image can't show that its HTML can (a hover, a Video, markup), and content that can't fit the Canvas (and validate() says both)", async () => {
     const template = (
       <Canvas width={300} height={120} style={{ fontFamily: "Liberation Sans", gap: 8 }}>
-        <Button href="https://x.test" hover={{ backgroundColor: "#333333" }}>
+        <Button href="https://x.test" style={{ hover: { backgroundColor: "#333333" } }}>
           Go
         </Button>
         <Video src="https://vimeo.com/76979871" title="Our launch" />
