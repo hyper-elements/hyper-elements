@@ -2,7 +2,7 @@
  * Type contract of the primitives (checked by `pnpm typecheck`): their props'
  * types come from the component definitions that validate them.
  */
-import { Button, Column, Email, Heading, Image, Link, Text, Row, Section, Span } from "./index";
+import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Section, Span, Svg } from "./index";
 import type { ParagraphProps, TextProps } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
@@ -81,3 +81,38 @@ export const wrongFormat = <Email fonts={[{ family: "Inter", src: "https://fonts
 // @ts-expect-error a Span is raised or lowered: baseline, super or sub
 export const wrongRaise = <Span style={{ verticalAlign: "top" }}>x</Span>;
 
+
+// Phone and hover styles inside style, each block typed to what the component takes there.
+export const blocks = (
+  <Email>
+    <Heading style={{ fontSize: 32, mobile: { fontSize: 24, textAlign: "center" } }}>Title</Heading>
+    <Button href="https://example.com" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151", color: "#ffffff" }, mobile: { width: "100%" } }}>
+      Go
+    </Button>
+    <Link href="https://example.com" style={{ hover: { textDecoration: "underline" } }}>
+      a link
+    </Link>
+  </Email>
+);
+// @ts-expect-error A style that can't be set for phones.
+export const notOnPhones = <Text style={{ mobile: { backgroundColor: "#000000" } }}>Hi</Text>;
+// @ts-expect-error A Heading has no hover styles: not even an empty block.
+export const noHoverBlock = <Heading style={{ hover: {} }}>Title</Heading>;
+// @ts-expect-error A Heading has no hover styles.
+export const noHoverStyle = <Heading style={{ hover: { fontSize: 16 } }}>Title</Heading>;
+// @ts-expect-error A Button's hover styles are its colors.
+export const notAHoverStyle = <Button href="https://example.com" style={{ hover: { padding: 8 } }}>Go</Button>;
+// @ts-expect-error Nor does a Menu have any.
+export const menuHover = <Menu items={[{ text: "Docs", href: "https://example.com" }]} style={{ hover: {} }} />;
+// @ts-expect-error A shape takes no phone styles.
+export const shapeOnPhones = <Svg width={40} height={20}><Rect width={40} height={20} style={{ mobile: { fill: "red" } }} /></Svg>;
+const shapeStyle = { mobile: { fill: "red" } };
+// @ts-expect-error Not from a variable either.
+export const shapeFromVariable = <Svg width={40} height={20}><Rect width={40} height={20} style={shapeStyle} /></Svg>;
+// The props keep their types until they're removed: what renders (or is left out) today still compiles.
+export const oldProps = (
+  <Email>
+    <Heading hover={{}} mobile={{ fontSize: 20 }}>Title</Heading>
+    <Text mobile={{ backgroundColor: undefined }}>Hi</Text>
+  </Email>
+);
