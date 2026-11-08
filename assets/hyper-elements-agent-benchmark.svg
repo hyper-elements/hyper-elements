@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1102" viewBox="0 0 1800 1102" role="img" aria-labelledby="title description">
 <title id="title">Hyper Elements: faster to a passing email</title>
 <desc id="description">Hyper Elements: 33 seconds, 1,831 output tokens, 16 of 16 first-check passes. MJML: 43 seconds, 2,762 output tokens, 16 of 16 first-check passes. Hand-written HTML: 60 seconds, 4,903 output tokens, 6 of 16 first-check passes. React Email: 86 seconds, 6,215 output tokens, 12 of 16 first-check passes. Time and output tokens are medians. Hyper Elements and MJML tie on first-check passes. Five email briefs and 16 runs per approach in one interleaved batch; all 64 runs eventually passed. Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a 100-second scale and tokens a 7,000-token scale. Each square represents one run's first check.</desc>
-<rect width="1800" height="1102" rx="24" fill="#0a0a0a"/>
+<rect width="1800" height="1102" fill="#0a0a0a"/>
 <g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
   <text x="72" y="104" font-size="72" fill="#ededed" font-weight="600" letter-spacing="-2.8">Faster to a passing email.</text>
   <text x="72" y="154" font-size="28" fill="#a1a1a1" >Four approaches. Same briefs. Same checks.</text>
@@ -29,7 +29,7 @@
   <text x="1360" y="421" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">FIRST-CHECK PASSES</text>
 
   <g id="row-he">
-    <rect x="52" y="446" width="1696" height="138" rx="14" fill="#101a15" stroke="#284a36"/>
+    <rect x="52" y="446" width="1696" height="138" fill="#101a15" stroke="#284a36"/>
     <text x="80" y="508" font-size="32" fill="#ededed" font-weight="600" letter-spacing="-0.6">Hyper Elements</text>
     <text x="80" y="546" font-size="20" fill="#a1a1a1" >Fastest · fewest output tokens</text>
     <text x="500" y="508" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">33s</text>

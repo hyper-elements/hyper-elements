@@ -65,7 +65,7 @@ const rows = groups.map((group, i) => {
   const active = group.kit === "he";
   return `
   <g id="row-${group.kit}">
-    ${active ? `<rect x="52" y="${top}" width="1696" height="138" rx="14" fill="${colors.surface}" stroke="${colors.border}"/>` : ""}
+    ${active ? `<rect x="52" y="${top}" width="1696" height="138" fill="${colors.surface}" stroke="${colors.border}"/>` : ""}
     ${text(80, top + 62, group.label, 32, active ? colors.ink : "#c2c2c2", `font-weight="${active ? 600 : 400}" letter-spacing="-0.6"`)}
     ${active ? text(80, top + 100, "Fastest · fewest output tokens", 20, colors.muted) : ""}
     ${number(500, top + 62, `${Math.round(group.seconds)}s`, active)}
@@ -85,7 +85,7 @@ const description = groups.map((group) =>
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="${height}" viewBox="0 0 1800 ${height}" role="img" aria-labelledby="title description">
 <title id="title">Hyper Elements: faster to a passing email</title>
 <desc id="description">${escape(description)} Time and output tokens are medians. Hyper Elements and MJML tie on first-check passes. Five email briefs and 16 runs per approach in one interleaved batch; all 64 runs eventually passed. Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a ${timeScale}-second scale and tokens a ${format(tokenScale)}-token scale. Each square represents one run's first check.</desc>
-<rect width="1800" height="${height}" rx="24" fill="${colors.bg}"/>
+<rect width="1800" height="${height}" fill="${colors.bg}"/>
 <g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
   ${text(72, 104, "Faster to a passing email.", 72, colors.ink, 'font-weight="600" letter-spacing="-2.8"')}
   ${text(72, 154, "Four approaches. Same briefs. Same checks.", 28, colors.muted)}
