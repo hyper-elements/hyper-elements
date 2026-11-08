@@ -120,6 +120,12 @@ Unit tests are Vitest files next to the code (`name.test.ts(x)`), plus `packages
 - **Hostile inputs**: `src/regression/hostile-input.test.tsx`. Markup in every user-facing value, in every root,
   must add no element or attribute (including inside Outlook's conditional comments), and the builder's design no
   markup where the builder reads HTML.
+- **Compatibility baseline**: `src/regression/cross-format-compatibility.test.tsx`. What existing templates give, recorded
+  in `src/regression/__compat__/`: every gallery and stress template (the screen ones as an Email and a Page) and
+  templates with their own components, as HTML, plain text, class names, diagnostics, outline, Unlayer design, and a
+  Document's PDF or a Canvas's image as drawn; each saved builder design read back; each entry's exports. A change
+  meant to change one rewrites it on purpose (`UPDATE_COMPAT=1 pnpm --filter @hyper-elements/react test cross-format`)
+  and says why.
 - **Render isolation**: `src/regression/render-isolation.test.tsx`. No render leaks into the next, the same input
   gives the same output, and a render reads no random numbers or the date (Next.js Cache Components fail a build on
   one).

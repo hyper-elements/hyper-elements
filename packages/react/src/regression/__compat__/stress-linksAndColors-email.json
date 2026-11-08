@@ -1,0 +1,854 @@
+{
+ "root": "Email",
+ "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><title>Merrow Line: Links and colours</title><!--[if !mso]><!--><style>@font-face{font-family:\"Familjen Grotesk\";src:url(\"https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2\") format(\"woff2\");font-weight:400 700}@font-face{font-family:\"DM Mono\";src:url(\"https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2\") format(\"woff2\");font-weight:400}</style><!--<![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}.eb0stu:hover,.eb0stu:focus-visible{color:#12242e!important;text-decoration:none!important}@media (max-width: 620px){.ej8cul{width:auto!important}.e5vcei{padding-bottom:16px!important}.eleu0z{padding-left:20px!important;padding-right:20px!important}.e4nzyq{padding-top:20px!important;padding-bottom:28px!important}}@media (max-width: 620px){.eippbt{display:none!important}}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#f3f1ea\"><div role=\"article\" aria-roledescription=\"email\" aria-label=\"Merrow Line: Links and colours\" style=\"background-color:#f3f1ea;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#f3f1ea\" style=\"background-color:#f3f1ea\"><tr><td align=\"center\" class=\"e4nzyq\" style=\"padding-top:28px;padding-bottom:36px\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"600\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:600px\"><tr><td class=\"eleu0z\" style=\"padding:0 32px 0 32px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td class=\"e5vcei\" style=\"padding-bottom:18px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:separate\"><tr><td style=\"padding:0 0 10px 0;border-bottom:1px solid #12242e\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td width=\"150\" valign=\"bottom\" style=\"width:150px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><p style=\"margin:0;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:15px;font-weight:700;line-height:18px;mso-line-height-rule:exactly;text-align:left\">Merrow Line</p></td></tr></table></td><td width=\"386\" valign=\"bottom\" class=\"ej8cul\" style=\"width:386px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:18px;mso-line-height-rule:exactly;text-align:right\">Links and colours</p></td></tr></table></td></tr></table></td></tr></table></td></tr><tr><td class=\"e5vcei\" style=\"padding-bottom:18px\"><p style=\"margin:0;color:#0f6a70;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:18px;line-height:26.1px;mso-line-height-rule:exactly;text-align:left\">Sea-green text, a <a href=\"https://merrow.example/a\" style=\"color:#00e;text-decoration:underline\">link with no colour of its own</a>, and a <a class=\"eb0stu\" href=\"https://merrow.example/b\" style=\"color:#c93a25;text-decoration:underline\">red link that turns dark on hover</a>.</p></td></tr><tr><td class=\"e5vcei\" style=\"padding-bottom:18px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td bgcolor=\"#e6e3d8\" style=\"padding:14px 16px;background-color:#e6e3d8\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding-bottom:6px\"><p style=\"margin:0;color:#7d5f14;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">A column’s colour, inherited by its text,<br><span style=\"color:#12242e\">overridden by a span</span>, and <span style=\"background-color:#f5e3a6\">highlighted</span>.</p></td></tr><tr><td><h3 style=\"margin:0;color:#7d5f14;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:20px;font-weight:600;line-height:25px;mso-line-height-rule:exactly;text-align:left\">A heading in the column’s colour</h3></td></tr></table></td></tr></table></td></tr><tr><td class=\"e5vcei\" style=\"padding-bottom:18px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"font-size:0;text-align:left\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:4px 8px\"><p style=\"margin:0;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://merrow.example/timetable\" style=\"color:#c93a25;text-decoration:none\">Timetable</a></p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div class=\"eippbt\" style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:4px 0\"><p style=\"margin:0;color:#55636b;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\">·</p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:4px 8px\"><p style=\"margin:0;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://merrow.example/fares\" style=\"color:#c93a25;text-decoration:none\">Fares</a></p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div class=\"eippbt\" style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:4px 0\"><p style=\"margin:0;color:#55636b;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\">·</p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:4px 8px\"><p style=\"margin:0;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://merrow.example/help\" style=\"color:#c93a25;text-decoration:none\">Help</a></p></td></tr></table></div><!--[if mso]></td></tr></table><![endif]--></td></tr></table></td></tr><tr><td class=\"e5vcei\" style=\"padding-bottom:18px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:5px 15px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding-bottom:10px\"><a href=\"https://merrow.example/1\" style=\"color:#0f6a70;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-decoration:none\">Down a column</a></td></tr><tr><td><a href=\"https://merrow.example/2\" style=\"color:#0f6a70;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-decoration:none\">Its second link</a></td></tr></table></td></tr></table></td></tr><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td width=\"24\" valign=\"top\" style=\"width:24px\"><a href=\"https://instagram.com/merrowline\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"Instagram\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/squared/instagram.png\" alt=\"Instagram\" width=\"24\" border=\"0\" style=\"display:block;width:100%;max-width:24px;height:auto;border:0\"></a></td><td width=\"8\" style=\"width:8px\"></td><td width=\"24\" valign=\"top\" style=\"width:24px\"><a href=\"https://linkedin.com/company/merrowline\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"LinkedIn\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/squared/linkedin.png\" alt=\"LinkedIn\" width=\"24\" border=\"0\" style=\"display:block;width:100%;max-width:24px;height:auto;border:0\"></a></td><td></td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
+ "text": "Merrow Line\n\nLinks and colours\n\nSea-green text, a link with no colour of its own (https://merrow.example/a), and a red link that turns dark on hover (https://merrow.example/b).\n\nA column’s colour, inherited by its text,\noverridden by a span, and highlighted.\n\nA heading in the column’s colour\n\nTimetable (https://merrow.example/timetable) · Fares (https://merrow.example/fares) · Help (https://merrow.example/help)\n\nDown a column (https://merrow.example/1)\n\nIts second link (https://merrow.example/2)\n\n[Instagram] (https://instagram.com/merrowline)\n\n[LinkedIn] (https://linkedin.com/company/merrowline)",
+ "classes": [
+  "e4nzyq",
+  "e5vcei",
+  "eb0stu",
+  "eippbt",
+  "ej8cul",
+  "eleu0z"
+ ],
+ "diagnostics": {
+  "validate": [
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.props.fonts",
+    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+   },
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.children[0].children[1].children[3].hover",
+    "message": "hover on this Link in email: no change in classic Outlook for Windows and some other apps and webmail (where it shows, keyboard focus gets it too)"
+   }
+  ],
+  "render": [
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.props.fonts",
+    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+   },
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.children[0].children[1].children[3].hover",
+    "message": "hover on this Link in email: no change in classic Outlook for Windows and some other apps and webmail (where it shows, keyboard focus gets it too)"
+   }
+  ],
+  "prepare": [
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.props.fonts",
+    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+   },
+   {
+    "code": "email/degraded",
+    "severity": "info",
+    "path": "root.children[0].children[1].children[3].hover",
+    "message": "hover on this Link in email: no change in classic Outlook for Windows and some other apps and webmail (where it shows, keyboard focus gets it too)"
+   }
+  ]
+ },
+ "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Links and colours\"\n    Text 536px \"Sea-green text, a link with no colour of its own (https://merrow.example/a), an…\"\n    Column 536px: background #e6e3d8\n      Text 504px \"A column’s colour, inherited by its text, / overridden by a span, and highlight…\"\n      Heading h3 504px \"A heading in the column’s colour\"\n    Row 536px: 5 side by side\n      Text \"Timetable (https://merrow.example/timetable)\"\n      Text: desktop only \"·\"\n      Text \"Fares (https://merrow.example/fares)\"\n      Text: desktop only \"·\"\n      Text \"Help (https://merrow.example/help)\"\n    Column 536px\n      Link \"Down a column\" → https://merrow.example/1\n      Link \"Its second link\" → https://merrow.example/2\n    Row 536px: 2 side by side\n      Link 24px \"[Instagram]\" → https://instagram.com/merrowline\n      Link 24px \"[LinkedIn]\" → https://linkedin.com/company/merrowline",
+ "design": {
+  "design": {
+   "counters": {
+    "u_row": 5,
+    "u_column": 8,
+    "u_content_paragraph": 4,
+    "u_content_divider": 3,
+    "u_content_heading": 1,
+    "u_content_menu": 2,
+    "u_content_social": 1
+   },
+   "body": {
+    "rows": [
+     {
+      "cells": [
+       182,
+       418
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "15px",
+           "textAlign": "left",
+           "lineHeight": "120%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_1",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 700,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Merrow Line\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 0px 0px 32px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_1",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "right",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_2",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Links and colours\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 32px 0px 0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_2",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "28px 0px 10px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_1",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "noStackMobile": true
+        }
+       },
+       "cells": [
+        182,
+        418
+       ],
+       "alignItems": "flex-end"
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "divider",
+          "values": {
+           "containerPadding": "0px 32px",
+           "width": "100%",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#12242e"
+           },
+           "textAlign": "center",
+           "_meta": {
+            "htmlID": "u_content_divider_1",
+            "htmlClassNames": "u_content_divider"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_3",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_2",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "fontSize": "18px",
+           "textAlign": "left",
+           "lineHeight": "145%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#0f6a70",
+           "_meta": {
+            "htmlID": "u_content_paragraph_3",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Sea-green text, a \"},{\"type\":\"extended-link\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"url\":\"https://merrow.example/a\",\"target\":null,\"rel\":null,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"link with no colour of its own\"}]},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\", and a \"},{\"type\":\"extended-link\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"url\":\"https://merrow.example/b\",\"target\":null,\"rel\":null,\"style\":\"color:#c93a25\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"red link that turns dark on hover\"}]},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\".\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_4",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_3",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       32,
+       536,
+       32
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "divider",
+          "values": {
+           "containerPadding": "0px",
+           "width": "100%",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "transparent"
+           },
+           "textAlign": "center",
+           "_meta": {
+            "htmlID": "u_content_divider_2",
+            "htmlClassNames": "u_content_divider"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_5",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "16px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#7d5f14",
+           "_meta": {
+            "htmlID": "u_content_paragraph_4",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"A column’s colour, inherited by its text,\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color:#12242e\",\"text\":\"overridden by a span\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\", and \"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"background-color:#f5e3a6\",\"text\":\"highlighted\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\".\"}]}]}}"
+          }
+         },
+         {
+          "type": "heading",
+          "values": {
+           "containerPadding": "6px 0px 0px",
+           "headingType": "h3",
+           "fontSize": "20px",
+           "textAlign": "left",
+           "lineHeight": "125%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#7d5f14",
+           "fontWeight": 600,
+           "text": "A heading in the column’s colour",
+           "_meta": {
+            "htmlID": "u_content_heading_1",
+            "htmlClassNames": "u_content_heading"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "letterSpacing": "0px"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "#e6e3d8",
+         "padding": "14px 16px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_6",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "divider",
+          "values": {
+           "containerPadding": "0px",
+           "width": "100%",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "transparent"
+           },
+           "textAlign": "center",
+           "_meta": {
+            "htmlID": "u_content_divider_3",
+            "htmlClassNames": "u_content_divider"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_7",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "18px 0px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_4",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "noStackMobile": true
+        }
+       },
+       "cells": [
+        32,
+        536,
+        32
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "menu",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "menu": {
+            "items": [
+             {
+              "key": "1",
+              "text": "Timetable",
+              "link": {
+               "name": "web",
+               "values": {
+                "href": "https://merrow.example/timetable",
+                "target": "_self"
+               }
+              }
+             },
+             {
+              "key": "2",
+              "text": "Fares",
+              "link": {
+               "name": "web",
+               "values": {
+                "href": "https://merrow.example/fares",
+                "target": "_self"
+               }
+              }
+             },
+             {
+              "key": "3",
+              "text": "Help",
+              "link": {
+               "name": "web",
+               "values": {
+                "href": "https://merrow.example/help",
+                "target": "_self"
+               }
+              }
+             }
+            ]
+           },
+           "fontSize": "14px",
+           "textColor": "#55636b",
+           "linkColor": "#c93a25",
+           "align": "left",
+           "layout": "horizontal",
+           "separator": "·",
+           "padding": "4px 8px",
+           "_meta": {
+            "htmlID": "u_content_menu_1",
+            "htmlClassNames": "u_content_menu"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px"
+          }
+         },
+         {
+          "type": "menu",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "menu": {
+            "items": [
+             {
+              "key": "1",
+              "text": "Down a column",
+              "link": {
+               "name": "web",
+               "values": {
+                "href": "https://merrow.example/1",
+                "target": "_self"
+               }
+              }
+             },
+             {
+              "key": "2",
+              "text": "Its second link",
+              "link": {
+               "name": "web",
+               "values": {
+                "href": "https://merrow.example/2",
+                "target": "_self"
+               }
+              }
+             }
+            ]
+           },
+           "fontSize": "14px",
+           "textColor": "#444444",
+           "linkColor": "#0f6a70",
+           "align": "left",
+           "layout": "vertical",
+           "separator": "",
+           "padding": "5px 15px",
+           "_meta": {
+            "htmlID": "u_content_menu_2",
+            "htmlClassNames": "u_content_menu"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px"
+          }
+         },
+         {
+          "type": "social",
+          "values": {
+           "containerPadding": "18px 32px 36px",
+           "icons": {
+            "iconType": "squared",
+            "icons": [
+             {
+              "name": "Instagram",
+              "url": "https://instagram.com/merrowline"
+             },
+             {
+              "name": "LinkedIn",
+              "url": "https://linkedin.com/company/merrowline"
+             }
+            ]
+           },
+           "align": "left",
+           "iconSize": 24,
+           "spacing": 8,
+           "_meta": {
+            "htmlID": "u_content_social_1",
+            "htmlClassNames": "u_content_social"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_8",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_5",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     }
+    ],
+    "values": {
+     "_styleGuide": null,
+     "borderRadius": "10px",
+     "contentAlign": "center",
+     "contentVerticalAlign": "middle",
+     "contentWidth": "600px",
+     "fontFamily": {
+      "label": "Familjen Grotesk",
+      "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+     },
+     "textColor": "#12242e",
+     "language": {},
+     "backgroundColor": "#f3f1ea",
+     "documentSize": "A4",
+     "documentOrientation": "portrait",
+     "documentMargin": "96px",
+     "preheaderText": "",
+     "linkStyle": {
+      "body": true,
+      "linkColor": "#0000ee",
+      "linkHoverColor": "#0000ee",
+      "linkUnderline": true,
+      "linkHoverUnderline": true
+     },
+     "backgroundImage": {
+      "url": "",
+      "fullWidth": true,
+      "repeat": "no-repeat",
+      "size": "custom",
+      "position": "center"
+     },
+     "accessibilityTitle": "Merrow Line: Links and colours",
+     "_meta": {
+      "htmlID": "u_body",
+      "htmlClassNames": "u_body"
+     },
+     "fonts": [
+      {
+       "family": "Familjen Grotesk",
+       "src": "https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2",
+       "format": "woff2",
+       "weight": [
+        400,
+        700
+       ]
+      },
+      {
+       "family": "DM Mono",
+       "src": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2",
+       "format": "woff2",
+       "weight": 400
+      }
+     ]
+    }
+   },
+   "schemaVersion": 27
+  },
+  "report": [
+   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
+   "root.children[0].children[1]: the builder's text holds no a link's hover: left out"
+  ]
+ }
+}
