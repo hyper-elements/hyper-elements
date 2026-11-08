@@ -18,7 +18,12 @@ export const textStyle = {
   fontFamily: { kind: fontFamily(), label: "Font", inherited: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
   // Word rounds sizes to half points (13px is 10pt): a fraction of a px.
   fontSize: { kind: length(["px"], { min: 1 }), label: "Font size", inherited: true, mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
-  fontWeight: { kind: fontWeight(), label: "Font weight", inherited: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
+  fontWeight: {
+    kind: fontWeight(),
+    label: "Font weight",
+    inherited: true,
+    support: { email: { level: "outlook", values: [100, 200, 300, 500], shows: "normal weight: Word draws only normal and bold (600 and over)", source: "caniemail", feature: "css-font-weight" }, web: css },
+  },
   fontStyle: { kind: enumOf(["normal", "italic"]), label: "Font style", inherited: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
   // Written in px with mso-line-height-rule: exactly, which Word keeps (it drops unitless ones).
   lineHeight: { kind: lineHeight(), label: "Line height", inherited: true, mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
@@ -30,8 +35,21 @@ export const textStyle = {
     support: { email: { level: "outlook", shows: "normal spacing: Word keeps letter spacing but doesn't draw it", source: "outlook-captures" }, web: css },
   },
   textAlign: { kind: enumOf(["left", "center", "right", "justify"]), label: "Alignment", inherited: true, mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
-  textTransform: { kind: enumOf(["none", "uppercase", "lowercase", "capitalize"]), label: "Letter case", inherited: true, support: { email: { level: "full", source: "assumed" }, web: css } },
-  textDecoration: { kind: enumOf(["none", "underline", "line-through"]), label: "Decoration", support: { email: { level: "full", source: "caniemail" }, web: css } },
+  textTransform: {
+    kind: enumOf(["none", "uppercase", "lowercase", "capitalize"]),
+    label: "Letter case",
+    inherited: true,
+    support: { email: { level: "outlook", values: ["lowercase"], shows: "the text as written: Word doesn't lowercase it", source: "caniemail", feature: "css-text-transform" }, web: css },
+  },
+  textDecoration: {
+    kind: enumOf(["none", "underline", "line-through"]),
+    label: "Decoration",
+    support: {
+      // Removed, so "none" leaves a link the client's own underline: said only where a line is asked for.
+      email: { level: "partial", values: ["underline", "line-through"], shows: "no line: the client removes it", source: "caniemail", feature: "css-text-decoration", clients: ["gmail-app-other", "protonmail", "orange", "sfr"] },
+      web: css,
+    },
+  },
 } satisfies Record<string, StyleSpec>;
 
 /** Text styles for a container, passed down to its text: all but decoration, which is a text element's own (CSS doesn't pass it down). */
@@ -47,7 +65,17 @@ export const boxStyle = {
   padding: { kind: insets(), label: "Padding", mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
   backgroundColor: { kind: color(), label: "Background color", support: { email: writer, web: css }},
   border: { kind: border(), label: "Border", mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
-  borderRadius: { kind: radius(), label: "Corner radius", support: { email: { level: "outlook", shows: "square corners", source: "caniemail" }, web: css } },
+  borderRadius: {
+    kind: radius(),
+    label: "Corner radius",
+    support: {
+      email: [
+        { level: "outlook", shows: "square corners", source: "caniemail", feature: "css-border-radius" },
+        { level: "partial", shows: "square corners", source: "caniemail", feature: "css-border-radius", clients: ["gmx", "web-de", "orange"] },
+      ],
+      web: css,
+    },
+  },
   overflow: {
     kind: enumOf(["visible", "hidden"]),
     label: "Overflow",

@@ -14,7 +14,7 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
    },
    {
     "code": "email/outlook-degraded",
@@ -37,8 +37,20 @@
    {
     "code": "email/outlook-degraded",
     "severity": "info",
+    "path": "root.children[0].children[2].children[0].style.fontWeight",
+    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
+   },
+   {
+    "code": "email/outlook-degraded",
+    "severity": "info",
     "path": "root.children[0].children[2].children[0].style.letterSpacing",
     "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ],
   "render": [
@@ -46,7 +58,7 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
    },
    {
     "code": "email/outlook-degraded",
@@ -69,8 +81,20 @@
    {
     "code": "email/outlook-degraded",
     "severity": "info",
+    "path": "root.children[0].children[2].children[0].style.fontWeight",
+    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
+   },
+   {
+    "code": "email/outlook-degraded",
+    "severity": "info",
     "path": "root.children[0].children[2].children[0].style.letterSpacing",
     "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ],
   "prepare": [
@@ -78,7 +102,7 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
    },
    {
     "code": "email/outlook-degraded",
@@ -101,8 +125,20 @@
    {
     "code": "email/outlook-degraded",
     "severity": "info",
+    "path": "root.children[0].children[2].children[0].style.fontWeight",
+    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
+   },
+   {
+    "code": "email/outlook-degraded",
+    "severity": "info",
     "path": "root.children[0].children[2].children[0].style.letterSpacing",
     "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ]
  },

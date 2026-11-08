@@ -6,7 +6,9 @@
  * image as drawn (the data handed to the engine: every text run, box and page); and each saved builder design read
  * back (the template's code and report, and its HTML); and each entry's exports.
  *
- * Recorded at the commit that completes the conditions plan (PR #103), under `__compat__/`. A change that's meant to
+ * Recorded at the commit that completes the conditions plan (PR #103), and recorded again on main once the email
+ * client checks (PR #114) and the narrow Button's label (PR #113) had changed email output, under `__compat__/`. A
+ * change that's meant to
  * change one of these rewrites it on purpose: UPDATE_COMPAT=1 pnpm --filter @hyper-elements/react test cross-format,
  * and the pull request says what changed and why. The controls at the end check this suite fails where it should.
  */

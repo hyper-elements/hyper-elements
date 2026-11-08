@@ -23,6 +23,55 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   an email Image's or TableCell's phone `border`, an email phone `lineHeight: "normal"`).
 - A warning inside a `component()`'s render is said at the component's place, instead of failing the render.
 
+### Email clients in diagnostics
+
+- New: a diagnostic about an Email's problems with particular email clients names them in `clients`, says what to
+  change in `fix`, and, where it's known from caniemail.com's tables, links to its page there in `see`. All three are
+  optional.
+- New: 26 email clients. Four were measured, from captures of the real clients showing 0.3.0 emails (`"outlook"`,
+  classic Outlook for Windows; `"outlook-com"`; `"gmail"`; `"apple-mail"`); what's known of the rest is from
+  caniemail's tables (`"outlook-mac"`, `"outlook-app"`, `"gmail-app"`, `"gmail-app-other"`, `"yahoo"`, `"aol"`,
+  `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`,
+  `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"`, `"rainloop"`). A problem is
+  reported at its own severity for either; only one Elements assumes, unchecked, is a note.
+- New: `validate(element, { emailClients })`, `render(element, { emailClients })` and
+  `prepare(element, { emailClients })` report problems for the clients named. The default is the clients most email is
+  read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
+  `email/layer`). For a root that isn't an Email the option is ignored, with an `email/clients-ignored` note. An
+  unknown client throws a `TypeError`.
+- New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
+  (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
+  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
+  default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
+- New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
+  apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
+  on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
+- New: `email/image-format`, a warning on an Image or a Video's thumbnail whose file is WebP (classic Outlook), AVIF
+  or SVG, by its data: type, the format an image CDN is asked for (`?fm=webp`, `f_avif`, which wins over the file's
+  extension) or its extension.
+- New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
+  (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
+  `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
+  with spaces).
+- New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in
+  classic Outlook; `borderRadius` in GMX, WEB.DE and Orange; `textDecoration` lines in the Gmail app with another
+  account and some others; a root's `lang` and `dir` where webmail removes them.
+- Changed: the note on hover in an email names the clients that don't show it (`clients`), and its message no longer
+  does. `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` names every client that loads no
+  web font, and its advice moves from the message to `fix`; the web fonts note (`email/degraded` on `fonts`) names them
+  too; `email/size` and `email/style-size` name Gmail and its apps, with a `fix`.
+- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
+  email clients are longer.
+
+### Fixes
+
+- **Email:** a `Button` narrower than its padding no longer draws its label a letter a line in Gmail and browsers. The
+  email's `word-break: break-word`, there so a long link in text breaks rather than widen the email on phones, let the
+  button size itself to one letter; its label now keeps its words whole (`word-break: normal` on the button's link) and
+  the button grows to its longest word, as classic Outlook and Apple Mail already drew it. Found in captures of 0.3.0
+  emails in Gmail on the web. Each button's link gains `word-break:normal` in its `style`; nothing else in the HTML
+  changes.
+
 ## 0.3.0
 
 ### ⚠️ Breaking: every template written with Unlayer Elements has to migrate

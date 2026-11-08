@@ -21,7 +21,13 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ],
   "render": [
@@ -29,7 +35,13 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ],
   "prepare": [
@@ -37,7 +49,13 @@
     "code": "email/degraded",
     "severity": "info",
     "path": "root.props.fonts",
-    "message": "fonts on this Email in email: Apple Mail and iOS Mail load web fonts; Gmail and classic Outlook don't, and show the next font in each stack"
+    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
+   },
+   {
+    "code": "email/phone-styles",
+    "severity": "info",
+    "path": "root",
+    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
    }
   ]
  },
