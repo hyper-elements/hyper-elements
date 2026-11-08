@@ -10,7 +10,8 @@ import type React from "react";
 import type { Diagnostic, EmailClient, RenderOptions } from "@hyper-elements/react";
 import { checkCore } from "./core";
 import { DEFAULT_PREVIEW_CLIENTS, variantsOf, type PreviewVariant, type Skipped } from "./clients";
-import { previewFile, type Runtime } from "./shell";
+import { RUNTIME } from "./runtime.generated";
+import { previewFile } from "./shell";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE } from "./core";
 export { DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
@@ -37,9 +38,6 @@ export interface EmailClientsResult {
   /** render()'s diagnostics. (What a preview finds is in the file, once it's opened.) */
   diagnostics: Diagnostic[];
 }
-
-/** The runtime each file draws with (none until it's built into the package: the file then shows only its note). */
-const RUNTIME: Runtime | null = null;
 
 /**
  * An <Email> as each email client draws it: one HTML preview file per client (and dark variant). Rejects with an

@@ -41,11 +41,13 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "build": "tsup",
+    "build": "node scripts/build-runtime.mjs --check && tsup",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs"
+    "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs",
+    "build:runtime": "node scripts/build-runtime.mjs",
+    "test:browser": "vitest run --config vitest.browser.config.ts"
   },
   "peerDependencies": {
     "@hyper-elements/react": "^0.3.1",
@@ -58,6 +60,8 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "0.25.11",
+    "playwright": "1.60.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "tsup": "^8.0.1",
