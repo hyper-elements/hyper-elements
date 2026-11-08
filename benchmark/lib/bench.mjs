@@ -165,11 +165,25 @@ async function session(dir, prompt, transcript) {
   };
 }
 
+/**
+ * The email client problems left in a finished email, from the kit's render tool (`diagnostics` in its kit.json, run
+ * with --json): warnings and notes that name email clients, and how many of each code.
+ */
+async function emailClientsOf(dir, tool) {
+  const r = await sh("node", [tool, "--json"], { cwd: dir, timeout: 120_000 });
+  let diagnostics;
+  try { ({ diagnostics } = JSON.parse(r.out.trim().split("\n").pop())); } catch { return { error: (r.err || r.out).slice(0, 300) }; }
+  const about = diagnostics.filter((d) => d.clients?.length);
+  const codes = {};
+  for (const d of about) codes[d.code] = (codes[d.code] ?? 0) + 1;
+  return { warnings: about.filter((d) => d.severity === "warning").length, notes: about.filter((d) => d.severity === "info").length, codes };
+}
+
 const SUMMED = ["wallMs", "durationMs", "apiMs", "turns", "costUsd", "inputTokens", "cacheWriteTokens", "cacheReadTokens", "outputTokens", "toolCalls", "checkRuns", "renderRuns", "renderErrors", "imageReads"];
 
 async function one(kit, brief, rep) {
   const dir = await makeRun(suiteName, kit, brief, rep, mkdtempSync(join(tmpdir(), "run-")), { isolated: true });
-  const { sources } = await kitOf(suiteName, kit);
+  const { sources, diagnostics } = await kitOf(suiteName, kit);
   const build = await session(dir, suite.prompt, "transcript.jsonl");
   const built = await sourcesOf(dir, sources);
   const source = Object.values(built).join("\n");
@@ -195,6 +209,7 @@ async function one(kit, brief, rep) {
       build, change,
     };
   }
+  if (diagnostics) row.emailClients = await emailClientsOf(dir, diagnostics);
   Object.assign(row, { sourceTokens: enc.encode(source).length, sourceChars: source.length, sourceFiles: Object.keys(built).length, copies, ...provenance });
   row.valid = !row.outside.some((o) => o.got && !o.own);
   await appendFile(resultsFile, JSON.stringify(row) + "\n");

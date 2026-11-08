@@ -87,5 +87,5 @@ export type {
 } from "./components";
 export { component, prop, type ComponentSpec, type CustomComponent, type CustomProps } from "./custom";
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type ValidateOptions, type ValidationResult } from "./render";
-export { DEFAULT_EMAIL_CLIENTS, ElementsError, EMAIL_CLIENTS, formatDiagnostics } from "@unlayer-internal/elements-core";
-export type { Diagnostic, EmailClient, EmailClientInfo, EmailClientMeasurement, Severity } from "@unlayer-internal/elements-core";
+export { BLOCK_MAP_VERSION, DEFAULT_EMAIL_CLIENTS, ElementsError, EMAIL_CLIENTS, formatDiagnostics } from "@unlayer-internal/elements-core";
+export type { BlockMap, BlockMapEntry, Diagnostic, EmailClient, EmailClientInfo, EmailClientMeasurement, Severity } from "@unlayer-internal/elements-core";
