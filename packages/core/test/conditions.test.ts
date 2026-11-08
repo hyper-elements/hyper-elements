@@ -1,4 +1,4 @@
-import { COMPONENTS, CONDITIONS, HOVER, MOBILE, type Target } from "../src";
+import { checkDocument, COMPONENTS, CONDITIONS, HOVER, MOBILE, type Target } from "../src";
 import { pagedSupport, prepareTemplate } from "../src/writers";
 
 const OUTPUT_OF: Record<string, Target> = { Email: "email", Page: "web", Document: "web", Canvas: "web" };
@@ -104,5 +104,52 @@ describe("support for conditions", () => {
     const text = { type: "Text", mobile: { lineHeight: "normal", letterSpacing: 2 }, children: ["a"] };
     const { diagnostics } = prepareTemplate({ root: { type: "Email", children: [text] } });
     expect(diagnostics.filter((d) => d.path.startsWith("root.children[0].mobile"))).toEqual([expect.objectContaining({ code: "email/unsupported", path: "root.children[0].mobile.lineHeight" })]);
+  });
+});
+
+describe("keys that name a condition another way", () => {
+  const read = (node: Record<string, unknown>, root = "Page") => checkDocument({ root: { type: root, children: [node] } }).diagnostics;
+  const message = (node: Record<string, unknown>, code: string, root = "Page") => read(node, root).find((d) => d.code === code)?.message ?? "";
+
+  it("point hover written as another library writes it to the hover block", () => {
+    for (const key of ["_hover", ":hover", "&:hover", "hoverStyle", "@hover"]) {
+      expect(message(button({ style: { [key]: { color: "#ffffff" } } }), "style/unknown"), key).toContain("style={{ hover: { … } }} (it takes color, backgroundColor)");
+    }
+  });
+
+  it("say a component without hover styles takes none", () => {
+    expect(message({ type: "Heading", style: { _hover: { color: "#ffffff" } }, children: ["T"] }, "style/unknown")).toContain("a Heading takes no hover styles");
+  });
+
+  it("point phone styles written another way to the mobile block", () => {
+    for (const key of ["_mobile", "phone", "$mobile", "@media (max-width: 480px)"]) {
+      expect(message({ type: "Text", style: { [key]: { fontSize: 12 } }, children: ["a"] }, "style/unknown"), key).toContain("style={{ mobile: { … } }}");
+    }
+  });
+
+  it("say there's one breakpoint where another library's breakpoint names are tried", () => {
+    for (const key of ["md", "sm", "$sm", "lg", "base", "tablet", "desktop"]) {
+      expect(message({ type: "Text", style: { [key]: { fontSize: 12 } }, children: ["a"] }, "style/unknown"), key).toContain("Elements has one breakpoint, phones");
+    }
+  });
+
+  it("send focus to hover, and say there are no active or dark styles", () => {
+    expect(message(button({ style: { _focus: { color: "#ffffff" } } }), "style/unknown")).toContain("keyboard focus gets its hover styles");
+    expect(message(button({ style: { _active: { color: "#ffffff" } } }), "style/unknown")).toContain("there are no active styles");
+    expect(message(button({ style: { _dark: { color: "#ffffff" } } }), "style/unknown")).toContain("there are no dark styles");
+  });
+
+  it("catch the same names given as props, the mobile and hover props among them", () => {
+    const props = (extra: Record<string, unknown>) => button({ props: { href: "https://example.com", ...extra } });
+    expect(message(props({ mobile: { width: "100%" } }), "prop/unknown")).toBe('A Button has no prop "mobile": phone styles go in its style\'s mobile block, style={{ mobile: { … } }}');
+    expect(message(props({ hover: { color: "#ffffff" } }), "prop/unknown")).toContain("style={{ hover: { … } }}");
+    expect(message(props({ _hover: { color: "#ffffff" } }), "prop/unknown")).toContain("style={{ hover: { … } }}");
+    expect(message(props({ hoverStyle: { color: "#ffffff" } }), "prop/unknown")).toContain("style={{ hover: { … } }}");
+    expect(message(props({ md: { width: 200 } }), "prop/unknown")).toContain("Elements has one breakpoint, phones");
+  });
+
+  it("are still errors: a key that isn't a style or a prop never renders", () => {
+    expect(read(button({ style: { _hover: { color: "#ffffff" } } })).some((d) => d.severity === "error")).toBe(true);
+    expect(read(button({ props: { href: "https://example.com", hoverStyle: {} } })).some((d) => d.severity === "error")).toBe(true);
   });
 });
