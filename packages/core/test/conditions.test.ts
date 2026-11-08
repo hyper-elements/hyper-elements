@@ -1,6 +1,5 @@
 import { COMPONENTS, CONDITIONS, HOVER, MOBILE, type Target } from "../src";
 import { pagedSupport, prepareTemplate } from "../src/writers";
-import { CONDITION_STYLES } from "../../migrate/src/style-blocks/allowed";
 
 const OUTPUT_OF: Record<string, Target> = { Email: "email", Page: "web", Document: "web", Canvas: "web" };
 
@@ -105,14 +104,5 @@ describe("support for conditions", () => {
     const text = { type: "Text", mobile: { lineHeight: "normal", letterSpacing: 2 }, children: ["a"] };
     const { diagnostics } = prepareTemplate({ root: { type: "Email", children: [text] } });
     expect(diagnostics.filter((d) => d.path.startsWith("root.children[0].mobile"))).toEqual([expect.objectContaining({ code: "email/unsupported", path: "root.children[0].mobile.lineHeight" })]);
-  });
-});
-
-describe("the style-blocks codemod's table", () => {
-  it("is each component's phone and hover styles, as the definitions say", () => {
-    const fromDefinitions = Object.fromEntries(
-      Object.values(COMPONENTS).map((d) => [d.type === "DocumentPage" ? "Document.Page" : d.type, { mobile: Object.entries(d.style).filter(([, s]) => (s as { mobile?: boolean }).mobile).map(([k]) => k), hover: [...(d.hover ?? [])] }])
-    );
-    expect(CONDITION_STYLES).toEqual(fromDefinitions);
   });
 });

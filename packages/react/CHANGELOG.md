@@ -4,26 +4,20 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
-### ⚠️ Breaking: phone and hover styles go in `style`
+### Phone and hover styles go in `style`
 
-The `mobile={…}` and `hover={…}` props are gone. A component's phone and hover styles are blocks of its `style`:
+A component's phone and hover styles are blocks of its `style`, typed to what the component takes there. They replace
+0.3.0's separate `mobile` and `hover` props.
 
 ```tsx
 <Heading style={{ fontSize: 32, mobile: { fontSize: 24 } }}>Title</Heading>
 <Button href="…" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Go</Button>
 ```
 
-**To upgrade:** run `npx @hyper-elements/migrate style-blocks src/emails`. It lists what it would change; `--write`
-rewrites the templates (only those git can restore). It moves what it can be sure of and lists the rest, such as a
-`mobile` spread from an imported object, to move by hand. A prop left behind is a `prop/unknown` error that says where
-it goes.
-
 ### What's new
 
-- Each block is typed to the styles the component takes there: `style.hover` only on a Button's or a Link's colors and
-  underline, `style.mobile` only on its phone styles.
 - `<Page breakpoints={{ mobile: 600 }}>` sets where a Page's phone styles start (480px where it isn't set).
-- Hover styles apply on keyboard focus too (`:focus-visible`). Each hover rule's class name changes.
+- Hover styles apply on keyboard focus too. Each hover rule's class name changes.
 - More is said about what an output doesn't show: hover in an email (a note: classic Outlook and some apps don't show
   it), and phone styles that were silently ignored (a Page root's phone text styles, a stacking Grid's phone `rowGap`,
   an email Image's or TableCell's phone `border`, an email phone `lineHeight: "normal"`).

@@ -52,8 +52,7 @@ Email / Page / Document / Canvas   (the root: which output render() writes)
 ```
 
 A root, a `Section` and a `Column` stack what they hold. Styles go in `style` (typed; a number is px), phone styles
-in its `mobile` block and hover styles in its `hover` block: `style={{ padding: 24, mobile: { padding: 16 } }}`. There
-are no `mobile={…}` or `hover={…}` props (`npx @hyper-elements/migrate style-blocks` rewrites old templates). The
+in its `mobile` block and hover styles in its `hover` block: `style={{ padding: 24, mobile: { padding: 16 } }}`. The
 conditions are one list in `packages/core/src/conditions.ts`, each with its support per output. A Page's phone width is
 its `breakpoints={{ mobile }}` (480px where it isn't set); an Email's is its width + 20px. There are no margins: space
 between blocks is the parent's `gap`. Every

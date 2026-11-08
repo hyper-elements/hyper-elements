@@ -1,7 +1,8 @@
 /**
- * Phone and hover styles written inside `style` (`style={{ mobile: { … }, hover: { … } }}`) are the same as the
- * `mobile={…}` and `hover={…}` props: every gallery and stress template, its blocks moved out of `style` into the
- * props, renders the same HTML and plain text, and gives the same diagnostics apart from where they point.
+ * Phone and hover styles written inside `style` (`style={{ mobile: { … }, hover: { … } }}`) are read into the tree's own
+ * `mobile` and `hover` fields: every gallery and stress template, its blocks moved out of `style` into those fields of
+ * the tree given to core, renders the same HTML and plain text, and gives the same diagnostics apart from where they
+ * point.
  */
 import { checkDocument, renderTemplate, type Json } from "@unlayer-internal/elements-core";
 import { describe, expect, it } from "vitest";
@@ -12,7 +13,7 @@ import { Button, Column, Document, Email, Heading, Page, Text, component, render
 
 const CONDITIONS = ["mobile", "hover"] as const;
 
-/** The node with the condition blocks of its style moved into props, and its children's too. */
+/** The node with the condition blocks of its style moved into its own fields, and its children's too. */
 function intoProps(node: JsonNode | string): JsonNode | string {
   if (typeof node === "string") return node;
   const { children, ...rest } = node;
@@ -53,7 +54,7 @@ describe("condition blocks inside style", () => {
   });
 
   for (const { name, template } of withBlocks) {
-    it(`render ${name} the same as the props`, () => {
+    it(`render ${name} the same as the tree's own fields`, () => {
       const { nodes, components } = collectNodes(template);
       const root = nodes.find((node): node is JsonNode => typeof node !== "string")!;
       const inStyle = renderTemplate({ root }, { components });
@@ -123,8 +124,8 @@ describe("reading condition blocks inside style", () => {
   });
 });
 
-describe("the mobile={…} and hover={…} props", () => {
-  it("are gone: each is an unknown prop whose message says where its styles go", () => {
+describe("mobile and hover as props", () => {
+  it("aren't props: each is an unknown prop whose message says where its styles go", () => {
     const { valid, diagnostics } = validate(
       <Email>
         <Button href="https://example.com" {...({ mobile: { width: "100%" }, hover: { backgroundColor: "#000000" } } as object)}>
@@ -136,10 +137,9 @@ describe("the mobile={…} and hover={…} props", () => {
     const unknown = diagnostics.filter((d) => d.code === "prop/unknown");
     expect(unknown.map((d) => d.path)).toEqual(["root.children[0].props.mobile", "root.children[0].props.hover"]);
     expect(unknown[0]!.message).toContain("style={{ mobile: { … } }}");
-    expect(unknown[0]!.message).toContain("npx @hyper-elements/migrate style-blocks");
   });
 
-  it("are gone inside a template's own component too", () => {
+  it("aren't props inside a template's own component either", () => {
     const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Text {...({ mobile: { fontSize: 12 } } as object)}>Card</Text> });
     const { valid, diagnostics } = validate(
       <Page>
