@@ -30,8 +30,26 @@ interface Diagnostic {
   message: string;                           // what's wrong, and what to do instead
   path: string;                              // where: "root.children[1].style.padding"
   nodeId?: string;                           // the node's id, where it has one
+  clients?: EmailClient[];                   // the email clients it's about; absent: every email
+  fix?: string;                              // what to change
+  see?: string;                              // how to see it
 }
 ```
+
+`formatDiagnostics(diagnostics)` prints each on a line, with its clients, fix and how to see it where it has them.
+
+## Email clients
+
+An Email's problems with particular email clients name them in `clients`: `"outlook"` (classic Outlook for Windows), `"outlook-com"` (Outlook.com and the new Outlook), `"gmail"` (Gmail on the web), `"apple-mail"`, and the Gmail apps, `"gmail-app"` and `"gmail-app-other"` (with an account that isn't Google's). By default `validate()` and `render()` report problems for the first four, which have been measured: captures of the real clients showing Elements emails. The Gmail apps haven't, so they're reported only when you name them, and only as notes.
+
+```tsx
+validate(<Welcome />, { emailClients: ["gmail", "outlook"] });   // only these clients' problems
+render(<Welcome />, { emailClients: [] });                         // no email client problems; the email's own stay
+```
+
+A problem about clients you didn't ask for is left out, and one about several has its `clients` narrowed to those you asked for. A problem about no client in particular (`email/width`, `email/layer`) is always reported. For a `Page`, `Document` or `Canvas` the option is ignored, with an `email/clients-ignored` note.
+
+`EMAIL_CLIENTS` says what's known of each: its name, the widths it shows an email at, and how closely it was measured (`measured`: the share of words a model of the client draws within 4px of the client, on emails it wasn't tuned on; `null` where it hasn't been captured).
 
 The path walks the template from the root: `root.children[2].style.justifyContent` is the third child's `justifyContent` style.
 
@@ -103,14 +121,16 @@ try {
 | Code | Severity | What triggers it |
 |------|----------|------------------|
 | `email/unsupported` | warning | A style or prop email can't show. The message says what it shows instead: `justifyContent: "space-between"` starts children at the left |
-| `email/outlook-degraded` | info | Shown as asked, except in classic Outlook: square corners, normal letter spacing |
+| `email/outlook-degraded` | info | Shown as asked, except in classic Outlook: square corners, normal letter spacing (`clients: ["outlook"]`) |
 | `email/degraded` | info | Not quite as asked anywhere the email is read, such as web fonts in Gmail |
 | `email/image-width` | warning | An Image with no width: Outlook shows it at its file's size. Give `src` the file's `width` and `height` |
 | `email/width` | warning | A child of a Row takes its own size and its size isn't known, so Outlook can't lay the Row out |
-| `email/font-fallback` | warning | A font stack ends on a web font, so a client that can't load it picks its own |
+| `email/font-fallback` | warning | A font stack ends on a web font, so a client that can't load it picks its own (Gmail, classic Outlook) |
+| `email/html-css` | info | An Html block's markup may have CSS an email client removes: position, CSS variables, gradients, newer color syntax and negative margins in Outlook.com; `!IMPORTANT` in capitals, rgb() with spaces, negative margins, variables and newer colors in Gmail |
 | `email/video-thumbnail` | warning | A Vimeo Video with no `thumbnail`, which can't be found without the network |
-| `email/size` | warning | The HTML is large enough for Gmail to clip it (`render()` only) |
-| `email/style-size` | warning | The stylesheet is more than Gmail reads (`render()` only) |
+| `email/size` | warning | The HTML is large enough for Gmail to clip it (`render()` only; a note for the Gmail apps, when named) |
+| `email/style-size` | warning | The stylesheet is more than Gmail reads (`render()` only; a note for the Gmail apps, when named) |
+| `email/clients-ignored` | info | `emailClients` given for a root that isn't an Email |
 | `web/unsupported` | warning | The same, for a page |
 | `layout/shrunk` | warning | A Row's children's widths add up to more than it has. They're narrowed to fit, as a browser does |
 | `layout/overflow` | warning | Content wider than the space it has: a Row's children at their minimum widths, a box wider than its parent, a Table's columns wider than the Table |
@@ -129,7 +149,7 @@ try {
 
 Each style and prop of each component declares how each output shows it: `full`, `outlook` (as asked, but classic Outlook shows something else), `partial`, or `none` (with what it shows instead). One pass reads those declarations for the styles and props you set, and turns each into a diagnostic. A test keeps the declarations true: every style and prop, at every value, either changes the output or gives a diagnostic. Nothing is dropped silently.
 
-Each declaration names its evidence: captures of real classic Outlook for Windows, caniemail.com's tables, the writer's own output checked in Chromium and against a model of Outlook's layout, or plain CSS. Some are marked as not checked yet.
+Each declaration names its evidence: captures of real classic Outlook for Windows, Gmail, Outlook.com or Apple Mail, caniemail.com's tables, the writer's own output checked in Chromium and against a model of Outlook's layout, or plain CSS. Some are marked as not checked yet: those, and anything about a client that hasn't been measured, are only ever notes, and say they aren't measured.
 
 ## Use it in CI and with agents
 

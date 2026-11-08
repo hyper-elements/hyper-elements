@@ -3,10 +3,12 @@
  * email is written: what each style and prop declares for email (the shared
  * pass, `shared/support.ts`), and what no single style or prop says: a Row
  * child whose size isn't known, a wrapped Row's gap between its lines, an image
- * without a width, a hidden table cell, a font stack that ends on a web font.
+ * without a width, a hidden table cell, a font stack that ends on a web font,
+ * CSS in an Html block that an email client removes.
  * Size budgets are checked on the written email (index.tsx).
  */
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
+import { addForClients, type EmailClient } from "../../email-clients";
 import { fontStack, videoParts, type FontFace } from "../../kinds";
 import type { ResolvedNode } from "../../resolve";
 import { support } from "../shared/support";
@@ -21,6 +23,7 @@ export function emailSupport(root: ResolvedNode): Diagnostic[] {
   const visit = (node: ResolvedNode) => {
     structure(node, d);
     fallback(node, webFonts, d);
+    if (node.type === "Html") htmlBlock(node, d);
     for (const child of node.children) if (isNode(child) && shown(child)) visit(child);
   };
   visit(root);
@@ -34,11 +37,14 @@ function fallback(node: ResolvedNode, webFonts: Set<string>, d: Diagnostics): vo
   const families = fontStack(stack);
   const last = families[families.length - 1];
   if (!last || !webFonts.has(last.toLowerCase())) return;
-  d.warning(
+  addForClients(
+    d,
     "email/font-fallback",
-    `This font stack ends with the web font "${last}": where it doesn't load (Gmail, classic Outlook) the email client picks its own font. Add one it has: "${stack}, Arial, sans-serif"`,
+    "warning",
+    `This font stack ends with the web font "${last}": where it doesn't load (Gmail, classic Outlook) the email client picks its own font`,
     `${node.path}.style.fontFamily`,
-    node.id
+    node.id,
+    { clients: ["gmail", "outlook"], fix: `end it with a font the client has: "${stack}, Arial, sans-serif"` }
   );
 }
 
@@ -55,7 +61,8 @@ function structure(node: ResolvedNode, d: Diagnostics): void {
         "info",
         `What it holds looks about ${past}px wide on one line, wider than its ${node.contentWidth}px (an estimate: text isn't measured yet): classic Outlook can't wrap it onto another line as other clients do, and draws it wider`,
         path,
-        id
+        id,
+        { clients: ["outlook"], fix: "put less in it, or let it stack on phones (stackOnMobile)" }
       );
     }
     // Its children wrap as inline-blocks, whose lines touch: anything between them but no space around them takes a
@@ -94,5 +101,28 @@ function structure(node: ResolvedNode, d: Diagnostics): void {
   }
   if (node.type === "Image" && node.width === null) {
     d.warning("email/image-width", "This Image has no width: Outlook shows it at the size of its file, however wide that is. Give it a width, or the file's width in src", `${path}.props.src`, id);
+  }
+}
+
+/**
+ * CSS in an Html block's markup that an email client removes, found by pattern (the markup isn't parsed, so each is a
+ * note that it may): what captures of Gmail and Outlook.com on the web showed them removing, and what caniemail says
+ * Gmail does. Elements writes none of these itself.
+ */
+const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailClient[]; removes: string; fix: string }> = [
+  { pattern: /!\s*(?!important\b)[iI][mM][pP][oO][rR][tT][aA][nN][tT]\b/, clients: ["gmail"], removes: "!important not written in lowercase: Gmail removes the whole style attribute, or the whole <style>, that holds it", fix: "write !important in lowercase" },
+  { pattern: /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i, clients: ["gmail", "outlook-com"], removes: "a negative margin: Gmail and Outlook.com remove the whole margin declaration", fix: "move it with padding on what holds it instead" },
+  { pattern: /(^|[\s;{"'])position\s*:/i, clients: ["outlook-com"], removes: "position: Outlook.com removes it", fix: "lay it out without position (a Layer puts content over an image)" },
+  { pattern: /var\(\s*--|(^|[\s;{"'])--[\w-]+\s*:/i, clients: ["gmail", "outlook-com"], removes: "CSS variables: Outlook.com removes var() and their declarations, Gmail their declarations", fix: "write the values themselves" },
+  { pattern: /gradient\(/i, clients: ["outlook-com"], removes: "a gradient: Outlook.com removes it", fix: "give it a solid background color too, or use an image" },
+  { pattern: /\b(oklch|oklab|lch|lab|hwb|color-mix|color)\(/i, clients: ["gmail", "outlook-com"], removes: "a newer color syntax: Outlook.com removes the declaration, and Gmail every inline style on its element", fix: "write the color as hex or rgb()" },
+  { pattern: /rgba?\(\s*[\d.]+%?\s+[\d.]/i, clients: ["gmail"], removes: "rgb() with spaces between its numbers: Gmail removes the whole style attribute, or the whole <style>", fix: "separate them with commas: rgb(8, 121, 161)" },
+];
+
+function htmlBlock(node: ResolvedNode, d: Diagnostics): void {
+  const markup = node.props.html;
+  if (typeof markup !== "string") return;
+  for (const check of HTML_CSS) {
+    if (check.pattern.test(markup)) d.add("email/html-css", "info", `This Html block's markup may have ${check.removes}`, `${node.path}.props.html`, node.id, { clients: check.clients, fix: check.fix });
   }
 }

@@ -4,10 +4,12 @@
  * that output shows it (`support`). One pass reads it for every output, for
  * what the author set (not a component's own defaults): `none` is a warning
  * (`<output>/unsupported`), `partial` a note (`<output>/degraded`), `outlook`
- * a note (`email/outlook-degraded`). Each output adds what no single style or
- * prop says (email: `email/support.ts`).
+ * a note (`email/outlook-degraded`), each naming the email clients it's about
+ * where the rule does. Each output adds what no single style or prop says
+ * (email: `email/support.ts`).
  */
-import { Diagnostics, type Diagnostic } from "../../diagnostics";
+import { Diagnostics, type Diagnostic, type Severity } from "../../diagnostics";
+import { addForClients } from "../../email-clients";
 import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
 import type { Support, SupportByTarget, Target } from "../../define";
@@ -42,8 +44,15 @@ function report(node: ResolvedNode, where: "style" | "props", key: string, value
     const at = `${node.path}.${where}.${key}`;
     const asked = typeof value === "string" ? `${key}: "${value}"` : key;
     const output = target === "web" ? "a page" : target;
-    if (rule.level === "none") d.warning(`${target}/unsupported`, `${asked} isn't possible in ${output}: ${rule.shows}`, at, node.id);
-    else if (rule.level === "partial") d.add(`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`, at, node.id);
-    else d.add("email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`, at, node.id);
+    const [code, severity, message]: [string, Severity, string] =
+      rule.level === "none"
+        ? [`${target}/unsupported`, "warning", `${asked} isn't possible in ${output}: ${rule.shows}`]
+        : rule.level === "partial"
+          ? [`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`]
+          : ["email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`];
+    // For email, the clients it's about (`outlook`: classic Outlook), told apart by whether they're measured.
+    const clients = target === "email" ? (rule.clients ?? (rule.level === "outlook" ? (["outlook"] as const) : undefined)) : undefined;
+    if (clients) addForClients(d, code, severity, message, at, node.id, { clients, fix: rule.fix, assumed: rule.source === "assumed" });
+    else d.add(code, severity, message, at, node.id, { fix: rule.fix });
   }
 }

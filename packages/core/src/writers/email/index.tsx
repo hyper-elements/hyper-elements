@@ -29,6 +29,7 @@
  * wrapped inside the shape's fixed size.
  */
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
+import { addForClients, type EmailClient } from "../../email-clients";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, raw, withStylesheet, type Html } from "../jsx";
 import { utf8Bytes } from "../shared/bytes";
@@ -213,12 +214,20 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions = 
     `<head>${head}</head><body${styleAttr(bodyDeclarations)}>${body}</body></html>`;
 
   const bytes = utf8Bytes(html);
+  // Measured in Gmail on the web; the apps are likely the same.
+  const gmails: EmailClient[] = ["gmail", "gmail-app", "gmail-app-other"];
   if (bytes > GMAIL_CLIP_BYTES) {
-    d.warning("email/size", `The email is ${Math.round(bytes / 1024)} KB; Gmail clips a message after ${GMAIL_CLIP_BYTES / 1024} KB ("[Message clipped]")`, "root");
+    addForClients(d, "email/size", "warning", `The email is ${Math.round(bytes / 1024)} KB; Gmail clips a message after ${GMAIL_CLIP_BYTES / 1024} KB ("[Message clipped]")`, "root", undefined, {
+      clients: gmails,
+      fix: "shorten the email, or move long sections to a page: what follows the clip is behind a link",
+    });
   }
   const styleBytes = utf8Bytes(stylesheet);
   if (styleBytes > GMAIL_STYLE_BYTES) {
-    d.warning("email/style-size", `The stylesheet is ${Math.round(styleBytes / 1024)} KB; Gmail reads ${GMAIL_STYLE_BYTES / 1024} KB of a <style>`, "root");
+    addForClients(d, "email/style-size", "warning", `The stylesheet is ${Math.round(styleBytes / 1024)} KB; Gmail reads ${GMAIL_STYLE_BYTES / 1024} KB of a <style>`, "root", undefined, {
+      clients: gmails,
+      fix: "use fewer phone and hover styles: each one adds a rule",
+    });
   }
   return { html, head, body, bodyStyle, diagnostics: d.list };
 }

@@ -1,6 +1,7 @@
 import { checkDocument } from "../normalize";
 import { checkTargetExpanded, resolveExpanded, type ResolvedDocument, type ResolvedNode } from "../resolve";
 import { ElementsError, type Diagnostic } from "../diagnostics";
+import { checkEmailClients, forEmailClients, type EmailClient } from "../email-clients";
 import { expandDocument } from "../expand";
 import { registryOf, type ComponentsOption } from "../registry";
 import type { Target } from "../define";
@@ -20,7 +21,16 @@ export { support } from "./shared/support";
 export { overflow, pagedSupport } from "./shared/paged";
 export { Stylesheet, CLASS_PREFIX, type Media } from "./shared/classes";
 
-export interface RenderOptions extends PageOptions, EmailOptions {
+export interface EmailClientsOption {
+  /**
+   * For an Email, the email clients to report problems for (default: classic Outlook, Outlook.com, Gmail and Apple
+   * Mail; the Gmail apps only when named). A problem about other clients is left out; `[]` leaves out every email
+   * client problem, not the problems of the email itself.
+   */
+  emailClients?: readonly EmailClient[];
+}
+
+export interface RenderOptions extends PageOptions, EmailOptions, EmailClientsOption {
   /** The HTML indented, for reading it; for sending, the compact HTML (white space may change how some email clients show it). */
   pretty?: boolean;
 }
@@ -64,7 +74,8 @@ export interface Prepared {
  * Only what needs the written output (an email's size against Gmail's limits)
  * is left to rendering.
  */
-export function prepareTemplate(input: unknown, options: ComponentsOption = {}): Prepared {
+export function prepareTemplate(input: unknown, options: ComponentsOption & EmailClientsOption = {}): Prepared {
+  checkEmailClients(options.emailClients);
   const registry = registryOf(options);
   const checked = checkDocument(input, registry);
   const diagnostics = [...checked.diagnostics];
@@ -87,7 +98,8 @@ export function prepareTemplate(input: unknown, options: ComponentsOption = {}):
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
   if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
-  diagnostics.push(...inTemplate(resolved, found));
+  diagnostics.push(...inTemplate(resolved, root === "Email" ? forEmailClients(found, options.emailClients) : found));
+  if (root !== "Email" && options.emailClients) diagnostics.push({ code: "email/clients-ignored", severity: "info", message: `emailClients is for an Email; a ${root} isn't checked for email clients`, path: "root" });
   return { resolved: failed() ? null : resolved, target: output.target, diagnostics };
 }
 
@@ -114,7 +126,7 @@ function pageNumbersOutside(root: ResolvedNode): Diagnostic[] {
  * A template's problems, without writing it: errors make it invalid, warnings and notes don't. A Document's are its
  * PDF's too, and a Canvas's its image's (what they can't show that its HTML can).
  */
-export function validateTemplate(input: unknown, options: ComponentsOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
+export function validateTemplate(input: unknown, options: ComponentsOption & EmailClientsOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
   const { diagnostics, resolved } = prepareTemplate(input, options);
   const root = resolved?.root;
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];
@@ -133,5 +145,5 @@ export function renderTemplate(input: unknown, options: RenderOptions & Componen
   const text = renderText(resolved, options);
   const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), diagnostics: [] };
   const shown = (html: string) => (options.pretty ? prettyHtml(html) : html);
-  return { html: shown(written.html), head: shown(written.head), body: shown(written.body), bodyStyle: written.bodyStyle, text, diagnostics: [...diagnostics, ...inTemplate(resolved, written.diagnostics)] };
+  return { html: shown(written.html), head: shown(written.head), body: shown(written.body), bodyStyle: written.bodyStyle, text, diagnostics: [...diagnostics, ...inTemplate(resolved, forEmailClients(written.diagnostics, options.emailClients))] };
 }

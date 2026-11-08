@@ -1,5 +1,18 @@
 import React from "react";
-import { ElementsError, LAYOUT_VERSION, pagedSupport, prepareTemplate, renderTemplate, validateTemplate, type Diagnostic, type RenderOptions, type RenderResult, type ResolvedNode } from "@unlayer-internal/elements-core";
+import {
+  checkEmailClients,
+  ElementsError,
+  LAYOUT_VERSION,
+  pagedSupport,
+  prepareTemplate,
+  renderTemplate,
+  validateTemplate,
+  type Diagnostic,
+  type EmailClient,
+  type RenderOptions,
+  type RenderResult,
+  type ResolvedNode,
+} from "@unlayer-internal/elements-core";
 import { collectTemplate } from "./collect";
 import { outlineOf } from "./outline";
 
@@ -18,10 +31,20 @@ function template(element: unknown, call: string) {
  * template has errors (see `validate()`).
  */
 export async function render(element: React.ReactElement, options: RenderOptions = {}): Promise<RenderResult> {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "render");
   if (!document || diagnostics.some((d) => d.severity === "error")) throw new ElementsError(diagnostics);
   const rendered = renderTemplate(document, { ...options, components });
   return { ...rendered, diagnostics: [...diagnostics, ...rendered.diagnostics] };
+}
+
+export interface ValidateOptions {
+  /**
+   * For an Email, the email clients to report problems for (default: classic Outlook, Outlook.com, Gmail and Apple
+   * Mail; the Gmail apps only when named). A problem about other clients is left out; `[]` leaves out every email
+   * client problem, not the problems of the email itself.
+   */
+  emailClients?: readonly EmailClient[];
 }
 
 export interface ValidationResult {
@@ -38,11 +61,13 @@ export interface ValidationResult {
  * own checks, layout, and what the output can't do as asked (`email/…`).
  * Warnings and notes leave it valid. Only what needs the written output is
  * left to `render()`: an email's size against Gmail's limits (`email/size`,
- * `email/style-size`).
+ * `email/style-size`). An Email's problems with email clients name them
+ * (`clients`), with what to change (`fix`); `emailClients` picks the clients.
  */
-export function validate(element: React.ReactElement): ValidationResult {
+export function validate(element: React.ReactElement, options: ValidateOptions = {}): ValidationResult {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "validate");
-  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components }).diagnostics : [])];
+  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components, emailClients: options.emailClients }).diagnostics : [])];
   return { valid: !all.some((d) => d.severity === "error"), diagnostics: all };
 }
 

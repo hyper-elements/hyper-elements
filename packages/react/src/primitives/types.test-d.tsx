@@ -3,7 +3,8 @@
  * types come from the component definitions that validate them.
  */
 import { Button, Column, Email, Heading, Image, Link, Text, Row, Section, Span } from "./index";
-import type { ParagraphProps, TextProps } from "./index";
+import { EMAIL_CLIENTS, render, validate } from "./index";
+import type { Diagnostic, EmailClient, ParagraphProps, TextProps, ValidateOptions } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
 export const textProps: TextProps = { style: { fontSize: 14 }, mobile: { fontSize: 12 }, children: "Hi" };
@@ -81,3 +82,13 @@ export const wrongFormat = <Email fonts={[{ family: "Inter", src: "https://fonts
 // @ts-expect-error a Span is raised or lowered: baseline, super or sub
 export const wrongRaise = <Span style={{ verticalAlign: "top" }}>x</Span>;
 
+
+// Email clients: the option on validate() and render(), the fields on a diagnostic, and what's known of each client.
+export const clients: EmailClient[] = ["outlook", "gmail-app"];
+export const validated = validate(ok, { emailClients: clients });
+export const rendered = render(ok, { emailClients: [], pretty: true });
+export const validateOptions: ValidateOptions = { emailClients: ["apple-mail"] };
+export const fields = (d: Diagnostic): [EmailClient[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];
+export const measured: number | undefined = EMAIL_CLIENTS.outlook.measured?.wordsWithin4px;
+// @ts-expect-error an email client it doesn't know
+export const unknownClient = validate(ok, { emailClients: ["hotmail"] });

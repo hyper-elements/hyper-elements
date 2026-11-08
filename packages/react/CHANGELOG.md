@@ -2,6 +2,28 @@
 
 Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
+## Unreleased
+
+### Email clients in diagnostics
+
+- New: a diagnostic about an Email's problems with particular email clients names them in `clients`
+  (`"outlook"`, `"outlook-com"`, `"gmail"`, `"apple-mail"`, and the Gmail apps `"gmail-app"` and `"gmail-app-other"`),
+  and says what to change in `fix`. `see` (how to see it) is in the type for previews to come. All three are optional.
+- New: `validate(element, { emailClients })` and `render(element, { emailClients })` report problems for the clients
+  named. The default is the four measured clients; the Gmail apps, not measured, only when named, and then only as
+  notes. `[]` leaves out every email client problem, not the email's own (`email/width`, `email/layer`). For a root
+  that isn't an Email the option is ignored, with an `email/clients-ignored` note. An unknown client throws a
+  `TypeError`.
+- New: `EMAIL_CLIENTS`, what's known of each client, with how closely it was measured on 0.3.0 emails (classic Outlook
+  0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types `EmailClient`,
+  `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`.
+- New: `email/html-css`, a note on an Html block whose markup may have CSS Gmail or Outlook.com removes (position,
+  CSS variables, gradients, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb() with spaces).
+- Changed: `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` has `["gmail", "outlook"]`
+  and its advice moves from the message to `fix`; `email/size` and `email/style-size` have `["gmail"]` and a `fix`.
+- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and how to see it to its line, so lines about
+  email clients are longer.
+
 ## 0.3.0
 
 ### ⚠️ Breaking: every template written with Unlayer Elements has to migrate

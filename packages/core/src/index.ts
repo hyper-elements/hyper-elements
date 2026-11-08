@@ -1,5 +1,6 @@
 export * from "./model";
 export * from "./diagnostics";
+export * from "./email-clients";
 export * from "./kinds";
 export * from "./define";
 export * from "./styles";
