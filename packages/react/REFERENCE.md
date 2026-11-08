@@ -293,7 +293,7 @@ Props:
 
 ### Layer
 
-Its children over each other, in one box as tall as the tallest: an image with words on it. In an email, an Image with one child over it.
+Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
 Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
 

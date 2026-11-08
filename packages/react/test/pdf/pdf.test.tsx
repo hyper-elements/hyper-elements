@@ -424,6 +424,22 @@ describe("renderPdf", () => {
     expect((await renderPdf(split)).diagnostics.map((d) => d.code)).not.toContain("document/overflow");
   });
 
+  it("places a Button by its own alignSelf, over its stack's alignItems", () => {
+    const { root } = prepare(
+      <Document style={{ alignItems: "start" }}>
+        <Button href="https://x.test">Start</Button>
+        <Button href="https://x.test" style={{ alignSelf: "center" }}>
+          Center
+        </Button>
+        <Button href="https://x.test" style={{ alignSelf: "end" }}>
+          End
+        </Button>
+      </Document>
+    );
+    const { content } = writeDocument(root!, { families: new Set(), fonts: [], image: () => undefined, date: new Date(0) }).pages[0];
+    expect(content.map((block) => block.style.alignSelf)).toEqual(["flex-start", "center", "flex-end"]);
+  });
+
   it("draws each render's fonts from its own files: a family another render gave other files to isn't theirs", async () => {
     // Two different files given, in turn, as one family.
     const brand = (

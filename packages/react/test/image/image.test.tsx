@@ -98,6 +98,26 @@ describe("renderImage", () => {
     expect(svg).toContain("6366f1");
   });
 
+  it("places a Button by its own alignSelf, over its stack's alignItems", async () => {
+    const buttons = (
+      <Canvas width={600} height={315} style={{ padding: 40, gap: 16, alignItems: "start", fontFamily: "Liberation Sans" }}>
+        <Button href="https://x.test" style={{ backgroundColor: "#fde68a" }}>Start</Button>
+        <Button href="https://x.test" style={{ alignSelf: "center", backgroundColor: "#e0e7ff" }}>Center</Button>
+        <Button href="https://x.test" style={{ alignSelf: "end", backgroundColor: "#bbf7d0" }}>End</Button>
+      </Canvas>
+    );
+    const svg = new TextDecoder().decode((await renderImage(buttons, { fonts, format: "svg" })).image);
+    const box = (fill: string) => {
+      const [, x, width] = new RegExp(`<path x="([\\d.]+)" y="[\\d.]+" width="([\\d.]+)" height="[\\d.]+" fill="${fill}"`).exec(svg)!;
+      return [Number(x), Number(x) + Number(width)];
+    };
+    // The content is 40px to 560px.
+    expect(box("#fde68a")[0]).toBe(40);
+    const [center, centerEnd] = box("#e0e7ff");
+    expect(Math.abs((center + centerEnd) / 2 - 300)).toBeLessThan(1);
+    expect(box("#bbf7d0")[1]).toBe(560);
+  });
+
   it("writes the same file for the same template", async () => {
     const [a, b] = await Promise.all([renderImage(card, { fonts }), renderImage(card, { fonts })]);
     expect(Buffer.from(a.image).equals(Buffer.from(b.image))).toBe(true);

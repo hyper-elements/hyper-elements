@@ -103,7 +103,7 @@ class Writer {
   alignSelf(child: ResolvedNode, stack: ResolvedNode): string | undefined {
     const sized = child.style.width !== undefined || child.style.maxWidth !== undefined;
     if (child.type === "Divider" || (child.definition.sizing !== "shrink" && !sized)) return undefined;
-    const align = stack.style.alignItems as string | undefined;
+    const align = (child.style.alignSelf ?? stack.style.alignItems) as string | undefined;
     if (align === "stretch") return undefined;
     if (align) return flex(align);
     return { left: "flex-start", justify: "flex-start", center: "center", right: "flex-end" }[stack.text.textAlign];
