@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, Canvas, Column, component, Document, Email, Heading, Page, PageNumber, prop, Row, Section, Svg, Text, validate } from "../primitives/index";
+import { Button, Canvas, Column, component, Document, Email, Heading, Page, PageNumber, prop, Row, Section, Span, Svg, Text, validate } from "../primitives/index";
 import { describeComponent, describeComponents, inspect, INSPECT_VERSION } from "./index";
 
 describe("describeComponents()", () => {
@@ -87,13 +87,45 @@ describe("inspect()", () => {
       </Page>
     );
     expect(result.valid).toBe(false);
-    expect(result.nodes.map((node) => [node.type, node.allowed, node.problems.map((d) => d.code)])).toEqual([
-      ["Page", true, []],
-      ["Text", true, []],
-      ["Heading", true, []],
+    expect(result.nodes.map((node) => [node.path, node.type, node.allowed, node.problems.map((d) => d.code)])).toEqual([
+      ["root", "Page", true, []],
+      ["root.children[0]", "Text", true, []],
+      // A component its root doesn't take is listed, not allowed, with its error.
+      ["root.children[0].children[1]", "PageNumber", false, ["document/page-number"]],
+      ["root.children[1]", "Heading", true, []],
     ]);
-    // A component a root doesn't take is left out of what's read, with its error.
     expect(result.diagnostics.map((d) => [d.code, d.path])).toEqual([["document/page-number", "root.children[0].children[1]"]]);
+  });
+
+  it("lists a component its root doesn't take, and keeps each one after it at the path diagnostics give", () => {
+    // Reading leaves the PageNumber out and joins the text either side of it: the Span after it is still children[3].
+    const result = inspect(
+      <Page>
+        <Text>
+          {"Page "}
+          <PageNumber total />
+          {" of "}
+          <Span style={{ fontWeight: "heavy" as never }}>ten</Span>
+        </Text>
+      </Page>
+    );
+    expect(result.nodes.map((node) => [node.path, node.type, node.allowed, node.given, node.problems.map((d) => d.code)])).toEqual([
+      ["root", "Page", true, [], []],
+      ["root.children[0]", "Text", true, [], []],
+      ["root.children[0].children[1]", "PageNumber", false, ["props.total"], ["document/page-number"]],
+      ["root.children[0].children[3]", "Span", true, ["style.fontWeight"], [result.diagnostics[1].code]],
+    ]);
+    expect(result.diagnostics.map((d) => d.path)).toEqual(["root.children[0].children[1]", "root.children[0].children[3].style.fontWeight"]);
+  });
+
+  it("lists a prop or style a root doesn't take as given, with its error", () => {
+    const result = inspect(
+      <Document>
+        <Heading style={{ fontSize: 24, mobile: { fontSize: 18 } }}>Report</Heading>
+      </Document>
+    );
+    expect(result.nodes[1]).toMatchObject({ type: "Heading", allowed: true, given: ["style.fontSize", "mobile.fontSize"] });
+    expect(result.nodes[1].problems.map((d) => d.code)).toEqual(["mobile/not-supported"]);
   });
 
   it("says the root, and what's not allowed under it", () => {

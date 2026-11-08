@@ -14,18 +14,18 @@ import {
   describeConditions,
   Registry,
   validateTemplate,
+  CONDITION_NAMES,
+  CUSTOM_TYPE,
   ROOT_NAMES,
   type ComponentDescription,
   type ConditionName,
   type CustomDefinition,
   type Diagnostic,
-  type Json,
-  type Node,
   type PropertyDescription,
   type RootName,
   type StyleGroup,
 } from "@unlayer-internal/elements-core";
-import { collectTemplate } from "../primitives/collect";
+import { collectTemplate, type JsonNode } from "../primitives/collect";
 
 export type { ComponentDescription, ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
 
@@ -98,7 +98,7 @@ export interface InspectedNode {
   roots: RootName[];
   /** Whether the template's root takes it. */
   allowed: boolean;
-  /** What it's given, as read: "props.href", "style.padding", "mobile.fontSize", "hover.color", "hidden.mobile". */
+  /** What it's given, as written: "props.href", "style.padding", "mobile.fontSize", "hover.color", "hidden.mobile". */
   given: string[];
   /** The problems found on it (its props, styles and blocks, and what it renders), not on its children. */
   problems: Diagnostic[];
@@ -110,7 +110,10 @@ export interface Inspection {
   root: RootName | null;
   /** No errors (there may be warnings and notes), as `validate()` says. */
   valid: boolean;
-  /** Each component in the template, in document order, as read: what's left out with an error isn't here. */
+  /**
+   * Each component in the template, in document order, as written: one its root doesn't take is here too, with
+   * `allowed: false` and its error in `problems`. Each `path` is the one diagnostics give.
+   */
   nodes: InspectedNode[];
   /** Everything found, as `validate()` finds it. */
   diagnostics: Diagnostic[];
@@ -124,37 +127,46 @@ export function inspect(element: React.ReactElement): Inspection {
   if (!React.isValidElement(element)) {
     throw new TypeError(`[Elements] inspect() takes a template as JSX (<Email>…</Email>, <Page>…</Page>), not ${element === null ? "null" : typeof element}`);
   }
-  const { document, diagnostics: read, components } = collectTemplate(element);
+  const { document, diagnostics: read, components, collected } = collectTemplate(element);
   const failed = read.some((d) => d.severity === "error");
   const diagnostics = [...read, ...(document && !failed ? validateTemplate(document, { components }).diagnostics : [])];
   const registry = new Registry(components);
   const rootType = document?.root.type;
   const root = rootType && (ROOT_NAMES as readonly string[]).includes(rootType) ? (rootType as RootName) : null;
   const nodes: InspectedNode[] = [];
-  const visit = (node: Node, path: string) => {
+  const visit = (node: JsonNode, path: string) => {
     const definition = registry.get(node.type);
     const roots = definition ? componentRoots(definition, registry) : [];
     nodes.push({
       path,
       type: node.type,
-      ...(node.id ? { id: node.id } : {}),
+      ...(typeof node.id === "string" && node.id ? { id: node.id } : {}),
       roots,
       allowed: !!root && roots.includes(root),
       given: given(node),
       problems: diagnostics.filter((diagnostic) => on(diagnostic.path, path)),
     });
-    (node.children ?? []).forEach((child, index) => {
-      if (typeof child !== "string") visit(child, `${path}.children[${index}]`);
+    (Array.isArray(node.children) ? node.children : []).forEach((child, index) => {
+      if (child && typeof child === "object") visit(child, `${path}.children[${index}]`);
     });
   };
-  if (document) visit(document.root, "root");
+  // The tree as collected, not as read: reading leaves out a component its root doesn't take (and merges text), and
+  // what's listed here is every component written, at the paths diagnostics name.
+  if (document && collected) visit(collected, "root");
   return { version: INSPECT_VERSION, root, valid: !diagnostics.some((d) => d.severity === "error"), nodes, diagnostics };
 }
 
-/** The keys a node was given, by where they're written. */
-function given(node: Node): string[] {
-  const keys = (prefix: string, values: Record<string, Json | boolean> | undefined) => Object.keys(values ?? {}).map((key) => `${prefix}.${key}`);
-  return [...keys("props", node.props), ...keys("style", node.style), ...keys("mobile", node.mobile), ...keys("hover", node.hover), ...keys("hidden", node.hidden)];
+/**
+ * The keys a node was given, by where they're written. A condition's block written in `style` (`style={{ mobile: { … } }}`)
+ * is the condition's, as reading takes it; a template's own component takes no condition, so in its style it's a style.
+ */
+function given(node: JsonNode): string[] {
+  const keys = (prefix: string, values: unknown) => (values && typeof values === "object" && !Array.isArray(values) ? Object.keys(values).map((key) => `${prefix}.${key}`) : []);
+  const style = node.style && typeof node.style === "object" && !Array.isArray(node.style) ? (node.style as Record<string, unknown>) : {};
+  const lifts = !CUSTOM_TYPE.test(node.type);
+  const own = Object.keys(style).filter((key) => !(lifts && CONDITION_NAMES.has(key)));
+  const condition = (name: string) => [...keys(name, node[name]), ...(lifts ? keys(name, style[name]) : [])];
+  return [...keys("props", node.props), ...own.map((key) => `style.${key}`), ...condition("mobile"), ...condition("hover"), ...keys("hidden", node.hidden)];
 }
 
 /** Whether a diagnostic's path is on a node itself (or what it renders), not on one of its children. */
