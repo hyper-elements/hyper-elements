@@ -139,6 +139,18 @@ In our benchmark of five email briefs, Hyper Elements reached a passing email **
 
 Claude Code with Claude Sonnet 5, November 8, 2026. All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
 
+## From prompt to passing image
+
+Across five image briefs, Hyper Elements reached a passing image **1.65× faster** with **1.8× fewer output tokens** than Canvas 2D (`@napi-rs/canvas`), at the median. **17 of 20** images passed on the first check.
+
+<p align="center">
+  <a href="https://hyperelements.dev/docs/benchmark#image-results">
+    <img src="./apps/website/public/img/hyper-elements-image-benchmark.svg" alt="Image agent benchmark: Hyper Elements took 76 seconds, used 5,096 output tokens, and passed on the first check in 17 of 20 runs. Playwright: 91 seconds, 6,846 output tokens, 14 of 20 first-check passes. Canvas 2D: 125 seconds, 9,132 output tokens, 16 of 20 first-check passes. Time and token counts are medians." width="1000" />
+  </a>
+</p>
+
+Claude Code with Claude Sonnet 5, November 8, 2026. All 60 isolated runs passed the same text, font, image and layout checks: five briefs, four runs per brief per approach. The speed comparison with Playwright was inconclusive. [Methodology and results](https://hyperelements.dev/docs/benchmark#image-results) · [Reproduce the benchmark](./apps/website/benchmark)
+
 ## Keep building
 
 - **Start from a design:** [Templates](https://hyperelements.dev/templates) · [Component gallery](https://hyperelements.dev/components)

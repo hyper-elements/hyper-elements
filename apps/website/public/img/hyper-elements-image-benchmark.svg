@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="792" viewBox="0 0 1800 792" role="img" aria-labelledby="title description">
+<title id="title">Hyper Elements image agent benchmark</title>
+<desc id="description">Hyper Elements: 76 seconds, 5,096 output tokens, 17 of 20 first-check passes. Playwright: 91 seconds, 6,846 output tokens, 14 of 20 first-check passes. Canvas 2D: 125 seconds, 9,132 output tokens, 16 of 20 first-check passes. Time and output tokens are medians. Five image briefs and 20 runs per approach, four per brief, in an isolated batch; all 60 runs were valid and eventually passed. The within-brief speed comparison with Playwright was inconclusive (p = 0.35). Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a 140-second scale and tokens a 10,000-token scale. Each square represents one run's first check.</desc>
+<rect width="1800" height="792" fill="#0a0a0a"/>
+<g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
+  <text x="80" y="113" font-size="27" fill="#ededed" font-weight="500">5 image briefs</text>
+  <text x="80" y="154" font-size="25" fill="#a1a1a1" >20 runs per approach</text>
+  <text x="80" y="194" font-size="23" fill="#a1a1a1" >60 runs in total.</text>
+
+  <text x="500" y="120" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">1.65×</text>
+  <text x="500" y="178" font-size="27" fill="#ededed" >faster to pass</text>
+  <text x="500" y="213" font-size="22" fill="#a1a1a1" >vs. Canvas 2D</text>
+
+  <text x="930" y="120" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">1.8×</text>
+  <text x="930" y="178" font-size="27" fill="#ededed" >fewer output tokens</text>
+  <text x="930" y="213" font-size="22" fill="#a1a1a1" >vs. Canvas 2D</text>
+
+  <text x="1360" y="120" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">17/20</text>
+  <text x="1360" y="178" font-size="27" fill="#ededed" >passed on first check</text>
+  <text x="1360" y="213" font-size="22" fill="#a1a1a1" >Hyper Elements</text>
+
+  <text x="80" y="269" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">APPROACH</text>
+  <text x="500" y="269" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">TIME · MEDIAN</text>
+  <text x="930" y="269" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">OUTPUT TOKENS · MEDIAN</text>
+  <text x="1360" y="269" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">FIRST-CHECK PASSES</text>
+
+  <g id="row-he">
+    <rect x="52" y="294" width="1696" height="138" rx="14" fill="#101a15" stroke="#284a36"/>
+    <text x="80" y="356" font-size="32" fill="#ededed" font-weight="600" letter-spacing="-0.6">Hyper Elements</text>
+    <text x="80" y="394" font-size="20" fill="#a1a1a1" >Lowest median time and tokens</text>
+    <text x="500" y="356" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">76s</text>
+
+  <rect x="500" y="390" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="500" y="390" width="175.819" height="10" rx="3" fill="#7ee2a8"/>
+
+    <text x="930" y="356" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">5,096</text>
+
+  <rect x="930" y="390" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="930" y="390" width="165.094" height="10" rx="3" fill="#7ee2a8"/>
+
+    <text x="1360" y="356" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">17 / 20</text>
+    <rect x="1360" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1376" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1392" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1408" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1424" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1440" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1456" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1472" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1488" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1504" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1520" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1536" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1552" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1568" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1584" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1600" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1616" y="389" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1632" y="389" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1648" y="389" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1664" y="389" width="12" height="12" rx="3" fill="#292929"/>
+  </g>
+
+
+
+  <g id="row-playwright">
+
+    <text x="80" y="514" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">Playwright</text>
+    <text x="80" y="552" font-size="20" fill="#a1a1a1" >HTML + Chromium</text>
+    <text x="500" y="514" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">91s</text>
+
+  <rect x="500" y="548" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="500" y="548" width="211.297" height="10" rx="3" fill="#737373"/>
+
+    <text x="930" y="514" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">6,846</text>
+
+  <rect x="930" y="548" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="930" y="548" width="221.810" height="10" rx="3" fill="#737373"/>
+
+    <text x="1360" y="514" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">14 / 20</text>
+    <rect x="1360" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1376" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1392" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1408" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1424" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1440" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1456" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1472" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1488" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1504" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1520" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1536" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1552" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1568" y="547" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1584" y="547" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1600" y="547" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1616" y="547" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1632" y="547" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1648" y="547" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1664" y="547" width="12" height="12" rx="3" fill="#292929"/>
+  </g>
+  <path d="M72 590H1728" stroke="#222222"/>
+
+
+  <g id="row-canvas">
+
+    <text x="80" y="672" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">Canvas 2D</text>
+    <text x="80" y="710" font-size="20" fill="#a1a1a1" >@napi-rs/canvas</text>
+    <text x="500" y="672" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">125s</text>
+
+  <rect x="500" y="706" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="500" y="706" width="290.334" height="10" rx="3" fill="#737373"/>
+
+    <text x="930" y="672" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">9,132</text>
+
+  <rect x="930" y="706" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="930" y="706" width="295.861" height="10" rx="3" fill="#737373"/>
+
+    <text x="1360" y="672" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">16 / 20</text>
+    <rect x="1360" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1376" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1392" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1408" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1424" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1440" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1456" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1472" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1488" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1504" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1520" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1536" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1552" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1568" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1584" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1600" y="705" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1616" y="705" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1632" y="705" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1648" y="705" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1664" y="705" width="12" height="12" rx="3" fill="#292929"/>
+  </g>
+
+
+</g>
+</svg>
