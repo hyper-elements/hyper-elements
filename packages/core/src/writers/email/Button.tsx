@@ -38,8 +38,11 @@ export const Button: Component = ({ node, style, mobile, fill, phoneText, text }
             phone={[phoneText, { padding: mobile.padding }]}
             hover={{ color: node.hover?.color }}
             style={[
-              // A button with a width fills it.
-              { display: width.width !== undefined ? "block" : "inline-block", padding: style.padding },
+              // A button with a width fills it. Its label's words stay whole (the email's word-break: break-word
+              // is for long links in text): a button narrower than its padding otherwise sized itself to one letter
+              // and drew its label a letter a line, in Gmail and browsers; it grows to its longest word instead, as
+              // classic Outlook's and Apple Mail's do (captures of Elements 0.3.0, e3-fresh/g-0054).
+              { display: width.width !== undefined ? "block" : "inline-block", padding: style.padding, wordBreak: "normal" },
               fullText(node),
               { textDecoration: style.textDecoration ?? "none", borderRadius: style.borderRadius },
             ]}
