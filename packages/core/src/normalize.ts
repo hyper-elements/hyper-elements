@@ -3,7 +3,7 @@
  * component definitions and normalized (values in their canonical form, ids
  * checked).
  */
-import { CONDITIONS, shownAnywhere } from "./conditions";
+import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
 import type { ComponentDefinition, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
@@ -178,18 +178,51 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const props = readProps(input.props, definition, `${path}.props`, id, d);
   if (props) node.props = props;
 
-  const style = readStyles(input.style, definition, definition.style, `${path}.style`, id, d, "style", () => true);
+  // A condition's block written inside `style` (`style={{ mobile: { … } }}`) is read as the condition's own; a template's
+  // own component (`acme.Card`) takes no condition, so in its style a block is an unknown style, as anything else is.
+  const lifted: Partial<Record<string, unknown>> = {};
+  let styleInput = input.style;
+  if (isObject(styleInput) && !CUSTOM_TYPE.test(definition.type)) {
+    const rest: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(styleInput)) {
+      if (CONDITION_NAMES.has(key)) lifted[key] = value;
+      else rest[key] = value;
+    }
+    styleInput = rest;
+  }
+
+  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true);
   if (style) node.style = style;
 
   for (const condition of CONDITIONS) {
+    const inStyle = lifted[condition.name];
     const given = input[condition.name];
-    if (given === undefined) continue;
-    const at = `${path}.${condition.name}`;
+    if (inStyle !== undefined && given !== undefined) {
+      d.error(
+        "style/twice",
+        `${condition.name} is given twice: as ${condition.name}={…} and in style. Give it once, in style: style={{ ${condition.name}: { … } }}`,
+        `${path}.style.${condition.name}`,
+        id
+      );
+      continue;
+    }
+    let value = inStyle ?? given;
+    if (value === undefined) continue;
+    const at = inStyle !== undefined ? `${path}.style.${condition.name}` : `${path}.${condition.name}`;
     if (condition.roots && !condition.roots(context.root)) {
       if (condition.notAllowed) d.error(condition.notAllowed.code, condition.notAllowed.message, at, id);
       continue;
     }
-    const read = readStyles(given, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for);
+    // One level deep: a condition inside a condition's block (hover on phones) isn't something Elements writes.
+    if (isObject(value) && Object.keys(value).some((key) => CONDITION_NAMES.has(key))) {
+      const own: Record<string, unknown> = {};
+      for (const [key, inner] of Object.entries(value)) {
+        if (CONDITION_NAMES.has(key)) d.error("style/nested", `${key} can't be set inside ${condition.name}: a block holds styles, not another block`, `${at}.${key}`, id);
+        else own[key] = inner;
+      }
+      value = own;
+    }
+    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for);
     if (read) node[condition.name] = read;
   }
 

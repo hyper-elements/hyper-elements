@@ -64,8 +64,8 @@ function component(c: ComponentDescription, all: ComponentDescription[], named: 
     `Holds: ${children || "nothing"}. Drawn in: ${c.targets.map((t) => OUTPUTS[t] ?? t).join(", ")}.`,
     ...(props.length ? ["", "Props:", ...props.map((p) => property(p, named))] : []),
     ...(style.length ? ["", "`style`:", ...style.map((p) => property(p, named))] : []),
-    ...(hover.length ? ["", `\`hover\`: ${hover.join(", ")}.`] : []),
-    ...(phone.length ? ["", `\`mobile\` (on phones): ${phone.join(", ")}.`] : []),
+    ...(hover.length ? ["", `\`style.hover\`: ${hover.join(", ")}.`] : []),
+    ...(phone.length ? ["", `\`style.mobile\` (on phones): ${phone.join(", ")}.`] : []),
   ].join("\n");
 }
 
@@ -90,8 +90,9 @@ export function primitivesReference(): string {
     "Every component also takes:",
     "",
     "- `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).",
-    "- `mobile={{ … }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under \"`mobile`\".",
-    "- `hover={{ … }}`: styles on hover, for the ones listed under \"`hover`\".",
+    "- `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under \"`style.mobile`\".",
+    "- `style={{ hover: { … } }}`: styles on hover, for the ones listed under \"`style.hover`\".",
+    "- `mobile={{ … }}` and `hover={{ … }}` as props do the same as those blocks; a component takes each one way, not both.",
     "- `hidden={{ mobile: true }}` or `hidden={{ desktop: true }}`: shown on one only.",
     "- `id`: an id of your own, written into the HTML.",
     "",
@@ -243,7 +244,7 @@ function guide(example: string): string {
     "- Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.",
     "- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.",
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
-    "- Phones: `mobile={{ fontSize: 20 }}` (the styles listed under \"Phones\"), `hidden={{ mobile: true }}`. Hover: `hover={{ backgroundColor: \"#374151\" }}` (those under \"Hover\").",
+    "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\"), `hidden={{ mobile: true }}`. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
     "- `await render(element)` gives `{ html, text, diagnostics }`; a template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.",
     "",
     "## Common mistakes",

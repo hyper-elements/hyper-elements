@@ -22,7 +22,7 @@ export default function Receipt() {
     <Email previewText="Your Acme receipt" style={{ backgroundColor: "#f4f4f5", fontFamily: "Inter, Arial, sans-serif", gap: 16 }}>
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
       <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
-        <Heading level={1} style={{ fontSize: 24 }} mobile={{ fontSize: 20 }}>
+        <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
           Thanks for your order, <MergeTag name="first_name" />
         </Heading>
         <Text>
@@ -51,7 +51,7 @@ export default function Receipt() {
             </List>
           </Column>
         </Row>
-        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6 }} hover={{ backgroundColor: "#374151" }}>
+        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6, hover: { backgroundColor: "#374151" } }}>
           View your order
         </Button>
       </Column>
@@ -221,13 +221,13 @@ const printed = await render(<Document size="A4" margin={48}><Invoice /></Docume
 
 ## Phones and hover
 
-`mobile` holds a component's styles on phones, `hidden` shows it on one size only, and `hover` holds its styles under the pointer. Each component's list is in [GUIDE.md](./GUIDE.md).
+Inside `style`, `mobile` holds a component's styles on phones and `hover` its styles under the pointer; `hidden` shows it on one size only. Each component's list is in [GUIDE.md](./GUIDE.md).
 
 ```tsx
-<Heading style={{ fontSize: 32 }} mobile={{ fontSize: 24, textAlign: "center" }}>Welcome</Heading>
+<Heading style={{ fontSize: 32, mobile: { fontSize: 24, textAlign: "center" } }}>Welcome</Heading>
 <Text hidden={{ mobile: true }}>Desktop detail</Text>
 <Text hidden={{ desktop: true }}>Phone detail</Text>
-<Button href="https://example.com" style={{ backgroundColor: "#111827" }} hover={{ backgroundColor: "#374151" }}>Buy</Button>
+<Button href="https://example.com" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Buy</Button>
 ```
 
 ## Common design patterns

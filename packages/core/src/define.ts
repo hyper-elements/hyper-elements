@@ -103,7 +103,11 @@ export type EditorGroup =
   | { title: string; paths: readonly string[] }
   | { title: string; composite: CompositeEditor };
 
-export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends StyleSpecs = StyleSpecs> {
+/**
+ * A component's definition. `H` is its hover styles' keys: a definition made with `defineComponent()` keeps the list it
+ * gives (none: `readonly []`), so the types of its `style.hover` can be exactly those; the default is any of its styles.
+ */
+export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends StyleSpecs = StyleSpecs, H extends readonly (keyof S & string)[] = readonly (keyof S & string)[]> {
   type: string;
   label: string;
   description: string;
@@ -115,7 +119,7 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
   /** Default style that depends on a prop's value (a Heading's size on its level), over `defaultStyle`. */
   defaultStyleBy?: { prop: keyof P & string; values: Record<string, { [K in keyof S]?: OutputOf<S[K]["kind"]> }> };
   /** Style keys that may be set for `hover`. */
-  hover?: readonly (keyof S & string)[];
+  hover?: H;
   /**
    * Styles a condition takes on this component that an output doesn't show under it, by condition, style and
    * output (a Page root's phone font size): reported when the template is expanded, before a Grid is arranged.
@@ -143,7 +147,9 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
 }
 
 /** Keeps the literal types of a definition's props and styles, for the derived TypeScript types. */
-export function defineComponent<const P extends PropSpecs, const S extends StyleSpecs>(definition: ComponentDefinition<P, S>): ComponentDefinition<P, S> {
+export function defineComponent<const P extends PropSpecs, const S extends StyleSpecs, const H extends readonly (keyof S & string)[] = readonly []>(
+  definition: ComponentDefinition<P, S, H>
+): ComponentDefinition<P, S, H> {
   return definition;
 }
 
