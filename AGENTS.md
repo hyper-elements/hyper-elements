@@ -53,7 +53,8 @@ Email / Page / Document / Canvas   (the root: which output render() writes)
 
 A root, a `Section` and a `Column` stack what they hold. Styles go in `style` (typed; a number is px), phone styles
 in its `mobile` block, hover styles in its `hover` block (`style={{ padding: 24, mobile: { padding: 16 } }}`; the
-`mobile={…}` and `hover={…}` props still do the same). Conditions are one list in `packages/core/src/conditions.ts`. There are no margins: space between blocks is the parent's `gap`. Every
+`mobile={…}` and `hover={…}` props still do the same). Conditions are one list in `packages/core/src/conditions.ts`.
+A Page's phone width is its `breakpoints={{ mobile }}` (480px where it isn't set); an Email's is its width + 20px. There are no margins: space between blocks is the parent's `gap`. Every
 component and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
 writes from the definitions. Don't edit them by hand.
 

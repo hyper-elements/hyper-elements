@@ -8,12 +8,12 @@ import { renderEmail, type EmailOptions } from "./email";
 import { emailSupport } from "./email/support";
 import { overflow, pagedSupport } from "./shared/paged";
 import { support } from "./shared/support";
-import { renderPage, type PageOptions } from "./page";
+import { pageBreakpoints, renderPage, type PageOptions } from "./page";
 import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
 
 export { renderEmail, EMAIL_PHONE_MARGIN, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, type EmailHtml, type EmailOptions } from "./email";
-export { renderPage, PAGE_PHONE_WIDTH, type PageHtml, type PageOptions } from "./page";
+export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
 export { renderText, type TextOptions } from "./plain-text";
 export { emailSupport } from "./email/support";
 export { support } from "./shared/support";
@@ -87,6 +87,7 @@ export function prepareTemplate(input: unknown, options: ComponentsOption = {}):
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
   if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
+  found.push(...pageBreakpoints(resolved.root));
   diagnostics.push(...inTemplate(resolved, found));
   return { resolved: failed() ? null : resolved, target: output.target, diagnostics };
 }

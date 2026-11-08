@@ -4,7 +4,7 @@
  * canvases and shapes follow in their own steps.
  */
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
-import { attributes, asset, boolean, enumOf, insets, length, line, link, number, text, video } from "./kinds";
+import { attributes, asset, boolean, breakpoints, enumOf, insets, length, line, link, number, text, video } from "./kinds";
 import type { Json } from "./model";
 import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
@@ -56,6 +56,11 @@ export const Page = defineComponent({
   props: {
     width: prop(length(["px"], { min: 200 }), { support: WRITTEN, label: "Content width", description: "The widest the content gets.", default: 1200 }),
     description: prop(text(), { support: WRITTEN, label: "Description", description: "The page's meta description." }),
+    breakpoints: prop(breakpoints(), {
+      support: { web: { level: "full", source: "writer" } },
+      label: "Breakpoints",
+      description: "Where its phone styles start: mobile, the widest window they apply to, in px (480 where it's not set).",
+    }),
     ...ROOT_PROPS,
   },
   style: ROOT_STYLE,

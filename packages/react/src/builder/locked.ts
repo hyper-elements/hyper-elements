@@ -28,7 +28,9 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
     n.type === "PageNumber" ? { type: "MergeTag", props: { name: n.props?.total ? "page_count" : "page_number" } } : n.children ? { ...n, children: n.children.map((child) => (typeof child === "string" ? child : tokens(child))) } : n;
   const own = tokens(node);
   const around = { ...inherited, ...(drawn < 200 ? { width: drawn } : {}) };
-  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn) }, style: root.style, children: [Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own] };
+  // A Page's own phone width, so the block's phone styles switch where the page's do.
+  const breakpoints = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
+  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own] };
   const { head, body } = renderTemplate({ root: page }, { components: components as never });
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
   // A page's <main> is centered by its margins: in a flex box, which the builder may draw a block in, those shrink it to its words. It fills its block.

@@ -104,7 +104,7 @@ const { image, diagnostics } = await renderImage(
 ### Roots
 
 - **Email**: An email. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), previewText (text), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: fontSize, lineHeight, letterSpacing, textAlign, gap.
-- **Page**: A web page. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), description (text), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: fontSize, lineHeight, letterSpacing, textAlign, gap.
+- **Page**: A web page. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), description (text), breakpoints (breakpoints), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: fontSize, lineHeight, letterSpacing, textAlign, gap.
 - **Document**: A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf. Holds sections, layout, blocks, Document.Page, PageBreak, PageHeader, PageFooter. Props: size (A3|A4|A5|Letter|Legal|Tabloid), orientation (portrait|landscape), margin (insets), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: fontSize, lineHeight, letterSpacing, textAlign, gap.
 - **Canvas**: An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image. Holds sections, layout, blocks. Props: width (a length (a number of px)), height (a length (a number of px)), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch), padding, justifyContent (start|center|end|space-between). Phones: fontSize, lineHeight, letterSpacing, textAlign, gap, padding.
 
@@ -165,6 +165,7 @@ const { image, diagnostics } = await renderImage(
 - *fontFamily*: a font stack, as CSS writes it ("Inter, Arial, sans-serif")
 - *fontWeight*: 100 to 900 in hundreds, "normal" or "bold"
 - *lineHeight*: a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own)
+- *breakpoints*: { mobile }: the phone width in px (from 240)
 - *insets*: px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }
 - *border*: "1px solid #ccc", { width, style, color } for all sides, or { top, right, bottom, left } with one of those each
 - *radius*: px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }

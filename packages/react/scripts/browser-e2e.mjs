@@ -702,9 +702,33 @@ async function checkDeviceOverrides(page) {
   await page.setViewportSize(DESKTOP);
 }
 
+/** Section 15: a Page's own phone width (breakpoints.mobile): its phone styles and hiding start there, not at 480px. */
+async function checkPagePhoneWidth(page) {
+  const html = await renderHtml(h(Page, { width: 900, breakpoints: { mobile: 600 } },
+    h(Column, { id: "padded", style: { padding: 20, mobile: { padding: 8 } } }, h(Text, null, "Padded")),
+    h(Text, { id: "desktop-only", hidden: { mobile: true } }, "Desktop only")
+  ));
+  const read = () => page.evaluate(() => ({
+    padding: getComputedStyle(document.getElementById("padded")).paddingTop,
+    hidden: getComputedStyle(document.getElementById("desktop-only")).display === "none",
+  }));
+  const problems = [];
+  for (const [width, phone] of [[600, true], [601, false], [480, true]]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.setContent(html);
+    const facts = await read();
+    if (facts.padding !== (phone ? "8px" : "20px")) problems.push(`at ${width}px the padding is ${facts.padding}, expected ${phone ? "8px" : "20px"}`);
+    if (facts.hidden !== phone) problems.push(`at ${width}px phone-hidden content ${facts.hidden ? "hides" : "shows"}`);
+  }
+  await page.setViewportSize(DESKTOP);
+  if (problems.length) fail("page-phone-width", problems);
+  else pass("page-phone-width", "breakpoints.mobile: phone styles and hiding apply at 600px and not at 601px");
+}
+
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ viewport: DESKTOP });
+  await checkPagePhoneWidth(page);
   await checkDocuments(page);
   await checkResponsive(page);
   await checkNoStack(page);

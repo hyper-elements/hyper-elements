@@ -63,6 +63,7 @@ function samples(key: string, kindName: string, schema: { enum?: Json[] }, fallb
     points: ["1,1 29,1 15,19"],
     d: ["M1 1 L29 1 L15 19 Z"],
     viewBox: ["0 0 50 30"],
+    breakpoints: [{ mobile: 600 }],
   };
   if (byKey[key]) return byKey[key];
   const byKind: Record<string, Json[]> = {
