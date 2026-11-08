@@ -3,7 +3,7 @@ title: "AI agents"
 description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates: write, validate, outline, render."
 ---
 
-If an agent writes your templates, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email 2× faster with Hyper Elements than with hand-written HTML or React Email.
+If an agent writes your templates, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email faster with Hyper Elements than with MJML (1.3×), hand-written HTML (1.8×) or React Email (2.6×).
 
 ## Why the API suits agents
 
