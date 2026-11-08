@@ -65,6 +65,14 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
 - Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
   email clients are longer.
 
+### Where each block is in an Email's HTML
+
+`render(email, { blockMap: true })` also returns `blocks`, for tools that preview an email: each block's place in the
+template and the UTF-8 byte offset in `html` just after its outermost element's tag name
+(`{ version, unit: "utf8", entries: [{ path, nodeId?, offset }] }`). The HTML is the same bytes as without the option.
+`BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
+`BlockMapEntry` are exported. Documented in REFERENCE.md.
+
 ### Fixes
 
 - **Email:** a `Button` narrower than its padding no longer draws its label a letter a line in Gmail and browsers. The

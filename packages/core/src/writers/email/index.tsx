@@ -32,6 +32,7 @@ import { Diagnostics, type Diagnostic } from "../../diagnostics";
 import type { EmailClient } from "../../email-clients";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, raw, withStylesheet, type Html } from "../jsx";
+import { BLOCK_MAP_VERSION, BlockMarks, MARK_PAIRS, markBlock, readMarks, withBlockMarks, type BlockMap } from "../shared/block-map";
 import { utf8Bytes } from "../shared/bytes";
 import { Stylesheet } from "../shared/classes";
 import { attrs, css, escapeText, styleAttr } from "../shared/css";
@@ -124,16 +125,20 @@ function propsOf(node: ResolvedNode, place: Place, options: EmailOptions): Props
   };
 }
 
+/** What writes no element of its own, so has no place in the block map: a line break, and a merge tag (its markup is the template's). */
+const UNMAPPED = new Set(["LineBreak", "MergeTag"]);
+
 function write(node: ResolvedNode, place: Place, options: EmailOptions): Html {
   if (place.inline) {
     if (!shown(node)) return raw("");
     const component = INLINES[node.type];
     if (!component) throw new Error(`[Elements] The email exporter can't render a ${node.type} inside text`);
-    return component(propsOf(node, place, options));
+    const html = component(propsOf(node, place, options));
+    return UNMAPPED.has(node.type) ? html : markBlock(html, node);
   }
   const component = BLOCKS[node.type];
   if (!component) throw new Error(`[Elements] The email exporter can't render a ${node.type} here (in a ${place.parent.type})`);
-  return component(propsOf(node, place, options));
+  return markBlock(component(propsOf(node, place, options)), node);
 }
 
 export interface EmailHtml {
@@ -147,6 +152,8 @@ export interface EmailHtml {
   bodyStyle: string;
   /** What only the written email shows: its size against Gmail's limits. (What email can't do as asked is `emailSupport`'s, found before writing.) */
   diagnostics: Diagnostic[];
+  /** With `blockMap`, where each block is in `html`. */
+  blocks?: BlockMap;
 }
 
 /** An email is on a phone below its content width plus this. */
@@ -156,14 +163,28 @@ export const GMAIL_CLIP_BYTES = 102_400;
 /** Gmail reads this much of a `<style>`. */
 export const GMAIL_STYLE_BYTES = 16_384;
 
-export function renderEmail(resolved: ResolvedDocument, options: EmailOptions = {}): EmailHtml {
+export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & { blockMap?: boolean } = {}): EmailHtml {
   const root = resolved.root;
-  const sheet = new Stylesheet(options.classPrefix);
   // What email can't do as asked is found before writing (prepareTemplate: emailSupport); here, only what needs the written email.
   const d = new Diagnostics();
   const fonts = fontFaces(root, { swap: false });
   const width = root.width ?? 600;
-  const email = withStylesheet(sheet, () => String(Email(propsOf(root, { parent: root, fill: false, mobile: {}, inline: false, rtl: false }, options))));
+  const write = (marks: BlockMarks | null) => {
+    const sheet = new Stylesheet(options.classPrefix);
+    const markup = withStylesheet(sheet, () => withBlockMarks(marks, () => String(markBlock(Email(propsOf(root, { parent: root, fill: false, mobile: {}, inline: false, rtl: false }, options)), root))));
+    return { sheet, markup };
+  };
+  // With a block map, written with marks (again with another pair where the template's text holds one), which come out again.
+  let written = options.blockMap ? null : write(null);
+  let marked: ReturnType<typeof readMarks> = null;
+  for (let pair = 0; !written; pair++) {
+    if (pair === MARK_PAIRS) throw new Error("[Elements] blockMap can't mark this email: its text holds every pair of the noncharacters U+FDD0 to U+FDEF");
+    const marks = new BlockMarks(pair);
+    const attempt = write(marks);
+    marked = readMarks(marks, attempt.markup);
+    if (marked) written = { sheet: attempt.sheet, markup: marked.text };
+  }
+  const { sheet, markup: email } = written;
 
   const background = root.style.backgroundColor as string | undefined;
   const lang = root.props.lang as string | undefined;
@@ -199,9 +220,8 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions = 
   // Gmail drops <html>'s attributes and <body>: the language, direction and background are kept on the email too. A word
   // too long for its line (a long link) breaks onto the next rather than widening the email past a phone's screen: in a
   // table cell too, whose width its longest word would set (word-break: break-word, as legacy's cells have it).
-  const body =
-    preheader +
-    `<div${attrs({ role: "article", "aria-roledescription": "email", "aria-label": title, lang, dir })}${styleAttr([["background-color", background], ["overflow-wrap", "break-word"], ["word-break", "break-word"]])}>${email}</div>`;
+  const opening = `<div${attrs({ role: "article", "aria-roledescription": "email", "aria-label": title, lang, dir })}${styleAttr([["background-color", background], ["overflow-wrap", "break-word"], ["word-break", "break-word"]])}>`;
+  const body = `${preheader}${opening}${email}</div>`;
   const bodyDeclarations: Array<[string, string | undefined]> = [
     ["margin", "0"],
     ["padding", "0"],
@@ -209,9 +229,10 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions = 
     ["background-color", background],
   ];
   const bodyStyle = css(bodyDeclarations);
-  const html =
+  const shell =
     `<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html${attrs({ lang, dir, xmlns: "http://www.w3.org/1999/xhtml", "xmlns:v": "urn:schemas-microsoft-com:vml", "xmlns:o": "urn:schemas-microsoft-com:office:office" })}>` +
-    `<head>${head}</head><body${styleAttr(bodyDeclarations)}>${body}</body></html>`;
+    `<head>${head}</head><body${styleAttr(bodyDeclarations)}>`;
+  const html = `${shell}${body}</body></html>`;
 
   const bytes = utf8Bytes(html);
   // Measured in Gmail on the web; the apps are likely the same.
@@ -229,5 +250,18 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions = 
       fix: "use fewer phone and hover styles: each one adds a rule",
     });
   }
-  return { html, head, body, bodyStyle, diagnostics: d.list };
+  return { html, head, body, bodyStyle, diagnostics: d.list, ...(marked ? { blocks: blockMap(resolved, marked.found, email, utf8Bytes(shell + preheader + opening)) } : {}) };
+}
+
+/** Each mark's block, at its offset in UTF-8 bytes: `start` bytes before the email's markup, and its markup up to the mark. */
+function blockMap(resolved: ResolvedDocument, found: Array<{ node: ResolvedNode; at: number }>, email: string, start: number): BlockMap {
+  const templatePath = resolved.templatePath ?? ((path: string) => path);
+  let offset = start;
+  let from = 0;
+  const entries = found.map(({ node, at }) => {
+    offset += utf8Bytes(email.slice(from, at));
+    from = at;
+    return { path: templatePath(node.path), ...(node.id ? { nodeId: node.id } : {}), offset };
+  });
+  return { version: BLOCK_MAP_VERSION, unit: "utf8", entries };
 }
