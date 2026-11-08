@@ -6,7 +6,7 @@ import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Sec
 import type { ParagraphProps, TextProps } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
-export const textProps: TextProps = { style: { fontSize: 14 }, mobile: { fontSize: 12 }, children: "Hi" };
+export const textProps: TextProps = { style: { fontSize: 14, mobile: { fontSize: 12 } }, children: "Hi" };
 export const paragraphProps: ParagraphProps = textProps;
 export const fromProps = <Text {...textProps} />;
 // @ts-expect-error A style that isn't one: the type is the component's, not a loose object.
@@ -27,7 +27,7 @@ export const ok = (
     <Section style={{ backgroundColor: "#111", padding: [24, 16] }}>
       <Image src={{ src: "https://example.com/logo.png", width: 120 }} alt="Logo" style={{ width: 120 }} />
     </Section>
-    <Heading level={2} style={{ fontSize: "28px", lineHeight: "120%" }} mobile={{ fontSize: 22 }}>
+    <Heading level={2} style={{ fontSize: "28px", lineHeight: "120%", mobile: { fontSize: 22 } }}>
       Title
     </Heading>
     <Row stackOnMobile={false} style={{ gap: 20 }}>
@@ -39,7 +39,7 @@ export const ok = (
           Read <Link href={{ href: "https://example.com", target: "_blank" }} title="Docs" aria-label="Read the docs">this</Link>
           <Span style={{ verticalAlign: "super" }}>1</Span>
         </Text>
-        <Button href="https://example.com" hover={{ backgroundColor: "#000" }} style={{ fontWeight: "bold" }}>
+        <Button href="https://example.com" style={{ fontWeight: "bold", hover: { backgroundColor: "#000" } }}>
           Go
         </Button>
       </Column>
@@ -109,10 +109,8 @@ export const shapeOnPhones = <Svg width={40} height={20}><Rect width={40} height
 const shapeStyle = { mobile: { fill: "red" } };
 // @ts-expect-error Not from a variable either.
 export const shapeFromVariable = <Svg width={40} height={20}><Rect width={40} height={20} style={shapeStyle} /></Svg>;
-// The props keep their types until they're removed: what renders (or is left out) today still compiles.
-export const oldProps = (
-  <Email>
-    <Heading hover={{}} mobile={{ fontSize: 20 }}>Title</Heading>
-    <Text mobile={{ backgroundColor: undefined }}>Hi</Text>
-  </Email>
-);
+// The mobile={…} and hover={…} props are gone: phone and hover styles are blocks of style.
+// @ts-expect-error No mobile prop.
+export const noMobileProp = <Heading mobile={{ fontSize: 20 }}>Title</Heading>;
+// @ts-expect-error No hover prop.
+export const noHoverProp = <Button href="https://example.com" hover={{ backgroundColor: "#000000" }}>Go</Button>;

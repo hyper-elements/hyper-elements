@@ -75,8 +75,7 @@ const BREAKPOINT_NOTE = "mobile breakpoint";
 
 const BUTTON_PROPS = {
   href: "https://example.com",
-  style: { color: "#ffffff", backgroundColor: "#3b82f6", borderRadius: 8 },
-  hover: { color: "#ffff00", backgroundColor: "#1d4ed8" },
+  style: { color: "#ffffff", backgroundColor: "#3b82f6", borderRadius: 8, hover: { color: "#ffff00", backgroundColor: "#1d4ed8" } },
 };
 
 // Self-contained image (no network in CI): 400×200 intrinsic size, drawn
@@ -649,8 +648,8 @@ async function checkDeviceOverrides(page) {
   const phone = { width: 375, height: 800 };
   for (const { name, Root } of DOCUMENTS.filter((d) => d.name !== "document")) {
     const make = (overrides) => renderHtml(h(Root, { width: 600 },
-      h(Row, null, h(Column, { id: "phone-column", style: { padding: 20 }, ...(overrides ? { mobile: { padding: [8, 12] } } : {}) },
-        h(Image, { src: { ...IMAGE_SRC, width: 800 }, alt: "", style: { width: 120 }, ...(overrides ? { mobile: { width: "100%" } } : {}) }),
+      h(Row, null, h(Column, { id: "phone-column", style: { padding: 20, ...(overrides ? { mobile: { padding: [8, 12] } } : {}) } },
+        h(Image, { src: { ...IMAGE_SRC, width: 800 }, alt: "", style: { width: 120, ...(overrides ? { mobile: { width: "100%" } } : {}) } }),
         h(Text, { id: "desktop-only", ...(overrides ? { hidden: { mobile: true } } : {}) }, "Desktop only"),
         h(Text, { id: "phone-only", ...(overrides ? { hidden: { desktop: true } } : {}) }, "Phone only")
       )),

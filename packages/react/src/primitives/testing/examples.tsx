@@ -17,7 +17,7 @@ import { Button, Column, Divider, Email, Heading, Image, Link, Menu, Page, Text,
  */
 function lineRow(label: string, value: string, colors: { label: string; value: string; line: string }, last = false) {
   const line = `1px solid ${colors.line}`;
-  const cell = { style: { padding: "14px 0" }, mobile: last ? undefined : { border: { bottom: line } } };
+  const cell = { style: { padding: "14px 0", mobile: last ? undefined : { border: { bottom: line } } } };
   return (
     <Section style={{ backgroundColor: "#FFFFFF" }}>
       <Row>
@@ -503,7 +503,7 @@ export const warby = (() => {
   /** A product line: its name in bold and its variant under it on the left, its price on the right; its hairline as `lineRow` draws it. */
   function productRow(name: string, variant: string, price: string, last = false) {
     const line = `1px solid ${LINE}`;
-    const cell = { style: { padding: "16px 0" }, mobile: last ? undefined : { border: { bottom: line } } };
+    const cell = { style: { padding: "16px 0", mobile: last ? undefined : { border: { bottom: line } } } };
     return (
       <Section style={{ backgroundColor: CARD }}>
         <Row>

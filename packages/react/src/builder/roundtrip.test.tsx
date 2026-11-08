@@ -135,8 +135,8 @@ describe("to the builder and back", () => {
   it("keeps the phone values the builder has fields for: a Divider's width in %, a Button's width and padding", () => {
     const template = (
       <primitives.Email>
-        <primitives.Divider mobile={{ width: "50%" }} />
-        <primitives.Button href="https://x.test" mobile={{ width: "40%", padding: [4, 8, 4, 8] }}>
+        <primitives.Divider style={{ mobile: { width: "50%" } }} />
+        <primitives.Button href="https://x.test" style={{ mobile: { width: "40%", padding: [4, 8, 4, 8] } }}>
           Go
         </primitives.Button>
       </primitives.Email>
