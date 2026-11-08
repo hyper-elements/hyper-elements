@@ -1,3 +1,8 @@
 # Coverage is for the published packages. The website (apps/) has no tests and isn't measured.
 ignore:
   - "apps/**"
+  # The email client previews' runtime runs in a browser, in the preview files: its tests are the Chromium ones
+  # (packages/email-clients/test/browser), as the build scripts' are their own runs.
+  - "packages/email-clients/src/runtime/**"
+  - "packages/email-clients/src/runtime.generated.ts"
+  - "packages/email-clients/scripts/**"
