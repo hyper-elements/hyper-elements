@@ -7,6 +7,7 @@
  * JSX that writes strings (../jsx.ts), from one props object (context.ts);
  * `layout.tsx` and `styles.tsx` are what they share.
  */
+import type { Diagnostic } from "../../diagnostics";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, withStylesheet, type Html } from "../jsx";
 import { Stylesheet } from "../shared/classes";
@@ -54,10 +55,29 @@ export interface PageHtml {
   bodyStyle: string;
 }
 
-/** Below this width a Page is on a phone. */
+/** At and below this window width a Page is on a phone, unless its `breakpoints` say otherwise. */
 export const PAGE_PHONE_WIDTH = 480;
-const PHONE = `@media (max-width: ${PAGE_PHONE_WIDTH}px)`;
-const DESKTOP = `@media (min-width: ${PAGE_PHONE_WIDTH + 1}px)`;
+
+/** The window width at and below which a Page's phone styles apply: its `breakpoints.mobile`, or 480. */
+export function pagePhoneWidth(root: ResolvedNode): number {
+  const mobile = (root.props.breakpoints as { mobile?: number } | undefined)?.mobile;
+  return typeof mobile === "number" ? mobile : PAGE_PHONE_WIDTH;
+}
+
+/** A Page whose phone width is at or above its content width: its phone styles apply to windows the content fills. */
+export function pageBreakpoints(root: ResolvedNode): Diagnostic[] {
+  const mobile = (root.props.breakpoints as { mobile?: number } | undefined)?.mobile;
+  const width = typeof root.props.width === "number" ? root.props.width : undefined;
+  if (root.type !== "Page" || typeof mobile !== "number" || width === undefined || mobile < width) return [];
+  return [
+    {
+      code: "page/phone-width",
+      severity: "warning",
+      message: `Its phone styles apply to every window up to ${mobile}px, wider than its ${width}px content: on those, the content is at its full width with its phone styles. Set breakpoints.mobile below ${width}`,
+      path: "root.props.breakpoints",
+    },
+  ];
+}
 
 /** The components. (The root, `Page`, is called on its own.) */
 const COMPONENTS: Record<string, Component> = {
@@ -127,7 +147,8 @@ export function renderPage(resolved: ResolvedDocument, options: PageOptions = {}
 
   // A Canvas and a Document are of a fixed size, whatever the window: no phone layout.
   const fixed = !root.definition.responsive;
-  const stylesheet = [...fonts, sheet.css(fixed ? null : PHONE, fixed ? null : DESKTOP), document ? documentCss(root) : ""].join("");
+  const phoneWidth = pagePhoneWidth(root);
+  const stylesheet = [...fonts, sheet.css(fixed ? null : `@media (max-width: ${phoneWidth}px)`, fixed ? null : `@media (min-width: ${phoneWidth + 1}px)`), document ? documentCss(root) : ""].join("");
   const head = [
     '<meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
