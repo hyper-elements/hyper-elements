@@ -1,0 +1,24 @@
+{
+  "id": "quote",
+  "title": "Customer quote card",
+  "brief": "A customer quote card for social media, 1200×675 px, as a PNG.\n\n- Background #ffffff, with a 12px bar of #6d5efc down the whole left edge, and 72px padding inside it.\n- Fonts: Inter (regular and bold) and Lora (italic), in fonts/.\n- The quote: \"We replaced four template systems with one. Our emails, invoices and social cards now ship from the same components.\" in Lora italic, 44px, #111827, line height 1.4.\n- At the bottom of the card, a row: the customer's photo, assets/avatar-daniel.png (a 256×256 file), shown 72×72 and round; beside it, stacked, \"Daniel Okafor\" (Inter bold, 28px, #111827) and \"Head of Platform, Northwind\" (Inter regular, 24px, #6b7280); and at the right end of the row, the Orbit logo, assets/orbit-logo.png (a 252×128 file), shown 100px wide.",
+  "spec": {
+    "size": [1200, 675],
+    "safeMargin": 40,
+    "background": { "color": "#ffffff" },
+    "edges": { "left": { "color": "#6d5efc", "width": 12 } },
+    "texts": [
+      { "id": "quote", "text": "We replaced four template systems with one. Our emails, invoices and social cards now ship from the same components.", "font": "Lora-Italic.ttf", "weight": 400, "style": "italic", "size": 44, "color": "#111827", "maxLines": 4, "align": "left" },
+      { "id": "name", "text": "Daniel Okafor", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 28, "color": "#111827" },
+      { "id": "role", "text": "Head of Platform, Northwind", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 24, "color": "#6b7280" }
+    ],
+    "fills": [],
+    "images": [
+      { "id": "avatar", "file": "avatar-daniel.png", "width": 72, "round": true },
+      { "id": "logo", "file": "orbit-logo.png", "width": 100, "region": "bottom-right" }
+    ],
+    "order": [["quote", "name"], ["name", "role"], ["quote", "avatar"]],
+    "sideBySide": [["avatar", "name"], ["name", "logo"], ["role", "logo"]],
+    "bottom": ["avatar", "name", "role", "logo"]
+  }
+}

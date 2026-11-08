@@ -1,0 +1,24 @@
+{
+  "id": "blog",
+  "title": "Blog post card",
+  "brief": "An Open Graph image for a blog post, 1200×630 px, as a PNG.\n\n- Background #0f172a, 72px padding on every side.\n- Fonts: Inter (regular and bold), in fonts/.\n- Top row: the Orbit logo, assets/orbit-logo-white.png (a 252×128 file), shown 126px wide on the left; on the right, a pill \"ENGINEERING\": Inter bold, 20px, letter spacing 2px, white text on #2563eb, fully rounded, 8px × 16px padding.\n- Title: \"How we cut our build times in half with incremental bundling\": Inter bold, 60px, #ffffff, line height 1.15, left-aligned, at most 2 lines.\n- At the bottom of the card: the author's photo, assets/avatar-maya.png (a 256×256 file), shown 64×64 and round; beside it, stacked, \"Maya Chen\" (Inter bold, 28px, #ffffff) and \"June 12, 2027 · 8 min read\" (Inter regular, 24px, #94a3b8).",
+  "spec": {
+    "size": [1200, 630],
+    "safeMargin": 48,
+    "background": { "color": "#0f172a" },
+    "texts": [
+      { "id": "pill", "text": "ENGINEERING", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 20, "color": "#ffffff" },
+      { "id": "title", "text": "How we cut our build times in half with incremental bundling", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 60, "color": "#ffffff", "maxLines": 2, "align": "left" },
+      { "id": "name", "text": "Maya Chen", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 28, "color": "#ffffff" },
+      { "id": "meta", "text": "June 12, 2027 · 8 min read", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 24, "color": "#94a3b8" }
+    ],
+    "fills": [{ "around": "pill", "color": "#2563eb" }],
+    "images": [
+      { "id": "logo", "file": "orbit-logo-white.png", "width": 126, "region": "top-left" },
+      { "id": "avatar", "file": "avatar-maya.png", "width": 64, "round": true }
+    ],
+    "order": [["logo", "title"], ["pill", "title"], ["title", "name"], ["name", "meta"]],
+    "sideBySide": [["logo", "pill"], ["avatar", "name"], ["avatar", "meta"]],
+    "bottom": ["avatar", "name", "meta"]
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "event",
+  "title": "Conference banner",
+  "brief": "A header banner for a conference's X (Twitter) profile, 1500×500 px, as a PNG.\n\n- Background #111827, 64px padding.\n- Fonts: Inter (regular and bold), in fonts/.\n- On the left, stacked:\n  - \"LUMEN CONF 2027\": Inter bold, 24px, #f87171, letter spacing 4px;\n  - \"Build what's next.\": Inter bold, 80px, #ffffff, on one line;\n  - \"March 18–19, 2027 · Lisbon\": Inter regular, 32px, #d1d5db.\n- On the right, beside it and vertically centered: a card 420px wide, background #1f2937, 16px rounded corners, 32px padding, its contents stacked 12px apart:\n  - \"Early-bird tickets\": Inter bold, 32px, #ffffff;\n  - \"Until January 31\": Inter regular, 24px, #9ca3af;\n  - a pill \"Get tickets\": Inter bold, 24px, #ffffff on #ef4444, fully rounded, 12px × 24px padding.",
+  "spec": {
+    "size": [1500, 500],
+    "safeMargin": 40,
+    "background": { "color": "#111827" },
+    "texts": [
+      { "id": "eyebrow", "text": "LUMEN CONF 2027", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 24, "color": "#f87171" },
+      { "id": "title", "text": "Build what's next.", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 80, "color": "#ffffff", "maxLines": 1 },
+      { "id": "date", "text": "March 18–19, 2027 · Lisbon", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 32, "color": "#d1d5db" },
+      { "id": "tickets", "text": "Early-bird tickets", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 32, "color": "#ffffff" },
+      { "id": "until", "text": "Until January 31", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 24, "color": "#9ca3af" },
+      { "id": "cta", "text": "Get tickets", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 24, "color": "#ffffff" }
+    ],
+    "fills": [
+      { "around": "tickets", "color": "#1f2937" },
+      { "around": "until", "color": "#1f2937" },
+      { "around": "cta", "color": "#ef4444" }
+    ],
+    "images": [],
+    "order": [["eyebrow", "title"], ["title", "date"], ["tickets", "until"], ["until", "cta"]],
+    "sideBySide": [["title", "tickets"], ["date", "until"]]
+  }
+}

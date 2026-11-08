@@ -1,0 +1,21 @@
+{
+  "id": "launch",
+  "title": "Product launch card",
+  "brief": "A social card for the launch of Orbit 2.0, 1200×630 px, as a PNG.\n\n- Background: assets/orbit-card-bg.png (a 1200×630 file) fills the whole card.\n- Fonts: Inter (regular and bold), in fonts/.\n- Centered, stacked 24px apart, and the group centered vertically in the card:\n  - the Orbit logo, assets/orbit-logo-white.png (a 252×128 file), shown 126px wide;\n  - \"Ship every surface from one codebase\": Inter bold, 72px, #ffffff, centered, at most 2 lines;\n  - \"Live previews, typed templates and one-click deploys.\": Inter regular, 30px, #c7d2fe, centered;\n  - a pill \"orbit.dev/2\": Inter bold, 28px, #ffffff on #6d5efc, fully rounded, 14px × 28px padding.",
+  "spec": {
+    "size": [1200, 630],
+    "safeMargin": 48,
+    "background": { "image": "orbit-card-bg.png" },
+    "texts": [
+      { "id": "title", "text": "Ship every surface from one codebase", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 72, "color": "#ffffff", "maxLines": 2, "align": "center" },
+      { "id": "sub", "text": "Live previews, typed templates and one-click deploys.", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 30, "color": "#c7d2fe", "align": "center" },
+      { "id": "cta", "text": "orbit.dev/2", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 28, "color": "#ffffff", "align": "center" }
+    ],
+    "fills": [{ "around": "cta", "color": "#6d5efc" }],
+    "images": [
+      { "id": "logo", "file": "orbit-logo-white.png", "width": 126, "align": "center" }
+    ],
+    "order": [["logo", "title"], ["title", "sub"], ["sub", "cta"]],
+    "vcenter": ["logo", "cta"]
+  }
+}

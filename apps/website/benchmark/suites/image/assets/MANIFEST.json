@@ -1,0 +1,32 @@
+{
+  "avatar-daniel.png": {
+    "width": 256,
+    "height": 256,
+    "sha256": "73a26b6ed739d5c343838184edade7d4f3e7e96d5a17422eee6c683209e785d2"
+  },
+  "avatar-maya.png": {
+    "width": 256,
+    "height": 256,
+    "sha256": "f755c681a4f851ac2de723499aa46cce310869c180529ee5dc58d914c17a6fc8"
+  },
+  "orbit-card-bg.png": {
+    "width": 1200,
+    "height": 630,
+    "sha256": "1fe84909791c44f7153de6975d7e00bfedd2d629f7305c204a91d18033ae6e3a"
+  },
+  "orbit-logo-white.png": {
+    "width": 252,
+    "height": 128,
+    "sha256": "f105743593f62e7b5092ec4bf5750cd98335ed31ff0177b27ac2f6604a380581"
+  },
+  "orbit-logo.png": {
+    "width": 252,
+    "height": 128,
+    "sha256": "4a801a1be0b8ba51ed0e9cb18aab3bac15f3560662c3bd2b5120c05a77e1e7a3"
+  },
+  "podcast-cover.png": {
+    "width": 600,
+    "height": 600,
+    "sha256": "af732df0047e996a1f3945da1ebcc5f54fde64cc78f15b1b4e0a588be24d3f3a"
+  }
+}

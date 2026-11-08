@@ -1,0 +1,195 @@
+{
+  "stamp": "2026-11-08",
+  "machine": {
+    "cpu": "Apple M5 Max",
+    "cores": 18,
+    "os": "darwin 25.6.0 arm64",
+    "node": "v25.9.0"
+  },
+  "engine": {
+    "version": "0.3.0",
+    "commit": "d66930a1c23583c4570bb296102f15956ce48f30",
+    "dirty": false
+  },
+  "coldRuns": 20,
+  "warmRuns": 50,
+  "facts": {
+    "he": {
+      "install": {
+        "packages": 42,
+        "bytes": 29034157,
+        "native": [
+          "@resvg/resvg-js-darwin-arm64/resvgjs.darwin-arm64.node"
+        ],
+        "what": "the package (packed from the checkout, its name before the rename) with its peers satori, @resvg/resvg-js, react and react-dom",
+        "tarballBytes": 1469344
+      },
+      "briefs": {
+        "blog": {
+          "coldStartMs": 121.4,
+          "importMs": 47.5,
+          "firstRenderMs": 47,
+          "warmRenderMs": 16.6,
+          "pngBytes": 45360,
+          "sameBytes": true
+        },
+        "event": {
+          "coldStartMs": 118.4,
+          "importMs": 45.8,
+          "firstRenderMs": 45.4,
+          "warmRenderMs": 15.7,
+          "pngBytes": 35153,
+          "sameBytes": true
+        },
+        "launch": {
+          "coldStartMs": 154.5,
+          "importMs": 45.8,
+          "firstRenderMs": 81,
+          "warmRenderMs": 49.3,
+          "pngBytes": 643156,
+          "sameBytes": true
+        },
+        "podcast": {
+          "coldStartMs": 128.9,
+          "importMs": 46,
+          "firstRenderMs": 56.3,
+          "warmRenderMs": 25.7,
+          "pngBytes": 93457,
+          "sameBytes": true
+        },
+        "quote": {
+          "coldStartMs": 125.7,
+          "importMs": 46,
+          "firstRenderMs": 51.6,
+          "warmRenderMs": 19.1,
+          "pngBytes": 56639,
+          "sameBytes": true
+        }
+      },
+      "median": {
+        "coldStartMs": 125.7,
+        "importMs": 46,
+        "firstRenderMs": 51.6,
+        "warmRenderMs": 19.1,
+        "pngBytes": 56639
+      }
+    },
+    "playwright": {
+      "install": {
+        "packages": 8,
+        "bytes": 22330938,
+        "native": [],
+        "what": "playwright, with react and react-dom to write the HTML (its browser, downloaded by `npx playwright install chromium`, is outside node_modules: browserBytes)",
+        "browserBytes": 199614542
+      },
+      "briefs": {
+        "blog": {
+          "coldStartMs": 367.2,
+          "importMs": 120.1,
+          "firstRenderMs": 219,
+          "warmRenderMs": 204,
+          "pngBytes": 46245,
+          "sameBytes": true
+        },
+        "event": {
+          "coldStartMs": 381.9,
+          "importMs": 124.9,
+          "firstRenderMs": 225.5,
+          "warmRenderMs": 199.2,
+          "pngBytes": 40817,
+          "sameBytes": true
+        },
+        "launch": {
+          "coldStartMs": 447.4,
+          "importMs": 118.1,
+          "firstRenderMs": 300.2,
+          "warmRenderMs": 320,
+          "pngBytes": 458740,
+          "sameBytes": true
+        },
+        "podcast": {
+          "coldStartMs": 382.4,
+          "importMs": 135.6,
+          "firstRenderMs": 221.5,
+          "warmRenderMs": 192.3,
+          "pngBytes": 64773,
+          "sameBytes": true
+        },
+        "quote": {
+          "coldStartMs": 371,
+          "importMs": 124.8,
+          "firstRenderMs": 216.7,
+          "warmRenderMs": 200.8,
+          "pngBytes": 68469,
+          "sameBytes": true
+        }
+      },
+      "median": {
+        "coldStartMs": 381.9,
+        "importMs": 124.8,
+        "firstRenderMs": 221.5,
+        "warmRenderMs": 200.8,
+        "pngBytes": 64773
+      }
+    },
+    "canvas": {
+      "install": {
+        "packages": 12,
+        "bytes": 29915178,
+        "native": [
+          "@napi-rs/canvas-darwin-arm64/skia.darwin-arm64.node"
+        ],
+        "what": "@napi-rs/canvas (Skia, a native binary per platform)"
+      },
+      "briefs": {
+        "blog": {
+          "coldStartMs": 190.1,
+          "importMs": 139.5,
+          "firstRenderMs": 21.2,
+          "warmRenderMs": 14.2,
+          "pngBytes": 52874,
+          "sameBytes": true
+        },
+        "event": {
+          "coldStartMs": 167.7,
+          "importMs": 121.2,
+          "firstRenderMs": 18.7,
+          "warmRenderMs": 12.7,
+          "pngBytes": 46268,
+          "sameBytes": true
+        },
+        "launch": {
+          "coldStartMs": 280.2,
+          "importMs": 112.5,
+          "firstRenderMs": 141.2,
+          "warmRenderMs": 135.3,
+          "pngBytes": 487033,
+          "sameBytes": true
+        },
+        "podcast": {
+          "coldStartMs": 174.8,
+          "importMs": 118.4,
+          "firstRenderMs": 28,
+          "warmRenderMs": 23.1,
+          "pngBytes": 73405,
+          "sameBytes": true
+        },
+        "quote": {
+          "coldStartMs": 189.5,
+          "importMs": 136.5,
+          "firstRenderMs": 24.8,
+          "warmRenderMs": 16.9,
+          "pngBytes": 78867,
+          "sameBytes": true
+        }
+      },
+      "median": {
+        "coldStartMs": 189.5,
+        "importMs": 121.2,
+        "firstRenderMs": 24.8,
+        "warmRenderMs": 16.9,
+        "pngBytes": 73405
+      }
+    }
+  }
+}

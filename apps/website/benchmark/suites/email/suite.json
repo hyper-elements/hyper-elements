@@ -1,0 +1,6 @@
+{
+  "prompt": "Build the email described in BRIEF.md, following CLAUDE.md. It's done when `node tools/check.mjs` passes.",
+  "packageName": "email",
+  "checker": ["check.mjs"],
+  "render": "tools/render.mjs"
+}
