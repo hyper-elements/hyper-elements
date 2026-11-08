@@ -21,6 +21,7 @@
  * Core's tsconfig sets `jsxFactory: "h"` and `jsxFragmentFactory: "Fragment"`; each
  * `.tsx` file imports them from here.
  */
+import { HOVER, MOBILE } from "../conditions";
 import type { Level, Media, Stylesheet } from "./shared/classes";
 import { border, css, escapeAttr, escapeText, insets, px, radius, type Declarations } from "./shared/css";
 
@@ -127,7 +128,7 @@ function classesOf(name: string, value: unknown): string[] {
   if (name === "class") return (Array.isArray(value) ? value : [value]).filter((v): v is string => typeof v === "string" && v !== "");
   const text = styleText(value as StyleValue, true);
   if (!text) return [];
-  return [name === "phone" ? rule("phone", `&{${text}}`) : rule("all", `&:hover{${text}}`, "hover")];
+  return [name === "phone" ? rule(MOBILE.sheet.media, `${MOBILE.sheet.selector}{${text}}`) : rule(HOVER.sheet.media, `${HOVER.sheet.selector}{${text}}`, HOVER.sheet.level)];
 }
 
 function attributes(props: Record<string, unknown>): string {

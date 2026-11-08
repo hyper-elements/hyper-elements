@@ -76,6 +76,15 @@ export const Grid = defineComponent({
   },
   children: { categories: ["layout", "block"] },
   sizing: "stretch",
+  // Stacked on phones, every two of its children are its phone gap apart: there are no rows for a row gap.
+  conditionSupport: {
+    mobile: {
+      rowGap: {
+        web: { level: "none", when: (_, node) => node.props.stackOnMobile !== false, shows: "its phone gap between every two children", source: "writer" },
+        email: { level: "none", when: (_, node) => node.props.stackOnMobile !== false, shows: "its phone gap between every two children", source: "writer" },
+      },
+    },
+  },
   targets: { email: {}, web: {} },
   editor: {
     groups: [

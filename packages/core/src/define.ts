@@ -116,6 +116,11 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
   defaultStyleBy?: { prop: keyof P & string; values: Record<string, { [K in keyof S]?: OutputOf<S[K]["kind"]> }> };
   /** Style keys that may be set for `hover`. */
   hover?: readonly (keyof S & string)[];
+  /**
+   * Styles a condition takes on this component that an output doesn't show under it, by condition, style and
+   * output (a Page root's phone font size): reported when the template is expanded, before a Grid is arranged.
+   */
+  conditionSupport?: Partial<Record<"mobile" | "hover", Partial<Record<keyof S & string, SupportByTarget>>>>;
   children: ChildrenRule;
   /**
    * How wide it is where nothing sets its width: `stretch` fills its parent's

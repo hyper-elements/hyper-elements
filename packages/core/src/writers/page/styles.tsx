@@ -1,4 +1,5 @@
 /** What inline styles can't do, as classes in the stylesheet: phone overrides, hiding, hover, a Row stacking on phones. */
+import { HOVER, MOBILE } from "../../conditions";
 import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
 import { rule } from "../jsx";
@@ -33,16 +34,16 @@ export function classesFor(node: ResolvedNode, parent: ResolvedNode): string | u
   if (node.mobile) {
     // A Divider's length is its line's.
     const { width, ...rest } = node.mobile;
-    if (Object.keys(rest).length) classes.push(rule("phone", `&{${css(declarationsOf(rest), true)}}`));
+    if (Object.keys(rest).length) classes.push(rule(MOBILE.sheet.media, `${MOBILE.sheet.selector}{${css(declarationsOf(rest), true)}}`));
     const line = node.type === "Divider" && node.style.padding !== undefined ? ">hr" : "";
-    if (width !== undefined) classes.push(rule("phone", `&${line}{${css(declarationsOf({ width }), true)}}`));
+    if (width !== undefined) classes.push(rule(MOBILE.sheet.media, `${MOBILE.sheet.selector}${line}{${css(declarationsOf({ width }), true)}}`));
     // In a Row kept side by side its flex basis wins over a width (rowPlacement), but where it's of its own size and has none.
     const own = node.style.width === undefined && (node.style.flex === "none" || node.style.flex === 0);
     const basis = own ? undefined : length(phoneWidthInRow(node, parent));
     if (basis !== undefined) classes.push(rule("phone", `&{flex:0 1 ${basis}!important}`));
   }
   classes.push(...hidingClasses(node.hidden));
-  if (node.hover) classes.push(rule("all", `&:hover{${css(declarationsOf(node.hover), true)}}`, "hover"));
+  if (node.hover) classes.push(rule(HOVER.sheet.media, `${HOVER.sheet.selector}{${css(declarationsOf(node.hover), true)}}`, HOVER.sheet.level));
   if (node.type === "Row" && node.props.stackOnMobile !== false) {
     classes.push(
       rule("phone", "&{flex-direction:column!important;align-items:stretch!important}&>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}", "layout")

@@ -4,6 +4,7 @@
  * text), and `render()` for its children, so components don't import each
  * other.
  */
+import { shownAnywhere } from "../../conditions";
 import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
 import type { Html } from "../jsx";
@@ -44,4 +45,4 @@ export interface Props {
 export type Component = (props: Props) => Html;
 
 export const isNode = (child: ResolvedNode | string): child is ResolvedNode => typeof child !== "string";
-export const shown = (node: ResolvedNode) => !(node.hidden?.mobile && node.hidden?.desktop);
+export const shown = (node: ResolvedNode) => shownAnywhere(node);

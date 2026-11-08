@@ -2,6 +2,7 @@ export * from "./model";
 export * from "./diagnostics";
 export * from "./kinds";
 export * from "./define";
+export * from "./conditions";
 export * from "./styles";
 export * from "./components";
 export * from "./composites";
