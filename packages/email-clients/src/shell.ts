@@ -42,6 +42,8 @@ const STYLE =
 /** The preview file for `config`'s client, drawing `html` (render()'s email) with `runtime`. */
 export function previewFile(html: string, config: PreviewConfig, runtime: Runtime | null): string {
   const approximate = config.approximate ? " The model is approximate: words can sit a few pixels from where the client puts them." : "";
+  // Classic Outlook's model places words as Word does; what it draws around them (rounded corners, for one) can still show.
+  const words = config.client === "outlook" ? " It models where words fall: details Outlook doesn't draw, such as rounded corners, may still show." : "";
   const title = `${config.name}${config.dark ? ", dark" : ""} (${config.variant}, ${config.width}px)`;
   return [
     "<!DOCTYPE html>",
@@ -54,7 +56,7 @@ export function previewFile(html: string, config: PreviewConfig, runtime: Runtim
     `<style>${STYLE}</style>`,
     "</head>",
     "<body>",
-    `<header class="note"><h1>${escapeHtml(title)}</h1><p>How this email draws in ${escapeHtml(config.name)}.${approximate} A preview isn't an email: what you send is render()'s html. What the client changed is listed here once the preview has loaded.</p><div id="findings"></div></header>`,
+    `<header class="note"><h1>${escapeHtml(title)}</h1><p>How this email draws in ${escapeHtml(config.name)}.${approximate}${words} A preview isn't an email: what you send is render()'s html. What the client changed is listed here once the preview has loaded.</p><div id="findings"></div></header>`,
     '<main id="frames"></main>',
     `<script type="application/json" id="email">${scriptJson(html)}</script>`,
     `<script type="application/json" id="email-client-config">${scriptJson(config)}</script>`,
