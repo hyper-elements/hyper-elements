@@ -127,7 +127,9 @@ Email 600px
 
 An agent can spot missing content, incorrect widths, and layout mistakes before rendering. Validation checks the engine's support rules; it does not open every email client. [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
 
-## Faster from prompt to passing email
+## Agent Benchmarks
+
+### Email
 
 In our benchmark of five email briefs, Hyper Elements reached a passing email **2.6× faster** with **3.4× fewer output tokens** than React Email, at the median. It was also **1.3× faster than MJML**. Hyper Elements and MJML both passed **16 of 16** first checks.
 
@@ -139,7 +141,7 @@ In our benchmark of five email briefs, Hyper Elements reached a passing email **
 
 All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
 
-## From prompt to passing image
+### Image
 
 Across five image briefs, Hyper Elements reached a passing image **1.65× faster** with **1.8× fewer output tokens** than Canvas 2D (`@napi-rs/canvas`), at the median. **17 of 20** images passed on the first check.
 
