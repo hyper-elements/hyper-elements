@@ -1,5 +1,18 @@
 import React from "react";
-import { ElementsError, LAYOUT_VERSION, pagedSupport, prepareTemplate, renderTemplate, validateTemplate, type Diagnostic, type RenderOptions, type RenderResult, type ResolvedNode } from "@unlayer-internal/elements-core";
+import {
+  checkEmailClients,
+  ElementsError,
+  LAYOUT_VERSION,
+  pagedSupport,
+  prepareTemplate,
+  renderTemplate,
+  validateTemplate,
+  type Diagnostic,
+  type EmailClientsOption,
+  type RenderOptions,
+  type RenderResult,
+  type ResolvedNode,
+} from "@unlayer-internal/elements-core";
 import { collectTemplate } from "./collect";
 import { outlineOf } from "./outline";
 
@@ -18,11 +31,15 @@ function template(element: unknown, call: string) {
  * template has errors (see `validate()`).
  */
 export async function render(element: React.ReactElement, options: RenderOptions = {}): Promise<RenderResult> {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "render");
   if (!document || diagnostics.some((d) => d.severity === "error")) throw new ElementsError(diagnostics);
   const rendered = renderTemplate(document, { ...options, components });
   return { ...rendered, diagnostics: [...diagnostics, ...rendered.diagnostics] };
 }
+
+/** `validate()`'s and `prepare()`'s options: `emailClients`, the email clients to report an Email's problems for. */
+export type ValidateOptions = EmailClientsOption;
 
 export interface ValidationResult {
   /** No errors (there may be warnings and notes). */
@@ -38,11 +55,13 @@ export interface ValidationResult {
  * own checks, layout, and what the output can't do as asked (`email/…`).
  * Warnings and notes leave it valid. Only what needs the written output is
  * left to `render()`: an email's size against Gmail's limits (`email/size`,
- * `email/style-size`).
+ * `email/style-size`). An Email's problems with email clients name them
+ * (`clients`), with what to change (`fix`); `emailClients` picks the clients.
  */
-export function validate(element: React.ReactElement): ValidationResult {
+export function validate(element: React.ReactElement, options: ValidateOptions = {}): ValidationResult {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "validate");
-  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components }).diagnostics : [])];
+  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components, emailClients: options.emailClients }).diagnostics : [])];
   return { valid: !all.some((d) => d.severity === "error"), diagnostics: all };
 }
 
@@ -67,10 +86,11 @@ export function outline(element: React.ReactElement): string {
  * errors. The tree is the writers' input, not a format to store: it changes with Elements, and `layout` says which
  * format it's in (a writer refuses one it doesn't read).
  */
-export function prepare(element: React.ReactElement): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
+export function prepare(element: React.ReactElement, options: ValidateOptions = {}): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "prepare");
   if (!document || diagnostics.some((d) => d.severity === "error")) return { root: null, diagnostics, layout: LAYOUT_VERSION };
-  const prepared = prepareTemplate(document, { components });
+  const prepared = prepareTemplate(document, { components, emailClients: options.emailClients });
   const root = prepared.resolved?.root ?? null;
   // A Document is prepared for its PDF and a Canvas for its image: what they can't show that the HTML can.
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];

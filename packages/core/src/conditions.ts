@@ -69,7 +69,15 @@ export const HOVER: Condition = {
   allows: (_, key, definition) => !!definition.hover?.includes(key),
   support: {
     web: { level: "full", source: "css" },
-    email: { level: "partial", shows: "no change in classic Outlook for Windows and some other apps and webmail (where it shows, keyboard focus gets it too)", source: "caniemail" },
+    // On type selectors only in Outlook.com and Outlook for Mac (Elements' are classes); the phone apps' results don't
+    // matter, as nothing hovers there.
+    email: {
+      level: "partial",
+      shows: "no change (where it shows, keyboard focus gets it too)",
+      source: "caniemail",
+      feature: "css-pseudo-class-hover",
+      clients: ["outlook", "outlook-com", "outlook-mac", "gmx", "web-de", "sfr", "laposte", "mail-ru"],
+    },
   },
   paged: (node, where) => `A hover isn't possible in ${where}: nothing points at it. The ${node.type} shows its own colors`,
   outlookApplies: false,

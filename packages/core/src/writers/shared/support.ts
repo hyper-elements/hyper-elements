@@ -5,7 +5,8 @@
  * and each style inside one. One pass reads it for every output, for what the
  * author set (not a component's own defaults): `none` is a warning
  * (`<output>/unsupported`), `partial` a note (`<output>/degraded`), `outlook`
- * a note (`email/outlook-degraded`). Each output adds what no single style or
+ * a note (`email/outlook-degraded`), each naming the email clients it's about
+ * where the rule does (declared.ts). Each output adds what no single style or
  * prop says (email: `email/support.ts`).
  */
 import { blockOf, CONDITIONS, shownAnywhere } from "../../conditions";

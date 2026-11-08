@@ -90,3 +90,40 @@ for (const root of ["Page", "Email"] as const) {
     }
   });
 }
+
+it("keeps a narrow Button's words whole, and still breaks a long link in text rather than widen its column (Email)", async () => {
+  // As e3-fresh/g-0054 in captures of Elements 0.3.0: a 50% Button in a third of the email, narrower than its padding,
+  // drew its label a letter a line in Gmail. A long link in a Text still breaks onto the next line.
+  const link = "https://example.com/an/unusually/long/path/that/has/no/spaces/in/it/at/all";
+  const email = {
+    root: {
+      type: "Email",
+      props: { width: 600 },
+      children: [
+        {
+          type: "Row",
+          children: [
+            { type: "Column", id: "first", children: [{ type: "Button", id: "button", props: { href: "https://example.com" }, style: { width: "50%", padding: [16, 48] }, children: ["Beginning questions"] }] },
+            { type: "Column", id: "second", children: [{ type: "Text", id: "link", children: [link] }] },
+            { type: "Column", children: [{ type: "Text", children: ["Third"] }] },
+          ],
+        },
+      ],
+    },
+  };
+  const page = await browser.newPage({ viewport: { width: 700, height: 800 } });
+  await page.setContent(renderTemplate(email).html);
+  const { lines, columns, linkLines } = await page.evaluate(() => {
+    const linesOf = (el: Element) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return new Set([...range.getClientRects()].filter((r) => r.width > 0).map((r) => Math.round(r.top))).size;
+    };
+    const width = (id: string) => Math.round(document.getElementById(id)!.getBoundingClientRect().width);
+    return { lines: linesOf(document.querySelector("#button a")!), columns: [width("first"), width("second")], linkLines: linesOf(document.getElementById("link")!) };
+  });
+  await page.close();
+  expect(lines).toBe(2);
+  expect(columns).toEqual([200, 200]);
+  expect(linkLines).toBeGreaterThan(1);
+});
