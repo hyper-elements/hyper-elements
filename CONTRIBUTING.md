@@ -28,9 +28,8 @@ pnpm test
 
 ```
 packages/
-  react/       → Published package (@hyper-elements/react), with a Document written as a PDF (/pdf), a Canvas as
-                 PNG or SVG (/image) and the design checks (/check) as entries of their own; the starter templates
-                 (templates/) ship in it
+  react/       → Published package (@hyper-elements/react), with a Document written as a PDF (/pdf) and a
+                 Canvas as PNG or SVG (/image) as entries of their own; the starter templates (templates/) ship in it
   core/        → Component definitions, validation, layout, and the writers (src/writers/: email, page and print
                  HTML, plain text; src/pdf/ and src/image/: the PDF and image writers, with their own entries);
                  bundled into react, not published

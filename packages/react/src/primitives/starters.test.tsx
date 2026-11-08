@@ -6,8 +6,7 @@
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import type { ComponentType } from "react";
-import { render } from "./render";
-import { check } from "../check";
+import { render, validate } from "./render";
 
 const dir = join(__dirname, "../../templates");
 const files = readdirSync(dir).filter((file) => file.endsWith(".tsx")).sort();
@@ -34,6 +33,7 @@ describe("the starter templates", () => {
 
   it.each(files)("%s passes the design checks", (file) => {
     const Template = starter(file).default;
-    expect(check(<Template />).diagnostics.map((d) => `${d.code} ${d.path}: ${d.message.slice(0, 80)}`)).toEqual([]);
+    const design = validate(<Template />, { design: true }).diagnostics.filter((d) => d.code.startsWith("design/"));
+    expect(design.map((d) => `${d.code} ${d.path}: ${d.message.slice(0, 80)}`)).toEqual([]);
   });
 });

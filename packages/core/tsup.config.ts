@@ -22,6 +22,4 @@ export default defineConfig([
   { ...shared, entry: { index: 'src/index.ts' }, clean: true },
   { ...shared, entry: { pdf: 'src/pdf/index.ts' } },
   { ...shared, entry: { image: 'src/image/index.ts' } },
-  // The design checks: @hyper-elements/react/check's, read from the tree as laid out.
-  { ...shared, entry: { check: 'src/check/index.ts' } },
 ]);

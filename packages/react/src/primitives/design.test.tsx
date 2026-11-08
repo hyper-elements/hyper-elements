@@ -1,15 +1,28 @@
 /**
- * The design checks: each fires where its problem is, and only there. The README's template passes them all, as
- * every template an agent copies has to.
+ * validate()'s design checks (`design: true`): each fires where its problem is, and only there, with its fix. They're
+ * off by default. The README's template passes them all, as every template an agent copies has to.
  */
-import { Button, Column, Document, Email, Heading, Image, Link, MergeTag, Row, Section, Table, TableCell, TableRow, Text } from "@hyper-elements/react";
-import { check } from "./index";
-import Receipt from "../primitives/readme-example";
+import { Button, Column, Document, Email, Heading, Image, Link, MergeTag, Row, Table, TableCell, TableRow, Text } from "./index";
+import { validate } from "./render";
+import Receipt from "./readme-example";
 
-const codes = (element: React.ReactElement) => check(element).diagnostics.map((d) => d.code);
+const design = (element: React.ReactElement) => validate(element, { design: true }).diagnostics.filter((d) => d.code.startsWith("design/"));
+const codes = (element: React.ReactElement) => design(element).map((d) => d.code);
 const LONG = "Thanks for your order. We'll send tracking details as soon as it ships from our warehouse.";
 
-describe("check()", () => {
+describe("validate(element, { design: true })", () => {
+  it("is off by default: a MergeTag is right in a template a sending service fills in", () => {
+    const element = <Email><Heading level={1}>Hi <MergeTag name="first_name" /></Heading></Email>;
+    expect(validate(element).diagnostics.filter((d) => d.code.startsWith("design/"))).toEqual([]);
+    expect(codes(element)).toEqual(["design/merge-tag-visible"]);
+  });
+
+  it("gives each problem as a warning with what to write instead, at its place in the template", () => {
+    const [found] = design(<Email><Text>Call +1 (503) 555-0142 any day.</Text></Email>);
+    expect(found).toMatchObject({ code: "design/phone-number", severity: "warning", path: "root.children[0]" });
+    expect(found.fix).toContain("+1&nbsp;(503)&nbsp;555&#8209;0142");
+  });
+
   it("finds a MergeTag shown as text, and a typed {{tag}}, but not a tag in a link's href", () => {
     expect(codes(<Email><Heading level={1}>Hi <MergeTag name="first_name" /></Heading></Email>)).toEqual(["design/merge-tag-visible"]);
     expect(codes(<Email><Text>Dear {"{{first_name}}"},</Text></Email>)).toEqual(["design/merge-tag-visible"]);
@@ -44,9 +57,9 @@ describe("check()", () => {
   });
 
   it("finds a phone number that can split at a space or a hyphen, and not one joined with non-breaking ones", () => {
-    const [found] = check(<Email><Text>Call +1 (503) 555-0142 any day.</Text></Email>).diagnostics;
+    const [found] = design(<Email><Text>Call +1 (503) 555-0142 any day.</Text></Email>);
     expect(found?.code).toBe("design/phone-number");
-    expect(found?.message).toContain("+1&nbsp;(503)&nbsp;555&#8209;0142");
+    expect(found?.fix).toContain("+1&nbsp;(503)&nbsp;555&#8209;0142");
     // A hyphen breaks a line too: non-breaking spaces alone aren't enough.
     expect(codes(<Email><Text>{"Call +1\u00a0(503)\u00a0555-0142 any day."}</Text></Email>)).toEqual(["design/phone-number"]);
     expect(codes(<Email><Text>{"Call +1\u00a0(503)\u00a0555\u20110142 any day."}</Text></Email>)).toEqual([]);
@@ -70,13 +83,13 @@ describe("check()", () => {
     expect(codes(<Email><Row stackOnMobile={false}><Column><Text>{LONG}</Text></Column><Column><Text>{LONG}</Text></Column></Row></Email>)).toEqual([]);
   });
 
-  it("gives a template's errors instead of checking it", () => {
-    const { diagnostics } = check(<Email><Text style={{ marginBottom: 16 } as never}>x</Text></Email>);
-    expect(diagnostics.length).toBeGreaterThan(0);
-    expect(diagnostics.every((d) => d.severity === "error")).toBe(true);
+  it("checks nothing in a template with errors, which is invalid", () => {
+    const { valid, diagnostics } = validate(<Email><Text style={{ marginBottom: 16 } as never}>{"{{name}}"}</Text></Email>, { design: true });
+    expect(valid).toBe(false);
+    expect(diagnostics.some((d) => d.code.startsWith("design/"))).toBe(false);
   });
 
   it("passes the README's template", () => {
-    expect(check(<Receipt />).diagnostics).toEqual([]);
+    expect(design(<Receipt />)).toEqual([]);
   });
 });

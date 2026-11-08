@@ -23,11 +23,6 @@
       "types": "./dist/image.d.ts",
       "import": "./dist/image.js",
       "require": "./dist/image.cjs"
-    },
-    "./check": {
-      "types": "./dist/check.d.ts",
-      "import": "./dist/check.js",
-      "require": "./dist/check.cjs"
     }
   },
   "types": "./dist/index.d.ts",

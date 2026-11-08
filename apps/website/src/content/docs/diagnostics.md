@@ -51,6 +51,18 @@ render(<Welcome />, { emailClients: [] });                         // no email c
 
 A problem about clients you didn't ask for is left out, and one about several has its `clients` narrowed to those you asked for. A problem about no client in particular (`email/width`, `email/layer`) is always reported. For a `Page`, `Document` or `Canvas` the option is ignored, with an `email/clients-ignored` note.
 
+## Design
+
+`validate(element, { design: true })` also reports what a reader of the design would turn down, as warnings with a `fix` each. They're off by default: a `MergeTag` is right in a template a sending service fills in, and a placeholder only in a design judged as it stands (a preview, a review). `npx hyper-elements preview` asks for them.
+
+| Code | What |
+|---|---|
+| `design/merge-tag-visible` | A `MergeTag` or a typed `{{tag}}` shown as text (one in a link's `href` doesn't show) |
+| `design/table-columns` | An email table that keeps four or more columns on a phone |
+| `design/phone-number` | A phone number with a space or hyphen a line can break at |
+| `design/contrast` | Text under 3:1 contrast with what's behind it |
+| `design/alt` | An `Image` without alt text |
+
 `EMAIL_CLIENTS` says what's known of each: its name, the widths it shows an email at, and how closely it was measured (`measured`: the share of words a model of the client draws within 4px of the client, on emails it wasn't tuned on; `null` where what's known of it is caniemail's).
 
 The path walks the template from the root: `root.children[2].style.justifyContent` is the third child's `justifyContent` style.

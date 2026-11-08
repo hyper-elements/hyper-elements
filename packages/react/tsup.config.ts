@@ -35,5 +35,4 @@ export default defineConfig([
   { ...shared, entry: { builder: 'src/builder/index.ts' } },
   output('pdf', ['@react-pdf/renderer']),
   output('image', ['satori', '@resvg/resvg-js']),
-  output('check', []),
 ]);

@@ -8,7 +8,7 @@ import {
   renderTemplate,
   validateTemplate,
   type Diagnostic,
-  type EmailClientsOption,
+  type DesignOption, type EmailClientsOption,
   type RenderOptions,
   type RenderResult,
   type ResolvedNode,
@@ -38,8 +38,11 @@ export async function render(element: React.ReactElement, options: RenderOptions
   return { ...rendered, diagnostics: [...diagnostics, ...rendered.diagnostics] };
 }
 
-/** `validate()`'s and `prepare()`'s options: `emailClients`, the email clients to report an Email's problems for. */
-export type ValidateOptions = EmailClientsOption;
+/**
+ * `validate()`'s and `prepare()`'s options: `emailClients`, the email clients to report an Email's problems for; and,
+ * for `validate()`, `design`, what a reader of the design would turn down (`design/…` warnings, each with its `fix`).
+ */
+export type ValidateOptions = EmailClientsOption & DesignOption;
 
 export interface ValidationResult {
   /** No errors (there may be warnings and notes). */
@@ -61,7 +64,7 @@ export interface ValidationResult {
 export function validate(element: React.ReactElement, options: ValidateOptions = {}): ValidationResult {
   checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "validate");
-  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components, emailClients: options.emailClients }).diagnostics : [])];
+  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components, emailClients: options.emailClients, design: options.design }).diagnostics : [])];
   return { valid: !all.some((d) => d.severity === "error"), diagnostics: all };
 }
 

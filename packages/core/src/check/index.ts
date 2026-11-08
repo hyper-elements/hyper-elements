@@ -1,8 +1,8 @@
 /**
  * Design checks: what makes a reader turn an email down, found in a template laid out (`prepareTemplate`'s tree). They
- * are warnings, separate from rendering's diagnostics: `check()` in `@hyper-elements/react/check` runs them, and
- * the preview command runs it on every preview. Each one fires only where its problem is there, and says what to
- * write instead. None measures text: a table's phone widths are worked out from the layout's rules, not from glyphs.
+ * are warnings `validate(element, { design: true })` adds, each with what to write instead (`fix`); rendering doesn't
+ * run them, and the preview command asks for them on every preview. Each fires only where its problem is there. None
+ * measures text: a table's phone widths are worked out from the layout's rules, not from glyphs.
  *
  * Each check was kept because, run over earlier agent-built emails, it fired where reviewers named its problem.
  * Two that didn't were left out: small text (under 12px fired as often on emails reviewers liked) and text in a
@@ -116,8 +116,8 @@ const stacks = (node: ResolvedNode) => (node.type === "Row" || node.type === "Gr
  */
 export function designChecks(root: ResolvedNode, options: { phoneWidth?: number } = {}): Diagnostic[] {
   const out: Diagnostic[] = [];
-  const warn = (code: string, node: ResolvedNode, message: string, at = "") =>
-    out.push({ code, severity: "warning", message, path: node.path + at, ...(node.id ? { nodeId: node.id } : {}) });
+  const warn = (code: string, node: ResolvedNode, message: string, fix: string, at = "") =>
+    out.push({ code, severity: "warning", message, path: node.path + at, ...(node.id ? { nodeId: node.id } : {}), fix });
   const phone = root.type === "Email" || root.type === "Page";
   const phoneWidth = options.phoneWidth ?? PHONE_WIDTH;
   const rootBackground = parseRgba(root.style.backgroundColor);
@@ -134,18 +134,18 @@ export function designChecks(root: ResolvedNode, options: { phoneWidth?: number 
     const text = TEXT_BLOCKS.has(node.type) ? words(node) : "";
 
     if (node.type === "MergeTag") {
-      warn("design/merge-tag-visible", node, `<MergeTag name="${String(node.props.name)}" /> shows as {{${String(node.props.name)}}} until a sending service fills it in, and a reader of this design sees a placeholder. Write the text itself (a name, an address), or leave it out; a service's tag can go in a Link's href (href="{{unsubscribe_url}}"), where it doesn't show.`);
+      warn("design/merge-tag-visible", node, `<MergeTag name="${String(node.props.name)}" /> shows as {{${String(node.props.name)}}} until a sending service fills it in: a reader of this design sees a placeholder`, `Write the text itself (a name, an address), or leave it out. A service's tag can go in a Link's href (href="{{unsubscribe_url}}"), where it doesn't show.`);
     }
     for (const child of node.children) {
       if (typeof child === "string" && TAG.test(child) && node.type !== "MergeTag") {
-        warn("design/merge-tag-visible", node, `"${TAG.exec(child)![0]}" shows as written: a reader of this design sees a placeholder. Write the text itself, or leave it out; a sending service's tag can go in a Link's href, where it doesn't show.`);
+        warn("design/merge-tag-visible", node, `"${TAG.exec(child)![0]}" shows as written: a reader of this design sees a placeholder`, "Write the text itself, or leave it out. A sending service's tag can go in a Link's href, where it doesn't show.");
         break;
       }
     }
 
     if (node.type === "Image") {
       const alt = node.props.alt;
-      if (typeof alt !== "string" || !alt.trim()) warn("design/alt", node, `This Image has no alt text. Mail apps that block images show the alt text instead: say what it shows (alt="Stoneware mug, speckled oat"), a product thumbnail's name included.`, ".props.alt");
+      if (typeof alt !== "string" || !alt.trim()) warn("design/alt", node, "This Image has no alt text: mail apps that block images show it instead", `Say what it shows (alt="Stoneware mug, speckled oat"), a product thumbnail's name included.`, ".props.alt");
     }
 
     if (text.trim()) {
@@ -153,11 +153,11 @@ export function designChecks(root: ResolvedNode, options: { phoneWidth?: number 
       const back = node.type === "Button" ? (own ? over(own, behind ?? page) : undefined) : behind;
       if (color && back) {
         const ratio = contrastRatio(color, back);
-        if (ratio < LOW_CONTRAST) warn("design/contrast", node, `This text's color has a contrast of ${ratio.toFixed(1)}:1 with what's behind it, which is hard to read. Use a darker or lighter color, ${LOW_CONTRAST}:1 at least (4.5:1 for body text is better).`, ".style.color");
+        if (ratio < LOW_CONTRAST) warn("design/contrast", node, `This text's color has a contrast of ${ratio.toFixed(1)}:1 with what's behind it, which is hard to read`, `Use a darker or lighter color: ${LOW_CONTRAST}:1 at least, 4.5:1 for body text.`, ".style.color");
       }
       for (const match of text.matchAll(PHONE_NUMBER)) {
         if (/[ -]/.test(match[0])) {
-          warn("design/phone-number", node, `On a narrow screen "${match[0]}" can break at a space or a hyphen and split across two lines. Join its parts with non-breaking spaces and hyphens: ${match[0].replace(/ /g, "&nbsp;").replace(/-/g, "&#8209;")}.`);
+          warn("design/phone-number", node, `On a narrow screen "${match[0]}" can break at a space or a hyphen and split across two lines`, `Join its parts with non-breaking spaces and hyphens: ${match[0].replace(/ /g, "&nbsp;").replace(/-/g, "&#8209;")}.`);
           break;
         }
       }
@@ -171,7 +171,7 @@ export function designChecks(root: ResolvedNode, options: { phoneWidth?: number 
         (node as Walked).columnsOnPhone = widths;
         const narrowest = Math.min(...widths);
         if (columns.length >= MANY_COLUMNS) {
-          warn("design/table-columns", node, `On phones this table keeps its ${columns.length} columns, the narrowest about ${Math.round(narrowest)}px wide, so their text breaks into short lines. Give line items two columns: the item with its quantity and unit price under its name, the amount on the right.`);
+          warn("design/table-columns", node, `On phones this table keeps its ${columns.length} columns, the narrowest about ${Math.round(narrowest)}px wide, so their text breaks into short lines`, "Give line items two columns: the item with its quantity and unit price under its name, the amount on the right.");
         }
       }
     }

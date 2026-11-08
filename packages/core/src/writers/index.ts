@@ -12,6 +12,7 @@ import { support } from "./shared/support";
 import { pageBreakpoints, renderPage, type PageOptions } from "./page";
 import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
+import { designChecks } from "../check";
 
 export { renderEmail, EMAIL_PHONE_MARGIN, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, type EmailHtml, type EmailOptions } from "./email";
 export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
@@ -29,6 +30,16 @@ export interface EmailClientsOption {
    * problems of the email itself.
    */
   emailClients?: readonly EmailClient[];
+}
+
+export interface DesignOption {
+  /**
+   * Also report what a reader of the design would turn down, as `design/…` warnings, each with what to write instead
+   * (`fix`): a MergeTag or `{{tag}}` shown as text, an email table of four or more columns on a phone, a phone number a
+   * line can split, text under 3:1 contrast with what's behind it, an Image without alt text. Off by default: a
+   * MergeTag is right in a template a sending service fills in; it's a placeholder in a design judged as it stands.
+   */
+  design?: boolean;
 }
 
 export interface RenderOptions extends PageOptions, EmailOptions, EmailClientsOption {
@@ -132,11 +143,12 @@ function pageNumbersOutside(root: ResolvedNode): Diagnostic[] {
  * A template's problems, without writing it: errors make it invalid, warnings and notes don't. A Document's are its
  * PDF's too, and a Canvas's its image's (what they can't show that its HTML can).
  */
-export function validateTemplate(input: unknown, options: ComponentsOption & EmailClientsOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
+export function validateTemplate(input: unknown, options: ComponentsOption & EmailClientsOption & DesignOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
   const { diagnostics, resolved } = prepareTemplate(input, options);
   const root = resolved?.root;
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];
-  const all = [...diagnostics, ...(resolved ? inTemplate(resolved, paged) : paged)];
+  const design = options.design && root ? designChecks(root) : [];
+  const all = [...diagnostics, ...(resolved ? inTemplate(resolved, [...paged, ...design]) : paged)];
   return { valid: !all.some((d) => d.severity === "error"), diagnostics: all };
 }
 
