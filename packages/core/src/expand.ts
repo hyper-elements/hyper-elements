@@ -4,11 +4,11 @@
  * each; only what's rendered is expanded.
  */
 import { blockOf, CONDITIONS } from "./conditions";
-import type { ComponentDefinition, Target } from "./define";
+import type { ComponentDefinition, SupportByTarget, Target } from "./define";
 import { Diagnostics, type Diagnostic } from "./diagnostics";
 import { isNode, type ElementsDocument, type Json, type Node } from "./model";
 import { checkFragment } from "./normalize";
-import { reportDeclared } from "./writers/shared/support";
+import { reportDeclared } from "./declared";
 import { CUSTOM_TYPE, isCustom, propsWithDefaults, registryOf, type ComponentsOption, type CustomDefinition, type Registry } from "./registry";
 
 /** How deep custom components may expand into others: deeper is a component that contains itself. */
@@ -62,10 +62,11 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     if (!declared) return;
     for (const condition of CONDITIONS) {
       const block = blockOf(node, condition);
-      const byStyle = declared[condition.name] as Record<string, Record<string, unknown>> | undefined;
-      if (!block || !byStyle) continue;
+      const byStyle: Partial<Record<string, SupportByTarget>> | undefined = declared[condition.name];
+      // Hidden where the condition applies (on phones), nothing in its block shows anyway: as the support pass skips it.
+      if (!block || !byStyle || (condition.hiddenKey && node.hidden?.[condition.hiddenKey])) continue;
       for (const [key, value] of Object.entries(block)) {
-        reportDeclared(d, { type: node.type, id: node.id, props: node.props ?? {} }, `${path}.${condition.name}.${key}`, key, value, byStyle[key]?.[target] as never, target);
+        reportDeclared(d, { type: node.type, id: node.id, props: node.props ?? {} }, `${path}.${condition.name}.${key}`, key, value, byStyle[key]?.[target], target);
       }
     }
   };

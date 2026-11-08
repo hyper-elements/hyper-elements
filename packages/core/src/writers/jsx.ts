@@ -123,12 +123,14 @@ export function styleText(style: StyleValue, important = false): string {
   return css(declarations(style), important);
 }
 
-/** A `class`, `phone` or `hover` prop's class names. */
+/** A `class`, `phone`, `hover` or `hoverWithin` (a box around a focusable element: its hover while that has focus) prop's class names. */
 function classesOf(name: string, value: unknown): string[] {
   if (name === "class") return (Array.isArray(value) ? value : [value]).filter((v): v is string => typeof v === "string" && v !== "");
   const text = styleText(value as StyleValue, true);
   if (!text) return [];
-  return [name === "phone" ? rule(MOBILE.sheet.media, `${MOBILE.sheet.selector}{${text}}`) : rule(HOVER.sheet.media, `${HOVER.sheet.selector}{${text}}`, HOVER.sheet.level)];
+  if (name === "phone") return [rule(MOBILE.sheet.media, `${MOBILE.sheet.selector}{${text}}`)];
+  const selector = name === "hoverWithin" ? (HOVER.sheet.within ?? HOVER.sheet.selector) : HOVER.sheet.selector;
+  return [rule(HOVER.sheet.media, `${selector}{${text}}`, HOVER.sheet.level)];
 }
 
 function attributes(props: Record<string, unknown>): string {
@@ -137,7 +139,7 @@ function attributes(props: Record<string, unknown>): string {
   let slot = -1;
   for (const [name, value] of Object.entries(props)) {
     if (name === "children" || name === "style" || value === undefined || value === null || value === false) continue;
-    if (name === "class" || name === "phone" || name === "hover") {
+    if (name === "class" || name === "phone" || name === "hover" || name === "hoverWithin") {
       const found = classesOf(name, value);
       if (found.length && slot < 0) slot = out.push("") - 1;
       classes.push(...found);
@@ -210,7 +212,7 @@ export declare namespace h {
       children: unknown;
     }
     interface IntrinsicElements {
-      [tag: string]: { style?: StyleValue; phone?: StyleValue; hover?: StyleValue; class?: string | ReadonlyArray<string | undefined>; children?: Child } & {
+      [tag: string]: { style?: StyleValue; phone?: StyleValue; hover?: StyleValue; hoverWithin?: StyleValue; class?: string | ReadonlyArray<string | undefined>; children?: Child } & {
         [attribute: string]: Attribute | StyleValue | Child | ReadonlyArray<string | undefined>;
       };
     }

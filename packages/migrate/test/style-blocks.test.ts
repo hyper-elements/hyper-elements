@@ -97,6 +97,12 @@ describe("style-blocks", () => {
     expect(code).toContain(`<Text mobile={{ x: 1 }} />`);
   });
 
+  it("reads a .ts file as TypeScript, where <T>value is a type assertion", () => {
+    const source = `import { Text } from "@hyper-elements/react";\nexport const sized = <Text>(value as unknown);\nconst value = 1;\n`;
+    const { code, report, moved } = styleBlocks(source, "helpers.ts");
+    expect([code, report, moved]).toEqual([source, [], 0]);
+  });
+
   it("says a file without Hyper Elements' components isn't a template", () => {
     expect(styleBlocks(`import { Text } from "./mine";\nexport const a = <Text mobile={{ fontSize: 1 }} />;\n`).template).toBe(false);
   });
@@ -193,8 +199,10 @@ describe("npx @hyper-elements/migrate style-blocks", () => {
   it("lists what it left, and writes the rest with --allow-dirty", async () => {
     const dir = project({ "emails/a.tsx": `import { Email, Text } from "@hyper-elements/react";\nexport const a = (m: object) => <Email><Text mobile={m}>Hi</Text><Text mobile={{ fontSize: 12 }}>Ho</Text></Email>;\n` });
     const sink = io(dir);
-    expect(await main(["style-blocks", "emails", "--write", "--allow-dirty"], sink)).toBe(0);
+    // What it left fails, so the run doesn't pass.
+    expect(await main(["style-blocks", "emails", "--write", "--allow-dirty"], sink)).toBe(2);
     expect(sink.out).toContain("emails/a.tsx: 1 prop moved into style, 1 left as it is");
+    expect(sink.err).toContain("1 prop was left as it is");
     expect(sink.out).toContain("mobile={…} isn't an object literal");
   });
 

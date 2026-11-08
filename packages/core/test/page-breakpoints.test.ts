@@ -40,6 +40,14 @@ describe("a Page's phone width", () => {
     }
   });
 
+  it("is left out where nothing is set in it, as if not given", () => {
+    for (const breakpoints of [{}, { mobile: undefined }]) {
+      const { resolved, diagnostics } = prepareTemplate(page({ breakpoints }));
+      expect(diagnostics).toEqual([]);
+      expect(resolved!.root.props).not.toHaveProperty("breakpoints");
+    }
+  });
+
   it("is a Page's alone", () => {
     for (const type of ["Email", "Document"]) {
       const { diagnostics } = prepareTemplate({ root: { type, props: { breakpoints: { mobile: 600 } }, children: [{ type: "Text", children: ["a"] }] } });

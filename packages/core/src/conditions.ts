@@ -23,8 +23,11 @@ export interface Condition {
   /** Whether it's allowed under a root; elsewhere it's the `notAllowed` error when a template is read. Undefined: every root. */
   roots?: (root: ComponentDefinition | undefined) => boolean;
   notAllowed?: { code: string; message: string };
-  /** Where its rules go in the stylesheet: an existing Media, and for a state its selector and Level. */
-  sheet: { media: Media; selector: string; level?: Level };
+  /**
+   * Where its rules go in the stylesheet: an existing Media, and for a state its selector and Level; `within`, the
+   * selector for a box that draws part of a focusable element inside it (an email Button's cell, around its link).
+   */
+  sheet: { media: Media; selector: string; within?: string; level?: Level };
   /** Which styles of a component it takes. */
   allows: (spec: StyleSpec, key: string, definition: ComponentDefinition) => boolean;
   /** How each output shows the block itself. */
@@ -61,7 +64,8 @@ export const HOVER: Condition = {
   on: "on hover",
   for: "for hover",
   // Keyboard focus gets the same styles as the pointer: a link or button reached by Tab shows its hover colors.
-  sheet: { media: "all", selector: "&:hover,&:focus-visible", level: "hover" },
+  // A box around the link (an email Button's cell, its background) takes them while the link in it has focus.
+  sheet: { media: "all", selector: "&:hover,&:focus-visible", within: "&:hover,&:focus-within", level: "hover" },
   allows: (_, key, definition) => !!definition.hover?.includes(key),
   support: {
     web: { level: "full", source: "css" },
