@@ -230,6 +230,8 @@ Inside `style`, `mobile` holds a component's styles on phones and `hover` its st
 <Button href="https://example.com" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Buy</Button>
 ```
 
+Phones are at or below an email's width plus 20px, and at or below 480px on a page, or its own width: `<Page breakpoints={{ mobile: 600 }}>`. Hover styles apply on keyboard focus too.
+
 ## Common design patterns
 
 ### Header with a logo
