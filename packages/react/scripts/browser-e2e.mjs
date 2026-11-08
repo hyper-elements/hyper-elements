@@ -300,8 +300,18 @@ async function checkHover(page) {
   if (hovered.color !== "rgb(255, 255, 0)") problems.push(`hover color is ${hovered.color}, expected rgb(255, 255, 0)`);
 
   await page.mouse.move(0, 0);
+  const left = await readColors();
+  if (left.background !== base.background) problems.push(`background after the pointer leaves is ${left.background}, expected ${base.background}`);
+
+  // Keyboard focus gets the hover colors too (:focus-visible): a link reached by Tab shows them.
+  await page.keyboard.press("Tab");
+  for (let i = 0; i < 20 && !(await page.$eval(selector, (a) => a === document.activeElement)); i++) await page.keyboard.press("Tab");
+  const focused = await readColors();
+  if (focused.background !== "rgb(29, 78, 216)") problems.push(`keyboard-focus background is ${focused.background}, expected rgb(29, 78, 216)`);
+  if (focused.color !== "rgb(255, 255, 0)") problems.push(`keyboard-focus color is ${focused.color}, expected rgb(255, 255, 0)`);
+
   if (problems.length) fail("hover", problems);
-  else pass("hover", "button hover applies configured background + text colors");
+  else pass("hover", "button hover and keyboard focus apply configured background + text colors");
 }
 
 /** Section 4: RTL — the root's dir reaches the computed direction. */

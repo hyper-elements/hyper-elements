@@ -60,11 +60,12 @@ export const HOVER: Condition = {
   name: "hover",
   on: "on hover",
   for: "for hover",
-  sheet: { media: "all", selector: "&:hover", level: "hover" },
+  // Keyboard focus gets the same styles as the pointer: a link or button reached by Tab shows its hover colors.
+  sheet: { media: "all", selector: "&:hover,&:focus-visible", level: "hover" },
   allows: (_, key, definition) => !!definition.hover?.includes(key),
   support: {
     web: { level: "full", source: "css" },
-    email: { level: "partial", shows: "no change in classic Outlook for Windows and some other apps and webmail", source: "caniemail" },
+    email: { level: "partial", shows: "no change in classic Outlook for Windows and some other apps and webmail (where it shows, keyboard focus gets it too)", source: "caniemail" },
   },
   paged: (node, where) => `A hover isn't possible in ${where}: nothing points at it. The ${node.type} shows its own colors`,
   outlookApplies: false,
