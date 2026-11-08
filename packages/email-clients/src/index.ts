@@ -11,6 +11,7 @@ import type { Diagnostic, EmailClient, RenderOptions } from "@hyper-elements/rea
 import { checkCore } from "./core";
 import { DEFAULT_PREVIEW_CLIENTS, variantsOf, type PreviewVariant, type Skipped } from "./clients";
 import { RUNTIME } from "./runtime.generated";
+import { facesToLoad, FACES, FONT_ORIGIN, fontCss, fontSources, OUTLOOK_COM_FILES, PROBE, PROBE_WIDTHS, readPackageFont, type ReadFont } from "./fonts";
 import { previewFile } from "./shell";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE } from "./core";
@@ -24,6 +25,9 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   /** Where the preview's stand-in fonts come from: a URL (default), or inlined in each file, to draw offline. */
   fonts?: "url" | "inline";
 }
+
+/** Reads a font file of this package's as base64 (Node only), for `fonts: "inline"`. */
+const readFont: ReadFont = readPackageFont;
 
 export interface EmailClientPreview extends PreviewVariant {
   /** The preview file: open it in Chromium. */
@@ -56,10 +60,30 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // The compact HTML: white space changes how some clients draw an email.
   const rendered = await core.render(element, { ...renderOptions, emailClients, pretty: false, blockMap: true });
   const blocks = rendered.blocks!;
-  const fontOrigin = fonts === "url" ? "https://cdn.jsdelivr.net" : null;
-  const previews = variants.map((variant) => {
-    const { filename: _, ...rest } = variant;
-    return { ...variant, html: previewFile(rendered.html, { ...rest, name: core.EMAIL_CLIENTS[variant.client].name, blocks, fontOrigin }, RUNTIME) };
-  });
+  const fontOrigin = fonts === "url" ? FONT_ORIGIN : null;
+  // Each font file read once, however many previews inline it.
+  const cache = new Map<string, Promise<string>>();
+  const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readFont(file)), cache.get(file)!);
+  const previews = await Promise.all(
+    variants.map(async (variant) => {
+      const { filename: _, ...rest } = variant;
+      const sources = await fontSources(variant.client, fonts, read);
+      const info = core.EMAIL_CLIENTS[variant.client];
+      const config = {
+        ...rest,
+        name: info.name,
+        blocks,
+        fontOrigin,
+        fontCss: fontCss(variant.client, sources),
+        faces: facesToLoad(variant.client),
+        standIns: [...new Set(FACES[variant.client].map((face) => face.family)), ...(variant.client === "outlook" ? ["Aptos Stand-in"] : [])],
+        outlookComFonts: variant.client === "outlook-com" ? Object.fromEntries(Object.entries(OUTLOOK_COM_FILES).map(([name, file]) => [name, sources[file]!])) : {},
+        probe: { text: PROBE, widths: PROBE_WIDTHS },
+        elements: info.measured?.elements ?? null,
+        runtime: RUNTIME.sha256,
+      };
+      return { ...variant, html: previewFile(rendered.html, config, RUNTIME) };
+    })
+  );
   return { previews, skipped, diagnostics: rendered.diagnostics };
 }

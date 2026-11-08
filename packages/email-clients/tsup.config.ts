@@ -9,5 +9,7 @@ export default defineConfig({
   splitting: false,
   clean: true,
   treeshake: true,
+  // import.meta.url in the CommonJS build too: fonts: "inline" reads the package's font files beside dist/.
+  shims: true,
   external: ['@hyper-elements/react', 'react', 'react-dom'],
 });
