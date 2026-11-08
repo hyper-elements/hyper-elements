@@ -160,6 +160,9 @@ export const PageNumber = defineComponent({
   children: {},
   sizing: "none",
   targets: { web: {} },
+  // A Page's or a Canvas's text has no page to number.
+  roots: ["Document"],
+  notAllowed: { code: "document/page-number", message: (root) => `A PageNumber is a page's number in a Document; this ${root} has no pages` },
 });
 
 /**

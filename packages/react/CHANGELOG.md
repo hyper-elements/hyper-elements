@@ -73,6 +73,25 @@ template and the UTF-8 byte offset in `html` just after its outermost element's 
 `BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
 `BlockMapEntry` are exported. Documented in REFERENCE.md.
 
+### Which roots take each component, prop and style
+
+Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
+validated before still validate, and render the same.
+
+- New: `component/not-supported`, `prop/not-supported` and `style/not-supported`, errors for a component, prop or
+  style under a root that doesn't take it, naming the roots that do. They're checked inside your own components too,
+  against the root they're rendered in. A component no output of the root can draw is still `target/unsupported`, and
+  a `PageNumber` outside a Document still `document/page-number`.
+- New: a `component()`'s prop can be for some roots only: `prop.text({ label: "Motto", roots: ["Page"] })`.
+- New: `@hyper-elements/react/inspect`, what each root takes and what a template holds, as data, without rendering.
+  `describeComponents({ root })` lists the components a root takes, each prop and style with its kind, group
+  (`Typography`, `Spacing`, …), default and roots, and the style blocks (`mobile`, `hover`) the root takes;
+  `describeComponent(type, { root })` gives one. `inspect(element)` lists each component in a template with the roots
+  that take it, whether its root does (`allowed`), what it's given and its problems, and every diagnostic `validate()`
+  finds. Each result has a `version` (`INSPECT_VERSION`) that changes only with its shape.
+- Docs: `REFERENCE.md` says where a component, prop or style isn't in every root ("Not in an Email.", "only in a
+  Page"), and each style's group; `GUIDE.md` and the agent skill say it for Svg and PageNumber.
+
 ### Fixes
 
 - **Email:** a `Button` narrower than its padding no longer draws its label a letter a line in Gmail and browsers. The

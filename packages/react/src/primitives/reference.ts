@@ -7,13 +7,33 @@
  * - REFERENCE.md: every prop and style, with the values it takes, its default and what it does.
  * - skills/hyper-elements/SKILL.md, at the repository's root: the guide as an agent skill.
  */
-import { describeComponents, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
+import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
 
 /** How a template writes a component whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };
 const name = (type: string) => JSX[type] ?? type;
 
-const OUTPUTS: Record<string, string> = { email: "email", web: "page", print: "print and PDF", image: "image" };
+/** The roots with phones: a component only under others has no phone styles (they're mobile/not-supported there). */
+const PHONE_ROOTS = describeConditions().find((condition) => condition.name === "mobile")!.roots;
+const hasPhones = (c: ComponentDescription) => c.roots.some((root) => PHONE_ROOTS.includes(root));
+const article = (type: string) => `${/^[AEIOU]/.test(type) ? "an" : "a"} ${type}`;
+/** The roots a component goes in, said where it isn't every root: "Not in an Email.", "Only in a Document." */
+function rootsNote(c: ComponentDescription): string {
+  if (c.categories.includes("root") || c.roots.length === ROOT_NAMES.length) return "";
+  const missing = ROOT_NAMES.filter((root) => !c.roots.includes(root));
+  const list = (roots: readonly string[]) => roots.map(article).join(missing.length === 1 ? "" : " or ").replace(/ or (?=.* or )/g, ", ");
+  return missing.length === 1 ? `Not in ${list(missing)}.` : `Only in ${list(c.roots)}.`;
+}
+/**
+ * The guide's note: only where what holds it doesn't already say so (a shape goes only in an Svg, which says it; a
+ * Document's parts only in a Document), so the guide stays short. REFERENCE.md gives every one.
+ */
+function guideRootsNote(c: ComponentDescription): string {
+  const holders = describeComponents().filter((h) => h.children.types.includes(c.type) || c.categories.some((category) => h.children.categories.includes(category)));
+  const reached = new Set(holders.flatMap((h) => (h.categories.includes("root") ? [h.type] : h.roots)));
+  const implied = holders.length > 0 && [...reached].every((root) => (c.roots as string[]).includes(root));
+  return implied ? "" : rootsNote(c);
+}
 
 const GROUPS: Array<{ title: string; about: string; has: (c: ComponentDescription) => boolean }> = [
   {
@@ -41,10 +61,16 @@ const code = (value: unknown) => `\`${JSON.stringify(value)}\``;
 const generated = (from: string) => `<!-- Written from the component definitions by ${from}: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->`;
 const GENERATED = generated("src/primitives/reference.ts");
 
-function property(p: PropertyDescription, named: Map<string, string>): string {
+function property(p: PropertyDescription, named: Map<string, string>, c: ComponentDescription): string {
   const key = p.path.slice(p.path.indexOf(".") + 1);
   const takes = named.has(p.kind) ? `*${p.kind}*` : p.accepts;
-  const notes = [p.required ? "required" : "", p.default !== undefined ? `default ${code(p.default)}` : "", p.inherited ? "inherited" : ""].filter(Boolean);
+  const notes = [
+    p.required ? "required" : "",
+    p.default !== undefined ? `default ${code(p.default)}` : "",
+    p.inherited ? "inherited" : "",
+    p.roots.length < c.roots.length ? `only in ${p.roots.join(", ")}` : "",
+    p.group ?? "",
+  ].filter(Boolean);
   return `- \`${key}\`: ${takes}${notes.length ? ` (${notes.join(", ")})` : ""}${p.description ? `. ${p.description.replace(/\.$/, "")}.` : ""}`;
 }
 
@@ -55,15 +81,15 @@ function component(c: ComponentDescription, all: ComponentDescription[], named: 
   const props = c.properties.filter((p) => p.path.startsWith("props."));
   const style = c.properties.filter((p) => p.path.startsWith("style."));
   const hover = c.properties.filter((p) => p.path.startsWith("hover.")).map((p) => `\`${p.path.slice(6)}\``);
-  const phone = NO_PHONES.has(c.type) ? [] : style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``);
+  const phone = hasPhones(c) ? style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``) : [];
   return [
     `### ${name(c.type)}`,
     "",
     c.description,
     "",
-    `Holds: ${children || "nothing"}. Drawn in: ${c.targets.map((t) => OUTPUTS[t] ?? t).join(", ")}.`,
-    ...(props.length ? ["", "Props:", ...props.map((p) => property(p, named))] : []),
-    ...(style.length ? ["", "`style`:", ...style.map((p) => property(p, named))] : []),
+    [`Holds: ${children || "nothing"}.`, rootsNote(c)].filter(Boolean).join(" "),
+    ...(props.length ? ["", "Props:", ...props.map((p) => property(p, named, c))] : []),
+    ...(style.length ? ["", "`style`:", ...style.map((p) => property(p, named, c))] : []),
     ...(hover.length ? ["", `\`style.hover\`: ${hover.join(", ")}.`] : []),
     ...(phone.length ? ["", `\`style.mobile\` (on phones): ${phone.join(", ")}.`] : []),
   ].join("\n");
@@ -128,11 +154,6 @@ const TEXT = ["color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lin
 const BOX = ["width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"];
 /** The text styles that may be set on phones, named `text` among a component's phone styles. */
 const PHONE_TEXT = ["fontSize", "lineHeight", "letterSpacing", "textAlign"];
-/**
- * Components that only go under a root with no phone width (a Document, a Canvas): phone styles are an error there
- * (mobile/not-supported), so their phone styles aren't listed.
- */
-const NO_PHONES = new Set(["Document", "DocumentPage", "PageHeader", "PageFooter", "PageNumber", "PageBreak", "Canvas"]);
 const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
 
 /**
@@ -168,10 +189,11 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
   const props = of("props.").map((p) => `${p.path.slice(6)}${p.required ? "*" : ""} (${short(p, named)})`);
   const style = of("style.").map((p) => p.path.slice(6));
   const hover = of("hover.").map((p) => p.path.slice(6));
-  const phone = NO_PHONES.has(c.type) ? [] : of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6));
+  const phone = hasPhones(c) ? of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6)) : [];
   const holds = [c.children.text ? "text" : "", ...c.children.categories.map((category) => CATEGORY[category] ?? category), ...c.children.types.map(name)].filter(Boolean);
   const parts = [
     `${c.description.replace(/\.$/, "")}.`,
+    guideRootsNote(c),
     holds.length ? `Holds ${holds.join(", ")}.` : "",
     props.length ? `Props: ${props.join(", ")}.` : "",
     style.length ? `Style: ${keys(style, enumOf("style."))}.` : "",
