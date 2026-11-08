@@ -33,11 +33,8 @@ if (runs.length !== 64 || new Set(runs.map((run) => run.brief)).size !== 5) {
   throw new Error("Review the chart's batch size and brief count.");
 }
 
-// Match the website's neutral palette, mint success color, and actual brand mark.
-const logoSource = readFileSync(new URL("../apps/website/src/components/Logo.astro", import.meta.url), "utf8");
-const logoPath = /<path[^>]*\bd="([^"]+)"/.exec(logoSource)?.[1];
-if (!logoPath) throw new Error("Could not read the website logo.");
-const colors = { bg: "#0a0a0a", surface: "#101a15", border: "#284a36", accent: "#7ee2a8", line: "#272727", ink: "#ededed", muted: "#a1a1a1", dim: "#6e6e6e" };
+// Match the website's neutral palette and mint success color.
+const colors = { bg: "#0a0a0a", surface: "#101a15", border: "#284a36", accent: "#7ee2a8", line: "#272727", ink: "#ededed", muted: "#a1a1a1" };
 const escape = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const text = (x, y, value, size = 24, fill = colors.ink, extra = "") =>
   `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" ${extra}>${escape(value)}</text>`;
@@ -51,8 +48,9 @@ const speed = (reactEmail.seconds / hyperElements.seconds).toFixed(1);
 const tokens = (reactEmail.tokens / hyperElements.tokens).toFixed(1);
 const timeScale = Math.ceil(Math.max(...groups.map((group) => group.seconds)) / 20) * 20;
 const tokenScale = Math.ceil(Math.max(...groups.map((group) => group.tokens)) / 1000) * 1000;
-const footerY = 526 + groups.length * 158 + 10;
-const height = footerY + 130;
+const rowStart = 446;
+const rowStride = 158;
+const height = rowStart + groups.length * rowStride + 24;
 
 const bar = (x, y, value, max, active) => `
   <rect x="${x}" y="${y}" width="324" height="10" rx="3" fill="#242424"/>
@@ -63,7 +61,7 @@ const passes = (x, y, count, active) => Array.from({ length: 16 }, (_, i) =>
 ).join("\n");
 
 const rows = groups.map((group, i) => {
-  const top = 526 + i * 158;
+  const top = rowStart + i * rowStride;
   const active = group.kit === "he";
   return `
   <g id="row-${group.kit}">
@@ -89,42 +87,31 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="${heig
 <desc id="description">${escape(description)} Time and output tokens are medians. Hyper Elements and MJML tie on first-check passes. Five email briefs and 16 runs per approach in one interleaved batch; all 64 runs eventually passed. Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a ${timeScale}-second scale and tokens a ${format(tokenScale)}-token scale. Each square represents one run's first check.</desc>
 <rect width="1800" height="${height}" rx="24" fill="${colors.bg}"/>
 <g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
-  <svg x="72" y="48" width="48" height="36" viewBox="228 326 798 600" aria-hidden="true">
-    <path d="${logoPath}" fill="#e3e8ed"/>
-    <path d="${logoPath}" fill="#ef4638" transform="rotate(180 627 626)"/>
-  </svg>
-  ${text(138, 77, "Hyper Elements", 30, colors.ink, 'font-weight="600" letter-spacing="-0.7"')}
-  ${text(1728, 74, "AGENT BENCHMARK", 19, colors.muted, `${mono} text-anchor="end" letter-spacing="2.2"`)}
-  ${text(72, 184, "Faster to a passing email.", 72, colors.ink, 'font-weight="600" letter-spacing="-2.8"')}
-  ${text(72, 234, "Four approaches. Same briefs. Same checks.", 28, colors.muted)}
-  <path d="M72 273H1728" stroke="${colors.line}"/>
+  ${text(72, 104, "Faster to a passing email.", 72, colors.ink, 'font-weight="600" letter-spacing="-2.8"')}
+  ${text(72, 154, "Four approaches. Same briefs. Same checks.", 28, colors.muted)}
+  <path d="M72 193H1728" stroke="${colors.line}"/>
 
-  ${text(80, 345, "5 email briefs", 27, colors.ink, 'font-weight="500"')}
-  ${text(80, 386, "16 runs per approach", 25, colors.muted)}
-  ${text(80, 426, "64 runs in total.", 23, colors.muted)}
+  ${text(80, 265, "5 email briefs", 27, colors.ink, 'font-weight="500"')}
+  ${text(80, 306, "16 runs per approach", 25, colors.muted)}
+  ${text(80, 346, "64 runs in total.", 23, colors.muted)}
 
-  ${text(500, 352, `${speed}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(500, 410, "faster to pass", 27, colors.ink)}
-  ${text(500, 445, "vs. React Email", 22, colors.muted)}
+  ${text(500, 272, `${speed}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(500, 330, "faster to pass", 27, colors.ink)}
+  ${text(500, 365, "vs. React Email", 22, colors.muted)}
 
-  ${text(930, 352, `${tokens}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(930, 410, "fewer output tokens", 27, colors.ink)}
-  ${text(930, 445, "vs. React Email", 22, colors.muted)}
+  ${text(930, 272, `${tokens}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(930, 330, "fewer output tokens", 27, colors.ink)}
+  ${text(930, 365, "vs. React Email", 22, colors.muted)}
 
-  ${text(1360, 352, `${hyperElements.firstPasses}/16`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(1360, 410, "passed on first check", 27, colors.ink)}
-  ${text(1360, 445, "tied with MJML", 22, colors.muted)}
+  ${text(1360, 272, `${hyperElements.firstPasses}/16`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(1360, 330, "passed on first check", 27, colors.ink)}
+  ${text(1360, 365, "tied with MJML", 22, colors.muted)}
 
-  ${label(80, 501, "APPROACH")}
-  ${label(500, 501, "TIME · MEDIAN")}
-  ${label(930, 501, "OUTPUT TOKENS · MEDIAN")}
-  ${label(1360, 501, "FIRST-CHECK PASSES")}
+  ${label(80, 421, "APPROACH")}
+  ${label(500, 421, "TIME · MEDIAN")}
+  ${label(930, 421, "OUTPUT TOKENS · MEDIAN")}
+  ${label(1360, 421, "FIRST-CHECK PASSES")}
   ${rows}
-
-  <path d="M72 ${footerY}H1728" stroke="${colors.line}"/>
-  ${text(72, footerY + 48, "Claude Code · Claude Sonnet 5 · Hyper Elements 0.3 · November 8, 2026", 22, colors.muted)}
-  ${text(72, footerY + 85, "Identical Chromium checks at desktop and mobile widths. All 64 runs eventually passed.", 21, colors.dim)}
-  ${text(1728, footerY + 48, "hyperelements.dev", 22, colors.muted, `${mono} text-anchor="end"`)}
 </g>
 </svg>
 `;
