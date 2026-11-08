@@ -110,6 +110,9 @@ function editDistance(from: string, to: string): number {
 
 /** What's wrong with a prop the component doesn't have, and what to write instead. */
 function unknownProp(definition: ComponentDefinition, key: string): string {
+  if (CONDITION_NAMES.has(key)) {
+    return `${a(definition.type)} has no prop "${key}": ${key} styles go in its style, style={{ ${key}: { … } }}. npx @hyper-elements/migrate style-blocks <files> --write rewrites them`;
+  }
   if (Object.prototype.hasOwnProperty.call(definition.style, key)) return `${a(definition.type)} has no prop "${key}": it's a style, style={{ ${key}: … }}`;
   const known = Object.keys(definition.props);
   const meant = nearest(key, known);

@@ -3,7 +3,7 @@
  * `mobile={…}` and `hover={…}` props: every gallery and stress template, its blocks moved out of `style` into the
  * props, renders the same HTML and plain text, and gives the same diagnostics apart from where they point.
  */
-import { renderTemplate, type Json } from "@unlayer-internal/elements-core";
+import { checkDocument, renderTemplate, type Json } from "@unlayer-internal/elements-core";
 import { describe, expect, it } from "vitest";
 import { collectNodes, type JsonNode } from "./collect";
 import { gallery } from "./examples/gallery";
@@ -76,34 +76,9 @@ describe("reading condition blocks inside style", () => {
     expect(diagnostics).toContainEqual(expect.objectContaining({ code: "mobile/not-allowed", path: "root.children[0].style.mobile.backgroundColor" }));
   });
 
-  it("refuses the same condition given both ways", () => {
-    const { valid, diagnostics } = validate(
-      <Email>
-        <Text style={{ mobile: { fontSize: 12 } }} mobile={{ lineHeight: 1.2 }}>
-          Hi
-        </Text>
-      </Email>
-    );
-    expect(valid).toBe(false);
+  it("refuses, in a tree given to core, the same condition given both as a node's own and in its style", () => {
+    const { diagnostics } = checkDocument({ root: { type: "Email", children: [{ type: "Text", style: { mobile: { fontSize: 12 } }, mobile: { lineHeight: 1.2 }, children: ["Hi"] }] } });
     expect(diagnostics).toContainEqual(expect.objectContaining({ code: "style/twice", severity: "error", path: "root.children[0].style.mobile" }));
-  });
-
-  it("takes a phone block in style and a hover prop on one node", async () => {
-    const both = await render(
-      <Email>
-        <Button href="https://example.com" style={{ mobile: { width: "100%" } }} hover={{ backgroundColor: "#000000" }}>
-          Go
-        </Button>
-      </Email>
-    );
-    const one = await render(
-      <Email>
-        <Button href="https://example.com" mobile={{ width: "100%" }} hover={{ backgroundColor: "#000000" }}>
-          Go
-        </Button>
-      </Email>
-    );
-    expect(both.html).toBe(one.html);
   });
 
   it("refuses a block inside a block", () => {
@@ -149,54 +124,29 @@ describe("reading condition blocks inside style", () => {
 });
 
 describe("the mobile={…} and hover={…} props", () => {
-  const deprecations = (diagnostics: Array<{ code: string }>) => diagnostics.filter((d) => d.code.endsWith("/deprecated-prop"));
-
-  it("are deprecated: one warning each, where they're written, in render() and validate()", async () => {
-    const template = (
+  it("are gone: each is an unknown prop whose message says where its styles go", () => {
+    const { valid, diagnostics } = validate(
       <Email>
-        <Button href="https://example.com" mobile={{ width: "100%" }} hover={{ backgroundColor: "#000000" }}>
+        <Button href="https://example.com" {...({ mobile: { width: "100%" }, hover: { backgroundColor: "#000000" } } as object)}>
           Go
         </Button>
       </Email>
     );
-    const expected = [
-      expect.objectContaining({ code: "mobile/deprecated-prop", severity: "warning", path: "root.children[0].mobile" }),
-      expect.objectContaining({ code: "hover/deprecated-prop", severity: "warning", path: "root.children[0].hover" }),
-    ];
-    expect(deprecations(validate(template).diagnostics)).toEqual(expected);
-    expect(deprecations((await render(template)).diagnostics)).toEqual(expected);
-    expect(validate(template).valid).toBe(true);
+    expect(valid).toBe(false);
+    const unknown = diagnostics.filter((d) => d.code === "prop/unknown");
+    expect(unknown.map((d) => d.path)).toEqual(["root.children[0].props.mobile", "root.children[0].props.hover"]);
+    expect(unknown[0]!.message).toContain("style={{ mobile: { … } }}");
+    expect(unknown[0]!.message).toContain("npx @hyper-elements/migrate style-blocks");
   });
 
-  it("say nothing for blocks in style", async () => {
-    const template = (
-      <Email>
-        <Button href="https://example.com" style={{ mobile: { width: "100%" }, hover: { backgroundColor: "#000000" } }}>
-          Go
-        </Button>
-      </Email>
-    );
-    expect(deprecations(validate(template).diagnostics)).toEqual([]);
-    expect(deprecations((await render(template)).diagnostics)).toEqual([]);
-  });
-
-  it("are a warning inside a template's own component too, at its place, and the render goes on", async () => {
-    const Inner = component({ type: "acme.Inner", label: "Inner", props: {}, render: () => <Text mobile={{ fontSize: 12 }}>Inner</Text> });
-    const Outer = component({ type: "acme.Outer", label: "Outer", props: {}, render: () => <Column><Text hover={{} as never}>Outer</Text><Inner /></Column> });
-    const template = (
+  it("are gone inside a template's own component too", () => {
+    const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Text {...({ mobile: { fontSize: 12 } } as object)}>Card</Text> });
+    const { valid, diagnostics } = validate(
       <Page>
-        <Outer />
+        <Card />
       </Page>
     );
-    const expected = [
-      expect.objectContaining({ code: "hover/deprecated-prop", path: "root.children[0](acme.Outer).children[0].hover" }),
-      expect.objectContaining({ code: "mobile/deprecated-prop", path: "root.children[0](acme.Outer).children[1](acme.Inner).mobile" }),
-    ];
-    const checked = validate(template);
-    expect(checked.valid).toBe(true);
-    expect(deprecations(checked.diagnostics)).toEqual(expected);
-    const rendered = await render(template);
-    expect(deprecations(rendered.diagnostics)).toEqual(expected);
-    expect(rendered.html).toContain("Inner");
+    expect(valid).toBe(false);
+    expect(diagnostics).toContainEqual(expect.objectContaining({ code: "prop/unknown", path: "root.children[0](acme.Card).props.mobile" }));
   });
 });

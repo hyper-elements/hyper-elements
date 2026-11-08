@@ -72,10 +72,6 @@ interface Extras<Style, Conditions> {
   id?: string;
   /** Its style, and inside it its styles on phones (`mobile`) and on hover (`hover`), where it takes them. */
   style?: Style & Conditions;
-  /** Style on phones (in an Email or Page). */
-  mobile?: Style;
-  /** Style while the pointer is over it, where the component has one. */
-  hover?: Style;
   hidden?: { mobile?: boolean; desktop?: boolean };
   children?: React.ReactNode;
 }

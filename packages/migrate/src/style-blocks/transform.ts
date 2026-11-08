@@ -137,6 +137,13 @@ export function styleBlocks(source: string, file = "template.tsx", options: Styl
     const named = (name: string) => attributes.filter((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && ts.isIdentifier(a.name) && a.name.text === name);
     const where = `line ${line(node)}: <${component}>`;
 
+    // Props spread from an object of the file that gives mobile or hover: the codemod doesn't rewrite the object.
+    for (const spread of attributes.filter(ts.isJsxSpreadAttribute)) {
+      const object = objectOf(spread.expression);
+      const gives = object?.properties.map(keyOf).filter((key): key is Condition => key === "mobile" || key === "hover") ?? [];
+      if (gives.length) report.push(`${where}: {...${unwrap(spread.expression).getText(sf)}} gives ${gives.join(" and ")}: move ${gives.length > 1 ? "them" : "it"} into the style it gives (left as it is)`);
+    }
+
     // Each condition prop: its block's text (null: it does nothing, so it goes), or why it stays.
     const blocks: Array<{ condition: Condition; attribute: ts.JsxAttribute; text: string | null }> = [];
     for (const condition of CONDITIONS) {

@@ -9,7 +9,7 @@ const FACE = { family: "Geist", src: "https://fonts.example/geist.woff2", format
 const template = createElement(
   Email,
   { fonts: [FACE], style: { fontFamily: "Geist, Arial, sans-serif" } },
-  createElement(Section, null, createElement(Text, { style: { fontStyle: "italic" }, mobile: { maxWidth: 200 } }, "Words"))
+  createElement(Section, null, createElement(Text, { style: { fontStyle: "italic", mobile: { maxWidth: 200 } } }, "Words"))
 );
 
 it("leaves out what the builder only keeps (a phone value in a hidden property), and keeps its fonts and what its markup draws", async () => {

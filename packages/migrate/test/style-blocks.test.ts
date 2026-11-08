@@ -82,6 +82,13 @@ describe("style-blocks", () => {
     expect(report).toHaveLength(2);
   });
 
+  it("says where props spread from an object of the file give a block, which it doesn't rewrite", () => {
+    const body = `const cell = { style: { padding: 8 }, mobile: { padding: 4 } };\nexport const a = <Column {...cell}><Words>a</Words></Column>;\n`;
+    const { code, report } = run(body);
+    expect(code).toBe(head + body);
+    expect(report).toEqual(["line 3: <Column>: {...cell} gives mobile: move it into the style it gives (left as it is)"]);
+  });
+
   it("reads Document.Page and renamed imports, and leaves other packages' components alone", () => {
     const { code } = styleBlocks(
       `import { Document as Doc } from "@hyper-elements/react";\nimport { Text } from "./mine";\nexport const a = <Doc><Doc.Page mobile={{ gap: 8 }}><Text mobile={{ x: 1 }} /></Doc.Page></Doc>;\n`
@@ -94,7 +101,7 @@ describe("style-blocks", () => {
     expect(styleBlocks(`import { Text } from "./mine";\nexport const a = <Text mobile={{ fontSize: 1 }} />;\n`).template).toBe(false);
   });
 
-  it("writes templates that type-check where the originals did", () => {
+  it("writes templates that type-check: the originals' only errors are the props it moves", () => {
     const original = [
       head.trim(),
       `export const a = <Email><Heading style={{ fontSize: 32 }} mobile={{ fontSize: 24 }} hover={{}}>T</Heading></Email>;`,
@@ -110,7 +117,10 @@ describe("style-blocks", () => {
     const rewritten = styleBlocks(original).code;
     expect(rewritten).not.toContain("mobile={");
     expect(rewritten).not.toContain("hover={");
-    expect(typeErrors(original)).toEqual([]);
+    // The props are gone from the package's types: each of the original's errors is one of them.
+    const before = typeErrors(original);
+    expect(before.length).toBeGreaterThan(0);
+    for (const error of before) expect(error).toMatch(/'(mobile|hover)'/);
     expect(typeErrors(rewritten)).toEqual([]);
     // The check catches what doesn't type-check: an empty hover block on a Heading, moved as it is.
     expect(typeErrors(`${head}export const x = <Email><Heading style={{ hover: {} }}>T</Heading></Email>;\n`)).not.toEqual([]);

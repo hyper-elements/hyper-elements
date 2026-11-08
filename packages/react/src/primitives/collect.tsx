@@ -102,8 +102,11 @@ function withoutAsync(children: React.ReactNode, collection: PrimitiveCollection
 const ENTITIES: Record<string, string> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#x27;": "'" };
 const unescape = (text: string) => text.replace(/&amp;|&lt;|&gt;|&quot;|&#x27;/g, (entity) => ENTITIES[entity]);
 
-/** Where a node's own keys go: the rest of its JSX props are its semantic props. */
-const NODE_KEYS = new Set(["id", "style", "mobile", "hover", "hidden"]);
+/**
+ * Where a node's own keys go: the rest of its JSX props are its semantic props. Phone and hover styles are blocks of its
+ * style; a mobile={…} or hover={…} prop is an unknown prop, whose message says so.
+ */
+const NODE_KEYS = new Set(["id", "style", "hidden"]);
 
 export interface JsonNode {
   type: string;
@@ -257,30 +260,10 @@ export function collectNodes(element: React.ReactElement): {
       path: "jsx",
     });
   }
-  deprecatedProps(nodes, diagnostics);
   // All of it was in a boundary that didn't finish: that says why there's no root.
   return { nodes, components: [...collection.components.values()], diagnostics, aborted: nodes.length === 0 && done.reasons.length > 0 };
 }
 
-/**
- * The `mobile={…}` and `hover={…}` props, which a component's style now holds (`style={{ mobile: { … } }}`): a warning
- * where the JSX gives one. Said here, where what the author wrote is known; the tree has the same fields either way.
- */
-function deprecatedProps(nodes: Array<JsonNode | string>, diagnostics: Diagnostic[]): void {
-  const visit = (node: JsonNode, path: string) => {
-    for (const name of ["mobile", "hover"] as const) {
-      if (node[name] === undefined) continue;
-      diagnostics.push({
-        code: `${name}/deprecated-prop`,
-        severity: "warning",
-        message: `${name}={…} is deprecated and will be removed: write it in style, style={{ ${name}: { … } }}. npx @hyper-elements/migrate style-blocks <files> --write rewrites it`,
-        path: `${path}.${name}`,
-      });
-    }
-    node.children.forEach((child, index) => typeof child !== "string" && visit(child, `${path}.children[${index}]`));
-  };
-  for (const node of nodes) if (typeof node !== "string") visit(node, "root");
-}
 
 /** A template collected from JSX: its tree (internal: never part of the API), the problems, the custom components it uses. */
 export interface CollectedTemplate extends CheckResult {
