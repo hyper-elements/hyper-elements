@@ -20,7 +20,7 @@ export interface Diagnostic {
   clients?: EmailClient[];
   /** What to change. */
   fix?: string;
-  /** How to see it (only on problems about looks). */
+  /** Where to see it: for a problem known from caniemail's tables, its page there. */
   see?: string;
 }
 

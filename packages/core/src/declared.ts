@@ -4,7 +4,7 @@
  * check of what a condition takes but an output doesn't show (expand.ts).
  */
 import { Diagnostics, type Severity } from "./diagnostics";
-import { addForClients } from "./email-clients";
+import { addForClients, caniemail } from "./email-clients";
 import type { Json } from "./model";
 import type { Support, SupportByTarget, Target } from "./define";
 
@@ -13,7 +13,7 @@ const same = (a: Json | undefined, b: Json | undefined) => JSON.stringify(a) ===
 /**
  * The diagnostics a declaration gives for a value at `at` (`key` names it in the message), on this node: nothing where
  * it's shown as asked. Classic Outlook's notes are left out where `outlook` is false (a block it never applies). For
- * email, a rule's clients go on its diagnostics (`outlook` is classic Outlook's), the measured ones apart from the rest.
+ * email, a rule's clients go on its diagnostics (`outlook` is classic Outlook's), with caniemail's page where it's from there.
  */
 export function reportDeclared(
   d: Diagnostics,
@@ -32,16 +32,16 @@ export function reportDeclared(
     if (rule.values && !rule.values.some((v) => same(v, value))) continue;
     if (rule.when && !rule.when(value, node)) continue;
     const asked = typeof value === "string" ? `${key}: "${value}"` : key;
-    const output = target === "web" ? "a page" : target;
+    // For email, the clients it's about (`outlook`: classic Outlook).
+    const clients = target === "email" ? (rule.clients ?? (rule.level === "outlook" ? (["outlook"] as const) : undefined)) : undefined;
+    const output = clients ? "some email clients" : target === "web" ? "a page" : target;
     const [code, severity, message]: [string, Severity, string] =
       rule.level === "none"
         ? [`${target}/unsupported`, "warning", `${asked} isn't possible in ${output}: ${rule.shows}`]
         : rule.level === "partial"
           ? [`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`]
           : ["email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`];
-    // For email, the clients it's about (`outlook`: classic Outlook), told apart by whether they're measured.
-    const clients = target === "email" ? (rule.clients ?? (rule.level === "outlook" ? (["outlook"] as const) : undefined)) : undefined;
-    if (clients) addForClients(d, code, severity, message, at, node.id, { clients, fix: rule.fix, assumed: rule.source === "assumed" });
+    if (clients) addForClients(d, code, severity, message, at, node.id, { clients, fix: rule.fix, see: rule.feature && caniemail(rule.feature), assumed: rule.source === "assumed" });
     else d.add(code, severity, message, at, node.id, { fix: rule.fix });
   }
 }

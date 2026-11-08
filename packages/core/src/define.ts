@@ -61,6 +61,8 @@ export type Support =
       source: SupportSource;
       /** For email, the clients it's about (`outlook`: classic Outlook); absent, every email client. */
       clients?: readonly EmailClient[];
+      /** caniemail's feature the clients are from (its slug), checked against its tables (test/caniemail.test.ts). */
+      feature?: string;
       /** What to change. */
       fix?: string;
     };

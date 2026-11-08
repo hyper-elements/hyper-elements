@@ -25,22 +25,40 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
 
 ### Email clients in diagnostics
 
-- New: a diagnostic about an Email's problems with particular email clients names them in `clients`
-  (`"outlook"`, `"outlook-com"`, `"gmail"`, `"apple-mail"`, and the Gmail apps `"gmail-app"` and `"gmail-app-other"`),
-  and says what to change in `fix`. `see` (how to see it) is in the type for previews to come. All three are optional.
+- New: a diagnostic about an Email's problems with particular email clients names them in `clients`, says what to
+  change in `fix`, and, where it's known from caniemail.com's tables, links to its page there in `see`. All three are
+  optional.
+- New: 26 email clients. Four were measured, from captures of the real clients showing 0.3.0 emails (`"outlook"`,
+  classic Outlook for Windows; `"outlook-com"`; `"gmail"`; `"apple-mail"`); what's known of the rest is from
+  caniemail's tables (`"outlook-mac"`, `"outlook-app"`, `"gmail-app"`, `"gmail-app-other"`, `"yahoo"`, `"aol"`,
+  `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`,
+  `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"`, `"rainloop"`). A problem is
+  reported at its own severity for either; only one Elements assumes, unchecked, is a note.
 - New: `validate(element, { emailClients })` and `render(element, { emailClients })` report problems for the clients
-  named. The default is the four measured clients; the Gmail apps, not measured, only when named, and then only as
-  notes. `[]` leaves out every email client problem, not the email's own (`email/width`, `email/layer`). For a root
-  that isn't an Email the option is ignored, with an `email/clients-ignored` note. An unknown client throws a
-  `TypeError`.
-- New: `EMAIL_CLIENTS`, what's known of each client, with how closely it was measured on 0.3.0 emails (classic Outlook
-  0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types `EmailClient`,
-  `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`.
-- New: `email/html-css`, a note on an Html block whose markup may have CSS Gmail or Outlook.com removes (position,
-  CSS variables, gradients, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb() with spaces).
-- Changed: `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` has `["gmail", "outlook"]`
-  and its advice moves from the message to `fix`; `email/size` and `email/style-size` have `["gmail"]` and a `fix`.
-- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and how to see it to its line, so lines about
+  named. The default is the clients most email is read in: the four measured, Outlook for Mac, the Outlook and Gmail
+  apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
+  `email/layer`). For a root that isn't an Email the option is ignored, with an `email/clients-ignored` note. An
+  unknown client throws a `TypeError`.
+- New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
+  (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
+  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`.
+- New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
+  apply them on phones (the Gmail app with another account, Samsung Email with an Outlook account, some webmail): a
+  note, or a warning where something hidden on desktop would then show nowhere. A Menu's separators, hidden on phones,
+  give the note.
+- New: `email/image-format`, a warning on an Image whose file is WebP (classic Outlook), AVIF or SVG.
+- New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
+  (`position: absolute`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
+  `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
+  with spaces).
+- New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in
+  classic Outlook; `borderRadius` in GMX, WEB.DE and Orange; `textDecoration` lines in the Gmail app with another
+  account and some others; a root's `lang` and `dir` where webmail removes them.
+- Changed: the note on hover in an email names the clients that don't show it (`clients`), and its message no longer
+  does. `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` names every client that loads no
+  web font, and its advice moves from the message to `fix`; the web fonts note (`email/degraded` on `fonts`) names them
+  too; `email/size` and `email/style-size` name Gmail and its apps, with a `fix`.
+- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
   email clients are longer.
 
 ### Fixes

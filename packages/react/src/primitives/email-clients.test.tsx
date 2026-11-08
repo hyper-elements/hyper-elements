@@ -9,19 +9,21 @@ const spaced = (
 );
 
 describe("email clients in validate() and render()", () => {
-  it("names the clients each problem is about, for the measured clients by default", () => {
+  it("names the clients each problem is about, for the clients most email is read in by default", () => {
     const { diagnostics } = validate(spaced);
     expect(diagnostics.map((d) => [d.code, d.clients])).toEqual([
       ["email/outlook-degraded", ["outlook"]],
-      ["email/html-css", ["outlook-com"]],
+      ["email/html-css", ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol"]],
     ]);
-    expect(formatDiagnostics(diagnostics).split("\n")[1]).toMatch(/^info email\/html-css at root\.children\[1\]\.props\.html: .* \[outlook-com\] Fix: /);
+    expect(formatDiagnostics(diagnostics).split("\n")[1]).toMatch(
+      /^info email\/html-css at root\.children\[1\]\.props\.html: .* \[outlook, outlook-com, .*\] Fix: .* See: https:\/\/www\.caniemail\.com\/features\/css-position\/$/
+    );
   });
 
   it("reports only the clients asked for, in validate() and render() alike", async () => {
-    expect(validate(spaced, { emailClients: ["outlook"] }).diagnostics.map((d) => d.code)).toEqual(["email/outlook-degraded"]);
-    expect(validate(spaced, { emailClients: ["gmail"] }).diagnostics).toEqual([]);
-    expect((await render(spaced, { emailClients: ["gmail"] })).diagnostics).toEqual([]);
+    expect(validate(spaced, { emailClients: ["outlook-com"] }).diagnostics.map((d) => d.code)).toEqual(["email/html-css"]);
+    expect(validate(spaced, { emailClients: ["apple-mail"] }).diagnostics).toEqual([]);
+    expect((await render(spaced, { emailClients: ["apple-mail"] })).diagnostics).toEqual([]);
     expect((await render(spaced)).diagnostics).toEqual(validate(spaced).diagnostics);
   });
 
@@ -40,6 +42,8 @@ describe("email clients in validate() and render()", () => {
   });
 
   it("exports what's known of each client", () => {
-    expect(Object.keys(EMAIL_CLIENTS)).toEqual(["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail"]);
+    expect(Object.keys(EMAIL_CLIENTS)).toHaveLength(26);
+    expect(EMAIL_CLIENTS["apple-mail"].measured).toMatchObject({ elements: "0.3.0" });
+    expect(EMAIL_CLIENTS.yahoo).toMatchObject({ name: "Yahoo Mail", measured: null });
   });
 });
