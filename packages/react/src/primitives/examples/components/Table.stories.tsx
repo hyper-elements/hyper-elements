@@ -35,7 +35,7 @@ const SITE = "https://fennick.example";
 
 /** A table's title: smaller on phones, so it stays on one line. */
 const title = (text: string) => (
-  <Heading level={2} style={{ fontSize: 30, fontWeight: 600, lineHeight: 1.1, letterSpacing: -0.6 }} mobile={{ fontSize: 25 }}>
+  <Heading level={2} style={{ fontSize: 30, fontWeight: 600, lineHeight: 1.1, letterSpacing: -0.6, mobile: { fontSize: 25 } }}>
     {text}
   </Heading>
 );
@@ -250,21 +250,21 @@ export const OnPhones = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ padding: [32, 24], gap: 18 }}>
       {title("Bags out of the door")}
-      <Table style={{ fontSize: 16, rowBorder: LINE }} mobile={{ fontSize: 13 }}>
+      <Table style={{ fontSize: 16, rowBorder: LINE, mobile: { fontSize: 13 } }}>
         <TableRow header style={{ fontWeight: 600 }}>
-          <TableCell style={{ padding: [14, 16] }} mobile={{ padding: [6, 4] }}>
+          <TableCell style={{ padding: [14, 16], mobile: { padding: [6, 4] } }}>
             Month
           </TableCell>
-          <TableCell style={{ padding: [14, 16], textAlign: "right" }} mobile={{ padding: [6, 4] }}>
+          <TableCell style={{ padding: [14, 16], textAlign: "right", mobile: { padding: [6, 4] } }}>
             Bags
           </TableCell>
         </TableRow>
         {MONTHS.map(([month, bags]) => (
           <TableRow key={month}>
-            <TableCell style={{ padding: [14, 16] }} mobile={{ padding: [6, 4] }}>
+            <TableCell style={{ padding: [14, 16], mobile: { padding: [6, 4] } }}>
               {month}
             </TableCell>
-            <TableCell style={{ padding: [14, 16], textAlign: "right", fontFamily: MONO }} mobile={{ padding: [6, 4] }}>
+            <TableCell style={{ padding: [14, 16], textAlign: "right", fontFamily: MONO, mobile: { padding: [6, 4] } }}>
               {bags}
             </TableCell>
           </TableRow>

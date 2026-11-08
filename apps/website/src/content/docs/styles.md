@@ -6,7 +6,7 @@ description: "Style components with style={{ }} using CSS names, set phone style
 Every component takes its styles in `style={{ }}`, with CSS's property names and values. Phone styles go in `mobile`, hover styles in `hover`, and `hidden` shows a block on one size only.
 
 ```tsx
-<Heading level={1} style={{ fontSize: 32, color: "#111827" }} mobile={{ fontSize: 24, textAlign: "center" }}>
+<Heading level={1} style={{ fontSize: 32, color: "#111827", mobile: { fontSize: 24, textAlign: "center" } }}>
   Welcome
 </Heading>
 ```
@@ -75,8 +75,8 @@ There are no margins. Space between blocks is their parent's `gap`, and space in
 `mobile` holds a component's styles on phones, in an Email or a Page:
 
 ```tsx
-<Column style={{ padding: 32 }} mobile={{ padding: 16 }}>
-  <Heading style={{ fontSize: 32 }} mobile={{ fontSize: 24, textAlign: "center" }}>Welcome</Heading>
+<Column style={{ padding: 32, mobile: { padding: 16 } }}>
+  <Heading style={{ fontSize: 32, mobile: { fontSize: 24, textAlign: "center" } }}>Welcome</Heading>
 </Column>
 ```
 
@@ -100,12 +100,12 @@ Hidden on both, a block never shows, and `validate()` warns (`hidden/everywhere`
 `hover` holds a link's or a button's styles under the pointer:
 
 ```tsx
-<Button href="https://example.com/buy" style={{ backgroundColor: "#111827" }} hover={{ backgroundColor: "#374151" }}>
+<Button href="https://example.com/buy" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>
   Buy
 </Button>
 
 <Text>
-  <Link href="https://example.com/help" style={{ color: "#2563eb", textDecoration: "none" }} hover={{ textDecoration: "underline" }}>
+  <Link href="https://example.com/help" style={{ color: "#2563eb", textDecoration: "none", hover: { textDecoration: "underline" } }}>
     Help
   </Link>
 </Text>

@@ -14,4 +14,4 @@ Holds: nothing. Drawn in: email, page.
 - `width`: a length (a number of px, %) (default `"100%"`)
 - `padding`: *insets*
 
-`mobile` (on phones): `width`, `padding`.
+`style.mobile` (on phones): `width`, `padding`.

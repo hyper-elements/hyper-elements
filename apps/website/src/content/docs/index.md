@@ -40,7 +40,7 @@ The root decides the output. Change the root and the same content renders somewh
 - **Writing Outlook conditional comments.** Outlook-only markup goes inside `<!--[if mso]>`, and nothing other clients need goes in one.
 - **Inlining styles.** Layout, colors, fonts, sizes and spacing are written inline, so the email holds its desktop layout where a client drops `<style>`.
 - **Keeping a plain-text version in sync.** Every `render()` returns `text` beside `html`.
-- **Writing media queries.** A `Row` stacks its children on phones by default, and `mobile={{ }}` holds a component's phone styles.
+- **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds a component's phone styles.
 - **Running headless Chrome for a PDF.** `@hyper-elements/react/pdf` writes a `Document` as a PDF with no browser.
 - **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value.
 

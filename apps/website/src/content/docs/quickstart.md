@@ -38,11 +38,11 @@ export function Welcome({ name }: { name: string }) {
     <Email previewText="Your Acme account is ready" style={{ backgroundColor: "#f4f4f5", fontFamily: "Helvetica, Arial, sans-serif", gap: 16 }}>
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
       <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
-        <Heading level={1} style={{ fontSize: 24 }} mobile={{ fontSize: 20 }}>
+        <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
           Welcome, {name}
         </Heading>
         <Text>Your account is ready. Create your first project to get going.</Text>
-        <Button href="https://example.com/projects/new" style={{ backgroundColor: "#111827", borderRadius: 6 }} hover={{ backgroundColor: "#374151" }}>
+        <Button href="https://example.com/projects/new" style={{ backgroundColor: "#111827", borderRadius: 6, hover: { backgroundColor: "#374151" } }}>
           Create a project
         </Button>
       </Column>

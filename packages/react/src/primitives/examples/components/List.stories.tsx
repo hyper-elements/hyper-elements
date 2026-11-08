@@ -61,22 +61,22 @@ const cardOnPhones = { padding: [28, 22, 30], gap: 20 } as const;
 /** A `Divider` is a line, `List` bullets or numbers, and an item can hold a list of its own. */
 export const ListsAndDividers = story((Root) => (
   <Root {...root}>
-    <Section style={table} mobile={tableOnPhones}>
-      <Column style={card} mobile={cardOnPhones}>
+    <Section style={{ ...table, mobile: tableOnPhones }}>
+      <Column style={{ ...card, mobile: cardOnPhones }}>
         <Column style={{ gap: 10 }}>
           <Text style={label}>Lesson three</Text>
-          <Heading level={2} style={{ ...title, fontSize: 44 }} mobile={{ fontSize: 34 }}>
+          <Heading level={2} style={{ ...title, fontSize: 44, mobile: { fontSize: 34 } }}>
             A loaf for Sunday
           </Heading>
         </Column>
-        <List style={{ gap: 4 }} mobile={{ fontSize: 16 }}>
+        <List style={{ gap: 4, mobile: { fontSize: 16 } }}>
           <ListItem>500 g strong white flour</ListItem>
           <ListItem>350 g cool water</ListItem>
           <ListItem>100 g lively starter</ListItem>
           <ListItem>10 g fine salt</ListItem>
         </List>
         <Divider style={{ borderTop: `1px solid ${RULE}` }} />
-        <List type="number" style={{ gap: 8 }} mobile={{ fontSize: 16 }}>
+        <List type="number" style={{ gap: 8, mobile: { fontSize: 16 } }}>
           <ListItem>Mix it all, and leave it for an hour.</ListItem>
           <ListItem>
             Fold it four times, half an hour apart.
@@ -106,8 +106,8 @@ const day = (name: string, when: string, list: JSX.Element) => (
 /** `type="number"` counts from 1, and `start` from another number. */
 export const Numbers = story((Root) => (
   <Root {...root}>
-    <Section style={{ ...table, gap: 20 }} mobile={{ ...tableOnPhones, gap: 14 }}>
-      <Heading level={2} style={{ ...title, fontSize: 40 }} mobile={{ fontSize: 32, padding: [8, 8, 0] }}>
+    <Section style={{ ...table, gap: 20, mobile: { ...tableOnPhones, gap: 14 } }}>
+      <Heading level={2} style={{ ...title, fontSize: 40, mobile: { fontSize: 32, padding: [8, 8, 0] } }}>
         Your first weekend
       </Heading>
       <Row style={{ gap: 12 }}>
@@ -128,7 +128,7 @@ export const Numbers = story((Root) => (
           </List>
         )}
       </Row>
-      <Text style={{ ...caption(INK), padding: [0, 2] }} mobile={{ padding: [0, 8] }}>
+      <Text style={{ ...caption(INK), padding: [0, 2], mobile: { padding: [0, 8] } }}>
         start: 3, so Saturday's count carries on
       </Text>
     </Section>
@@ -138,12 +138,12 @@ export const Numbers = story((Root) => (
 /** An item holds a `List` of its own, down as many levels as it needs. */
 export const Nested = story((Root) => (
   <Root {...root}>
-    <Section style={table} mobile={tableOnPhones}>
-      <Column style={card} mobile={cardOnPhones}>
-        <Heading level={2} style={{ ...title, fontSize: 40 }} mobile={{ fontSize: 32 }}>
+    <Section style={{ ...table, mobile: tableOnPhones }}>
+      <Column style={{ ...card, mobile: cardOnPhones }}>
+        <Heading level={2} style={{ ...title, fontSize: 40, mobile: { fontSize: 32 } }}>
           What’s on the shelf
         </Heading>
-        <List style={{ gap: 10, fontWeight: 600 }} mobile={{ fontSize: 16 }}>
+        <List style={{ gap: 10, fontWeight: 600, mobile: { fontSize: 16 } }}>
           <ListItem>
             Flour
             <List style={{ gap: 6, fontWeight: 400 }}>
@@ -167,20 +167,20 @@ export const Nested = story((Root) => (
 /** `gap` is the space between items, `indent` the markers' column, and a list has a box of its own. */
 export const Styles = story((Root) => (
   <Root {...root}>
-    <Section style={table} mobile={tableOnPhones}>
-      <Column style={{ ...card, gap: 36 }} mobile={{ ...cardOnPhones, gap: 30 }}>
+    <Section style={{ ...table, mobile: tableOnPhones }}>
+      <Column style={{ ...card, gap: 36, mobile: { ...cardOnPhones, gap: 30 } }}>
         <Column style={{ gap: 14 }}>
-          <Heading level={2} style={{ ...title, fontSize: 32 }} mobile={{ fontSize: 28 }}>
+          <Heading level={2} style={{ ...title, fontSize: 32, mobile: { fontSize: 28 } }}>
             Saturday’s rules
           </Heading>
-          <List style={{ gap: 12, indent: 40, fontFamily: SERIF, fontSize: 20, lineHeight: 1.3, color: CRUST }} mobile={{ fontSize: 18 }}>
+          <List style={{ gap: 12, indent: 40, fontFamily: SERIF, fontSize: 20, lineHeight: 1.3, color: CRUST, mobile: { fontSize: 18 } }}>
             <ListItem>Nobody opens the oven for the first twenty minutes</ListItem>
             <ListItem>Whoever finishes the starter feeds the starter</ListItem>
           </List>
           <Text style={caption(QUIET)}>gap: 12, indent: 40</Text>
         </Column>
         <Column style={{ gap: 14 }}>
-          <Heading level={2} style={{ ...title, fontSize: 32 }} mobile={{ fontSize: 28 }}>
+          <Heading level={2} style={{ ...title, fontSize: 32, mobile: { fontSize: 28 } }}>
             Your order
           </Heading>
           <List type="number" style={{ gap: 8, padding: [18, 20], backgroundColor: BUTTER, border: `1px solid ${RULE}`, fontSize: 16, color: QUIET }}>
@@ -198,15 +198,15 @@ export const Styles = story((Root) => (
 /** An item's text holds what any text holds: a `Span`, a `Link`, a `MergeTag`. */
 export const RunsInItems = story((Root) => (
   <Root {...root}>
-    <Section style={table} mobile={tableOnPhones}>
-      <Column style={card} mobile={cardOnPhones}>
+    <Section style={{ ...table, mobile: tableOnPhones }}>
+      <Column style={{ ...card, mobile: cardOnPhones }}>
         <Column style={{ gap: 10 }}>
           <Text style={label}>Before you come</Text>
-          <Heading level={2} style={{ ...title, fontSize: 40 }} mobile={{ fontSize: 30 }}>
+          <Heading level={2} style={{ ...title, fontSize: 40, mobile: { fontSize: 30 } }}>
             Three things about Saturday
           </Heading>
         </Column>
-        <List style={{ gap: 10, fontSize: 18 }} mobile={{ fontSize: 16, gap: 8 }}>
+        <List style={{ gap: 10, fontSize: 18, mobile: { fontSize: 16, gap: 8 } }}>
           <ListItem>
             <Span style={{ fontWeight: 700 }}>Bring an apron.</Span> We have the flour.
           </ListItem>

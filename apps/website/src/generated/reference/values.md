@@ -12,6 +12,7 @@ What a property takes, where it says *kind*:
 - *fontFamily*: a font stack, as CSS writes it ("Inter, Arial, sans-serif")
 - *fontWeight*: 100 to 900 in hundreds, "normal" or "bold"
 - *lineHeight*: a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own)
+- *breakpoints*: { mobile }: the phone width in px (from 240)
 - *insets*: px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }
 - *border*: "1px solid #ccc", { width, style, color } for all sides, or { top, right, bottom, left } with one of those each
 - *radius*: px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }

@@ -356,9 +356,9 @@ export const T = () => <Email contentWidth="600px"><Row><Column><Heading heading
     const { code, report } = await migrate(`const cell = { padding: "14px 0", borderBottomWidth: "1px", borderBottomStyle: "solid", borderBottomColor: "#dddddd" } as const;
 export const T = () => <Email><Row layout={ColumnLayouts.TwoWideNarrow}><Column {...cell}><Paragraph>Item</Paragraph></Column><Column {...cell}><Paragraph>$1</Paragraph></Column></Row></Email>;`);
     const flat = squash(code);
-    expect(flat).toContain('<Rowstyle={{border:{bottom:"1pxsolid#dddddd"}}}mobile={{border:{bottom:"none"}}}>');
-    expect(flat).toContain('<Columnstyle={{width:"66.67%",padding:"14px0"}}mobile={{border:{bottom:"1pxsolid#dddddd"}}}>');
-    expect(flat).toContain('<Columnstyle={{width:"33.33%",padding:"14px0"}}');
+    expect(flat).toContain('<Rowstyle={{border:{bottom:"1pxsolid#dddddd"},mobile:{border:{bottom:"none"}}}}>');
+    expect(flat).toContain('<Columnstyle={{width:"66.67%",padding:"14px0",mobile:{border:{bottom:"1pxsolid#dddddd"}},}}>');
+    expect(flat).toContain('<Columnstyle={{width:"33.33%",padding:"14px0",mobile:{border:{bottom:"1pxsolid#dddddd"}},}}>');
     expect(report).toEqual([]);
   });
 
@@ -439,8 +439,9 @@ export default function Card({ align }) {
   it("carries phone settings over, today's containerPadding as the padding", async () => {
     const { code } = await migrate(`export const T = () => <Email><Row><Column padding="36px 40px" mobile={{ padding: "24px 20px" }}><Heading mobile={{ fontSize: 30, textAlign: "center", containerPadding: "4px 0" }}>Hi</Heading></Column></Row></Email>;`);
     const flat = squash(code);
-    expect(flat).toContain('mobile={{padding:"24px20px"}}');
-    expect(flat).toContain('mobile={{padding:"4px0",fontSize:30,textAlign:"center"}}');
+    expect(flat).toContain('mobile:{padding:"24px20px"}');
+    expect(flat).toContain('mobile:{padding:"4px0",fontSize:30,textAlign:"center"}');
+    expect(flat).not.toContain("mobile={");
   });
 
   it("moves today's types to the new package, and keeps a namespace used for more than its components; the components through it are migrated", async () => {
@@ -652,11 +653,11 @@ export const T = () => (
     expect(squashed).toContain('icons={[{name:"X",href:{href:"https://x.com/acme",target:"_self"}},{name:"Facebook",href:"https://facebook.com/acme"},]}');
     expect(squashed.split('<Imagesrc="https://cdn.tools.unlayer.com/image/placeholder.png"/>')).toHaveLength(3);
     expect(squashed).toContain("lineHeight:1.5");
-    expect(squashed).toContain("mobile={{lineHeight:2}}");
+    expect(squashed).toContain("lineHeight:1.5,mobile:{lineHeight:2}");
     expect(report).toContain("line 5: this Image has no src: Unlayer Elements draws its placeholder image, which is written in (give it its own)");
     expect(report).toContain("line 6: this Image has no src: Unlayer Elements draws its placeholder image, which is written in (give it its own)");
     // A menu's phone padding is each of its links' (and separators') on phones, as today's.
-    expect(squashed).toContain('<Textstyle={{flex:"none",padding:[5,15]}}mobile={{padding:4}}>');
+    expect(squashed).toContain('<Textstyle={{flex:"none",padding:[5,15],mobile:{padding:4}}}>');
     expect(report.join("\n")).not.toContain("phone padding is left out");
     expect(errors(code)).toEqual([]);
   });

@@ -44,7 +44,7 @@ export default function KeelSignInCode() {
       fonts={[{ family: "DM Mono", src: "https://fonts.gstatic.com/s/dmmono/v16/aFTR7PB1QTsUX8KYvumzEYOtbYf-Vlg.woff2", format: "woff2", weight: 500 }]}
       style={{ backgroundColor: "#FFFFFF", color: INK, fontFamily: SYSTEM, fontSize: 16, lineHeight: 1.55 }}
     >
-      <Section style={{ padding: [48, 24, 56], gap: 32 }} mobile={{ padding: [32, 24, 40], gap: 28 }}>
+      <Section style={{ padding: [48, 24, 56], gap: 32, mobile: { padding: [32, 24, 40], gap: 28 } }}>
         <Text style={{ fontSize: 22, fontWeight: 700, letterSpacing: -0.6, lineHeight: 1 }}>
           <Link href={SITE} style={{ color: INK, textDecoration: "none" }}>
             keel<Span style={{ color: GREEN }}>.</Span>
@@ -58,8 +58,8 @@ export default function KeelSignInCode() {
           <Text style={{ color: QUIET }}>Enter it in the Keel app to finish signing in. It works once, for the next ten minutes.</Text>
         </Column>
 
-        <Column style={{ backgroundColor: PANEL, borderRadius: 10, padding: [26, 28], gap: 6 }} mobile={{ padding: [22, 20] }}>
-          <Text style={{ fontFamily: MONO, fontSize: 46, fontWeight: 500, letterSpacing: 10, lineHeight: 1.1 }} mobile={{ fontSize: 40, letterSpacing: 8 }}>
+        <Column style={{ backgroundColor: PANEL, borderRadius: 10, padding: [26, 28], gap: 6, mobile: { padding: [22, 20] } }}>
+          <Text style={{ fontFamily: MONO, fontSize: 46, fontWeight: 500, letterSpacing: 10, lineHeight: 1.1, mobile: { fontSize: 40, letterSpacing: 8 } }}>
             482 913
           </Text>
           <Text style={{ fontSize: 13, color: QUIET }}>Expires at 06:52 GMT</Text>

@@ -75,9 +75,9 @@ export default meta;
 export const Width = showing(
   "Email",
   <Email width={420} fonts={fonts} style={text}>
-    <Section style={{ padding: [40, 0, 16], gap: 0 }} mobile={{ padding: [20, 16, 12] }}>
+    <Section style={{ padding: [40, 0, 16], gap: 0, mobile: { padding: [20, 16, 12] } }}>
       <Image src={ARCADE} alt="Five horseshoe arches along a courtyard wall, the middle one in pomegranate red." style={{ width: "100%" }} />
-      <Column style={{ padding: [28, 32, 32], gap: 16, backgroundColor: CARD }} mobile={{ padding: [24, 20, 24] }}>
+      <Column style={{ padding: [28, 32, 32], gap: 16, backgroundColor: CARD, mobile: { padding: [24, 20, 24] } }}>
         <Column style={{ gap: 8 }}>
           <Text style={label}>Friday 11 December</Text>
           <Heading level={1} style={serif(34)}>
@@ -91,7 +91,7 @@ export const Width = showing(
         </Column>
       </Column>
     </Section>
-    <Section style={{ padding: [0, 0, 40] }} mobile={{ padding: [0, 16, 24] }}>
+    <Section style={{ padding: [0, 0, 40], mobile: { padding: [0, 16, 24] } }}>
       <Text style={{ ...note, textAlign: "center" }}>width: 420. The default is 600, and the window around it is the Email’s own background.</Text>
     </Section>
   </Email>
@@ -100,8 +100,8 @@ export const Width = showing(
 /** Text styles on the root are inherited by everything in it: its color, font, size, line height and alignment. */
 export const InheritedText = showing(
   "Email",
-  <Email width={520} fonts={fonts} style={{ backgroundColor: CARD, color: WALNUT, fontFamily: SERIF, fontSize: 20, lineHeight: 1.6, textAlign: "center" }} mobile={{ fontSize: 18 }}>
-    <Section style={{ padding: [64, 32], gap: 18 }} mobile={{ padding: [44, 24], gap: 16 }}>
+  <Email width={520} fonts={fonts} style={{ backgroundColor: CARD, color: WALNUT, fontFamily: SERIF, fontSize: 20, lineHeight: 1.6, textAlign: "center", mobile: { fontSize: 18 } }}>
+    <Section style={{ padding: [64, 32], gap: 18, mobile: { padding: [44, 24], gap: 16 } }}>
       <Heading level={1} style={{ fontSize: 44, fontWeight: 400, fontStyle: "italic", lineHeight: 1.1 }}>
         Dear Ada,
       </Heading>
@@ -117,7 +117,7 @@ export const InheritedText = showing(
 
 /** A card on the way there: where it applies, and what to do. */
 const before = (name: string, body: string) => (
-  <Column style={{ width: 400, padding: [22, 24], gap: 6, backgroundColor: CARD, borderRadius: 4 }} mobile={{ width: 327 }}>
+  <Column style={{ width: 400, padding: [22, 24], gap: 6, backgroundColor: CARD, borderRadius: 4, mobile: { width: 327 } }}>
     <Text style={label}>{name}</Text>
     <Text style={{ ...serif(21), lineHeight: 1.3, letterSpacing: 0 }}>{body}</Text>
   </Column>
@@ -127,15 +127,15 @@ const before = (name: string, body: string) => (
 export const GapAndAlignment = showing(
   "Email",
   <Email width={560} fonts={fonts} style={{ ...text, gap: 16, alignItems: "center", textAlign: "center" }}>
-    <Heading level={2} style={{ ...serif(36), padding: [44, 24, 8] }} mobile={{ fontSize: 26, padding: [32, 24, 4] }}>
+    <Heading level={2} style={{ ...serif(36), padding: [44, 24, 8], mobile: { fontSize: 26, padding: [32, 24, 4] } }}>
       Two things, before you come
     </Heading>
     {before("From the station", "Hassan will meet you at the Bab Boujloud gate, with a cart for your bags.")}
     {before("At eight", "Dinner is on the roof. Tell us what you don’t eat, and we’ll cook around it.")}
-    <Button href={`${SITE}/arrival`} style={{ backgroundColor: POMEGRANATE, fontSize: 15, fontWeight: 600, padding: [15, 30], borderRadius: 3 }} hover={{ backgroundColor: POMEGRANATE_DOWN }}>
+    <Button href={`${SITE}/arrival`} style={{ backgroundColor: POMEGRANATE, fontSize: 15, fontWeight: 600, padding: [15, 30], borderRadius: 3, hover: { backgroundColor: POMEGRANATE_DOWN } }}>
       Tell us when you’ll arrive
     </Button>
-    <Text style={{ ...note, padding: [8, 24, 44] }} mobile={{ padding: [8, 24, 32] }}>
+    <Text style={{ ...note, padding: [8, 24, 44], mobile: { padding: [8, 24, 32] } }}>
       gap: 16 between each; alignItems: "center" and textAlign: "center" on the Email
     </Text>
   </Email>
@@ -145,7 +145,7 @@ export const GapAndAlignment = showing(
 export const PreviewTextAndTitle = showing(
   "Email",
   <Email width={560} previewText="Your room is held for 11 December, and a note about the train" title="Your Dar Rumman deposit" lang="en" fonts={fonts} style={text}>
-    <Section style={{ padding: [40, 40, 44], gap: 24 }} mobile={{ padding: [28, 24, 32], gap: 20 }}>
+    <Section style={{ padding: [40, 40, 44], gap: 24, mobile: { padding: [28, 24, 32], gap: 20 } }}>
       <Row stackOnMobile={false} style={{ alignItems: "end", padding: [0, 0, 12], border: { bottom: `1px solid ${WALNUT}` } }}>
         <Column style={{ width: 180 }}>
           <Text style={{ ...serif(25), fontStyle: "italic", lineHeight: "28px" }}>Dar Rumman</Text>
@@ -154,7 +154,7 @@ export const PreviewTextAndTitle = showing(
           <Text style={{ ...label, textAlign: "right" }}>Receipt 0417</Text>
         </Column>
       </Row>
-      <Heading level={1} style={serif(38)} mobile={{ fontSize: 32 }}>
+      <Heading level={1} style={{ ...serif(38), mobile: { fontSize: 32 } }}>
         Your deposit is paid, and your room is yours.
       </Heading>
       <Column>
@@ -192,9 +192,9 @@ export const RightToLeft = showing(
     fonts={[...fonts, { family: "Noto Naskh Arabic", src: "https://fonts.gstatic.com/s/notonaskharabic/v44/RrQKbpV-9Dd1b1OAGA6M9PkyDuVBeN2DHV2mLXgzTrc.woff2", format: "woff2", weight: "400 700" }]}
     style={{ ...text, fontFamily: ARABIC, fontSize: 19, lineHeight: 1.8 }}
   >
-    <Section style={{ padding: [36, 40, 44], gap: 20, alignItems: "start" }} mobile={{ padding: [24, 24, 32] }}>
+    <Section style={{ padding: [36, 40, 44], gap: 20, alignItems: "start", mobile: { padding: [24, 24, 32] } }}>
       <Image src={ARCADE} alt="خمسة أقواس على جدار الفناء، أوسطها بلون الرمّان." style={{ width: "100%" }} />
-      <Heading level={1} style={{ fontSize: 36, fontWeight: 500, lineHeight: 1.35 }} mobile={{ fontSize: 30 }}>
+      <Heading level={1} style={{ fontSize: 36, fontWeight: 500, lineHeight: 1.35, mobile: { fontSize: 30 } }}>
         أهلاً بكم في دار الرمّان
       </Heading>
       <Text>غرفتكم جاهزة، والشاي بالنعناع ينتظركم على السطح.</Text>
@@ -202,7 +202,7 @@ export const RightToLeft = showing(
         {arabicFact("الوصول", "الجمعة ١١ ديسمبر")}
         {arabicFact("المغادرة", "الاثنين ١٤ ديسمبر")}
       </Column>
-      <Button href={`${SITE}/ar/dinner`} style={{ backgroundColor: POMEGRANATE, fontFamily: ARABIC, fontSize: 18, fontWeight: 600, padding: [12, 30], borderRadius: 3 }} hover={{ backgroundColor: POMEGRANATE_DOWN }}>
+      <Button href={`${SITE}/ar/dinner`} style={{ backgroundColor: POMEGRANATE, fontFamily: ARABIC, fontSize: 18, fontWeight: 600, padding: [12, 30], borderRadius: 3, hover: { backgroundColor: POMEGRANATE_DOWN } }}>
         احجزوا عشاءكم
       </Button>
       <Text dir="ltr" style={{ ...note, textAlign: "right" }}>

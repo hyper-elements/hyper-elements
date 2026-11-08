@@ -216,15 +216,15 @@ export const phone = (() => {
 
   const next = (
     <Email width={600} style={{ backgroundColor: "#f3f5f1", fontFamily: "Arial" }}>
-      <Column style={{ backgroundColor: "#ffffff", padding: [36, 40] }} mobile={{ padding: [24, 20] }}>
+      <Column style={{ backgroundColor: "#ffffff", padding: [36, 40], mobile: { padding: [24, 20] } }}>
         <Text style={{ color: "#355b48", fontSize: 12, letterSpacing: 2, lineHeight: "140%" }}>ELEMENTS · DESIGN PREVIEW</Text>
-        <Heading level={1} style={{ padding: [16, 0], fontSize: 38, fontWeight: 400, lineHeight: "115%", color: "#20372a" }} mobile={{ fontSize: 30, textAlign: "center" }}>
+        <Heading level={1} style={{ padding: [16, 0], fontSize: 38, fontWeight: 400, lineHeight: "115%", color: "#20372a", mobile: { fontSize: 30, textAlign: "center" } }}>
           Room to read. On every screen.
         </Heading>
-        <Column style={{ padding: [8, 0, 20, 0], alignItems: "center" }} mobile={{ padding: [4, 0, 16, 0] }}>
-          <Image src={{ src: art, width: 900, height: 540 }} alt="Illustrated green landscape with a warm sun" style={{ width: "75%" }} mobile={{ width: "100%" }} />
+        <Column style={{ padding: [8, 0, 20, 0], alignItems: "center", mobile: { padding: [4, 0, 16, 0] } }}>
+          <Image src={{ src: art, width: 900, height: 540 }} alt="Illustrated green landscape with a warm sun" style={{ width: "75%", mobile: { width: "100%" } }} />
         </Column>
-        <Text style={{ padding: [0, 0, 24, 0], color: "#526358", fontSize: 16, lineHeight: "160%" }} mobile={{ fontSize: 15, lineHeight: "155%" }}>
+        <Text style={{ padding: [0, 0, 24, 0], color: "#526358", fontSize: 16, lineHeight: "160%", mobile: { fontSize: 15, lineHeight: "155%" } }}>
           The same design keeps its desktop layout and adapts its padding, typography and image width for a phone.
         </Text>
         <Column style={{ alignItems: "center" }}>

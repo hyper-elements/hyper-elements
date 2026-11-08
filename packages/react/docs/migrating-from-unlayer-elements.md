@@ -60,7 +60,7 @@ share, the codemod writes it out:
 | `Table`'s `headers` and `data`, or the `values` it can read | a `Table` of `TableRow`s and `TableCell`s, in its section styles |
 | `Document`'s `documentSize`, `documentOrientation`, `documentMargin`; a `PageBreak` | `size`, `orientation`, `margin`; a `PageBreak` between `Section`s |
 | `Button`'s `buttonColors` | the colors in `style` and `hover` |
-| `mobile={{ ... }}`, `hideOnMobile`, `hideOnDesktop` | `mobile={{ ... }}` with the new names, `hidden={{ mobile: true }}` |
+| `mobile={{ ... }}`, `hideOnMobile`, `hideOnDesktop` | `style={{ mobile: { ... } }}` with the new names, `hidden={{ mobile: true }}` |
 | `Social`'s `{ name, url }`, `Menu`'s `linkColor` and `textColor` | `{ name, href }`, `color` and `separatorColor` |
 
 ## What it notes

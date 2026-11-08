@@ -29,7 +29,7 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
   const own = tokens(node);
   const around = { ...inherited, ...(drawn < 200 ? { width: drawn } : {}) };
   // A Page's own phone width, so the block's phone styles switch where the page's do.
-  const breakpoints = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
+  const breakpoints: Record<string, Json> = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
   const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own] };
   const { head, body } = renderTemplate({ root: page }, { components: components as never });
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";

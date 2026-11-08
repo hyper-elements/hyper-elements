@@ -27,6 +27,6 @@ Props:
 - `backgroundColor`: *color*
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`hover`: `color`, `textDecoration`, `backgroundColor`.
+`style.hover`: `color`, `textDecoration`, `backgroundColor`.
 
-`mobile` (on phones): `fontSize`, `letterSpacing`.
+`style.mobile` (on phones): `fontSize`, `letterSpacing`.

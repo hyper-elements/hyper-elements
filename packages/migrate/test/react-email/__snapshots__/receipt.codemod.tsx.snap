@@ -80,8 +80,7 @@ export const ReceiptEmail = ({
                 height: 36,
               }}
               alt="Northwind"
-              style={{ width: "26.12%", maxWidth: 156.72 }}
-              mobile={{ width: 140 }}
+              style={{ width: "26.12%", maxWidth: 156.72, mobile: { width: 140 } }}
             />
           </Column>
         </Column>

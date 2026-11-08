@@ -376,7 +376,7 @@ describe("renderPdf", () => {
   it("says what a PDF can't show that its HTML can: a hover, a Video, markup (and validate() says it too)", async () => {
     const template = (
       <Document>
-        <Button href="https://x.test" hover={{ backgroundColor: "#333333" }}>
+        <Button href="https://x.test" style={{ hover: { backgroundColor: "#333333" } }}>
           Go
         </Button>
         <Video src="https://vimeo.com/76979871" title="Our launch" />
@@ -392,7 +392,7 @@ describe("renderPdf", () => {
     expect(said((await renderPdf(template)).diagnostics)).toEqual(expected);
     expect(said(validate(template).diagnostics)).toEqual(expected);
     // An email shows both: neither is said.
-    expect(validate(<Email><Button href="https://x.test" hover={{ backgroundColor: "#333333" }}>Go</Button></Email>).diagnostics.filter((d) => d.code.startsWith("pdf/"))).toEqual([]);
+    expect(validate(<Email><Button href="https://x.test" style={{ hover: { backgroundColor: "#333333" } }}>Go</Button></Email>).diagnostics.filter((d) => d.code.startsWith("pdf/"))).toEqual([]);
   });
 
   it("says a page whose content can't fit is cut off, an estimate till text is measured (and validate() says it too)", async () => {

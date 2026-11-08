@@ -24,4 +24,4 @@ Props:
 - `alignSelf`: one of "start", "center", "end". Where it sits in its stack on phones, where that's another place than on desktop.
 - `verticalAlign`: one of "top", "middle". Where it sits in a line of text it's in.
 
-`mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
+`style.mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
