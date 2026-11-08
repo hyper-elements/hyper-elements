@@ -519,11 +519,34 @@ export async function migrateElements(source: string, options: MigrateElementsOp
 
   // ─── Writing the new JSX ───────────────────────────────────────────────────
 
+  /** Marks a component's style entries, its phone entries and its hover entries until element() writes them as one style. */
+  const STYLE_PART = "\u0000style:";
+  const PHONE_PART = "\u0000mobile:";
+  const HOVER_PART = "\u0000hover:";
+  const PARTS = [STYLE_PART, PHONE_PART, HOVER_PART];
+
   const element = (component: string, attributes: Array<string | false | undefined>, children: string[] = []) => {
     used.add(component);
     const tag = nameOf(component);
-    const attrs = attributes.filter(Boolean).join(" ");
+    const attrs = withBlocksInStyle(attributes.filter((a): a is string => !!a)).join(" ");
     return children.length ? `<${tag}${attrs ? ` ${attrs}` : ""}>${children.join("")}</${tag}>` : `<${tag}${attrs ? ` ${attrs}` : ""} />`;
+  };
+  /**
+   * A component's style, its phone and hover styles in it: styleAttr(), mobileAttr() and hoverAttr() hand element() their
+   * entries (marked, not written yet), and it writes one style={{ …, mobile: { … }, hover: { … } }} of them.
+   */
+  const withBlocksInStyle = (attributes: string[]): string[] => {
+    const part = (marker: string) => attributes.find((a) => a.startsWith(marker))?.slice(marker.length);
+    const phone = part(PHONE_PART);
+    const hover = part(HOVER_PART);
+    const style = [part(STYLE_PART), phone && `mobile: { ${phone} }`, hover && `hover: { ${hover} }`].filter(Boolean).join(", ");
+    let written = false;
+    return attributes.flatMap((a) => {
+      if (!PARTS.some((marker) => a.startsWith(marker))) return [a];
+      if (written) return [];
+      written = true;
+      return [`style={{ ${style} }}`];
+    });
   };
   const attr = (name: string, value: Value | undefined) =>
     value && (isLiteral(value) && value.code === undefined && typeof value.literal === "string" && !/["\\&{}\n]/.test(value.literal) ? `${name}="${value.literal}"` : `${name}={${code(value)}}`);
@@ -531,9 +554,11 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     const set = entries.filter((entry): entry is [string, Value] => entry[1] !== undefined);
     return set.length ? `{{ ${set.map(([key, value]) => `${key}: ${code(value)}`).join(", ")} }}` : undefined;
   };
+  /** The entries of an object, written ("a: 1, b: 2"), or none. */
+  const entriesOf = (entries: Array<[string, Value | undefined]>) => object(entries)?.slice(3, -3);
   const styleAttr = (entries: Array<[string, Value | undefined]>) => {
-    const value = object(entries);
-    return value && `style=${value}`;
+    const value = entriesOf(entries);
+    return value && `${STYLE_PART}${value}`;
   };
   const lit = (value: unknown): Value => ({ literal: value });
   const given = (props: Props, name: string, fallback?: unknown): Value | undefined => props.get(name) ?? (fallback === undefined ? undefined : lit(fallback));
@@ -620,8 +645,13 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     return out;
   };
   const mobileAttr = (entries: Array<[string, Value | undefined]>) => {
-    const value = object(entries);
-    return value && `mobile=${value}`;
+    const value = entriesOf(entries);
+    return value && `${PHONE_PART}${value}`;
+  };
+  /** Styles on hover (style={{ hover: { … } }}), where any is given. */
+  const hoverAttr = (entries: Array<[string, Value | undefined]>) => {
+    const value = entriesOf(entries);
+    return value && `${HOVER_PART}${value}`;
   };
   /**
    * A text block's words as today's draw them: a Paragraph's children, else its `text` (plain text: markup in it
@@ -1106,6 +1136,8 @@ export async function migrateElements(source: string, options: MigrateElementsOp
         ["borderRadius", radiusOf(radius, node)],
       ]),
       mobileAttr([["width", isLiteral(m.get("autoWidth")) && (m.get("autoWidth") as { literal: unknown }).literal === true ? undefined : n(m.get("width"))], ["fontSize", n(m.get("fontSize"))], ["lineHeight", lineHeightOf(m.get("lineHeight"), node)], ["padding", n(m.get("padding"))]]),
+      // Today's hover colors (buttonColors' hoverColor and hoverBackgroundColor) are the new Button's hover styles.
+      hoverAttr([["backgroundColor", color(props, "hoverBackgroundColor")], ["color", color(props, "hoverColor")]]),
     ], textChildren(node, props, node, "Button"));
     if (!href) report.push(`${where(node)}: this Button has no href: it links to "#"`);
     return wrapped(props, block, align(props, "textAlign", "center"), node);

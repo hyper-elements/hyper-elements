@@ -13,15 +13,13 @@ export default function Example() {
         <Row style={{ gap: 12, justifyContent: "center" }}>
           <Button
             href="https://example.com/start"
-            style={{ backgroundColor: "#ef4638", borderRadius: 8, padding: [12, 22], fontWeight: 600, width: 150 }}
-            hover={{ backgroundColor: "#d93425" }}
+            style={{ backgroundColor: "#ef4638", borderRadius: 8, padding: [12, 22], fontWeight: 600, width: 150, hover: { backgroundColor: "#d93425" } }}
           >
             Get started
           </Button>
           <Button
             href="https://example.com/docs"
-            style={{ backgroundColor: "#ffffff", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: 8, padding: [12, 22], width: 170 }}
-            hover={{ backgroundColor: "#f1f5f9" }}
+            style={{ backgroundColor: "#ffffff", color: "#0f172a", border: "1px solid #cbd5e1", borderRadius: 8, padding: [12, 22], width: 170, hover: { backgroundColor: "#f1f5f9" } }}
           >
             Read the docs
           </Button>

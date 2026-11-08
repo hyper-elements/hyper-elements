@@ -79,9 +79,9 @@ const coffee = (origin: string, name: string, tastes: string, noted: string) => 
 /** A `Column` with a box is a card: its background, border, corners and padding, and another padding on phones. */
 export const Cards = story((Root) => (
   <Root width={560} fonts={fonts} style={text}>
-    <Section style={{ padding: [32, 32, 40], gap: 16 }} mobile={{ padding: [24, 16, 32], gap: 12 }}>
+    <Section style={{ padding: [32, 32, 40], gap: 16, mobile: { padding: [24, 16, 32], gap: 12 } }}>
       {masthead("This month’s roasts")}
-      <Column style={{ gap: 6, padding: 28, backgroundColor: CARD, borderRadius: 8 }} mobile={{ padding: 18 }}>
+      <Column style={{ gap: 6, padding: 28, backgroundColor: CARD, borderRadius: 8, mobile: { padding: 18 } }}>
         {coffee("Filter · Hambela, Ethiopia", "Long Shadow", "Bergamot and white peach, with a finish as clean as tea.", "backgroundColor, borderRadius; less padding on phones")}
       </Column>
       <Column style={{ gap: 6, padding: 28, border: `1px solid ${DIM}` }}>
@@ -113,7 +113,7 @@ const bag = (alignItems: "start" | "center" | "end", textAlign: "left" | "center
       </Heading>
       <Text style={{ fontSize: 14, color: QUIET }}>{price}, whole bean</Text>
     </Column>
-    <Button href={`${SITE}/bags/${size}`} style={{ backgroundColor: ESPRESSO, color: CARD, fontSize: 14, fontWeight: 600, padding: [10, 20], borderRadius: 3 }} hover={{ backgroundColor: "#46362C" }}>
+    <Button href={`${SITE}/bags/${size}`} style={{ backgroundColor: ESPRESSO, color: CARD, fontSize: 14, fontWeight: 600, padding: [10, 20], borderRadius: 3, hover: { backgroundColor: "#46362C" } }}>
       Add
     </Button>
     <Text style={{ ...note, padding: [4, 0, 0] }}>“{alignItems}”</Text>
@@ -123,7 +123,7 @@ const bag = (alignItems: "start" | "center" | "end", textAlign: "left" | "center
 /** `alignItems` says where its children sit across it: on the left, in the center, on the right. */
 export const Alignment = story((Root) => (
   <Root width={600} fonts={fonts} style={text}>
-    <Section style={{ padding: [32, 32, 40], gap: 20 }} mobile={{ padding: [24, 16, 32] }}>
+    <Section style={{ padding: [32, 32, 40], gap: 20, mobile: { padding: [24, 16, 32] } }}>
       {masthead("By the bag")}
       <Row style={{ gap: 12 }}>
         {bag("start", "left", "250 g", "£9")}
@@ -149,7 +149,7 @@ const roast = (justifyContent: "start" | "center" | "end", backgroundColor: stri
 export const HeightAndJustify = showing(
   "Page",
   <Page width={640} fonts={fonts} style={text}>
-    <Section style={{ padding: [32, 32, 40], gap: 20 }} mobile={{ padding: [24, 16, 32] }}>
+    <Section style={{ padding: [32, 32, 40], gap: 20, mobile: { padding: [24, 16, 32] } }}>
       {masthead("The roast scale")}
       <Row style={{ gap: 8 }}>
         {roast("start", "#DDC49C", ESPRESSO, "Light", "Tastes of where it grew: fruit, flowers, a little tea.")}
@@ -175,8 +175,7 @@ const plan = (name: string, price: string, features: string[], dark = false) => 
     </List>
     <Button
       href={`${SITE}/plans/${name.toLowerCase()}`}
-      style={{ width: "100%", backgroundColor: dark ? CREMA : OAT, color: ESPRESSO, fontSize: 14, fontWeight: 600, padding: [12, 0], borderRadius: 3 }}
-      hover={{ backgroundColor: dark ? CREMA_DOWN : RULE }}
+      style={{ width: "100%", backgroundColor: dark ? CREMA : OAT, color: ESPRESSO, fontSize: 14, fontWeight: 600, padding: [12, 0], borderRadius: 3, hover: { backgroundColor: dark ? CREMA_DOWN : RULE } }}
     >
       Choose {name}
     </Button>
@@ -186,9 +185,9 @@ const plan = (name: string, price: string, features: string[], dark = false) => 
 /** Three plans, the middle one featured: a `Column` is a card, and a `Row` puts them side by side. */
 export const PricingCards = story((Root) => (
   <Root width={640} fonts={fonts} style={text}>
-    <Section style={{ padding: [32, 24, 40], gap: 24 }} mobile={{ padding: [24, 16, 32] }}>
+    <Section style={{ padding: [32, 24, 40], gap: 24, mobile: { padding: [24, 16, 32] } }}>
       {masthead("Subscriptions")}
-      <Heading level={2} style={serif(38)} mobile={{ fontSize: 28 }}>
+      <Heading level={2} style={{ ...serif(38), mobile: { fontSize: 28 } }}>
         Roasted on Monday,
         <LineBreak />
         at your door by Thursday.
@@ -205,10 +204,10 @@ export const PricingCards = story((Root) => (
 /** A figure and what it counts, centered in its column. */
 const stat = (figure: string, what: string) => (
   <Column key={what} style={{ gap: 6, textAlign: "center" }}>
-    <Text style={{ ...serif(40), color: CREMA }} mobile={{ fontSize: 28 }}>
+    <Text style={{ ...serif(40), color: CREMA, mobile: { fontSize: 28 } }}>
       {figure}
     </Text>
-    <Text style={{ fontSize: 13, lineHeight: 1.35, color: DIM }} mobile={{ fontSize: 11 }}>
+    <Text style={{ fontSize: 13, lineHeight: 1.35, color: DIM, mobile: { fontSize: 11 } }}>
       {what}
     </Text>
   </Column>
@@ -217,9 +216,9 @@ const stat = (figure: string, what: string) => (
 /** Figures along a dark band: a column's `textAlign` is inherited by what it holds. */
 export const Stats = story((Root) => (
   <Root width={640} fonts={fonts} style={{ ...text, backgroundColor: ESPRESSO }}>
-    <Section style={{ backgroundColor: ESPRESSO, color: CARD, padding: [40, 24, 44], gap: 28 }} mobile={{ padding: [32, 16, 36], gap: 24 }}>
+    <Section style={{ backgroundColor: ESPRESSO, color: CARD, padding: [40, 24, 44], gap: 28, mobile: { padding: [32, 16, 36], gap: 24 } }}>
       <Text style={{ ...label, color: DIM, textAlign: "center" }}>Sundial’s year, in four numbers</Text>
-      <Row stackOnMobile={false} style={{ gap: 16 }} mobile={{ gap: 8 }}>
+      <Row stackOnMobile={false} style={{ gap: 16, mobile: { gap: 8 } }}>
         {stat("38", "farms we buy from")}
         {stat("4", "days from roast to door")}
         {stat("62p", "a kilo over market")}
@@ -232,7 +231,7 @@ export const Stats = story((Root) => (
 /** A link in the sidebar. */
 const contents = (href: string, title: ReactNode) => (
   <Text style={{ fontSize: 14, lineHeight: 1.4, padding: [8, 0, 0], border: { top: `1px solid ${RULE}` } }}>
-    <Link href={`${SITE}/letter/31#${href}`} style={{ color: ESPRESSO, textDecoration: "none" }} hover={{ textDecoration: "underline" }}>
+    <Link href={`${SITE}/letter/31#${href}`} style={{ color: ESPRESSO, textDecoration: "none", hover: { textDecoration: "underline" } }}>
       {title}
     </Link>
   </Text>
@@ -241,9 +240,9 @@ const contents = (href: string, title: ReactNode) => (
 /** An article beside a tinted sidebar: the sidebar has a set `width`, and the article takes what's left. */
 export const Sidebar = story((Root) => (
   <Root width={640} fonts={fonts} style={{ ...text, backgroundColor: CARD }}>
-    <Section style={{ padding: [32, 32, 40], gap: 28 }} mobile={{ padding: [24, 20, 32], gap: 20 }}>
+    <Section style={{ padding: [32, 32, 40], gap: 28, mobile: { padding: [24, 20, 32], gap: 20 } }}>
       {masthead("The letter, No. 31")}
-      <Row style={{ gap: 32 }} mobile={{ gap: 24 }}>
+      <Row style={{ gap: 32, mobile: { gap: 24 } }}>
         <Column style={{ width: 168, gap: 8, padding: 18, backgroundColor: OAT, borderRadius: 4 }}>
           <Text style={{ ...label, padding: [0, 0, 4] }}>In this issue</Text>
           {contents("blends", "Why we stopped blending")}
@@ -251,7 +250,7 @@ export const Sidebar = story((Root) => (
           {contents("kayanza", "A week in Kayanza")}
         </Column>
         <Column style={{ gap: 12 }}>
-          <Heading level={2} style={serif(34)} mobile={{ fontSize: 30 }}>
+          <Heading level={2} style={{ ...serif(34), mobile: { fontSize: 30 } }}>
             Why we stopped blending
           </Heading>
           <Text style={{ fontSize: 16, lineHeight: 1.65 }}>A blend hides a bad harvest. For nine years that suited us, because it meant the same bag all year. Then Ana sent us a single lot from Huila, and we couldn’t improve it by adding anything.</Text>

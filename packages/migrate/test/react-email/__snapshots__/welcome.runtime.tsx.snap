@@ -40,8 +40,7 @@ export default function Template() {
                 height: 40,
               }}
               alt={"{{productName}}"}
-              style={{ width: "24.19%", maxWidth: 135.46 }}
-              mobile={{ width: 120 }}
+              style={{ width: "24.19%", maxWidth: 135.46, mobile: { width: 120 } }}
             />
           </Column>
         </Column>

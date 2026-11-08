@@ -33,8 +33,8 @@ const root: Pick<EmailProps, "width" | "fonts" | "style"> = {
 const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSpacing: 1.2, textTransform: "uppercase", color: QUIET } as const;
 /** A quiet mono note on what a button sets. */
 const note = { fontFamily: MONO, fontSize: 12, lineHeight: 1.55, color: QUIET } as const;
-const big = { style: { fontSize: 44, fontWeight: 500, lineHeight: 1.04, letterSpacing: -1.7 }, mobile: { fontSize: 34, letterSpacing: -1.2 } } as const;
-const small = { style: { fontSize: 28, fontWeight: 500, lineHeight: 1.15, letterSpacing: -0.8 }, mobile: { fontSize: 24 } } as const;
+const big = { style: { fontSize: 44, fontWeight: 500, lineHeight: 1.04, letterSpacing: -1.7, mobile: { fontSize: 34, letterSpacing: -1.2 } } } as const;
+const small = { style: { fontSize: 28, fontWeight: 500, lineHeight: 1.15, letterSpacing: -0.8, mobile: { fontSize: 24 } } } as const;
 
 /** Oyen's three buttons: the orange one, the ink one and an outline. */
 const signal: ButtonProps["style"] = { backgroundColor: SIGNAL, color: INK, fontSize: 15, fontWeight: 600, padding: [15, 26], borderRadius: 2 };
@@ -44,7 +44,7 @@ const fullOnPhones = { width: "100%" } as const;
 
 /** The band each story is drawn in. */
 const band = (children: ReactNode, style: SectionProps["style"] = {}) => (
-  <Section style={{ padding: [32, 44, 44], gap: 28, ...style }} mobile={{ padding: [24, 24, 32], gap: 24 }}>
+  <Section style={{ padding: [32, 44, 44], gap: 28, ...style, mobile: { padding: [24, 24, 32], gap: 24 } }}>
     {children}
   </Section>
 );
@@ -63,7 +63,7 @@ const masthead = (page: string) => (
 
 /** A line of a sheet: a button, and a note beside it on what it sets (under it on phones). */
 const line = (noted: string, button: ReactNode) => (
-  <Row style={{ alignItems: "center", gap: 20, padding: [14, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 10 }}>
+  <Row style={{ alignItems: "center", gap: 20, padding: [14, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 10 } }}>
     <Column style={{ width: 236, alignItems: "start" }}>{button}</Column>
     <Column>
       <Text style={note}>{noted}</Text>
@@ -111,20 +111,20 @@ export const Styles = story((Root) => (
           <Text style={{ fontSize: 17, lineHeight: 1.5, maxWidth: 420 }}>A pocket recorder with two capsules that turn, one dial, and nothing to set before you press record.</Text>
         </Column>
         <Row style={{ gap: 12 }}>
-          <Button href={`${SITE}/fr-2`} style={{ ...signal, width: 176, padding: [15, 0] }} hover={{ backgroundColor: SIGNAL_DOWN }} mobile={fullOnPhones}>
+          <Button href={`${SITE}/fr-2`} style={{ ...signal, width: 176, padding: [15, 0], mobile: fullOnPhones, hover: { backgroundColor: SIGNAL_DOWN } }}>
             Pre-order FR-2
           </Button>
-          <Button href={`${SITE}/fr-2/specifications`} style={{ ...outline, width: 232, padding: [14, 0] }} hover={{ backgroundColor: TINT }} mobile={fullOnPhones}>
+          <Button href={`${SITE}/fr-2/specifications`} style={{ ...outline, width: 232, padding: [14, 0], mobile: fullOnPhones, hover: { backgroundColor: TINT } }}>
             Read the specifications
           </Button>
         </Row>
       </>
     )}
-    <Section style={{ backgroundColor: SIGNAL, padding: [32, 44, 36], gap: 16 }} mobile={{ padding: [28, 24, 32] }}>
+    <Section style={{ backgroundColor: SIGNAL, padding: [32, 44, 36], gap: 16, mobile: { padding: [28, 24, 32] } }}>
       <Heading level={3} style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.25, letterSpacing: -0.4, maxWidth: 350 }}>
         Rather hold one first? Forty shops have one on the counter.
       </Heading>
-      <Button href={`${SITE}/dealers`} style={{ ...dark, width: 320 }} hover={{ backgroundColor: "#3A3833" }} mobile={fullOnPhones}>
+      <Button href={`${SITE}/dealers`} style={{ ...dark, width: 320, mobile: fullOnPhones, hover: { backgroundColor: "#3A3833" } }}>
         Find a dealer near you
       </Button>
       <Text style={{ ...note, color: INK }}>width: 320, the whole width on phones</Text>
@@ -154,13 +154,13 @@ export const Hover = story((Root) => (
           </Column>
         </Row>
         <Column style={{ gap: 10 }}>
-          <Button href={`${SITE}/basket`} style={{ ...signal, width: "100%" }} hover={{ backgroundColor: SIGNAL_DOWN }}>
+          <Button href={`${SITE}/basket`} style={{ ...signal, width: "100%", hover: { backgroundColor: SIGNAL_DOWN } }}>
             Finish your order
           </Button>
-          <Button href={`${SITE}/basket/later`} style={{ ...outline, width: "100%" }} hover={{ backgroundColor: INK, color: PAPER }}>
+          <Button href={`${SITE}/basket/later`} style={{ ...outline, width: "100%", hover: { backgroundColor: INK, color: PAPER } }}>
             Save it for later
           </Button>
-          <Button href={`${SITE}/basket/add/battery`} style={{ ...signal, width: "100%", backgroundColor: TINT, color: QUIET }} hover={{ color: INK }}>
+          <Button href={`${SITE}/basket/add/battery`} style={{ ...signal, width: "100%", backgroundColor: TINT, color: QUIET, hover: { color: INK } }}>
             Add a spare battery, €19
           </Button>
         </Column>
@@ -229,7 +229,7 @@ export const Widths = story((Root) => (
           )}
           {measure(
             "width: 240, all of it on phones",
-            <Button href={`${SITE}/record`} style={{ ...signal, width: 240 }} hover={{ backgroundColor: SIGNAL_DOWN }} mobile={fullOnPhones}>
+            <Button href={`${SITE}/record`} style={{ ...signal, width: 240, mobile: fullOnPhones, hover: { backgroundColor: SIGNAL_DOWN } }}>
               Press record
             </Button>
           )}
@@ -255,15 +255,15 @@ export const Alignment = story((Root) => (
         </Column>
       </>
     )}
-    <Section style={{ padding: [0, 44, 44], gap: 12, alignItems: "center", textAlign: "center" }} mobile={{ padding: [0, 24, 32] }}>
-      <Button href={`${SITE}/dispatch/07`} style={signal} hover={{ backgroundColor: SIGNAL_DOWN }}>
+    <Section style={{ padding: [0, 44, 44], gap: 12, alignItems: "center", textAlign: "center", mobile: { padding: [0, 24, 32] } }}>
+      <Button href={`${SITE}/dispatch/07`} style={{ ...signal, hover: { backgroundColor: SIGNAL_DOWN } }}>
         Read dispatch 07
       </Button>
       <Text style={{ ...note, padding: [0, 0, 16] }}>In the center, as the stack says</Text>
-      <Button href={`${SITE}/dispatch/07.pdf`} style={{ ...dark, width: 320, textAlign: "left" }} mobile={fullOnPhones}>
+      <Button href={`${SITE}/dispatch/07.pdf`} style={{ ...dark, width: 320, textAlign: "left", mobile: fullOnPhones }}>
         As a PDF, 2.4 MB
       </Button>
-      <Button href={`${SITE}/dispatch/07.mp3`} style={{ ...dark, width: 320, textAlign: "right" }} mobile={fullOnPhones}>
+      <Button href={`${SITE}/dispatch/07.mp3`} style={{ ...dark, width: 320, textAlign: "right", mobile: fullOnPhones }}>
         As audio, 41 minutes
       </Button>
       <Text style={{ ...note, padding: [0, 0, 16] }}>textAlign: "left", and "right"</Text>
@@ -295,7 +295,7 @@ export const Links = story((Root) => (
           {line('target: "_blank", aria-label', <Button href={{ href: `${SITE}/manual`, target: "_blank" }} aria-label="Read the manual, in a new window" style={{ ...dark, width: "100%" }}>Read the manual</Button>)}
           {line("mailto:", <Button href="mailto:bench@oyen.example" style={{ ...outline, width: "100%" }}>Write to Ingrid</Button>)}
           {line("tel:", <Button href="tel:+4722000170" style={{ ...outline, width: "100%" }}>Call the workshop</Button>)}
-          {line("A merge tag, filled in when it’s sent", <Button href={`${SITE}/repairs/track`} style={{ ...signal, width: "100%", padding: [15, 0] }} hover={{ backgroundColor: SIGNAL_DOWN }}>Track repair <MergeTag name="order_id" /></Button>)}
+          {line("A merge tag, filled in when it’s sent", <Button href={`${SITE}/repairs/track`} style={{ ...signal, width: "100%", padding: [15, 0], hover: { backgroundColor: SIGNAL_DOWN } }}>Track repair <MergeTag name="order_id" /></Button>)}
         </Column>
       </>
     )}

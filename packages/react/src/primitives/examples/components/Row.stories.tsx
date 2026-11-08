@@ -216,17 +216,17 @@ const ROOM = drawing(
 export const PictureAndWords = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ padding: [28, 24] }}>
-      <Row style={{ gap: 28, alignItems: "center" }} mobile={{ gap: 20 }}>
+      <Row style={{ gap: 28, alignItems: "center", mobile: { gap: 20 } }}>
         <Column>
           <Image src={ROOM} alt="A corner of a room painted in Rust Hill, with an arched doorway, a black stool and a white jug of twigs" style={{ width: "100%" }} />
         </Column>
         <Column style={{ gap: 12, alignItems: "start" }}>
           <Text style={CAPTION}>No. 41</Text>
-          <Heading level={3} style={{ ...NAME, fontSize: 30 }} mobile={{ fontSize: 24 }}>
+          <Heading level={3} style={{ ...NAME, fontSize: 30, mobile: { fontSize: 24 } }}>
             Rust Hill, in a north room
           </Heading>
           <Text style={{ fontSize: 15, color: QUIET }}>North light cools most colours. This one keeps its warmth until the lamps come on.</Text>
-          <Button href={`${SITE}/rust-hill`} style={{ backgroundColor: RUST_HILL, color: PLASTER, fontSize: 15, fontWeight: 600, padding: [12, 22], borderRadius: 2 }} hover={{ backgroundColor: RUST_DOWN }}>
+          <Button href={`${SITE}/rust-hill`} style={{ backgroundColor: RUST_HILL, color: PLASTER, fontSize: 15, fontWeight: 600, padding: [12, 22], borderRadius: 2, hover: { backgroundColor: RUST_DOWN } }}>
             Order a sample pot
           </Button>
         </Column>

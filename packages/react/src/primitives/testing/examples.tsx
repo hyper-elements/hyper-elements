@@ -17,7 +17,7 @@ import { Button, Column, Divider, Email, Heading, Image, Link, Menu, Page, Text,
  */
 function lineRow(label: string, value: string, colors: { label: string; value: string; line: string }, last = false) {
   const line = `1px solid ${colors.line}`;
-  const cell = { style: { padding: "14px 0" }, mobile: last ? undefined : { border: { bottom: line } } };
+  const cell = { style: { padding: "14px 0", mobile: last ? undefined : { border: { bottom: line } } } };
   return (
     <Section style={{ backgroundColor: "#FFFFFF" }}>
       <Row>
@@ -216,15 +216,15 @@ export const phone = (() => {
 
   const next = (
     <Email width={600} style={{ backgroundColor: "#f3f5f1", fontFamily: "Arial" }}>
-      <Column style={{ backgroundColor: "#ffffff", padding: [36, 40] }} mobile={{ padding: [24, 20] }}>
+      <Column style={{ backgroundColor: "#ffffff", padding: [36, 40], mobile: { padding: [24, 20] } }}>
         <Text style={{ color: "#355b48", fontSize: 12, letterSpacing: 2, lineHeight: "140%" }}>ELEMENTS · DESIGN PREVIEW</Text>
-        <Heading level={1} style={{ padding: [16, 0], fontSize: 38, fontWeight: 400, lineHeight: "115%", color: "#20372a" }} mobile={{ fontSize: 30, textAlign: "center" }}>
+        <Heading level={1} style={{ padding: [16, 0], fontSize: 38, fontWeight: 400, lineHeight: "115%", color: "#20372a", mobile: { fontSize: 30, textAlign: "center" } }}>
           Room to read. On every screen.
         </Heading>
-        <Column style={{ padding: [8, 0, 20, 0], alignItems: "center" }} mobile={{ padding: [4, 0, 16, 0] }}>
-          <Image src={{ src: art, width: 900, height: 540 }} alt="Illustrated green landscape with a warm sun" style={{ width: "75%" }} mobile={{ width: "100%" }} />
+        <Column style={{ padding: [8, 0, 20, 0], alignItems: "center", mobile: { padding: [4, 0, 16, 0] } }}>
+          <Image src={{ src: art, width: 900, height: 540 }} alt="Illustrated green landscape with a warm sun" style={{ width: "75%", mobile: { width: "100%" } }} />
         </Column>
-        <Text style={{ padding: [0, 0, 24, 0], color: "#526358", fontSize: 16, lineHeight: "160%" }} mobile={{ fontSize: 15, lineHeight: "155%" }}>
+        <Text style={{ padding: [0, 0, 24, 0], color: "#526358", fontSize: 16, lineHeight: "160%", mobile: { fontSize: 15, lineHeight: "155%" } }}>
           The same design keeps its desktop layout and adapts its padding, typography and image width for a phone.
         </Text>
         <Column style={{ alignItems: "center" }}>
@@ -503,7 +503,7 @@ export const warby = (() => {
   /** A product line: its name in bold and its variant under it on the left, its price on the right; its hairline as `lineRow` draws it. */
   function productRow(name: string, variant: string, price: string, last = false) {
     const line = `1px solid ${LINE}`;
-    const cell = { style: { padding: "16px 0" }, mobile: last ? undefined : { border: { bottom: line } } };
+    const cell = { style: { padding: "16px 0", mobile: last ? undefined : { border: { bottom: line } } } };
     return (
       <Section style={{ backgroundColor: CARD }}>
         <Row>

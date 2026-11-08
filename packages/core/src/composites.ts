@@ -14,10 +14,10 @@ const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, w
 const BY_PARTS: SupportByTarget = { email: { level: "full", source: "writer" }, web: css as SupportByTarget["web"] };
 
 /** A definition made of primitives: `expand` returns the node it is, from its props and style (defaults applied). */
-function defineComposite<const P extends PropSpecs, const S extends StyleSpecs>(
-  definition: ComponentDefinition<P, S> & { expand(props: ExpandProps<P>, context: ExpandContext): unknown }
-): ComponentDefinition<P, S> {
-  return { ...definition, custom: true } as ComponentDefinition<P, S>;
+function defineComposite<const P extends PropSpecs, const S extends StyleSpecs, const H extends readonly (keyof S & string)[] = readonly []>(
+  definition: ComponentDefinition<P, S, H> & { expand(props: ExpandProps<P>, context: ExpandContext): unknown }
+): ComponentDefinition<P, S, H> {
+  return { ...definition, custom: true } as ComponentDefinition<P, S, H>;
 }
 
 /** Where the social networks' icons are, by style and network: Unlayer's, as today's Social uses them. */

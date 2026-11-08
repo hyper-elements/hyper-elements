@@ -30,4 +30,4 @@ Props:
 - `width`: a length (a number of px, %). Its column's width (of a cell spanning one column).
 - `verticalAlign`: one of "top", "middle", "bottom"
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`.

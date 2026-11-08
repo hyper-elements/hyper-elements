@@ -9,11 +9,11 @@
  *       Heading h1 536px "Thanks for your order, {{first_name}}"
  *       Row 536px: 2 side by side, stacked on phones
  */
-import { linkParts, type LinkValue, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { linkParts, shownAnywhere, type LinkValue, type ResolvedNode } from "@unlayer-internal/elements-core";
 
 const LONGEST = 80;
 const clip = (text: string) => (text.length > LONGEST ? `${text.slice(0, LONGEST - 1)}…` : text);
-const shown = (node: ResolvedNode) => !(node.hidden?.mobile && node.hidden?.desktop);
+const shown = (node: ResolvedNode) => shownAnywhere(node);
 const blocks = (node: ResolvedNode) => node.children.filter((child): child is ResolvedNode => typeof child !== "string" && shown(child));
 
 /** The words a node shows, a merge tag as `{{name}}`, a link's URL after its words, an image as its alt text; Lists in it are lines of their own. */

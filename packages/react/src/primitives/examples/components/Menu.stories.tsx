@@ -67,8 +67,8 @@ const RECORD = drawing(
 /** `Menu` for a line of links, `Social` for profiles' icons. */
 export const WithSocialIcons = story((Root) => (
   <Root {...root} style={{ ...root.style, backgroundColor: BLACK, color: BONE }}>
-    <Section style={{ padding: [52, 24, 56], gap: 24, alignItems: "center", textAlign: "center" }} mobile={{ padding: [40, 20, 44], gap: 20 }}>
-      <Text style={{ ...wordmark, fontSize: 56 }} mobile={{ fontSize: 34 }}>
+    <Section style={{ padding: [52, 24, 56], gap: 24, alignItems: "center", textAlign: "center", mobile: { padding: [40, 20, 44], gap: 20 } }}>
+      <Text style={{ ...wordmark, fontSize: 56, mobile: { fontSize: 34 } }}>
         Cratewell
       </Text>
       <Menu
@@ -105,8 +105,8 @@ const shelf = (written: string, menu: JSX.Element) => (
 /** With nothing set, and with a `separator` between the links, in a color of its own (phones show none). */
 export const Separators = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [40, 24, 28], gap: 24 }} mobile={{ padding: [28, 16, 16], gap: 20 }}>
-      <Heading level={2} style={{ ...wordmark, fontSize: 36, textAlign: "center" }} mobile={{ fontSize: 30 }}>
+    <Section style={{ padding: [40, 24, 28], gap: 24, mobile: { padding: [28, 16, 16], gap: 20 } }}>
+      <Heading level={2} style={{ ...wordmark, fontSize: 36, textAlign: "center", mobile: { fontSize: 30 } }}>
         Browse the shelves
       </Heading>
       <Column>
@@ -121,10 +121,10 @@ export const Separators = story((Root) => (
 /** `layout="vertical"` puts the links down a column. */
 export const Vertical = story((Root) => (
   <Root {...root} style={{ ...root.style, backgroundColor: BLACK, color: BONE }}>
-    <Section style={{ padding: [40, 32, 44] }} mobile={{ padding: [28, 24, 32] }}>
-      <Row style={{ gap: 40, alignItems: "center" }} mobile={{ gap: 24 }}>
-        <Column style={{ width: 240, alignItems: "center" }} mobile={{ width: "100%" }}>
-          <Image src={RECORD} alt="A black record from above, with an orange label" style={{ width: "100%" }} mobile={{ width: 220, alignSelf: "center" }} />
+    <Section style={{ padding: [40, 32, 44], mobile: { padding: [28, 24, 32] } }}>
+      <Row style={{ gap: 40, alignItems: "center", mobile: { gap: 24 } }}>
+        <Column style={{ width: 240, alignItems: "center", mobile: { width: "100%" } }}>
+          <Image src={RECORD} alt="A black record from above, with an orange label" style={{ width: "100%", mobile: { width: 220, alignSelf: "center" } }} />
         </Column>
         <Column style={{ gap: 12 }}>
           <Text style={{ fontFamily: MONO, fontSize: 12, letterSpacing: 1, color: DIM, textTransform: "uppercase" }}>In the shop</Text>
@@ -137,7 +137,7 @@ export const Vertical = story((Root) => (
 
 /** A band of the shop's colors, with its links where `justifyContent` puts them. */
 const band = (backgroundColor: string, color: string, justifyContent: "start" | "center" | "end", textAlign: "left" | "center" | "right", padding: [number, number, number, number]) => (
-  <Column style={{ backgroundColor, color, padding: [22, 24, 24], gap: 10, textAlign }} mobile={{ padding: [18, 12, 20] }}>
+  <Column style={{ backgroundColor, color, padding: [22, 24, 24], gap: 10, textAlign, mobile: { padding: [18, 12, 20] } }}>
     <Text style={caption(color)}>justifyContent: "{justifyContent}"</Text>
     <Menu items={ITEMS} style={{ justifyContent, padding, color, fontSize: 16, fontWeight: 500 }} />
   </Column>
@@ -146,7 +146,7 @@ const band = (backgroundColor: string, color: string, justifyContent: "start" | 
 /** `justifyContent` puts the links on the left, in the center or on the right. */
 export const Alignment = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [32, 0, 36], gap: 4 }} mobile={{ padding: 0, gap: 0 }}>
+    <Section style={{ padding: [32, 0, 36], gap: 4, mobile: { padding: 0, gap: 0 } }}>
       {band(BLACK, BONE, "start", "left", [4, 16, 4, 0])}
       {band("#E3DCCD", BLACK, "center", "center", [4, 12, 4, 12])}
       {band(STICKER, BLACK, "end", "right", [4, 0, 4, 16])}
@@ -157,15 +157,15 @@ export const Alignment = story((Root) => (
 /** A site's navigation: light, bold capitals on a dark band. */
 export const NavigationBar = story((Root) => (
   <Root {...root}>
-    <Section style={{ backgroundColor: BLACK, padding: [8, 16] }} mobile={{ padding: [6, 4] }}>
+    <Section style={{ backgroundColor: BLACK, padding: [8, 16], mobile: { padding: [6, 4] } }}>
       <Menu items={ITEMS} style={{ color: BONE, fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", padding: [12, 16] }} />
     </Section>
-    <Section style={{ padding: [44, 32, 52], gap: 16 }} mobile={{ padding: [32, 24, 36] }}>
+    <Section style={{ padding: [44, 32, 52], gap: 16, mobile: { padding: [32, 24, 36] } }}>
       <Text style={{ fontFamily: MONO, fontSize: 12, letterSpacing: 1, textTransform: "uppercase", color: STICKER }}>Friday 6 November</Text>
-      <Heading level={1} style={{ ...wordmark, fontSize: 44, lineHeight: 1.04 }} mobile={{ fontSize: 34 }}>
+      <Heading level={1} style={{ ...wordmark, fontSize: 44, lineHeight: 1.04, mobile: { fontSize: 34 } }}>
         Forty crates from a shut pressing plant
       </Heading>
-      <Text style={{ fontSize: 17, color: QUIET, maxWidth: 440 }} mobile={{ fontSize: 16 }}>
+      <Text style={{ fontSize: 17, color: QUIET, maxWidth: 440, mobile: { fontSize: 16 } }}>
         Test pressings, misprints and a whole run of a dub record nobody ordered. On the shelves from ten.
       </Text>
     </Section>
@@ -175,7 +175,7 @@ export const NavigationBar = story((Root) => (
 /** An email's footer: small links, a quiet separator, the address under them. */
 export const FooterLinks = story((Root) => (
   <Root {...root}>
-    <Section style={{ padding: [44, 32, 40], gap: 8 }} mobile={{ padding: [32, 24, 28] }}>
+    <Section style={{ padding: [44, 32, 40], gap: 8, mobile: { padding: [32, 24, 28] } }}>
       <Heading level={2} style={{ ...wordmark, fontSize: 30 }}>
         See you in the crates.
       </Heading>

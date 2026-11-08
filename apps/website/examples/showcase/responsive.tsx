@@ -11,8 +11,7 @@ export default function PlanPicker() {
     <Email style={{ backgroundColor: "#f1f2f6" }}>
       <Section style={{ padding: 20 }}>
         <Column style={card}>
-          <Heading style={{ fontSize: 30 }}
-            mobile={{ fontSize: 22 }}>
+          <Heading style={{ fontSize: 30, mobile: { fontSize: 22 } }}>
             Pick your Orbit plan
           </Heading>
           <Row style={{ gap: 12 }}>
@@ -23,8 +22,7 @@ export default function PlanPicker() {
               </Column>
             ))}
           </Row>
-          <Button href="https://orbit.dev/plans" style={cta}
-            hover={{ backgroundColor: "#4c3df0" }}>
+          <Button href="https://orbit.dev/plans" style={{ ...cta, hover: { backgroundColor: "#4c3df0" } }}>
             Choose a plan
           </Button>
         </Column>

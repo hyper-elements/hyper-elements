@@ -12,6 +12,7 @@ Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Imag
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
 - `description`: text. The page's meta description.
+- `breakpoints`: *breakpoints*. Where its phone styles start: mobile, the widest window they apply to, in px (480 where it's not set).
 - `title`: text. The document's title (shown in a browser tab, and by some email clients).
 - `lang`: text. Its language, as a BCP 47 tag ("en", "ar").
 - `dir`: one of "ltr", "rtl", "auto"
@@ -31,4 +32,4 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
+`style.mobile` (on phones): `gap`.

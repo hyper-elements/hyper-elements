@@ -127,6 +127,7 @@ Each of these made an agent's first try fail:
 - `style={{ marginBottom: 16 }}` → `gap: 16` on the parent. There are no margins.
 - `ColumnLayouts`, `layout`, `headingType`, `altText`, `html` are props of Unlayer Elements' components, not these: use a `Row` of `Column`s, `level`, `alt`, and text as children.
 - `<Image src="https://example.com/logo.png">` → `src={{ src: "https://example.com/logo.png", width: 240, height: 80 }}`, the file's size. Without it Outlook shows the image at its file's size, and Hyper Elements warns.
+- `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.
 
 ## Rules worth giving your agent
 

@@ -97,7 +97,9 @@ export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): Cu
     expand(props, context) {
       const { nodes, components, diagnostics } = collectNodes(spec.render(props));
       for (const used of components) context.register(used);
-      if (diagnostics.length) throw new Error(formatDiagnostics(diagnostics));
+      // An error stops it; a warning or a note (a deprecated prop) is said at the instance's place.
+      if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) throw new Error(formatDiagnostics(diagnostics));
+      for (const diagnostic of diagnostics) context.report(diagnostic);
       return nodes.length === 1 ? nodes[0] : nodes;
     },
   });

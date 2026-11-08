@@ -76,13 +76,13 @@ const pieces = [
  */
 export const ProductGrid = outputs((Root) => (
   <Root width={600} fonts={FONTS} style={{ backgroundColor: STONE, color: INK, fontFamily: SANS }}>
-    <Section style={{ backgroundColor: CARD, padding: [36, 24, 8], gap: 6 }} mobile={{ padding: [28, 16, 4] }}>
+    <Section style={{ backgroundColor: CARD, padding: [36, 24, 8], gap: 6, mobile: { padding: [28, 16, 4] } }}>
       <Text style={{ ...kicker, color: CELADON }}>From the winter firing</Text>
       <Heading level={2} style={{ fontFamily: SERIF, fontSize: 30, fontWeight: 400, letterSpacing: -0.5 }}>
         New on the shelves
       </Heading>
     </Section>
-    <Section style={{ backgroundColor: CARD, padding: [20, 24, 36] }} mobile={{ padding: [16, 16, 28] }}>
+    <Section style={{ backgroundColor: CARD, padding: [20, 24, 36], mobile: { padding: [16, 16, 28] } }}>
       <Grid columns={3} style={{ gap: 16, rowGap: 28 }}>
         {pieces.map((piece) => (
           <Column key={piece.name} style={{ gap: 4 }}>
@@ -101,12 +101,12 @@ export const ProductGrid = outputs((Root) => (
 /** What the studio offers, two to a row, cells of different heights each in the middle of its row; kept two to a row on phones. */
 export const FeatureGrid = outputs((Root) => (
   <Root width={600} fonts={FONTS} style={{ backgroundColor: STONE, color: INK, fontFamily: SANS }}>
-    <Section style={{ padding: [32, 24] }} mobile={{ padding: [20, 12] }}>
-      <Grid columns={2} stackOnMobile={false} style={{ gap: 24, alignItems: "center", padding: 28, backgroundColor: CARD, borderRadius: 4 }} mobile={{ gap: 16, padding: 18 }}>
+    <Section style={{ padding: [32, 24], mobile: { padding: [20, 12] } }}>
+      <Grid columns={2} stackOnMobile={false} style={{ gap: 24, alignItems: "center", padding: 28, backgroundColor: CARD, borderRadius: 4, mobile: { gap: 16, padding: 18 } }}>
         <Text style={{ fontFamily: SERIF, fontSize: 21, lineHeight: 1.25 }}>Open studio on Saturdays, ten till four.</Text>
         <Text style={{ fontSize: 15, color: QUIET }}>Every piece is thrown here in Hebden Bridge, and fired twice in a gas kiln that takes a day to cool.</Text>
         <Text style={{ fontSize: 15, color: QUIET }}>Chipped something? We mend our own work for a year.</Text>
-        <Button href="https://tarn.example/visit" style={{ backgroundColor: CELADON, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [13, 20], borderRadius: 2 }} hover={{ backgroundColor: CELADON_DOWN }}>
+        <Button href="https://tarn.example/visit" style={{ backgroundColor: CELADON, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [13, 20], borderRadius: 2, hover: { backgroundColor: CELADON_DOWN } }}>
           Plan a visit
         </Button>
       </Grid>
@@ -139,15 +139,15 @@ export const HeroOverImage = outputs((Root) => (
     <Section>
       <Layer style={{ height: 320, alignItems: "center" }}>
         <Image src={dusk(1200, 600)} alt="Dusk over the moor above Hebden Bridge, the studio's window lit" style={{ width: "100%" }} />
-        <Column style={{ padding: [0, 40], gap: 14 }} mobile={{ padding: [0, 20] }}>
+        <Column style={{ padding: [0, 40], gap: 14, mobile: { padding: [0, 20] } }}>
           <Text style={{ ...kicker, color: "#E2B474" }}>The winter firing</Text>
-          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 36, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.6 }} mobile={{ fontSize: 28 }}>
+          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 36, fontWeight: 400, lineHeight: 1.1, letterSpacing: -0.6, mobile: { fontSize: 28 } }}>
             Forty-two pieces,
             <LineBreak />
             out of the kiln.
           </Heading>
           <Text style={{ fontSize: 15, lineHeight: 1.5, color: "#E4DED3", maxWidth: 256 }}>Celadon and tenmoku, on the shelves from Saturday at ten.</Text>
-          <Button href="https://tarn.example/new" style={{ backgroundColor: CARD, color: INK, fontSize: 14, fontWeight: 600, padding: [12, 20], borderRadius: 2 }} hover={{ backgroundColor: STONE }}>
+          <Button href="https://tarn.example/new" style={{ backgroundColor: CARD, color: INK, fontSize: 14, fontWeight: 600, padding: [12, 20], borderRadius: 2, hover: { backgroundColor: STONE } }}>
             See the new pieces
           </Button>
         </Column>
@@ -175,7 +175,7 @@ const kiln = (width: number, height: number) =>
 /** A banner, its caption along the bottom on a band of its own, its corners rounded. */
 export const BannerCaption = outputs((Root) => (
   <Root width={600} fonts={FONTS} style={{ backgroundColor: STONE, fontFamily: SANS }}>
-    <Section style={{ padding: [24, 24] }} mobile={{ padding: [16, 12] }}>
+    <Section style={{ padding: [24, 24], mobile: { padding: [16, 12] } }}>
       <Layer style={{ height: 184, alignItems: "end", borderRadius: 6 }}>
         <Image src={kiln(1200, 400)} alt="Rows of pots on the kiln's shelves, dark against an orange glow at 1,280°C" style={{ width: "100%" }} />
         <Text style={{ padding: [10, 16], backgroundColor: INK, color: CARD, fontSize: 13, letterSpacing: 0.2 }}>

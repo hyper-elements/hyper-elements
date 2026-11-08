@@ -2,6 +2,27 @@
 
 Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
+## Unreleased
+
+### Phone and hover styles go in `style`
+
+A component's phone and hover styles are blocks of its `style`, typed to what the component takes there. They replace
+0.3.0's separate `mobile` and `hover` props.
+
+```tsx
+<Heading style={{ fontSize: 32, mobile: { fontSize: 24 } }}>Title</Heading>
+<Button href="…" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Go</Button>
+```
+
+### What's new
+
+- `<Page breakpoints={{ mobile: 600 }}>` sets where a Page's phone styles start (480px where it isn't set).
+- Hover styles apply on keyboard focus too. Each hover rule's class name changes.
+- More is said about what an output doesn't show: hover in an email (a note: classic Outlook and some apps don't show
+  it), and phone styles that were silently ignored (a Page root's phone text styles, a stacking Grid's phone `rowGap`,
+  an email Image's or TableCell's phone `border`, an email phone `lineHeight: "normal"`).
+- A warning inside a `component()`'s render is said at the component's place, instead of failing the render.
+
 ## 0.3.0
 
 ### ⚠️ Breaking: every template written with Unlayer Elements has to migrate

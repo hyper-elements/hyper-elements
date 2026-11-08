@@ -8,7 +8,7 @@
  * (print, PDF, image) joins by its entry in OUTPUTS: until each of its
  * components' styles and props declares it, this fails.
  */
-import { COMPONENTS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
+import { COMPONENTS, CONDITIONS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
 import { prepareTemplate, renderTemplate } from "../../src/writers";
 
 /** Each output with a writer, and the root that renders to it. */
@@ -63,6 +63,7 @@ function samples(key: string, kindName: string, schema: { enum?: Json[] }, fallb
     points: ["1,1 29,1 15,19"],
     d: ["M1 1 L29 1 L15 19 Z"],
     viewBox: ["0 0 50 30"],
+    breakpoints: [{ mobile: 600 }],
   };
   if (byKey[key]) return byKey[key];
   const byKind: Record<string, Json[]> = {
@@ -88,7 +89,8 @@ function host(root: string, type: string, node: Record<string, unknown>, key: st
   const doc = (children: unknown[], extra: Record<string, unknown> = {}) => ({ root: { type: root, props: width, ...extra, children } });
   if (type === root) {
     const children = [text("a"), { type: "Button", props: { href: "#" }, children: ["Go"] }, { type: "Row", children: [{ type: "Column", children: [text("b")] }, { type: "Column", children: [text("c")] }] }];
-    return doc(children, { style: node.style, props: { ...width, ...(node.props as object) } });
+    const blocks = Object.fromEntries(CONDITIONS.filter((c) => node[c.name]).map((c) => [c.name, node[c.name]]));
+    return doc(children, { style: node.style, ...blocks, props: { ...width, ...(node.props as object) } });
   }
   if (key === "flex") return doc([{ type: "Row", children: [node, { type: "Column", children: [text("beside")] }] }]);
   if (SHAPES.has(type)) return doc([{ type: "Svg", props: { width: 100, height: 60 }, children: [node] }]);
@@ -110,8 +112,8 @@ function host(root: string, type: string, node: Record<string, unknown>, key: st
 }
 
 /** The component's node with `style` and `props`, holding what lets each show. */
-function nodeOf(type: string, style: Record<string, Json>, props: Record<string, Json>): Record<string, unknown> {
-  const node = (base: Record<string, unknown>) => ({ type, id: "subject", ...(Object.keys(style).length ? { style } : {}), ...base, props: { ...(base.props as object), ...props } });
+function nodeOf(type: string, style: Record<string, Json>, props: Record<string, Json>, blocks: Record<string, Record<string, Json>> = {}): Record<string, unknown> {
+  const node = (base: Record<string, unknown>) => ({ type, id: "subject", ...(Object.keys(style).length ? { style } : {}), ...blocks, ...base, props: { ...(base.props as object), ...props } });
   const cells = (a: string, b: string) => [{ type: "TableCell", children: [a] }, { type: "TableCell", children: [b] }];
   switch (type) {
     case "Section":
@@ -175,9 +177,9 @@ function nodeOf(type: string, style: Record<string, Json>, props: Record<string,
   }
 }
 
-function render(root: string, type: string, style: Record<string, Json>, props: Record<string, Json>, key: string) {
+function render(root: string, type: string, style: Record<string, Json>, props: Record<string, Json>, key: string, blocks: Record<string, Record<string, Json>> = {}) {
   try {
-    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props), key));
+    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props, blocks), key));
     return { html, text, diagnostics };
   } catch (error) {
     return { html: "", text: "", diagnostics: [], error: String(error) };
@@ -269,4 +271,68 @@ for (const { target, root } of OUTPUTS) {
       expect(unreported).toEqual([]);
     });
   });
+}
+
+/** Values a condition is tried with beyond the style's own samples. */
+const CONDITION_SAMPLES: Record<string, Json[]> = { lineHeight: ["normal"], rowGap: [23] };
+
+/**
+ * The same for each condition (conditions.ts): every style a condition takes on every component, set in its block,
+ * changes the output or gives a diagnostic, in every output its roots render to; and what its declarations (the
+ * condition's own, its per-style ones, a component's `conditionSupport`) say an output doesn't show is reported.
+ */
+for (const { target, root } of OUTPUTS) {
+  const rootDefinition = COMPONENTS[root];
+  for (const condition of CONDITIONS) {
+    if (condition.roots && !condition.roots(rootDefinition)) continue;
+    const components = Object.values(COMPONENTS).filter((definition) => definition.targets[target] && (!ROOTS.has(definition.type) || definition.type === root) && sampled(root, definition.type));
+
+    describe(`${condition.name} in ${target} (${root})`, () => {
+      it("declares how this output shows the block", () => {
+        expect(condition.support[target]).toBeDefined();
+      });
+
+      const silent: string[] = [];
+      const unreported: string[] = [];
+      const failed: string[] = [];
+      for (const definition of components) {
+        const type = definition.type;
+        for (const [key, spec] of Object.entries(definition.style)) {
+          if (!condition.allows(spec, key, definition)) continue;
+          const base = render(root, type, {}, {}, key);
+          const current = inEffect(root, type, "style", key);
+          const kind = spec.kind as { name: string; jsonSchema(): unknown; parse(value: unknown): { ok: boolean } };
+          for (const value of [...samples(key, kind.name, kind.jsonSchema() as { enum?: Json[] }, undefined), ...(CONDITION_SAMPLES[key] ?? [])].filter((v) => kind.parse(v).ok)) {
+            // The value it already has: setting it for the condition changes nothing.
+            if (JSON.stringify(value) === JSON.stringify(current) || JSON.stringify(value) === JSON.stringify((definition.defaultStyle as Record<string, Json> | undefined)?.[key])) continue;
+            const label = `${type}.${condition.name}.${key} = ${JSON.stringify(value)}`;
+            const result = render(root, type, {}, {}, key, { [condition.name]: { [key]: value } });
+            if ("error" in result && result.error) {
+              failed.push(`${label}: ${result.error}`);
+              continue;
+            }
+            const subject = type === root ? "root" : undefined;
+            const reported = result.diagnostics.some((d) => d.path.endsWith(`.${condition.name}.${key}`) || d.path.endsWith(`.${condition.name}`) || d.nodeId === "subject" || (subject !== undefined && d.path.startsWith(`${subject}.${condition.name}`)));
+            const declared = [condition.support[target], condition.styles?.[key]?.[target], (definition.conditionSupport?.[condition.name] as Record<string, SupportByTarget> | undefined)?.[key]?.[target]].filter(
+              (rules): rules is Support | readonly Support[] => rules !== undefined
+            );
+            if (declared.some((rules) => declaredOtherwise(rules, value, {})) && !reported) unreported.push(label);
+            else if (result.html === base.html && result.text === base.text && !reported) silent.push(label);
+          }
+        }
+      }
+
+      it("renders every style the condition takes, each sample value", () => {
+        expect(failed).toEqual([]);
+      });
+
+      it("drops nothing silently", () => {
+        expect(silent).toEqual([]);
+      });
+
+      it("reports what it shows otherwise, as the declarations say", () => {
+        expect(unreported).toEqual([]);
+      });
+    });
+  }
 }

@@ -21,7 +21,7 @@ export default function Receipt() {
     <Email previewText="Your Acme receipt" style={{ backgroundColor: "#f4f4f5", fontFamily: "Inter, Arial, sans-serif", gap: 16 }}>
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
       <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
-        <Heading level={1} style={{ fontSize: 24 }} mobile={{ fontSize: 20 }}>
+        <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
           Thanks for your order, <MergeTag name="first_name" />
         </Heading>
         <Text>
@@ -50,7 +50,7 @@ export default function Receipt() {
             </List>
           </Column>
         </Row>
-        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6 }} hover={{ backgroundColor: "#374151" }}>
+        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6, hover: { backgroundColor: "#374151" } }}>
           View your order
         </Button>
       </Column>

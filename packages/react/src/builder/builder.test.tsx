@@ -127,7 +127,7 @@ describe("toDesign", () => {
       toDesign(
         <Email>
           <Text>
-            <Link href="https://x.test" hover={{ color: "#ff0000" }}>
+            <Link href="https://x.test" style={{ hover: { color: "#ff0000" } }}>
               a
             </Link>
           </Text>
@@ -332,15 +332,15 @@ describe("what the builder can't hold", () => {
 
   it("says what it leaves out of text", () => {
     expect(said(<Email><List><ListItem style={{ color: "#654321" }}>a</ListItem></List></Email>)).toContain("list item");
-    expect(said(<Email><Text>a <Span mobile={{ fontSize: 20 }}>b</Span></Text></Email>)).toContain("phone styles");
+    expect(said(<Email><Text>a <Span style={{ mobile: { fontSize: 20 } }}>b</Span></Text></Email>)).toContain("phone styles");
     expect(said(<Email><Text><Link href="#" attrs={{ "data-x": "1" }}>b</Link></Text></Email>)).toContain("other attributes");
     expect(said(<Email><Text><Link id="x" href="#">b</Link></Text></Email>)).toContain("id on part of its text");
   });
 
   it("says a Row's and a Section's border on phones, and a plain Column's phone values, are left out", () => {
-    expect(said(<Email><Row mobile={{ border: "1px solid #000" }}><Column><Text>a</Text></Column></Row></Email>)).toContain("no border on phones");
-    expect(said(<Email><Section mobile={{ border: "1px solid #000" }}><Text>a</Text></Section></Email>)).toContain("no border on phones");
-    expect(said(<Email><Column><Column mobile={{ padding: 4 }}><Text>a</Text></Column></Column></Email>)).toContain("no phone values");
+    expect(said(<Email><Row style={{ mobile: { border: "1px solid #000" } }}><Column><Text>a</Text></Column></Row></Email>)).toContain("no border on phones");
+    expect(said(<Email><Section style={{ mobile: { border: "1px solid #000" } }}><Text>a</Text></Section></Email>)).toContain("no border on phones");
+    expect(said(<Email><Column><Column style={{ mobile: { padding: 4 } }}><Text>a</Text></Column></Column></Email>)).toContain("no phone values");
   });
 
   it("takes what it can: a header's background, a Column's corners and the ids of rows and columns", () => {
@@ -398,7 +398,7 @@ describe("a line height", () => {
   });
 
   it("is one on phones too", () => {
-    expect(field(<Text mobile={{ lineHeight: 1.625 }}>x</Text>)._override?.mobile?.lineHeight).toBe("163%");
+    expect(field(<Text style={{ mobile: { lineHeight: 1.625 } }}>x</Text>)._override?.mobile?.lineHeight).toBe("163%");
   });
 });
 
