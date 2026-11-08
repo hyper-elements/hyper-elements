@@ -1,0 +1,1185 @@
+{
+ "source": {
+  "package": "caniemail",
+  "updated": "2026-05-13 14:45:41 +0000"
+ },
+ "profiles": {
+  "gmail-web": {
+   "name": "Gmail (web)",
+   "client": "gmail",
+   "platform": "desktop-webmail",
+   "properties": [
+    "-webkit-user-select",
+    "accent-color",
+    "align-items",
+    "animation",
+    "animation-delay",
+    "animation-direction",
+    "animation-duration",
+    "animation-fill-mode",
+    "animation-iteration-count",
+    "animation-name",
+    "animation-play-state",
+    "animation-timing-function",
+    "aspect-ratio",
+    "backdrop-filter",
+    "block-size",
+    "border-block",
+    "border-block-color",
+    "border-block-end",
+    "border-block-start",
+    "border-block-style",
+    "border-block-width",
+    "border-end-end-radius",
+    "border-end-start-radius",
+    "border-image",
+    "border-image-outset",
+    "border-image-repeat",
+    "border-image-slice",
+    "border-image-source",
+    "border-image-width",
+    "border-inline",
+    "border-inline-color",
+    "border-inline-end",
+    "border-inline-start",
+    "border-inline-style",
+    "border-inline-width",
+    "border-start-end-radius",
+    "border-start-start-radius",
+    "bottom",
+    "box-shadow",
+    "clip-path",
+    "color-scheme",
+    "cursor",
+    "filter",
+    "flex-direction",
+    "flex-wrap",
+    "grid-template",
+    "grid-template-areas",
+    "grid-template-columns",
+    "grid-template-rows",
+    "hyphenate-character",
+    "hyphenate-limit-chars",
+    "hyphens",
+    "inline-size",
+    "inset",
+    "justify-content",
+    "left",
+    "list-style-image",
+    "margin-block",
+    "margin-block-end",
+    "margin-block-start",
+    "margin-inline",
+    "margin-inline-end",
+    "margin-inline-start",
+    "mask",
+    "mask-image",
+    "max-block-size",
+    "max-inline-size",
+    "min-block-size",
+    "min-inline-size",
+    "orphans",
+    "outline-offset",
+    "overflow-wrap",
+    "padding-block",
+    "padding-block-end",
+    "padding-block-start",
+    "padding-inline",
+    "padding-inline-end",
+    "padding-inline-start",
+    "position",
+    "resize",
+    "right",
+    "scroll-snap-align",
+    "scroll-snap-stop",
+    "scroll-snap-type",
+    "shape-margin",
+    "shape-outside",
+    "tab-size",
+    "text-decoration-skip-ink",
+    "text-decoration-thickness",
+    "text-emphasis-position",
+    "text-shadow",
+    "text-underline-offset",
+    "text-wrap",
+    "text-wrap-mode",
+    "text-wrap-style",
+    "top",
+    "transform",
+    "transform-origin",
+    "transition",
+    "transition-delay",
+    "transition-duration",
+    "transition-property",
+    "transition-timing-function",
+    "user-select",
+    "visibility",
+    "white-space-collapse",
+    "widows",
+    "z-index"
+   ],
+   "atRules": [
+    "font-face",
+    "import",
+    "keyframes",
+    "supports"
+   ],
+   "media": [
+    "device-pixel-ratio",
+    "hover",
+    "pointer",
+    "prefers-color-scheme",
+    "prefers-reduced-motion",
+    "resolution"
+   ],
+   "selectors": [
+    "::after",
+    "::before",
+    "::first-letter",
+    "::first-line",
+    "::marker",
+    "::placeholder",
+    ":active",
+    ":after",
+    ":before",
+    ":checked",
+    ":default",
+    ":first-child",
+    ":first-letter",
+    ":first-line",
+    ":first-of-type",
+    ":focus",
+    ":focus-visible",
+    ":focus-within",
+    ":has(",
+    ":lang(",
+    ":last-child",
+    ":last-of-type",
+    ":link",
+    ":not(",
+    ":nth-child(",
+    ":nth-last-child(",
+    ":nth-last-of-type(",
+    ":nth-of-type(",
+    ":only-child",
+    ":only-of-type",
+    ":target",
+    ":visited"
+   ],
+   "displays": [],
+   "elements": [
+    "audio",
+    "bdi",
+    "dialog",
+    "link",
+    "marquee",
+    "meter",
+    "object",
+    "progress",
+    "svg"
+   ],
+   "attributes": [
+    "hidden",
+    "loading",
+    "sizes",
+    "srcset"
+   ],
+   "partial": {
+    "css-at-media": [
+     "Partial. Does not support height based media queries."
+    ],
+    "css-gap": [
+     "Partial. Supports column-gap for flexbox."
+    ],
+    "css-important": [
+     "Partial. Only supported in lowercase. (See [email-bugs#13](https://github.com/hteumeuleu/email-bugs/issues/13))"
+    ],
+    "css-list-style": [
+     "`list-style-image` values are not supported. The entire `list-style` property is removed if present."
+    ],
+    "css-margin": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-overflow": [
+     "Partial. `overflow-block` & `overflow-inline` not supported."
+    ],
+    "css-rgb": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgb(0 128 0)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-rgba": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgba(0 128 0 / 1)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-selector-attribute": [
+     "Partial. Only supports `[attr~=value]` syntax. Only `class` as an attribute name is known to be supported."
+    ],
+    "css-text-indent": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-text-justify": [
+     "Partial. Depends on browser support"
+    ],
+    "css-unit-initial": [
+     "Partial. Webmail rendering doesn't work in IE."
+    ],
+    "css-word-wrap": [
+     "Applies `word-wrap: break-word` to all items."
+    ],
+    "html-base": [
+     "Buggy. The element is removed but URLs are turned into links with `href` attribute."
+    ],
+    "html-body": [
+     "Partial. Replaced by a `<div>` with supported attributes."
+    ],
+    "html-lists": [
+     "Partial. The `reversed` attribute on `<ol>` is not supported."
+    ],
+    "html-semantics": [
+     "Partial. `<details>`, `<main>`, `<nav>` and `<summary>` are not supported. Opening and closing tags are replaced by `<u></u>`."
+    ],
+    "html-style": [
+     "Partial. Not supported inside the `<body>`.",
+     "The size of the `<style>` tag [is limited to 16 KB](https://github.com/hteumeuleu/email-bugs/issues/90)"
+    ],
+    "image-avif": [
+     "Converts still AVIF into a jpg and animated AVIF into a gif."
+    ],
+    "image-bmp": [
+     "Buggy. An image renders but the colours are incorrect."
+    ],
+    "image-heif": [
+     "Partial: Converts file to jpg."
+    ],
+    "image-tiff": [
+     "Buggy. An image renders but the colours are incorrect."
+    ],
+    "image-webp": [
+     "Partial: Converts file to jpg.",
+     "Partial. Does not support animation."
+    ]
+   }
+  },
+  "gmail-app": {
+   "name": "Gmail app, Google account",
+   "client": "gmail",
+   "platform": "android",
+   "properties": [
+    "-webkit-user-select",
+    "accent-color",
+    "align-items",
+    "animation",
+    "animation-delay",
+    "animation-direction",
+    "animation-duration",
+    "animation-fill-mode",
+    "animation-iteration-count",
+    "animation-name",
+    "animation-play-state",
+    "animation-timing-function",
+    "aspect-ratio",
+    "backdrop-filter",
+    "block-size",
+    "border-block",
+    "border-block-color",
+    "border-block-end",
+    "border-block-start",
+    "border-block-style",
+    "border-block-width",
+    "border-end-end-radius",
+    "border-end-start-radius",
+    "border-image",
+    "border-image-outset",
+    "border-image-repeat",
+    "border-image-slice",
+    "border-image-source",
+    "border-image-width",
+    "border-inline",
+    "border-inline-color",
+    "border-inline-end",
+    "border-inline-start",
+    "border-inline-style",
+    "border-inline-width",
+    "border-start-end-radius",
+    "border-start-start-radius",
+    "bottom",
+    "clip-path",
+    "color-scheme",
+    "cursor",
+    "filter",
+    "flex-direction",
+    "flex-wrap",
+    "grid-template",
+    "grid-template-areas",
+    "grid-template-columns",
+    "grid-template-rows",
+    "hyphenate-character",
+    "hyphenate-limit-chars",
+    "hyphens",
+    "inline-size",
+    "inset",
+    "justify-content",
+    "left",
+    "list-style-image",
+    "margin-block",
+    "margin-block-end",
+    "margin-block-start",
+    "margin-inline",
+    "margin-inline-end",
+    "margin-inline-start",
+    "mask",
+    "mask-image",
+    "max-block-size",
+    "max-inline-size",
+    "min-block-size",
+    "min-inline-size",
+    "orphans",
+    "outline-offset",
+    "overflow-wrap",
+    "padding-block",
+    "padding-block-end",
+    "padding-block-start",
+    "padding-inline",
+    "padding-inline-end",
+    "padding-inline-start",
+    "position",
+    "resize",
+    "right",
+    "scroll-snap-align",
+    "scroll-snap-stop",
+    "scroll-snap-type",
+    "shape-margin",
+    "shape-outside",
+    "tab-size",
+    "text-decoration-skip-ink",
+    "text-decoration-thickness",
+    "text-emphasis-position",
+    "text-shadow",
+    "text-underline-offset",
+    "text-wrap",
+    "text-wrap-mode",
+    "text-wrap-style",
+    "top",
+    "transform",
+    "transform-origin",
+    "transition",
+    "transition-delay",
+    "transition-duration",
+    "transition-property",
+    "transition-timing-function",
+    "user-select",
+    "visibility",
+    "white-space-collapse",
+    "widows",
+    "z-index"
+   ],
+   "atRules": [
+    "font-face",
+    "import",
+    "keyframes",
+    "supports"
+   ],
+   "media": [
+    "device-pixel-ratio",
+    "hover",
+    "pointer",
+    "prefers-color-scheme",
+    "prefers-reduced-motion",
+    "resolution"
+   ],
+   "selectors": [
+    "::after",
+    "::before",
+    "::first-letter",
+    "::first-line",
+    "::marker",
+    "::placeholder",
+    ":active",
+    ":after",
+    ":before",
+    ":checked",
+    ":default",
+    ":first-child",
+    ":first-letter",
+    ":first-line",
+    ":first-of-type",
+    ":focus",
+    ":focus-visible",
+    ":focus-within",
+    ":has(",
+    ":lang(",
+    ":last-child",
+    ":last-of-type",
+    ":link",
+    ":not(",
+    ":nth-child(",
+    ":nth-last-child(",
+    ":nth-last-of-type(",
+    ":nth-of-type(",
+    ":only-child",
+    ":only-of-type",
+    ":target",
+    ":visited"
+   ],
+   "displays": [],
+   "elements": [
+    "audio",
+    "bdi",
+    "link",
+    "marquee",
+    "object",
+    "svg"
+   ],
+   "attributes": [
+    "hidden",
+    "loading",
+    "sizes",
+    "srcset"
+   ],
+   "partial": {
+    "css-at-media": [
+     "Partial. Not supported with non Google accounts.",
+     "Partial. Does not support height based media queries."
+    ],
+    "css-background-blend-mode": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-background-clip": [
+     "Partial. Not supported with non Google accounts. But it can be used in the `background` shorthand property instead."
+    ],
+    "css-background-origin": [],
+    "css-background-size": [
+     "Partial. Not supported with non Google accounts. But it can be used in the `background` shorthand property instead."
+    ],
+    "css-box-shadow": [
+     "Partial. Only supported with non Google accounts."
+    ],
+    "css-clear": [
+     "Partial. Logical property values `inline-start` and `inline-end` are not supported."
+    ],
+    "css-comments": [
+     "Partial. `<style>` tag not supported with non-google account. Comment inside `style:` attribute works."
+    ],
+    "css-display-flex": [
+     "Not supported with non Google accounts."
+    ],
+    "css-display-grid": [
+     "Not supported with non Google accounts."
+    ],
+    "css-display": [
+     "Partial. `flex`, `grid`, `flow-root`, `contents`, `inline flow-root`, `inline flex`, `inline grid`, `initial`, `revert`, `unset` are not supported with non Google accounts."
+    ],
+    "css-float": [
+     "Partial. Logical property values `inline-start` and `inline-end` are not supported."
+    ],
+    "css-font-size-adjust": [
+     "Not supported with non Google accounts."
+    ],
+    "css-function-clamp": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-function-max": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-function-min": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-gap": [
+     "Partial. Supports column-gap for flexbox."
+    ],
+    "css-important": [
+     "Partial. Only supported in lowercase. (See [email-bugs#13](https://github.com/hteumeuleu/email-bugs/issues/13))",
+     "Partial. Only supported inline when using a Non Gmail Account due to the lack of `<style>` support."
+    ],
+    "css-linear-gradient": [
+     "Buggy. Does not work inline in the `background-image` property. (See [email-bugs#135](https://github.com/hteumeuleu/email-bugs/issues/135))"
+    ],
+    "css-list-style": [
+     "`list-style-image` values are not supported. The entire `list-style` property is removed if present."
+    ],
+    "css-margin": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-mix-blend-mode": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-object-fit": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-object-position": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-overflow": [
+     "Buggy. Cannot scroll through to hidden content.",
+     "Partial. `overflow-block` & `overflow-inline` not supported."
+    ],
+    "css-pseudo-class-hover": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-radial-gradient": [
+     "Buggy. Does not work inline in the `background-image` property. (See [email-bugs#135](https://github.com/hteumeuleu/email-bugs/issues/135))"
+    ],
+    "css-rgb": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgb(0 128 0)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-rgba": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgba(0 128 0 / 1)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-selector-adjacent-sibling": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-attribute": [
+     "Partial. Only supports `[attr~=value]` syntax. Only `class` as an attribute name is known to be supported.",
+     "Partial. Doesn't work with non Google accounts."
+    ],
+    "css-selector-chaining": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-child": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-class": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-descendant": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-general-sibling": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-grouping": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-id": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-type": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-selector-universal": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-sytem-ui": [
+     "Partial. Supports `system-ui` only."
+    ],
+    "css-text-align": [
+     "Partial. Doesn't support the `match-parent` value.",
+     "Supports the vendor prefixed value `-webkit-match-parent`."
+    ],
+    "css-text-decoration-color": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-text-decoration": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-text-indent": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-text-overflow": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-unit-calc": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-unit-initial": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "css-white-space": [
+     "Partial. Not supported with non Google accounts.",
+     "Partial. `pre` value is not supported."
+    ],
+    "css-word-break": [
+     "Buggy. Supported but a `word-wrap:break-word` is applied, making it look like `break-all`."
+    ],
+    "css-word-wrap": [
+     "Applies `word-wrap: break-word` to all items."
+    ],
+    "css-writing-mode": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "html-background": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "html-base": [
+     "Buggy. The element is removed but URLs are turned into links with `href` attribute."
+    ],
+    "html-body": [
+     "Partial. Replaced by a `<div>` with supported attributes."
+    ],
+    "html-lists": [
+     "Partial. The `reversed` attribute on `<ol>` is not supported."
+    ],
+    "html-meter": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "html-progress": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "html-required": [
+     "Partial. Only supported with non Google accounts."
+    ],
+    "html-rp": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "html-rt": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "html-ruby": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "html-semantics": [
+     "Partial. `<details>`, `<main>`, `<nav>` and `<summary>` are not supported. Opening and closing tags are replaced by `<u></u>`."
+    ],
+    "html-strike": [
+     "Partial. Not supported with non Google accounts."
+    ],
+    "html-style": [
+     "Partial. Not supported inside the `<body>`.",
+     "Partial. Not supported with non Google accounts."
+    ],
+    "html-wbr": [
+     "Partial. Supported with non Google accounts only."
+    ],
+    "image-avif": [
+     "Converts still AVIF into a jpg and animated AVIF into a gif."
+    ],
+    "image-bmp": [
+     "Buggy. An image renders but the colours are incorrect."
+    ],
+    "image-heif": [
+     "Partial: Converts file to jpg."
+    ],
+    "image-svg": [
+     "Partially supported. Only works with non Google accounts."
+    ],
+    "image-tiff": [
+     "Buggy. An image renders but the colours are incorrect.",
+     "Partial. Does not render with non Google accounts."
+    ],
+    "image-webp": [
+     "Partial: Converts file to jpg.",
+     "Partial. Does not support animation."
+    ]
+   }
+  },
+  "gmail-app-other": {
+   "name": "Gmail app, other account",
+   "client": "gmail",
+   "platform": "android",
+   "properties": [
+    "-webkit-user-select",
+    "accent-color",
+    "align-items",
+    "animation",
+    "animation-delay",
+    "animation-direction",
+    "animation-duration",
+    "animation-fill-mode",
+    "animation-iteration-count",
+    "animation-name",
+    "animation-play-state",
+    "animation-timing-function",
+    "aspect-ratio",
+    "backdrop-filter",
+    "block-size",
+    "border-block",
+    "border-block-color",
+    "border-block-end",
+    "border-block-start",
+    "border-block-style",
+    "border-block-width",
+    "border-end-end-radius",
+    "border-end-start-radius",
+    "border-image",
+    "border-image-outset",
+    "border-image-repeat",
+    "border-image-slice",
+    "border-image-source",
+    "border-image-width",
+    "border-inline",
+    "border-inline-color",
+    "border-inline-end",
+    "border-inline-start",
+    "border-inline-style",
+    "border-inline-width",
+    "border-start-end-radius",
+    "border-start-start-radius",
+    "bottom",
+    "clip-path",
+    "color-scheme",
+    "cursor",
+    "filter",
+    "flex-direction",
+    "flex-wrap",
+    "grid-template",
+    "grid-template-areas",
+    "grid-template-columns",
+    "grid-template-rows",
+    "hyphenate-character",
+    "hyphenate-limit-chars",
+    "hyphens",
+    "inline-size",
+    "inset",
+    "justify-content",
+    "left",
+    "list-style-image",
+    "margin-block",
+    "margin-block-end",
+    "margin-block-start",
+    "margin-inline",
+    "margin-inline-end",
+    "margin-inline-start",
+    "mask",
+    "mask-image",
+    "max-block-size",
+    "max-inline-size",
+    "min-block-size",
+    "min-inline-size",
+    "orphans",
+    "outline-offset",
+    "overflow-wrap",
+    "padding-block",
+    "padding-block-end",
+    "padding-block-start",
+    "padding-inline",
+    "padding-inline-end",
+    "padding-inline-start",
+    "position",
+    "resize",
+    "right",
+    "scroll-snap-align",
+    "scroll-snap-stop",
+    "scroll-snap-type",
+    "shape-margin",
+    "shape-outside",
+    "tab-size",
+    "text-decoration-skip-ink",
+    "text-decoration-thickness",
+    "text-emphasis-position",
+    "text-shadow",
+    "text-underline-offset",
+    "text-wrap",
+    "text-wrap-mode",
+    "text-wrap-style",
+    "top",
+    "transform",
+    "transform-origin",
+    "transition",
+    "transition-delay",
+    "transition-duration",
+    "transition-property",
+    "transition-timing-function",
+    "user-select",
+    "visibility",
+    "white-space-collapse",
+    "widows",
+    "z-index"
+   ],
+   "atRules": [
+    "font-face",
+    "import",
+    "keyframes",
+    "media",
+    "supports"
+   ],
+   "media": [
+    "device-pixel-ratio",
+    "hover",
+    "pointer",
+    "prefers-color-scheme",
+    "prefers-reduced-motion",
+    "resolution"
+   ],
+   "selectors": [
+    "#",
+    ".",
+    "::after",
+    "::before",
+    "::first-letter",
+    "::first-line",
+    "::marker",
+    "::placeholder",
+    ":active",
+    ":after",
+    ":before",
+    ":checked",
+    ":default",
+    ":first-child",
+    ":first-letter",
+    ":first-line",
+    ":first-of-type",
+    ":focus",
+    ":focus-visible",
+    ":focus-within",
+    ":has(",
+    ":hover",
+    ":lang(",
+    ":last-child",
+    ":last-of-type",
+    ":link",
+    ":not(",
+    ":nth-child(",
+    ":nth-last-child(",
+    ":nth-last-of-type(",
+    ":nth-of-type(",
+    ":only-child",
+    ":only-of-type",
+    ":target",
+    ":visited"
+   ],
+   "displays": [
+    "flex",
+    "grid",
+    "inline-flex",
+    "inline-grid"
+   ],
+   "elements": [
+    "audio",
+    "bdi",
+    "link",
+    "marquee",
+    "meter",
+    "object",
+    "progress",
+    "svg"
+   ],
+   "attributes": [
+    "hidden",
+    "loading",
+    "sizes",
+    "srcset"
+   ],
+   "partial": {
+    "css-background-origin": [],
+    "css-box-shadow": [
+     "Partial. Only supported with non Google accounts."
+    ],
+    "css-clear": [
+     "Partial. Logical property values `inline-start` and `inline-end` are not supported."
+    ],
+    "css-float": [
+     "Partial. Logical property values `inline-start` and `inline-end` are not supported."
+    ],
+    "css-gap": [
+     "Partial. Supports column-gap for flexbox."
+    ],
+    "css-important": [
+     "Partial. Only supported in lowercase. (See [email-bugs#13](https://github.com/hteumeuleu/email-bugs/issues/13))",
+     "Partial. Only supported inline when using a Non Gmail Account due to the lack of `<style>` support."
+    ],
+    "css-linear-gradient": [
+     "Buggy. Does not work inline in the `background-image` property. (See [email-bugs#135](https://github.com/hteumeuleu/email-bugs/issues/135))"
+    ],
+    "css-list-style": [
+     "`list-style-image` values are not supported. The entire `list-style` property is removed if present."
+    ],
+    "css-margin": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-overflow": [
+     "Buggy. Cannot scroll through to hidden content.",
+     "Partial. `overflow-block` & `overflow-inline` not supported."
+    ],
+    "css-radial-gradient": [
+     "Buggy. Does not work inline in the `background-image` property. (See [email-bugs#135](https://github.com/hteumeuleu/email-bugs/issues/135))"
+    ],
+    "css-rgb": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgb(0 128 0)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-rgba": [
+     "Whitespace syntax is not supported (`rgb(0 128 0 / 1)`).",
+     "whitespace syntax (`rgba(0 128 0 / 1)`): when used in the `style` attribute of an element, the whole attribute is stripped. When used inside `<style>`, the whole `<style>` block is stripped."
+    ],
+    "css-sytem-ui": [
+     "Partial. Supports `system-ui` only."
+    ],
+    "css-text-align": [
+     "Partial. Doesn't support the `match-parent` value.",
+     "Supports the vendor prefixed value `-webkit-match-parent`."
+    ],
+    "css-text-indent": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-word-break": [
+     "Buggy. Supported but a `word-wrap:break-word` is applied, making it look like `break-all`."
+    ],
+    "css-word-wrap": [
+     "Applies `word-wrap: break-word` to all items."
+    ],
+    "html-base": [
+     "Buggy. The element is removed but URLs are turned into links with `href` attribute."
+    ],
+    "html-body": [
+     "Partial. Replaced by a `<div>` with supported attributes."
+    ],
+    "html-lists": [
+     "Partial. The `reversed` attribute on `<ol>` is not supported."
+    ],
+    "html-required": [
+     "Partial. Only supported with non Google accounts."
+    ],
+    "html-semantics": [
+     "Partial. `<details>`, `<main>`, `<nav>` and `<summary>` are not supported. Opening and closing tags are replaced by `<u></u>`."
+    ],
+    "image-avif": [
+     "Converts still AVIF into a jpg and animated AVIF into a gif."
+    ],
+    "image-bmp": [
+     "Buggy. An image renders but the colours are incorrect."
+    ],
+    "image-heif": [
+     "Partial: Converts file to jpg."
+    ],
+    "image-webp": [
+     "Partial: Converts file to jpg.",
+     "Partial. Does not support animation."
+    ]
+   },
+   "noStyleElement": true
+  },
+  "outlook-com": {
+   "name": "Outlook.com and new Outlook",
+   "client": "outlook",
+   "platform": "outlook-com",
+   "properties": [
+    "-webkit-user-select",
+    "accent-color",
+    "animation",
+    "animation-delay",
+    "animation-direction",
+    "animation-duration",
+    "animation-fill-mode",
+    "animation-iteration-count",
+    "animation-name",
+    "animation-play-state",
+    "animation-timing-function",
+    "aspect-ratio",
+    "backdrop-filter",
+    "block-size",
+    "border-block",
+    "border-block-color",
+    "border-block-end",
+    "border-block-start",
+    "border-block-style",
+    "border-block-width",
+    "border-end-end-radius",
+    "border-end-start-radius",
+    "border-image",
+    "border-image-outset",
+    "border-image-repeat",
+    "border-image-slice",
+    "border-image-source",
+    "border-image-width",
+    "border-inline",
+    "border-inline-color",
+    "border-inline-end",
+    "border-inline-start",
+    "border-inline-style",
+    "border-inline-width",
+    "border-start-end-radius",
+    "border-start-start-radius",
+    "clip-path",
+    "color-scheme",
+    "cursor",
+    "filter",
+    "grid-template",
+    "grid-template-areas",
+    "grid-template-columns",
+    "grid-template-rows",
+    "hyphenate-character",
+    "hyphenate-limit-chars",
+    "hyphens",
+    "inline-size",
+    "inset",
+    "list-style-image",
+    "margin-block",
+    "margin-block-end",
+    "margin-block-start",
+    "margin-inline",
+    "margin-inline-end",
+    "margin-inline-start",
+    "mask",
+    "mask-image",
+    "max-block-size",
+    "max-inline-size",
+    "min-block-size",
+    "min-inline-size",
+    "outline-offset",
+    "overflow-wrap",
+    "padding-block",
+    "padding-block-end",
+    "padding-block-start",
+    "padding-inline",
+    "padding-inline-end",
+    "padding-inline-start",
+    "resize",
+    "scroll-snap-align",
+    "scroll-snap-stop",
+    "scroll-snap-type",
+    "shape-margin",
+    "shape-outside",
+    "text-decoration-skip-ink",
+    "text-decoration-thickness",
+    "text-emphasis-position",
+    "text-shadow",
+    "text-underline-offset",
+    "text-wrap",
+    "text-wrap-mode",
+    "text-wrap-style",
+    "transform",
+    "transform-origin",
+    "transition",
+    "transition-delay",
+    "transition-duration",
+    "transition-property",
+    "transition-timing-function",
+    "user-select",
+    "white-space-collapse"
+   ],
+   "atRules": [
+    "font-face",
+    "import",
+    "keyframes",
+    "supports"
+   ],
+   "media": [],
+   "selectors": [
+    "::marker",
+    ":focus-within",
+    ":has(",
+    ":lang(",
+    ":not(",
+    ":nth-child(",
+    ":nth-last-child(",
+    ":nth-last-of-type(",
+    ":nth-of-type("
+   ],
+   "displays": [],
+   "elements": [
+    "audio",
+    "bdi",
+    "dialog",
+    "link",
+    "object",
+    "progress",
+    "svg"
+   ],
+   "attributes": [
+    "hidden",
+    "loading",
+    "sizes",
+    "srcset"
+   ],
+   "partial": {
+    "css-at-media": [
+     "Partial. Does not support nested media queries.",
+     "Partial. Nested media queries are removed."
+    ],
+    "css-gap": [
+     "Partial. Supports column-gap for flexbox."
+    ],
+    "css-margin": [
+     "Partial. Negative values are not supported."
+    ],
+    "css-overflow": [
+     "Partial. `overflow-block` & `overflow-inline` not supported."
+    ],
+    "css-position": [
+     "Partial. Supports `sticky` but not `relative`, `absolute` and `fixed`."
+    ],
+    "css-pseudo-class-active": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-checked": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-default": [
+     "Works on input[radio] and input[checkbox] only."
+    ],
+    "css-pseudo-class-first-child": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-first-of-type": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-focus-visible": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-focus": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-hover": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-last-child": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-last-of-type": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-link": [],
+    "css-pseudo-class-only-child": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-only-of-type": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-class-target": [
+     "Partial. Only supported on type selectors.",
+     "Buggy. Not filtered but doesn't work."
+    ],
+    "css-pseudo-class-visited": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-element-after": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-element-before": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-element-first-letter": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-element-first-line": [
+     "Partial. Only supported on type selectors."
+    ],
+    "css-pseudo-element-placeholder": [
+     "The pseudo-element is supported but `<input>` elements are not."
+    ],
+    "css-selector-attribute": [
+     "Partial. Can not be used with a class selector (`.test[class]`). Must be used solo (`[class]`) or with an element selector (`td[class]`).",
+     "Partial. Only supports `[attr]`, `[attr=value]`, `[attr~=value]`, `[attr|=value]` syntaxes.",
+     "Buggy. A `class=\"test\"` in the HTML is prefixed `class=\"x_test\"`, but an attribute selector stays unprefixed `[class=\"test\"]`."
+    ],
+    "css-text-justify": [
+     "Partial. Depends on browser support"
+    ],
+    "css-word-break": [
+     "Buggy. Supported but a `word-wrap:break-word` is applied, making it look like `break-all`."
+    ],
+    "html-base": [
+     "Buggy. The element is removed but URLs are turned into links with `href` attribute."
+    ],
+    "html-body": [
+     "Partial. Replaced by a `<div>` with supported attributes."
+    ],
+    "html-form": [
+     "Not supported. The `<form>` is there but values are not submitted."
+    ],
+    "html-lists": [
+     "Partial. The `reversed` attribute on `<ol>` is not supported."
+    ],
+    "html-marquee": [
+     "The `<marquee>` element is supported but not the `behavior` or `direction` attributes."
+    ],
+    "html-semantics": [
+     "Partial. Only `<time>` is supported.",
+     "Unsupported opening and closing tags are stripped."
+    ]
+   }
+  }
+ }
+}

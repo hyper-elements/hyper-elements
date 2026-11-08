@@ -8,6 +8,7 @@ import { Button, EMAIL_CLIENTS, Email, Html, Page, render, Text } from "@hyper-e
 import { checkCore, CORE_RANGE } from "../src/core";
 import { contentSecurityPolicy, scriptJson } from "../src/shell";
 import { DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, renderInEmailClients } from "../src/index";
+import { RUNTIME } from "../src/runtime.generated";
 
 const welcome = (
   <Email width={600}>
@@ -67,8 +68,9 @@ describe("renderInEmailClients()", () => {
     );
     const { previews } = await renderInEmailClients(element, { emailClients: ["gmail"] });
     const file = previews[0]!.html;
-    // The only script tags: the two data blocks (no runtime in it yet).
-    expect(file.match(/<script\b[^>]*>/g)).toEqual(['<script type="application/json" id="email">', '<script type="application/json" id="email-client-config">']);
+    // The only script tags: the two data blocks and the runtime, which the CSP names by its hash.
+    expect(file.match(/<script\b[^>]*>/g)).toEqual(['<script type="application/json" id="email">', '<script type="application/json" id="email-client-config">', "<script>"]);
+    expect(file).toContain(`script-src 'sha256-${RUNTIME.sha256}'`);
     expect(file).not.toContain("</script><script>alert");
     expect(embedded(file, "email")).toBe((await render(element, { emailClients: ["gmail"] })).html);
     const config = embedded(file, "email-client-config");

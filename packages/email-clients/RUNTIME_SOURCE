@@ -1,0 +1,13 @@
+# The email-renderer modules src/runtime/renderer/ holds, copied unchanged. Move the pin by copying them again
+# from a new commit, running `pnpm build:runtime`, and showing the new scores in the PR.
+# Published here under this package's MIT licence, as the owner of both repositories decided (8 November 2026).
+repository: unlayer/email-renderer
+commit: f65fabe5454dd97c811de86810f4279075da7d33
+path: renderer/src
+files:
+  rules.js sha256-0194281c68f2490998ffa6773d7572119090eba19529004de761d686474d2b0a
+  conditional.mjs sha256-f5b1720a4cac94932af5b0109f2d7c0f62deca54d5ebf303763b5c025cc88eb5
+  clients/gmail.js sha256-2e2503e913ebdf07c34b7d58997a9d0f62de0b50d2253b2321d72df549a29f13
+  clients/outlook-com.js sha256-433ade500209f597de67a66213adae80483543cf049128ac069444f91a44a6b5
+  clients/apple-mail.js sha256-74c843842f61862ea771ebd19ec51a01c58b430a4232c0203e4b9d68a5bb32ae
+  clients/support.json sha256-16e1ac717559781f74a4ec704ddafca51fb285baa940386655fa214161c4bc41
