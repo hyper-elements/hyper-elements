@@ -8,6 +8,9 @@
  * (print, PDF, image) joins by its entry in OUTPUTS: until each of its
  * components' styles and props declares it, this fails.
  */
+import { EMAIL_CLIENTS, type EmailClient } from "../../src/email-clients";
+
+const ALL_CLIENTS = Object.keys(EMAIL_CLIENTS) as EmailClient[];
 import { COMPONENTS, CONDITIONS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
 import { prepareTemplate, renderTemplate } from "../../src/writers";
 
@@ -179,7 +182,8 @@ function nodeOf(type: string, style: Record<string, Json>, props: Record<string,
 
 function render(root: string, type: string, style: Record<string, Json>, props: Record<string, Json>, key: string, blocks: Record<string, Record<string, Json>> = {}) {
   try {
-    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props, blocks), key));
+    // Every email client, so a limit about clients not checked by default is reported too.
+    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props, blocks), key), { emailClients: ALL_CLIENTS });
     return { html, text, diagnostics };
   } catch (error) {
     return { html: "", text: "", diagnostics: [], error: String(error) };
@@ -226,7 +230,13 @@ for (const { target, root } of OUTPUTS) {
 
     it("says where each declaration comes from", () => {
       const sources = new Set(components.flatMap((definition) => entries(definition).flatMap(({ spec }) => ([] as Support[]).concat(spec.support?.[target] ?? []).map((rule) => rule.source))));
-      for (const source of sources) expect(["outlook-captures", "caniemail", "writer", "css", "assumed"]).toContain(source);
+      for (const source of sources) expect(["outlook-captures", "gmail-captures", "outlook-com-captures", "apple-mail-captures", "caniemail", "writer", "css", "assumed"]).toContain(source);
+    });
+
+    it("names only email clients it knows, and only for email", () => {
+      const named = components.flatMap((definition) => entries(definition).flatMap(({ spec }) => ([] as Support[]).concat(spec.support?.[target] ?? []).flatMap((rule) => (rule.level === "full" ? [] : (rule.clients ?? [])))));
+      if (target !== "email") expect(named).toEqual([]);
+      for (const client of named) expect(Object.keys(EMAIL_CLIENTS)).toContain(client);
     });
 
     const silent: string[] = [];

@@ -13,7 +13,8 @@ const engineReq = createRequire(engine);
 await mkdir(join(run, ".cache"), { recursive: true });
 await mkdir(join(run, "out"), { recursive: true });
 const entry = join(run, ".cache/entry.tsx");
-await writeFile(entry, `import Template from "../emails/email";\nimport { render } from "@hyper-elements/react";\nexport default () => render(<Template />);\n`);
+// formatDiagnostics() prints each problem on a line, with the email clients it's about and what to change.
+await writeFile(entry, `import Template from "../emails/email";\nimport { formatDiagnostics, render } from "@hyper-elements/react";\nexport { formatDiagnostics };\nexport default () => render(<Template />);\n`);
 const out = join(run, ".cache/bundle.cjs");
 try {
   await build({
@@ -24,13 +25,14 @@ try {
   console.error(e.errors?.map((x) => `${x.location?.file ?? ""}:${x.location?.line ?? ""} ${x.text}`).join("\n") ?? e.message);
   process.exit(1);
 }
+const bundle = createRequire(import.meta.url)(out);
 try {
-  const { html, diagnostics } = await createRequire(import.meta.url)(out).default();
+  const { html, diagnostics } = await bundle.default();
   await writeFile(join(run, "out/email.html"), html);
-  for (const d of diagnostics) console.log(`${d.severity} ${d.code} at ${d.path}: ${d.message}`);
+  if (diagnostics.length) console.log(bundle.formatDiagnostics(diagnostics));
   console.log(`Rendered out/email.html (${html.length} bytes).`);
 } catch (e) {
-  if (e.diagnostics) for (const d of e.diagnostics) console.error(`${d.severity ?? "error"} ${d.code} at ${d.path}: ${d.message}`);
+  if (e.diagnostics) console.error(bundle.formatDiagnostics(e.diagnostics));
   else console.error(e.stack ?? e.message);
   process.exit(1);
 }

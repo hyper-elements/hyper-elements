@@ -38,8 +38,15 @@ describe("support for conditions", () => {
     const { diagnostics } = prepareTemplate({ root: { type: "Email", children: [button({ hover: { backgroundColor: "#000000" } })] } });
     const notes = diagnostics.filter((d) => d.code === "email/degraded");
     expect(notes).toHaveLength(1);
-    expect(notes[0]).toMatchObject({ severity: "info", path: "root.children[0].hover", nodeId: "go" });
-    expect(notes[0]!.message).toContain("classic Outlook for Windows");
+    // The desktop clients that don't show it, from caniemail's tables, with its page there.
+    expect(notes[0]).toMatchObject({
+      severity: "info",
+      path: "root.children[0].hover",
+      nodeId: "go",
+      clients: ["outlook", "outlook-com", "outlook-mac"],
+      see: "https://www.caniemail.com/features/css-pseudo-class-hover/",
+    });
+    expect(notes[0]!.message).toBe("hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)");
   });
 
   it("says nothing about a page's hover, nor a document's print HTML", () => {

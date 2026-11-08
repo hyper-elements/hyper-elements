@@ -735,7 +735,8 @@ describe("email HTML", () => {
       expect(rules).toMatch(new RegExp(`\\.(${cell.className.split(" ").join("|")})\\{[^}]*background-image:none!important[^}]*height:auto!important`));
       expect(dom.querySelector('div[role="img"]')!.className).not.toBe("");
       // Its height on phones is a page's: nothing to note.
-      expect(hidden.diagnostics).toEqual([]);
+      // Where phone styles don't apply, the image shows on phones: a note.
+      expect(hidden.diagnostics.map((d) => [d.code, d.severity])).toEqual([["email/phone-styles", "info"]]);
     });
 
     it("says what an email can't draw: not an Image under one child, an Image narrower than the Layer, a height it can't work out", () => {
