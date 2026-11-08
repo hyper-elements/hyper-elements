@@ -73,9 +73,9 @@ export const InheritedText = showing(
   <Page
     width={640}
     fonts={[{ family: "Cormorant Garamond", src: "https://fonts.gstatic.com/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2", format: "woff2", weight: "300 700" }, MONO_FONT]}
-    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: SERIF, fontSize: 24, lineHeight: 1.45, textAlign: "center", mobile: { fontSize: 21 } }}
+    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: SERIF, fontSize: 24, lineHeight: 1.45, textAlign: "center" }}
   >
-    <Section style={{ padding: [72, 40, 64], gap: 18, mobile: { padding: [52, 24, 44] } }}>
+    <Section style={{ padding: [72, 40, 64], gap: 18, mobile: { padding: [52, 24, 44], fontSize: 21 } }}>
       <Heading level={1} style={{ fontSize: 54, fontWeight: 500, lineHeight: 1.02, mobile: { fontSize: 42 } }}>
         Bring a coat.
       </Heading>
@@ -166,9 +166,9 @@ export const RightToLeft = showing(
       { family: "Noto Naskh Arabic", src: "https://fonts.gstatic.com/s/notonaskharabic/v44/RrQKbpV-9Dd1b1OAGA6M9PkyDuVBeN2DHV2mLXgzTrc.woff2", format: "woff2", weight: "400 700" },
       MONO_FONT,
     ]}
-    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: ARABIC, fontSize: 18, lineHeight: 1.8, mobile: { fontSize: 17 } }}
+    style={{ backgroundColor: NIGHT, color: PARCHMENT, fontFamily: ARABIC, fontSize: 18, lineHeight: 1.8 }}
   >
-    <Section style={{ padding: [52, 32, 48], gap: 18, alignItems: "start", mobile: { padding: [36, 24, 36], gap: 16 } }}>
+    <Section style={{ padding: [52, 32, 48], gap: 18, alignItems: "start", mobile: { padding: [36, 24, 36], gap: 16, fontSize: 17 } }}>
       <Text style={{ fontSize: 15, fontWeight: 600, color: BRASS }}>مرصد تل الصقر</Text>
       <Heading level={1} style={{ fontFamily: ARABIC_DISPLAY, fontSize: 52, fontWeight: 700, lineHeight: 1.25, mobile: { fontSize: 40 } }}>
         ليلة تحت السماء المفتوحة

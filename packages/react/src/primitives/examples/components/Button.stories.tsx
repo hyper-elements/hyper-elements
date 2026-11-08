@@ -33,8 +33,8 @@ const root: Pick<EmailProps, "width" | "fonts" | "style"> = {
 const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSpacing: 1.2, textTransform: "uppercase", color: QUIET } as const;
 /** A quiet mono note on what a button sets. */
 const note = { fontFamily: MONO, fontSize: 12, lineHeight: 1.55, color: QUIET } as const;
-const big = { style: { fontSize: 44, fontWeight: 500, lineHeight: 1.04, letterSpacing: -1.7 }, mobile: { fontSize: 34, letterSpacing: -1.2 } } as const;
-const small = { style: { fontSize: 28, fontWeight: 500, lineHeight: 1.15, letterSpacing: -0.8 }, mobile: { fontSize: 24 } } as const;
+const big = { style: { fontSize: 44, fontWeight: 500, lineHeight: 1.04, letterSpacing: -1.7, mobile: { fontSize: 34, letterSpacing: -1.2 } } } as const;
+const small = { style: { fontSize: 28, fontWeight: 500, lineHeight: 1.15, letterSpacing: -0.8, mobile: { fontSize: 24 } } } as const;
 
 /** Oyen's three buttons: the orange one, the ink one and an outline. */
 const signal: ButtonProps["style"] = { backgroundColor: SIGNAL, color: INK, fontSize: 15, fontWeight: 600, padding: [15, 26], borderRadius: 2 };
