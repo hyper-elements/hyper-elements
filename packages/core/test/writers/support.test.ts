@@ -11,7 +11,7 @@
 import { EMAIL_CLIENTS, type EmailClient } from "../../src/email-clients";
 
 const ALL_CLIENTS = Object.keys(EMAIL_CLIENTS) as EmailClient[];
-import { COMPONENTS, CONDITIONS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
+import { COMPONENTS, CONDITIONS, componentRoots, describeComponents, ROOT_NAMES, STYLE_GROUPS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
 import { prepareTemplate, renderTemplate } from "../../src/writers";
 
 /** Each output with a writer, and the root that renders to it. */
@@ -24,8 +24,12 @@ const OUTPUTS: Array<{ target: Target; root: string }> = [
   { target: "web", root: "Canvas" },
 ];
 
-/** What only a Document takes. */
-const DOCUMENT_ONLY = new Set(["DocumentPage", "PageBreak", "PageHeader", "PageFooter", "PageNumber"]);
+/** What only a Document takes, from the definitions' roots. */
+const DOCUMENT_ONLY = new Set(
+  Object.values(COMPONENTS)
+    .filter((d) => !d.categories.includes("root") && componentRoots(d).join() === "Document")
+    .map((d) => d.type)
+);
 /** The components an output's samples take: a Document's own under a Document; the others under the other roots. */
 const sampled = (root: string, type: string) => (root === "Document" ? DOCUMENT_ONLY.has(type) || type === root : root === "Canvas" ? type === root : !DOCUMENT_ONLY.has(type));
 const SHAPES = new Set(["Rect", "Circle", "Ellipse", "Line", "Polygon", "Path"]);
@@ -346,3 +350,38 @@ for (const { target, root } of OUTPUTS) {
     });
   }
 }
+
+describe("roots", () => {
+  it("are declared for every component, prop and style, with its kind (and a style's group)", () => {
+    expect([...DOCUMENT_ONLY].sort()).toEqual(["DocumentPage", "PageBreak", "PageFooter", "PageHeader", "PageNumber"]);
+    for (const component of describeComponents()) {
+      expect(component.roots.length, component.type).toBeGreaterThan(0);
+      for (const root of component.roots) expect(ROOT_NAMES).toContain(root);
+      for (const property of component.properties) {
+        const at = `${component.type}.${property.path}`;
+        expect(property.roots.length, at).toBeGreaterThan(0);
+        expect(property.roots.every((root) => component.roots.includes(root)), at).toBe(true);
+        expect(property.kind, at).toBeTruthy();
+        if (!property.path.startsWith("props.")) expect(STYLE_GROUPS, at).toContain(property.group);
+      }
+    }
+  });
+
+  it("are each root itself for a root, and every root for what all of them render", () => {
+    for (const root of ROOT_NAMES) expect(componentRoots(COMPONENTS[root])).toEqual([root]);
+    expect(componentRoots(COMPONENTS.Text)).toEqual(["Email", "Page", "Document", "Canvas"]);
+    // The web's: an Svg isn't drawn in an email.
+    expect(componentRoots(COMPONENTS.Svg)).toEqual(["Page", "Document", "Canvas"]);
+  });
+
+  it("narrow a description to one root: what it holds, and phone styles only where it has phones", () => {
+    const document = describeComponents({ root: "Document" });
+    expect(document.map((c) => c.type)).not.toContain("Email");
+    expect(document.map((c) => c.type)).toContain("PageHeader");
+    expect(document.flatMap((c) => c.properties).some((p) => p.mobile)).toBe(false);
+    const email = describeComponents({ root: "Email" });
+    expect(email.map((c) => c.type)).not.toContain("Svg");
+    expect(email.map((c) => c.type)).not.toContain("PageNumber");
+    expect(email.find((c) => c.type === "Text")!.properties.find((p) => p.path === "style.fontSize")).toMatchObject({ mobile: true, roots: ["Email"], group: "Typography" });
+  });
+});

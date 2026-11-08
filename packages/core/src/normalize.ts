@@ -4,7 +4,7 @@
  * checked).
  */
 import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
-import type { ComponentDefinition, StyleSpecs } from "./define";
+import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
 import { CUSTOM_TYPE, registryOf, type ComponentsOption, type Registry } from "./registry";
@@ -74,6 +74,25 @@ export function checkFragment(
   const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), root: options.root };
   const node = readNode(input, options.path, options.parent, context);
   return { node, diagnostics: d.list };
+}
+
+/** "an Email or a Page", "a Document": the roots something is for, in a message. */
+export function rootList(roots: readonly string[]): string {
+  const named = roots.map((root) => a(root).replace(/^A/, "a"));
+  return named.length > 1 ? `${named.slice(0, -1).join(", ")} or ${named[named.length - 1]}` : named[0] ?? "no root";
+}
+
+/**
+ * Whether a root takes what's declared for `roots` (a component's, a prop's, a style's): undefined is every root, and
+ * so is a root Elements doesn't know (its own error says so).
+ */
+function rootTakes(roots: readonly RootName[] | undefined, root: ComponentDefinition | undefined): boolean {
+  return !roots || !root || roots.includes(root.type as RootName);
+}
+
+/** Whether a component and a root share an output: where they don't, it's the output's `target/unsupported`, as today. */
+function sharesOutput(definition: ComponentDefinition, root: ComponentDefinition): boolean {
+  return Object.keys(definition.targets).some((target) => target in root.targets);
 }
 
 function allowedIn(parent: ComponentDefinition, child: ComponentDefinition): boolean {
@@ -191,6 +210,15 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     d.error("children/not-allowed", placementMessage(parent, definition), path);
     return null;
   }
+  const root = context.root;
+  if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
+    const { code, message } = definition.notAllowed ?? {
+      code: "component/not-supported",
+      message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
+    };
+    d.error(code, message(root.type), path);
+    return null;
+  }
 
   // Only what the author writes: an id is theirs (an anchor, a reference), never generated.
   let id: string | undefined;
@@ -215,7 +243,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
 
   const node: Node = id === undefined ? { type: definition.type } : { id, type: definition.type };
 
-  const props = readProps(input.props, definition, `${path}.props`, id, d);
+  const props = readProps(input.props, definition, `${path}.props`, id, d, context.root);
   if (props) node.props = props;
 
   // A condition's block written inside `style` (`style={{ mobile: { … } }}`) is read as the condition's own; a template's
@@ -231,7 +259,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     styleInput = rest;
   }
 
-  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true);
+  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true, undefined, context.root);
   if (style) node.style = style;
 
   for (const condition of CONDITIONS) {
@@ -262,7 +290,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
       }
       value = own;
     }
-    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for);
+    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for, context.root);
     if (read) node[condition.name] = read;
   }
 
@@ -276,7 +304,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   return node;
 }
 
-function readProps(input: unknown, definition: ComponentDefinition, path: string, id: string | undefined, d: Diagnostics): Record<string, Json> | undefined {
+function readProps(input: unknown, definition: ComponentDefinition, path: string, id: string | undefined, d: Diagnostics, root: ComponentDefinition | undefined): Record<string, Json> | undefined {
   const out: Record<string, Json> = {};
   if (input !== undefined && !isObject(input)) {
     d.error("props/invalid", "props is an object", path, id);
@@ -287,6 +315,10 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
     const spec = Object.prototype.hasOwnProperty.call(definition.props, key) ? definition.props[key] : undefined;
     if (!spec) {
       d.error("prop/unknown", unknownProp(definition, key), `${path}.${key}`, id);
+      continue;
+    }
+    if (!rootTakes(spec.roots, root)) {
+      d.error("prop/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
       continue;
     }
     const parsed = spec.kind.parse(value);
@@ -343,7 +375,9 @@ function readStyles(
   what: string,
   allowed: (spec: StyleSpecs[string], key: string) => boolean,
   /** For a condition, what can be set for it is set "for phones". */
-  forLabel?: string
+  forLabel?: string,
+  /** The template's root: a style declared for other roots is an error under it. */
+  root?: ComponentDefinition
 ): Record<string, Json> | undefined {
   if (input === undefined) return undefined;
   if (!isObject(input)) {
@@ -356,6 +390,10 @@ function readStyles(
     const spec = Object.prototype.hasOwnProperty.call(specs, key) ? specs[key] : undefined;
     if (!spec) {
       d.error("style/unknown", seeing(`"${key}" isn't a style ${a(definition.type).replace(/^A/, "a")} takes${styleHint(definition, specs, key)}`, definition.type), `${path}.${key}`, id);
+      continue;
+    }
+    if (!rootTakes(spec.roots, root)) {
+      d.error("style/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
       continue;
     }
     if (!allowed(spec, key)) {

@@ -60,6 +60,11 @@
       "import": "./dist/builder.js",
       "require": "./dist/builder.cjs"
     },
+    "./inspect": {
+      "types": "./dist/inspect.d.ts",
+      "import": "./dist/inspect.js",
+      "require": "./dist/inspect.cjs"
+    },
     "./pdf": {
       "types": "./dist/pdf.d.ts",
       "import": "./dist/pdf.js",
@@ -77,6 +82,9 @@
       "builder": [
         "./dist/builder.d.ts"
       ],
+      "inspect": [
+        "./dist/inspect.d.ts"
+      ],
       "pdf": [
         "./dist/pdf.d.ts"
       ],
@@ -89,6 +97,7 @@
   "files": [
     "dist/primitives.*",
     "dist/builder.*",
+    "dist/inspect.*",
     "dist/pdf.*",
     "dist/image.*",
     "README.md",

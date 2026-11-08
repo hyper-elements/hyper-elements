@@ -1,0 +1,814 @@
+{
+ "root": "Page",
+ "html": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Merrow Line: Buttons</title><style>@font-face{font-family:\"Familjen Grotesk\";src:url(\"https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2\") format(\"woff2\");font-weight:400 700;font-display:swap}@font-face{font-family:\"DM Mono\";src:url(\"https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2\") format(\"woff2\");font-weight:400;font-display:swap}.ec97ab:hover,.ec97ab:focus-visible{background-color:#ab2f1d!important}.eqr2g3:hover,.eqr2g3:focus-visible{background-color:#2a3d48!important}.eqyvng:hover,.eqyvng:focus-visible{background-color:#e6e3d8!important}@media (max-width: 480px){.ev3fzm{padding:20px 20px 28px 20px!important;gap:16px!important}.e8ezpv{font-size:28px!important}.e431r5{align-self:center!important}}</style></head><body style=\"margin:0;background-color:#f3f1ea\"><main style=\"display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><section class=\"ev3fzm\" style=\"display:flex;flex-direction:column;gap:18px;padding:28px max(32px, calc((100% - 600px) / 2 + 32px)) 36px max(32px, calc((100% - 600px) / 2 + 32px))\"><div style=\"display:flex;align-items:flex-end;box-sizing:border-box;padding:0 0 10px 0;border-bottom:1px solid #12242e\"><div style=\"flex:0 1 150px;min-width:0;display:flex;flex-direction:column\"><p style=\"margin:0;font-size:15px;font-weight:700;line-height:1.2\">Merrow Line</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;text-align:right\">Buttons</p></div></div><h1 class=\"e8ezpv\" style=\"margin:0;font-size:34px;font-weight:600;line-height:1.08;letter-spacing:-0.6px\">Your sailing is forty minutes late.</h1><a class=\"ec97ab\" href=\"https://merrow.example/rebook\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;padding:14px 24px;background-color:#c93a25;border-radius:2px\">Move me to the next sailing with the same cabin, at no extra charge, and send me the new times</a><a class=\"eqr2g3\" href=\"https://merrow.example/keep\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;width:100%;padding:14px 20px;background-color:#12242e;border-radius:2px\">Keep my booking and wait</a><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Would a voucher for the café help?</p><div style=\"display:flex;gap:8px\"><a href=\"https://merrow.example/voucher/yes\" style=\"flex:0 1 120px;min-width:0;align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;padding:12px 0;background-color:#0f6a70;border-radius:2px\">Yes</a><a class=\"eqyvng\" href=\"https://merrow.example/voucher/no\" style=\"flex:0 1 120px;min-width:0;align-self:flex-start;display:inline-block;text-decoration:none;color:#12242e;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;padding:12px 0;background-color:transparent;border:1px solid #12242e;border-radius:2px\">No thanks</a></div><a class=\"e431r5\" href=\"https://merrow.example/harbour-office\" style=\"align-self:flex-end;display:inline-block;text-decoration:none;color:#fff;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;padding:14px 24px;background-color:#55636b;border-radius:999px\">At the end, centred on phones</a></section></main></body></html>",
+ "text": "Merrow Line\n\nButtons\n\nYOUR SAILING IS FORTY MINUTES LATE.\n\nMove me to the next sailing with the same cabin, at no extra charge, and send me the new times (https://merrow.example/rebook)\n\nKeep my booking and wait (https://merrow.example/keep)\n\nWould a voucher for the café help?\n\nYes (https://merrow.example/voucher/yes)\n\nNo thanks (https://merrow.example/voucher/no)\n\nAt the end, centred on phones (https://merrow.example/harbour-office)",
+ "classes": [
+  "e431r5",
+  "e8ezpv",
+  "ec97ab",
+  "eqr2g3",
+  "eqyvng",
+  "ev3fzm"
+ ],
+ "diagnostics": {
+  "validate": [],
+  "render": [],
+  "prepare": []
+ },
+ "outline": "Page 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Buttons\"\n    Heading h1 536px \"Your sailing is forty minutes late.\"\n    Button: background #c93a25 \"Move me to the next sailing with the same cabin, at no extra charge, and send m…\" → https://merrow.example/rebook\n    Button 536px: background #12242e \"Keep my booking and wait\" → https://merrow.example/keep\n    Text 536px \"Would a voucher for the café help?\"\n    Row 536px: 2 side by side\n      Button 120px: background #0f6a70 \"Yes\" → https://merrow.example/voucher/yes\n      Button 120px: background transparent \"No thanks\" → https://merrow.example/voucher/no\n    Button: background #55636b \"At the end, centred on phones\" → https://merrow.example/harbour-office",
+ "design": {
+  "design": {
+   "counters": {
+    "u_row": 5,
+    "u_column": 7,
+    "u_content_paragraph": 3,
+    "u_content_divider": 1,
+    "u_content_heading": 1,
+    "u_content_button": 5
+   },
+   "body": {
+    "rows": [
+     {
+      "cells": [
+       182,
+       418
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "15px",
+           "textAlign": "left",
+           "lineHeight": "120%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_1",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 700,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Merrow Line\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 0px 0px 32px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_1",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "right",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_2",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Buttons\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 32px 0px 0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_2",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "28px 0px 10px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_1",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "noStackMobile": true
+        }
+       },
+       "cells": [
+        182,
+        418
+       ],
+       "alignItems": "flex-end"
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "divider",
+          "values": {
+           "containerPadding": "0px 32px",
+           "width": "100%",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#12242e"
+           },
+           "textAlign": "center",
+           "_meta": {
+            "htmlID": "u_content_divider_1",
+            "htmlClassNames": "u_content_divider"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_3",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_2",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "heading",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "headingType": "h1",
+           "fontSize": "34px",
+           "textAlign": "left",
+           "lineHeight": "108%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "fontWeight": 600,
+           "text": "Your sailing is forty minutes late.",
+           "_meta": {
+            "htmlID": "u_content_heading_1",
+            "htmlClassNames": "u_content_heading"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "letterSpacing": "-0.6px",
+           "_override": {
+            "mobile": {
+             "fontSize": "28px"
+            }
+           }
+          }
+         },
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/rebook",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#ffffff",
+            "backgroundColor": "#c93a25",
+            "hoverColor": "#ffffff",
+            "hoverBackgroundColor": "#ab2f1d"
+           },
+           "size": {
+            "autoWidth": true,
+            "width": "100%"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "14px 24px",
+           "border": {},
+           "borderRadius": "2px",
+           "text": "Move me to the next sailing with the same cabin, at no extra charge, and send me the new times",
+           "_meta": {
+            "htmlID": "u_content_button_1",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         },
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/keep",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#ffffff",
+            "backgroundColor": "#12242e",
+            "hoverColor": "#ffffff",
+            "hoverBackgroundColor": "#2a3d48"
+           },
+           "size": {
+            "autoWidth": false,
+            "width": "100%"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "14px 20px",
+           "border": {},
+           "borderRadius": "2px",
+           "text": "Keep my booking and wait",
+           "_meta": {
+            "htmlID": "u_content_button_2",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         },
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "18px 32px 0px",
+           "fontSize": "12px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_3",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Would a voucher for the café help?\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_4",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_3",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       156,
+       156
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "0px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/voucher/yes",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#ffffff",
+            "backgroundColor": "#0f6a70",
+            "hoverColor": "#ffffff",
+            "hoverBackgroundColor": "#0f6a70"
+           },
+           "size": {
+            "autoWidth": false,
+            "width": "120px"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "12px 0px",
+           "border": {},
+           "borderRadius": "2px",
+           "text": "Yes",
+           "_meta": {
+            "htmlID": "u_content_button_3",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 4px 0px 32px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_5",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "0px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/voucher/no",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#12242e",
+            "backgroundColor": "transparent",
+            "hoverColor": "#12242e",
+            "hoverBackgroundColor": "#e6e3d8"
+           },
+           "size": {
+            "autoWidth": false,
+            "width": "120px"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "12px 0px",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#12242e",
+            "borderRightWidth": "1px",
+            "borderRightStyle": "solid",
+            "borderRightColor": "#12242e",
+            "borderBottomWidth": "1px",
+            "borderBottomStyle": "solid",
+            "borderBottomColor": "#12242e",
+            "borderLeftWidth": "1px",
+            "borderLeftStyle": "solid",
+            "borderLeftColor": "#12242e"
+           },
+           "borderRadius": "2px",
+           "text": "No thanks",
+           "_meta": {
+            "htmlID": "u_content_button_4",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 32px 0px 4px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_6",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "18px 0px 0px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_4",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "noStackMobile": true
+        }
+       },
+       "cells": [
+        156,
+        156
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "18px 32px 36px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/harbour-office",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#ffffff",
+            "backgroundColor": "#55636b",
+            "hoverColor": "#ffffff",
+            "hoverBackgroundColor": "#55636b"
+           },
+           "size": {
+            "autoWidth": true,
+            "width": "100%"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "14px 24px",
+           "border": {},
+           "borderRadius": "999px",
+           "text": "At the end, centred on phones",
+           "_meta": {
+            "htmlID": "u_content_button_5",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_7",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_5",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     }
+    ],
+    "values": {
+     "_styleGuide": null,
+     "borderRadius": "10px",
+     "contentAlign": "center",
+     "contentVerticalAlign": "middle",
+     "contentWidth": "600px",
+     "fontFamily": {
+      "label": "Familjen Grotesk",
+      "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+     },
+     "textColor": "#12242e",
+     "language": {},
+     "backgroundColor": "#f3f1ea",
+     "documentSize": "A4",
+     "documentOrientation": "portrait",
+     "documentMargin": "96px",
+     "preheaderText": "",
+     "linkStyle": {
+      "body": true,
+      "linkColor": "#0000ee",
+      "linkHoverColor": "#0000ee",
+      "linkUnderline": true,
+      "linkHoverUnderline": true
+     },
+     "backgroundImage": {
+      "url": "",
+      "fullWidth": true,
+      "repeat": "no-repeat",
+      "size": "custom",
+      "position": "center"
+     },
+     "accessibilityTitle": "Merrow Line: Buttons",
+     "_meta": {
+      "htmlID": "u_body",
+      "htmlClassNames": "u_body"
+     },
+     "fonts": [
+      {
+       "family": "Familjen Grotesk",
+       "src": "https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2",
+       "format": "woff2",
+       "weight": [
+        400,
+        700
+       ]
+      },
+      {
+       "family": "DM Mono",
+       "src": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2",
+       "format": "woff2",
+       "weight": 400
+      }
+     ]
+    }
+   },
+   "schemaVersion": 27
+  },
+  "report": [
+   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
+   "root.children[0].children[6]: the builder's button has no place for style.alignSelf, mobile.alignSelf: left out"
+  ]
+ }
+}

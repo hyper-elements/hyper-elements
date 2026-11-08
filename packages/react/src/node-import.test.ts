@@ -14,9 +14,12 @@ import { join, resolve } from "path";
 import ts from "typescript";
 
 describe("Node environment (no jsdom)", () => {
-  it("imports the main entry and /builder without a browser", async () => {
+  it("imports the main entry, /builder and /inspect without a browser", async () => {
     const main = await import("./primitives/index");
     const builder = await import("./builder/index");
+    const inspect = await import("./inspect/index");
+    expect(inspect.inspect).toBeTypeOf("function");
+    expect(inspect.describeComponents({ root: "Page" }).components.length).toBeGreaterThan(0);
     for (const name of ["Email", "Page", "Document", "Row", "Column", "Text", "Button", "render", "validate", "outline", "prepare", "component"] as const) expect(main[name], name).toBeTypeOf("function");
     expect(builder.toDesign).toBeTypeOf("function");
     expect(builder.fromDesign).toBeTypeOf("function");
@@ -42,7 +45,7 @@ describe("Node environment (no jsdom)", () => {
 });
 
 describe("each entry's types, for every moduleResolution", () => {
-  it("resolves the main entry, /builder, /pdf and /image to their declarations, under node (node10) too", () => {
+  it("resolves the main entry, /builder, /inspect, /pdf and /image to their declarations, under node (node10) too", () => {
     // A project's node_modules with this package in it, as an install has it.
     const dir = resolve(__dirname, "..");
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
@@ -52,7 +55,7 @@ describe("each entry's types, for every moduleResolution", () => {
     symlinkSync(dir, installed, "dir");
     // The declarations each entry names, which a build writes: there for the resolver whether built or not.
     const entries = Object.entries(pkg.exports as Record<string, { types?: string }>).filter(([, entry]) => typeof entry === "object" && entry.types);
-    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./pdf", "./image"]);
+    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./inspect", "./pdf", "./image"]);
     const declared = new Set(entries.map(([, entry]) => join(dir, entry.types!)));
     const inPackage = (file: string) => (file.startsWith(installed) ? join(dir, file.slice(installed.length)) : file);
     const host: ts.ModuleResolutionHost = { ...ts.sys, fileExists: (file) => declared.has(inPackage(file)) || ts.sys.fileExists(file) };
