@@ -75,8 +75,7 @@ const BREAKPOINT_NOTE = "mobile breakpoint";
 
 const BUTTON_PROPS = {
   href: "https://example.com",
-  style: { color: "#ffffff", backgroundColor: "#3b82f6", borderRadius: 8 },
-  hover: { color: "#ffff00", backgroundColor: "#1d4ed8" },
+  style: { color: "#ffffff", backgroundColor: "#3b82f6", borderRadius: 8, hover: { color: "#ffff00", backgroundColor: "#1d4ed8" } },
 };
 
 // Self-contained image (no network in CI): 400×200 intrinsic size, drawn
@@ -300,8 +299,28 @@ async function checkHover(page) {
   if (hovered.color !== "rgb(255, 255, 0)") problems.push(`hover color is ${hovered.color}, expected rgb(255, 255, 0)`);
 
   await page.mouse.move(0, 0);
+  const left = await readColors();
+  if (left.background !== base.background) problems.push(`background after the pointer leaves is ${left.background}, expected ${base.background}`);
+
+  // Keyboard focus gets the hover colors too (:focus-visible): a link reached by Tab shows them.
+  await page.keyboard.press("Tab");
+  for (let i = 0; i < 20 && !(await page.$eval(selector, (a) => a === document.activeElement)); i++) await page.keyboard.press("Tab");
+  const focused = await readColors();
+  if (focused.background !== "rgb(29, 78, 216)") problems.push(`keyboard-focus background is ${focused.background}, expected rgb(29, 78, 216)`);
+  if (focused.color !== "rgb(255, 255, 0)") problems.push(`keyboard-focus color is ${focused.color}, expected rgb(255, 255, 0)`);
+
+  // In an email the button's background is its cell's: keyboard focus on the link inside gives the cell its hover color too.
+  const email = DOCUMENTS.find((d) => d.name === "email");
+  await page.setContent(email.html, { waitUntil: "load" });
+  const cellColors = () => page.$eval(selector, (a) => ({ background: getComputedStyle(a.closest("td")).backgroundColor, color: getComputedStyle(a).color }));
+  const emailBase = await cellColors();
+  for (let i = 0; i < 20 && !(await page.$eval(selector, (a) => a === document.activeElement)); i++) await page.keyboard.press("Tab");
+  const emailFocused = await cellColors();
+  if (emailFocused.background !== "rgb(29, 78, 216)") problems.push(`email keyboard-focus background is ${emailFocused.background} (unfocused ${emailBase.background}), expected rgb(29, 78, 216)`);
+  if (emailFocused.color !== "rgb(255, 255, 0)") problems.push(`email keyboard-focus color is ${emailFocused.color}, expected rgb(255, 255, 0)`);
+
   if (problems.length) fail("hover", problems);
-  else pass("hover", "button hover applies configured background + text colors");
+  else pass("hover", "button hover and keyboard focus apply configured background + text colors, on a page and in an email");
 }
 
 /** Section 4: RTL — the root's dir reaches the computed direction. */
@@ -639,8 +658,8 @@ async function checkDeviceOverrides(page) {
   const phone = { width: 375, height: 800 };
   for (const { name, Root } of DOCUMENTS.filter((d) => d.name !== "document")) {
     const make = (overrides) => renderHtml(h(Root, { width: 600 },
-      h(Row, null, h(Column, { id: "phone-column", style: { padding: 20 }, ...(overrides ? { mobile: { padding: [8, 12] } } : {}) },
-        h(Image, { src: { ...IMAGE_SRC, width: 800 }, alt: "", style: { width: 120 }, ...(overrides ? { mobile: { width: "100%" } } : {}) }),
+      h(Row, null, h(Column, { id: "phone-column", style: { padding: 20, ...(overrides ? { mobile: { padding: [8, 12] } } : {}) } },
+        h(Image, { src: { ...IMAGE_SRC, width: 800 }, alt: "", style: { width: 120, ...(overrides ? { mobile: { width: "100%" } } : {}) } }),
         h(Text, { id: "desktop-only", ...(overrides ? { hidden: { mobile: true } } : {}) }, "Desktop only"),
         h(Text, { id: "phone-only", ...(overrides ? { hidden: { desktop: true } } : {}) }, "Phone only")
       )),
@@ -692,9 +711,33 @@ async function checkDeviceOverrides(page) {
   await page.setViewportSize(DESKTOP);
 }
 
+/** Section 15: a Page's own phone width (breakpoints.mobile): its phone styles and hiding start there, not at 480px. */
+async function checkPagePhoneWidth(page) {
+  const html = await renderHtml(h(Page, { width: 900, breakpoints: { mobile: 600 } },
+    h(Column, { id: "padded", style: { padding: 20, mobile: { padding: 8 } } }, h(Text, null, "Padded")),
+    h(Text, { id: "desktop-only", hidden: { mobile: true } }, "Desktop only")
+  ));
+  const read = () => page.evaluate(() => ({
+    padding: getComputedStyle(document.getElementById("padded")).paddingTop,
+    hidden: getComputedStyle(document.getElementById("desktop-only")).display === "none",
+  }));
+  const problems = [];
+  for (const [width, phone] of [[600, true], [601, false], [480, true]]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.setContent(html);
+    const facts = await read();
+    if (facts.padding !== (phone ? "8px" : "20px")) problems.push(`at ${width}px the padding is ${facts.padding}, expected ${phone ? "8px" : "20px"}`);
+    if (facts.hidden !== phone) problems.push(`at ${width}px phone-hidden content ${facts.hidden ? "hides" : "shows"}`);
+  }
+  await page.setViewportSize(DESKTOP);
+  if (problems.length) fail("page-phone-width", problems);
+  else pass("page-phone-width", "breakpoints.mobile: phone styles and hiding apply at 600px and not at 601px");
+}
+
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ viewport: DESKTOP });
+  await checkPagePhoneWidth(page);
   await checkDocuments(page);
   await checkResponsive(page);
   await checkNoStack(page);

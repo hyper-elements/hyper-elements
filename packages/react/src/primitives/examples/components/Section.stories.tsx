@@ -95,7 +95,7 @@ export const Spacing = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ backgroundColor: OVEN, padding: [40, 24], gap: 24 }}>
       <Text style={CAPTION}>padding: [40, 24] · gap: 24</Text>
-      <Heading level={2} style={{ ...DISPLAY_TYPE, fontSize: 48 }} mobile={{ fontSize: 38 }}>
+      <Heading level={2} style={{ ...DISPLAY_TYPE, fontSize: 48, mobile: { fontSize: 38 } }}>
         Fig and fennel
       </Heading>
       <Text style={{ fontSize: 17, maxWidth: 440 }}>This week’s loaf: two days’ slow rise, a dark crust, and enough fruit that it doesn’t need butter. It gets it anyway.</Text>
@@ -112,19 +112,19 @@ export const Alignment = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ padding: [24, 24], gap: 10, alignItems: "start" }}>
       <Text style={CAPTION}>alignItems: "start"</Text>
-      <Button href={`${SITE}/order`} style={BUTTON} hover={{ backgroundColor: JAM_DOWN }}>
+      <Button href={`${SITE}/order`} style={{ ...BUTTON, hover: { backgroundColor: JAM_DOWN } }}>
         Order for Saturday
       </Button>
     </Section>
     <Section style={{ padding: [24, 24], gap: 10, alignItems: "center", backgroundColor: OVEN }}>
       <Text style={{ ...CAPTION, textAlign: "center" }}>alignItems: "center"</Text>
-      <Button href={`${SITE}/classes`} style={BUTTON} hover={{ backgroundColor: JAM_DOWN }}>
+      <Button href={`${SITE}/classes`} style={{ ...BUTTON, hover: { backgroundColor: JAM_DOWN } }}>
         Book a bread class
       </Button>
     </Section>
     <Section style={{ padding: [24, 24], gap: 10, alignItems: "end" }}>
       <Text style={{ ...CAPTION, textAlign: "right" }}>alignItems: "end"</Text>
-      <Button href={`${SITE}/gift`} style={BUTTON} hover={{ backgroundColor: JAM_DOWN }}>
+      <Button href={`${SITE}/gift`} style={{ ...BUTTON, hover: { backgroundColor: JAM_DOWN } }}>
         Send someone a loaf
       </Button>
     </Section>
@@ -151,8 +151,8 @@ export const Borders = story((Root) => (
 /** A section's text styles are inherited by what it holds, so a dark band needs no color on each line. */
 export const InheritedText = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
-    <Section style={{ backgroundColor: RYE, color: FLOUR, padding: [56, 32], gap: 16, textAlign: "center", fontFamily: DISPLAY }} mobile={{ padding: [40, 24] }}>
-      <Heading level={2} style={{ fontSize: 34, fontWeight: 400, lineHeight: 1.15 }} mobile={{ fontSize: 28 }}>
+    <Section style={{ backgroundColor: RYE, color: FLOUR, padding: [56, 32], gap: 16, textAlign: "center", fontFamily: DISPLAY, mobile: { padding: [40, 24] } }}>
+      <Heading level={2} style={{ fontSize: 34, fontWeight: 400, lineHeight: 1.15, mobile: { fontSize: 28 } }}>
         “It has ruined all other
         <LineBreak />
         toast for me.”
@@ -165,8 +165,8 @@ export const InheritedText = story((Root) => (
 /** `mobile` has its padding, gap and text on phones: choose "phone" under width to see it. */
 export const OnPhones = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
-    <Section style={{ backgroundColor: OVEN, padding: [48, 40], gap: 24, fontSize: 18 }} mobile={{ padding: [20, 16], gap: 8, fontSize: 15, textAlign: "center" }}>
-      <Heading level={2} style={{ ...DISPLAY_TYPE, fontSize: 36 }} mobile={{ fontSize: 28 }}>
+    <Section style={{ backgroundColor: OVEN, padding: [48, 40], gap: 24, fontSize: 18, mobile: { padding: [20, 16], gap: 8, fontSize: 15, textAlign: "center" } }}>
+      <Heading level={2} style={{ ...DISPLAY_TYPE, fontSize: 36, mobile: { fontSize: 28 } }}>
         Saturday bread class
       </Heading>
       <Text>Eight till noon, six to a table. You’ll shape four loaves, and take home a starter that already has a name.</Text>

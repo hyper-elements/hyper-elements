@@ -96,7 +96,7 @@ describe("web HTML", () => {
     for (const name of classes) expect(name).toMatch(/^e[0-9a-z]{5}$/);
     // The same rule is one class, written once.
     expect(hidePhoneAgain).toBe(hidePhone);
-    expect(head).toContain(`.${hover}:hover{background-color:#000!important;color:#fff!important}`);
+    expect(head).toContain(`.${hover}:hover,.${hover}:focus-visible{background-color:#000!important;color:#fff!important}`);
     expect(head).toContain(`@media (min-width: 481px){.${hideDesktop}{display:none!important}}`);
     expect(head).toContain(`@media (max-width: 480px){.${phone}{font-size:14px!important;padding:4px!important}.${hidePhone}{display:none!important}}`);
     expect(head.match(/display:none/g)).toHaveLength(2);

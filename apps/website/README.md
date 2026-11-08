@@ -60,3 +60,5 @@ A page is Markdown with a quoted `title` and `description` in its frontmatter, n
 ## Deploying
 
 `dist/` is a static site: Cloudflare Pages, Vercel, Netlify or GitHub Pages all serve it with `hyperelements.dev` as the custom domain. Build command `pnpm --filter @hyper-elements/website build`, output `apps/website/dist`, on Node.js 22.23.4 or later (set the host's Node version to match).
+
+On Vercel, only `main` deploys: `vercel.json` turns off deployments for every other branch, so pull requests get no site preview. Check a change locally with `dev` or `build` and `preview`.

@@ -24,9 +24,8 @@ function propsOf(node: Node): Record<string, unknown> {
   return {
     ...(node.id !== undefined ? { id: node.id } : {}),
     ...node.props,
-    ...(node.style && Object.keys(node.style).length ? { style: node.style } : {}),
-    ...(node.mobile ? { mobile: node.mobile } : {}),
-    ...(node.hover ? { hover: node.hover } : {}),
+    // Phone and hover styles inside the style, as a template writes them now.
+    ...(node.style && Object.keys(node.style).length) || node.mobile || node.hover ? { style: { ...node.style, ...(node.mobile ? { mobile: node.mobile } : {}), ...(node.hover ? { hover: node.hover } : {}) } } : {},
     ...(node.hidden ? { hidden: node.hidden } : {}),
   };
 }

@@ -29,7 +29,7 @@ export const Button: Component = ({ node, style, mobile, fill, phoneText, text }
           align={TEXT_ALIGN[node.text.textAlign]}
           bgcolor={bgcolor(style.backgroundColor)}
           // The background is the cell's, so its hover is too; the text's color is the link's (below).
-          hover={{ backgroundColor: node.hover?.backgroundColor }}
+          hoverWithin={{ backgroundColor: node.hover?.backgroundColor }}
           phone={{ border: mobile.border, backgroundColor: mobile.backgroundColor }}
           style={{ backgroundColor: style.backgroundColor, border: style.border, borderRadius: style.borderRadius, msoPaddingAlt: insets(style.padding) }}
         >

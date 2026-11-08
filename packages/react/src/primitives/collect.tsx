@@ -102,8 +102,11 @@ function withoutAsync(children: React.ReactNode, collection: PrimitiveCollection
 const ENTITIES: Record<string, string> = { "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#x27;": "'" };
 const unescape = (text: string) => text.replace(/&amp;|&lt;|&gt;|&quot;|&#x27;/g, (entity) => ENTITIES[entity]);
 
-/** Where a node's own keys go: the rest of its JSX props are its semantic props. */
-const NODE_KEYS = new Set(["id", "style", "mobile", "hover", "hidden"]);
+/**
+ * Where a node's own keys go: the rest of its JSX props are its semantic props. Phone and hover styles are blocks of its
+ * style; a mobile={…} or hover={…} prop is an unknown prop, whose message says so.
+ */
+const NODE_KEYS = new Set(["id", "style", "hidden"]);
 
 export interface JsonNode {
   type: string;
@@ -260,6 +263,7 @@ export function collectNodes(element: React.ReactElement): {
   // All of it was in a boundary that didn't finish: that says why there's no root.
   return { nodes, components: [...collection.components.values()], diagnostics, aborted: nodes.length === 0 && done.reasons.length > 0 };
 }
+
 
 /** A template collected from JSX: its tree (internal: never part of the API), the problems, the custom components it uses. */
 export interface CollectedTemplate extends CheckResult {

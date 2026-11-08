@@ -110,7 +110,7 @@ const masthead = (name: string) => (
 
 const shell = (Root: ScreenRoot, name: string, children: ReactNode, extra: Record<string, unknown> = {}) => (
   <Root width={600} title={`Merrow Line: ${name}`} fonts={FONTS} style={PAPER} {...extra}>
-    <Section style={{ padding: [28, 32, 36], gap: 18 }} mobile={{ padding: [20, 20, 28], gap: 16 }}>
+    <Section style={{ padding: [28, 32, 36], gap: 18, mobile: { padding: [20, 20, 28], gap: 16 } }}>
       {masthead(name)}
       {children}
     </Section>
@@ -124,7 +124,7 @@ export const stress: Record<string, Stress> = {
       Root,
       "Long words",
       <>
-        <Heading level={1} style={{ ...TITLE, fontSize: 34 }} mobile={{ fontSize: 28 }}>
+        <Heading level={1} style={{ ...TITLE, fontSize: 34, mobile: { fontSize: 28 } }}>
           Schifffahrtsgesellschaftsbeförderungsbedingungen
         </Heading>
         <Text style={{ color: QUIET }}>Our conditions of carriage, in one word. It breaks inside its column, never out of it.</Text>
@@ -156,7 +156,7 @@ export const stress: Record<string, Stress> = {
       Root,
       "Right to left",
       <>
-        <Heading level={1} style={{ fontWeight: 600, fontSize: 34, lineHeight: 1.2 }} mobile={{ fontSize: 28 }}>
+        <Heading level={1} style={{ fontWeight: 600, fontSize: 34, lineHeight: 1.2, mobile: { fontSize: 28 } }}>
           مرحباً بك على متن عبّارتنا
         </Heading>
         <Text style={{ fontSize: 19 }}>
@@ -179,7 +179,7 @@ export const stress: Record<string, Stress> = {
           <ListItem>احضر قبل الإبحار بساعة</ListItem>
           <ListItem>أظهر رمز الحجز عند البوابة</ListItem>
         </List>
-        <Button href={`${SITE}/bookings/10482`} style={BUTTON} hover={{ backgroundColor: FUNNEL_DOWN }}>
+        <Button href={`${SITE}/bookings/10482`} style={{ ...BUTTON, hover: { backgroundColor: FUNNEL_DOWN } }}>
           عرض الحجز
         </Button>
       </>,
@@ -193,7 +193,7 @@ export const stress: Record<string, Stress> = {
       Root,
       "Merge tags",
       <>
-        <Heading level={1} style={{ ...TITLE, fontSize: 34 }} mobile={{ fontSize: 28 }}>
+        <Heading level={1} style={{ ...TITLE, fontSize: 34, mobile: { fontSize: 28 } }}>
           Hello, <MergeTag name="first_name" />
         </Heading>
         <Text>
@@ -222,7 +222,7 @@ export const stress: Record<string, Stress> = {
             Account: <MergeTag name="email" />
           </ListItem>
         </List>
-        <Button href="{{checkout_url}}" style={BUTTON} hover={{ backgroundColor: FUNNEL_DOWN }}>
+        <Button href="{{checkout_url}}" style={{ ...BUTTON, hover: { backgroundColor: FUNNEL_DOWN } }}>
           Pay <MergeTag name="amount_due" /> now
         </Button>
       </>,
@@ -290,7 +290,7 @@ export const stress: Record<string, Stress> = {
       <Section hidden={{ desktop: true }} style={{ backgroundColor: FUNNEL, color: "#FFFFFF", padding: [14, 20] }}>
         <Text style={{ fontSize: 15 }}>A band only phones show: your pass is in the app.</Text>
       </Section>
-      <Section style={{ padding: [24, 32, 36], gap: 16 }} mobile={{ padding: [20, 20, 28] }}>
+      <Section style={{ padding: [24, 32, 36], gap: 16, mobile: { padding: [20, 20, 28] } }}>
         {masthead("Hidden blocks")}
         <Row style={{ gap: 10 }}>
           <Column style={BOX}>
@@ -310,7 +310,7 @@ export const stress: Record<string, Stress> = {
         <Text hidden={{ desktop: true }} style={{ color: QUIET }}>
           Phones get these words instead of the picture.
         </Text>
-        <Button hidden={{ desktop: true }} href={`${SITE}/app`} style={BUTTON} hover={{ backgroundColor: FUNNEL_DOWN }} mobile={{ width: "100%" }}>
+        <Button hidden={{ desktop: true }} href={`${SITE}/app`} style={{ ...BUTTON, mobile: { width: "100%" }, hover: { backgroundColor: FUNNEL_DOWN } }}>
           Open the app
         </Button>
       </Section>
@@ -366,7 +366,7 @@ export const stress: Record<string, Stress> = {
       Root,
       "Tables",
       <>
-        <Heading level={1} style={{ ...TITLE, fontSize: 34 }} mobile={{ fontSize: 28 }}>
+        <Heading level={1} style={{ ...TITLE, fontSize: 34, mobile: { fontSize: 28 } }}>
           Fares to Stornoway
         </Heading>
         <Table style={{ fontSize: 15, cellPadding: [10, 12], rowBorder: LINE_RULE, border: `1px solid ${HARBOUR}` }}>
@@ -410,7 +410,7 @@ export const stress: Record<string, Stress> = {
             <Image src={TIDE} alt="The tide: a linked, rounded thumbnail" style={{ width: 120, borderRadius: 8 }} />
           </Link>
         </Row>
-        <Image src={TIDE} alt="The tide again: half the width at the end, centred on phones" style={{ width: "50%", alignSelf: "end" }} mobile={{ width: "100%", alignSelf: "center" }} />
+        <Image src={TIDE} alt="The tide again: half the width at the end, centred on phones" style={{ width: "50%", alignSelf: "end", mobile: { width: "100%", alignSelf: "center" } }} />
       </>
     )
   ),
@@ -421,13 +421,13 @@ export const stress: Record<string, Stress> = {
       Root,
       "Buttons",
       <>
-        <Heading level={1} style={{ ...TITLE, fontSize: 34 }} mobile={{ fontSize: 28 }}>
+        <Heading level={1} style={{ ...TITLE, fontSize: 34, mobile: { fontSize: 28 } }}>
           Your sailing is forty minutes late.
         </Heading>
-        <Button href={`${SITE}/rebook`} style={BUTTON} hover={{ backgroundColor: FUNNEL_DOWN }}>
+        <Button href={`${SITE}/rebook`} style={{ ...BUTTON, hover: { backgroundColor: FUNNEL_DOWN } }}>
           Move me to the next sailing with the same cabin, at no extra charge, and send me the new times
         </Button>
-        <Button href={`${SITE}/keep`} style={{ ...BUTTON, width: "100%", backgroundColor: HARBOUR, padding: [14, 20] }} hover={{ backgroundColor: HARBOUR_UP }}>
+        <Button href={`${SITE}/keep`} style={{ ...BUTTON, width: "100%", backgroundColor: HARBOUR, padding: [14, 20], hover: { backgroundColor: HARBOUR_UP } }}>
           Keep my booking and wait
         </Button>
         {caption("Would a voucher for the café help?")}
@@ -435,11 +435,11 @@ export const stress: Record<string, Stress> = {
           <Button href={`${SITE}/voucher/yes`} style={{ ...BUTTON, width: 120, backgroundColor: SEA, padding: [12, 0] }}>
             Yes
           </Button>
-          <Button href={`${SITE}/voucher/no`} style={{ ...BUTTON, width: 120, backgroundColor: "transparent", color: HARBOUR, border: `1px solid ${HARBOUR}`, padding: [12, 0] }} hover={{ backgroundColor: SWELL }}>
+          <Button href={`${SITE}/voucher/no`} style={{ ...BUTTON, width: 120, backgroundColor: "transparent", color: HARBOUR, border: `1px solid ${HARBOUR}`, padding: [12, 0], hover: { backgroundColor: SWELL } }}>
             No thanks
           </Button>
         </Row>
-        <Button href={`${SITE}/harbour-office`} style={{ ...BUTTON, alignSelf: "end", backgroundColor: QUIET, borderRadius: 999 }} mobile={{ alignSelf: "center" }}>
+        <Button href={`${SITE}/harbour-office`} style={{ ...BUTTON, alignSelf: "end", backgroundColor: QUIET, borderRadius: 999, mobile: { alignSelf: "center" } }}>
           At the end, centred on phones
         </Button>
       </>
@@ -455,7 +455,7 @@ export const stress: Record<string, Stress> = {
       <Section>
         <Column />
       </Section>
-      <Section style={{ backgroundColor: CHALK, color: HARBOUR, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", padding: [32, 28], gap: 14 }} mobile={{ padding: [24, 20] }}>
+      <Section style={{ backgroundColor: CHALK, color: HARBOUR, fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", padding: [32, 28], gap: 14, mobile: { padding: [24, 20] } }}>
         <Heading>Sailings resume on Friday.</Heading>
         <Text>Everything below takes only the props it must have.</Text>
         <Text>The harbour wall is mended, and the 08:30 is back on its old timetable.</Text>
@@ -496,7 +496,7 @@ export const stress: Record<string, Stress> = {
       Root,
       "Emoji and CJK",
       <>
-        <Heading level={1} style={{ fontWeight: 600, fontSize: 32, lineHeight: 1.25 }} mobile={{ fontSize: 26 }}>
+        <Heading level={1} style={{ fontWeight: 600, fontSize: 32, lineHeight: 1.25, mobile: { fontSize: 26 } }}>
           🎉 秋の船旅セール、始まりました
         </Heading>
         <Text style={{ fontSize: 17 }}>欢迎登船！您的船票已发送。 탑승해 주셔서 감사합니다. Family cabins 👨‍👩‍👧, party time 🥳🍰 and flags 🇯🇵🇰🇷.</Text>
@@ -510,7 +510,7 @@ export const stress: Record<string, Stress> = {
             <TableCell style={{ textAlign: "right" }}>₩9,000</TableCell>
           </TableRow>
         </Table>
-        <Button href={`${SITE}/sale`} style={BUTTON} hover={{ backgroundColor: FUNNEL_DOWN }}>
+        <Button href={`${SITE}/sale`} style={{ ...BUTTON, hover: { backgroundColor: FUNNEL_DOWN } }}>
           今すぐ見る →
         </Button>
       </>,
@@ -526,7 +526,7 @@ export const stress: Record<string, Stress> = {
       <>
         <Column style={{ gap: 4 }}>
           {caption("A web font, Newsreader, with Georgia behind it")}
-          <Text style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 38, lineHeight: 1.1, letterSpacing: -0.6 }} mobile={{ fontSize: 30 }}>
+          <Text style={{ fontFamily: "Newsreader, Georgia, serif", fontSize: 38, lineHeight: 1.1, letterSpacing: -0.6, mobile: { fontSize: 30 } }}>
             The 08:30 for Stornoway
           </Text>
         </Column>
@@ -561,7 +561,7 @@ export const stress: Record<string, Stress> = {
       <>
         <Text style={{ color: SEA, fontSize: 18, lineHeight: 1.45 }}>
           Sea-green text, a <Link href={`${SITE}/a`}>link with no colour of its own</Link>, and a{" "}
-          <Link href={`${SITE}/b`} style={{ color: FUNNEL }} hover={{ color: HARBOUR, textDecoration: "none" }}>
+          <Link href={`${SITE}/b`} style={{ color: FUNNEL, hover: { color: HARBOUR, textDecoration: "none" } }}>
             red link that turns dark on hover
           </Link>
           .
@@ -611,9 +611,9 @@ export const stress: Record<string, Stress> = {
     roots: "own",
     template: (
       <Page width={600} title="Merrow Line: shapes" fonts={FONTS} style={PAPER}>
-        <Section style={{ padding: [28, 32, 36], gap: 16 }} mobile={{ padding: [20, 20, 28] }}>
+        <Section style={{ padding: [28, 32, 36], gap: 16, mobile: { padding: [20, 20, 28] } }}>
           {masthead("Svg shapes on a page")}
-          <Heading level={1} style={{ ...TITLE, fontSize: 34 }} mobile={{ fontSize: 28 }}>
+          <Heading level={1} style={{ ...TITLE, fontSize: 34, mobile: { fontSize: 28 } }}>
             The MV Selkie, in six shapes
           </Heading>
           <Svg width={320} height={168} viewBox="0 0 320 168" title="A ferry with a red funnel on the waves, under a low sun, drawn in six kinds of shape">

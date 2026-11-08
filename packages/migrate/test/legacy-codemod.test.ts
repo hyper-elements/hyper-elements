@@ -356,9 +356,9 @@ export const T = () => <Email contentWidth="600px"><Row><Column><Heading heading
     const { code, report } = await migrate(`const cell = { padding: "14px 0", borderBottomWidth: "1px", borderBottomStyle: "solid", borderBottomColor: "#dddddd" } as const;
 export const T = () => <Email><Row layout={ColumnLayouts.TwoWideNarrow}><Column {...cell}><Paragraph>Item</Paragraph></Column><Column {...cell}><Paragraph>$1</Paragraph></Column></Row></Email>;`);
     const flat = squash(code);
-    expect(flat).toContain('<Rowstyle={{border:{bottom:"1pxsolid#dddddd"}}}mobile={{border:{bottom:"none"}}}>');
-    expect(flat).toContain('<Columnstyle={{width:"66.67%",padding:"14px0"}}mobile={{border:{bottom:"1pxsolid#dddddd"}}}>');
-    expect(flat).toContain('<Columnstyle={{width:"33.33%",padding:"14px0"}}');
+    expect(flat).toContain('<Rowstyle={{border:{bottom:"1pxsolid#dddddd"},mobile:{border:{bottom:"none"}}}}>');
+    expect(flat).toContain('<Columnstyle={{width:"66.67%",padding:"14px0",mobile:{border:{bottom:"1pxsolid#dddddd"}},}}>');
+    expect(flat).toContain('<Columnstyle={{width:"33.33%",padding:"14px0",mobile:{border:{bottom:"1pxsolid#dddddd"}},}}>');
     expect(report).toEqual([]);
   });
 
@@ -439,8 +439,9 @@ export default function Card({ align }) {
   it("carries phone settings over, today's containerPadding as the padding", async () => {
     const { code } = await migrate(`export const T = () => <Email><Row><Column padding="36px 40px" mobile={{ padding: "24px 20px" }}><Heading mobile={{ fontSize: 30, textAlign: "center", containerPadding: "4px 0" }}>Hi</Heading></Column></Row></Email>;`);
     const flat = squash(code);
-    expect(flat).toContain('mobile={{padding:"24px20px"}}');
-    expect(flat).toContain('mobile={{padding:"4px0",fontSize:30,textAlign:"center"}}');
+    expect(flat).toContain('mobile:{padding:"24px20px"}');
+    expect(flat).toContain('mobile:{padding:"4px0",fontSize:30,textAlign:"center"}');
+    expect(flat).not.toContain("mobile={");
   });
 
   it("moves today's types to the new package, and keeps a namespace used for more than its components; the components through it are migrated", async () => {
@@ -652,11 +653,11 @@ export const T = () => (
     expect(squashed).toContain('icons={[{name:"X",href:{href:"https://x.com/acme",target:"_self"}},{name:"Facebook",href:"https://facebook.com/acme"},]}');
     expect(squashed.split('<Imagesrc="https://cdn.tools.unlayer.com/image/placeholder.png"/>')).toHaveLength(3);
     expect(squashed).toContain("lineHeight:1.5");
-    expect(squashed).toContain("mobile={{lineHeight:2}}");
+    expect(squashed).toContain("lineHeight:1.5,mobile:{lineHeight:2}");
     expect(report).toContain("line 5: this Image has no src: Unlayer Elements draws its placeholder image, which is written in (give it its own)");
     expect(report).toContain("line 6: this Image has no src: Unlayer Elements draws its placeholder image, which is written in (give it its own)");
     // A menu's phone padding is each of its links' (and separators') on phones, as today's.
-    expect(squashed).toContain('<Textstyle={{flex:"none",padding:[5,15]}}mobile={{padding:4}}>');
+    expect(squashed).toContain('<Textstyle={{flex:"none",padding:[5,15],mobile:{padding:4}}}>');
     expect(report.join("\n")).not.toContain("phone padding is left out");
     expect(errors(code)).toEqual([]);
   });
@@ -684,6 +685,20 @@ export const T = () => (
     const images = ["https://example.com/first.png", "https://example.com/second.png"];
     expect(errors(called.code, { images })).toEqual([]);
     expect(images).toEqual(["https://example.com/second.png"]);
+  });
+
+  it("keeps a Button's hover colors as its hover styles, from buttonColors or as props", async () => {
+    const given = await migrate('export const T = () => <Email><Row><Column><Button href="https://example.com" buttonColors={{ color: "#ffffff", backgroundColor: "#111111", hoverColor: "#eeeeee", hoverBackgroundColor: "#333333" }}>A</Button><Button href="https://example.com" hoverBackgroundColor="#444444">B</Button></Column></Row></Email>;');
+    const flat = squash(given.code);
+    expect(flat).toMatch(/style=\{\{backgroundColor:"#111111",color:"#ffffff",hover:\{backgroundColor:"#333333",color:"#eeeeee"\},?\}\}/);
+    expect(flat).toContain('hover:{backgroundColor:"#444444"}');
+    expect(given.code).not.toContain("hover={");
+    expect(given.report.join("\n")).not.toMatch(/hover/i);
+    expect(errors(given.code)).toEqual([]);
+    // From code, read by name as the other colors are.
+    const named = await migrate('export const T = ({ theme }: { theme: { color: string; hoverColor: string } }) => <Email><Row><Column><Button href="https://example.com" buttonColors={theme}>A</Button></Column></Row></Email>;');
+    expect(squash(named.code)).toContain("hover:{backgroundColor:theme.hoverBackgroundColor,color:theme.hoverColor}");
+    expect(errors(named.code, { theme: { color: "#ffffff", hoverColor: "#eeeeee" } })).toEqual([]);
   });
 
   it("doesn't run a Button's buttonColors from a call once for each color, and keeps them from an object of names", async () => {

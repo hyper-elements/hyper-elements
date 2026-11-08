@@ -7,8 +7,8 @@ Every component, what it holds, and every prop and style it takes, with its defa
 Every component also takes:
 
 - `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).
-- `mobile={{ … }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`mobile`".
-- `hover={{ … }}`: styles on hover, for the ones listed under "`hover`".
+- `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`style.mobile`".
+- `style={{ hover: { … } }}`: styles on hover, for the ones listed under "`style.hover`".
 - `hidden={{ mobile: true }}` or `hidden={{ desktop: true }}`: shown on one only.
 - `id`: an id of your own, written into the HTML.
 
@@ -21,6 +21,7 @@ What a property takes, where it says *kind*:
 - *fontFamily*: a font stack, as CSS writes it ("Inter, Arial, sans-serif")
 - *fontWeight*: 100 to 900 in hundreds, "normal" or "bold"
 - *lineHeight*: a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own)
+- *breakpoints*: { mobile }: the phone width in px (from 240)
 - *insets*: px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }
 - *border*: "1px solid #ccc", { width, style, color } for all sides, or { top, right, bottom, left } with one of those each
 - *radius*: px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }
@@ -63,7 +64,7 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
 
 ### Page
 
@@ -74,6 +75,7 @@ Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Imag
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
 - `description`: text. The page's meta description.
+- `breakpoints`: *breakpoints*. Where its phone styles start: mobile, the widest window they apply to, in px (480 where it's not set).
 - `title`: text. The document's title (shown in a browser tab, and by some email clients).
 - `lang`: text. Its language, as a BCP 47 tag ("en", "ar").
 - `dir`: one of "ltr", "rtl", "auto"
@@ -93,7 +95,7 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
+`style.mobile` (on phones): `gap`.
 
 ### Document
 
@@ -123,8 +125,6 @@ Props:
 - `backgroundColor`: *color*. Each page's background, out to its edges.
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
 
 ### Canvas
 
@@ -156,8 +156,6 @@ Props:
 - `padding`: *insets*
 - `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`, `padding`.
-
 ## Sections and layout
 
 Bands and boxes that arrange blocks. None is required: a root stacks its children.
@@ -184,7 +182,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
 
 ### Row
 
@@ -221,7 +219,7 @@ Props:
 - `flexWrap`: one of "nowrap", "wrap", "words". "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
 ### Column
 
@@ -253,7 +251,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
 ### Grid
 
@@ -289,7 +287,7 @@ Props:
 - `alignItems`: one of "start", "center", "end", "stretch". Where each child sits in its row's height, as CSS align-items.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`.
 
 ### Layer
 
@@ -318,7 +316,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `justifyItems`: one of "start", "center", "end", "stretch" (default `"stretch"`). Where its children sit across its width, as CSS justify-items: stretched to it by default.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
 
 ## Blocks
 
@@ -343,7 +341,7 @@ Props:
 - `borderRadius`: *radius*
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `padding`, `border`.
+`style.mobile` (on phones): `padding`, `border`.
 
 ### Text
 
@@ -373,7 +371,7 @@ Props:
 - `borderRadius`: *radius*
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
 
 ### Heading
 
@@ -404,7 +402,7 @@ Props:
 - `borderRadius`: *radius*
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
 
 ### Button
 
@@ -439,9 +437,9 @@ Props:
 - `alignSelf`: one of "start", "center", "end". Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`hover`: `color`, `backgroundColor`.
+`style.hover`: `color`, `backgroundColor`.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `alignSelf`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `alignSelf`.
 
 ### Image
 
@@ -464,7 +462,7 @@ Props:
 - `alignSelf`: one of "start", "center", "end". Where it sits in its stack on phones, where that's another place than on desktop.
 - `verticalAlign`: one of "top", "middle". Where it sits in a line of text it's in.
 
-`mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
+`style.mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
 
 ### Divider
 
@@ -477,7 +475,7 @@ Holds: nothing. Drawn in: email, page.
 - `width`: a length (a number of px, %) (default `"100%"`)
 - `padding`: *insets*
 
-`mobile` (on phones): `width`, `padding`.
+`style.mobile` (on phones): `width`, `padding`.
 
 ### List
 
@@ -508,7 +506,7 @@ Props:
 - `indent`: a length (a number of px) (default `24`). The width of the markers' column, before the items.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
 ### Table
 
@@ -535,7 +533,7 @@ Holds: TableRow. Drawn in: email, page.
 - `borderCollapse`: one of "separate", "collapse". Whether cells side by side draw a border each (separate) or share one (collapse).
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
 
 ### Video
 
@@ -553,7 +551,7 @@ Props:
 - `maxWidth`: a length (a number of px, %)
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `width`, `maxWidth`.
+`style.mobile` (on phones): `width`, `maxWidth`.
 
 ### Social
 
@@ -571,7 +569,7 @@ Props:
 - `justifyContent`: one of "start", "center", "end" (default `"center"`). Where the icons sit across the line.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `gap`.
+`style.mobile` (on phones): `gap`.
 
 ### Menu
 
@@ -597,7 +595,7 @@ Props:
 - `justifyContent`: one of "start", "center", "end" (default `"center"`). Where the links sit.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`.
 
 ### Html
 
@@ -640,7 +638,7 @@ Holds: text; PageNumber, Span, Link, LineBreak, MergeTag. Drawn in: email, page.
 - `backgroundColor`: *color*
 - `verticalAlign`: one of "baseline", "super", "sub". "super": superscript (®, a footnote mark); "sub": subscript; as CSS vertical-align.
 
-`mobile` (on phones): `fontSize`, `letterSpacing`.
+`style.mobile` (on phones): `fontSize`, `letterSpacing`.
 
 ### Link
 
@@ -666,9 +664,9 @@ Props:
 - `backgroundColor`: *color*
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`hover`: `color`, `textDecoration`, `backgroundColor`.
+`style.hover`: `color`, `textDecoration`, `backgroundColor`.
 
-`mobile` (on phones): `fontSize`, `letterSpacing`.
+`style.mobile` (on phones): `fontSize`, `letterSpacing`.
 
 ### LineBreak
 
@@ -709,8 +707,6 @@ Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Imag
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
-
 ### PageBreak
 
 In a Document, where a page ends: what follows starts the next page.
@@ -739,8 +735,6 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
-
 ### PageFooter
 
 In a Document: drawn at the bottom of every page, inside its margins.
@@ -763,8 +757,6 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
-
 ### ListItem
 
 An item of a List: text, and a List of its own to nest one.
@@ -786,7 +778,7 @@ Props:
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
 - `textDecoration`: one of "none", "underline", "line-through"
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
 
 ### TableRow
 
@@ -811,7 +803,7 @@ Props:
 - `backgroundColor`: *color*
 - `height`: a length (a number of px)
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
 
 ### TableCell
 
@@ -840,7 +832,7 @@ Props:
 - `width`: a length (a number of px, %). Its column's width (of a cell spanning one column).
 - `verticalAlign`: one of "top", "middle", "bottom"
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`.
 
 ## Shapes
 

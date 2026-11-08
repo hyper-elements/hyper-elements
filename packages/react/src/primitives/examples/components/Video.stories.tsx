@@ -83,7 +83,7 @@ export const YouTube = story((Root) => (
       {masthead("Workshop film · 1:30")}
       <Video src={FILM} thumbnail={thumbnail(Root, WORKSHOP)} title="Inside the Larch frame shop" />
       <Column style={{ gap: 6 }}>
-        <Heading level={2} style={{ ...TITLE, fontSize: 28 }} mobile={{ fontSize: 24 }}>
+        <Heading level={2} style={{ ...TITLE, fontSize: 28, mobile: { fontSize: 24 } }}>
           Forty-one hours, one frame.
         </Heading>
         <Text style={{ color: QUIET }}>Anna brazes every Larch by hand. Here’s a whole one, in ninety seconds.</Text>
@@ -99,7 +99,7 @@ export const Vimeo = story((Root) => (
       {masthead("A short film · 4:12")}
       <Video src="https://vimeo.com/76979871" thumbnail={thumbnail(Root, PASS)} title="Over the Brenner, slowly" />
       <Column style={{ gap: 6 }}>
-        <Heading level={2} style={{ ...TITLE, fontSize: 28 }} mobile={{ fontSize: 24 }}>
+        <Heading level={2} style={{ ...TITLE, fontSize: 28, mobile: { fontSize: 24 } }}>
           Over the Brenner, slowly.
         </Heading>
         <Text style={{ color: QUIET }}>Two friends, one pass, and a thermos that didn’t make it.</Text>
@@ -112,7 +112,7 @@ export const Vimeo = story((Root) => (
 export const Widths = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
     <Section style={{ padding: [32, 24], gap: 12, alignItems: "center" }}>
-      <Video src={FILM} thumbnail={thumbnail(Root, BENCH)} title="Cutting the tubes" style={{ width: 320 }} mobile={{ width: "100%" }} />
+      <Video src={FILM} thumbnail={thumbnail(Root, BENCH)} title="Cutting the tubes" style={{ width: 320, mobile: { width: "100%" } }} />
       <Text style={{ ...CAPTION, textAlign: "center" }}>width: 320, the whole width on phones</Text>
       <Video src={FILM} thumbnail={thumbnail(Root, PASS)} title="The first ride" style={{ width: "50%" }} />
       <Text style={{ ...CAPTION, textAlign: "center" }}>width: "50%", half the space</Text>
@@ -123,18 +123,18 @@ export const Widths = story((Root) => (
 /** A video in the middle of a product launch: a band for the title, the video, and a button to try it. */
 export const ProductLaunch = story((Root) => (
   <Root width={560} lang="en-GB" fonts={FONTS} style={PAPER}>
-    <Section style={{ backgroundColor: GRAPHITE, color: CHALK, padding: [44, 32, 40], gap: 10 }} mobile={{ padding: [32, 24] }}>
+    <Section style={{ backgroundColor: GRAPHITE, color: CHALK, padding: [44, 32, 40], gap: 10, mobile: { padding: [32, 24] } }}>
       <Text style={{ ...CAPTION, color: ON_DARK }}>New for 2027 · Frame no. 2</Text>
-      <Heading level={1} style={{ ...TITLE, fontSize: 56, letterSpacing: -1.6 }} mobile={{ fontSize: 42 }}>
+      <Heading level={1} style={{ ...TITLE, fontSize: 56, letterSpacing: -1.6, mobile: { fontSize: 42 } }}>
         The Tern 2.
       </Heading>
       <Text style={{ fontSize: 17, color: ON_DARK }}>Four hundred grams lighter, and it still fits a mudguard.</Text>
     </Section>
-    <Section style={{ padding: [32, 32, 44], gap: 18 }} mobile={{ padding: [24, 24, 36] }}>
+    <Section style={{ padding: [32, 32, 44], gap: 18, mobile: { padding: [24, 24, 36] } }}>
       <Video src={FILM} thumbnail={thumbnail(Root, WORKSHOP)} title="See the Tern 2 in 90 seconds" />
       <Text style={{ fontSize: 16, color: QUIET }}>Ninety seconds on what changed in the tubes, and what it means on a long climb.</Text>
       <Column style={{ alignItems: "center", padding: [8, 0, 0], border: { top: `1px solid ${RULE}` } }}>
-        <Button href={`${SITE}/tern-2`} style={{ backgroundColor: RED, color: "#FFFFFF", fontSize: 15, fontWeight: 700, padding: [14, 28], borderRadius: 2 }} hover={{ backgroundColor: RED_DOWN }} mobile={{ width: "100%" }}>
+        <Button href={`${SITE}/tern-2`} style={{ backgroundColor: RED, color: "#FFFFFF", fontSize: 15, fontWeight: 700, padding: [14, 28], borderRadius: 2, mobile: { width: "100%" }, hover: { backgroundColor: RED_DOWN } }}>
           Book a test ride
         </Button>
       </Column>

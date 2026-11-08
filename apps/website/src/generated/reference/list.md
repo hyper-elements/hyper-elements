@@ -32,4 +32,4 @@ Props:
 - `indent`: a length (a number of px) (default `24`). The width of the markers' column, before the items.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.

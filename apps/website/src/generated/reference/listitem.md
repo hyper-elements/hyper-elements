@@ -24,4 +24,4 @@ Props:
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
 - `textDecoration`: one of "none", "underline", "line-through"
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.

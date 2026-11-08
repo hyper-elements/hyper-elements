@@ -26,7 +26,7 @@ const label = { fontSize: 12, fontWeight: 600, letterSpacing: 1.4, textTransform
 const step = (name: string, date: string, done: boolean) => (
   <Column style={{ gap: 10 }}>
     <Column style={{ height: 4, backgroundColor: done ? CELADON : RULE }} />
-    <Text style={{ fontSize: 13, lineHeight: 1.35, color: done ? INK : QUIET, fontWeight: done ? 600 : 400 }} mobile={{ fontSize: 12 }}>
+    <Text style={{ fontSize: 13, lineHeight: 1.35, color: done ? INK : QUIET, fontWeight: done ? 600 : 400, mobile: { fontSize: 12 } }}>
       {name}
       <Span style={{ fontWeight: 400, color: QUIET }}>
         <LineBreak />
@@ -38,10 +38,10 @@ const step = (name: string, date: string, done: boolean) => (
 
 /** A piece in the parcel: its glaze as a circle, what it is, and what it cost. */
 const piece = (glaze: string, rim: string, name: string, detail: string, price: string) => (
-  <Row stackOnMobile={false} style={{ alignItems: "center", gap: 20, padding: [16, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 14 }}>
+  <Row stackOnMobile={false} style={{ alignItems: "center", gap: 20, padding: [16, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 14 } }}>
     <Column style={{ width: 48, height: 48, backgroundColor: glaze, borderRadius: 24, border: `1px solid ${rim}` }} />
     <Column style={{ gap: 2 }}>
-      <Text style={{ fontFamily: SERIF, fontSize: 18, lineHeight: 1.3 }} mobile={{ fontSize: 16 }}>
+      <Text style={{ fontFamily: SERIF, fontSize: 18, lineHeight: 1.3, mobile: { fontSize: 16 } }}>
         {name}
       </Text>
       <Text style={{ fontSize: 13, color: QUIET }}>{detail}</Text>
@@ -78,8 +78,8 @@ export const tarnShipped = (
     ]}
     style={{ backgroundColor: STONE, color: INK, fontFamily: SANS, fontSize: 16, lineHeight: 1.6 }}
   >
-    <Section style={{ padding: [40, 0, 48], gap: 24 }} mobile={{ padding: [20, 12, 32], gap: 20 }}>
-      <Row stackOnMobile={false} style={{ alignItems: "end", padding: [0, 8] }} mobile={{ padding: [0, 12] }}>
+    <Section style={{ padding: [40, 0, 48], gap: 24, mobile: { padding: [20, 12, 32], gap: 20 } }}>
+      <Row stackOnMobile={false} style={{ alignItems: "end", padding: [0, 8], mobile: { padding: [0, 12] } }}>
         <Column>
           <Text style={{ fontFamily: SERIF, fontSize: 30, fontStyle: "italic", lineHeight: 1, letterSpacing: -0.5 }}>
             <Link href={SITE} style={{ color: INK, textDecoration: "none" }}>
@@ -92,20 +92,20 @@ export const tarnShipped = (
         </Column>
       </Row>
 
-      <Column style={{ backgroundColor: CARD, borderRadius: 4, padding: [48, 48, 40], gap: 36 }} mobile={{ padding: [32, 22, 28], gap: 28 }}>
+      <Column style={{ backgroundColor: CARD, borderRadius: 4, padding: [48, 48, 40], gap: 36, mobile: { padding: [32, 22, 28], gap: 28 } }}>
         <Column style={{ gap: 16 }}>
           <Text style={label}>Shipped 5 November</Text>
-          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 42, fontWeight: 400, lineHeight: 1.08, letterSpacing: -1 }} mobile={{ fontSize: 32, letterSpacing: -0.6 }}>
+          <Heading level={1} style={{ fontFamily: SERIF, fontSize: 42, fontWeight: 400, lineHeight: 1.08, letterSpacing: -1, mobile: { fontSize: 32, letterSpacing: -0.6 } }}>
             Packed in straw,
             <LineBreak />
             and <Span style={{ fontStyle: "italic" }}>on its way</Span>.
           </Heading>
-          <Text style={{ fontSize: 17, color: QUIET, maxWidth: 440 }} mobile={{ fontSize: 16 }}>
+          <Text style={{ fontSize: 17, color: QUIET, maxWidth: 440, mobile: { fontSize: 16 } }}>
             Rowan wrapped your three pieces this morning. They’re with Parcelforce now, and should reach you on {"Monday 9\u00a0November"}.
           </Text>
         </Column>
 
-        <Row stackOnMobile={false} style={{ gap: 12 }} mobile={{ gap: 8 }}>
+        <Row stackOnMobile={false} style={{ gap: 12, mobile: { gap: 8 } }}>
           {step("Ordered", "2 Nov", true)}
           {step("Packed", "5 Nov", true)}
           {step("On its way", "5 Nov", true)}
@@ -114,9 +114,7 @@ export const tarnShipped = (
 
         <Button
           href={`${SITE}/orders/TC-20418/track`}
-          style={{ backgroundColor: CELADON, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [15, 28], borderRadius: 2 }}
-          hover={{ backgroundColor: CELADON_DOWN }}
-          mobile={{ width: "100%" }}
+          style={{ backgroundColor: CELADON, color: "#FFFFFF", fontSize: 15, fontWeight: 600, padding: [15, 28], borderRadius: 2, mobile: { width: "100%" }, hover: { backgroundColor: CELADON_DOWN } }}
         >
           Follow your parcel
         </Button>
@@ -133,7 +131,7 @@ export const tarnShipped = (
           </Column>
         </Column>
 
-        <Row style={{ gap: 24, padding: [24, 0, 0], border: { top: `1px solid ${RULE}` } }} mobile={{ gap: 20 }}>
+        <Row style={{ gap: 24, padding: [24, 0, 0], border: { top: `1px solid ${RULE}` }, mobile: { gap: 20 } }}>
           <Column style={{ gap: 6 }}>
             <Text style={label}>Delivering to</Text>
             <Text style={{ fontSize: 15, lineHeight: 1.55 }}>
@@ -159,7 +157,7 @@ export const tarnShipped = (
         </Text>
       </Column>
 
-      <Text style={{ fontSize: 13, lineHeight: 1.6, color: QUIET, padding: [0, 8] }} mobile={{ padding: [0, 12] }}>
+      <Text style={{ fontSize: 13, lineHeight: 1.6, color: QUIET, padding: [0, 8], mobile: { padding: [0, 12] } }}>
         Tarn Ceramics, Unit 4, Mytholm Works, Hebden Bridge HX7 6DL. Questions about your order? Reply to this email, or{" "}
         <Link href={`${SITE}/returns`} style={{ color: INK }}>
           read about returns

@@ -38,4 +38,4 @@ Props:
 - `flexWrap`: one of "nowrap", "wrap", "words". "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
 - `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
-`mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.

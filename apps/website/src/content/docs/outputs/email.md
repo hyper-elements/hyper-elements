@@ -12,7 +12,7 @@ const { html, text } = await render(
   <Email previewText="Two columns" title="Hi">
     <Row style={{ gap: 16 }}>
       <Column><Text>Left</Text></Column>
-      <Column style={{ width: 180 }}><Text mobile={{ fontSize: 14 }}>Right</Text></Column>
+      <Column style={{ width: 180 }}><Text style={{ mobile: { fontSize: 14 } }}>Right</Text></Column>
     </Row>
   </Email>
 );

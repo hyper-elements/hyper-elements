@@ -3,6 +3,7 @@
  * component definitions and normalized (values in their canonical form, ids
  * checked).
  */
+import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
 import type { ComponentDefinition, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
@@ -31,7 +32,8 @@ interface Context {
   idPrefix?: string | null;
   /** Ids taken so far: an id is unique in a template. */
   used: Set<string>;
-  responsive: boolean;
+  /** The template's root: which conditions its nodes may have (phone styles only under one with a phone width). */
+  root: ComponentDefinition | undefined;
 }
 
 /** Validates and normalizes a document; never throws. */
@@ -46,7 +48,7 @@ export function checkDocument(input: unknown, options?: ComponentsOption | Regis
   for (const key of extra) d.error("document/unknown-key", `"${key}" isn't part of a document (root)`, key);
 
   const rootDefinition = isObject(input.root) && typeof input.root.type === "string" ? registry.get(input.root.type) : undefined;
-  const context: Context = { d, registry, used: new Set(), responsive: !!rootDefinition?.responsive };
+  const context: Context = { d, registry, used: new Set(), root: rootDefinition };
   const root = input.root === undefined ? null : readNode(input.root, "root", null, context);
   if (input.root === undefined) d.error("document/root", 'A document has a root: { type: "Email" }, "Page", …', "root");
   return { document: root ? { root } : null, diagnostics: d.list };
@@ -66,10 +68,10 @@ export function parseDocument(input: unknown, options?: ComponentsOption | Regis
  */
 export function checkFragment(
   input: unknown,
-  options: { parent: ComponentDefinition; responsive: boolean; idPrefix: string | null; taken: ReadonlySet<string>; registry: Registry; path: string }
+  options: { parent: ComponentDefinition; root: ComponentDefinition | undefined; idPrefix: string | null; taken: ReadonlySet<string>; registry: Registry; path: string }
 ): { node: Node | null; diagnostics: Diagnostic[] } {
   const d = new Diagnostics();
-  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), responsive: options.responsive };
+  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), root: options.root };
   const node = readNode(input, options.path, options.parent, context);
   return { node, diagnostics: d.list };
 }
@@ -107,7 +109,47 @@ function editDistance(from: string, to: string): number {
 }
 
 /** What's wrong with a prop the component doesn't have, and what to write instead. */
+/** Breakpoint names other libraries use (Tailwind's, Chakra's, Bootstrap's), which Elements doesn't have. */
+const OTHER_BREAKPOINTS = new Set(["base", "initial", "xs", "sm", "md", "lg", "xl", "2xl", "tablet", "desktop", "wide", "small", "medium", "large"]);
+
+/**
+ * Where a key that names a condition goes, written the way another library writes it (`_hover`, `":hover"`,
+ * `hoverStyle`, `$sm`, `md`, `@media …`) or as a prop (`mobile={…}`): what an agent or a person coming from Chakra,
+ * Tailwind, Stitches or Tamagui tries first. Undefined: it isn't one.
+ */
+function conditionHint(definition: ComponentDefinition, key: string): string | undefined {
+  const name = key
+    .trim()
+    .replace(/^(&?:+|_+|\$|@)/, "")
+    .replace(/Style$/, "")
+    .toLowerCase();
+  const own = CUSTOM_TYPE.test(definition.type);
+  const hoverStyles = definition.hover ?? [];
+  const toHover = own
+    ? `a template's own component takes only its place in a Row in its style: set hover styles in what it renders`
+    : hoverStyles.length
+      ? `hover styles go in its style's hover block, style={{ hover: { … } }} (it takes ${hoverStyles.join(", ")})`
+      : `${a(definition.type).replace(/^A/, "a")} takes no hover styles (a Button's and a Link's colors do)`;
+  const toPhone = own
+    ? `a template's own component takes only its place in a Row in its style: set phone styles in what it renders`
+    : `phone styles go in its style's mobile block, style={{ mobile: { … } }}`;
+  if (name === "hover") return toHover;
+  if (name === "mobile" || name === "phone" || name === "phones" || key.trim().startsWith("@media")) return toPhone;
+  if (name === "focus" || name === "focus-visible" || name === "focusvisible" || name === "focus-within") {
+    return hoverStyles.length && !own ? `keyboard focus gets its hover styles: set them in style={{ hover: { … } }}` : `there are no focus styles; keyboard focus gets a Button's and a Link's hover styles`;
+  }
+  if (OTHER_BREAKPOINTS.has(name)) {
+    return `Elements has one breakpoint, phones: desktop styles go in style itself, phone styles in its mobile block, style={{ mobile: { … } }} (a Page sets where phones start with breakpoints={{ mobile }})`;
+  }
+  if (name === "active" || name === "pressed" || name === "press" || name === "visited" || name === "dark" || name === "light" || name === "print") {
+    return `there are no ${name} styles: Elements has phone styles (mobile) and hover styles (hover) in style`;
+  }
+  return undefined;
+}
+
 function unknownProp(definition: ComponentDefinition, key: string): string {
+  const condition = conditionHint(definition, key);
+  if (condition) return `${a(definition.type)} has no prop "${key}": ${condition}`;
   if (Object.prototype.hasOwnProperty.call(definition.style, key)) return `${a(definition.type)} has no prop "${key}": it's a style, style={{ ${key}: … }}`;
   const known = Object.keys(definition.props);
   const meant = nearest(key, known);
@@ -176,21 +218,52 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const props = readProps(input.props, definition, `${path}.props`, id, d);
   if (props) node.props = props;
 
-  const style = readStyles(input.style, definition, definition.style, `${path}.style`, id, d, "style", () => true);
-  if (style) node.style = style;
-
-  if (input.mobile !== undefined) {
-    if (!context.responsive) d.error("mobile/not-supported", "Phone styles are for an Email or a Page, which have a phone width", `${path}.mobile`, id);
-    else {
-      const mobile = readStyles(input.mobile, definition, definition.style, `${path}.mobile`, id, d, "mobile", (spec) => !!spec.mobile);
-      if (mobile) node.mobile = mobile;
+  // A condition's block written inside `style` (`style={{ mobile: { … } }}`) is read as the condition's own; a template's
+  // own component (`acme.Card`) takes no condition, so in its style a block is an unknown style, as anything else is.
+  const lifted: Partial<Record<string, unknown>> = {};
+  let styleInput = input.style;
+  if (isObject(styleInput) && !CUSTOM_TYPE.test(definition.type)) {
+    const rest: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(styleInput)) {
+      if (CONDITION_NAMES.has(key)) lifted[key] = value;
+      else rest[key] = value;
     }
+    styleInput = rest;
   }
 
-  if (input.hover !== undefined) {
-    const allowed = new Set<string>(definition.hover ?? []);
-    const hover = readStyles(input.hover, definition, definition.style, `${path}.hover`, id, d, "hover", (_, key) => allowed.has(key));
-    if (hover) node.hover = hover;
+  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true);
+  if (style) node.style = style;
+
+  for (const condition of CONDITIONS) {
+    const inStyle = lifted[condition.name];
+    const given = input[condition.name];
+    if (inStyle !== undefined && given !== undefined) {
+      d.error(
+        "style/twice",
+        `${condition.name} is given twice: as ${condition.name}={…} and in style. Give it once, in style: style={{ ${condition.name}: { … } }}`,
+        `${path}.style.${condition.name}`,
+        id
+      );
+      continue;
+    }
+    let value = inStyle ?? given;
+    if (value === undefined) continue;
+    const at = inStyle !== undefined ? `${path}.style.${condition.name}` : `${path}.${condition.name}`;
+    if (condition.roots && !condition.roots(context.root)) {
+      if (condition.notAllowed) d.error(condition.notAllowed.code, condition.notAllowed.message, at, id);
+      continue;
+    }
+    // One level deep: a condition inside a condition's block (hover on phones) isn't something Elements writes.
+    if (isObject(value) && Object.keys(value).some((key) => CONDITION_NAMES.has(key))) {
+      const own: Record<string, unknown> = {};
+      for (const [key, inner] of Object.entries(value)) {
+        if (CONDITION_NAMES.has(key)) d.error("style/nested", `${key} can't be set inside ${condition.name}: a block holds styles, not another block`, `${at}.${key}`, id);
+        else own[key] = inner;
+      }
+      value = own;
+    }
+    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for);
+    if (read) node[condition.name] = read;
   }
 
   if (input.hidden !== undefined) {
@@ -217,8 +290,9 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
       continue;
     }
     const parsed = spec.kind.parse(value);
-    if (parsed.ok) out[key] = parsed.value;
-    else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
+    if (parsed.ok) {
+      if (!spec.kind.empty?.(parsed.value)) out[key] = parsed.value;
+    } else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
   }
   for (const [key, spec] of Object.entries(definition.props)) {
     if (spec.required && !(key in out) && !(isObject(input) && input[key] !== undefined)) {
@@ -253,6 +327,8 @@ function styleHint(definition: ComponentDefinition, specs: StyleSpecs, key: stri
   if (Object.prototype.hasOwnProperty.call(definition.props, key)) return `: it's a prop, ${key}={…}`;
   if (key === "padding" && definition.categories.includes("root")) return ": a root has no padding; put it on a Column (a card) or a Section (a band) inside it";
   if (UNSUPPORTED_CSS[key]) return `: ${UNSUPPORTED_CSS[key]}`;
+  const condition = conditionHint(definition, key);
+  if (condition) return `: ${condition}`;
   const meant = nearest(key, Object.keys(specs));
   return meant ? `: did you mean "${meant}"?` : "";
 }
@@ -264,8 +340,10 @@ function readStyles(
   path: string,
   id: string | undefined,
   d: Diagnostics,
-  what: "style" | "mobile" | "hover",
-  allowed: (spec: StyleSpecs[string], key: string) => boolean
+  what: string,
+  allowed: (spec: StyleSpecs[string], key: string) => boolean,
+  /** For a condition, what can be set for it is set "for phones". */
+  forLabel?: string
 ): Record<string, Json> | undefined {
   if (input === undefined) return undefined;
   if (!isObject(input)) {
@@ -281,7 +359,7 @@ function readStyles(
       continue;
     }
     if (!allowed(spec, key)) {
-      d.error(`${what}/not-allowed`, what === "mobile" ? `"${key}" can't be set for phones` : `"${key}" can't be set for hover`, `${path}.${key}`, id);
+      d.error(`${what}/not-allowed`, `"${key}" can't be set ${forLabel ?? "here"}`, `${path}.${key}`, id);
       continue;
     }
     const parsed = spec.kind.parse(value);
@@ -293,7 +371,7 @@ function readStyles(
 
 function readHidden(input: unknown, path: string, id: string | undefined, context: Context): Node["hidden"] | undefined {
   const { d } = context;
-  if (!context.responsive) {
+  if (!context.root?.responsive) {
     d.error("hidden/not-supported", "Hiding on phones or desktops is for an Email or a Page", path, id);
     return undefined;
   }
@@ -304,7 +382,7 @@ function readHidden(input: unknown, path: string, id: string | undefined, contex
   const out: { mobile?: boolean; desktop?: boolean } = {};
   if (input.mobile === true) out.mobile = true;
   if (input.desktop === true) out.desktop = true;
-  if (out.mobile && out.desktop) d.warning("hidden/everywhere", "Hidden on phones and on desktops, it never shows", path, id);
+  if (!shownAnywhere({ hidden: out })) d.warning("hidden/everywhere", "Hidden on phones and on desktops, it never shows", path, id);
   return Object.keys(out).length ? out : undefined;
 }
 

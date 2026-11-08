@@ -48,7 +48,7 @@ const ASH: Paint = ["Ash Bud", "No. 12", "#B8B4A2"];
 
 /** A swatch: a block of the paint, with its name and number at the foot. */
 const swatch = ([name, number, color, light]: Paint, height = 56) => (
-  <Column key={name} style={{ gap: 0, padding: [height, 14, 12], backgroundColor: color, color: light ? CARD : INK }} mobile={{ padding: [20, 14, 12] }}>
+  <Column key={name} style={{ gap: 0, padding: [height, 14, 12], backgroundColor: color, color: light ? CARD : INK, mobile: { padding: [20, 14, 12] } }}>
     <Text style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.25 }}>{name}</Text>
     <Text style={{ fontFamily: MONO, fontSize: 11, lineHeight: 1.4 }}>{number}</Text>
   </Column>
@@ -61,7 +61,7 @@ const note = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, color: QUIET } a
 
 /** The band each story is drawn in. */
 const band = (children: ReactNode) => (
-  <Section style={{ padding: [28, 44, 44], gap: 24 }} mobile={{ padding: [20, 20, 32], gap: 20 }}>
+  <Section style={{ padding: [28, 44, 44], gap: 24, mobile: { padding: [20, 20, 32], gap: 20 } }}>
     {children}
   </Section>
 );
@@ -78,7 +78,7 @@ const masthead = (page: string, title?: ReactNode) => (
       </Column>
     </Row>
     {title ? (
-      <Heading level={2} style={{ fontSize: 30, fontWeight: 400, lineHeight: 1.15, letterSpacing: -0.4 }} mobile={{ fontSize: 26 }}>
+      <Heading level={2} style={{ fontSize: 30, fontWeight: 400, lineHeight: 1.15, letterSpacing: -0.4, mobile: { fontSize: 26 } }}>
         {title}
       </Heading>
     ) : null}
@@ -145,7 +145,7 @@ export const Gaps = story((Root) => (
         )}
         {noted("gap: 2", <Grid columns={3} style={{ gap: 2 }}>{[BRACKEN, TALLOW, PEAT, OCHRE_PIT, REED, OLD_BRICK].map((paint) => swatch(paint, 36))}</Grid>)}
         {noted("gap: 24", <Grid columns={3} style={{ gap: 24 }}>{[VERDIGRIS, CHALK_HILL, HARBOUR, DOCK_LEAF, LICHEN, WET_SLATE].map((paint) => swatch(paint, 36))}</Grid>)}
-        {noted("gap: 8, rowGap: 32; gap: 4 on phones", <Grid columns={3} style={{ gap: 8, rowGap: 32 }} mobile={{ gap: 4 }}>{[MADDER, RHUBARB, ASH, SEA_COAL, FLINT, TALLOW].map((paint) => swatch(paint, 36))}</Grid>)}
+        {noted("gap: 8, rowGap: 32; gap: 4 on phones", <Grid columns={3} style={{ gap: 8, rowGap: 32, mobile: { gap: 4 } }}>{[MADDER, RHUBARB, ASH, SEA_COAL, FLINT, TALLOW].map((paint) => swatch(paint, 36))}</Grid>)}
       </>
     )}
   </Root>

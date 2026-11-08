@@ -21,4 +21,4 @@ Holds: text; PageNumber, Span, Link, LineBreak, MergeTag. Drawn in: email, page.
 - `backgroundColor`: *color*
 - `verticalAlign`: one of "baseline", "super", "sub". "super": superscript (®, a footnote mark); "sub": subscript; as CSS vertical-align.
 
-`mobile` (on phones): `fontSize`, `letterSpacing`.
+`style.mobile` (on phones): `fontSize`, `letterSpacing`.
