@@ -61,27 +61,61 @@ const PLATFORMS: Record<EmailClient, ReadonlyArray<[string, string]>> = {
 };
 
 /**
- * The clients where caniemail's latest test of a feature isn't a plain yes, on any of their platforms. A partial
- * result whose notes are all about another account than Google's is the Gmail apps' with another account; one only
- * supported with another account is theirs with a Google account.
+ * What caniemail notes on a yes, for every feature a list takes: where a note says part of the feature isn't supported
+ * after all, the uses it's about (`""`: a list that names no use), whose lists then count that client; otherwise why
+ * it doesn't matter to what Elements checks. A note on a yes not listed here fails the test, so a refresh that adds
+ * one gets read.
  */
-function affected(slug: string): EmailClient[] {
+const YES_NOTES: Record<string, Record<string, { uses: string[] } | { reason: string }>> = {
+  "css-aspect-ratio": { "1": { reason: "needs iOS 15, from 2021: only older iPhones" } },
+  "css-at-font-face": { "8": { reason: "only with an Outlook or Hotmail account, which Elements can't tell apart" } },
+  "css-at-media": { "1": { reason: "only nested media queries aren't, and Elements writes none" } },
+  "css-display-flex": { "2": { uses: ["inline"] } },
+  "css-position": { "2": { uses: ["", "relative"] }, "5": { reason: "only fixed is buggy, and no check is about fixed" } },
+  "image-avif": {
+    "1": { reason: "depends on the reader's browser or system, which shows AVIF in their current versions" },
+    "2": { reason: "only animation isn't, and the check is about the image showing" },
+  },
+  "image-webp": { "2": { reason: "depends on the reader's browser, which shows WebP in every current version" } },
+};
+
+/** The latest result on each platform a client is tested on, as its level and its notes' references. */
+function latest(feature: Feature, client: EmailClient): Array<{ family: string; level: string; refs: string[] }> {
+  return PLATFORMS[client].flatMap(([family, platform]) =>
+    Object.entries(feature.stats[family] ?? {})
+      .filter(([name]) => platform === "*" || name === platform)
+      .map(([, results]) => {
+        const [level, ...refs] = results[results.length - 1]![1].split(/\s+/);
+        return { family, level: level!, refs: refs.map((ref) => ref.slice(1)) };
+      })
+  );
+}
+
+/**
+ * The clients where caniemail's latest test of a feature isn't a plain yes, on any of their platforms, for a list with
+ * this use: a no, a partial, or a yes whose note says this use isn't supported (YES_NOTES). A partial result whose
+ * notes are all about another account than Google's is the Gmail apps' with another account; one only supported with
+ * another account is theirs with a Google account.
+ */
+function affected(slug: string, use = ""): EmailClient[] {
   const feature = data.features[slug];
   if (!feature) throw new Error(`test/fixtures/caniemail.json has no "${slug}": run node scripts/caniemail.mjs`);
   return (Object.keys(PLATFORMS) as EmailClient[]).filter((client) =>
-    PLATFORMS[client].some(([family, platform]) =>
-      Object.entries(feature.stats[family] ?? {})
-        .filter(([name]) => platform === "*" || name === platform)
-        .some(([, results]) => {
-          const [level, ...refs] = results[results.length - 1]![1].split(/\s+/);
-          if (level !== "n" && level !== "a") return false;
-          if (family !== "gmail" || level !== "a" || !refs.length) return true;
-          const notes = refs.map((ref) => feature.notes[ref.slice(1)] ?? "");
-          if (notes.every((note) => /not supported with non google/i.test(note))) return client === "gmail-app-other";
-          if (notes.every((note) => /only (supported|works) with non google/i.test(note))) return client !== "gmail-app-other";
-          return true;
-        })
-    )
+    latest(feature, client).some(({ family, level, refs }) => {
+      if (level === "y") {
+        return refs.some((ref) => {
+          const read = YES_NOTES[slug]?.[ref];
+          if (!read) throw new Error(`caniemail notes "${feature.notes[ref]}" on ${family}'s yes for ${slug}: say in YES_NOTES which uses it's about, or why it doesn't matter`);
+          return "uses" in read && read.uses.includes(use);
+        });
+      }
+      if (level !== "n" && level !== "a") return false;
+      if (family !== "gmail" || level !== "a" || !refs.length) return true;
+      const notes = refs.map((ref) => feature.notes[ref] ?? "");
+      if (notes.every((note) => /not supported with non google/i.test(note))) return client === "gmail-app-other";
+      if (notes.every((note) => /only (supported|works) with non google/i.test(note))) return client !== "gmail-app-other";
+      return true;
+    })
   );
 }
 
@@ -179,12 +213,13 @@ const LEFT_OUT: Record<string, Partial<Record<EmailClient, string>>> = {
   },
 };
 
-const slugOf = (feature: string) => feature.split("@")[0]!;
+/** A feature as a list reads it, `slug` or `slug@use`, as affected()'s arguments. */
+const parts = (feature: string) => feature.split("@") as [string, string?];
 
 /** What a list should be: caniemail's clients for its features, less those left out. */
 function expected(...features: string[]): EmailClient[] {
   const left = (client: EmailClient) => features.some((feature) => LEFT_OUT[feature]?.[client]);
-  return [...new Set(features.map(slugOf).flatMap(affected).filter((client) => !left(client)))].sort();
+  return [...new Set(features.flatMap((feature) => affected(...parts(feature))).filter((client) => !left(client)))].sort();
 }
 
 const sorted = (clients: readonly EmailClient[]) => [...new Set(clients)].sort();
@@ -226,8 +261,20 @@ describe("email clients from caniemail's tables", () => {
   it("leaves a client out only where caniemail lists it, with a reason", () => {
     for (const [feature, clients] of Object.entries(LEFT_OUT)) {
       for (const [client, reason] of Object.entries(clients)) {
-        expect([feature, client, affected(slugOf(feature)).includes(client as EmailClient)]).toEqual([feature, client, true]);
+        expect([feature, client, affected(...parts(feature)).includes(client as EmailClient)]).toEqual([feature, client, true]);
         expect(reason!.length).toBeGreaterThan(10);
+      }
+    }
+  });
+
+  it("reads only notes caniemail puts on a yes, each with its uses or a reason", () => {
+    for (const [slug, notes] of Object.entries(YES_NOTES)) {
+      const feature = data.features[slug]!;
+      const clients = Object.keys(PLATFORMS) as EmailClient[];
+      const onYes = new Set(clients.flatMap((client) => latest(feature, client).filter((r) => r.level === "y").flatMap((r) => r.refs)));
+      for (const [ref, read] of Object.entries(notes)) {
+        expect([slug, ref, onYes.has(ref)]).toEqual([slug, ref, true]);
+        expect("uses" in read ? read.uses.length : read.reason.length).toBeGreaterThan(0);
       }
     }
   });

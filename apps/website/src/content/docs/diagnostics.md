@@ -47,6 +47,7 @@ By default `validate()`, `render()` and `prepare()` report problems for the clie
 ```tsx
 validate(<Welcome />, { emailClients: ["gmail", "outlook"] });   // only these clients' problems
 render(<Welcome />, { emailClients: [] });                         // no email client problems; the email's own stay
+validate(<Welcome />, { emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx", "web-de"] });   // the default ones and two more
 ```
 
 A problem about clients you didn't ask for is left out, and one about several has its `clients` narrowed to those you asked for. A problem about no client in particular (`email/width`, `email/layer`) is always reported. For a `Page`, `Document` or `Canvas` the option is ignored, with an `email/clients-ignored` note.

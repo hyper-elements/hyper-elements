@@ -115,6 +115,7 @@ describe("an Html block's CSS that email clients remove", () => {
     ["box-shadow", '<div style="box-shadow:0 1px 2px #000">x</div>', ["outlook", "gmail", "gmail-app", "yahoo", "aol"], "css-box-shadow"],
     ["text-shadow", '<p style="text-shadow:0 1px #000">x</p>', [...OUTLOOKS, ...GMAILS], "css-text-shadow"],
     ["display: flex", '<div style="display:flex">x</div>', ["outlook", "gmail-app-other"], "css-display-flex"],
+    ["display: inline-flex", '<span style="display:inline-flex">x</span>', ["outlook", "gmail-app-other", "yahoo", "aol"], "css-display-flex"],
     ["display: grid", '<div style="display:grid">x</div>', ["outlook", "gmail-app-other"], "css-display-grid"],
     ["opacity", '<p style="opacity:0.5">x</p>', ["outlook", "aol"], "css-opacity"],
     ["object-fit", '<img style="object-fit:cover" src="https://example.com/a.png" alt="">', ["outlook", "gmail-app-other", "yahoo", "aol"], "css-object-fit"],
@@ -177,6 +178,11 @@ describe("other problems from caniemail's tables", () => {
     // The format an image CDN is asked for.
     expect(formats("https://images.example.com/hero.jpg?w=600&fm=webp")).toHaveLength(1);
     expect(formats("https://res.example.com/image/upload/f_avif,q_auto/hero.jpg", ALL)[0]!.message).toBe("This Image is an AVIF file, which these email clients don't show");
+    // What the CDN is asked for wins over the file's extension, either way.
+    expect(formats("https://images.example.com/hero.webp?fm=avif", ALL)[0]!.clients).toEqual(["outlook", "fastmail", "gmx", "web-de", "orange", "sfr", "mail-ru", "ionos"]);
+    expect(formats("https://images.example.com/hero.avif?fm=png", ALL)).toEqual([]);
+    expect(formats("https://res.example.com/image/upload/f_jpg/hero.webp", ALL)).toEqual([]);
+    expect(formats("data:image/png;base64,iVBORw0KGgo=", ALL)).toEqual([]);
     const video = validateTemplate(email([{ type: "Video", props: { src: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumbnail: "https://example.com/thumb.webp" } }])).diagnostics.filter((d) => d.code === "email/image-format");
     expect(video.map((d) => [d.path, d.message])).toEqual([["root.children[0].props.thumbnail", "This Video's thumbnail is a WebP file, which these email clients don't show"]]);
   });

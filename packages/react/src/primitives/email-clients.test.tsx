@@ -1,5 +1,5 @@
 import React from "react";
-import { Email, EMAIL_CLIENTS, formatDiagnostics, Html, Page, prepare, render, Text, validate } from "./index";
+import { DEFAULT_EMAIL_CLIENTS, Email, EMAIL_CLIENTS, formatDiagnostics, Html, Page, prepare, render, Text, validate } from "./index";
 
 const spaced = (
   <Email width={600}>
@@ -51,5 +51,11 @@ describe("email clients in validate() and render()", () => {
     expect(Object.keys(EMAIL_CLIENTS)).toHaveLength(26);
     expect(EMAIL_CLIENTS["apple-mail"].measured).toMatchObject({ elements: "0.3.0" });
     expect(EMAIL_CLIENTS.yahoo).toMatchObject({ name: "Yahoo Mail", measured: null });
+  });
+
+  it("exports the default clients, to report for them and more", () => {
+    expect(validate(spaced, { emailClients: DEFAULT_EMAIL_CLIENTS }).diagnostics).toEqual(validate(spaced).diagnostics);
+    const widened = validate(spaced, { emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx"] }).diagnostics;
+    expect(widened.find((d) => d.code === "email/html-css")!.clients).toContain("gmx");
   });
 });

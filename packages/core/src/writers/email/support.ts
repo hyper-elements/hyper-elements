@@ -79,12 +79,16 @@ export const IMAGE_FORMATS: Readonly<Record<string, { clients: readonly EmailCli
   svg: { clients: ["mail-ru"], feature: "image-svg", name: "an SVG" },
 };
 
-const FORMAT_IN = [/^data:image\/(webp|avif|svg)/i, /\.(webp|avif|svg)(?:[?#]|$)/i, /[?&](?:fm|format|f)=(webp|avif)\b/i, /\/f_(webp|avif)[,/]/i];
+/**
+ * Where an image's format is said, first to last: its data: type, then the format an image CDN is asked for (which it
+ * serves whatever the file's extension), then its extension. The first found is the format, even one every client shows.
+ */
+const FORMAT_IN = [/^data:image\/([a-z]+)/i, /[?&](?:fm|format|f)=(webp|avif|svg|png|jpe?g|gif)\b/i, /\/f_(webp|avif|svg|png|jpe?g|gif)[,/]/i, /\.([a-z]+)(?:[?#]|$)/i];
 
 function imageFormat(node: ResolvedNode, key: "src" | "thumbnail", d: Diagnostics): void {
   const src = assetParts(node.props[key] as Asset).src;
   const format = FORMAT_IN.map((pattern) => pattern.exec(src)?.[1]).find(Boolean)?.toLowerCase();
-  const known = format ? IMAGE_FORMATS[format] : undefined;
+  const known = format && Object.prototype.hasOwnProperty.call(IMAGE_FORMATS, format) ? IMAGE_FORMATS[format] : undefined;
   if (!known) return;
   const what = key === "src" ? "This Image is" : "This Video's thumbnail is";
   d.warning("email/image-format", `${what} ${known.name} file, which these email clients don't show`, `${node.path}.props.${key}`, node.id, {
@@ -177,15 +181,15 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   { pattern: /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i, clients: ["gmail", "outlook-com"], removes: "a negative margin: the client removes the whole margin declaration", fix: "move it with padding on what holds it instead" },
   {
     pattern: /(^|[\s;{"'])position\s*:\s*absolute\b/i,
-    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol", "hey", "sfr", "laposte", "mail-ru"],
+    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol", "hey", "sfr", "laposte", "mail-ru", "gmx", "web-de"],
     removes: "position: absolute: the client removes it",
     fix: "lay it out without position (a Layer puts content over an image)",
     feature: "css-position",
   },
   {
-    // Outlook.com removes every position (captures); the others keep relative.
+    // Outlook.com removes every position (captures); the others not named keep relative.
     pattern: /(^|[\s;{"'])position\s*:\s*relative\b/i,
-    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "mail-ru"],
+    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "mail-ru", "gmx", "web-de"],
     removes: "position: relative: the client removes it, and what it moves stays where it is",
     fix: "move it with padding instead",
     feature: "css-position",
@@ -216,7 +220,15 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   },
   { pattern: /box-shadow\s*:/i, clients: ["outlook", "gmail", "gmail-app", "yahoo", "aol", "orange", "gmx", "web-de"], removes: "box-shadow: the client removes it", fix: "draw it with a border, or leave it out", feature: "css-box-shadow" },
   { pattern: /text-shadow\s*:/i, clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other"], removes: "text-shadow: the client removes it", fix: "leave it out, and keep the text readable without it", feature: "css-text-shadow" },
-  { pattern: /display\s*:\s*(inline-)?flex\b/i, clients: ["outlook", "gmail-app-other", "orange", "gmx", "web-de"], removes: "display: flex: the client lays it out as blocks", fix: "lay it out with a Row", feature: "css-display-flex" },
+  { pattern: /display\s*:\s*flex\b/i, clients: ["outlook", "gmail-app-other", "orange", "gmx", "web-de"], removes: "display: flex: the client lays it out as blocks", fix: "lay it out with a Row", feature: "css-display-flex" },
+  {
+    pattern: /display\s*:\s*inline-flex\b/i,
+    clients: ["outlook", "gmail-app-other", "yahoo", "aol", "orange", "gmx", "web-de"],
+    removes: "display: inline-flex: the client lays it out without flex",
+    fix: "lay it out with a Row",
+    feature: "css-display-flex",
+    use: "inline",
+  },
   { pattern: /display\s*:\s*(inline-)?grid\b/i, clients: ["outlook", "gmail-app-other", "orange", "gmx", "web-de"], removes: "display: grid: the client lays it out as blocks", fix: "lay it out with a Row or a Grid", feature: "css-display-grid" },
   { pattern: /(^|[\s;{"'])opacity\s*:/i, clients: ["outlook", "aol", "orange", "mail-ru", "gmx", "web-de"], removes: "opacity: the client shows it opaque", fix: "use a lighter color instead", feature: "css-opacity" },
   {

@@ -41,12 +41,14 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   unknown client throws a `TypeError`.
 - New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
   (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
-  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`.
+  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
+  default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
 - New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
   apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
   on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
 - New: `email/image-format`, a warning on an Image or a Video's thumbnail whose file is WebP (classic Outlook), AVIF
-  or SVG, by its extension, data: type or the format an image CDN is asked for (`?fm=webp`, `f_avif`).
+  or SVG, by its data: type, the format an image CDN is asked for (`?fm=webp`, `f_avif`, which wins over the file's
+  extension) or its extension.
 - New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
   (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
   `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
