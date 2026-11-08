@@ -28,13 +28,16 @@ pnpm test
 
 ```
 packages/
-  react/       → Published package (@hyper-elements/react), with a Document written as a PDF (/pdf) and a
-                 Canvas as PNG or SVG (/image) as entries of their own
+  react/       → Published package (@hyper-elements/react), with a Document written as a PDF (/pdf), a Canvas as
+                 PNG or SVG (/image) and the design checks (/check) as entries of their own; the starter templates
+                 (templates/) ship in it
   core/        → Component definitions, validation, layout, and the writers (src/writers/: email, page and print
                  HTML, plain text; src/pdf/ and src/image/: the PDF and image writers, with their own entries);
                  bundled into react, not published
   migrate/     → The migration CLI (@hyper-elements/migrate), with the React Email converter (src/react-email/) and what
                  converters share (src/convert/)
+  cli/         → The `hyper-elements` command (@hyper-elements/cli): `preview` renders a template, takes desktop and
+                 phone screenshots and runs the design checks; `new` copies a starter template
 examples/      → The demo application (demo/) and runnable examples
 tests/
   nextjs-integration/  → Integration test with Next.js 15 + Server Components (next14-, next16-, jest-integration/: more consumers)
