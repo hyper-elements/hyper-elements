@@ -19,7 +19,7 @@
   "excludeFiles": [
     "CHANGELOG.md",
     "CONTRIBUTING.md",
-    "CLAUDE.md"
+    "AGENTS.md"
   ],
   "rules": [
     "Install @hyper-elements/react. A template has one root: <Email>, <Page>, <Document> (print/PDF) or <Canvas> (an image).",
