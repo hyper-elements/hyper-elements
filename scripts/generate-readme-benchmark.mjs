@@ -34,7 +34,7 @@ if (runs.length !== 64 || new Set(runs.map((run) => run.brief)).size !== 5) {
 }
 
 // Match the website's neutral palette and mint success color.
-const colors = { bg: "#0a0a0a", surface: "#101a15", border: "#284a36", accent: "#7ee2a8", line: "#272727", ink: "#ededed", muted: "#a1a1a1" };
+const colors = { bg: "#0a0a0a", surface: "#101a15", border: "#284a36", accent: "#7ee2a8", ink: "#ededed", muted: "#a1a1a1" };
 const escape = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
 const text = (x, y, value, size = 24, fill = colors.ink, extra = "") =>
   `<text x="${x}" y="${y}" font-size="${size}" fill="${fill}" ${extra}>${escape(value)}</text>`;
@@ -48,7 +48,7 @@ const speed = (reactEmail.seconds / hyperElements.seconds).toFixed(1);
 const tokens = (reactEmail.tokens / hyperElements.tokens).toFixed(1);
 const timeScale = Math.ceil(Math.max(...groups.map((group) => group.seconds)) / 20) * 20;
 const tokenScale = Math.ceil(Math.max(...groups.map((group) => group.tokens)) / 1000) * 1000;
-const rowStart = 446;
+const rowStart = 294;
 const rowStride = 158;
 const height = rowStart + groups.length * rowStride + 24;
 
@@ -83,34 +83,30 @@ const description = groups.map((group) =>
 ).join(" ");
 
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="${height}" viewBox="0 0 1800 ${height}" role="img" aria-labelledby="title description">
-<title id="title">Hyper Elements: faster to a passing email</title>
+<title id="title">Hyper Elements agent benchmark</title>
 <desc id="description">${escape(description)} Time and output tokens are medians. Hyper Elements and MJML tie on first-check passes. Five email briefs and 16 runs per approach in one interleaved batch; all 64 runs eventually passed. Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a ${timeScale}-second scale and tokens a ${format(tokenScale)}-token scale. Each square represents one run's first check.</desc>
 <rect width="1800" height="${height}" fill="${colors.bg}"/>
 <g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
-  ${text(72, 104, "Faster to a passing email.", 72, colors.ink, 'font-weight="600" letter-spacing="-2.8"')}
-  ${text(72, 154, "Four approaches. Same briefs. Same checks.", 28, colors.muted)}
-  <path d="M72 193H1728" stroke="${colors.line}"/>
+  ${text(80, 113, "5 email briefs", 27, colors.ink, 'font-weight="500"')}
+  ${text(80, 154, "16 runs per approach", 25, colors.muted)}
+  ${text(80, 194, "64 runs in total.", 23, colors.muted)}
 
-  ${text(80, 265, "5 email briefs", 27, colors.ink, 'font-weight="500"')}
-  ${text(80, 306, "16 runs per approach", 25, colors.muted)}
-  ${text(80, 346, "64 runs in total.", 23, colors.muted)}
+  ${text(500, 120, `${speed}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(500, 178, "faster to pass", 27, colors.ink)}
+  ${text(500, 213, "vs. React Email", 22, colors.muted)}
 
-  ${text(500, 272, `${speed}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(500, 330, "faster to pass", 27, colors.ink)}
-  ${text(500, 365, "vs. React Email", 22, colors.muted)}
+  ${text(930, 120, `${tokens}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(930, 178, "fewer output tokens", 27, colors.ink)}
+  ${text(930, 213, "vs. React Email", 22, colors.muted)}
 
-  ${text(930, 272, `${tokens}×`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(930, 330, "fewer output tokens", 27, colors.ink)}
-  ${text(930, 365, "vs. React Email", 22, colors.muted)}
+  ${text(1360, 120, `${hyperElements.firstPasses}/16`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
+  ${text(1360, 178, "passed on first check", 27, colors.ink)}
+  ${text(1360, 213, "tied with MJML", 22, colors.muted)}
 
-  ${text(1360, 272, `${hyperElements.firstPasses}/16`, 88, colors.accent, 'font-weight="600" letter-spacing="-4"')}
-  ${text(1360, 330, "passed on first check", 27, colors.ink)}
-  ${text(1360, 365, "tied with MJML", 22, colors.muted)}
-
-  ${label(80, 421, "APPROACH")}
-  ${label(500, 421, "TIME · MEDIAN")}
-  ${label(930, 421, "OUTPUT TOKENS · MEDIAN")}
-  ${label(1360, 421, "FIRST-CHECK PASSES")}
+  ${label(80, 269, "APPROACH")}
+  ${label(500, 269, "TIME · MEDIAN")}
+  ${label(930, 269, "OUTPUT TOKENS · MEDIAN")}
+  ${label(1360, 269, "FIRST-CHECK PASSES")}
   ${rows}
 </g>
 </svg>
