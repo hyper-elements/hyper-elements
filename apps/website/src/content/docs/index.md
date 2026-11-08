@@ -5,6 +5,8 @@ description: "Hyper Elements is a set of React components that render one templa
 
 Hyper Elements is a set of React components for emails, web pages, printed documents and images. You write a template once in JSX, and `render()` gives you the HTML its root asks for, with a plain-text version beside it, on your own server and with no network calls.
 
+[![React components flow through Hyper Elements into email HTML and plain text, responsive web HTML, PDF documents, and PNG or SVG images.](/img/hyper-elements-overview.png)](/img/hyper-elements-overview.png "Open the overview diagram at full size")
+
 ```tsx
 import { Button, Column, Email, Heading, Text, render } from "@hyper-elements/react";
 

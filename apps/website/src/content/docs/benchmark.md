@@ -9,6 +9,8 @@ We gave a coding agent the same five emails to build four ways: with Hyper Eleme
 
 Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), 16 runs per approach, November 8, 2026. Every run reached a passing email.
 
+[![Agent benchmark comparing Hyper Elements, MJML, hand-written HTML, and React Email on median time, output tokens, and first-check passes. Full results follow in the table.](/img/hyper-elements-agent-benchmark.svg)](/img/hyper-elements-agent-benchmark.svg "Open the benchmark chart at full size")
+
 | | Hyper Elements | MJML | Hand-written HTML | React Email |
 |---|---|---|---|---|
 | Median time to a passing email | **33s** | 43s | 60s | 86s |
