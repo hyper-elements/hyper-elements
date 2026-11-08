@@ -78,6 +78,9 @@ JSX
   → the writers in packages/core/src/writers write the root's output: email, page or print HTML, and plain text
 ```
 
+- `render(email, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
+  preview an email (`packages/core/src/writers/shared/block-map.ts`): marks written in as the email is, then taken out,
+  so the HTML is the same bytes (`block-map.test.tsx` checks it over the examples and generated templates).
 - `render()` is async and rejects with an `ElementsError` listing the template's problems. `validate()` checks
   without rendering, `outline()` prints the laid-out template. A component that is async or suspends is an error
   (`jsx/async`).
@@ -201,8 +204,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 270,000 bytes,
-  `dist/builder.js` 434,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 275,000 bytes,
+  `dist/builder.js` 439,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
