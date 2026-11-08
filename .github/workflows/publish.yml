@@ -3,7 +3,7 @@
 # Gated publish flow, one package at a time:
 #   1. PR merged to main → triggers build & test
 #   2. Each package publishes only when its code changed since its last
-#      release tag (Elements: v*, migrate: migrate-v*)
+#      release tag (Elements: v*, migrate: migrate-v*, the CLI: cli-v*)
 #   3. A reviewer approves each publish in the Actions UI (environment gate)
 #   4. The package is published to npm via trusted publishing (OIDC)
 #
@@ -22,7 +22,8 @@
 #     Workflow:    publish.yml
 #     Environment: npm-publish
 # npm only offers this on a package that exists, so a new package's first
-# version is published by hand, with its release tag (e.g. migrate-v0.1.0).
+# version is published by hand, with its release tag (e.g. migrate-v0.1.0,
+# cli-v0.1.0).
 
 name: Release
 
@@ -52,6 +53,7 @@ on:
         options:
           - react
           - migrate
+          - cli
         default: react
       bump:
         description: 'Version bump type'
@@ -109,6 +111,7 @@ jobs:
     outputs:
       elements: ${{ steps.detect.outputs.elements }}
       migrate: ${{ steps.detect.outputs.migrate }}
+      cli: ${{ steps.detect.outputs.cli }}
 
     steps:
       - name: Checkout code (with tags)
@@ -133,7 +136,7 @@ jobs:
             exit 1
           fi
           last() { git tag -l "$1" --sort=-v:refname | head -1; }
-          for pattern in 'v*' 'migrate-v*'; do
+          for pattern in 'v*' 'migrate-v*' 'cli-v*'; do
             tag=$(last "$pattern")
             if [ -n "$tag" ] && ! git merge-base --is-ancestor "$tag" HEAD; then
               echo "::notice::$tag isn't an ancestor of this commit: nothing older than it is published."
@@ -155,6 +158,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             ELEMENTS=$([ "${{ inputs.package }}" = "react" ] && descends 'v*' && echo true || echo false)
             MIGRATE=$([ "${{ inputs.package }}" = "migrate" ] && descends 'migrate-v*' && echo true || echo false)
+            CLI=$([ "${{ inputs.package }}" = "cli" ] && descends 'cli-v*' && echo true || echo false)
           else
             # Storybook (its config, stories and examples) isn't in the package: the same paths as paths-ignore above.
             ELEMENTS=$(changed 'v*' packages/react packages/core pnpm-workspace.yaml \
@@ -164,15 +168,22 @@ jobs:
             # Not Elements: migrate requires the Elements range committed in its package.json (the oldest
             # release the converter supports), not the newest, so an Elements release doesn't republish it.
             MIGRATE=$(changed 'migrate-v*' packages/migrate pnpm-workspace.yaml pnpm-lock.yaml)
+            # The CLI renders with the project's Elements (a peer, >=0.3.0), so an Elements release doesn't republish it.
+            CLI=$(changed 'cli-v*' packages/cli pnpm-workspace.yaml pnpm-lock.yaml)
           fi
           # The first version of a new package is published by hand (see above).
           if [ "$MIGRATE" = "true" ] && ! npm view @hyper-elements/migrate version >/dev/null 2>&1; then
             echo "::notice::@hyper-elements/migrate isn't on npm yet: publish its first version by hand, tag it migrate-v<version>, and add its trusted publisher."
             MIGRATE=false
           fi
+          if [ "$CLI" = "true" ] && ! npm view @hyper-elements/cli version >/dev/null 2>&1; then
+            echo "::notice::@hyper-elements/cli isn't on npm yet: publish its first version by hand, tag it cli-v<version>, and add its trusted publisher."
+            CLI=false
+          fi
           echo "elements=$ELEMENTS" >> $GITHUB_OUTPUT
           echo "migrate=$MIGRATE" >> $GITHUB_OUTPUT
-          echo "Elements changed: $ELEMENTS, migrate changed: $MIGRATE"
+          echo "cli=$CLI" >> $GITHUB_OUTPUT
+          echo "Elements changed: $ELEMENTS, migrate changed: $MIGRATE, CLI changed: $CLI"
 
   publish:
     name: Publish @hyper-elements/react
@@ -536,6 +547,158 @@ jobs:
           else
             gh release create "$TAG" \
               --title "@hyper-elements/migrate ${{ steps.version.outputs.version }}" \
+              --generate-notes \
+              --latest=false \
+              ${PREVIOUS:+--notes-start-tag "$PREVIOUS"}
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-cli:
+    name: Publish @hyper-elements/cli
+    needs: [build-and-test, changes, publish]
+    # After Elements (when it publishes too), so a CLI released with it finds its /check entry on npm.
+    if: >-
+      !cancelled() &&
+      needs.build-and-test.result == 'success' &&
+      needs.changes.outputs.cli == 'true' &&
+      (needs.publish.result == 'success' || needs.publish.result == 'skipped')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-cli
+      cancel-in-progress: false
+    environment: npm-publish
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: read
+
+    steps:
+      # The commit this run built and tested, not whatever main is when the approval lands.
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      # Checked again here, where publishes run one at a time: re-running an
+      # older run's failed jobs reuses the `changes` job's result from before a
+      # newer commit was published, and would ship older code as the newest version.
+      - name: Check no newer commit was published
+        shell: bash
+        run: |
+          git fetch --tags --force origin
+          TAG=$(git tag -l 'cli-v*' --sort=-v:refname | head -1)
+          if [ -n "$TAG" ] && ! git merge-base --is-ancestor "$TAG" HEAD; then
+            echo "::error::$TAG was published from a newer commit than this run's: nothing older than it is published."
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - name: Setup Node.js 24 (with npm registry for OIDC)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@12
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Determine version bump
+        id: bump
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ inputs.bump }}" >> $GITHUB_OUTPUT
+          else
+            LABELS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].labels[].name' 2>/dev/null || echo "")
+            if echo "$LABELS" | grep -Fxq "release:major"; then
+              echo "type=major" >> $GITHUB_OUTPUT
+            elif echo "$LABELS" | grep -Fxq "release:minor"; then
+              echo "type=minor" >> $GITHUB_OUTPUT
+            else
+              echo "type=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine version
+        id: version
+        working-directory: packages/cli
+        run: |
+          COMMITTED=$(node -p "require('./package.json').version")
+          CURRENT=$(npm view @hyper-elements/cli version 2>/dev/null || echo "$COMMITTED")
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+          npm version "$CURRENT" --no-git-tag-version --allow-same-version
+          VERSION=$(npm version ${{ steps.bump.outputs.type }} --no-git-tag-version)
+          VERSION="${VERSION#v}"
+          if [ "$COMMITTED" != "$VERSION" ] && [ "$(printf '%s\n%s\n' "$VERSION" "$COMMITTED" | sort -V | tail -1)" = "$COMMITTED" ]; then
+            npm version "$COMMITTED" --no-git-tag-version --allow-same-version
+            VERSION="$COMMITTED"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Pre-publish summary
+        run: |
+          echo "## Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Package** | \`@hyper-elements/cli\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.version.outputs.current }} → ${{ steps.version.outputs.version }} (${{ steps.bump.outputs.type }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trigger** | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Publish to npm (trusted publishing)
+        working-directory: packages/cli
+        run: |
+          pnpm pack --pack-destination /tmp
+          TARBALL=$(ls /tmp/hyper-elements-cli-*.tgz)
+          npm publish "$TARBALL" --access public
+
+      - name: Tag release
+        run: |
+          TAG="cli-v${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags origin | awk '{print $2}' | grep -Fxq "refs/tags/$TAG"; then
+            echo "Tag $TAG already exists — skipping"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      # Not marked latest: the repository's latest release stays Elements.
+      - name: Create GitHub Release
+        run: |
+          TAG="cli-v${{ steps.version.outputs.version }}"
+          PREVIOUS=$(git ls-remote --tags --refs origin | sed 's#.*refs/tags/##' | grep -E '^cli-v[0-9]' | grep -vFx "$TAG" | sort -V | tail -1)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — skipping"
+          else
+            gh release create "$TAG" \
+              --title "@hyper-elements/cli ${{ steps.version.outputs.version }}" \
               --generate-notes \
               --latest=false \
               ${PREVIOUS:+--notes-start-tag "$PREVIOUS"}
