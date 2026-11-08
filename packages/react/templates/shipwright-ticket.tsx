@@ -18,6 +18,8 @@ export const meta = {
 const INDIGO = "#1B1640";
 const CORAL = "#FF6B4A";
 const MINT = "#7CF0C4";
+/** Coral as text on white: the stub's coral, darker, to read (4.9:1). */
+const CORAL_TEXT = "#C9401F";
 const INK = "#16141F";
 const QUIET = "#6A6678";
 const RULE = "#E4E2EA";
@@ -130,7 +132,7 @@ export default function ShipwrightTicket() {
         <Table style={{ rowBorder: `1px solid ${RULE}`, cellPadding: [9, 0] }}>
           {DAY.map(([time, what, where]) => (
             <TableRow key={time}>
-              <TableCell style={{ width: 72, fontFamily: MONO, fontSize: 12, fontWeight: 700, color: CORAL }}>{time}</TableCell>
+              <TableCell style={{ width: 72, fontFamily: MONO, fontSize: 12, fontWeight: 700, color: CORAL_TEXT }}>{time}</TableCell>
               <TableCell style={{ fontSize: 13.5, fontWeight: 500 }}>{what}</TableCell>
               <TableCell style={{ width: 110, textAlign: "right", fontFamily: MONO, fontSize: 11, color: QUIET }}>{where}</TableCell>
             </TableRow>

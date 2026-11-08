@@ -176,7 +176,7 @@ export default function PellAshbyInvoice() {
             <Text style={{ fontFamily: SANS, fontSize: 10.5, lineHeight: 1.6, color: QUIET, textAlign: "right" }}>
               14 Calvert Mews, London E2 7LL
               <LineBreak />
-              +44 20 7946 0321 · studio@pellashby.example
+              +44&nbsp;20&nbsp;7946&nbsp;0321 · studio@pellashby.example
             </Text>
           </Column>
         </Row>

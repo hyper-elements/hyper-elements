@@ -273,7 +273,7 @@ export default function CasaAlberoPage() {
               <Link href="mailto:stay@casaalbero.example" style={{ color: INK }}>
                 stay@casaalbero.example
               </Link>
-              {"  ·  +39 0583 000 412"}
+              {"  ·  +39 0583 000 412"}
             </Text>
           </Column>
         </Row>

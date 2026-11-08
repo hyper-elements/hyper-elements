@@ -88,3 +88,28 @@ describe("hyper-elements preview", () => {
     expect(out).toContain("phone.png (375px wide)");
   }, 60000);
 });
+
+describe("hyper-elements new", () => {
+  it("lists the starter templates @hyper-elements/react ships", async () => {
+    const { code, out } = await run({}, "new");
+    expect(code).toBe(0);
+    expect(out).toMatch(/larder-receipt\s+Email\s+An order confirmation/);
+  });
+
+  it("copies one, which then previews with nothing to fix, and won't overwrite a file", async () => {
+    const copied = await run({}, "new", "larder-receipt", "order.tsx");
+    expect(copied.code).toBe(0);
+    expect(readFileSync(join(copied.dir, "order.tsx"), "utf8")).toContain("export default function LarderReceipt");
+    const shown = await main(["preview", "order.tsx", "--no-screenshots"], { cwd: copied.dir, out: { write: () => 0 }, err: { write: () => 0 } });
+    expect(shown).toBe(0);
+    expect(readFileSync(join(copied.dir, "preview/order/report.txt"), "utf8")).toContain("To fix (0)");
+    const again = await main(["new", "larder-receipt", "order.tsx"], { cwd: copied.dir, out: { write: () => 0 }, err: { write: () => 0 } });
+    expect(again).toBe(1);
+  });
+
+  it("says which starters there are when given one that isn't", async () => {
+    const { code, err } = await run({}, "new", "no-such-starter");
+    expect(code).toBe(1);
+    expect(err).toContain("larder-receipt");
+  });
+});

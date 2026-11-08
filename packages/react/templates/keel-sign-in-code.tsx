@@ -80,7 +80,7 @@ export default function KeelSignInCode() {
             <Text style={{ fontSize: 15, color: QUIET }}>
               Don’t share this code with anyone, even someone who says they’re from Keel. Freeze your cards in the app, or call us any time on{" "}
               <Link href="tel:+448081570412" style={{ color: GREEN, fontWeight: 600 }}>
-                0808 157 0412
+                0808&nbsp;157&nbsp;0412
               </Link>
               .
             </Text>

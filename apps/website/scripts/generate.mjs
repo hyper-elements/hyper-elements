@@ -45,7 +45,8 @@ const resolvePlugin = {
 };
 
 async function renderAll(kind) {
-  const dir = join(root, "examples", kind);
+  // The templates are the starters @hyper-elements/react ships (packages/react/templates): one copy for both.
+  const dir = kind === "templates" ? join(root, "../../packages/react/templates") : join(root, "examples", kind);
   const files = (await readdir(dir)).filter((f) => f.endsWith(".tsx")).sort();
   const out = {};
   for (const file of files) {

@@ -47,7 +47,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/docs/…` | `src/content/docs/**/*.md`, in the order of `docsNav` in `src/lib/site.ts` |
 | `/docs/components/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
-| `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
+| `/templates`, `/templates/<slug>` | `packages/react/templates/*.tsx` (the starters the package ships) |
 | `/ai`, `/migrate` | Landing pages |
 | `/llms.txt`, `/llms-full.txt` | Every docs page and component, for AI agents |
 
