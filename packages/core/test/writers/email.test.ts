@@ -111,7 +111,7 @@ describe("email HTML", () => {
       ])
     );
     expect(body).toMatch(
-      /<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate"><tr><td align="center" bgcolor="#0879a1" class="(e[0-9a-z]{5})" style="background-color:#0879a1;border-radius:4px;mso-padding-alt:10px 20px"><a href="https:\/\/example.com" class="(e[0-9a-z]{5})" style="display:inline-block;padding:10px 20px;color:#fff;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:center;text-decoration:none;border-radius:4px">Go<\/a><\/td><\/tr><\/table>/
+      /<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate"><tr><td align="center" bgcolor="#0879a1" class="(e[0-9a-z]{5})" style="background-color:#0879a1;border-radius:4px;mso-padding-alt:10px 20px"><a href="https:\/\/example.com" class="(e[0-9a-z]{5})" style="display:inline-block;padding:10px 20px;word-break:normal;color:#fff;font-family:Arial, Helvetica, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:center;text-decoration:none;border-radius:4px">Go<\/a><\/td><\/tr><\/table>/
     );
     // Hover changes the background where it's set (the cell) and the text's color where it's set (the link).
     const [, cell, link] = /<td align="center" bgcolor="#0879a1" class="(e[0-9a-z]{5})"[^>]*><a href="https:\/\/example.com" class="(e[0-9a-z]{5})"/.exec(body)!;
@@ -119,8 +119,11 @@ describe("email HTML", () => {
     expect(head).toContain(`.${link}:hover,.${link}:focus-visible{color:#fff!important}`);
     // A button with a width fills it: a 200px table (Word's width), its link a block.
     expect(body).toContain('<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:200px;border-collapse:separate"><tr><td align="center"');
-    expect(body).toContain('style="display:block;padding:10px 20px;');
+    expect(body).toContain('style="display:block;padding:10px 20px;word-break:normal;');
     expect(body).not.toContain("v:roundrect");
+    // Its label's words stay whole (word-break: normal, above), where the email's word-break: break-word, kept for long
+    // links in text, would let a button narrower than its padding size itself to one letter.
+    expect(body).toContain('style="overflow-wrap:break-word;word-break:break-word"');
   });
 
   it("writes images with px width attributes, fluid elsewhere, and warns where Outlook can't know the width", () => {

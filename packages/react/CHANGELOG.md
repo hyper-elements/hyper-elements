@@ -43,6 +43,15 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
 - Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and how to see it to its line, so lines about
   email clients are longer.
 
+### Fixes
+
+- **Email:** a `Button` narrower than its padding no longer draws its label a letter a line in Gmail and browsers. The
+  email's `word-break: break-word`, there so a long link in text breaks rather than widen the email on phones, let the
+  button size itself to one letter; its label now keeps its words whole (`word-break: normal` on the button's link) and
+  the button grows to its longest word, as classic Outlook and Apple Mail already drew it. Found in captures of 0.3.0
+  emails in Gmail on the web. Each button's link gains `word-break:normal` in its `style`; nothing else in the HTML
+  changes.
+
 ## 0.3.0
 
 ### ⚠️ Breaking: every template written with Unlayer Elements has to migrate
