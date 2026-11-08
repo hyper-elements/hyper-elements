@@ -71,6 +71,9 @@ jobs:
       - name: Converter typechecks
         run: pnpm --filter @hyper-elements/migrate typecheck
 
+      - name: Email client previews typecheck
+        run: pnpm --filter @hyper-elements/email-clients typecheck
+
       # ── Bundle size budgets ─────────────────────────────────────
       # Each entry's ESM bundle against its budget. The budgets track the
       # unminified ESM output as a proxy for code volume; they still flag
@@ -123,6 +126,22 @@ jobs:
           fi
           echo "✅ /builder bundle within budget"
 
+      # The email client previews (@hyper-elements/email-clients, dist/index.js): the
+      # function, the preview shell and the runtime each file carries. Core isn't in
+      # it (external). Raise it on purpose, with what grew.
+      - name: Check email client previews bundle size
+        run: |
+          BUNDLE="packages/email-clients/dist/index.js"
+          test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+          MAX_SIZE=7000
+          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
+          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
+            exit 1
+          fi
+          echo "✅ Email client previews bundle within budget"
+
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
         run: |
@@ -144,7 +163,7 @@ jobs:
       # --disallow-code-generation-from-strings (a CSP without 'unsafe-eval').
       # HARD gate: fails if this package evaluates a string at import/render.
       - name: CSP safety gate
-        run: pnpm --filter @hyper-elements/react test:csp
+        run: pnpm --filter @hyper-elements/react test:csp && pnpm --filter @hyper-elements/email-clients test:csp
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
