@@ -70,8 +70,8 @@ jobs:
             });
             core.setOutput('url', data.html_url);
 
-      # The website's Vercel project builds every branch from apps/website, which gh-pages doesn't have, so each
-      # push here failed on Vercel. Vercel reads vercel.json from that folder, so this one turns it off for gh-pages.
+      # The website's Vercel project reads apps/website/vercel.json from each pushed commit to decide whether to deploy
+      # it. gh-pages has no apps/website, so each push here deployed and failed. This file turns it off for gh-pages.
       - name: Turn off Vercel for gh-pages
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |

@@ -61,4 +61,4 @@ A page is Markdown with a quoted `title` and `description` in its frontmatter, n
 
 `dist/` is a static site: Cloudflare Pages, Vercel, Netlify or GitHub Pages all serve it with `hyperelements.dev` as the custom domain. Build command `pnpm --filter @hyper-elements/website build`, output `apps/website/dist`, on Node.js 22.23.4 or later (set the host's Node version to match).
 
-On Vercel, a commit builds only when it changes `apps/website` or the workspace's install files (`package.json`, `pnpm-lock.yaml`, `pnpm-workspace.yaml` at the root), compared with where its branch left `main`. `scripts/vercel-ignore-build.sh` decides, through `vercel.json`'s `ignoreCommand`. Other pull requests get no site preview.
+On Vercel, only `main` deploys: `vercel.json` turns off deployments for every other branch, so pull requests get no site preview. Check a change locally with `dev` or `build` and `preview`.
