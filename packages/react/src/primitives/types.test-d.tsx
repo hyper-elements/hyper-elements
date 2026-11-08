@@ -114,3 +114,10 @@ export const shapeFromVariable = <Svg width={40} height={20}><Rect width={40} he
 export const noMobileProp = <Heading mobile={{ fontSize: 20 }}>Title</Heading>;
 // @ts-expect-error No hover prop.
 export const noHoverProp = <Button href="https://example.com" hover={{ backgroundColor: "#000000" }}>Go</Button>;
+// Other libraries' ways of writing a condition aren't props or styles either.
+// @ts-expect-error No _hover prop (Chakra's).
+export const chakraHover = <Button href="https://example.com" _hover={{ backgroundColor: "#000000" }}>Go</Button>;
+// @ts-expect-error No _hover style.
+export const chakraHoverStyle = <Button href="https://example.com" style={{ _hover: { backgroundColor: "#000000" } }}>Go</Button>;
+// @ts-expect-error No md breakpoint.
+export const tailwindBreakpoint = <Text style={{ md: { fontSize: 18 } }}>Hi</Text>;

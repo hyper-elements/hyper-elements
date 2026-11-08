@@ -109,10 +109,47 @@ function editDistance(from: string, to: string): number {
 }
 
 /** What's wrong with a prop the component doesn't have, and what to write instead. */
-function unknownProp(definition: ComponentDefinition, key: string): string {
-  if (CONDITION_NAMES.has(key)) {
-    return `${a(definition.type)} has no prop "${key}": ${key} styles go in its style, style={{ ${key}: { … } }}`;
+/** Breakpoint names other libraries use (Tailwind's, Chakra's, Bootstrap's), which Elements doesn't have. */
+const OTHER_BREAKPOINTS = new Set(["base", "initial", "xs", "sm", "md", "lg", "xl", "2xl", "tablet", "desktop", "wide", "small", "medium", "large"]);
+
+/**
+ * Where a key that names a condition goes, written the way another library writes it (`_hover`, `":hover"`,
+ * `hoverStyle`, `$sm`, `md`, `@media …`) or as a prop (`mobile={…}`): what an agent or a person coming from Chakra,
+ * Tailwind, Stitches or Tamagui tries first. Undefined: it isn't one.
+ */
+function conditionHint(definition: ComponentDefinition, key: string): string | undefined {
+  const name = key
+    .trim()
+    .replace(/^(&?:+|_+|\$|@)/, "")
+    .replace(/Style$/, "")
+    .toLowerCase();
+  const own = CUSTOM_TYPE.test(definition.type);
+  const hoverStyles = definition.hover ?? [];
+  const toHover = own
+    ? `a template's own component takes only its place in a Row in its style: set hover styles in what it renders`
+    : hoverStyles.length
+      ? `hover styles go in its style's hover block, style={{ hover: { … } }} (it takes ${hoverStyles.join(", ")})`
+      : `${a(definition.type).replace(/^A/, "a")} takes no hover styles (a Button's and a Link's colors do)`;
+  const toPhone = own
+    ? `a template's own component takes only its place in a Row in its style: set phone styles in what it renders`
+    : `phone styles go in its style's mobile block, style={{ mobile: { … } }}`;
+  if (name === "hover") return toHover;
+  if (name === "mobile" || name === "phone" || name === "phones" || key.trim().startsWith("@media")) return toPhone;
+  if (name === "focus" || name === "focus-visible" || name === "focusvisible" || name === "focus-within") {
+    return hoverStyles.length && !own ? `keyboard focus gets its hover styles: set them in style={{ hover: { … } }}` : `there are no focus styles; keyboard focus gets a Button's and a Link's hover styles`;
   }
+  if (OTHER_BREAKPOINTS.has(name)) {
+    return `Elements has one breakpoint, phones: desktop styles go in style itself, phone styles in its mobile block, style={{ mobile: { … } }} (a Page sets where phones start with breakpoints={{ mobile }})`;
+  }
+  if (name === "active" || name === "pressed" || name === "press" || name === "visited" || name === "dark" || name === "light" || name === "print") {
+    return `there are no ${name} styles: Elements has phone styles (mobile) and hover styles (hover) in style`;
+  }
+  return undefined;
+}
+
+function unknownProp(definition: ComponentDefinition, key: string): string {
+  const condition = conditionHint(definition, key);
+  if (condition) return `${a(definition.type)} has no prop "${key}": ${condition}`;
   if (Object.prototype.hasOwnProperty.call(definition.style, key)) return `${a(definition.type)} has no prop "${key}": it's a style, style={{ ${key}: … }}`;
   const known = Object.keys(definition.props);
   const meant = nearest(key, known);
@@ -290,6 +327,8 @@ function styleHint(definition: ComponentDefinition, specs: StyleSpecs, key: stri
   if (Object.prototype.hasOwnProperty.call(definition.props, key)) return `: it's a prop, ${key}={…}`;
   if (key === "padding" && definition.categories.includes("root")) return ": a root has no padding; put it on a Column (a card) or a Section (a band) inside it";
   if (UNSUPPORTED_CSS[key]) return `: ${UNSUPPORTED_CSS[key]}`;
+  const condition = conditionHint(definition, key);
+  if (condition) return `: ${condition}`;
   const meant = nearest(key, Object.keys(specs));
   return meant ? `: did you mean "${meant}"?` : "";
 }
