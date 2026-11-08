@@ -32,5 +32,3 @@ Props:
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 - `padding`: *insets*
 - `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
-
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`, `padding`.

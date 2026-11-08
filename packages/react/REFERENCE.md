@@ -95,7 +95,7 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
+`style.mobile` (on phones): `gap`.
 
 ### Document
 
@@ -126,8 +126,6 @@ Props:
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
-
 ### Canvas
 
 An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
@@ -157,8 +155,6 @@ Props:
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 - `padding`: *insets*
 - `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
-
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`, `padding`.
 
 ## Sections and layout
 
@@ -711,8 +707,6 @@ Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Imag
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
-
 ### PageBreak
 
 In a Document, where a page ends: what follows starts the next page.
@@ -741,8 +735,6 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
-
 ### PageFooter
 
 In a Document: drawn at the bottom of every page, inside its margins.
@@ -764,8 +756,6 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 - `border`: *border*
 - `gap`: a length (a number of px). Space between children.
 - `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
 
 ### ListItem
 
