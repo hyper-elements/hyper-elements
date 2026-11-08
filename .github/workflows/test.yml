@@ -118,6 +118,22 @@ jobs:
           fi
           echo "✅ /builder bundle within budget"
 
+      # The design checks' entry (/check: check()) has its own budget: about 15KB unminified ESM. The checks and their
+      # color and contrast reading; it takes the main entry's prepare() by name, so it holds no copy of the core.
+      # Raise it on purpose, with what grew.
+      - name: Check /check bundle size
+        run: |
+          BUNDLE="packages/react/dist/check.js"
+          test -s "$BUNDLE" && test -s "packages/react/dist/check.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+          MAX_SIZE=18000
+          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
+          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::/check bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
+            exit 1
+          fi
+          echo "✅ /check bundle within budget"
+
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
         run: |

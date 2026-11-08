@@ -52,7 +52,7 @@ describe("each entry's types, for every moduleResolution", () => {
     symlinkSync(dir, installed, "dir");
     // The declarations each entry names, which a build writes: there for the resolver whether built or not.
     const entries = Object.entries(pkg.exports as Record<string, { types?: string }>).filter(([, entry]) => typeof entry === "object" && entry.types);
-    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./pdf", "./image"]);
+    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./pdf", "./image", "./check"]);
     const declared = new Set(entries.map(([, entry]) => join(dir, entry.types!)));
     const inPackage = (file: string) => (file.startsWith(installed) ? join(dir, file.slice(installed.length)) : file);
     const host: ts.ModuleResolutionHost = { ...ts.sys, fileExists: (file) => declared.has(inPackage(file)) || ts.sys.fileExists(file) };

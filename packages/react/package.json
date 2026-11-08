@@ -70,6 +70,11 @@
       "import": "./dist/image.js",
       "require": "./dist/image.cjs"
     },
+    "./check": {
+      "types": "./dist/check.d.ts",
+      "import": "./dist/check.js",
+      "require": "./dist/check.cjs"
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -82,6 +87,9 @@
       ],
       "image": [
         "./dist/image.d.ts"
+      ],
+      "check": [
+        "./dist/check.d.ts"
       ]
     }
   },
@@ -91,6 +99,7 @@
     "dist/builder.*",
     "dist/pdf.*",
     "dist/image.*",
+    "dist/check.*",
     "README.md",
     "GUIDE.md",
     "REFERENCE.md",
