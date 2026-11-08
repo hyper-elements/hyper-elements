@@ -3,11 +3,12 @@ name: Deploy Storybook to GitHub Pages
 on:
   push:
     branches: [ main ]
-    # Storybook is the react package's: a change only to the website (apps/) doesn't rebuild it.
-    paths-ignore: [ 'apps/**' ]
+    # Storybook is the react package's: a change only to the website (apps/) or the agent benchmark (benchmark/)
+    # doesn't rebuild it.
+    paths-ignore: [ 'apps/**', 'benchmark/**' ]
   pull_request:
     branches: [ main ]
-    paths-ignore: [ 'apps/**' ]
+    paths-ignore: [ 'apps/**', 'benchmark/**' ]
 
 # The repository's token is read-only by default: this workflow pushes to gh-pages,
 # reads the Pages site's URL and adds the preview link to a PR's description.
