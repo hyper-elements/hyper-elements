@@ -12,7 +12,7 @@ HTML, print HTML, PDFs and images. A template is written once in JSX; its root d
 
 ```bash
 pnpm install          # Install all dependencies
-pnpm build            # Build the packages in packages/ (core, then react, then migrate)
+pnpm build            # Build the packages in packages/ (core, then react, then migrate and email-clients)
 pnpm test             # Run every package's unit tests (Vitest)
 pnpm test:coverage    # The same, with coverage
 ```
@@ -35,6 +35,7 @@ Local development uses the Node version in `.nvmrc`; CI runs Node 20.
 |------|---------|-----------|---------|
 | `packages/react` | `@hyper-elements/react` | Yes | The components and `render()` (main entry); the builder adapter (`/builder`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
 | `packages/migrate` | `@hyper-elements/migrate` | Yes | The `npx @hyper-elements/migrate` CLI: converts React Email templates (`src/react-email/`, API at `@hyper-elements/migrate/react-email`) and Unlayer Elements templates (`--from unlayer-elements`: the command in `src/legacy/`, the codemod in `src/convert/elements/`, API at `@hyper-elements/migrate/elements`), checks each against its original and writes a report; `compare` checks a template migrated by hand. What the converters share is in `src/convert/` (the Elements tree, the report, the TSX printer, the content check). Fidelity benchmark in `bench/`, results in `FIDELITY.md`. |
+| `packages/email-clients` | `@hyper-elements/email-clients` | Yes | `renderInEmailClients()`: an Email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, one self-contained HTML preview file per email client. Builds on core's public API only (`render()`'s `blockMap`), imported as a namespace with a version check (`src/core.ts`); core is a peer, left external. |
 | `packages/core` | `@unlayer-internal/elements-core` | No (bundled into react) | The template tree (internal), component definitions, value kinds, validation, custom components, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
 | `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. |
 | `benchmark/` | `@hyper-elements/agent-benchmark` | No | The agent benchmark: how long a coding agent takes to write a correct email or image with Hyper Elements and with other tools. Its own npm package, outside the pnpm workspace; see `benchmark/README.md`. |
