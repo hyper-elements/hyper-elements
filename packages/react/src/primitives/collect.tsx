@@ -268,6 +268,11 @@ export function collectNodes(element: React.ReactElement): {
 /** A template collected from JSX: its tree (internal: never part of the API), the problems, the custom components it uses. */
 export interface CollectedTemplate extends CheckResult {
   components: CustomDefinition<any>[];
+  /**
+   * The root as collected, before it's read: every component the JSX gave, those an error leaves out of `document`
+   * too, at the paths diagnostics name (reading merges text and drops what's left out, so `document`'s may differ).
+   */
+  collected: JsonNode | null;
 }
 
 /** JSX collected into Elements' internal tree and checked, never throwing for what's in it. */
@@ -283,8 +288,8 @@ export function collectTemplate(element: React.ReactElement): CollectedTemplate 
         path: "jsx",
       });
     }
-    return { document: null, diagnostics, components };
+    return { document: null, diagnostics, components, collected: null };
   }
   const result = checkDocument({ root: top[0] }, new Registry(components));
-  return { document: result.document, diagnostics: [...diagnostics, ...result.diagnostics], components };
+  return { document: result.document, diagnostics: [...diagnostics, ...result.diagnostics], components, collected: top[0] };
 }

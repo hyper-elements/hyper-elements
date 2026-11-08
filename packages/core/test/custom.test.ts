@@ -141,3 +141,67 @@ describe("custom components", () => {
     expectTypeOf<Props["name"]>().toEqualTypeOf<string>();
   });
 });
+
+describe("roots", () => {
+  /** A component of a template's own with a prop only a Page takes, and one that renders it. */
+  const Banner = defineCustomComponent({
+    type: "acme.Banner",
+    label: "Banner",
+    props: { motto: prop(text(), { label: "Motto", roots: ["Page"] }) },
+    expand: ({ motto }) => ({ type: "Text", children: [motto ?? "Hello"] }),
+  });
+  const Hero = defineCustomComponent({
+    type: "acme.Hero",
+    label: "Hero",
+    props: {},
+    expand: () => ({ type: "acme.Banner", props: { motto: "Ship it" } }),
+  });
+  const under = (root: string, ...children: unknown[]) => ({ root: { type: root, children } });
+  const errors = (input: unknown, components: Parameters<typeof checkDocument>[1]) =>
+    checkDocument(input, components).diagnostics.filter((d) => d.severity === "error").map((d) => [d.code, d.path, d.message]);
+
+  it("make a prop given under another root an error naming the roots that take it", () => {
+    expect(errors(under("Page", { type: "acme.Banner", props: { motto: "Hi" } }), { components: [Banner] })).toEqual([]);
+    expect(errors(under("Email", { type: "acme.Banner", props: { motto: "Hi" } }), { components: [Banner] })).toEqual([
+      ["prop/not-supported", "root.children[0].props.motto", 'A acme.Banner\'s "motto" is for a Page, not an Email'],
+    ]);
+    expect(describeComponent("acme.Banner", { components: [Banner] })!.properties[0].roots).toEqual(["Page"]);
+  });
+
+  it("check what a custom component renders against the root it renders in", () => {
+    const expanded = (root: string) => {
+      const { document, diagnostics } = checkDocument(under(root, { type: "acme.Hero" }), { components: [Hero, Banner] });
+      return [...diagnostics, ...expandDocument(document!, new Registry([Hero, Banner]), root === "Email" ? "email" : "web").diagnostics].map((d) => [d.code, d.path]);
+    };
+    expect(expanded("Page")).toEqual([]);
+    expect(expanded("Email")).toEqual([["prop/not-supported", "root.children[0](acme.Hero).props.motto"]]);
+  });
+
+  it("make a style set under another root an error, in style and in its phone block", () => {
+    const Tag = { ...defineCustomComponent({ type: "acme.Tag", label: "Tag", props: {}, expand: () => ({ type: "Text", children: ["Tag"] }) }) };
+    Tag.style = { flex: { ...Tag.style.flex, mobile: true, roots: ["Page"] } } as typeof Tag.style;
+    const row = (root: string, style: Record<string, unknown>) => under(root, { type: "Row", children: [{ type: "acme.Tag", style }] });
+    expect(errors(row("Page", { flex: 2 }), { components: [Tag] })).toEqual([]);
+    expect(errors(row("Email", { flex: 2 }), { components: [Tag] })).toEqual([
+      ["style/not-supported", "root.children[0].children[0].style.flex", 'A acme.Tag\'s "flex" is for a Page, not an Email'],
+    ]);
+  });
+
+  it("make a component under a root it isn't for an error, and leave one whose output the root lacks to target/unsupported", () => {
+    const PageOnly = { ...defineCustomComponent({ type: "acme.Strip", label: "Strip", props: {}, expand: () => ({ type: "Text", children: ["Strip"] }) }), roots: ["Page"] as const };
+    expect(errors(under("Page", { type: "acme.Strip" }), { components: [PageOnly] })).toEqual([]);
+    expect(errors(under("Document", { type: "acme.Strip" }), { components: [PageOnly] })).toEqual([
+      ["component/not-supported", "root.children[0]", "A acme.Strip goes in a Page, not in a Document"],
+    ]);
+    expect(describeComponent("acme.Strip", { components: [PageOnly] })!.roots).toEqual(["Page"]);
+    // A PageNumber keeps its own code and message, and an Svg in an Email is still its output's.
+    expect(errors(under("Page", { type: "Text", children: [{ type: "PageNumber" }] }), {})).toEqual([
+      ["document/page-number", "root.children[0].children[0]", "A PageNumber is a page's number in a Document; this Page has no pages"],
+    ]);
+    // (Reading leaves it to the output's check, after expansion.)
+    const svg = { type: "Svg", props: { viewBox: "0 0 10 10", width: 10, height: 10 } };
+    expect(errors(under("Email", svg), {})).toEqual([]);
+    const { document } = checkDocument(under("Email", svg));
+    expect(expandDocument(document!, new Registry(), "email").diagnostics.map((d) => d.code)).not.toContain("component/not-supported");
+  });
+});

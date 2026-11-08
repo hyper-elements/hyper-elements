@@ -114,6 +114,9 @@ try {
 | `mobile/invalid`, `hover/invalid`, `hidden/invalid` | A `mobile`, `hover` or `hidden` value that isn't one they take |
 | `target/unsupported` | A component the output can't draw: an `Svg` or a `PageNumber` in an email (Gmail and classic Outlook drop inline SVG) |
 | `document/page-number` | A `PageNumber` in a Page or a Canvas, which have no pages |
+| `component/not-supported` | A component under a root that doesn't take it. The message names the roots that do |
+| `prop/not-supported` | A prop for some roots only (a `component()`'s, made with `roots`), under another |
+| `style/not-supported` | A style for some roots only, under another, in `style` or in its `mobile` or `hover` block |
 | `email/layer` | A Layer email can't draw: in an email it's an Image as wide as the Layer with one child over it |
 | `custom/render` | A custom component's `render` throws, or returns something other than one component |
 | `custom/depth` | Custom components expanding into each other too deep, as when one contains itself |
@@ -175,5 +178,14 @@ test("the welcome email is valid and has no warnings", () => {
 Match on `code`, which is stable for tools to match on, and show people the `message`.
 
 For an agent, `validate()` is the feedback loop. Each message says what to use instead and where, so an agent that writes a template, validates it and reads the messages can fix its own mistakes: a margin becomes the parent's `gap`, a style written as a prop goes into `style`. Pair it with [`outline()`](/docs/rendering#outline) to check the layout as text, without reading HTML.
+
+Before it writes, an agent can ask what a root takes. `@hyper-elements/react/inspect` says it as data: `describeComponents({ root: "Email" })` lists the components an Email takes, each prop and style with its kind and the roots that take it, and `inspect(element)` lists each component of a template with whether its root takes it (`allowed`), what it's given and the diagnostics on it.
+
+```tsx
+import { describeComponent, inspect } from "@hyper-elements/react/inspect";
+
+describeComponent("Svg", { root: "Email" });   // undefined: an Email doesn't take one
+inspect(<Welcome />).nodes.filter((node) => !node.allowed || node.problems.length);   // what's wrong, and where
+```
 
 > **Tip:** Point your agent at the package's guide, `node_modules/@hyper-elements/react/GUIDE.md`, before it writes a template. It lists every component on a line, and the mistakes that most often fail a first try.

@@ -112,7 +112,6 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
   const found = output.target === "email" ? emailSupport(resolved.root, resolved.templatePath) : support(resolved.root, output.target);
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
-  if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
   found.push(...pageBreakpoints(resolved.root));
   diagnostics.push(...inTemplate(resolved, found));
   return done(failed() ? null : resolved, output.target);
@@ -122,19 +121,6 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
 export function inTemplate(resolved: ResolvedDocument, diagnostics: Diagnostic[]): Diagnostic[] {
   const { templatePath } = resolved;
   return templatePath ? diagnostics.map((diagnostic) => ({ ...diagnostic, path: templatePath(diagnostic.path) })) : diagnostics;
-}
-
-/** A PageNumber outside a Document: a page has no number there. */
-function pageNumbersOutside(root: ResolvedNode): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  const visit = (node: ResolvedNode) => {
-    if (node.type === "PageNumber") {
-      out.push({ code: "document/page-number", severity: "error", message: `A PageNumber is a page's number in a Document; this ${root.type} has no pages`, path: node.path, ...(node.id ? { nodeId: node.id } : {}) });
-    }
-    for (const child of node.children) if (typeof child !== "string") visit(child);
-  };
-  visit(root);
-  return out;
 }
 
 /**

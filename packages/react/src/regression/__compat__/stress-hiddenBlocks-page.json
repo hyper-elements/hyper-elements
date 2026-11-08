@@ -1,0 +1,995 @@
+{
+ "root": "Page",
+ "html": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Merrow Line: Hidden blocks</title><style>@font-face{font-family:\"Familjen Grotesk\";src:url(\"https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2\") format(\"woff2\");font-weight:400 700;font-display:swap}@font-face{font-family:\"DM Mono\";src:url(\"https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2\") format(\"woff2\");font-weight:400;font-display:swap}.ec97ab:hover,.ec97ab:focus-visible{background-color:#ab2f1d!important}@media (min-width: 481px){.e8lmgc{display:none!important}}@media (max-width: 480px){.emfqa6{flex-direction:column!important;align-items:stretch!important}.emfqa6>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}.epbr0g{display:none!important}.ebkajj{padding:20px 20px 28px 20px!important}.e9lbgm{width:100%!important}}</style></head><body style=\"margin:0;background-color:#f3f1ea\"><main style=\"display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><section class=\"epbr0g\" style=\"display:flex;flex-direction:column;padding:14px max(32px, calc((100% - 600px) / 2 + 32px)) 14px max(32px, calc((100% - 600px) / 2 + 32px));background-color:#12242e;color:#f3f1ea\"><p style=\"margin:0;font-size:15px\">A band only desktops show: print your boarding pass.</p></section><section class=\"e8lmgc\" style=\"display:flex;flex-direction:column;padding:14px max(20px, calc((100% - 600px) / 2 + 20px)) 14px max(20px, calc((100% - 600px) / 2 + 20px));background-color:#c93a25;color:#fff\"><p style=\"margin:0;font-size:15px\">A band only phones show: your pass is in the app.</p></section><section class=\"ebkajj\" style=\"display:flex;flex-direction:column;gap:16px;padding:24px max(32px, calc((100% - 600px) / 2 + 32px)) 36px max(32px, calc((100% - 600px) / 2 + 32px))\"><div style=\"display:flex;align-items:flex-end;box-sizing:border-box;padding:0 0 10px 0;border-bottom:1px solid #12242e\"><div style=\"flex:0 1 150px;min-width:0;display:flex;flex-direction:column\"><p style=\"margin:0;font-size:15px;font-weight:700;line-height:1.2\">Merrow Line</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;text-align:right\">Hidden blocks</p></div></div><div class=\"emfqa6\" style=\"display:flex;gap:10px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:4px;box-sizing:border-box;padding:12px 14px;background-color:#e6e3d8\"><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Always here</p><p style=\"margin:0;font-weight:600\">The 08:30 to Stornoway</p></div><div class=\"epbr0g\" style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:4px;box-sizing:border-box;padding:12px 14px;background-color:#e6e3d8\"><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Desktop’s column</p><p style=\"margin:0;font-weight:600\">Print and fold it</p></div><div class=\"e8lmgc\" style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:4px;box-sizing:border-box;padding:12px 14px;background-color:#e6e3d8\"><p style=\"margin:0;color:#55636b;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Phone’s column</p><p style=\"margin:0;font-weight:600\">Turn the brightness up</p></div></div><img class=\"epbr0g\" src=\"gallery/saltworks/low-water.png\" alt=\"The tide drawn in blue lines under a low sun: the desktop&#39;s picture\" style=\"align-self:flex-start;display:block;max-width:100%;width:100%;height:auto\"><p class=\"e8lmgc\" style=\"margin:0;color:#55636b\">Phones get these words instead of the picture.</p><a class=\"e9lbgm e8lmgc ec97ab\" href=\"https://merrow.example/app\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:15px;font-weight:600;line-height:1.2;text-align:center;box-sizing:border-box;padding:14px 24px;background-color:#c93a25;border-radius:2px\">Open the app</a></section></main></body></html>",
+ "text": "A band only desktops show: print your boarding pass.\n\nA band only phones show: your pass is in the app.\n\nMerrow Line\n\nHidden blocks\n\nAlways here\n\nThe 08:30 to Stornoway\n\nDesktop’s column\n\nPrint and fold it\n\nPhone’s column\n\nTurn the brightness up\n\n[The tide drawn in blue lines under a low sun: the desktop's picture]\n\nPhones get these words instead of the picture.\n\nOpen the app (https://merrow.example/app)",
+ "classes": [
+  "e8lmgc",
+  "e9lbgm",
+  "ebkajj",
+  "ec97ab",
+  "emfqa6",
+  "epbr0g"
+ ],
+ "diagnostics": {
+  "validate": [],
+  "render": [],
+  "prepare": []
+ },
+ "outline": "Page 600px: background #f3f1ea\n  Section 600px: background #12242e, desktop only\n    Text 536px \"A band only desktops show: print your boarding pass.\"\n  Section 600px: background #c93a25, phones only\n    Text 560px \"A band only phones show: your pass is in the app.\"\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Hidden blocks\"\n    Row 536px: 3 side by side, stacked on phones\n      Column 263px: background #e6e3d8\n        Text 235px \"Always here\"\n        Text 235px \"The 08:30 to Stornoway\"\n      Column 263px: background #e6e3d8, desktop only\n        Text 235px \"Desktop’s column\"\n        Text 235px \"Print and fold it\"\n      Column 536px: background #e6e3d8, phones only\n        Text 508px \"Phone’s column\"\n        Text 508px \"Turn the brightness up\"\n    Image 536px: desktop only [The tide drawn in blue lines under a low sun: the desktop's picture] gallery/saltworks/low-water.png\n    Text 536px: phones only \"Phones get these words instead of the picture.\"\n    Button: background #c93a25, phones only \"Open the app\" → https://merrow.example/app",
+ "design": {
+  "design": {
+   "counters": {
+    "u_row": 6,
+    "u_column": 9,
+    "u_content_paragraph": 11,
+    "u_content_divider": 1,
+    "u_content_image": 1,
+    "u_content_button": 1
+   },
+   "body": {
+    "rows": [
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "14px 32px",
+           "fontSize": "15px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#f3f1ea",
+           "_meta": {
+            "htmlID": "u_content_paragraph_1",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"A band only desktops show: print your boarding pass.\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_1",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "#12242e",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_1",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "hideMobile": true
+        }
+       },
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "14px 20px",
+           "fontSize": "15px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#ffffff",
+           "_meta": {
+            "htmlID": "u_content_paragraph_2",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"A band only phones show: your pass is in the app.\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_2",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "#c93a25",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_2",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "desktop": {
+         "hideDesktop": true
+        }
+       },
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       182,
+       418
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "15px",
+           "textAlign": "left",
+           "lineHeight": "120%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_3",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 700,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Merrow Line\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 0px 0px 32px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_3",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "right",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_4",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Hidden blocks\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px 32px 0px 0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_4",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "24px 0px 10px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_3",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "_override": {
+        "mobile": {
+         "noStackMobile": true
+        }
+       },
+       "cells": [
+        182,
+        418
+       ],
+       "alignItems": "flex-end"
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "divider",
+          "values": {
+           "containerPadding": "0px 32px",
+           "width": "100%",
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#12242e"
+           },
+           "textAlign": "center",
+           "_meta": {
+            "htmlID": "u_content_divider_1",
+            "htmlClassNames": "u_content_divider"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_5",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_4",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     },
+     {
+      "cells": [
+       300,
+       273,
+       37
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_5",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Always here\"}]}]}}"
+          }
+         },
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "4px 0px 0px",
+           "fontSize": "16px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_6",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"The 08:30 to Stornoway\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "#e6e3d8",
+         "padding": "12px 19px 12px 46px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_6",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false,
+         "_override": {
+          "mobile": {
+           "padding": "12px 46px"
+          }
+         }
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_7",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Desktop’s column\"}]}]}}"
+          }
+         },
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "4px 0px 0px",
+           "fontSize": "16px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_8",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Print and fold it\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "#e6e3d8",
+         "padding": "12px 19px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_7",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false,
+         "_override": {
+          "mobile": {
+           "hideMobile": true,
+           "padding": "22px 46px 12px"
+          }
+         }
+        }
+       },
+       {
+        "contents": [
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "0px",
+           "fontSize": "12px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_meta": {
+            "htmlID": "u_content_paragraph_9",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "DM Mono",
+            "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Phone’s column\"}]}]}}"
+          }
+         },
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "4px 0px 0px",
+           "fontSize": "16px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#12242e",
+           "_meta": {
+            "htmlID": "u_content_paragraph_10",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Turn the brightness up\"}]}]}}"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "#e6e3d8",
+         "padding": "12px 46px 12px 19px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_8",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false,
+         "_override": {
+          "desktop": {
+           "hideDesktop": true
+          },
+          "mobile": {
+           "padding": "22px 46px 12px"
+          }
+         }
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "16px 0px 0px 0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_5",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        300,
+        273,
+        37
+       ]
+      }
+     },
+     {
+      "cells": [
+       1
+      ],
+      "columns": [
+       {
+        "contents": [
+         {
+          "type": "image",
+          "values": {
+           "containerPadding": "16px 32px 0px",
+           "src": {
+            "url": "gallery/saltworks/low-water.png",
+            "width": 1200,
+            "height": 680,
+            "autoWidth": false,
+            "maxWidth": "100%"
+           },
+           "textAlign": "left",
+           "altText": "The tide drawn in blue lines under a low sun: the desktop's picture",
+           "action": {
+            "name": "web",
+            "values": {
+             "href": "",
+             "target": "_blank"
+            }
+           },
+           "_override": {
+            "mobile": {
+             "hideMobile": true
+            }
+           },
+           "_meta": {
+            "htmlID": "u_content_image_1",
+            "htmlClassNames": "u_content_image"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true
+          }
+         },
+         {
+          "type": "paragraph",
+          "values": {
+           "containerPadding": "16px 32px 0px",
+           "fontSize": "16px",
+           "textAlign": "left",
+           "lineHeight": "150%",
+           "linkStyle": {
+            "inherit": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
+           "color": "#55636b",
+           "_override": {
+            "desktop": {
+             "hideDesktop": true
+            }
+           },
+           "_meta": {
+            "htmlID": "u_content_paragraph_11",
+            "htmlClassNames": "u_content_paragraph"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 400,
+           "letterSpacing": "0px",
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Phones get these words instead of the picture.\"}]}]}}"
+          }
+         },
+         {
+          "type": "button",
+          "values": {
+           "containerPadding": "16px 32px 36px",
+           "href": {
+            "name": "web",
+            "values": {
+             "href": "https://merrow.example/app",
+             "target": "_self"
+            }
+           },
+           "buttonColors": {
+            "color": "#ffffff",
+            "backgroundColor": "#c93a25",
+            "hoverColor": "#ffffff",
+            "hoverBackgroundColor": "#ab2f1d"
+           },
+           "size": {
+            "autoWidth": true,
+            "width": "100%"
+           },
+           "fontSize": "15px",
+           "lineHeight": "120%",
+           "textAlign": "left",
+           "padding": "14px 24px",
+           "border": {},
+           "borderRadius": "2px",
+           "text": "Open the app",
+           "_override": {
+            "desktop": {
+             "hideDesktop": true
+            },
+            "mobile": {
+             "size": {
+              "autoWidth": false,
+              "width": "100%"
+             }
+            }
+           },
+           "_meta": {
+            "htmlID": "u_content_button_1",
+            "htmlClassNames": "u_content_button"
+           },
+           "selectable": true,
+           "draggable": true,
+           "duplicatable": true,
+           "deletable": true,
+           "hideable": true,
+           "fontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "fontWeight": 600,
+           "letterSpacing": "0px"
+          }
+         }
+        ],
+        "values": {
+         "backgroundColor": "",
+         "padding": "0px",
+         "border": {},
+         "borderRadius": "0px",
+         "_meta": {
+          "htmlID": "u_column_9",
+          "htmlClassNames": "u_column"
+         },
+         "deletable": true,
+         "locked": false
+        }
+       }
+      ],
+      "values": {
+       "displayCondition": null,
+       "columns": false,
+       "_styleGuide": null,
+       "backgroundColor": "",
+       "columnsBackgroundColor": "",
+       "backgroundImage": {
+        "url": "",
+        "fullWidth": true,
+        "repeat": "no-repeat",
+        "size": "custom",
+        "position": "center"
+       },
+       "padding": "0px",
+       "anchor": "",
+       "noStackMobile": false,
+       "_meta": {
+        "htmlID": "u_row_6",
+        "htmlClassNames": "u_row"
+       },
+       "selectable": true,
+       "draggable": true,
+       "duplicatable": true,
+       "deletable": true,
+       "hideable": true,
+       "locked": false,
+       "cells": [
+        1
+       ]
+      }
+     }
+    ],
+    "values": {
+     "_styleGuide": null,
+     "borderRadius": "10px",
+     "contentAlign": "center",
+     "contentVerticalAlign": "middle",
+     "contentWidth": "600px",
+     "fontFamily": {
+      "label": "Familjen Grotesk",
+      "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+     },
+     "textColor": "#12242e",
+     "language": {},
+     "backgroundColor": "#f3f1ea",
+     "documentSize": "A4",
+     "documentOrientation": "portrait",
+     "documentMargin": "96px",
+     "preheaderText": "",
+     "linkStyle": {
+      "body": true,
+      "linkColor": "#0000ee",
+      "linkHoverColor": "#0000ee",
+      "linkUnderline": true,
+      "linkHoverUnderline": true
+     },
+     "backgroundImage": {
+      "url": "",
+      "fullWidth": true,
+      "repeat": "no-repeat",
+      "size": "custom",
+      "position": "center"
+     },
+     "accessibilityTitle": "Merrow Line: Hidden blocks",
+     "_meta": {
+      "htmlID": "u_body",
+      "htmlClassNames": "u_body"
+     },
+     "fonts": [
+      {
+       "family": "Familjen Grotesk",
+       "src": "https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2",
+       "format": "woff2",
+       "weight": [
+        400,
+        700
+       ]
+      },
+      {
+       "family": "DM Mono",
+       "src": "https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2",
+       "format": "woff2",
+       "weight": 400
+      }
+     ]
+    }
+   },
+   "schemaVersion": 27
+  },
+  "report": [
+   "root.children[2]: the builder's row has no place for mobile.padding: left out"
+  ]
+ }
+}

@@ -1,0 +1,163 @@
+{
+ "root": "Canvas",
+ "html": "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Merrow Line: summer timetable</title><style>@font-face{font-family:\"Familjen Grotesk\";src:url(\"https://fonts.gstatic.com/s/familjengrotesk/v11/Qw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2\") format(\"woff2\");font-weight:400 700;font-display:swap}@font-face{font-family:\"DM Mono\";src:url(\"https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2\") format(\"woff2\");font-weight:400;font-display:swap}</style></head><body style=\"margin:0;background-color:#12242e\"><main style=\"width:600px;height:315px;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;padding:36px;background-color:#12242e;color:#f3f1ea;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;flex-direction:column;gap:10px\"><p style=\"margin:0;color:#a7b4ba;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Summer timetable, out now</p><h1 style=\"margin:0;font-size:52px;font-weight:600;line-height:1.02;letter-spacing:-1.4px\">Oban to Stornoway,<br>every morning.</h1></div><div class=\"emfqa6\" style=\"display:flex;gap:16px;align-items:center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"120\" height=\"40\" viewBox=\"0 0 120 40\" role=\"img\" aria-label=\"A small ferry under a low red sun\" style=\"flex:1 1 0%;min-width:0;align-self:center;display:block;flex:none\"><circle cx=\"100\" cy=\"14\" r=\"11\" fill=\"#c93a25\"></circle><rect x=\"26\" y=\"10\" width=\"38\" height=\"14\" rx=\"1\" fill=\"#f3f1ea\"></rect><polygon points=\"6,24 88,24 76,38 18,38\" fill=\"#a7b4ba\"></polygon></svg><p style=\"flex:1 1 0%;min-width:0;margin:0;font-weight:600\">merrow.example</p></div></main></body></html>",
+ "text": "Summer timetable, out now\n\nOBAN TO STORNOWAY,\nEVERY MORNING.\n\n[A small ferry under a low red sun]\n\nmerrow.example",
+ "classes": [
+  "emfqa6"
+ ],
+ "diagnostics": {
+  "validate": [],
+  "render": [],
+  "prepare": []
+ },
+ "outline": "Canvas 600px: background #12242e\n  Column 528px\n    Text 528px \"Summer timetable, out now\"\n    Heading h1 528px \"Oban to Stornoway, / every morning.\"\n  Row 528px: 2 side by side, stacked on phones\n    Svg 120px (3 shapes)\n    Text 392px \"merrow.example\"",
+ "image": {
+  "width": 600,
+  "height": 315,
+  "style": {
+   "display": "flex",
+   "flexDirection": "column",
+   "width": "600px",
+   "height": "315px",
+   "overflow": "hidden",
+   "justifyContent": "space-between",
+   "padding": "36px 36px 36px 36px",
+   "backgroundColor": "#12242e",
+   "color": "#f3f1ea",
+   "fontFamily": "",
+   "fontSize": "16px",
+   "fontWeight": 400,
+   "fontStyle": "normal",
+   "lineHeight": "24px",
+   "textAlign": "left"
+  },
+  "children": [
+   {
+    "kind": "box",
+    "style": {
+     "display": "flex",
+     "flexDirection": "column",
+     "gap": "10px"
+    },
+    "children": [
+     {
+      "kind": "text",
+      "style": {
+       "display": "flex",
+       "flexWrap": "wrap",
+       "color": "#a7b4ba",
+       "fontFamily": "",
+       "fontSize": "12px",
+       "fontWeight": 400,
+       "fontStyle": "normal",
+       "lineHeight": "18px",
+       "textAlign": "left"
+      },
+      "runs": [
+       "Summer timetable, out now"
+      ]
+     },
+     {
+      "kind": "text",
+      "style": {
+       "display": "flex",
+       "flexWrap": "wrap",
+       "color": "#f3f1ea",
+       "fontFamily": "",
+       "fontSize": "52px",
+       "fontWeight": 600,
+       "fontStyle": "normal",
+       "lineHeight": "53.04px",
+       "letterSpacing": "-1.4px",
+       "textAlign": "left",
+       "whiteSpace": "pre-wrap"
+      },
+      "runs": [
+       "Oban to Stornoway,",
+       "\n",
+       "every morning."
+      ]
+     }
+    ]
+   },
+   {
+    "kind": "box",
+    "style": {
+     "display": "flex",
+     "flexDirection": "row",
+     "gap": "16px",
+     "alignItems": "center"
+    },
+    "children": [
+     {
+      "kind": "box",
+      "style": {
+       "display": "flex",
+       "flexShrink": 0,
+       "flexGrow": 0,
+       "alignSelf": "center"
+      },
+      "children": [
+       {
+        "kind": "drawing",
+        "width": 120,
+        "height": 40,
+        "viewBox": "0 0 120 40",
+        "shapes": [
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 100,
+           "cy": 14,
+           "r": 11,
+           "fill": "#c93a25"
+          }
+         },
+         {
+          "kind": "rect",
+          "attributes": {
+           "x": 26,
+           "y": 10,
+           "width": 38,
+           "height": 14,
+           "rx": 1,
+           "fill": "#f3f1ea"
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "6,24 88,24 76,38 18,38",
+           "fill": "#a7b4ba"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "text",
+      "style": {
+       "display": "flex",
+       "flexWrap": "wrap",
+       "color": "#f3f1ea",
+       "fontFamily": "",
+       "fontSize": "16px",
+       "fontWeight": 600,
+       "fontStyle": "normal",
+       "lineHeight": "24px",
+       "textAlign": "left",
+       "width": "392px",
+       "flexShrink": 0,
+       "flexGrow": 0
+      },
+      "runs": [
+       "merrow.example"
+      ]
+     }
+    ]
+   }
+  ],
+  "fonts": []
+ }
+}

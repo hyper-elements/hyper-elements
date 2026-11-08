@@ -1,0 +1,477 @@
+{
+ "root": "Canvas",
+ "html": "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>Slow Signals, episode 48: The quiet economics of lighthouses</title><style>@font-face{font-family:\"DM Serif Display\";src:url(\"https://fonts.gstatic.com/s/dmserifdisplay/v17/-nFnOHM81r4j6k0gjAW3mujVU2B2G_Bx0vrx52g.woff2\") format(\"woff2\");font-weight:400;font-display:swap}@font-face{font-family:\"DM Mono\";src:url(\"https://fonts.gstatic.com/s/dmmono/v16/aFTU7PB1QTsUX8KYthqQBK6PYK0.woff2\") format(\"woff2\");font-weight:400;font-display:swap}</style></head><body style=\"margin:0;background-color:#1b1712\"><main style=\"width:1200px;height:630px;overflow:hidden;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;box-sizing:border-box;padding:64px 72px;background-color:#1b1712;color:#f1e8d6;font-family:&#39;DM Mono&#39;, Menlo, monospace;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div class=\"emfqa6\" style=\"display:flex;gap:48px;align-items:stretch\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:28px;justify-content:space-between;height:502px\"><p style=\"margin:0;color:#a79c88;font-size:18px;letter-spacing:2.5px;text-transform:uppercase\">Slow Signals · Episode 48</p><div style=\"display:flex;flex-direction:column;gap:22px\"><h1 style=\"margin:0;font-family:&#39;DM Serif Display&#39;, Georgia, serif;font-size:84px;font-weight:400;line-height:0.98;letter-spacing:-1.5px\">The quiet economics of lighthouses</h1><p style=\"margin:0;font-size:20px\">With Hannah Okoye, who kept the Fair Isle South light for twenty-three years.</p></div><div class=\"emfqa6\" style=\"display:flex;gap:32px;align-items:center\"><p style=\"flex:0 0 auto;min-width:0;margin:0;color:#f2b544;font-size:18px;letter-spacing:2.5px;text-transform:uppercase\">52 min</p><p style=\"flex:1 1 0%;min-width:0;margin:0;color:#a79c88;font-size:18px;letter-spacing:2.5px;text-transform:uppercase\">Wherever you listen</p></div></div><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"360\" height=\"502\" viewBox=\"0 0 360 502\" role=\"img\" aria-label=\"A lighthouse at night, its beam sweeping out to the left over a dark sea, under a few stars.\" style=\"flex:1 1 0%;min-width:0;align-self:stretch;display:block;flex:none\"><circle cx=\"40\" cy=\"60\" r=\"2\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"96\" cy=\"30\" r=\"1.5\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"150\" cy=\"96\" r=\"2.5\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"212\" cy=\"44\" r=\"1.5\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"300\" cy=\"22\" r=\"2\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"352\" cy=\"84\" r=\"1.5\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"30\" cy=\"170\" r=\"1.5\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"330\" cy=\"168\" r=\"2\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><circle cx=\"270\" cy=\"120\" r=\"1.2\" fill=\"#f1e8d6\" opacity=\"0.7\"></circle><polygon points=\"252,194 220.5,184.625 220.5,203.375 252,194\" fill=\"#f2b544\" opacity=\"0.34\"></polygon><polygon points=\"220.5,184.625 189,175.25 189,212.75 220.5,203.375\" fill=\"#f2b544\" opacity=\"0.29800000000000004\"></polygon><polygon points=\"189,175.25 157.5,165.875 157.5,222.125 189,212.75\" fill=\"#f2b544\" opacity=\"0.256\"></polygon><polygon points=\"157.5,165.875 126,156.5 126,231.5 157.5,222.125\" fill=\"#f2b544\" opacity=\"0.21400000000000002\"></polygon><polygon points=\"126,156.5 94.5,147.125 94.5,240.875 126,231.5\" fill=\"#f2b544\" opacity=\"0.17200000000000001\"></polygon><polygon points=\"94.5,147.125 63,137.75 63,250.25 94.5,240.875\" fill=\"#f2b544\" opacity=\"0.13\"></polygon><polygon points=\"63,137.75 31.5,128.375 31.5,259.625 63,250.25\" fill=\"#f2b544\" opacity=\"0.08800000000000002\"></polygon><polygon points=\"31.5,128.375 0,119 0,269 31.5,259.625\" fill=\"#f2b544\" opacity=\"0.045999999999999985\"></polygon><polygon points=\"228,430 240,214 264,214 276,430\" fill=\"#f1e8d6\"></polygon><polygon points=\"230,400 232,370 272,370 274,400\" fill=\"#1b1712\" opacity=\"0.85\"></polygon><polygon points=\"234,320 236,296 268,296 270,320\" fill=\"#1b1712\" opacity=\"0.85\"></polygon><rect x=\"232\" y=\"206\" width=\"40\" height=\"8\" fill=\"#f1e8d6\"></rect><rect x=\"238\" y=\"180\" width=\"28\" height=\"26\" rx=\"2\" fill=\"#f2b544\"></rect><path d=\"M234 182 L252 160 L270 182 Z\" fill=\"#f1e8d6\"></path><line x1=\"252\" y1=\"160\" x2=\"252\" y2=\"148\" fill=\"#000000\" stroke=\"#f1e8d6\" stroke-width=\"2\"></line><path d=\"M190 436 C214 420 300 418 330 438 L340 452 L180 452 Z\" fill=\"#3a332a\"></path><line x1=\"10\" y1=\"466\" x2=\"150\" y2=\"466\" fill=\"#000000\" stroke=\"#f2b544\" stroke-width=\"2\" opacity=\"0.45\"></line><line x1=\"40\" y1=\"480\" x2=\"120\" y2=\"480\" fill=\"#000000\" stroke=\"#f2b544\" stroke-width=\"2\" opacity=\"0.3\"></line><line x1=\"190\" y1=\"474\" x2=\"340\" y2=\"474\" fill=\"#000000\" stroke=\"#a79c88\" stroke-width=\"1.5\" opacity=\"0.4\"></line><line x1=\"220\" y1=\"490\" x2=\"300\" y2=\"490\" fill=\"#000000\" stroke=\"#a79c88\" stroke-width=\"1.5\" opacity=\"0.3\"></line></svg></div></main></body></html>",
+ "text": "Slow Signals · Episode 48\n\nTHE QUIET ECONOMICS OF LIGHTHOUSES\n\nWith Hannah Okoye, who kept the Fair Isle South light for twenty-three years.\n\n52 min\n\nWherever you listen\n\n[A lighthouse at night, its beam sweeping out to the left over a dark sea, under a few stars.]",
+ "classes": [
+  "emfqa6"
+ ],
+ "diagnostics": {
+  "validate": [],
+  "render": [],
+  "prepare": []
+ },
+ "outline": "Canvas 1200px: background #1b1712\n  Row 1056px: 2 side by side, stacked on phones\n    Column 648px\n      Text 648px \"Slow Signals · Episode 48\"\n      Column 648px\n        Heading h1 648px \"The quiet economics of lighthouses\"\n        Text 648px \"With Hannah Okoye, who kept the Fair Isle South light for twenty-three years.\"\n      Row 648px: 2 side by side, stacked on phones\n        Text \"52 min\"\n        Text 616px \"Wherever you listen\"\n    Svg 360px (29 shapes)",
+ "image": {
+  "width": 1200,
+  "height": 630,
+  "style": {
+   "display": "flex",
+   "flexDirection": "column",
+   "width": "1200px",
+   "height": "630px",
+   "overflow": "hidden",
+   "justifyContent": "space-between",
+   "padding": "64px 72px 64px 72px",
+   "backgroundColor": "#1b1712",
+   "color": "#f1e8d6",
+   "fontFamily": "",
+   "fontSize": "16px",
+   "fontWeight": 400,
+   "fontStyle": "normal",
+   "lineHeight": "24px",
+   "textAlign": "left"
+  },
+  "children": [
+   {
+    "kind": "box",
+    "style": {
+     "display": "flex",
+     "flexDirection": "row",
+     "gap": "48px",
+     "alignItems": "stretch"
+    },
+    "children": [
+     {
+      "kind": "box",
+      "style": {
+       "display": "flex",
+       "flexDirection": "column",
+       "height": "502px",
+       "width": "648px",
+       "flexShrink": 0,
+       "flexGrow": 0,
+       "gap": "28px",
+       "justifyContent": "space-between"
+      },
+      "children": [
+       {
+        "kind": "text",
+        "style": {
+         "display": "flex",
+         "flexWrap": "wrap",
+         "color": "#a79c88",
+         "fontFamily": "",
+         "fontSize": "18px",
+         "fontWeight": 400,
+         "fontStyle": "normal",
+         "lineHeight": "27px",
+         "letterSpacing": "2.5px",
+         "textAlign": "left",
+         "textTransform": "uppercase"
+        },
+        "runs": [
+         "Slow Signals · Episode 48"
+        ]
+       },
+       {
+        "kind": "box",
+        "style": {
+         "display": "flex",
+         "flexDirection": "column",
+         "gap": "22px"
+        },
+        "children": [
+         {
+          "kind": "text",
+          "style": {
+           "display": "flex",
+           "flexWrap": "wrap",
+           "color": "#f1e8d6",
+           "fontFamily": "",
+           "fontSize": "84px",
+           "fontWeight": 400,
+           "fontStyle": "normal",
+           "lineHeight": "82.32px",
+           "letterSpacing": "-1.5px",
+           "textAlign": "left"
+          },
+          "runs": [
+           "The quiet economics of lighthouses"
+          ]
+         },
+         {
+          "kind": "text",
+          "style": {
+           "display": "flex",
+           "flexWrap": "wrap",
+           "color": "#f1e8d6",
+           "fontFamily": "",
+           "fontSize": "20px",
+           "fontWeight": 400,
+           "fontStyle": "normal",
+           "lineHeight": "30px",
+           "textAlign": "left"
+          },
+          "runs": [
+           "With Hannah Okoye, who kept the Fair Isle South light for twenty-three years."
+          ]
+         }
+        ]
+       },
+       {
+        "kind": "box",
+        "style": {
+         "display": "flex",
+         "flexDirection": "row",
+         "gap": "32px",
+         "alignItems": "center"
+        },
+        "children": [
+         {
+          "kind": "text",
+          "style": {
+           "display": "flex",
+           "flexWrap": "wrap",
+           "color": "#f2b544",
+           "fontFamily": "",
+           "fontSize": "18px",
+           "fontWeight": 400,
+           "fontStyle": "normal",
+           "lineHeight": "27px",
+           "letterSpacing": "2.5px",
+           "textAlign": "left",
+           "textTransform": "uppercase",
+           "flexShrink": 0,
+           "flexGrow": 0
+          },
+          "runs": [
+           "52 min"
+          ]
+         },
+         {
+          "kind": "text",
+          "style": {
+           "display": "flex",
+           "flexWrap": "wrap",
+           "color": "#a79c88",
+           "fontFamily": "",
+           "fontSize": "18px",
+           "fontWeight": 400,
+           "fontStyle": "normal",
+           "lineHeight": "27px",
+           "letterSpacing": "2.5px",
+           "textAlign": "left",
+           "textTransform": "uppercase",
+           "width": "616px",
+           "flexShrink": 0,
+           "flexGrow": 0
+          },
+          "runs": [
+           "Wherever you listen"
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "box",
+      "style": {
+       "display": "flex",
+       "flexShrink": 0,
+       "flexGrow": 0,
+       "alignSelf": "stretch"
+      },
+      "children": [
+       {
+        "kind": "drawing",
+        "width": 360,
+        "height": 502,
+        "viewBox": "0 0 360 502",
+        "shapes": [
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 40,
+           "cy": 60,
+           "r": 2,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 96,
+           "cy": 30,
+           "r": 1.5,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 150,
+           "cy": 96,
+           "r": 2.5,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 212,
+           "cy": 44,
+           "r": 1.5,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 300,
+           "cy": 22,
+           "r": 2,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 352,
+           "cy": 84,
+           "r": 1.5,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 30,
+           "cy": 170,
+           "r": 1.5,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 330,
+           "cy": 168,
+           "r": 2,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "circle",
+          "attributes": {
+           "cx": 270,
+           "cy": 120,
+           "r": 1.2,
+           "fill": "#f1e8d6",
+           "opacity": 0.7
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "252,194 220.5,184.625 220.5,203.375 252,194",
+           "fill": "#f2b544",
+           "opacity": 0.34
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "220.5,184.625 189,175.25 189,212.75 220.5,203.375",
+           "fill": "#f2b544",
+           "opacity": 0.29800000000000004
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "189,175.25 157.5,165.875 157.5,222.125 189,212.75",
+           "fill": "#f2b544",
+           "opacity": 0.256
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "157.5,165.875 126,156.5 126,231.5 157.5,222.125",
+           "fill": "#f2b544",
+           "opacity": 0.21400000000000002
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "126,156.5 94.5,147.125 94.5,240.875 126,231.5",
+           "fill": "#f2b544",
+           "opacity": 0.17200000000000001
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "94.5,147.125 63,137.75 63,250.25 94.5,240.875",
+           "fill": "#f2b544",
+           "opacity": 0.13
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "63,137.75 31.5,128.375 31.5,259.625 63,250.25",
+           "fill": "#f2b544",
+           "opacity": 0.08800000000000002
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "31.5,128.375 0,119 0,269 31.5,259.625",
+           "fill": "#f2b544",
+           "opacity": 0.045999999999999985
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "228,430 240,214 264,214 276,430",
+           "fill": "#f1e8d6"
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "230,400 232,370 272,370 274,400",
+           "fill": "#1b1712",
+           "opacity": 0.85
+          }
+         },
+         {
+          "kind": "polygon",
+          "attributes": {
+           "points": "234,320 236,296 268,296 270,320",
+           "fill": "#1b1712",
+           "opacity": 0.85
+          }
+         },
+         {
+          "kind": "rect",
+          "attributes": {
+           "x": 232,
+           "y": 206,
+           "width": 40,
+           "height": 8,
+           "fill": "#f1e8d6"
+          }
+         },
+         {
+          "kind": "rect",
+          "attributes": {
+           "x": 238,
+           "y": 180,
+           "width": 28,
+           "height": 26,
+           "rx": 2,
+           "fill": "#f2b544"
+          }
+         },
+         {
+          "kind": "path",
+          "attributes": {
+           "d": "M234 182 L252 160 L270 182 Z",
+           "fill": "#f1e8d6"
+          }
+         },
+         {
+          "kind": "line",
+          "attributes": {
+           "x1": 252,
+           "y1": 160,
+           "x2": 252,
+           "y2": 148,
+           "fill": "#000000",
+           "stroke": "#f1e8d6",
+           "strokeWidth": 2
+          }
+         },
+         {
+          "kind": "path",
+          "attributes": {
+           "d": "M190 436 C214 420 300 418 330 438 L340 452 L180 452 Z",
+           "fill": "#3a332a"
+          }
+         },
+         {
+          "kind": "line",
+          "attributes": {
+           "x1": 10,
+           "y1": 466,
+           "x2": 150,
+           "y2": 466,
+           "fill": "#000000",
+           "stroke": "#f2b544",
+           "strokeWidth": 2,
+           "opacity": 0.45
+          }
+         },
+         {
+          "kind": "line",
+          "attributes": {
+           "x1": 40,
+           "y1": 480,
+           "x2": 120,
+           "y2": 480,
+           "fill": "#000000",
+           "stroke": "#f2b544",
+           "strokeWidth": 2,
+           "opacity": 0.3
+          }
+         },
+         {
+          "kind": "line",
+          "attributes": {
+           "x1": 190,
+           "y1": 474,
+           "x2": 340,
+           "y2": 474,
+           "fill": "#000000",
+           "stroke": "#a79c88",
+           "strokeWidth": 1.5,
+           "opacity": 0.4
+          }
+         },
+         {
+          "kind": "line",
+          "attributes": {
+           "x1": 220,
+           "y1": 490,
+           "x2": 300,
+           "y2": 490,
+           "fill": "#000000",
+           "stroke": "#a79c88",
+           "strokeWidth": 1.5,
+           "opacity": 0.3
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "fonts": []
+ }
+}

@@ -40,7 +40,7 @@ A template is one of these, and the root decides the output: `render()` writes a
 
 An email. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `600`)
@@ -51,18 +51,18 @@ Props:
 - `fonts`: *fontFaces*. The font files the template loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.
 
 `style`:
-- `color`: *color* (default `"#000000"`, inherited)
-- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited)
-- `fontSize`: a length (a number of px) (default `16`, inherited)
-- `fontWeight`: *fontWeight* (default `400`, inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*. The window's background, behind the content.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (default `"#000000"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
+- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background). The window's background, behind the content.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `gap`.
 
@@ -70,7 +70,7 @@ Props:
 
 A web page. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
@@ -82,18 +82,18 @@ Props:
 - `fonts`: *fontFaces*. The font files the template loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.
 
 `style`:
-- `color`: *color* (default `"#000000"`, inherited)
-- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited)
-- `fontSize`: a length (a number of px) (default `16`, inherited)
-- `fontWeight`: *fontWeight* (default `400`, inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*. The window's background, behind the content.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (default `"#000000"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
+- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background). The window's background, behind the content.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `gap`.
 
@@ -101,7 +101,7 @@ Props:
 
 A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter. Drawn in: page.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter.
 
 Props:
 - `size`: one of "A3", "A4", "A5", "Letter", "Legal", "Tabloid" (default `"A4"`)
@@ -113,24 +113,24 @@ Props:
 - `fonts`: *fontFaces*. The font files the template loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.
 
 `style`:
-- `color`: *color* (default `"#000000"`, inherited)
-- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited)
-- `fontSize`: a length (a number of px) (default `16`, inherited)
-- `fontWeight`: *fontWeight* (default `400`, inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*. Each page's background, out to its edges.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (default `"#000000"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
+- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background). Each page's background, out to its edges.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 ### Canvas
 
 An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The image's width, in px.
@@ -141,20 +141,20 @@ Props:
 - `fonts`: *fontFaces*. The font files the template loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.
 
 `style`:
-- `color`: *color* (default `"#000000"`, inherited)
-- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited)
-- `fontSize`: a length (a number of px) (default `16`, inherited)
-- `fontWeight`: *fontWeight* (default `400`, inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*. The window's background, behind the content.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-- `padding`: *insets*
-- `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
+- `color`: *color* (default `"#000000"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
+- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background). The window's background, behind the content.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `padding`: *insets* (Spacing)
+- `justifyContent`: one of "start", "center", "end", "space-between" (Layout). Where children sit along the layout's direction, as CSS justify-content.
 
 ## Sections and layout
 
@@ -164,23 +164,23 @@ Bands and boxes that arrange blocks. None is required: a root stacks its childre
 
 A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*
-- `padding`: *insets*
-- `border`: *border*
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background)
+- `padding`: *insets* (Spacing)
+- `border`: *border* (Border)
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
 
@@ -188,36 +188,36 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `stackOnMobile`: true or false (default `true`). Its children stack full-width on phones (in an Email or a Page).
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `minWidth`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `height`: a length (a number of px)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `overflow`: one of "visible", "hidden". Whether content past a set height is cut off.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-- `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
-- `flexWrap`: one of "nowrap", "wrap", "words". "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `minWidth`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `height`: a length (a number of px) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `justifyContent`: one of "start", "center", "end", "space-between" (Layout). Where children sit along the layout's direction, as CSS justify-content.
+- `flexWrap`: one of "nowrap", "wrap", "words" (Layout). "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
@@ -225,31 +225,31 @@ Props:
 
 Stacks its children vertically, with its own spacing and box.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `minWidth`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `height`: a length (a number of px)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `overflow`: one of "visible", "hidden". Whether content past a set height is cut off.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-- `justifyContent`: one of "start", "center", "end", "space-between". Where children sit along the layout's direction, as CSS justify-content.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `minWidth`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `height`: a length (a number of px) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `justifyContent`: one of "start", "center", "end", "space-between" (Layout). Where children sit along the layout's direction, as CSS justify-content.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
@@ -257,35 +257,35 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Its children in columns of equal width, row after row; on phones, one under another.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `columns`: an integer from 1 to 12 (default `2`). How many children to a row.
 - `stackOnMobile`: true or false (default `true`). Its children one under another on phones (in an Email or a Page).
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `minWidth`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `height`: a length (a number of px)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `overflow`: one of "visible", "hidden". Whether content past a set height is cut off.
-- `gap`: a length (a number of px). Space between its children, across and down (unless rowGap is set).
-- `rowGap`: a length (a number of px). Space between its rows (gap by default); on phones, where the children stack, gap is between them.
-- `alignItems`: one of "start", "center", "end", "stretch". Where each child sits in its row's height, as CSS align-items.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `minWidth`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `height`: a length (a number of px) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px) (Spacing). Space between its children, across and down (unless rowGap is set).
+- `rowGap`: a length (a number of px) (Spacing). Space between its rows (gap by default); on phones, where the children stack, gap is between them.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where each child sits in its row's height, as CSS align-items.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`.
 
@@ -293,28 +293,28 @@ Props:
 
 Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: email, page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `minWidth`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `height`: a length (a number of px). Its height: the image under its children covers it, cut at its sides or its top and bottom.
-- `alignItems`: one of "start", "center", "end", "stretch" (default `"start"`). Where its children sit in its height, as CSS align-items.
-- `justifyItems`: one of "start", "center", "end", "stretch" (default `"stretch"`). Where its children sit across its width, as CSS justify-items: stretched to it by default.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `minWidth`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `height`: a length (a number of px) (Size). Its height: the image under its children covers it, cut at its sides or its top and bottom.
+- `alignItems`: one of "start", "center", "end", "stretch" (default `"start"`, Layout). Where its children sit in its height, as CSS align-items.
+- `justifyItems`: one of "start", "center", "end", "stretch" (default `"stretch"`, Layout). Where its children sit across its width, as CSS justify-items: stretched to it by default.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
 
@@ -326,7 +326,7 @@ Content, stacked down whatever holds it.
 
 Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them.
 
-Holds: Rect, Circle, Ellipse, Line, Polygon, Path. Drawn in: page.
+Holds: Rect, Circle, Ellipse, Line, Polygon, Path. Not in an Email.
 
 Props:
 - `width`: a number from 0 (required)
@@ -335,11 +335,11 @@ Props:
 - `title`: text. What it shows, read out by screen readers.
 
 `style`:
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `padding`, `border`.
 
@@ -347,29 +347,29 @@ Props:
 
 A paragraph of text.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image.
 
 Props:
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
 
@@ -377,30 +377,30 @@ Props:
 
 A heading, from level 1 (the page's title) to 6.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag.
 
 Props:
 - `level`: one of 1, 2, 3, 4, 5, 6 (default `1`)
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (default `700`, inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.25`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (default `700`, inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.25`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
 
@@ -408,7 +408,7 @@ Props:
 
 A link drawn as a button.
 
-Holds: text; Span, MergeTag, LineBreak. Drawn in: email, page.
+Holds: text; Span, MergeTag, LineBreak.
 
 Props:
 - `href`: *link* (required)
@@ -417,25 +417,25 @@ Props:
 - `attrs`: *attributes*. More attributes for its link: a class, a `data-` attribute.
 
 `style`:
-- `color`: *color* (default `"#ffffff"`, inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (default `14`, inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.2`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"center"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `padding`: *insets* (default `{"top":10,"right":20,"bottom":10,"left":20}`)
-- `backgroundColor`: *color* (default `"#0879a1"`)
-- `border`: *border*
-- `borderRadius`: *radius* (default `4`)
-- `boxSizing`: one of "border-box", "content-box". Whether its width holds its padding and border (border-box), or they go on top of it (content-box).
-- `alignSelf`: one of "start", "center", "end". Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (default `"#ffffff"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (default `14`, inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.2`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"center"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `padding`: *insets* (default `{"top":10,"right":20,"bottom":10,"left":20}`, Spacing)
+- `backgroundColor`: *color* (default `"#0879a1"`, Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (default `4`, Border)
+- `boxSizing`: one of "border-box", "content-box" (Size). Whether its width holds its padding and border (border-box), or they go on top of it (content-box).
+- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.hover`: `color`, `backgroundColor`.
 
@@ -445,7 +445,7 @@ Props:
 
 An image in the content. Without a width it takes its own size, no wider than its parent.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `src`: *asset* (required)
@@ -453,14 +453,14 @@ Props:
 - `title`: text. Shown as a tooltip by mail clients and browsers that show one.
 
 `style`:
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `height`: a length (a number of px)
-- `border`: *border*
-- `borderRadius`: *radius*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
-- `alignSelf`: one of "start", "center", "end". Where it sits in its stack on phones, where that's another place than on desktop.
-- `verticalAlign`: one of "top", "middle". Where it sits in a line of text it's in.
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `height`: a length (a number of px) (Size)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack on phones, where that's another place than on desktop.
+- `verticalAlign`: one of "top", "middle" (Layout). Where it sits in a line of text it's in.
 
 `style.mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
 
@@ -468,12 +468,12 @@ Props:
 
 A horizontal line.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 `style`:
-- `borderTop`: *line* (default `{"width":1,"style":"solid","color":"#bbbbbb"}`). The line, as CSS border-top: "1px solid #bbbbbb".
-- `width`: a length (a number of px, %) (default `"100%"`)
-- `padding`: *insets*
+- `borderTop`: *line* (default `{"width":1,"style":"solid","color":"#bbbbbb"}`, Border). The line, as CSS border-top: "1px solid #bbbbbb".
+- `width`: a length (a number of px, %) (default `"100%"`, Size)
+- `padding`: *insets* (Spacing)
 
 `style.mobile` (on phones): `width`, `padding`.
 
@@ -481,30 +481,30 @@ Holds: nothing. Drawn in: email, page.
 
 A bulleted or numbered list of ListItems. Its markers sit in a column of their own (indent) before the items.
 
-Holds: ListItem. Drawn in: email, page.
+Holds: ListItem.
 
 Props:
 - `type`: one of "bullet", "number" (default `"bullet"`)
 - `start`: an integer from 0 (default `1`). The first item's number, in a numbered list.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `gap`: a length (a number of px). Space between items.
-- `indent`: a length (a number of px) (default `24`). The width of the markers' column, before the items.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `gap`: a length (a number of px) (Spacing). Space between items.
+- `indent`: a length (a number of px) (default `24`, Spacing). The width of the markers' column, before the items.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
 
@@ -512,26 +512,26 @@ Props:
 
 A table of data: TableRows of TableCells. Columns take their cells' widths; the rest share what's left.
 
-Holds: TableRow. Drawn in: email, page.
+Holds: TableRow.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `backgroundColor`: *color*
-- `border`: *border*
-- `cellPadding`: *insets*. Every cell's padding, where the cell doesn't set its own.
-- `rowBorder`: *line*
-- `borderCollapse`: one of "separate", "collapse". Whether cells side by side draw a border each (separate) or share one (collapse).
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `cellPadding`: *insets* (Spacing). Every cell's padding, where the cell doesn't set its own.
+- `rowBorder`: *line* (Border)
+- `borderCollapse`: one of "separate", "collapse" (Border). Whether cells side by side draw a border each (separate) or share one (collapse).
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `border`.
 
@@ -539,7 +539,7 @@ Holds: TableRow. Drawn in: email, page.
 
 A YouTube or Vimeo video: its player on a page; in an email (which can't play one), its thumbnail, linked to it.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `src`: *video* (required). The video's YouTube or Vimeo link.
@@ -547,9 +547,9 @@ Props:
 - `title`: text (default `"Video"`). The player's title on a page, the thumbnail's alternate text in an email.
 
 `style`:
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `width`, `maxWidth`.
 
@@ -557,7 +557,7 @@ Props:
 
 Links to social profiles: a line of the networks' icons, each linked to its profile.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `icons`: a list of icons, each { name, href } (required). Each network by name ("Instagram", "LinkedIn") and the link to its profile.
@@ -565,9 +565,9 @@ Props:
 - `size`: an integer from 1 (default `32`). Each icon's width and height, in px.
 
 `style`:
-- `gap`: a length (a number of px) (default `5`). Space between children.
-- `justifyContent`: one of "start", "center", "end" (default `"center"`). Where the icons sit across the line.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `gap`: a length (a number of px) (default `5`, Spacing). Space between children.
+- `justifyContent`: one of "start", "center", "end" (default `"center"`, Layout). Where the icons sit across the line.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `gap`.
 
@@ -575,7 +575,7 @@ Props:
 
 A line of links (a site's sections, a footer's), onto more lines where they don't fit, with a separator between them on desktop; or links down a column.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `items`: a list of items, each { text, href } (required). Each link's text and where it goes.
@@ -583,17 +583,17 @@ Props:
 - `layout`: one of "horizontal", "vertical" (default `"horizontal"`)
 
 `style`:
-- `color`: *color* (default `"#0068A5"`, inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (default `14`, inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `lineHeight`: *lineHeight* (default `1.2`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `separatorColor`: *color* (default `"#444444"`)
-- `padding`: *insets* (default `{"top":5,"right":15,"bottom":5,"left":15}`). Around each link: its sides are the space between them.
-- `justifyContent`: one of "start", "center", "end" (default `"center"`). Where the links sit.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (default `"#0068A5"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (default `14`, inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.2`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `separatorColor`: *color* (default `"#444444"`, Border)
+- `padding`: *insets* (default `{"top":5,"right":15,"bottom":5,"left":15}`, Spacing). Around each link: its sides are the space between them.
+- `justifyContent`: one of "start", "center", "end" (default `"center"`, Layout). Where the links sit.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`.
 
@@ -601,7 +601,7 @@ Props:
 
 Markup written as it is, for what no component says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `html`: text (required). The markup, written as it is: only markup you trust. Or give it as JSX inside the block, which React writes.
@@ -615,7 +615,7 @@ Inside text: a styled run, a link, a line break, a merge tag.
 
 In a Document's text: the number of the page it's on, or (total) how many pages there are.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Only in a Document.
 
 Props:
 - `total`: true or false (default `false`). How many pages the Document has, instead of this page's number.
@@ -624,19 +624,19 @@ Props:
 
 Styled text inside text; raised or lowered (superscript, subscript) with verticalAlign.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `backgroundColor`: *color*
-- `verticalAlign`: one of "baseline", "super", "sub". "super": superscript (®, a footnote mark); "sub": subscript; as CSS vertical-align.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `backgroundColor`: *color* (Background)
+- `verticalAlign`: one of "baseline", "super", "sub" (Layout). "super": superscript (®, a footnote mark); "sub": subscript; as CSS vertical-align.
 
 `style.mobile` (on phones): `fontSize`, `letterSpacing`.
 
@@ -644,7 +644,7 @@ Holds: text; PageNumber, Span, Link, LineBreak, MergeTag. Drawn in: email, page.
 
 A link: text inside text, or around an Image.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image.
 
 Props:
 - `href`: *link* (required)
@@ -653,16 +653,16 @@ Props:
 - `attrs`: *attributes*. More attributes for it: a class, a `data-` attribute.
 
 `style`:
-- `color`: *color* (default `"#0000ee"`, inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through" (default `"underline"`)
-- `backgroundColor`: *color*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (default `"#0000ee"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (default `"underline"`, Typography)
+- `backgroundColor`: *color* (Background)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.hover`: `color`, `textDecoration`, `backgroundColor`.
 
@@ -672,13 +672,13 @@ Props:
 
 Starts a new line inside text.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 ### MergeTag
 
 A value the sending service fills in (a name, a link), written in the service's own syntax.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `name`: text (required)
@@ -691,92 +691,92 @@ Only inside the component named: a list's items, a table's rows and cells, a doc
 
 One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*. The page's background, out to its edges.
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background). The page's background, out to its edges.
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 ### PageBreak
 
 In a Document, where a page ends: what follows starts the next page.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Only in a Document.
 
 ### PageHeader
 
 In a Document: drawn at the top of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 ### PageFooter
 
 In a Document: drawn at the bottom of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Drawn in: page.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `gap`: a length (a number of px). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch". Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `gap`: a length (a number of px) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 ### ListItem
 
 An item of a List: text, and a List of its own to nest one.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, List. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, List.
 
 Props:
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
 
@@ -784,24 +784,24 @@ Props:
 
 A row of a Table. A header row's cells are header cells, in bold.
 
-Holds: TableCell. Drawn in: email, page.
+Holds: TableCell.
 
 Props:
 - `header`: true or false (default `false`). Its cells head the columns below them.
 - `footer`: true or false (default `false`). It ends the table (printed, on each page the table runs to).
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `backgroundColor`: *color*
-- `height`: a length (a number of px)
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `backgroundColor`: *color* (Background)
+- `height`: a length (a number of px) (Size)
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
 
@@ -809,28 +809,28 @@ Props:
 
 A cell of a TableRow: text, and images. Its width sets its column's.
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image. Drawn in: email, page.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image.
 
 Props:
 - `colSpan`: an integer from 1 (default `1`). How many columns it spans.
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
-- `color`: *color* (inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `width`: a length (a number of px, %). Its column's width (of a cell spanning one column).
-- `verticalAlign`: one of "top", "middle", "bottom"
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `width`: a length (a number of px, %) (Size). Its column's width (of a cell spanning one column).
+- `verticalAlign`: one of "top", "middle", "bottom" (Layout)
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`.
 
@@ -842,7 +842,7 @@ Only inside an Svg, in its viewBox's units.
 
 A rectangle at x, y in its Svg, rounded by rx.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `x`: a number (default `0`)
@@ -852,16 +852,16 @@ Props:
 - `rx`: a number from 0
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ### Circle
 
 A circle centered at cx, cy in its Svg.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `cx`: a number (default `0`)
@@ -869,16 +869,16 @@ Props:
 - `r`: a number from 0 (required)
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ### Ellipse
 
 An ellipse centered at cx, cy in its Svg.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `cx`: a number (default `0`)
@@ -887,16 +887,16 @@ Props:
 - `ry`: a number from 0 (required)
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ### Line
 
 A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke).
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `x1`: a number (default `0`)
@@ -905,40 +905,40 @@ Props:
 - `y2`: a number (default `0`)
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ### Polygon
 
 A closed shape through its points ("0,0 40,0 20,30"), in its Svg.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `points`: text (required)
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ### Path
 
 A shape drawn by an SVG path (d), in its Svg.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Not in an Email.
 
 Props:
 - `d`: text (required). SVG path data ("M0 0 L40 0 L20 30 Z").
 
 `style`:
-- `fill`: *color* (default `"#000000"`). Its inside ("transparent" for none).
-- `stroke`: *color*. Its outline's color.
-- `strokeWidth`: a number from 0
-- `opacity`: a number from 0 to 1
+- `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
+- `stroke`: *color* (Border). Its outline's color.
+- `strokeWidth`: a number from 0 (Border)
+- `opacity`: a number from 0 to 1 (Effects)
 
 ## For tools: where each block is in an Email's HTML
 
