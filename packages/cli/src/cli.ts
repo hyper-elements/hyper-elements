@@ -49,7 +49,7 @@ function parse(argv: string[]): { positional: string[]; options: Record<string, 
   return { positional, options };
 }
 
-const line = (d: Diagnostic) => `  ${d.severity === "error" ? "error " : ""}${d.code} at ${d.path}: ${d.message}`;
+const line = (d: Diagnostic) => `  ${d.severity === "error" ? "error " : ""}${d.code} at ${d.path}: ${d.message}${d.fix ? `\n      Fix: ${d.fix}` : ""}`;
 
 async function preview(file: string, options: Record<string, string | true>, io: Io): Promise<number> {
   const path = resolve(io.cwd, file);
@@ -79,7 +79,8 @@ async function preview(file: string, options: Record<string, string | true>, io:
   const text = join(out, `${name}.txt`);
   write(html, rendered.html);
   write(text, rendered.text);
-  const design = engine.check ? engine.check(element).diagnostics : [];
+  // The design checks: validate()'s `design` option (a version without it reports none).
+  const design = engine.validate(element, { design: true }).diagnostics.filter((d) => d.code.startsWith("design/"));
 
   // Screenshots: an Email or a Page at a desktop and a phone width; a Document or a Canvas at its own width.
   const width = Number(prepared.root.props.width) || undefined;
@@ -100,7 +101,6 @@ async function preview(file: string, options: Record<string, string | true>, io:
     "",
     `Notes, nothing to fix (${notes.length}):`,
     ...(notes.length ? notes.map(line) : ["  none"]),
-    ...(engine.check ? [] : ["", "This version of @hyper-elements/react has no design checks (@hyper-elements/react/check): update it to get them."]),
   ].join("\n");
   write(join(out, "report.txt"), report + "\n");
 
@@ -115,7 +115,6 @@ async function preview(file: string, options: Record<string, string | true>, io:
       ...(taken.problem ? [`  ${taken.problem}`] : []),
       warnings.length ? `To fix (${warnings.length}):\n${warnings.map(line).join("\n")}` : "Nothing to fix.",
       ...(notes.length ? [`Notes, nothing to fix: ${[...counts].map(([code, n]) => `${code} ×${n}`).join(", ")} (${shown(join(out, "report.txt"))})`] : []),
-      ...(engine.check ? [] : ["No design checks: this @hyper-elements/react has no /check entry."]),
     ].join("\n") + "\n",
   );
   return 0;

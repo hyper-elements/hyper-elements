@@ -16,7 +16,7 @@ export interface Engine {
   render: (element: unknown, options?: Record<string, unknown>) => Promise<{ html: string; text: string; diagnostics: Diagnostic[] }>;
   prepare: (element: unknown) => { root: { type: string; props: Record<string, unknown> } | null; diagnostics: Diagnostic[] };
   outline: (element: unknown) => string;
-  check?: (element: unknown) => { diagnostics: Diagnostic[] };
+  validate: (element: unknown, options?: Record<string, unknown>) => { valid: boolean; diagnostics: Diagnostic[] };
   createElement: (type: unknown, props?: Record<string, unknown> | null) => unknown;
   isValidElement: (value: unknown) => boolean;
   /** Where the project's package is: the starters ship in it. */
@@ -28,6 +28,8 @@ export interface Diagnostic {
   severity: "error" | "warning" | "info";
   message: string;
   path: string;
+  /** What to change, where the problem says (email client and design problems). */
+  fix?: string;
 }
 
 export class UsageError extends Error {}
@@ -51,14 +53,8 @@ export async function engineFor(from: string): Promise<Engine> {
   const pkg = JSON.parse(readFileSync(manifest, "utf8"));
   const main = await import(pathToFileURL(require.resolve("@hyper-elements/react")).href);
   const React = await import(pathToFileURL(react).href);
-  let check: Engine["check"];
-  try {
-    check = (await import(pathToFileURL(require.resolve("@hyper-elements/react/check")).href)).check;
-  } catch {
-    check = undefined; // a version without design checks
-  }
   const R = React.default ?? React;
-  return { version: pkg.version, render: main.render, prepare: main.prepare, outline: main.outline, check, createElement: R.createElement, isValidElement: R.isValidElement, root };
+  return { version: pkg.version, render: main.render, prepare: main.prepare, outline: main.outline, validate: main.validate, createElement: R.createElement, isValidElement: R.isValidElement, root };
 }
 
 /** The template a file exports: its default export (a component or an element), else its one exported component. */

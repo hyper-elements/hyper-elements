@@ -12,7 +12,7 @@ It renders the template with your project's `@hyper-elements/react` and React, a
 - `desktop.png` (800px wide) and `phone.png` (375px wide): full-page screenshots;
 - `report.txt`: every problem found.
 
-It also checks the design (`@hyper-elements/react/check`) and prints what to fix: a `{{merge tag}}` a reader would see, a table that keeps four columns on a phone, faint text, an image without alt text, a phone number that can split across lines. Each message says what to write instead.
+It also checks the design (`validate(element, { design: true })`) and prints what to fix: a `{{merge tag}}` a reader would see, a table that keeps four columns on a phone, faint text, an image without alt text, a phone number that can split across lines. Each message says what to write instead.
 
 No tsconfig, `"type": "module"` or tsx is needed: the template is bundled with esbuild. Its default export is a component (or an element) whose root is an `Email`, `Page`, `Document` or `Canvas`:
 
