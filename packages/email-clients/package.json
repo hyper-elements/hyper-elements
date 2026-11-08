@@ -1,0 +1,70 @@
+{
+  "name": "@hyper-elements/email-clients",
+  "version": "0.3.0",
+  "description": "See a Hyper Elements email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it: one self-contained HTML preview file per email client, with what each one changes.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyper-elements/hyper-elements.git",
+    "directory": "packages/email-clients"
+  },
+  "homepage": "https://github.com/hyper-elements/hyper-elements/tree/main/packages/email-clients",
+  "keywords": [
+    "email",
+    "email-clients",
+    "email-preview",
+    "outlook",
+    "gmail",
+    "apple-mail",
+    "hyper-elements",
+    "react"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs"
+  },
+  "peerDependencies": {
+    "@hyper-elements/react": "^0.3.1",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@hyper-elements/react": "workspace:*",
+    "@types/node": "24.9.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tsup": "^8.0.1",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
