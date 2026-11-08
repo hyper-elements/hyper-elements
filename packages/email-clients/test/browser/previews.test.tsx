@@ -23,6 +23,13 @@ afterAll(async () => {
 const dir = mkdtempSync(join(tmpdir(), "email-client-previews-"));
 
 /**
+ * The fonts the models were measured with are on a Mac: there every preview here draws "ok". Elsewhere (CI's Linux) some
+ * aren't (Helvetica Neue, for Outlook's Aptos; Georgia), and the preview says so: "incomplete", with only fonts missing.
+ */
+const MAC = process.platform === "darwin";
+const onlyFonts = (missing: Array<{ kind: string }>) => missing.filter((m) => m.kind !== "font" && m.kind !== "substituted");
+
+/**
  * A preview file opened in a page, once its runtime says it's done: what reached the network (a request the CSP blocks
  * never does), and its errors (but the CSP's reports and the made-up images' 404s).
  */
@@ -87,7 +94,9 @@ describe("a preview file in Chromium", () => {
     const { previews } = await renderInEmailClients(email, { emailClients: [client] });
     const { page, ready, errors, findings } = await open(previews[0]!.filename, previews[0]!.html);
     try {
-      expect([ready, findings.error, findings.missing]).toEqual(["ok", null, []]);
+      expect([findings.error, onlyFonts(findings.missing)]).toEqual([null, []]);
+      if (MAC) expect([ready, findings.missing]).toEqual(["ok", []]);
+      else expect(ready).toBe(findings.missing.length ? "incomplete" : "ok");
       expect(findings).toMatchObject({ version: 1, client, width: previews[0]!.width });
       const frame = page.frames().find((f) => f !== page.mainFrame())!;
       expect(await frame.evaluate(() => document.body.innerText)).toContain("Your order is on its way");
@@ -129,7 +138,7 @@ describe("a preview file in Chromium", () => {
         const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
         await frame.locator("#evil").click({ timeout: 2000 }).catch(() => undefined);
         await page.waitForTimeout(200);
-        expect([client, ready]).toEqual([client, "ok"]);
+        expect([client, ready === "ok" || (!MAC && ready === "incomplete")]).toEqual([client, true]);
         expect([client, await page.title()]).toEqual([client, expect.not.stringContaining("pwned")]);
         expect([client, page.url()]).toEqual([client, expect.stringMatching(/^file:/)]);
         // Only its image, and the preview's own stand-in fonts.
@@ -147,7 +156,9 @@ describe("what a preview lists, and when it's incomplete", () => {
     for (const preview of inline.previews) {
       expect(preview.html).toContain("data:font/woff2;base64,");
       const { page, ready, requests, findings } = await open(`inline-${preview.filename}`, preview.html);
-      expect([preview.id, ready, findings.missing]).toEqual([preview.id, "ok", []]);
+      // The inlined fonts all load; what's missing elsewhere is only the machine's own (Outlook's Aptos stand-in).
+      expect([preview.id, findings.missing.filter((m) => ["Segoe UI", "Segoe UI Web (West European)", "Calibri", "Inter"].includes(m.family!))]).toEqual([preview.id, []]);
+      if (MAC) expect([preview.id, ready, findings.missing]).toEqual([preview.id, "ok", []]);
       expect(requests.filter((url) => url.includes("jsdelivr"))).toEqual([]);
       await page.close();
     }
@@ -175,7 +186,7 @@ describe("what a preview lists, and when it's incomplete", () => {
   it("keeps the gray box in classic Outlook too, whose rules size images as Word does", async () => {
     const { previews } = await renderInEmailClients(email, { emailClients: ["outlook"] });
     const { page, findings } = await open("missing-image-outlook.html", previews[0]!.html, { images: "missing" });
-    expect(findings.missing).toEqual([{ kind: "image", src: "https://example.test/hero.png" }]);
+    expect(findings.missing.filter((m) => m.kind === "image")).toEqual([{ kind: "image", src: "https://example.test/hero.png" }]);
     const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
     expect(await frame.evaluate(() => (document.querySelector('img[alt="Hero"]') as HTMLImageElement).getBoundingClientRect().height)).toBe(300);
     await page.close();
@@ -192,8 +203,11 @@ describe("what a preview lists, and when it's incomplete", () => {
     const { page, ready, findings } = await open("missing-fonts.html", previews[0]!.html);
     expect(ready).toBe("incomplete");
     expect(findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Zzz No Such Font" }, { kind: "author-font", family: "Brand", src: "https://example.test/brand.woff2" }]));
-    // What drew instead was checked against the probe's widths.
-    expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }, { family: "Georgia", verified: "widths" }]));
+    // What drew instead was checked against the probe's widths: Arial everywhere (Liberation Sans has its widths), and
+    // Georgia, which only the Mac has here (on Linux it's listed as missing).
+    expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
+    if (MAC) expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Georgia", verified: "widths" }]));
+    else expect(findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Georgia" }]));
     await page.close();
   });
 
@@ -217,6 +231,20 @@ describe("what a preview lists, and when it's incomplete", () => {
       expect(findings.removed.map((r) => r.what)).toContain("content past 102,400 bytes (clipped)");
       await page.close();
     }
+  });
+});
+
+describe.runIf(process.platform === "linux")("on Linux, without the Mac's fonts", () => {
+  it("draws classic Outlook incomplete for want of Helvetica Neue (its Aptos stand-in), and accepts Arial's metric twin", async () => {
+    const { previews } = await renderInEmailClients(email, { emailClients: ["outlook", "gmail"], fonts: "inline" });
+    const outlook = await open("linux-outlook.html", previews[0]!.html);
+    expect(outlook.ready).toBe("incomplete");
+    expect(outlook.findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Aptos Stand-in" }]));
+    await outlook.page.close();
+    // Gmail draws in Arial: Linux has none, and draws Liberation Sans, which has Arial's widths: the layout matches.
+    const gmail = await open("linux-gmail.html", previews[1]!.html);
+    expect(gmail.findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
+    await gmail.page.close();
   });
 });
 
