@@ -205,14 +205,16 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 275,000 bytes,
-  `dist/builder.js` 439,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
-  `@unlayer/exporters`; unit tests with coverage; the CSP gate.
+- **Tests**: `pnpm build`; typechecks of react, core, migrate and email-clients; bundle budgets (`dist/primitives.js`
+  275,000 bytes, `dist/builder.js` 439,000 bytes, email-clients' `dist/index.js` 85,000 bytes, unminified ESM; raise
+  one on purpose and say what grew); no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates
+  (react and email-clients); email-clients packed and installed beside the packed core and beside core 0.3.0
+  (`test:pack`).
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
 - **Browser**: the content-workflows example's typecheck and tests; the demo app builds; browser runtime; browser
-  E2E; the layout gate; PDF and image against Chromium; migration fidelity; migration differential; the Next.js 15,
-  14 and 16 and Jest 30 consumer apps.
+  E2E; the layout gate; PDF and image against Chromium; the email client previews in Chromium; migration fidelity;
+  migration differential; the Next.js 15, 14 and 16 and Jest 30 consumer apps.
 
 ## Review bar for the migration tool
 

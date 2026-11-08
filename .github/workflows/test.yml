@@ -168,6 +168,13 @@ jobs:
       - name: CSP safety gate
         run: pnpm --filter @hyper-elements/react test:csp && pnpm --filter @hyper-elements/email-clients test:csp
 
+      # The email client previews packed and installed in a clean project: beside the packed core (as the release
+      # with blockMap), both module formats write every preview with the fonts inlined, and the tarball holds the fonts
+      # and their licences; beside core 0.3.0, npm reports the unmet peer and the first call throws
+      # email-clients/version-mismatch (packages/email-clients/scripts/pack-check.mjs).
+      - name: Email client previews, packed and installed
+        run: pnpm --filter @hyper-elements/email-clients test:pack
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:

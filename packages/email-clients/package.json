@@ -49,7 +49,8 @@
     "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs",
     "build:runtime": "node scripts/build-runtime.mjs",
     "test:browser": "vitest run --config vitest.browser.config.ts",
-    "build:fonts": "node scripts/build-fonts.mjs"
+    "build:fonts": "node scripts/build-fonts.mjs",
+    "test:pack": "node scripts/pack-check.mjs"
   },
   "peerDependencies": {
     "@hyper-elements/react": "^0.3.1",
