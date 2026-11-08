@@ -36,7 +36,6 @@ export const USAGE = `Migrate React Email templates to Hyper Elements.
 Usage:
   npx @hyper-elements/migrate <files or folders...> [options]
   npx @hyper-elements/migrate compare <original> <migrated>
-  npx @hyper-elements/migrate style-blocks <files or folders...> [--write]
 
 Each template is converted to Hyper Elements' components, with their styles in
 style={{ }} (its props, loops and conditions stay), then checked: the
@@ -81,14 +80,7 @@ each true/false prop flipped), every word, link and image must be there, and
 the visual editor must get the template.
 
 Run it from your project folder: templates load with your project's React,
-React Email and TypeScript paths.
-
-style-blocks rewrites Hyper Elements templates' mobile={…} and hover={…} props
-into their style: style={{ …, mobile: { … }, hover: { … } }}. It moves only
-object literals of styles the component takes there, into a style that's an
-object literal; anything else is left as it is and listed. One template is
-printed; with --write, templates are replaced (only ones git can restore,
-unless --allow-dirty). Exit code 0 when every template converted
+React Email and TypeScript paths. Exit code 0 when every template converted
 with the same content (what looks different is listed), 1 for a usage error
 or when no templates were found, 2 when a template failed to convert (or
 couldn't be written in Hyper Elements' components), its content differs (with
@@ -231,10 +223,6 @@ async function run(argv: string[], io: Io, library?: Library): Promise<number> {
     return 0;
   }
   if (args.positional[0] === "compare") return compare(args.positional.slice(1), args, io, library);
-  if (args.positional[0] === "style-blocks") {
-    const { styleBlocksCommand } = await import("./style-blocks/command");
-    return styleBlocksCommand(args.positional.slice(1), args, io, { walk: (dir) => walk(dir, [], true), notRestorable });
-  }
   const from = args.option("from") ?? "react-email";
   if (from !== "react-email" && from !== "unlayer-elements") {
     io.stderr(`Unknown --from "${from}". Supported: react-email, unlayer-elements.\n`);
