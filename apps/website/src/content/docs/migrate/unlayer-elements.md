@@ -109,7 +109,7 @@ The new template draws what the old one drew. Unlayer Elements' components fille
 | `Html` | `Html` in a `Column` with its padding |
 | `Table`'s `headers` and `data`, or the `values` it can read | A `Table` of `TableRow`s and `TableCell`s |
 | `Document`'s `documentSize`, `documentOrientation`, `documentMargin`; a `PageBreak` | `size`, `orientation`, `margin`; a `PageBreak` between `Section`s |
-| `Button`'s `buttonColors` | Its `color` and `backgroundColor` in `style`. The hover colors are left out and noted: add them as `style={{ hover: { … } }}` |
+| `Button`'s `buttonColors` | Its `color` and `backgroundColor` in `style`, and its hover colors in `style={{ hover: { … } }}` |
 | `mobile={{ ... }}`, `hideOnMobile`, `hideOnDesktop` | `style={{ mobile: { ... } }}` with the new names, `hidden={{ mobile: true }}` |
 | `Social`'s `{ name, url }`; `Menu`'s `linkColor` and `textColor` | `{ name, href }`; `color` and `separatorColor` |
 
@@ -121,7 +121,6 @@ The codemod never drops anything quietly. It lists, with the line:
 - `html` from an expression: it's written as text, so markup in it would show;
 - markup the new components don't write, each named (an image with its `src` and `alt`, a list's bullets, a style declaration and the tag it was on, a tag they have no run for), with the text in it kept;
 - a text block's source the old one didn't draw (a `Paragraph`'s `html` beside its children);
-- a `Button`'s hover colors, which it leaves out;
 - `Column`s whose borders or backgrounds the old components stretched to their `Row`'s height;
 - a horizontal `Menu` of links written out, which becomes a wrapping `Row` of its links and separators so it draws the same (a `Menu` worked out at run time, or a vertical one, stays a `Menu`);
 - custom tools, which it doesn't rewrite yet: a comment marks each one for you to rewrite;

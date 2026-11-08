@@ -687,6 +687,20 @@ export const T = () => (
     expect(images).toEqual(["https://example.com/second.png"]);
   });
 
+  it("keeps a Button's hover colors as its hover styles, from buttonColors or as props", async () => {
+    const given = await migrate('export const T = () => <Email><Row><Column><Button href="https://example.com" buttonColors={{ color: "#ffffff", backgroundColor: "#111111", hoverColor: "#eeeeee", hoverBackgroundColor: "#333333" }}>A</Button><Button href="https://example.com" hoverBackgroundColor="#444444">B</Button></Column></Row></Email>;');
+    const flat = squash(given.code);
+    expect(flat).toMatch(/style=\{\{backgroundColor:"#111111",color:"#ffffff",hover:\{backgroundColor:"#333333",color:"#eeeeee"\},?\}\}/);
+    expect(flat).toContain('hover:{backgroundColor:"#444444"}');
+    expect(given.code).not.toContain("hover={");
+    expect(given.report.join("\n")).not.toMatch(/hover/i);
+    expect(errors(given.code)).toEqual([]);
+    // From code, read by name as the other colors are.
+    const named = await migrate('export const T = ({ theme }: { theme: { color: string; hoverColor: string } }) => <Email><Row><Column><Button href="https://example.com" buttonColors={theme}>A</Button></Column></Row></Email>;');
+    expect(squash(named.code)).toContain("hover:{backgroundColor:theme.hoverBackgroundColor,color:theme.hoverColor}");
+    expect(errors(named.code, { theme: { color: "#ffffff", hoverColor: "#eeeeee" } })).toEqual([]);
+  });
+
   it("doesn't run a Button's buttonColors from a call once for each color, and keeps them from an object of names", async () => {
     const { code, report } = await migrate('export const T = ({ nextTheme }: { nextTheme: () => { color: string } }) => <Email><Row><Column><Button href="https://example.com" buttonColors={nextTheme()}>A</Button></Column></Row></Email>;');
     expect(code).not.toContain("nextTheme()");
