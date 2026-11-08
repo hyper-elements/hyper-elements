@@ -5,8 +5,7 @@
  * lets only that script run: inline styles only, fonts from the stand-in origin, inlined or any HTTPS URL, images from
  * anywhere, nothing else fetched.
  */
-import type { BlockMap } from "@hyper-elements/react";
-import type { PreviewVariant } from "./clients";
+import type { Config } from "./runtime/main";
 
 /** The runtime: its script, and the script's sha256 (base64) for the CSP. */
 export interface Runtime {
@@ -14,13 +13,8 @@ export interface Runtime {
   sha256: string;
 }
 
-/** What the runtime reads, beside the email: the variant, and where each block is. */
-export interface PreviewConfig extends Omit<PreviewVariant, "filename"> {
-  name: string;
-  blocks: BlockMap;
-  /** Where the stand-in fonts load from (`fonts: "url"`), else null (inlined). */
-  fontOrigin: string | null;
-}
+/** What the runtime reads, beside the email (src/runtime/main.ts's Config). */
+export type PreviewConfig = Config;
 
 /** `value` as JSON that's safe inside a `<script>`: <, >, &, U+2028 and U+2029 as \u escapes. */
 export function scriptJson(value: unknown): string {
@@ -42,7 +36,7 @@ export function contentSecurityPolicy(runtime: Runtime | null, fontOrigin: strin
 
 const STYLE =
   "body{margin:0;font:14px/1.4 system-ui,sans-serif;color:#1f2328;background:#f6f8fa}" +
-  ".note{padding:12px 16px;border-bottom:1px solid #d0d7de;background:#fff}.note h1{margin:0 0 4px;font-size:15px}.note p{margin:0}" +
+  ".note{padding:12px 16px;border-bottom:1px solid #d0d7de;background:#fff}.note h1{margin:0 0 4px;font-size:15px}.note h2{margin:8px 0 2px;font-size:13px}.note p{margin:0}.note ul{margin:0;padding-left:20px}" +
   "#frames{display:flex;gap:16px;padding:16px;align-items:flex-start}#frames iframe{border:0;background:#fff;box-shadow:0 0 0 1px #d0d7de}";
 
 /** The preview file for `config`'s client, drawing `html` (render()'s email) with `runtime`. */

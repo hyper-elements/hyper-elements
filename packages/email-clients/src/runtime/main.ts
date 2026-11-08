@@ -1,14 +1,27 @@
 /**
- * The runtime a preview file carries (built into one script by scripts/build-runtime.mjs). It reads the email and its
- * config from the file's JSON blocks, makes the client's version (clients.ts), shows it in a sandboxed frame at the
- * client's width, runs the client's step on the loaded frame, and says when it's done: `data-email-client-ready` on the
- * shell's <html> is "ok", or "error" with the error in the findings. It never runs code inside the frame.
+ * The runtime a preview file carries (built into one script by scripts/build-runtime.mjs). It never runs code inside
+ * the frames and never measures the shell:
+ *
+ * 1. Reads the email and its config, and makes the client's version (clients.ts), noting what the client removed.
+ * 2. Writes two sandboxed frames at the client's width, each with the client's font CSS after its own processing: the
+ *    client's version, and a baseline (the email as written, with its block paths, no client processing).
+ * 3. In each: waits for it to load, loads every stand-in face, waits for every image (one that failed, or is still
+ *    loading at the deadline, is drawn as a gray box and listed), and lists the email's own web fonts that failed.
+ * 4. Checks the system fonts the client's version draws with by measurement (system-fonts.ts).
+ * 5. Runs the client's step on its frame, then waits for its fonts again.
+ * 6. Finds what's robust to find (findings.ts), and writes it to `email-client-findings` and the note.
+ * 7. Says it's done: `data-email-client-ready` is "ok", "incomplete" (something was missing, or 10 seconds passed), or
+ *    "error" (with the error in the findings).
  */
-import type { BlockMap } from "@hyper-elements/react";
+import type { BlockMap, Diagnostic } from "@hyper-elements/react";
 import { scriptJson } from "../shell";
 import { processForClient, type Client } from "./clients";
+import { clipped, darkContrast, moreLines } from "./findings";
+import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, withCss } from "./frames";
+import { markPaths } from "./marks";
+import { checkSystemFonts } from "./system-fonts";
 
-interface Config {
+export interface Config {
   id: string;
   client: Client;
   name: string;
@@ -18,28 +31,25 @@ interface Config {
   approximate: boolean;
   blocks: BlockMap;
   fontOrigin: string | null;
+  /** The client's stand-in @font-face rules and what its scorer adds beside them. */
+  fontCss: string;
+  /** Each stand-in face to load before measuring, and their families. */
+  faces: string[];
+  standIns: string[];
+  /** Outlook.com's web font files, by the names outlook-com.js asks for. */
+  outlookComFonts: Record<string, string>;
+  probe: { text: string; widths: Record<string, Record<number, number>> };
+  /** The Elements version the client's model was measured on, and the runtime's sha256. */
+  elements: string | null;
+  runtime: string;
 }
+
+type Missing = { kind: "font" | "substituted"; family: string } | { kind: "author-font"; family: string; src: string } | { kind: "image"; src: string };
+
+/** How long a preview may take to draw, in ms. */
+const DEADLINE = 10_000;
 
 const json = <T>(id: string): T => JSON.parse(document.getElementById(id)!.textContent!) as T;
-
-/** A sandboxed frame (no scripts, forms, popups or navigation) of `width`, showing `html`, once it has loaded. */
-function frame(html: string, width: number, title: string): Promise<HTMLIFrameElement> {
-  const el = document.createElement("iframe");
-  el.setAttribute("sandbox", "allow-same-origin");
-  el.setAttribute("title", title);
-  el.style.width = `${width}px`;
-  el.style.height = "0";
-  const loaded = new Promise<HTMLIFrameElement>((resolve) => el.addEventListener("load", () => resolve(el), { once: true }));
-  el.srcdoc = html;
-  document.getElementById("frames")!.append(el);
-  return loaded;
-}
-
-/** The frame as tall as what it shows. */
-function grow(el: HTMLIFrameElement): void {
-  const doc = el.contentDocument!;
-  el.style.height = `${Math.ceil(Math.max(doc.documentElement.scrollHeight, doc.body?.scrollHeight ?? 0))}px`;
-}
 
 function writeFindings(findings: Record<string, unknown>): void {
   const script = document.createElement("script");
@@ -49,24 +59,87 @@ function writeFindings(findings: Record<string, unknown>): void {
   document.body.append(script);
 }
 
+/** The note: how the preview went, what the client removed, what was missing, what it found. */
+function writeNote(findings: { ready: string; removed: Array<{ what: string; count: number }>; missing: Missing[]; diagnostics: Diagnostic[]; error: string | null }): void {
+  const note = document.getElementById("findings")!;
+  const list = (title: string, items: string[]) => {
+    if (!items.length) return;
+    const h = document.createElement("h2");
+    h.textContent = title;
+    const ul = document.createElement("ul");
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.textContent = item;
+      ul.append(li);
+    }
+    note.append(h, ul);
+  };
+  const status = document.createElement("p");
+  status.textContent = findings.error ? `The preview failed: ${findings.error}` : findings.ready === "ok" ? "Drawn." : "Drawn, with something missing (listed below): it may differ from the client.";
+  note.append(status);
+  list("Found", findings.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}. Fix: ${d.fix}`));
+  list("What the client removed or changed", findings.removed.map(({ what, count }) => `${what}${count > 1 ? ` (${count})` : ""}`));
+  list("Missing", findings.missing.map((m) => (m.kind === "image" ? `image ${m.src}` : m.kind === "author-font" ? `web font ${m.family} (${m.src})` : m.kind === "substituted" ? `font ${m.family} (another font of other widths drew instead)` : `font ${m.family}`)));
+}
+
 async function main(): Promise<void> {
+  const started = performance.now();
+  const deadline = started + DEADLINE;
   const root = document.documentElement;
   const config = json<Config>("email-client-config");
-  const findings: Record<string, unknown> = { version: 1, client: config.client, variant: config.variant, dark: config.dark, width: config.width, approximate: config.approximate, error: null };
+  const findings = {
+    version: 1,
+    client: config.client,
+    variant: config.variant,
+    dark: config.dark,
+    width: config.width,
+    ready: "ok" as "ok" | "incomplete" | "error",
+    elements: config.elements,
+    runtime: config.runtime,
+    browser: navigator.userAgent,
+    approximate: config.approximate,
+    removed: [] as Array<{ what: string; count: number }>,
+    missing: [] as Missing[],
+    fonts: [] as Array<{ family: string; verified: "present" | "widths" }>,
+    diagnostics: [] as Diagnostic[],
+    error: null as string | null,
+  };
   try {
     const html = json<string>("email");
-    const processed = processForClient(config.client, html, config.blocks.entries, { dark: config.dark });
-    const shown = await frame(processed.html, config.width, `${config.name}: the email as it draws`);
-    processed.frameStep(shown.contentWindow!);
-    grow(shown);
+    const processed = processForClient(config.client, html, config.blocks.entries, { dark: config.dark, outlookComFonts: config.outlookComFonts });
     findings.removed = Object.entries(processed.removed).map(([what, count]) => ({ what, count }));
-    findings.ready = "ok";
+    // Outlook.com's version has its web font from outlook-com.js itself, as its scorer's has.
+    const clientHtml = config.client === "outlook-com" ? processed.html : withCss(processed.html, config.fontCss);
+    const [shown, baseline] = await Promise.all([
+      frame(clientHtml, config.width, `${config.name}: the email as it draws`, deadline),
+      frame(withCss(markPaths(html, config.blocks.entries), config.fontCss), config.width, "The email as written", deadline),
+    ]);
+    const docs = [shown.contentDocument!, baseline.contentDocument!];
+    await Promise.all(docs.map((doc) => loadFaces(doc, config.faces, deadline)));
+    const [images] = await Promise.all(docs.map((doc) => settleImages(doc, deadline)));
+    const standIns = new Set(config.standIns);
+    const author = await missingAuthorFonts(docs[0]!, standIns, deadline);
+    const loaded = new Set([...docs[0]!.fonts].filter((face) => face.status === "loaded").map((face) => face.family.replace(/^["']|["']$/g, "")));
+    // A stand-in with no face loaded (its file unreachable; Helvetica Neue not on this machine for Aptos) is missing.
+    const standInsMissing = config.standIns.filter((family) => !loaded.has(family) && [...docs[0]!.fonts].some((face) => face.family.replace(/^["']|["']$/g, "") === family));
+    const system = checkSystemFonts(docs[0]!, new Set([...loaded, ...standInsMissing]), config.probe);
+    const report = processed.frameStep(shown.contentWindow!);
+    await until(docs[0]!.fonts.ready.then(() => undefined), deadline, undefined);
+    findings.missing = [...standInsMissing.map((family) => ({ kind: "font" as const, family })), ...system.missing, ...author.map((a) => ({ kind: "author-font" as const, ...a })), ...images!.map((src) => ({ kind: "image" as const, src }))];
+    findings.fonts = system.fonts;
+    if (config.client === "outlook") findings.diagnostics.push(...moreLines(docs[0]!, docs[1]!, report.breaks ?? []));
+    if (config.client === "apple-mail" && config.dark) findings.diagnostics.push(...darkContrast(docs[0]!, docs[1]!));
+    if (processed.cut !== null && (config.client === "gmail" || config.client === "gmail-app" || config.client === "gmail-app-other")) findings.diagnostics.push(clipped(config.client, processed.cut, processed.size ?? 0, config.blocks.entries));
+    grow(shown);
+    baseline.hidden = true;
+    findings.ready = findings.missing.length || performance.now() > deadline ? "incomplete" : "ok";
   } catch (error) {
     findings.ready = "error";
     findings.error = error instanceof Error ? error.message : String(error);
   }
   writeFindings(findings);
-  root.setAttribute("data-email-client-ready", String(findings.ready));
+  writeNote(findings);
+  root.setAttribute("data-email-client-ready", findings.ready);
 }
 
 void main();

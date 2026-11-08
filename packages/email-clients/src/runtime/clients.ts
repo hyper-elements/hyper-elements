@@ -20,8 +20,9 @@ export interface Processed {
   /** The client's version of the email, with the block paths in it. */
   html: string;
   removed: Removed;
-  /** Gmail's clip: the UTF-8 byte offset it cut at. */
+  /** Gmail's clip: the UTF-8 byte offset it cut at, and the email's size in bytes. */
   cut: number | null;
+  size?: number;
   /** What the frame step needs. */
   frameStep: (win: Window) => FrameReport;
 }
@@ -32,10 +33,11 @@ export interface FrameReport {
 }
 
 const OFFICE_XML = /<xml>[\s\S]*?<\/xml>/gi;
+const FONT_PREFIX = "email-client-font:";
 const GMAIL_PROFILE = { gmail: "gmail-web", "gmail-app": "gmail-app", "gmail-app-other": "gmail-app-other" } as const;
 
 /** The client's version of `html` (render()'s compact HTML), its block paths written in by `entries`. */
-export function processForClient(client: Client, html: string, entries: readonly BlockMapEntry[], { dark = false } = {}): Processed {
+export function processForClient(client: Client, html: string, entries: readonly BlockMapEntry[], { dark = false, outlookComFonts = {} as Record<string, string> } = {}): Processed {
   const none = () => ({});
   switch (client) {
     case "outlook": {
@@ -58,10 +60,12 @@ export function processForClient(client: Client, html: string, entries: readonly
       // The clip on the unmarked bytes (102,400 of them), the markers in what it kept.
       const clip = gmailClip(html);
       const drawn = gmail(markPaths(clip.kept, entries, clip.cut ?? Number.POSITIVE_INFINITY), GMAIL_PROFILE[client], { clipped: clip.clipped, size: clip.size });
-      return { html: drawn.html, removed: drawn.removed, cut: clip.clipped ? clip.cut : null, frameStep: none };
+      return { html: drawn.html, removed: drawn.removed, cut: clip.clipped ? clip.cut : null, size: clip.size, frameStep: none };
     }
     case "outlook-com": {
-      const drawn = outlookCom(markPaths(html, entries));
+      // Its web font's files by the names outlook-com.js asks for, from where the preview's fonts come.
+      let drawn = outlookCom(markPaths(html, entries), { fonts: FONT_PREFIX });
+      drawn = { ...drawn, html: drawn.html.replace(/url\("email-client-font:([^"]+)"\)/g, (all, file: string) => (outlookComFonts[file] ? `url("${outlookComFonts[file]}")` : all)) };
       return { html: drawn.html, removed: drawn.removed, cut: null, frameStep: none };
     }
     case "apple-mail": {
