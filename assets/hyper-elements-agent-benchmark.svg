@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1140" viewBox="0 0 1800 1140" role="img" aria-labelledby="title description">
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1298" viewBox="0 0 1800 1298" role="img" aria-labelledby="title description">
 <title id="title">Hyper Elements: faster to a passing email</title>
-<desc id="description">Hyper Elements: 35 seconds, 2,346 output tokens, 11 of 16 first-check passes. Hand-written HTML: 65 seconds, 5,676 output tokens, 4 of 16 first-check passes. React Email: 76 seconds, 5,745 output tokens, 5 of 16 first-check passes. Time and output tokens are medians. Five email briefs and 16 runs per approach; all 48 runs eventually passed. Claude Code with Claude Sonnet 5, November 6, 2026. Bars start at zero; time uses an 80-second scale and tokens a 6,000-token scale. Each square represents one run's first check.</desc>
-<rect width="1800" height="1140" rx="24" fill="#0a0a0a"/>
+<desc id="description">Hyper Elements: 33 seconds, 1,831 output tokens, 16 of 16 first-check passes. MJML: 43 seconds, 2,762 output tokens, 16 of 16 first-check passes. Hand-written HTML: 60 seconds, 4,903 output tokens, 6 of 16 first-check passes. React Email: 86 seconds, 6,215 output tokens, 12 of 16 first-check passes. Time and output tokens are medians. Hyper Elements and MJML tie on first-check passes. Five email briefs and 16 runs per approach in one interleaved batch; all 64 runs eventually passed. Claude Code with Claude Sonnet 5, November 8, 2026. Bars start at zero; time uses a 100-second scale and tokens a 7,000-token scale. Each square represents one run's first check.</desc>
+<rect width="1800" height="1298" rx="24" fill="#0a0a0a"/>
 <g font-family="Geist, -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
   <svg x="72" y="48" width="48" height="36" viewBox="228 326 798 600" aria-hidden="true">
     <path d="M595 388 L623 424 L436 627 L665 913 L522 913 Q492 913 470 891 L262 678 Q240 654 240 627 Q240 600 262 576 L428 410 Q452 388 482 388 Z" fill="#e3e8ed"/>
@@ -10,24 +10,24 @@
   <text x="138" y="77" font-size="30" fill="#ededed" font-weight="600" letter-spacing="-0.7">Hyper Elements</text>
   <text x="1728" y="74" font-size="19" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="end" letter-spacing="2.2">AGENT BENCHMARK</text>
   <text x="72" y="184" font-size="72" fill="#ededed" font-weight="600" letter-spacing="-2.8">Faster to a passing email.</text>
-  <text x="72" y="234" font-size="28" fill="#a1a1a1" >Less time. Fewer output tokens. More first-check passes.</text>
+  <text x="72" y="234" font-size="28" fill="#a1a1a1" >Four approaches. Same briefs. Same checks.</text>
   <path d="M72 273H1728" stroke="#272727"/>
 
   <text x="80" y="345" font-size="27" fill="#ededed" font-weight="500">5 email briefs</text>
   <text x="80" y="386" font-size="25" fill="#a1a1a1" >16 runs per approach</text>
-  <text x="80" y="426" font-size="23" fill="#a1a1a1" >Same tasks. Same checks.</text>
+  <text x="80" y="426" font-size="23" fill="#a1a1a1" >64 runs in total.</text>
 
-  <text x="500" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">2.2×</text>
+  <text x="500" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">2.6×</text>
   <text x="500" y="410" font-size="27" fill="#ededed" >faster to pass</text>
   <text x="500" y="445" font-size="22" fill="#a1a1a1" >vs. React Email</text>
 
-  <text x="930" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">2.4×</text>
+  <text x="930" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">3.4×</text>
   <text x="930" y="410" font-size="27" fill="#ededed" >fewer output tokens</text>
   <text x="930" y="445" font-size="22" fill="#a1a1a1" >vs. React Email</text>
 
-  <text x="1360" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">11/16</text>
+  <text x="1360" y="352" font-size="88" fill="#7ee2a8" font-weight="600" letter-spacing="-4">16/16</text>
   <text x="1360" y="410" font-size="27" fill="#ededed" >passed on first check</text>
-  <text x="1360" y="445" font-size="22" fill="#a1a1a1" >Hyper Elements</text>
+  <text x="1360" y="445" font-size="22" fill="#a1a1a1" >tied with MJML</text>
 
   <text x="80" y="501" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">APPROACH</text>
   <text x="500" y="501" font-size="18" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" letter-spacing="1.5">TIME · MEDIAN</text>
@@ -37,18 +37,18 @@
   <g id="row-he">
     <rect x="52" y="526" width="1696" height="138" rx="14" fill="#101a15" stroke="#284a36"/>
     <text x="80" y="588" font-size="32" fill="#ededed" font-weight="600" letter-spacing="-0.6">Hyper Elements</text>
-    <text x="80" y="626" font-size="20" fill="#a1a1a1" >Best across all three measures</text>
-    <text x="500" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">35s</text>
+    <text x="80" y="626" font-size="20" fill="#a1a1a1" >Fastest · fewest output tokens</text>
+    <text x="500" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">33s</text>
 
   <rect x="500" y="622" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="500" y="622" width="139.780" height="10" rx="3" fill="#7ee2a8"/>
+  <rect x="500" y="622" width="107.949" height="10" rx="3" fill="#7ee2a8"/>
 
-    <text x="930" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">2,346</text>
+    <text x="930" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">1,831</text>
 
   <rect x="930" y="622" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="930" y="622" width="126.684" height="10" rx="3" fill="#7ee2a8"/>
+  <rect x="930" y="622" width="84.749" height="10" rx="3" fill="#7ee2a8"/>
 
-    <text x="1360" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">11 / 16</text>
+    <text x="1360" y="588" font-size="40" fill="#7ee2a8" font-weight="500" letter-spacing="-1">16 / 16</text>
     <rect x="1360" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
 <rect x="1380" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
 <rect x="1400" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
@@ -60,71 +60,71 @@
 <rect x="1520" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
 <rect x="1540" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
 <rect x="1560" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
-<rect x="1580" y="621" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1600" y="621" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1620" y="621" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1640" y="621" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1660" y="621" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1580" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1600" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1620" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1640" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
+<rect x="1660" y="621" width="12" height="12" rx="3" fill="#7ee2a8"/>
   </g>
 
 
 
-  <g id="row-html">
+  <g id="row-mjml">
 
-    <text x="80" y="746" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">Hand-written HTML</text>
+    <text x="80" y="746" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">MJML</text>
 
-    <text x="500" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">65s</text>
+    <text x="500" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">43s</text>
 
   <rect x="500" y="780" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="500" y="780" width="262.468" height="10" rx="3" fill="#737373"/>
+  <rect x="500" y="780" width="138.241" height="10" rx="3" fill="#737373"/>
 
-    <text x="930" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">5,676</text>
+    <text x="930" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">2,762</text>
 
   <rect x="930" y="780" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="930" y="780" width="306.477" height="10" rx="3" fill="#737373"/>
+  <rect x="930" y="780" width="127.818" height="10" rx="3" fill="#737373"/>
 
-    <text x="1360" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">4 / 16</text>
+    <text x="1360" y="746" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">16 / 16</text>
     <rect x="1360" y="779" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1380" y="779" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1400" y="779" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1420" y="779" width="12" height="12" rx="3" fill="#737373"/>
-<rect x="1440" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1460" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1480" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1500" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1520" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1540" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1560" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1580" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1600" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1620" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1640" y="779" width="12" height="12" rx="3" fill="#292929"/>
-<rect x="1660" y="779" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1440" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1460" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1480" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1500" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1520" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1540" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1560" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1580" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1600" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1620" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1640" y="779" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1660" y="779" width="12" height="12" rx="3" fill="#737373"/>
   </g>
   <path d="M72 822H1728" stroke="#222222"/>
 
 
-  <g id="row-react-email">
+  <g id="row-html">
 
-    <text x="80" y="904" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">React Email</text>
+    <text x="80" y="904" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">Hand-written HTML</text>
 
-    <text x="500" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">76s</text>
+    <text x="500" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">60s</text>
 
   <rect x="500" y="938" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="500" y="938" width="307.255" height="10" rx="3" fill="#737373"/>
+  <rect x="500" y="938" width="194.739" height="10" rx="3" fill="#737373"/>
 
-    <text x="930" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">5,745</text>
+    <text x="930" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">4,903</text>
 
   <rect x="930" y="938" width="324" height="10" rx="3" fill="#242424"/>
-  <rect x="930" y="938" width="310.230" height="10" rx="3" fill="#737373"/>
+  <rect x="930" y="938" width="226.939" height="10" rx="3" fill="#737373"/>
 
-    <text x="1360" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">5 / 16</text>
+    <text x="1360" y="904" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">6 / 16</text>
     <rect x="1360" y="937" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1380" y="937" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1400" y="937" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1420" y="937" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1440" y="937" width="12" height="12" rx="3" fill="#737373"/>
-<rect x="1460" y="937" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1460" y="937" width="12" height="12" rx="3" fill="#737373"/>
 <rect x="1480" y="937" width="12" height="12" rx="3" fill="#292929"/>
 <rect x="1500" y="937" width="12" height="12" rx="3" fill="#292929"/>
 <rect x="1520" y="937" width="12" height="12" rx="3" fill="#292929"/>
@@ -136,12 +136,47 @@
 <rect x="1640" y="937" width="12" height="12" rx="3" fill="#292929"/>
 <rect x="1660" y="937" width="12" height="12" rx="3" fill="#292929"/>
   </g>
+  <path d="M72 980H1728" stroke="#222222"/>
+
+
+  <g id="row-react-email">
+
+    <text x="80" y="1062" font-size="32" fill="#c2c2c2" font-weight="400" letter-spacing="-0.6">React Email</text>
+
+    <text x="500" y="1062" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">86s</text>
+
+  <rect x="500" y="1096" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="500" y="1096" width="278.700" height="10" rx="3" fill="#737373"/>
+
+    <text x="930" y="1062" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">6,215</text>
+
+  <rect x="930" y="1096" width="324" height="10" rx="3" fill="#242424"/>
+  <rect x="930" y="1096" width="287.643" height="10" rx="3" fill="#737373"/>
+
+    <text x="1360" y="1062" font-size="40" fill="#ededed" font-weight="500" letter-spacing="-1">12 / 16</text>
+    <rect x="1360" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1380" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1400" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1420" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1440" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1460" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1480" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1500" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1520" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1540" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1560" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1580" y="1095" width="12" height="12" rx="3" fill="#737373"/>
+<rect x="1600" y="1095" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1620" y="1095" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1640" y="1095" width="12" height="12" rx="3" fill="#292929"/>
+<rect x="1660" y="1095" width="12" height="12" rx="3" fill="#292929"/>
+  </g>
 
 
 
-  <path d="M72 1010H1728" stroke="#272727"/>
-  <text x="72" y="1058" font-size="22" fill="#a1a1a1" >Claude Code · Claude Sonnet 5 · Hyper Elements 0.3 · November 6, 2026</text>
-  <text x="72" y="1095" font-size="21" fill="#6e6e6e" >Identical Chromium checks at desktop and mobile widths. All 48 runs eventually passed.</text>
-  <text x="1728" y="1058" font-size="22" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="end">hyperelements.dev</text>
+  <path d="M72 1168H1728" stroke="#272727"/>
+  <text x="72" y="1216" font-size="22" fill="#a1a1a1" >Claude Code · Claude Sonnet 5 · Hyper Elements 0.3 · November 8, 2026</text>
+  <text x="72" y="1253" font-size="21" fill="#6e6e6e" >Identical Chromium checks at desktop and mobile widths. All 64 runs eventually passed.</text>
+  <text x="1728" y="1216" font-size="22" fill="#a1a1a1" font-family="Geist Mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" text-anchor="end">hyperelements.dev</text>
 </g>
 </svg>

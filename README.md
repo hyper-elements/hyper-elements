@@ -129,15 +129,15 @@ An agent can spot missing content, incorrect widths, and layout mistakes before 
 
 ## Faster from prompt to passing email
 
-In our benchmark of five email briefs, Hyper Elements reached a passing email **2.2× faster** with **2.4× fewer output tokens** than React Email, at the median. **11 of 16** Hyper Elements runs passed on the first check.
+In our benchmark of five email briefs, Hyper Elements reached a passing email **2.6× faster** with **3.4× fewer output tokens** than React Email, at the median. It was also **1.3× faster than MJML**. Hyper Elements and MJML both passed **16 of 16** first checks.
 
 <p align="center">
   <a href="https://hyperelements.dev/docs/benchmark">
-    <img src="./assets/hyper-elements-agent-benchmark.svg" alt="Agent benchmark: Hyper Elements took 35 seconds, used 2,346 output tokens, and passed on the first check in 11 of 16 runs. Hand-written HTML: 65 seconds, 5,676 output tokens, 4 of 16 first-check passes. React Email: 76 seconds, 5,745 output tokens, 5 of 16 first-check passes. Time and token counts are medians." width="1000" />
+    <img src="./assets/hyper-elements-agent-benchmark.svg" alt="Agent benchmark: Hyper Elements took 33 seconds, used 1,831 output tokens, and passed on the first check in 16 of 16 runs. MJML: 43 seconds, 2,762 output tokens, 16 of 16 first-check passes. Hand-written HTML: 60 seconds, 4,903 output tokens, 6 of 16 first-check passes. React Email: 86 seconds, 6,215 output tokens, 12 of 16 first-check passes. Time and token counts are medians." width="1000" />
   </a>
 </p>
 
-Claude Code with Claude Sonnet 5, November 6, 2026. Each approach had 16 runs against the same Chromium checks at desktop and mobile widths; all 48 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
+Claude Code with Claude Sonnet 5, November 8, 2026. All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
 
 ## Keep building
 
