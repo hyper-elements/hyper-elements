@@ -14,11 +14,26 @@ export type Target = "email" | "web" | "print" | "pdf" | "image";
 
 export const TARGETS: readonly Target[] = ["email", "web", "print", "pdf", "image"];
 
+/** The roots a template can have: each decides the output (`render()` writes an Email's HTML, a Page's, …). */
+export type RootName = "Email" | "Page" | "Document" | "Canvas";
+
+export const ROOT_NAMES: readonly RootName[] = ["Email", "Page", "Document", "Canvas"];
+
+/** What a style is about, for the guide and `describeComponents()`: the group it's listed in. */
+export type StyleGroup = "Layout" | "Size" | "Position" | "Spacing" | "Typography" | "Background" | "Border" | "Effects";
+
+export const STYLE_GROUPS: readonly StyleGroup[] = ["Layout", "Size", "Position", "Spacing", "Typography", "Background", "Border", "Effects"];
+
 export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends boolean = boolean> {
   kind: K;
   required?: R;
   label: string;
   description?: string;
+  /**
+   * The roots it may be given under (default: every root its component goes in). Under another root it's a
+   * `prop/not-supported` error naming these.
+   */
+  roots?: readonly RootName[];
   /** Used where the prop isn't given (not written into the document). */
   default?: OutputOf<K>;
   /** Editors may change it (default true). */
@@ -60,6 +75,13 @@ export interface StyleSpec<K extends Kind<any, any> = Kind<any, any>> {
   inherited?: boolean;
   /** May be overridden on phones (`mobile`). */
   mobile?: boolean;
+  /**
+   * The roots it may be set under (default: every root its component goes in). Under another root it's a
+   * `style/not-supported` error naming these, in `style` and in its condition blocks alike.
+   */
+  roots?: readonly RootName[];
+  /** The group it's listed in; default: the group of its name (`STYLE_GROUP_OF`), as a style's name is CSS's. */
+  group?: StyleGroup;
   editable?: boolean;
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
@@ -141,6 +163,13 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
   arrange?: (node: Node) => Node;
   /** Where it renders; a target left out is a diagnostic. */
   targets: Partial<Record<Target, TargetSupport>>;
+  /**
+   * The roots it may go in, of those whose output it renders to (default: every one whose children reach it). Under
+   * another such root it's the `notAllowed` error, by default `component/not-supported` naming these; under a root
+   * whose output it doesn't render to, it's `target/unsupported`, as for any component.
+   */
+  roots?: readonly RootName[];
+  notAllowed?: { code: string; message: (root: string) => string };
   /** Why a target it doesn't render can't, and what to do instead (in the diagnostic). */
   unsupported?: Partial<Record<Target, string>>;
   editor?: { groups: readonly EditorGroup[] };

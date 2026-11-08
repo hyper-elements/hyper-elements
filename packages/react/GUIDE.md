@@ -119,7 +119,7 @@ const { image, diagnostics } = await renderImage(
 
 ### Blocks
 
-- **Svg**: Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. Holds shapes. Props: width* (a number from 0), height* (a number from 0), viewBox (text), title (text). Style: padding, backgroundColor, border, borderRadius, flex. Phones: padding, border.
+- **Svg**: Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. Not in an Email. Holds shapes. Props: width* (a number from 0), height* (a number from 0), viewBox (text), title (text). Style: padding, backgroundColor, border, borderRadius, flex. Phones: padding, border.
 - **Text**: A paragraph of text. Holds text, inline, Image. Props: dir (ltr|rtl|auto). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
 - **Heading**: A heading, from level 1 (the page's title) to 6. Holds text, inline. Props: level (1|2|3|4|5|6), dir (ltr|rtl|auto). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
 - **Button**: A link drawn as a button. Holds text, Span, MergeTag, LineBreak. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: text, box, textDecoration (none|underline|line-through), boxSizing (border-box|content-box), alignSelf (start|center|end), flex. Hover: color, backgroundColor. Phones: text, width, maxWidth, padding, border, alignSelf.
@@ -134,7 +134,7 @@ const { image, diagnostics } = await renderImage(
 
 ### Inline
 
-- **PageNumber**: In a Document's text: the number of the page it's on, or (total) how many pages there are. Props: total (true or false).
+- **PageNumber**: In a Document's text: the number of the page it's on, or (total) how many pages there are. Only in a Document. Props: total (true or false).
 - **Span**: Styled text inside text; raised or lowered (superscript, subscript) with verticalAlign. Holds text, inline. Style: color, fontFamily, fontSize, fontWeight, fontStyle (normal|italic), letterSpacing, textTransform (none|uppercase|lowercase|capitalize), textDecoration (none|underline|line-through), backgroundColor, verticalAlign (baseline|super|sub). Phones: fontSize, letterSpacing.
 - **Link**: A link: text inside text, or around an Image. Holds text, inline, Image. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: color, fontFamily, fontSize, fontWeight, fontStyle (normal|italic), letterSpacing, textTransform (none|uppercase|lowercase|capitalize), textDecoration (none|underline|line-through), backgroundColor, flex. Hover: color, textDecoration, backgroundColor. Phones: fontSize, letterSpacing.
 - **LineBreak**: Starts a new line inside text.
@@ -142,22 +142,22 @@ const { image, diagnostics } = await renderImage(
 
 ### Parts
 
-- **Document.Page**: One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins. Holds sections, layout, blocks. Style: text, backgroundColor, gap, alignItems (start|center|end|stretch).
-- **PageBreak**: In a Document, where a page ends: what follows starts the next page.
-- **PageHeader**: In a Document: drawn at the top of every page, inside its margins. Holds layout, blocks. Style: text, padding, backgroundColor, border, gap, alignItems (start|center|end|stretch).
-- **PageFooter**: In a Document: drawn at the bottom of every page, inside its margins. Holds layout, blocks. Style: text, padding, backgroundColor, border, gap, alignItems (start|center|end|stretch).
+- **Document.Page**: One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins. Only in a Document. Holds sections, layout, blocks. Style: text, backgroundColor, gap, alignItems (start|center|end|stretch).
+- **PageBreak**: In a Document, where a page ends: what follows starts the next page. Only in a Document.
+- **PageHeader**: In a Document: drawn at the top of every page, inside its margins. Only in a Document. Holds layout, blocks. Style: text, padding, backgroundColor, border, gap, alignItems (start|center|end|stretch).
+- **PageFooter**: In a Document: drawn at the bottom of every page, inside its margins. Only in a Document. Holds layout, blocks. Style: text, padding, backgroundColor, border, gap, alignItems (start|center|end|stretch).
 - **ListItem**: An item of a List: text, and a List of its own to nest one. Holds text, inline, List. Props: dir (ltr|rtl|auto). Style: text, textDecoration (none|underline|line-through). Phones: text.
 - **TableRow**: A row of a Table. A header row's cells are header cells, in bold. Holds TableCell. Props: header (true or false), footer (true or false). Style: text, backgroundColor, height. Phones: text.
 - **TableCell**: A cell of a TableRow: text, and images. Its width sets its column's. Holds text, inline, Image. Props: colSpan (an integer from 1), dir (ltr|rtl|auto). Style: text, textDecoration (none|underline|line-through), padding, backgroundColor, border, width, verticalAlign (top|middle|bottom). Phones: text, padding, border.
 
 ### Shapes
 
-- **Rect**: A rectangle at x, y in its Svg, rounded by rx. Props: x (a number), y (a number), width* (a number from 0), height* (a number from 0), rx (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Circle**: A circle centered at cx, cy in its Svg. Props: cx (a number), cy (a number), r* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Ellipse**: An ellipse centered at cx, cy in its Svg. Props: cx (a number), cy (a number), rx* (a number from 0), ry* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Line**: A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke). Props: x1 (a number), y1 (a number), x2 (a number), y2 (a number). Style: fill, stroke, strokeWidth, opacity.
-- **Polygon**: A closed shape through its points ("0,0 40,0 20,30"), in its Svg. Props: points* (text). Style: fill, stroke, strokeWidth, opacity.
-- **Path**: A shape drawn by an SVG path (d), in its Svg. Props: d* (text). Style: fill, stroke, strokeWidth, opacity.
+- **Rect**: A rectangle at x, y in its Svg, rounded by rx. Not in an Email. Props: x (a number), y (a number), width* (a number from 0), height* (a number from 0), rx (a number from 0). Style: fill, stroke, strokeWidth, opacity.
+- **Circle**: A circle centered at cx, cy in its Svg. Not in an Email. Props: cx (a number), cy (a number), r* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
+- **Ellipse**: An ellipse centered at cx, cy in its Svg. Not in an Email. Props: cx (a number), cy (a number), rx* (a number from 0), ry* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
+- **Line**: A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke). Not in an Email. Props: x1 (a number), y1 (a number), x2 (a number), y2 (a number). Style: fill, stroke, strokeWidth, opacity.
+- **Polygon**: A closed shape through its points ("0,0 40,0 20,30"), in its Svg. Not in an Email. Props: points* (text). Style: fill, stroke, strokeWidth, opacity.
+- **Path**: A shape drawn by an SVG path (d), in its Svg. Not in an Email. Props: d* (text). Style: fill, stroke, strokeWidth, opacity.
 
 ## Values
 

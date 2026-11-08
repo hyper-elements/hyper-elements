@@ -3,7 +3,7 @@
  * between siblings is the parent's `gap`, space inside a box its `padding`,
  * which every target can do (margins aren't reliable in email).
  */
-import type { Support, StyleSpec } from "./define";
+import type { Support, StyleGroup, StyleSpec } from "./define";
 
 /** Shown as asked, by how the writer writes it. */
 const writer: Support = { level: "full", source: "writer" };
@@ -86,4 +86,61 @@ export const placementStyle = {
 /** The keys of `group` named, as a group of their own. */
 export function pick<G extends Record<string, StyleSpec>, const K extends keyof G>(group: G, ...keys: K[]): Pick<G, K> {
   return Object.fromEntries(keys.map((key) => [key, group[key]])) as Pick<G, K>;
+}
+
+/**
+ * The group each style is listed in, by its name. A style's name is CSS's (or, for a component's own, says what it
+ * draws), and it's in the same group on every component that takes it; a spec's own `group` comes first.
+ */
+export const STYLE_GROUP_OF: Readonly<Record<string, StyleGroup>> = {
+  // How children are placed, and how a box sits among its siblings.
+  alignItems: "Layout",
+  justifyContent: "Layout",
+  justifyItems: "Layout",
+  alignSelf: "Layout",
+  verticalAlign: "Layout",
+  flex: "Layout",
+  flexWrap: "Layout",
+  overflow: "Layout",
+  // A box's size.
+  width: "Size",
+  minWidth: "Size",
+  maxWidth: "Size",
+  height: "Size",
+  boxSizing: "Size",
+  // Space inside a box and between its children.
+  padding: "Spacing",
+  gap: "Spacing",
+  rowGap: "Spacing",
+  indent: "Spacing",
+  cellPadding: "Spacing",
+  // Text.
+  color: "Typography",
+  fontFamily: "Typography",
+  fontSize: "Typography",
+  fontWeight: "Typography",
+  fontStyle: "Typography",
+  lineHeight: "Typography",
+  letterSpacing: "Typography",
+  textAlign: "Typography",
+  textTransform: "Typography",
+  textDecoration: "Typography",
+  // What's drawn behind content, and a shape's paint.
+  backgroundColor: "Background",
+  fill: "Background",
+  // Lines around and between boxes, and a shape's outline.
+  border: "Border",
+  borderTop: "Border",
+  borderRadius: "Border",
+  borderCollapse: "Border",
+  rowBorder: "Border",
+  separatorColor: "Border",
+  stroke: "Border",
+  strokeWidth: "Border",
+  opacity: "Effects",
+};
+
+/** The group a style is listed in: its spec's own, else its name's. */
+export function styleGroup(key: string, spec: StyleSpec): StyleGroup | undefined {
+  return spec.group ?? STYLE_GROUP_OF[key];
 }
