@@ -55,7 +55,7 @@ function component(c: ComponentDescription, all: ComponentDescription[], named: 
   const props = c.properties.filter((p) => p.path.startsWith("props."));
   const style = c.properties.filter((p) => p.path.startsWith("style."));
   const hover = c.properties.filter((p) => p.path.startsWith("hover.")).map((p) => `\`${p.path.slice(6)}\``);
-  const phone = style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``);
+  const phone = NO_PHONES.has(c.type) ? [] : style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``);
   return [
     `### ${name(c.type)}`,
     "",
@@ -111,6 +111,13 @@ export function primitivesReference(): string {
 /** Styles most components share, named as a group on a component's line. */
 const TEXT = ["color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "textAlign", "textTransform"];
 const BOX = ["width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"];
+/** The text styles that may be set on phones, named `text` among a component's phone styles. */
+const PHONE_TEXT = ["fontSize", "lineHeight", "letterSpacing", "textAlign"];
+/**
+ * Components that only go under a root with no phone width (a Document, a Canvas): phone styles are an error there
+ * (mobile/not-supported), so their phone styles aren't listed.
+ */
+const NO_PHONES = new Set(["Document", "DocumentPage", "PageHeader", "PageFooter", "PageNumber", "PageBreak", "Canvas"]);
 const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
 
 /**
@@ -124,10 +131,10 @@ function short(p: PropertyDescription, named: Map<string, string>): string {
 }
 
 /** Keys, with the shared groups named where all of a group's keys are there. */
-function keys(found: string[], describe: (key: string) => string = (key) => key): string {
+function keys(found: string[], describe: (key: string) => string = (key) => key, groups: ReadonlyArray<readonly [string, readonly string[]]> = [["text", TEXT], ["box", BOX]]): string {
   const out: string[] = [];
   let rest = found;
-  for (const [group, members] of [["text", TEXT], ["box", BOX]] as const) {
+  for (const [group, members] of groups) {
     if (members.every((key) => rest.includes(key))) {
       out.push(group);
       rest = rest.filter((key) => !members.includes(key));
@@ -146,7 +153,7 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
   const props = of("props.").map((p) => `${p.path.slice(6)}${p.required ? "*" : ""} (${short(p, named)})`);
   const style = of("style.").map((p) => p.path.slice(6));
   const hover = of("hover.").map((p) => p.path.slice(6));
-  const phone = of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6));
+  const phone = NO_PHONES.has(c.type) ? [] : of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6));
   const holds = [c.children.text ? "text" : "", ...c.children.categories.map((category) => CATEGORY[category] ?? category), ...c.children.types.map(name)].filter(Boolean);
   const parts = [
     `${c.description.replace(/\.$/, "")}.`,
@@ -154,7 +161,7 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
     props.length ? `Props: ${props.join(", ")}.` : "",
     style.length ? `Style: ${keys(style, enumOf("style."))}.` : "",
     hover.length ? `Hover: ${hover.join(", ")}.` : "",
-    phone.length ? `Phones: ${keys(phone)}.` : "",
+    phone.length ? `Phones: ${keys(phone, undefined, [["text", PHONE_TEXT]])}.` : "",
   ].filter(Boolean);
   return `- **${name(c.type)}**: ${parts.join(" ")}`;
 }
@@ -243,7 +250,7 @@ function guide(example: string): string {
     "- Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.",
     "- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.",
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
-    "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\"), `hidden={{ mobile: true }}`. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
+    "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
     "- `await render(element)` gives `{ html, text, diagnostics }`; a template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.",
     "",
     "## Common mistakes",
@@ -256,6 +263,7 @@ function guide(example: string): string {
     "- `style={{ marginBottom: 16 }}` → `gap: 16` on the parent. There are no margins.",
     "- `ColumnLayouts`, `layout`, `headingType`, `altText`, `html` are Unlayer Elements' props, not these: a `Row` of `Column`s, `level`, `alt`, and text as children.",
     "- `<Image src=\"https://example.com/logo.png\">` → `src={{ src: \"https://example.com/logo.png\", width: 240, height: 80 }}`, the file's size. Without it Outlook shows the image at its file's size, and Hyper Elements warns.",
+    "- `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.",
     "",
     "## A whole template",
     "",

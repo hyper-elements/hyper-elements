@@ -3,7 +3,7 @@
  * plain data for editors, docs and agents.
  */
 import { registryOf, type ComponentsOption } from "./registry";
-import type { Category, ComponentDefinition, Target } from "./define";
+import type { Category, ComponentDefinition, Support, SupportByTarget, Target } from "./define";
 import type { EditorKind, JsonSchema } from "./kinds";
 import type { Json } from "./model";
 
@@ -65,6 +65,12 @@ function describe(definition: ComponentDefinition): ComponentDescription {
   }
   const defaults = (definition.defaultStyle ?? {}) as Record<string, Json>;
   const hover = new Set<string>(definition.hover ?? []);
+  // A phone style no output it renders to shows, whatever its value (a Page root's phone font size): not listed as one.
+  const targets = Object.keys(definition.targets) as Target[];
+  const unshownOnPhones = (key: string) => {
+    const declared = (definition.conditionSupport?.mobile as Record<string, SupportByTarget> | undefined)?.[key];
+    return !!declared && targets.every((target) => ([] as Support[]).concat(declared[target] ?? []).some((rule) => rule.level === "none" && !rule.values && !rule.when));
+  };
   for (const [key, spec] of Object.entries(definition.style)) {
     const base = {
       label: spec.label,
@@ -75,7 +81,7 @@ function describe(definition: ComponentDefinition): ComponentDescription {
       editable: spec.editable !== false,
       required: false,
       inherited: !!spec.inherited,
-      mobile: !!spec.mobile,
+      mobile: !!spec.mobile && !unshownOnPhones(key),
       schema: spec.kind.jsonSchema(),
     };
     properties.push({ path: `style.${key}`, ...base, ...(defaults[key] !== undefined ? { default: defaults[key] } : {}) });
