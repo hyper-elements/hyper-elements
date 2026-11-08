@@ -19,6 +19,8 @@ export interface BlockMapEntry {
   path: string;
   /** Its `id`, where it has one. */
   nodeId?: string;
+  /** Its component (`Heading`, `Button`, a Grid's `Row`…), as laid out. */
+  type: string;
   /** The UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). */
   offset: number;
 }

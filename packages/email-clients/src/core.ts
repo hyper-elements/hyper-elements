@@ -4,15 +4,16 @@
  * not when the module is linked.
  */
 import * as installed from "@hyper-elements/react";
+import { peerDependencies, version } from "../package.json";
 
 /** The `blocks` formats (core's BLOCK_MAP_VERSION) this package reads. */
 export const BLOCK_MAP_VERSIONS: readonly number[] = [1];
 
-/** The core releases this package works with: its peer dependency on @hyper-elements/react. */
-export const CORE_RANGE = "^0.3.1";
+/** The core releases this package works with: its peer dependency on @hyper-elements/react, as package.json says it. */
+export const CORE_RANGE: string = peerDependencies["@hyper-elements/react"];
 
-/** The command that installs a core and this package that work together. */
-export const INSTALL = `npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.3`;
+/** The command that installs a core and this package that work together: this package's own line (it follows core's minor). */
+export const INSTALL = `npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^${version.split(".").slice(0, 2).join(".")}`;
 
 /** What's used of core, by name. */
 export type Core = typeof installed;

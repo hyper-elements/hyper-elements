@@ -38,31 +38,61 @@ export function linesOf(el: Element): number {
   return lines;
 }
 
-/** The Headings (h1–h6) and Buttons (their link, in the cell Outlook pads with mso-padding-alt) in `doc`, keyed by path and order. */
-export function textBlocks(doc: Document): Map<string, { el: Element; kind: "Heading" | "Button" }> {
+/** Each block's component, by its path: the block map's types. */
+export type Types = ReadonlyMap<string, string>;
+
+/**
+ * The Headings (their h1–h6) and Buttons (their link) in `doc`, by the block map's types (not an Html block's own
+ * headings or links), keyed by path and order.
+ */
+export function textBlocks(doc: Document, types: Types): Map<string, { el: Element; kind: "Heading" | "Button" }> {
   const out = new Map<string, { el: Element; kind: "Heading" | "Button" }>();
   const count = new Map<string, number>();
   for (const el of [...doc.querySelectorAll("h1,h2,h3,h4,h5,h6,a")]) {
-    const kind = el.tagName === "A" ? (/mso-padding-alt/i.test(el.parentElement?.getAttribute("style") ?? "") ? "Button" : null) : "Heading";
-    if (!kind) continue;
     const path = pathOf(el);
+    const kind = types.get(path);
+    if (kind !== (el.tagName === "A" ? "Button" : "Heading")) continue;
     const n = count.get(path) ?? 0;
     count.set(path, n + 1);
-    out.set(`${path}#${n}`, { el, kind });
+    out.set(`${path}#${n}`, { el, kind: kind as "Heading" | "Button" });
   }
   return out;
 }
 
-/** email/more-lines: Outlook's Headings and Buttons that take more lines than as written, where each of its breaks there missed by MARGIN or more. */
-export function moreLines(client: Document, baseline: Document, breaks: readonly OutlookBreak[]): Diagnostic[] {
-  const before = textBlocks(baseline);
+/** The words that start each of `el`'s lines after its first (as written: where the browser broke them). */
+export function lineStarts(el: Element): Set<string> {
+  const doc = el.ownerDocument;
+  const starts = new Set<string>();
+  const walker = doc.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  let last: number | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    for (const match of node.textContent!.matchAll(/\S+/g)) {
+      const range = doc.createRange();
+      range.setStart(node, match.index!);
+      range.setEnd(node, match.index! + match[0].length);
+      const rect = range.getBoundingClientRect();
+      if (last !== null && rect.top - last > rect.height / 2) starts.add(match[0]);
+      last = rect.top;
+    }
+  }
+  return starts;
+}
+
+/**
+ * email/more-lines: Outlook's Headings and Buttons that take more lines than as written, where each break its rules
+ * made differently from the email as written missed by MARGIN or more. A break the browser made itself (centered text,
+ * a block with an image: margin null) has no margin to judge, so a block whose extra lines are all such isn't reported.
+ */
+export function moreLines(client: Document, baseline: Document, breaks: readonly OutlookBreak[], types: Types): Diagnostic[] {
+  const before = textBlocks(baseline, types);
   const out: Diagnostic[] = [];
-  for (const [key, { el, kind }] of textBlocks(client)) {
+  for (const [key, { el, kind }] of textBlocks(client, types)) {
     const written = before.get(key);
     if (!written) continue;
     const [lines, writtenLines] = [linesOf(el), linesOf(written.el)];
     if (lines <= writtenLines) continue;
-    const decided = breaks.filter((b) => b.margin !== null && (b.block === el || el.contains(b.block) || (b.block.contains(el) && (el.textContent ?? "").includes(b.word))));
+    const shared = lineStarts(written.el);
+    const decided = breaks.filter((b) => b.margin !== null && !shared.has(b.word) && (b.block === el || el.contains(b.block) || (b.block.contains(el) && (el.textContent ?? "").includes(b.word))));
     if (!decided.length || decided.some((b) => Math.abs(b.margin!) < MARGIN)) continue;
     out.push({
       code: "email/more-lines",
@@ -129,16 +159,33 @@ function textContrast(doc: Document): Map<string, { el: Element; ratio: number }
   return out;
 }
 
+/** A CSS selector for `el` from `block` (`div:nth-of-type(2) > p:nth-of-type(1)`), for what's inside an Html block. */
+export function selectorFrom(block: Element, el: Element): string {
+  const parts: string[] = [];
+  for (let node: Element | null = el; node && node !== block; node = node.parentElement) {
+    const tag = node.tagName.toLowerCase();
+    const index = [...(node.parentElement?.children ?? [])].filter((sibling) => sibling.tagName === node!.tagName).indexOf(node) + 1;
+    parts.unshift(`${tag}:nth-of-type(${index})`);
+  }
+  return parts.join(" > ");
+}
+
+/** A finding inside an Html block takes the block's path and a selector to its element. */
+export type Finding = Diagnostic & { selector?: string };
+
 /** email/dark-contrast: text that reads as written (CONTRAST or more) and doesn't after Apple Mail's dark-mode change. */
-export function darkContrast(client: Document, baseline: Document): Diagnostic[] {
+export function darkContrast(client: Document, baseline: Document, types: Types = new Map()): Finding[] {
   const before = textContrast(baseline);
   const reported = new Set<string>();
-  const out: Diagnostic[] = [];
+  const out: Finding[] = [];
   for (const [key, { el, ratio }] of textContrast(client)) {
     const written = before.get(key);
     const path = pathOf(el);
-    if (!written || written.ratio < CONTRAST || ratio >= CONTRAST || reported.has(path)) continue;
-    reported.add(path);
+    const block = el.closest("[data-el-path]");
+    const selector = block && block !== el && types.get(path) === "Html" ? selectorFrom(block, el) : undefined;
+    const at = selector ? `${path} ${selector}` : path;
+    if (!written || written.ratio < CONTRAST || ratio >= CONTRAST || reported.has(at)) continue;
+    reported.add(at);
     out.push({
       code: "email/dark-contrast",
       severity: "warning",
@@ -146,6 +193,7 @@ export function darkContrast(client: Document, baseline: Document): Diagnostic[]
       path,
       clients: ["apple-mail"],
       fix: "set the text's and its background's colours so both modes read",
+      ...(selector ? { selector } : {}),
     });
   }
   return out;

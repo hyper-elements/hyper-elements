@@ -13,13 +13,16 @@
  * 7. Says it's done: `data-email-client-ready` is "ok", "incomplete" (something was missing, or 10 seconds passed), or
  *    "error" (with the error in the findings).
  */
-import type { BlockMap, Diagnostic } from "@hyper-elements/react";
+import type { BlockMap } from "@hyper-elements/react";
 import { scriptJson } from "../shell";
 import { processForClient, type Client } from "./clients";
-import { clipped, darkContrast, moreLines } from "./findings";
+import { clipped, darkContrast, moreLines, type Finding, type Types } from "./findings";
 import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, withCss } from "./frames";
 import { markPaths } from "./marks";
 import { checkSystemFonts } from "./system-fonts";
+
+/** How tall a client's window is, while a frame loads and is measured: a desktop's, or a phone's. */
+const WINDOW = { desktop: 900, phone: 812 } as const;
 
 export interface Config {
   id: string;
@@ -60,7 +63,7 @@ function writeFindings(findings: Record<string, unknown>): void {
 }
 
 /** The note: how the preview went, what the client removed, what was missing, what it found. */
-function writeNote(findings: { ready: string; removed: Array<{ what: string; count: number }>; missing: Missing[]; diagnostics: Diagnostic[]; error: string | null }): void {
+function writeNote(findings: { ready: string; removed: Array<{ what: string; count: number }>; missing: Missing[]; diagnostics: Finding[]; error: string | null }): void {
   const note = document.getElementById("findings")!;
   const list = (title: string, items: string[]) => {
     if (!items.length) return;
@@ -77,7 +80,7 @@ function writeNote(findings: { ready: string; removed: Array<{ what: string; cou
   const status = document.createElement("p");
   status.textContent = findings.error ? `The preview failed: ${findings.error}` : findings.ready === "ok" ? "Drawn." : "Drawn, with something missing (listed below): it may differ from the client.";
   note.append(status);
-  list("Found", findings.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}. Fix: ${d.fix}`));
+  list("Found", findings.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}${d.selector ? ` (${d.selector})` : ""}: ${d.message}. Fix: ${d.fix}`));
   list("What the client removed or changed", findings.removed.map(({ what, count }) => `${what}${count > 1 ? ` (${count})` : ""}`));
   list("Missing", findings.missing.map((m) => (m.kind === "image" ? `image ${m.src}` : m.kind === "author-font" ? `web font ${m.family} (${m.src})` : m.kind === "substituted" ? `font ${m.family} (another font of other widths drew instead)` : `font ${m.family}`)));
 }
@@ -101,7 +104,7 @@ async function main(): Promise<void> {
     removed: [] as Array<{ what: string; count: number }>,
     missing: [] as Missing[],
     fonts: [] as Array<{ family: string; verified: "present" | "widths" }>,
-    diagnostics: [] as Diagnostic[],
+    diagnostics: [] as Finding[],
     error: null as string | null,
   };
   try {
@@ -110,9 +113,10 @@ async function main(): Promise<void> {
     findings.removed = Object.entries(processed.removed).map(([what, count]) => ({ what, count }));
     // Outlook.com's version has its web font from outlook-com.js itself, as its scorer's has.
     const clientHtml = config.client === "outlook-com" ? processed.html : withCss(processed.html, config.fontCss);
+    const height = WINDOW[config.variant];
     const [shown, baseline] = await Promise.all([
-      frame(clientHtml, config.width, `${config.name}: the email as it draws`, deadline),
-      frame(withCss(markPaths(html, config.blocks.entries), config.fontCss), config.width, "The email as written", deadline),
+      frame(clientHtml, config.width, height, `${config.name}: the email as it draws`, deadline),
+      frame(withCss(markPaths(html, config.blocks.entries), config.fontCss), config.width, height, "The email as written", deadline),
     ]);
     const docs = [shown.contentDocument!, baseline.contentDocument!];
     await Promise.all(docs.map((doc) => loadFaces(doc, config.faces, deadline)));
@@ -122,13 +126,15 @@ async function main(): Promise<void> {
     const loaded = new Set([...docs[0]!.fonts].filter((face) => face.status === "loaded").map((face) => face.family.replace(/^["']|["']$/g, "")));
     // A stand-in with no face loaded (its file unreachable; Helvetica Neue not on this machine for Aptos) is missing.
     const standInsMissing = config.standIns.filter((family) => !loaded.has(family) && [...docs[0]!.fonts].some((face) => face.family.replace(/^["']|["']$/g, "") === family));
-    const system = checkSystemFonts(docs[0]!, new Set([...loaded, ...standInsMissing]), config.probe);
     const report = processed.frameStep(shown.contentWindow!);
     await until(docs[0]!.fonts.ready.then(() => undefined), deadline, undefined);
+    // After the client's step: classic Outlook's rules write the one font Outlook draws each run in.
+    const system = checkSystemFonts(docs[0]!, new Set([...loaded, ...standInsMissing]), config.probe, standIns);
     findings.missing = [...standInsMissing.map((family) => ({ kind: "font" as const, family })), ...system.missing, ...author.map((a) => ({ kind: "author-font" as const, ...a })), ...images!.map((src) => ({ kind: "image" as const, src }))];
     findings.fonts = system.fonts;
-    if (config.client === "outlook") findings.diagnostics.push(...moreLines(docs[0]!, docs[1]!, report.breaks ?? []));
-    if (config.client === "apple-mail" && config.dark) findings.diagnostics.push(...darkContrast(docs[0]!, docs[1]!));
+    const types: Types = new Map(config.blocks.entries.map((entry) => [entry.path, entry.type]));
+    if (config.client === "outlook") findings.diagnostics.push(...moreLines(docs[0]!, docs[1]!, report.breaks ?? [], types));
+    if (config.client === "apple-mail" && config.dark) findings.diagnostics.push(...darkContrast(docs[0]!, docs[1]!, types));
     if (processed.cut !== null && (config.client === "gmail" || config.client === "gmail-app" || config.client === "gmail-app-other")) findings.diagnostics.push(clipped(config.client, processed.cut, processed.size ?? 0, config.blocks.entries));
     grow(shown);
     baseline.hidden = true;

@@ -53,7 +53,7 @@ describe("renderInEmailClients()", () => {
 
   it("rejects a root that isn't an Email, a template with errors, and a client it doesn't know", async () => {
     const page = await renderInEmailClients(<Page width={600}><Text>Hi</Text></Page>).catch((e: unknown) => e);
-    expect((page as { diagnostics: unknown }).diagnostics).toEqual([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is a Page", path: "root" }]);
+    expect((page as { diagnostics: unknown }).diagnostics).toEqual([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
     const broken = await renderInEmailClients(<Email width={600}><Text style={{ marginBottom: 4 } as never}>Hi</Text></Email>).catch((e: unknown) => e);
     expect((broken as { diagnostics: Array<{ code: string }> }).diagnostics.map((d) => d.code)).toContain("style/unknown");
     await expect(renderInEmailClients(welcome, { emailClients: ["hotmail" as never] })).rejects.toThrow(TypeError);
@@ -96,6 +96,12 @@ describe("the version check", () => {
     }
     return null;
   };
+
+  it("names the core range package.json declares, and this package's own line, in what to install", async () => {
+    const pkg = (await import("../package.json")).default as { version: string; peerDependencies: Record<string, string> };
+    expect(CORE_RANGE).toBe(pkg.peerDependencies["@hyper-elements/react"]);
+    expect(mismatch({})!.message).toContain(`npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^${pkg.version.split(".").slice(0, 2).join(".")}`);
+  });
 
   it("passes a core with render()'s blockMap in a format it reads, as the installed one is", () => {
     expect(mismatch(core)).toBeNull();

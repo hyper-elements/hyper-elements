@@ -8,7 +8,7 @@ import type { BlockMapEntry } from "@hyper-elements/react";
 const escapeAttr = (text: string) => text.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 
 /** `html` with each entry's path at its offset, for offsets before `limit` (the bytes Gmail's clip keeps). */
-export function markPaths(html: string, entries: readonly BlockMapEntry[], limit = Number.POSITIVE_INFINITY): string {
+export function markPaths(html: string, entries: ReadonlyArray<Pick<BlockMapEntry, "path" | "offset">>, limit = Number.POSITIVE_INFINITY): string {
   const encoder = new TextEncoder();
   const bytes = encoder.encode(html);
   // One path per offset: the last entry there (entries at one offset come outer first).

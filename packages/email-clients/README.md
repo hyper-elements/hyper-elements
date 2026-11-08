@@ -34,14 +34,17 @@ An agent with a browser opens a file, waits for `<html data-email-client-ready>`
 `incomplete` when something was missing (a font, an image) or 10 seconds passed; `error` when the preview failed. The
 findings are JSON in `<script type="application/json" id="email-client-findings">`, and listed at the top of the file:
 
-- `removed`: what the client removed or changed, and how often.
+- `removed`: what the client removed or changed, and how often (by kind, as the client models count it, such as
+  `"position (inline)"`; not yet by block).
 - `missing`: a font that isn't on this machine, one swapped for a font of other widths (`substituted`), the email's own
   web font that didn't load (`author-font`), an image that didn't load (drawn as a gray box of its size).
 - `fonts`: the system fonts it drew with, checked against the widths they were measured with (`verified: "widths"`)
   or only found (`"present"`).
 - `diagnostics`: what it found in what it drew, only where that's robust to the model's error:
-  `email/more-lines` (a Heading or Button classic Outlook draws on more lines), `email/dark-contrast` (text that
-  doesn't read in Apple Mail's dark mode) and `email/size` (where Gmail clips the email).
+  `email/more-lines` (a Heading or Button classic Outlook draws on more lines, where each break Outlook's rules made
+  differently missed by 2px or more; centered text keeps the browser's own breaks, which have no margin to judge, so
+  it isn't reported), `email/dark-contrast` (text that doesn't read in Apple Mail's dark mode; inside an Html block,
+  with a `selector`) and `email/size` (where Gmail clips the email).
 
 ## Fonts
 
