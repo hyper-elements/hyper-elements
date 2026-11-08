@@ -65,7 +65,7 @@ const rows = groups.map((group, i) => {
   const active = group.kit === "he";
   return `
   <g id="row-${group.kit}">
-    ${active ? `<rect x="52" y="${top}" width="1696" height="138" fill="${colors.surface}" stroke="${colors.border}"/>` : ""}
+    ${active ? `<rect x="52" y="${top}" width="1696" height="138" rx="14" fill="${colors.surface}" stroke="${colors.border}"/>` : ""}
     ${text(80, top + 62, group.label, 32, active ? colors.ink : "#c2c2c2", `font-weight="${active ? 600 : 400}" letter-spacing="-0.6"`)}
     ${active ? text(80, top + 100, "Fastest · fewest output tokens", 20, colors.muted) : ""}
     ${number(500, top + 62, `${Math.round(group.seconds)}s`, active)}
