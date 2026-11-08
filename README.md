@@ -127,7 +127,9 @@ Email 600px
 
 An agent can spot missing content, incorrect widths, and layout mistakes before rendering. Validation checks the engine's support rules; it does not open every email client. [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
 
-## Faster from prompt to passing email
+## Agent Benchmarks
+
+### Email
 
 In our benchmark of five email briefs, Hyper Elements reached a passing email **2.6× faster** with **3.4× fewer output tokens** than React Email, at the median. It was also **1.3× faster than MJML**. Hyper Elements and MJML both passed **16 of 16** first checks.
 
@@ -137,7 +139,19 @@ In our benchmark of five email briefs, Hyper Elements reached a passing email **
   </a>
 </p>
 
-Claude Code with Claude Sonnet 5, November 8, 2026. All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
+All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
+
+### Image
+
+Across five image briefs, Hyper Elements reached a passing image **1.65× faster** with **1.8× fewer output tokens** than Canvas 2D (`@napi-rs/canvas`), at the median. **17 of 20** images passed on the first check.
+
+<p align="center">
+  <a href="https://hyperelements.dev/docs/benchmark#image-results">
+    <img src="./apps/website/public/img/hyper-elements-image-benchmark.svg" alt="Image agent benchmark: Hyper Elements took 76 seconds, used 5,096 output tokens, and passed on the first check in 17 of 20 runs. Playwright: 91 seconds, 6,846 output tokens, 14 of 20 first-check passes. Canvas 2D: 125 seconds, 9,132 output tokens, 16 of 20 first-check passes. Time and token counts are medians." width="1000" />
+  </a>
+</p>
+
+All 60 isolated runs passed the same text, font, image and layout checks: five briefs, four runs per brief per approach. The speed comparison with Playwright was inconclusive. [Methodology and results](https://hyperelements.dev/docs/benchmark#image-results) · [Reproduce the benchmark](./apps/website/benchmark)
 
 ## Keep building
 
