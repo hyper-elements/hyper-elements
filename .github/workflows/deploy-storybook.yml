@@ -70,6 +70,14 @@ jobs:
             });
             core.setOutput('url', data.html_url);
 
+      # The website's Vercel project builds every branch from apps/website, which gh-pages doesn't have, so each
+      # push here failed on Vercel. Vercel reads vercel.json from that folder, so this one turns it off for gh-pages.
+      - name: Turn off Vercel for gh-pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p packages/react/storybook-static/apps/website
+          echo '{ "git": { "deploymentEnabled": false } }' > packages/react/storybook-static/apps/website/vercel.json
+
       # Main branch → deploy to root
       - name: Deploy (main)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
