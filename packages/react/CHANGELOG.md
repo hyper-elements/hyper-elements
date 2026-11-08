@@ -43,6 +43,8 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
   `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
   default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
+- Docs: `GUIDE.md` and the agent skill say what an email's warnings name (`clients`, `fix`, `see`) and how to check
+  more clients, with a script that renders an email and prints its problems with `formatDiagnostics()`.
 - New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
   apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
   on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
