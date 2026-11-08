@@ -1,9 +1,9 @@
 ---
 title: "Agent benchmark"
-description: "A coding agent wrote the same five emails with Hyper Elements, MJML, React Email and hand-written HTML. With Hyper Elements it reached a passing email fastest and wrote the fewest tokens."
+description: "A coding agent wrote the same five emails with Hyper Elements, MJML, React Email and hand-written HTML. With Hyper Elements it reached a passing email fastest and wrote the fewest output tokens."
 ---
 
-We gave a coding agent the same five emails to build four ways: with Hyper Elements, with MJML, with React Email, and as hand-written HTML. Each email was done when it passed the same checks. We timed how long that took and counted the tokens.
+We gave a coding agent the same five emails to build four ways: with Hyper Elements, with MJML, with React Email, and as hand-written HTML. Each email was done when it passed the same checks. We timed how long that took and counted the output tokens.
 
 ## Results
 
@@ -17,12 +17,10 @@ Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), 16 runs per approa
 | Median output tokens | **1,831** | 2,762 | 4,903 | 6,215 |
 | Passed the checks the first time they ran | **16 of 16** | **16 of 16** | 6 of 16 | 12 of 16 |
 | Median turns | 9 | 9 | 8.5 | 18 |
-| Median tokens in all, context included | 594k | 527k | 501k | 1,000k |
 
 - **Fastest.** Hyper Elements was 1.3× faster than MJML, 1.8× faster than hand-written HTML and 2.6× faster than React Email at the median, and the fastest on four of the five briefs (MJML was faster on the launch email). Within a brief it was faster in 40 of 52 pairings with MJML (one-sided Mann–Whitney, p < 0.01), 48 of 52 with HTML and 51 of 52 with React Email (p < 0.001 for each).
-- **Fewest tokens written.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short template; the engine writes the tables.
+- **Fewest output tokens.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short template; the engine writes the tables.
 - **Right the first time.** Every Hyper Elements and MJML email passed the first time the agent ran the checks, against 6 of 16 hand-written HTML emails and 12 of 16 React Email ones.
-- **Not the fewest tokens in all.** The guide is in the agent's context on every turn (cached), so the tokens in all are a little more than MJML's and hand-written HTML's, and fewer than React Email's.
 
 ## The emails
 
@@ -48,7 +46,7 @@ Every approach was held to the same checks, run in headless Chromium at 800px an
 
 ## How it ran
 
-Each run started in a fresh directory with the brief, a `CLAUDE.md` of conventions and the checker, and the same prompt: "Build the email described in BRIEF.md, following CLAUDE.md. It's done when `node tools/check.mjs` passes." The agent could edit files and run `node`, `tsc`, `ls` and `cat`, with no web access. The Hyper Elements project's `CLAUDE.md` also imported the package's guide, [as we tell you to set it up](/docs/guides/ai-agents), so its tokens count against Hyper Elements. The MJML project compiled `emails/email.mjml` with MJML's defaults.
+Each run started in a fresh directory with the brief, a `CLAUDE.md` of conventions and the checker, and the same prompt: "Build the email described in BRIEF.md, following CLAUDE.md. It's done when `node tools/check.mjs` passes." The agent could edit files and run `node`, `tsc`, `ls` and `cat`, with no web access. The Hyper Elements project's `CLAUDE.md` also imported the package's guide, [as we tell you to set it up](/docs/guides/ai-agents). The MJML project compiled `emails/email.mjml` with MJML's defaults.
 
 ## What it doesn't show
 
