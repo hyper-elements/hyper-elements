@@ -211,6 +211,40 @@ describe("what a preview lists, and when it's incomplete", () => {
     await page.close();
   });
 
+  it("checks the fonts classic Outlook draws with, after its rules, not the email's web fonts it never sees", async () => {
+    const element = (
+      <Email width={600} fonts={[{ family: "Brand", src: "https://example.test/brand.woff2", format: "woff2", weight: 400, style: "normal" }]} style={{ fontFamily: "Brand, Arial, sans-serif" }}>
+        <Text>Brand words</Text>
+      </Email>
+    );
+    const { previews } = await renderInEmailClients(element, { emailClients: ["outlook"] });
+    const { page, findings } = await open("outlook-web-font.html", previews[0]!.html);
+    expect(findings.missing.filter((m) => m.family === "Brand")).toEqual([]);
+    expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
+    await page.close();
+  });
+
+  it("loads an image marked loading=lazy, and leaves a web font weight nothing uses unfetched", async () => {
+    const element = (
+      <Email
+        width={600}
+        fonts={[
+          { family: "Brand", src: "https://example.test/brand-regular.woff2", format: "woff2", weight: 400, style: "normal" },
+          { family: "Brand", src: "https://example.test/brand-bold.woff2", format: "woff2", weight: 700, style: "normal" },
+        ]}
+      >
+        <Text style={{ fontFamily: "Arial" }}>No Brand here</Text>
+        <Html html={'<div style="height:3000px"></div><img src="https://example.test/below.png" loading="lazy" width="10" height="10" alt="Below">'} />
+      </Email>
+    );
+    const { previews } = await renderInEmailClients(element, { emailClients: ["apple-mail"] });
+    const { page, findings, requests } = await open("lazy.html", previews[0]!.html);
+    expect(findings.missing).toEqual([]);
+    expect(requests).toContain("https://example.test/below.png");
+    expect(requests.filter((url) => url.includes("brand"))).toEqual([]);
+    await page.close();
+  });
+
   it("finds where Gmail clips a long email: a warning on the web, a note in the apps", async () => {
     const words = "Every word of this paragraph is here to make the email long enough for Gmail to clip it. ".repeat(12);
     const long = (
@@ -252,7 +286,14 @@ describe("the drawn findings (src/runtime/findings.ts), on documents made for th
   let harness: string;
   beforeAll(async () => {
     const { build } = await import("esbuild");
-    const out = await build({ entryPoints: [join(__dirname, "../../src/runtime/findings.ts")], bundle: true, write: false, format: "iife", globalName: "findings", platform: "browser" });
+    const out = await build({
+      stdin: { contents: 'export * from "./findings"; export { checkSystemFonts } from "./system-fonts";', resolveDir: join(__dirname, "../../src/runtime"), loader: "ts" },
+      bundle: true,
+      write: false,
+      format: "iife",
+      globalName: "findings",
+      platform: "browser",
+    });
     harness = out.outputFiles[0]!.text;
   });
 
@@ -281,13 +322,37 @@ describe("the drawn findings (src/runtime/findings.ts), on documents made for th
         const baseline = (document.getElementById("baseline") as HTMLIFrameElement).contentDocument!;
         const h1 = client.querySelector("h1")!;
         const breaks = margins.map((margin) => ({ block: h1, word: "wraps", margin }));
-        return (globalThis as any).findings.moreLines(client, baseline, breaks);
+        return (globalThis as any).findings.moreLines(client, baseline, breaks, new Map([["root.children[0]", "Heading"]]));
       }, margins);
     expect(await run([-5, -2])).toEqual([{ code: "email/more-lines", severity: "info", message: expect.stringMatching(/^This Heading takes \d lines in classic Outlook, \d as written$/), path: "root.children[0]", clients: ["outlook"], fix: "shorten the text, or widen its column" }]);
     // A break that missed by less than 2px could go either way; one the browser made isn't Outlook's rule.
     expect(await run([-5, -1.5])).toEqual([]);
     expect(await run([null])).toEqual([]);
     expect(await run([])).toEqual([]);
+    // A heading in an Html block isn't a Heading.
+    const html = await page.evaluate(() => {
+      const [client, baseline] = ["client", "baseline"].map((id) => (document.getElementById(id) as HTMLIFrameElement).contentDocument!);
+      return (globalThis as any).findings.moreLines(client, baseline, [{ block: client.querySelector("h1"), word: "wraps", margin: -5 }], new Map([["root.children[0]", "Html"]]));
+    });
+    expect(html).toEqual([]);
+    await page.close();
+  });
+
+  it("judges only the breaks Outlook made differently: a tight one shared with the email as written doesn't hide an extra line", async () => {
+    // As written the heading breaks before "wraps" (300px); in Outlook also before "in" (200px).
+    const heading = '<div data-el-path="root.children[0]"><h1 style="margin:0;width:%W%px;font:40px/48px Arial">A heading that wraps in Outlook</h1></div>';
+    const page = await pair(heading.replace("%W%", "190"), heading.replace("%W%", "330"));
+    const found = await page.evaluate(() => {
+      const [client, baseline] = ["client", "baseline"].map((id) => (document.getElementById(id) as HTMLIFrameElement).contentDocument!);
+      const f = (globalThis as any).findings;
+      const h1 = client.querySelector("h1")!;
+      const starts = [...f.lineStarts(baseline.querySelector("h1"))];
+      // The break as written, tight (-1px); and one only Outlook made, clear (-6px).
+      const breaks = [{ block: h1, word: starts[0], margin: -1 }, { block: h1, word: "Outlook", margin: -6 }];
+      return { starts, found: f.moreLines(client, baseline, breaks, new Map([["root.children[0]", "Heading"]])).map((d: { code: string }) => d.code) };
+    });
+    expect(found.starts.length).toBeGreaterThan(0);
+    expect(found.found).toEqual(["email/more-lines"]);
     await page.close();
   });
 
@@ -299,6 +364,24 @@ describe("the drawn findings (src/runtime/findings.ts), on documents made for th
       return (globalThis as any).findings.darkContrast(client, baseline);
     });
     expect(found).toEqual([{ code: "email/dark-contrast", severity: "warning", message: expect.stringMatching(/^This text's contrast with its background is 1\.\d:1 in Apple Mail's dark mode \(12\.\d:1 as written\)$/), path: "root.children[0]", clients: ["apple-mail"], fix: "set the text's and its background's colours so both modes read" }]);
+    // Inside an Html block, the block's path and a selector to the element.
+    const inHtml = await page.evaluate(() => {
+      const [client, baseline] = ["client", "baseline"].map((id) => (document.getElementById(id) as HTMLIFrameElement).contentDocument!);
+      return (globalThis as any).findings.darkContrast(client, baseline, new Map([["root.children[0]", "Html"]]));
+    });
+    expect(inHtml).toEqual([expect.objectContaining({ path: "root.children[0]", selector: "p:nth-of-type(1)" })]);
+    await page.close();
+  });
+
+  it("stops at a font swapped for one of other widths, in every stack it's in", async () => {
+    const page = await pair('<p style="font-family:Verdana, Arial">One</p><p style="font-family:Verdana, Arial, sans-serif">Two</p>', "<p>x</p>");
+    const check = await page.evaluate(() => {
+      const client = (document.getElementById("client") as HTMLIFrameElement).contentDocument!;
+      // Verdana's widths as if another font drew it; Arial's as they are (it mustn't be checked: it doesn't draw).
+      return (globalThis as any).findings.checkSystemFonts(client, new Set(), { text: "Hamburgefonstiv 0123456789", widths: { Verdana: { 400: 1 }, Arial: { 400: 1 } } });
+    });
+    if (MAC) expect(check).toEqual({ missing: [{ kind: "substituted", family: "Verdana" }], fonts: [] });
+    else expect(check.fonts).toEqual([]);
     await page.close();
   });
 });

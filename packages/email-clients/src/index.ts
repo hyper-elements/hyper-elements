@@ -26,9 +26,6 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   fonts?: "url" | "inline";
 }
 
-/** Reads a font file of this package's as base64 (Node only), for `fonts: "inline"`. */
-const readFont: ReadFont = readPackageFont;
-
 export interface EmailClientPreview extends PreviewVariant {
   /** The preview file: open it in Chromium. */
   html: string;
@@ -52,18 +49,17 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   const core = checkCore();
   const { emailClients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", ...renderOptions } = options;
   const { variants, skipped } = variantsOf(emailClients, dark, core.EMAIL_CLIENTS);
-  // Only an Email is previewed (render() would write another root as a page).
-  const { root } = core.prepare(element);
-  if (root && root.type !== "Email") {
-    throw new core.ElementsError([{ code: "email-clients/not-an-email", severity: "error", message: `renderInEmailClients() previews an Email; this template's root is a ${root.type}`, path: "root" }]);
-  }
-  // The compact HTML: white space changes how some clients draw an email.
+  // The compact HTML: white space changes how some clients draw an email. A core that passed the check gives a block
+  // map for an Email, and none for another root: only an Email is previewed.
   const rendered = await core.render(element, { ...renderOptions, emailClients, pretty: false, blockMap: true });
-  const blocks = rendered.blocks!;
+  const blocks = rendered.blocks;
+  if (!blocks) {
+    throw new core.ElementsError([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
+  }
   const fontOrigin = fonts === "url" ? FONT_ORIGIN : null;
   // Each font file read once, however many previews inline it.
   const cache = new Map<string, Promise<string>>();
-  const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readFont(file)), cache.get(file)!);
+  const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readPackageFont(file)), cache.get(file)!);
   const previews = await Promise.all(
     variants.map(async (variant) => {
       const { filename: _, ...rest } = variant;

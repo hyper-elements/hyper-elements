@@ -6,7 +6,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 // @ts-expect-error a script, without types
-import { generated, runtimeScript } from "../scripts/build-runtime.mjs";
+import { assertInlineSafe, generated, runtimeScript } from "../scripts/build-runtime.mjs";
 import { RUNTIME } from "../src/runtime.generated";
 
 const dir = resolve(__dirname, "..");
@@ -17,6 +17,14 @@ describe("the runtime", () => {
     expect(readFileSync(join(dir, "src/runtime.generated.ts"), "utf8")).toBe(generated(built));
     expect(RUNTIME.sha256).toBe(createHash("sha256").update(RUNTIME.script, "utf8").digest("base64"));
     expect(RUNTIME.script).not.toMatch(/<\/script/i);
+  });
+
+  it("refuses a runtime that couldn't sit inline in the preview's <script>", () => {
+    expect(assertInlineSafe("var a='<!--[if mso]>';")).toBe("var a='<!--[if mso]>';");
+    expect(() => assertInlineSafe("var a='</script>';")).toThrow(/<\/script/);
+    expect(() => assertInlineSafe("var a='<!--',b='<script>';")).toThrow(/double|read past/);
+    expect(() => assertInlineSafe("var a='<!--',b='<script src=x>';")).toThrow();
+    expect(assertInlineSafe("var a='<!--',b='<scripts>';")).toContain("<scripts>");
   });
 
   it("draws with the email-renderer modules RUNTIME_SOURCE pins, unchanged", () => {

@@ -34,4 +34,10 @@ describe("the stand-in fonts", () => {
     expect(inline["selawk.woff2"]).toBe(`data:font/woff2;base64,${await readPackageFont("selawk.woff2")}`);
     expect(await fontSources("gmail", "inline")).toEqual({});
   });
+
+  it("says why inlining fails where the font files aren't beside the code (a bundled package)", async () => {
+    const error = await readPackageFont("not-a-font.woff2").catch((e: Error) => e);
+    expect(error).toMatchObject({ name: "email-clients/fonts-unreadable" });
+    expect((error as Error).message).toMatch(/serverExternalPackages.*fonts: "url"/);
+  });
 });

@@ -11,7 +11,12 @@ import ts from "typescript";
 const dir = resolve(__dirname, "..");
 const built = existsSync(join(dir, "dist/index.js")) && existsSync(join(dir, "dist/index.cjs"));
 
-describe.runIf(built)("the built package", () => {
+// Locally, after `pnpm build`; in CI always, so a build that's missing fails here rather than skipping these.
+describe.runIf(built || !!process.env.CI)("the built package", () => {
+  it("is built", () => {
+    expect(built, "dist/index.js and dist/index.cjs: run pnpm build first").toBe(true);
+  });
+
   it("imports in both module formats, without a browser, and writes previews", async () => {
     const esm = await import(join(dir, "dist/index.js"));
     const cjs = createRequire(join(dir, "package.json"))(join(dir, "dist/index.cjs"));

@@ -41,27 +41,32 @@ export function present(doc: Document, family: string): boolean {
 
 /**
  * Each system family the frame's text draws with: for each font stack its text uses, the families in order, past web
- * fonts that loaded and stand-ins, up to the first one there (a missing one is listed, and the next one draws).
+ * fonts that loaded and stand-ins, up to the first one there (a missing one is listed, and the next one draws). A
+ * family drawn by the stand-in after it (classic Outlook's rules write `"Aptos", "Aptos Stand-in"`) isn't missing.
  */
-export function checkSystemFonts(doc: Document, loaded: ReadonlySet<string>, probe: { text: string; widths: Record<string, Record<number, number>> }): FontCheck {
+export function checkSystemFonts(doc: Document, loaded: ReadonlySet<string>, probe: { text: string; widths: Record<string, Record<number, number>> }, standIns: ReadonlySet<string> = new Set()): FontCheck {
   const stacks = new Set<string>();
   const walker = doc.createTreeWalker(doc.body ?? doc.documentElement, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (node.textContent?.trim() && node.parentElement) stacks.add(styleOf(node.parentElement).fontFamily);
   }
   const result: FontCheck = { missing: [], fonts: [] };
-  const seen = new Set<string>();
+  // Each family checked: whether it draws (present, its widths right or not) or the next one does.
+  const draws = new Map<string, boolean>();
   for (const stack of stacks) {
-    for (const family of families(stack)) {
+    const list = families(stack);
+    for (const [i, family] of list.entries()) {
       const key = family.toLowerCase();
       if (GENERIC.has(key) || loaded.has(family)) break;
-      if (seen.has(key)) {
-        if (result.fonts.some((f) => f.family === family)) break;
+      if (draws.has(key)) {
+        if (draws.get(key)) break;
         continue;
       }
-      seen.add(key);
-      if (!present(doc, family)) {
-        result.missing.push({ kind: "font", family });
+      const there = present(doc, family);
+      draws.set(key, there);
+      if (!there) {
+        const next = list[i + 1];
+        if (!(next && standIns.has(next) && loaded.has(next))) result.missing.push({ kind: "font", family });
         continue;
       }
       const widths = probe.widths[family];
