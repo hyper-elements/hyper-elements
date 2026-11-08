@@ -1,7 +1,8 @@
 # Agent benchmark
 
 How long a coding agent takes to make a correct email or social image with Hyper Elements and with the tools agents
-reach for otherwise, and how many tokens it spends. The email results are on hyperelements.dev/docs/benchmark.
+reach for otherwise, and how many tokens it spends. The email and image results are on
+[hyperelements.dev/docs/benchmark](https://hyperelements.dev/docs/benchmark).
 
 Two suites, each with its own briefs, kits and checker, run by one harness (`lib/`):
 
@@ -89,13 +90,13 @@ that only read the file.
 ```bash
 npm ci
 npx playwright install chromium                                 # the email checker and the image suite's Playwright kit
-(cd ../../.. && pnpm install && pnpm build)                     # the engine, built from this checkout
-HYPER_ELEMENTS_PACKAGE=../../../packages/react npm run setup    # again after every npm ci / npm install
+(cd .. && pnpm install && pnpm build)                           # the engine, built from this checkout
+HYPER_ELEMENTS_PACKAGE=../packages/react npm run setup          # again after every npm ci / npm install
 npm run bench -- --suite email --kits he,react-email,mjml,html --briefs all --reps 3 --model sonnet --concurrency 4
 npm run selftest                                                # the image checker's own test; no API
 npm run bench -- --suite image --kits he,playwright,canvas --briefs all --reps 4 --model sonnet --concurrency 4
 npm run report -- results/<stamp>-<suite>-sonnet.jsonl
-HYPER_ELEMENTS_PACKAGE=../../../packages/react npm run runtime
+HYPER_ELEMENTS_PACKAGE=../packages/react npm run runtime
 ```
 
 `claude` must be signed in. A run costs about $0.25–$1. The image suite's fonts' and images' sources and hashes are

@@ -63,7 +63,7 @@ const passes = (x, y, count, active, total) => {
 };
 
 function generateChart(chart) {
-  const source = new URL(`../apps/website/benchmark/results/${chart.source}`, import.meta.url);
+  const source = new URL(`../benchmark/results/${chart.source}`, import.meta.url);
   const destination = new URL(`../apps/website/public/img/${chart.destination}`, import.meta.url);
   const runs = readFileSync(source, "utf8").trim().split("\n").map((line) => JSON.parse(line));
   const groups = chart.kits.map(([kit, label, note]) => {

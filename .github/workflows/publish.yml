@@ -33,10 +33,12 @@ permissions:
 on:
   push:
     branches: [main]
-    # The website (apps/) and Storybook aren't published: a merge that only changes them has nothing to release.
+    # The website (apps/), the agent benchmark (benchmark/) and Storybook aren't published: a merge that only changes
+    # them has nothing to release.
     # Storybook's paths are also left out of the Elements check below; keep the two lists the same.
     paths-ignore:
       - 'apps/**'
+      - 'benchmark/**'
       - '.github/workflows/deploy-storybook.yml'
       - 'packages/react/.storybook/**'
       - 'packages/react/src/stories/**'

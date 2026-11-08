@@ -3,11 +3,12 @@ name: Test & Coverage
 on:
   push:
     branches: [ main, develop ]
-    # The website (apps/) has no package code: a change only there doesn't run the packages' tests.
-    paths-ignore: [ 'apps/**' ]
+    # The website (apps/) and the agent benchmark (benchmark/) have no package code: a change only there doesn't run
+    # the packages' tests.
+    paths-ignore: [ 'apps/**', 'benchmark/**' ]
   pull_request:
     branches: [ main, develop ]
-    paths-ignore: [ 'apps/**' ]
+    paths-ignore: [ 'apps/**', 'benchmark/**' ]
 
 # A new push to a pull request cancels the run still going on its older head.
 concurrency:
