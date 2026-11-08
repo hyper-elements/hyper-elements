@@ -1,0 +1,16 @@
+{
+  "prompt": "Build the image described in BRIEF.md, following CLAUDE.md. It's done when `node tools/check.mjs` passes.",
+  "packageName": "image",
+  "folders": [
+    "fonts",
+    "assets",
+    "tools"
+  ],
+  "checker": [
+    "check/check.mjs",
+    "check/ocr.mjs",
+    "check/pixels.mjs",
+    "check/trace.mjs"
+  ],
+  "render": "tools/render.mjs"
+}

@@ -1,0 +1,26 @@
+{
+  "Inter-Bold.ttf": {
+    "sha256": "b37284b5701b6b168dfc770aa1a4ac492106422fd3ba76bc7641e37434e8019c",
+    "source": "Google Fonts (fonts.googleapis.com/css2), static instance"
+  },
+  "Inter-Regular.ttf": {
+    "sha256": "1b08e7fc267a5c7e1d614100f604b83e7e8a0be241f0f288faa2b3ac93a683ba",
+    "source": "Google Fonts (fonts.googleapis.com/css2), static instance"
+  },
+  "Inter-Regular.woff2": {
+    "sha256": "48a0c2503a9c8ec4153302693fff56b3281aba5ce5afd7cf2bd51a03b098cd22",
+    "source": "Google Fonts (fonts.googleapis.com/css2), static instance"
+  },
+  "Lora-Italic.ttf": {
+    "sha256": "26243fda8cd938cc2734f46d20d7464822d89378c7f375e187e39f9ed3f20907",
+    "source": "Google Fonts (fonts.googleapis.com/css2), static instance"
+  },
+  "OFL-Inter.txt": {
+    "sha256": "5b9321a4298cfeb6b34354164a1c3afc3db114569984c502b9b35d988fd58c57",
+    "source": "https://github.com/google/fonts (ofl/inter/OFL.txt)"
+  },
+  "OFL-Lora.txt": {
+    "sha256": "1d9a970809ac804b582a6ce7f0ebc4e7fefcbfd7ff6299cad35ee656a21be716",
+    "source": "https://github.com/google/fonts (ofl/lora/OFL.txt)"
+  }
+}
