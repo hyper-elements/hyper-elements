@@ -4,9 +4,6 @@
  * Every wait stops at the preview's deadline.
  */
 
-/** An element's computed style, from its own document's window. */
-const styleOf = (el: Element) => el.ownerDocument.defaultView!.getComputedStyle(el);
-
 /** Resolves when `promise` does, or with `fallback` at the deadline. */
 export function until<T>(promise: Promise<T>, deadline: number, fallback: T): Promise<T> {
   const left = deadline - performance.now();
@@ -14,13 +11,16 @@ export function until<T>(promise: Promise<T>, deadline: number, fallback: T): Pr
   return Promise.race([promise, new Promise<T>((resolve) => setTimeout(() => resolve(fallback), left))]);
 }
 
-/** A sandboxed frame of `width` showing `html`, once it has loaded (or at the deadline). */
-export async function frame(html: string, width: number, title: string, deadline: number): Promise<HTMLIFrameElement> {
+/**
+ * A sandboxed frame of `width` showing `html`, once it has loaded (or at the deadline), `height` tall while it loads
+ * and is measured (a window's height, for what's sized by it), as tall as its content once grown.
+ */
+export async function frame(html: string, width: number, height: number, title: string, deadline: number): Promise<HTMLIFrameElement> {
   const el = document.createElement("iframe");
   el.setAttribute("sandbox", "allow-same-origin");
   el.setAttribute("title", title);
   el.style.width = `${width}px`;
-  el.style.height = "0";
+  el.style.height = `${height}px`;
   const loaded = new Promise<void>((resolve) => el.addEventListener("load", () => resolve(), { once: true }));
   el.srcdoc = html;
   document.getElementById("frames")!.append(el);
@@ -55,6 +55,8 @@ export async function loadFaces(doc: Document, faces: readonly string[], deadlin
  */
 export async function settleImages(doc: Document, deadline: number): Promise<string[]> {
   const images = [...doc.images];
+  // Every image loads, as in the client's view of the message: one loading="lazy" below the frame's window wouldn't.
+  for (const img of images) if (img.loading === "lazy") img.loading = "eager";
   const done = (img: HTMLImageElement) => img.complete || new Promise<void>((resolve) => {
     img.addEventListener("load", () => resolve(), { once: true });
     img.addEventListener("error", () => resolve(), { once: true });
@@ -77,7 +79,10 @@ export async function settleImages(doc: Document, deadline: number): Promise<str
   return missing;
 }
 
-/** The email's own web fonts (its @font-face rules the client kept, not a stand-in) that failed or are still loading. */
+/**
+ * The email's own web fonts (its @font-face rules the client kept, not a stand-in) that its text asked for and that
+ * failed, or are still loading at the deadline. A face nothing uses isn't fetched, as in the client, and isn't listed.
+ */
 export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<string>, deadline: number): Promise<Array<{ family: string; src: string }>> {
   const rules: Array<{ family: string; src: string }> = [];
   for (const sheet of [...doc.styleSheets]) {
@@ -96,8 +101,8 @@ export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<st
     }
   }
   if (!rules.length) return [];
+  await until(doc.fonts.ready.then(() => undefined), deadline, undefined);
   const faces = [...doc.fonts].filter((face) => rules.some((rule) => rule.family === face.family.replace(/^["']|["']$/g, "")));
-  await until(Promise.all(faces.map((face) => (face.status === "unloaded" ? face.load().catch(() => face) : face.loaded.catch(() => face)))), deadline, []);
-  const failed = new Set(faces.filter((face) => face.status !== "loaded").map((face) => face.family.replace(/^["']|["']$/g, "")));
+  const failed = new Set(faces.filter((face) => face.status === "error" || face.status === "loading").map((face) => face.family.replace(/^["']|["']$/g, "")));
   return rules.filter((rule) => failed.has(rule.family)).filter((rule, i, all) => all.findIndex((r) => r.family === rule.family) === i);
 }

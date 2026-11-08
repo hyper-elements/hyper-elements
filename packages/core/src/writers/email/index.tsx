@@ -261,7 +261,7 @@ function blockMap(resolved: ResolvedDocument, found: Array<{ node: ResolvedNode;
   const entries = found.map(({ node, at }) => {
     offset += utf8Bytes(email.slice(from, at));
     from = at;
-    return { path: templatePath(node.path), ...(node.id ? { nodeId: node.id } : {}), offset };
+    return { path: templatePath(node.path), ...(node.id ? { nodeId: node.id } : {}), type: node.type, offset };
   });
   return { version: BLOCK_MAP_VERSION, unit: "utf8", entries };
 }

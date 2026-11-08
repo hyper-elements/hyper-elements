@@ -688,6 +688,11 @@ jobs:
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      # Built again with the version it's published as: its previews load their fonts from that version's files
+      # (src/fonts.ts reads package.json's version at build), and the build above had the committed one.
+      - name: Build with the release version
+        run: pnpm --filter @hyper-elements/email-clients build
+
       # The Elements range committed in package.json: the first Elements with
       # render()'s blockMap, raised in a commit when the previews need a newer
       # one. A release in that range must be on npm, or installs would fail.

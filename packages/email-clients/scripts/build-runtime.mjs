@@ -28,9 +28,22 @@ export async function runtimeScript() {
     logLevel: 'silent',
   });
   // Inline in a <script>: nothing in it may end the element.
-  const script = result.outputFiles[0].text.trimEnd().replace(/<\/(script)/gi, '<\\/$1');
+  const script = assertInlineSafe(result.outputFiles[0].text.trimEnd().replace(/<\/(script)/gi, '<\\/$1'));
   const sha256 = createHash('sha256').update(script, 'utf8').digest('base64');
   return { script, sha256 };
+}
+
+/**
+ * `script`, if it's safe inline in a <script>: no `</script`, and not both `<!--` and `<script` followed by a space,
+ * `/` or `>`, which would put the HTML parser in its double-escaped state, so the shell's own </script> wouldn't end
+ * it. (The runtime has `<!--` in its conditional-comment patterns.) Fails the build otherwise.
+ */
+export function assertInlineSafe(script) {
+  if (/<\/script/i.test(script)) throw new Error('The runtime holds "</script": it would end the preview\'s script early.');
+  if (script.includes('<!--') && /<script[\s/>]/i.test(script)) {
+    throw new Error('The runtime holds "<!--" and "<script": inline, the HTML parser would read past the preview\'s </script>. Write the tag another way in the source (as "<" + "script").');
+  }
+  return script;
 }
 
 export function generated({ script, sha256 }) {
