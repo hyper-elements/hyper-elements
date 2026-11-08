@@ -14,7 +14,24 @@ Everything needed to write a template, in short. Every prop's and style's detail
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
-- `await render(element)` gives `{ html, text, diagnostics }`; a template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.
+- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).
+- An Email's warnings name the email clients they're about (`clients`), with a `fix` and a `see` link. The clients most email is read in are checked; `emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx"]` checks more.
+
+```tsx
+import { writeFile } from "node:fs/promises";
+import { ElementsError, formatDiagnostics, render } from "@hyper-elements/react";
+import Welcome from "./welcome";
+
+try {
+  const { html, diagnostics } = await render(<Welcome />);
+  await writeFile("welcome.html", html);
+  console.log(formatDiagnostics(diagnostics)); // warnings, each with its email clients and fix
+} catch (e) {
+  if (!(e instanceof ElementsError)) throw e;
+  console.error(formatDiagnostics(e.diagnostics));
+  process.exitCode = 1;
+}
+```
 
 ## Common mistakes
 
@@ -25,7 +42,7 @@ Each of these made an agent's first try fail:
 - `items={[{ text: "Home", link: "/" }]}` → `items={[{ text: "Home", href: "/" }]}`. A `Menu`'s items are `{ text, href }`, a `Social`'s icons `{ name, href }`.
 - `style={{ marginBottom: 16 }}` → `gap: 16` on the parent. There are no margins.
 - `ColumnLayouts`, `layout`, `headingType`, `altText`, `html` are Unlayer Elements' props, not these: a `Row` of `Column`s, `level`, `alt`, and text as children.
-- `<Image src="https://example.com/logo.png">` → `src={{ src: "https://example.com/logo.png", width: 240, height: 80 }}`, the file's size. Without it Outlook shows the image at its file's size, and Hyper Elements warns.
+- `<Image src="https://example.com/logo.png">` → `src={{ src: "https://example.com/logo.png", width: 240, height: 80 }}`, the file's size. Without it, Outlook shows the file at its own size.
 - `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.
 
 ## A whole template
@@ -79,7 +96,7 @@ export default function Receipt() {
 
 ## A Canvas as an image
 
-`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise than written: a weight not given, a hover); errors throw an `ElementsError`.
+`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`.
 
 ```tsx
 import { readFile } from "node:fs/promises";
