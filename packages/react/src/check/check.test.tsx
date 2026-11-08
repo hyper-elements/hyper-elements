@@ -43,11 +43,13 @@ describe("check()", () => {
     expect(codes(<Email><Image src={{ src: "https://example.com/a.png", width: 200, height: 100 }} alt="Acme" /></Email>)).toEqual([]);
   });
 
-  it("finds a phone number that can split at a space, and not one joined with non-breaking spaces", () => {
+  it("finds a phone number that can split at a space or a hyphen, and not one joined with non-breaking ones", () => {
     const [found] = check(<Email><Text>Call +1 (503) 555-0142 any day.</Text></Email>).diagnostics;
-    expect(found.code).toBe("design/phone-number");
-    expect(found.message).toContain("+1&nbsp;(503)&nbsp;555-0142");
-    expect(codes(<Email><Text>Call +1{" "}(503){" "}555-0142 any day.</Text></Email>)).toEqual([]);
+    expect(found?.code).toBe("design/phone-number");
+    expect(found?.message).toContain("+1&nbsp;(503)&nbsp;555&#8209;0142");
+    // A hyphen breaks a line too: non-breaking spaces alone aren't enough.
+    expect(codes(<Email><Text>{"Call +1\u00a0(503)\u00a0555-0142 any day."}</Text></Email>)).toEqual(["design/phone-number"]);
+    expect(codes(<Email><Text>{"Call +1\u00a0(503)\u00a0555\u20110142 any day."}</Text></Email>)).toEqual([]);
   });
 
   it("checks a Document's text but not a phone layout it doesn't have", () => {

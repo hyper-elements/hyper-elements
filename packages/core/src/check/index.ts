@@ -26,8 +26,8 @@ export const LOW_CONTRAST = 3;
 const TEXT_BLOCKS = new Set(["Text", "Heading", "ListItem", "TableCell", "Button"]);
 const WHITE: Rgba = [255, 255, 255, 1];
 const TAG = /\{\{\s*[\w.-]+\s*\}\}/;
-/** A phone number written with a space a line can break at: "+1 (503) 555-0142", "020 7946 0018". */
-const PHONE_NUMBER = /(?:\+\d{1,3}[ .-]?)?(?:\(\d{2,4}\)[ .-]?|\d{2,4}[ .-])\d{2,4}[ .-]\d{3,5}(?!\d)/g;
+/** A phone number, its parts joined by spaces or hyphens, breaking or not: "+1 (503) 555-0142", "020 7946 0018". */
+const PHONE_NUMBER = /(?:\+\d{1,3}[ .\-\u00a0\u2011]?)?(?:\(\d{2,4}\)[ .\-\u00a0\u2011]?|\d{2,4}[ .\-\u00a0\u2011])\d{2,4}[ .\-\u00a0\u2011]\d{3,5}(?!\d)/g;
 
 const isNode = (child: ResolvedNode | string): child is ResolvedNode => typeof child !== "string";
 
@@ -156,8 +156,8 @@ export function designChecks(root: ResolvedNode, options: { phoneWidth?: number 
         if (ratio < LOW_CONTRAST) warn("design/contrast", node, `This text's color has a contrast of ${ratio.toFixed(1)}:1 with what's behind it, which is hard to read. Use a darker or lighter color, ${LOW_CONTRAST}:1 at least (4.5:1 for body text is better).`, ".style.color");
       }
       for (const match of text.matchAll(PHONE_NUMBER)) {
-        if (/ /.test(match[0])) {
-          warn("design/phone-number", node, `On a narrow screen "${match[0]}" can break at a space and split across two lines. Join its parts with non-breaking spaces: ${match[0].replace(/ /g, "&nbsp;")}.`);
+        if (/[ -]/.test(match[0])) {
+          warn("design/phone-number", node, `On a narrow screen "${match[0]}" can break at a space or a hyphen and split across two lines. Join its parts with non-breaking spaces and hyphens: ${match[0].replace(/ /g, "&nbsp;").replace(/-/g, "&#8209;")}.`);
           break;
         }
       }
