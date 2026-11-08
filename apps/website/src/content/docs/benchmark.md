@@ -11,7 +11,7 @@ The email comparison uses Hyper Elements, MJML, React Email and hand-written HTM
 
 ## Results
 
-Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), 16 runs per approach, November 8, 2026. Every run reached a passing email.
+16 runs per approach. Every run reached a passing email.
 
 [![Agent benchmark comparing Hyper Elements, MJML, hand-written HTML, and React Email on median time, output tokens, and first-check passes. Full results follow in the table.](/img/hyper-elements-agent-benchmark.svg)](/img/hyper-elements-agent-benchmark.svg "Open the benchmark chart at full size")
 
@@ -60,7 +60,7 @@ Each run started in a fresh directory with the brief, a `CLAUDE.md` of conventio
 
 ## Image results
 
-Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), November 8, 2026. Five briefs, four runs per brief per approach: **60 valid, isolated runs**, all of which reached a passing image.
+Five briefs, four runs per brief per approach: **60 valid, isolated runs**, all of which reached a passing image.
 
 [![Image agent benchmark comparing Hyper Elements, Playwright and Canvas 2D on median time, output tokens and first-check passes. Full results follow in the table.](/img/hyper-elements-image-benchmark.svg)](/img/hyper-elements-image-benchmark.svg "Open the image benchmark chart at full size")
 

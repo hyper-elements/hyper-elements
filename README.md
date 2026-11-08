@@ -137,7 +137,7 @@ In our benchmark of five email briefs, Hyper Elements reached a passing email **
   </a>
 </p>
 
-Claude Code with Claude Sonnet 5, November 8, 2026. All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
+All four approaches ran in one interleaved batch, with 16 runs each against the same Chromium checks at desktop and mobile widths; all 64 eventually passed. Token counts here measure output tokens, not total usage or cost. [Methodology](https://hyperelements.dev/docs/benchmark) · [Reproduce the benchmark](./apps/website/benchmark)
 
 ## From prompt to passing image
 
@@ -149,7 +149,7 @@ Across five image briefs, Hyper Elements reached a passing image **1.65× faster
   </a>
 </p>
 
-Claude Code with Claude Sonnet 5, November 8, 2026. All 60 isolated runs passed the same text, font, image and layout checks: five briefs, four runs per brief per approach. The speed comparison with Playwright was inconclusive. [Methodology and results](https://hyperelements.dev/docs/benchmark#image-results) · [Reproduce the benchmark](./apps/website/benchmark)
+All 60 isolated runs passed the same text, font, image and layout checks: five briefs, four runs per brief per approach. The speed comparison with Playwright was inconclusive. [Methodology and results](https://hyperelements.dev/docs/benchmark#image-results) · [Reproduce the benchmark](./apps/website/benchmark)
 
 ## Keep building
 
