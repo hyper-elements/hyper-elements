@@ -1,0 +1,23 @@
+{
+  "id": "podcast",
+  "title": "Podcast episode card",
+  "brief": "A square card for a podcast episode, 1080×1080 px, as a PNG.\n\n- Background #fef3c7, 80px padding, everything centered.\n- Fonts: Inter (regular and bold), in fonts/.\n- Stacked from the top:\n  - the show's cover, assets/podcast-cover.png (a 600×600 file), shown 360×360 with 24px rounded corners;\n  - \"EPISODE 42\": Inter bold, 28px, #b45309, letter spacing 3px;\n  - \"Designing APIs that agents can read\": Inter bold, 64px, #1c1917, centered, at most 2 lines;\n  - \"with Priya Natarajan\": Inter regular, 32px, #44403c.\n- At the bottom of the card: \"The Build Log\" (Inter bold, 28px, #1c1917) above \"Listen wherever you get podcasts\" (Inter regular, 24px, #78716c).",
+  "spec": {
+    "size": [1080, 1080],
+    "safeMargin": 48,
+    "background": { "color": "#fef3c7" },
+    "texts": [
+      { "id": "episode", "text": "EPISODE 42", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 28, "color": "#b45309", "align": "center" },
+      { "id": "title", "text": "Designing APIs that agents can read", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 64, "color": "#1c1917", "maxLines": 2, "align": "center" },
+      { "id": "guest", "text": "with Priya Natarajan", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 32, "color": "#44403c", "align": "center" },
+      { "id": "show", "text": "The Build Log", "font": "Inter-Bold.ttf", "weight": 700, "style": "normal", "size": 28, "color": "#1c1917", "align": "center" },
+      { "id": "listen", "text": "Listen wherever you get podcasts", "font": "Inter-Regular.ttf", "weight": 400, "style": "normal", "size": 24, "color": "#78716c", "align": "center" }
+    ],
+    "fills": [],
+    "images": [
+      { "id": "cover", "file": "podcast-cover.png", "width": 360, "rounded": true, "align": "center" }
+    ],
+    "order": [["cover", "episode"], ["episode", "title"], ["title", "guest"], ["guest", "show"], ["show", "listen"]],
+    "bottom": ["show", "listen"]
+  }
+}
