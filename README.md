@@ -32,7 +32,7 @@ Hyper Elements is an open-source React library for generating content. Write a r
 - **Render in your own app.** Generate output on your server, with no browser, hosted service, or API key required.
 
 <p align="center">
-  <img src="./assets/hyper-elements-overview.png" alt="React components flow through Hyper Elements into email HTML and plain text, responsive web HTML, PDF documents, and PNG or SVG images." width="1000" />
+  <img src="./apps/website/public/img/hyper-elements-overview.png" alt="React components flow through Hyper Elements into email HTML and plain text, responsive web HTML, PDF documents, and PNG or SVG images." width="1000" />
 </p>
 
 ## Quick start
