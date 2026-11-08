@@ -63,6 +63,12 @@ export const Page = defineComponent({
   children: { categories: ["section", "layout", "block"] },
   sizing: "none",
   responsive: true,
+  // The page writer writes the root's phone gap, not its phone text styles.
+  conditionSupport: {
+    mobile: Object.fromEntries(
+      (["fontSize", "lineHeight", "letterSpacing", "textAlign"] as const).map((key) => [key, { web: { level: "none", shows: "its desktop value: set phone text styles on its Sections or Columns", source: "writer" } }])
+    ),
+  },
   targets: { web: {} },
   editor: {
     groups: [
@@ -321,6 +327,7 @@ export const Image = defineComponent({
   },
   children: {},
   sizing: "shrink",
+  conditionSupport: { mobile: { border: { email: { level: "none", shows: "its desktop border", source: "writer" } } } },
   targets: { email: {}, web: {} },
   editor: { groups: [{ title: "Image", paths: ["props.src", "props.alt", "style.width"] }, { title: "Box", paths: ["style.border", "style.borderRadius"] }] },
 });
@@ -459,6 +466,7 @@ export const TableCell = defineComponent({
   },
   children: { text: true, categories: ["inline"], types: ["Image"] },
   sizing: "none",
+  conditionSupport: { mobile: { border: { email: { level: "none", shows: "its desktop border", source: "writer" } } } },
   targets: { email: {}, web: {} },
   editor: { groups: [{ title: "Cell", paths: ["props.colSpan", "style.width", "style.verticalAlign"] }, TEXT_EDITOR, { title: "Box", paths: ["style.padding", "style.backgroundColor", "style.border"] }] },
 });

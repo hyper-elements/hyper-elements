@@ -76,7 +76,7 @@ export function prepareTemplate(input: unknown, options: ComponentsOption = {}):
     diagnostics.push({ code: "output/unavailable", severity: "error", message: output?.later ?? `A ${root} can't be rendered yet`, path: "root" });
     return { resolved: null, target: null, diagnostics };
   }
-  const expanded = expandDocument(checked.document, registry);
+  const expanded = expandDocument(checked.document, registry, output.target);
   diagnostics.push(...expanded.diagnostics);
   if (failed()) return { resolved: null, target: output.target, diagnostics };
   diagnostics.push(...checkTargetExpanded(expanded.document, output.target, registry, expanded.paths));

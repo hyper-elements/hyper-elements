@@ -3,10 +3,12 @@
  * document is resolved and rendered. The document keeps them as one node
  * each; only what's rendered is expanded.
  */
-import type { ComponentDefinition } from "./define";
+import { blockOf, CONDITIONS } from "./conditions";
+import type { ComponentDefinition, Target } from "./define";
 import { Diagnostics, type Diagnostic } from "./diagnostics";
 import { isNode, type ElementsDocument, type Json, type Node } from "./model";
 import { checkFragment } from "./normalize";
+import { reportDeclared } from "./writers/shared/support";
 import { CUSTOM_TYPE, isCustom, propsWithDefaults, registryOf, type ComponentsOption, type CustomDefinition, type Registry } from "./registry";
 
 /** How deep custom components may expand into others: deeper is a component that contains itself. */
@@ -37,7 +39,11 @@ export function templatePathsOf(document: ElementsDocument, paths: TemplatePaths
   };
 }
 
-export function expandDocument(document: ElementsDocument, options?: ComponentsOption | Registry): { document: ElementsDocument; diagnostics: Diagnostic[]; paths: TemplatePaths } {
+/**
+ * `target`, the output the root renders to: given, what a condition takes on a component but that output doesn't
+ * show under it (its definition's `conditionSupport`) is reported here, before a Grid is arranged and loses it.
+ */
+export function expandDocument(document: ElementsDocument, options?: ComponentsOption | Registry, target?: Target): { document: ElementsDocument; diagnostics: Diagnostic[]; paths: TemplatePaths } {
   const registry = registryOf(options);
   const d = new Diagnostics();
   const paths: TemplatePaths = new WeakMap();
@@ -50,8 +56,23 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
   const rootDefinition = registry.get(document.root.type);
   const responsive = !!rootDefinition?.responsive;
 
+  /** What a condition takes on this node's component but the output doesn't show under it. */
+  const unshown = (node: Node, path: string) => {
+    const declared = target && registry.get(node.type)?.conditionSupport;
+    if (!declared) return;
+    for (const condition of CONDITIONS) {
+      const block = blockOf(node, condition);
+      const byStyle = declared[condition.name] as Record<string, Record<string, unknown>> | undefined;
+      if (!block || !byStyle) continue;
+      for (const [key, value] of Object.entries(block)) {
+        reportDeclared(d, { type: node.type, id: node.id, props: node.props ?? {} }, `${path}.${condition.name}.${key}`, key, value, byStyle[key]?.[target] as never, target);
+      }
+    }
+  };
+
   /** A node at `path` (its children's paths start from it), arranged first if its component arranges; it's at `self` in the template. */
   const visit = (given: Node, path: string, depth: number, self = path): Node => {
+    unshown(given, path);
     const arrange = registry.get(given.type)?.arrange;
     if (!arrange) return walk(given, path, self, depth);
     // Its own children keep their places in the template, wherever it puts them.
@@ -94,7 +115,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       d.error("custom/render", `${node.type} renders one component (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
       return undefined;
     }
-    const { node: expanded, diagnostics } = checkFragment(raw, { parent, responsive, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})` });
+    const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: rootDefinition, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})` });
     for (const diagnostic of diagnostics) d.list.push(diagnostic);
     if (!expanded) return undefined;
     collectIds(expanded);
@@ -103,9 +124,13 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     if (node.style?.flex !== undefined) expanded.style = { ...expanded.style, flex: node.style.flex };
     if (node.hidden) expanded.hidden = { ...expanded.hidden, ...node.hidden };
     if (node.id && !expanded.id && !CUSTOM_TYPE.test(node.type)) expanded.id = node.id;
-    for (const [key, value] of Object.entries(node.mobile ?? {})) {
-      if (registry.get(expanded.type)?.style[key]?.mobile) expanded.mobile = { [key]: value, ...expanded.mobile };
-      else d.warning("mobile/not-shown", `${node.type}'s ${key} on phones isn't shown: what it renders (a ${expanded.type}) has no ${key} for phones`, `${path}.mobile.${key}`, node.id);
+    for (const condition of CONDITIONS) {
+      const rendered = registry.get(expanded.type);
+      for (const [key, value] of Object.entries(node[condition.name] ?? {})) {
+        const spec = rendered?.style[key];
+        if (rendered && spec && condition.allows(spec, key, rendered)) expanded[condition.name] = { [key]: value, ...expanded[condition.name] };
+        else d.warning(`${condition.name}/not-shown`, `${node.type}'s ${key} ${condition.on} isn't shown: what it renders (a ${expanded.type}) has no ${key} ${condition.for}`, `${path}.${condition.name}.${key}`, node.id);
+      }
     }
     const inner = registry.get(expanded.type)!;
     if (isCustom(inner)) return expandOne(expanded, inner, parent, `${path}(${node.type})`, depth + 1, self);

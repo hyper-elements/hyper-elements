@@ -3,6 +3,7 @@
  * component definitions and normalized (values in their canonical form, ids
  * checked).
  */
+import { CONDITIONS, shownAnywhere } from "./conditions";
 import type { ComponentDefinition, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
@@ -31,7 +32,8 @@ interface Context {
   idPrefix?: string | null;
   /** Ids taken so far: an id is unique in a template. */
   used: Set<string>;
-  responsive: boolean;
+  /** The template's root: which conditions its nodes may have (phone styles only under one with a phone width). */
+  root: ComponentDefinition | undefined;
 }
 
 /** Validates and normalizes a document; never throws. */
@@ -46,7 +48,7 @@ export function checkDocument(input: unknown, options?: ComponentsOption | Regis
   for (const key of extra) d.error("document/unknown-key", `"${key}" isn't part of a document (root)`, key);
 
   const rootDefinition = isObject(input.root) && typeof input.root.type === "string" ? registry.get(input.root.type) : undefined;
-  const context: Context = { d, registry, used: new Set(), responsive: !!rootDefinition?.responsive };
+  const context: Context = { d, registry, used: new Set(), root: rootDefinition };
   const root = input.root === undefined ? null : readNode(input.root, "root", null, context);
   if (input.root === undefined) d.error("document/root", 'A document has a root: { type: "Email" }, "Page", …', "root");
   return { document: root ? { root } : null, diagnostics: d.list };
@@ -66,10 +68,10 @@ export function parseDocument(input: unknown, options?: ComponentsOption | Regis
  */
 export function checkFragment(
   input: unknown,
-  options: { parent: ComponentDefinition; responsive: boolean; idPrefix: string | null; taken: ReadonlySet<string>; registry: Registry; path: string }
+  options: { parent: ComponentDefinition; root: ComponentDefinition | undefined; idPrefix: string | null; taken: ReadonlySet<string>; registry: Registry; path: string }
 ): { node: Node | null; diagnostics: Diagnostic[] } {
   const d = new Diagnostics();
-  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), responsive: options.responsive };
+  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), root: options.root };
   const node = readNode(input, options.path, options.parent, context);
   return { node, diagnostics: d.list };
 }
@@ -179,18 +181,16 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const style = readStyles(input.style, definition, definition.style, `${path}.style`, id, d, "style", () => true);
   if (style) node.style = style;
 
-  if (input.mobile !== undefined) {
-    if (!context.responsive) d.error("mobile/not-supported", "Phone styles are for an Email or a Page, which have a phone width", `${path}.mobile`, id);
-    else {
-      const mobile = readStyles(input.mobile, definition, definition.style, `${path}.mobile`, id, d, "mobile", (spec) => !!spec.mobile);
-      if (mobile) node.mobile = mobile;
+  for (const condition of CONDITIONS) {
+    const given = input[condition.name];
+    if (given === undefined) continue;
+    const at = `${path}.${condition.name}`;
+    if (condition.roots && !condition.roots(context.root)) {
+      if (condition.notAllowed) d.error(condition.notAllowed.code, condition.notAllowed.message, at, id);
+      continue;
     }
-  }
-
-  if (input.hover !== undefined) {
-    const allowed = new Set<string>(definition.hover ?? []);
-    const hover = readStyles(input.hover, definition, definition.style, `${path}.hover`, id, d, "hover", (_, key) => allowed.has(key));
-    if (hover) node.hover = hover;
+    const read = readStyles(given, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for);
+    if (read) node[condition.name] = read;
   }
 
   if (input.hidden !== undefined) {
@@ -264,8 +264,10 @@ function readStyles(
   path: string,
   id: string | undefined,
   d: Diagnostics,
-  what: "style" | "mobile" | "hover",
-  allowed: (spec: StyleSpecs[string], key: string) => boolean
+  what: string,
+  allowed: (spec: StyleSpecs[string], key: string) => boolean,
+  /** For a condition, what can be set for it is set "for phones". */
+  forLabel?: string
 ): Record<string, Json> | undefined {
   if (input === undefined) return undefined;
   if (!isObject(input)) {
@@ -281,7 +283,7 @@ function readStyles(
       continue;
     }
     if (!allowed(spec, key)) {
-      d.error(`${what}/not-allowed`, what === "mobile" ? `"${key}" can't be set for phones` : `"${key}" can't be set for hover`, `${path}.${key}`, id);
+      d.error(`${what}/not-allowed`, `"${key}" can't be set ${forLabel ?? "here"}`, `${path}.${key}`, id);
       continue;
     }
     const parsed = spec.kind.parse(value);
@@ -293,7 +295,7 @@ function readStyles(
 
 function readHidden(input: unknown, path: string, id: string | undefined, context: Context): Node["hidden"] | undefined {
   const { d } = context;
-  if (!context.responsive) {
+  if (!context.root?.responsive) {
     d.error("hidden/not-supported", "Hiding on phones or desktops is for an Email or a Page", path, id);
     return undefined;
   }
@@ -304,7 +306,7 @@ function readHidden(input: unknown, path: string, id: string | undefined, contex
   const out: { mobile?: boolean; desktop?: boolean } = {};
   if (input.mobile === true) out.mobile = true;
   if (input.desktop === true) out.desktop = true;
-  if (out.mobile && out.desktop) d.warning("hidden/everywhere", "Hidden on phones and on desktops, it never shows", path, id);
+  if (!shownAnywhere({ hidden: out })) d.warning("hidden/everywhere", "Hidden on phones and on desktops, it never shows", path, id);
   return Object.keys(out).length ? out : undefined;
 }
 
