@@ -22,6 +22,9 @@ describe.runIf(built)("the built package", () => {
       expect(entry.renderInEmailClients).toBeTypeOf("function");
       const { previews } = await entry.renderInEmailClients(email, { emailClients: ["gmail"] });
       expect(previews.map((p: { filename: string }) => p.filename)).toEqual(["gmail.html"]);
+      // Its font files, read from beside dist/ in either format.
+      const inline = await entry.renderInEmailClients(email, { emailClients: ["outlook-com"], fonts: "inline" });
+      expect(inline.previews[0].html).toContain("data:font/woff2;base64,");
     }
     expect(typeof document).toBe("undefined");
   });

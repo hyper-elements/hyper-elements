@@ -28,6 +28,29 @@ what the client changed. To show a preview, write the files and open them in you
 A preview isn't an email: what you send is `render()`'s `html`. Classic Outlook's model is approximate, and the file
 says so.
 
+## What a preview says
+
+An agent with a browser opens a file, waits for `<html data-email-client-ready>`, and reads its value: `ok`;
+`incomplete` when something was missing (a font, an image) or 10 seconds passed; `error` when the preview failed. The
+findings are JSON in `<script type="application/json" id="email-client-findings">`, and listed at the top of the file:
+
+- `removed`: what the client removed or changed, and how often.
+- `missing`: a font that isn't on this machine, one swapped for a font of other widths (`substituted`), the email's own
+  web font that didn't load (`author-font`), an image that didn't load (drawn as a gray box of its size).
+- `fonts`: the system fonts it drew with, checked against the widths they were measured with (`verified: "widths"`)
+  or only found (`"present"`).
+- `diagnostics`: what it found in what it drew, only where that's robust to the model's error:
+  `email/more-lines` (a Heading or Button classic Outlook draws on more lines), `email/dark-contrast` (text that
+  doesn't read in Apple Mail's dark mode) and `email/size` (where Gmail clips the email).
+
+## Fonts
+
+The previews draw with the open fonts the models were measured with, which ship in `fonts/` (SIL OFL 1.1): Selawik for
+Segoe UI, Carlito for Calibri, and Inter. Aptos is drawn with Helvetica Neue at 93.5%; Arial, Georgia, Verdana,
+Tahoma, Trebuchet MS, Times New Roman and Courier New come from the machine opening the file, as when they were
+measured. `fonts: "url"` (the default) loads the open fonts from jsDelivr; `fonts: "inline"` puts them in each file
+(up to 2 MB) so it draws offline, apart from the email's own images and web fonts, which it lists as missing.
+
 The package builds on `@hyper-elements/react`'s public API, which it needs at ^0.3.1 (`render()`'s `blockMap`). With an
 older one it throws `email-clients/version-mismatch`, with the command to install a matching pair.
 

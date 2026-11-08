@@ -37,6 +37,7 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
+    "fonts",
     "README.md",
     "CHANGELOG.md"
   ],
@@ -47,7 +48,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs",
     "build:runtime": "node scripts/build-runtime.mjs",
-    "test:browser": "vitest run --config vitest.browser.config.ts"
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "build:fonts": "node scripts/build-fonts.mjs"
   },
   "peerDependencies": {
     "@hyper-elements/react": "^0.3.1",
@@ -66,7 +68,8 @@
     "react-dom": "18.3.1",
     "tsup": "^8.0.1",
     "typescript": "^5.6.3",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "wawoff2": "2.0.1"
   },
   "publishConfig": {
     "access": "public"
