@@ -1,0 +1,1 @@
+export{F as createCopyToClipboardFunction}from"./DocsRenderer-PQXLIZUC-14talkoc.js";
