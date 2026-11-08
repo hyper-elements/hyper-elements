@@ -48,8 +48,9 @@ export type SupportSource = "outlook-captures" | "gmail-captures" | "outlook-com
  * Outlook, which shows something else (`outlook`, email only: what it shows);
  * not quite as asked anywhere it's shown (`partial`: what it shows); or not at
  * all (`none`: what it does instead). Read by the support pass every output
- * runs: `outlook` and `partial` are notes, `none` a warning; for email, a
- * warning only for clients captured (`EMAIL_CLIENTS`), and never from `assumed`.
+ * runs: `outlook` and `partial` are notes, `none` a warning, whether the email
+ * clients it names were captured or are from caniemail's tables; one `assumed`
+ * is only ever a note.
  */
 export type Support =
   | { level: "full"; source: SupportSource }

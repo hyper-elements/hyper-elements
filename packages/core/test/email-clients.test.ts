@@ -1,5 +1,6 @@
 import { Diagnostics, formatDiagnostics, type Diagnostic } from "../src/diagnostics";
-import { addForClients, DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, forEmailClients, type EmailClient } from "../src/email-clients";
+import { reportDeclared } from "../src/declared";
+import { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, forEmailClients, type EmailClient } from "../src/email-clients";
 import { renderTemplate, validateTemplate } from "../src/writers";
 
 const email = (children: unknown[], props: Record<string, unknown> = {}) => ({ root: { type: "Email", props: { width: 600, ...props }, children } });
@@ -75,12 +76,20 @@ describe("email clients", () => {
 
   it("reports a problem at its severity for measured clients and caniemail's alike, and what's assumed as a note", () => {
     const d = new Diagnostics();
-    addForClients(d, "email/x", "warning", "Cut off", "root", undefined, { clients: ["outlook", "gmail-app"] });
-    addForClients(d, "email/y", "warning", "Hidden", "root", undefined, { clients: ["gmail"], assumed: true });
+    const node = { type: "Text", props: {} };
+    reportDeclared(d, node, "root.style.x", "x", 1, { level: "none", shows: "nothing", source: "caniemail", feature: "css-x", clients: ["outlook", "gmail-app"] }, "email");
+    reportDeclared(d, node, "root.style.y", "y", 1, { level: "none", shows: "nothing", source: "assumed", clients: ["gmail"] }, "email");
     expect(d.list).toEqual([
-      { code: "email/x", severity: "warning", message: "Cut off", path: "root", clients: ["outlook", "gmail-app"] },
-      { code: "email/y", severity: "info", message: "Hidden (not checked)", path: "root", clients: ["gmail"] },
+      { code: "email/unsupported", severity: "warning", message: "x isn't possible in some email clients: nothing", path: "root.style.x", clients: ["outlook", "gmail-app"], see: "https://www.caniemail.com/features/css-x/" },
+      { code: "email/unsupported", severity: "info", message: "y isn't possible in some email clients: nothing (not checked)", path: "root.style.y", clients: ["gmail"] },
     ]);
+  });
+
+  it("filters an Email's problems for the clients asked for even where it has errors", () => {
+    const broken = email([spaced, { type: "Text", style: { nope: 1 }, children: ["x"] }]);
+    const { diagnostics } = validateTemplate(broken, { emailClients: ["gmail"] });
+    expect(diagnostics.some((d) => d.severity === "error")).toBe(true);
+    expect(diagnostics.filter((d) => d.clients && !d.clients.every((c) => c === "gmail"))).toEqual([]);
   });
 
   it("prints a diagnostic's clients, fix and how to see it on its line", () => {
@@ -97,8 +106,9 @@ describe("an Html block's CSS that email clients remove", () => {
     ["!IMPORTANT in capitals", '<p style="color:red !IMPORTANT">x</p>', ["gmail"], undefined],
     ["a negative margin", '<p style="margin-top:-12px">x</p>', ["outlook-com", "gmail"], undefined],
     ["position: absolute", '<div style="position:absolute;top:0">x</div>', [...OUTLOOKS, ...GMAILS, "yahoo", "aol"], "css-position"],
+    ["position: relative", '<span style="position:relative;top:-4px">x</span>', [...OUTLOOKS, ...GMAILS], "css-position"],
     ["var()", '<p style="color:var(--brand)">x</p>', [...OUTLOOKS, ...GMAILS, "yahoo", "aol"], "css-variables"],
-    ["a gradient", '<div style="background:linear-gradient(#fff,#000)">x</div>', [...OUTLOOKS, "gmail-app", "gmail-app-other", "yahoo", "aol", "samsung-email"], "css-linear-gradient"],
+    ["a gradient", '<div style="background:linear-gradient(#fff,#000)">x</div>', [...OUTLOOKS, "gmail-app", "gmail-app-other", "yahoo", "aol"], "css-linear-gradient"],
     ["oklch()", '<p style="color:oklch(70% 0.1 200)">x</p>', ["outlook-com", "gmail"], undefined],
     ["rgb() with spaces", '<p style="color:rgb(8 121 161)">x</p>', ["gmail"], undefined],
     ["a <style>", "<style>p{color:red}</style><p>x</p>", GMAILS, "html-style"],
@@ -120,12 +130,21 @@ describe("an Html block's CSS that email clients remove", () => {
   });
 
   it("notes nothing in markup they keep", () => {
-    const kept = '<div style="background-position:center;margin:0 12px;color:rgb(8, 121, 161);position:relative"><p style="color:red !important;padding:4px;display:block">A gradient of words, in color (position: absolute), with a text-shadow</p></div>';
+    const kept = '<div style="background-position:center;margin:0 12px;color:rgb(8, 121, 161)"><p style="color:red !important;padding:4px;display:block">A gradient of words, in color (position: absolute), with a text-shadow</p></div>';
     expect(htmlChecks(kept)).toEqual([]);
   });
 
   it("leaves its notes out with the clients", () => {
     expect(htmlChecks('<div style="position:absolute">x</div>', [])).toEqual([]);
+  });
+
+  it("reads neither a media query's aspect ratio nor what only classic Outlook reads", () => {
+    expect(htmlChecks("<style>@media (min-aspect-ratio: 16/9) { p { color: red } }</style><p>x</p>").map((d) => d.message)).toEqual([
+      "This Html block's markup may have a <style> in the email's body: the client removes it, and what it styles shows without it",
+    ]);
+    expect(htmlChecks('<!--[if mso]><style>p{color:red}</style><![endif]--><p>x</p>')).toEqual([]);
+    expect(htmlChecks('<!--[if gte mso 9]><div style="box-shadow:0 1px #000">x</div><![endif]-->')).toEqual([]);
+    expect(htmlChecks('<!--[if !mso]><!--><style>p{color:red}</style><!--<![endif]--><p>x</p>')).toHaveLength(1);
   });
 
   it("names clients not checked by default where they're asked for", () => {
@@ -142,7 +161,7 @@ describe("other problems from caniemail's tables", () => {
       {
         code: "email/image-format",
         severity: "warning",
-        message: "This Image is a WEBP file, which these email clients don't show",
+        message: "This Image is a WebP file, which these email clients don't show",
         path: "root.children[0].props.src",
         clients: ["outlook"],
         fix: "use a PNG, JPEG or GIF file",
@@ -155,6 +174,11 @@ describe("other problems from caniemail's tables", () => {
     expect(formats("https://example.com/logo.svg")).toEqual([]);
     expect(formats("https://example.com/hero.png")).toEqual([]);
     expect(formats("https://example.com/webp/hero.png")).toEqual([]);
+    // The format an image CDN is asked for.
+    expect(formats("https://images.example.com/hero.jpg?w=600&fm=webp")).toHaveLength(1);
+    expect(formats("https://res.example.com/image/upload/f_avif,q_auto/hero.jpg", ALL)[0]!.message).toBe("This Image is an AVIF file, which these email clients don't show");
+    const video = validateTemplate(email([{ type: "Video", props: { src: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumbnail: "https://example.com/thumb.webp" } }])).diagnostics.filter((d) => d.code === "email/image-format");
+    expect(video.map((d) => [d.path, d.message])).toEqual([["root.children[0].props.thumbnail", "This Video's thumbnail is a WebP file, which these email clients don't show"]]);
   });
 
   it("notes once where phone styles don't apply, and warns where something hidden on desktop would show nowhere", () => {
@@ -163,12 +187,14 @@ describe("other problems from caniemail's tables", () => {
     expect(phone([text({})])).toEqual([]);
     const [styled] = phone([text({ mobile: { fontSize: 18 } }), text({ mobile: { fontSize: 20 } })]);
     expect(phone([text({ mobile: { fontSize: 18 } }), text({ mobile: { fontSize: 20 } })])).toHaveLength(1);
-    expect(styled).toMatchObject({ severity: "info", path: "root", clients: ["gmail-app-other", "samsung-email"], see: "https://www.caniemail.com/features/css-at-media/" });
+    expect(styled).toMatchObject({ severity: "info", path: "root", clients: ["gmail-app-other"], see: "https://www.caniemail.com/features/css-at-media/" });
     expect(styled!.message).toBe("On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)");
     expect(phone([text({ hidden: { mobile: true } })])[0]).toMatchObject({ severity: "info", message: "On phones, the email's phone styles don't apply: what's hidden on phones shows (Rows still stack)" });
     const [hidden] = phone([text({ hidden: { desktop: true } })]);
     expect(hidden).toMatchObject({ severity: "warning", message: "On phones, the email's phone styles don't apply: what's hidden on desktop shows nowhere (Rows still stack)" });
     expect(hidden!.fix).toContain("show what a reader needs on desktop too");
+    // A Menu's separators, hidden on phones by the Menu itself: nothing for the author to change.
+    expect(phone([{ type: "Menu", props: { items: [{ text: "A", href: "https://example.com/a" }, { text: "B", href: "https://example.com/b" }], separator: "|" } }])).toEqual([]);
   });
 
   it("says what caniemail's tables say of a style, with the page there", () => {

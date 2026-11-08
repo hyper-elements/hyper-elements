@@ -1,5 +1,5 @@
 import React from "react";
-import { Email, EMAIL_CLIENTS, formatDiagnostics, Html, Page, render, Text, validate } from "./index";
+import { Email, EMAIL_CLIENTS, formatDiagnostics, Html, Page, prepare, render, Text, validate } from "./index";
 
 const spaced = (
   <Email width={600}>
@@ -25,6 +25,12 @@ describe("email clients in validate() and render()", () => {
     expect(validate(spaced, { emailClients: ["apple-mail"] }).diagnostics).toEqual([]);
     expect((await render(spaced, { emailClients: ["apple-mail"] })).diagnostics).toEqual([]);
     expect((await render(spaced)).diagnostics).toEqual(validate(spaced).diagnostics);
+  });
+
+  it("takes emailClients in prepare() too", () => {
+    expect(prepare(spaced, { emailClients: ["outlook-com"] }).diagnostics.map((d) => d.code)).toEqual(["email/html-css"]);
+    expect(prepare(spaced).diagnostics).toEqual(validate(spaced).diagnostics);
+    expect(() => prepare(spaced, { emailClients: ["hotmail" as never] })).toThrow(TypeError);
   });
 
   it("ignores emailClients for a Page, and says so", () => {

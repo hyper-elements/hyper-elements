@@ -8,7 +8,7 @@ import {
   renderTemplate,
   validateTemplate,
   type Diagnostic,
-  type EmailClient,
+  type EmailClientsOption,
   type RenderOptions,
   type RenderResult,
   type ResolvedNode,
@@ -38,14 +38,8 @@ export async function render(element: React.ReactElement, options: RenderOptions
   return { ...rendered, diagnostics: [...diagnostics, ...rendered.diagnostics] };
 }
 
-export interface ValidateOptions {
-  /**
-   * For an Email, the email clients to report problems for (default: classic Outlook, Outlook.com, Gmail and Apple
-   * Mail; the Gmail apps only when named). A problem about other clients is left out; `[]` leaves out every email
-   * client problem, not the problems of the email itself.
-   */
-  emailClients?: readonly EmailClient[];
-}
+/** `validate()`'s and `prepare()`'s options: `emailClients`, the email clients to report an Email's problems for. */
+export type ValidateOptions = EmailClientsOption;
 
 export interface ValidationResult {
   /** No errors (there may be warnings and notes). */
@@ -92,10 +86,11 @@ export function outline(element: React.ReactElement): string {
  * errors. The tree is the writers' input, not a format to store: it changes with Elements, and `layout` says which
  * format it's in (a writer refuses one it doesn't read).
  */
-export function prepare(element: React.ReactElement): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
+export function prepare(element: React.ReactElement, options: ValidateOptions = {}): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
+  checkEmailClients(options.emailClients);
   const { document, diagnostics, components } = template(element, "prepare");
   if (!document || diagnostics.some((d) => d.severity === "error")) return { root: null, diagnostics, layout: LAYOUT_VERSION };
-  const prepared = prepareTemplate(document, { components });
+  const prepared = prepareTemplate(document, { components, emailClients: options.emailClients });
   const root = prepared.resolved?.root ?? null;
   // A Document is prepared for its PDF and a Canvas for its image: what they can't show that the HTML can.
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];

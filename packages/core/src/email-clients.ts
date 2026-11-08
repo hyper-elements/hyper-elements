@@ -4,7 +4,7 @@
  * tables (caniemail.com, MIT), which test the CSS and HTML each client keeps. Either way a problem is said at its own
  * severity; only one Elements assumes, unchecked, is a note.
  */
-import type { ClientFields, Diagnostic, Diagnostics, Severity } from "./diagnostics";
+import type { Diagnostic } from "./diagnostics";
 
 export type EmailClient =
   | "outlook"
@@ -134,11 +134,4 @@ export function forEmailClients(diagnostics: readonly Diagnostic[], selection: r
     }
   }
   return out;
-}
-
-/** One problem with some email clients, as a diagnostic at its severity; where Elements assumes it, unchecked, a note. */
-export function addForClients(d: Diagnostics, code: string, severity: Severity, message: string, path: string, nodeId: string | undefined, extra: ClientFields & { assumed?: boolean }): void {
-  const { assumed, ...fields } = extra;
-  if (assumed) d.add(code, "info", `${message} (not checked)`, path, nodeId, fields);
-  else d.add(code, severity, message, path, nodeId, fields);
 }

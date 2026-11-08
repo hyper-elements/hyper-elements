@@ -23,9 +23,10 @@ export { Stylesheet, CLASS_PREFIX, type Media } from "./shared/classes";
 
 export interface EmailClientsOption {
   /**
-   * For an Email, the email clients to report problems for (default: classic Outlook, Outlook.com, Gmail and Apple
-   * Mail; the Gmail apps only when named). A problem about other clients is left out; `[]` leaves out every email
-   * client problem, not the problems of the email itself.
+   * For an Email, the email clients to report problems for (default: `DEFAULT_EMAIL_CLIENTS`, the ones most email is
+   * read in: classic Outlook, Outlook.com, Outlook for Mac, the Outlook and Gmail apps, Gmail, Apple Mail, Yahoo, AOL
+   * and Samsung Email). A problem about other clients is left out; `[]` leaves out every email client problem, not the
+   * problems of the email itself.
    */
   emailClients?: readonly EmailClient[];
 }
@@ -82,27 +83,30 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
   const failed = () => diagnostics.some((d) => d.severity === "error");
   if (!checked.document || failed()) return { resolved: null, target: null, diagnostics };
   const root = checked.document.root.type;
+  /** What it found, an Email's problems with email clients for the clients asked for (expansion's too: a condition's notes). */
+  const done = (resolved: ResolvedDocument | null, target: Target | null): Prepared => {
+    if (root !== "Email" && options.emailClients) diagnostics.push({ code: "email/clients-ignored", severity: "info", message: `emailClients is for an Email; a ${root} isn't checked for email clients`, path: "root" });
+    return { resolved, target, diagnostics: root === "Email" ? forEmailClients(diagnostics, options.emailClients) : diagnostics };
+  };
   const output = OUTPUTS[root];
   if (!output?.ready) {
     diagnostics.push({ code: "output/unavailable", severity: "error", message: output?.later ?? `A ${root} can't be rendered yet`, path: "root" });
-    return { resolved: null, target: null, diagnostics };
+    return done(null, null);
   }
   const expanded = expandDocument(checked.document, registry, output.target);
   diagnostics.push(...expanded.diagnostics);
-  if (failed()) return { resolved: null, target: output.target, diagnostics };
+  if (failed()) return done(null, output.target);
   diagnostics.push(...checkTargetExpanded(expanded.document, output.target, registry, expanded.paths));
-  if (failed()) return { resolved: null, target: output.target, diagnostics };
+  if (failed()) return done(null, output.target);
   const resolved = resolveExpanded(expanded.document, registry, expanded.paths);
   diagnostics.push(...resolved.diagnostics);
-  const found = output.target === "email" ? emailSupport(resolved.root) : support(resolved.root, output.target);
+  const found = output.target === "email" ? emailSupport(resolved.root, resolved.templatePath) : support(resolved.root, output.target);
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
   if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
   found.push(...pageBreakpoints(resolved.root));
   diagnostics.push(...inTemplate(resolved, found));
-  if (root !== "Email" && options.emailClients) diagnostics.push({ code: "email/clients-ignored", severity: "info", message: `emailClients is for an Email; a ${root} isn't checked for email clients`, path: "root" });
-  // An Email's problems with email clients, for the clients asked for (expansion's too: a condition's notes).
-  return { resolved: failed() ? null : resolved, target: output.target, diagnostics: root === "Email" ? forEmailClients(diagnostics, options.emailClients) : diagnostics };
+  return done(failed() ? null : resolved, output.target);
 }
 
 /** Diagnostics found on the tree as laid out, at their places in the template (a Grid's children, a custom component's). */

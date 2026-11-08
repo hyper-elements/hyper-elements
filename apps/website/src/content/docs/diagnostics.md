@@ -42,7 +42,7 @@ interface Diagnostic {
 
 An Email's problems with particular email clients name them in `clients`. Four have been measured: captures of the real clients showing Elements emails, `"outlook"` (classic Outlook for Windows), `"outlook-com"` (Outlook.com and the new Outlook), `"gmail"` (Gmail on the web) and `"apple-mail"`. What's known of the others is from [caniemail.com](https://www.caniemail.com)'s tables, which test the CSS and HTML each client keeps: `"outlook-mac"`, `"outlook-app"`, the Gmail apps `"gmail-app"` and `"gmail-app-other"` (with an account that isn't Google's), `"yahoo"`, `"aol"`, `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`, `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"` and `"rainloop"`. Either way a problem is reported at its own severity, and one from caniemail links to its page there in `see`.
 
-By default `validate()` and `render()` report problems for the clients most email is read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. Name the clients your readers use to check others, or fewer:
+By default `validate()`, `render()` and `prepare()` report problems for the clients most email is read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. Name the clients your readers use to check others, or fewer:
 
 ```tsx
 validate(<Welcome />, { emailClients: ["gmail", "outlook"] });   // only these clients' problems
@@ -125,12 +125,12 @@ try {
 | `email/unsupported` | warning | A style or prop email can't show. The message says what it shows instead: `justifyContent: "space-between"` starts children at the left |
 | `email/outlook-degraded` | info | Shown as asked, except in classic Outlook: square corners, normal letter spacing, weights under 600 as normal, `lowercase` as written (`clients: ["outlook"]`) |
 | `email/degraded` | info | Not quite as asked where the email is read, such as web fonts in Gmail and Outlook, hover in Outlook, or a `lang` some webmail removes |
-| `email/phone-styles` | info or warning | The email has phone styles or hides something, which the Gmail app with another account, Samsung Email with an Outlook account and some webmail don't apply on phones. A warning where something hidden on desktop would then show nowhere |
+| `email/phone-styles` | info or warning | The email has phone styles or hides something, which the Gmail app with another account and some webmail don't apply on phones. A warning where something hidden on desktop would then show nowhere |
 | `email/image-format` | warning | An Image's file is WebP (classic Outlook), AVIF or SVG, which some clients don't show |
 | `email/image-width` | warning | An Image with no width: Outlook shows it at its file's size. Give `src` the file's `width` and `height` |
 | `email/width` | warning | A child of a Row takes its own size and its size isn't known, so Outlook can't lay the Row out |
 | `email/font-fallback` | warning | A font stack ends on a web font, so a client that can't load it picks its own (Gmail, Outlook, Yahoo and others) |
-| `email/html-css` | info | An Html block's markup may have CSS or HTML an email client removes: `position: absolute`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`, `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb() with spaces |
+| `email/html-css` | info | An Html block's markup may have CSS or HTML an email client removes: `position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`, `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb() with spaces |
 | `email/video-thumbnail` | warning | A Vimeo Video with no `thumbnail`, which can't be found without the network |
 | `email/size` | warning | The HTML is large enough for Gmail and its apps to clip it (`render()` only) |
 | `email/style-size` | warning | The stylesheet is more than Gmail and its apps read (`render()` only) |

@@ -34,21 +34,21 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`,
   `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"`, `"rainloop"`). A problem is
   reported at its own severity for either; only one Elements assumes, unchecked, is a note.
-- New: `validate(element, { emailClients })` and `render(element, { emailClients })` report problems for the clients
-  named. The default is the clients most email is read in: the four measured, Outlook for Mac, the Outlook and Gmail
-  apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
+- New: `validate(element, { emailClients })`, `render(element, { emailClients })` and
+  `prepare(element, { emailClients })` report problems for the clients named. The default is the clients most email is
+  read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
   `email/layer`). For a root that isn't an Email the option is ignored, with an `email/clients-ignored` note. An
   unknown client throws a `TypeError`.
 - New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
   (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
   `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`.
 - New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
-  apply them on phones (the Gmail app with another account, Samsung Email with an Outlook account, some webmail): a
-  note, or a warning where something hidden on desktop would then show nowhere. A Menu's separators, hidden on phones,
-  give the note.
-- New: `email/image-format`, a warning on an Image whose file is WebP (classic Outlook), AVIF or SVG.
+  apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
+  on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
+- New: `email/image-format`, a warning on an Image or a Video's thumbnail whose file is WebP (classic Outlook), AVIF
+  or SVG, by its extension, data: type or the format an image CDN is asked for (`?fm=webp`, `f_avif`).
 - New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
-  (`position: absolute`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
+  (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
   `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
   with spaces).
 - New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in

@@ -4,7 +4,7 @@
  * check of what a condition takes but an output doesn't show (expand.ts).
  */
 import { Diagnostics, type Severity } from "./diagnostics";
-import { addForClients, caniemail } from "./email-clients";
+import { caniemail } from "./email-clients";
 import type { Json } from "./model";
 import type { Support, SupportByTarget, Target } from "./define";
 
@@ -41,7 +41,8 @@ export function reportDeclared(
         : rule.level === "partial"
           ? [`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`]
           : ["email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`];
-    if (clients) addForClients(d, code, severity, message, at, node.id, { clients, fix: rule.fix, see: rule.feature && caniemail(rule.feature), assumed: rule.source === "assumed" });
-    else d.add(code, severity, message, at, node.id, { fix: rule.fix });
+    // What Elements assumes, unchecked, is a note that says so.
+    const [said, as] = rule.source === "assumed" ? (["info", `${message} (not checked)`] as const) : [severity, message];
+    d.add(code, said, as, at, node.id, { clients, fix: rule.fix, see: rule.feature && caniemail(rule.feature) });
   }
 }

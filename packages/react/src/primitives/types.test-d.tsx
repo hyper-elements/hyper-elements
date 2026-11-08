@@ -4,7 +4,7 @@
  */
 import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Section, Span, Svg } from "./index";
 import type { ParagraphProps, TextProps } from "./index";
-import { EMAIL_CLIENTS, render, validate } from "./index";
+import { EMAIL_CLIENTS, prepare, render, validate } from "./index";
 import type { Diagnostic, EmailClient, ValidateOptions } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
@@ -124,11 +124,12 @@ export const chakraHoverStyle = <Button href="https://example.com" style={{ _hov
 // @ts-expect-error No md breakpoint.
 export const tailwindBreakpoint = <Text style={{ md: { fontSize: 18 } }}>Hi</Text>;
 
-// Email clients: the option on validate() and render(), the fields on a diagnostic, and what's known of each client.
+// Email clients: the option on validate(), render() and prepare(), the fields on a diagnostic, and what's known of each client.
 export const clients: EmailClient[] = ["outlook", "gmail-app"];
 export const validated = validate(ok, { emailClients: clients });
 export const rendered = render(ok, { emailClients: [], pretty: true });
 export const validateOptions: ValidateOptions = { emailClients: ["apple-mail"] };
+export const prepared = prepare(ok, { emailClients: ["yahoo", "samsung-email"] });
 export const fields = (d: Diagnostic): [EmailClient[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];
 export const measured: number | undefined = EMAIL_CLIENTS.outlook.measured?.wordsWithin4px;
 // @ts-expect-error an email client it doesn't know

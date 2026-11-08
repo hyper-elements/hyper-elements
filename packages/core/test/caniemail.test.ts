@@ -1,7 +1,8 @@
 /**
  * Every email client list Elements takes from caniemail's tables matches them: the clients a feature isn't shown as
  * written in, from test/fixtures/caniemail.json (refreshed by scripts/caniemail.mjs), less those left out here with
- * the reason, plus those our own captures add. A list that differs from the data fails, naming the clients.
+ * the reason. A list that differs from the data fails, naming the clients. (Html patterns known only from our
+ * captures name no feature and aren't checked here.)
  */
 import { readFileSync } from "node:fs";
 import { COMPONENTS, CONDITIONS, type Support, type SupportByTarget } from "../src";
@@ -11,7 +12,8 @@ import { HTML_CSS, IMAGE_FORMATS, NO_PHONE_STYLES } from "../src/writers/email/s
 
 interface Feature {
   title: string;
-  stats: Record<string, Record<string, Record<string, string>>>;
+  /** Each platform's results, [version, result], oldest to latest. */
+  stats: Record<string, Record<string, Array<[string, string]>>>;
   notes: Record<string, string>;
 }
 const data = JSON.parse(readFileSync(new URL("fixtures/caniemail.json", import.meta.url), "utf8")) as { features: Record<string, Feature> };
@@ -70,9 +72,8 @@ function affected(slug: string): EmailClient[] {
     PLATFORMS[client].some(([family, platform]) =>
       Object.entries(feature.stats[family] ?? {})
         .filter(([name]) => platform === "*" || name === platform)
-        .some(([, versions]) => {
-          const results = Object.values(versions);
-          const [level, ...refs] = results[results.length - 1]!.split(/\s+/);
+        .some(([, results]) => {
+          const [level, ...refs] = results[results.length - 1]![1].split(/\s+/);
           if (level !== "n" && level !== "a") return false;
           if (family !== "gmail" || level !== "a" || !refs.length) return true;
           const notes = refs.map((ref) => feature.notes[ref.slice(1)] ?? "");
@@ -101,6 +102,7 @@ const LEFT_OUT: Record<string, Partial<Record<EmailClient, string>>> = {
     aol: "only its phone apps, where nothing hovers",
   },
   "css-at-media": {
+    "samsung-email": "only with an Outlook or Hotmail account, which Elements can't tell apart",
     outlook: "on desktop, where phone styles don't apply anyway (Elements writes classic Outlook's layout without them)",
     thunderbird: "on desktop, where phone styles don't apply anyway",
     "outlook-com": "only nested media queries aren't, and Elements writes none",
@@ -155,6 +157,20 @@ const LEFT_OUT: Record<string, Partial<Record<EmailClient, string>>> = {
     gmx: "only the line's style, color and thickness aren't: textDecoration sets the line",
     "web-de": "only the line's style, color and thickness aren't: textDecoration sets the line",
   },
+  "css-linear-gradient": {
+    "samsung-email": "only with an Outlook or Hotmail account, which Elements can't tell apart",
+  },
+  "css-position@relative": {
+    "apple-mail": "keeps relative",
+    "samsung-email": "keeps relative",
+    orange: "keeps relative",
+    fastmail: "keeps relative",
+    yahoo: "keeps relative (only absolute, sticky and fixed aren't)",
+    aol: "keeps relative (only absolute, sticky and fixed aren't)",
+    hey: "keeps relative",
+    sfr: "keeps relative",
+    laposte: "keeps relative",
+  },
   "css-position": {
     "apple-mail": "keeps absolute (only sticky and fixed aren't)",
     "samsung-email": "keeps absolute (only sticky and fixed aren't)",
@@ -163,17 +179,12 @@ const LEFT_OUT: Record<string, Partial<Record<EmailClient, string>>> = {
   },
 };
 
-/** Clients our captures add to caniemail's for a pattern: what Gmail or Outlook.com on the web were seen removing. */
-const CAPTURED: Record<string, readonly EmailClient[]> = {};
-
 const slugOf = (feature: string) => feature.split("@")[0]!;
 
-/** What a list should be: caniemail's clients for its features, less those left out, plus those captured. */
+/** What a list should be: caniemail's clients for its features, less those left out. */
 function expected(...features: string[]): EmailClient[] {
   const left = (client: EmailClient) => features.some((feature) => LEFT_OUT[feature]?.[client]);
-  const out = new Set(features.map(slugOf).flatMap(affected).filter((client) => !left(client)));
-  for (const slug of features) for (const client of CAPTURED[slug] ?? []) out.add(client);
-  return [...out].sort();
+  return [...new Set(features.map(slugOf).flatMap(affected).filter((client) => !left(client)))].sort();
 }
 
 const sorted = (clients: readonly EmailClient[]) => [...new Set(clients)].sort();
@@ -209,7 +220,7 @@ describe("email clients from caniemail's tables", () => {
     expect(sorted(NO_WEB_FONTS)).toEqual(expected("css-at-font-face"));
     expect(sorted(NO_PHONE_STYLES)).toEqual(expected("css-at-media", "html-style@head"));
     for (const [format, { clients, feature }] of Object.entries(IMAGE_FORMATS)) expect([format, sorted(clients)]).toEqual([format, expected(feature)]);
-    for (const { pattern, clients, feature } of HTML_CSS) if (feature) expect([String(pattern), sorted(clients)]).toEqual([String(pattern), expected(feature)]);
+    for (const { pattern, clients, feature, use } of HTML_CSS) if (feature) expect([String(pattern), sorted(clients)]).toEqual([String(pattern), expected(use ? `${feature}@${use}` : feature)]);
   });
 
   it("leaves a client out only where caniemail lists it, with a reason", () => {

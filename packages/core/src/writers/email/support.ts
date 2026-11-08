@@ -9,7 +9,8 @@
  * Size budgets are checked on the written email (index.tsx).
  */
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
-import { addForClients, caniemail, type EmailClient } from "../../email-clients";
+import { COMPONENTS } from "../../components";
+import { caniemail, type EmailClient } from "../../email-clients";
 import { assetParts, fontStack, videoParts, type Asset, type FontFace } from "../../kinds";
 import { NO_WEB_FONTS } from "../../roots";
 import type { ResolvedNode } from "../../resolve";
@@ -18,7 +19,8 @@ import { wrapsPastIts, wrapsWithGap } from "../shared/estimate";
 import { isNode, shown } from "./context";
 import { layerShape } from "./layout";
 
-export function emailSupport(root: ResolvedNode): Diagnostic[] {
+/** `templatePath`: a node's place in the template (inside the component that made it, where one did). */
+export function emailSupport(root: ResolvedNode, templatePath: (path: string) => string = (path) => path): Diagnostic[] {
   const d = new Diagnostics();
   d.list.push(...support(root, "email"));
   const webFonts = new Set(((root.props.fonts as FontFace[] | undefined) ?? []).map((face) => face.family.toLowerCase()));
@@ -27,10 +29,12 @@ export function emailSupport(root: ResolvedNode): Diagnostic[] {
     structure(node, d);
     fallback(node, webFonts, d);
     if (node.type === "Html") htmlBlock(node, d);
-    if (node.type === "Image") imageFormat(node, d);
+    if (node.type === "Image") imageFormat(node, "src", d);
+    if (node.type === "Video" && node.props.thumbnail !== undefined) imageFormat(node, "thumbnail", d);
+    // What a built-in component hides itself (a Menu's separators on phones) is its own, not the author's to change.
     if (node.mobile && Object.keys(node.mobile).length) phone.styled = true;
-    if (node.hidden?.mobile) phone.phoneHidden = true;
-    if (node.hidden?.desktop) phone.desktopHidden = true;
+    if (node.hidden?.mobile && !builtIn(templatePath(node.path))) phone.phoneHidden = true;
+    if (node.hidden?.desktop && !builtIn(templatePath(node.path))) phone.desktopHidden = true;
     for (const child of node.children) if (isNode(child) && shown(child)) visit(child);
   };
   visit(root);
@@ -38,12 +42,18 @@ export function emailSupport(root: ResolvedNode): Diagnostic[] {
   return d.list;
 }
 
+/** Whether a node was made by a built-in component's expansion: its place in the template is inside one, `…(Menu)…`. */
+function builtIn(place: string): boolean {
+  const made = [...place.matchAll(/\((\w+)\)/g)].pop()?.[1];
+  return !!made && Object.prototype.hasOwnProperty.call(COMPONENTS, made);
+}
+
 /**
  * The clients that show an email on a phone without its phone styles (caniemail's css-at-media and html-style): with
- * another account in the Gmail app, and in some webmail, the email's <style> or its media queries are removed; Samsung
- * Email with an Outlook account. What Elements does without them (a Row stacks) still happens.
+ * another account in the Gmail app, and in some webmail, the email's <style> or its media queries are removed. What
+ * Elements does without them (a Row stacks) still happens.
  */
-export const NO_PHONE_STYLES: readonly EmailClient[] = ["gmail-app-other", "samsung-email", "sfr", "laposte", "gmx", "web-de", "rainloop"];
+export const NO_PHONE_STYLES: readonly EmailClient[] = ["gmail-app-other", "sfr", "laposte", "gmx", "web-de", "rainloop"];
 
 /**
  * Said once for the email: a warning where it hides something on desktop (shown only on phones, it then shows
@@ -52,26 +62,32 @@ export const NO_PHONE_STYLES: readonly EmailClient[] = ["gmail-app-other", "sams
 function phoneStyles(root: ResolvedNode, phone: { styled: boolean; phoneHidden: boolean; desktopHidden: boolean }, d: Diagnostics): void {
   const parts = [phone.desktopHidden && "what's hidden on desktop shows nowhere", phone.phoneHidden && "what's hidden on phones shows", phone.styled && "it keeps its desktop styles"].filter(Boolean);
   if (!parts.length) return;
-  addForClients(d, "email/phone-styles", phone.desktopHidden ? "warning" : "info", `On phones, the email's phone styles don't apply: ${parts.join(", ")} (Rows still stack)`, root.path, root.id, {
+  d.add("email/phone-styles", phone.desktopHidden ? "warning" : "info", `On phones, the email's phone styles don't apply: ${parts.join(", ")} (Rows still stack)`, root.path, root.id, {
     clients: NO_PHONE_STYLES,
     fix: phone.desktopHidden ? "show what a reader needs on desktop too, and hide on phones only what they can do without" : undefined,
     see: caniemail("css-at-media"),
   });
 }
 
-/** Image formats some clients don't show (caniemail's image-webp, image-avif, image-svg), by the file's extension or data: type. */
-export const IMAGE_FORMATS: Readonly<Record<string, { clients: readonly EmailClient[]; feature: string }>> = {
-  webp: { clients: ["outlook"], feature: "image-webp" },
-  avif: { clients: ["outlook", "fastmail", "gmx", "web-de", "orange", "sfr", "mail-ru", "ionos"], feature: "image-avif" },
-  svg: { clients: ["mail-ru"], feature: "image-svg" },
+/**
+ * Image formats some clients don't show (caniemail's image-webp, image-avif, image-svg): by the file's extension, its
+ * data: type, or the format an image CDN is asked for (`?fm=webp`, `?format=avif`, Cloudinary's `f_webp`).
+ */
+export const IMAGE_FORMATS: Readonly<Record<string, { clients: readonly EmailClient[]; feature: string; name: string }>> = {
+  webp: { clients: ["outlook"], feature: "image-webp", name: "a WebP" },
+  avif: { clients: ["outlook", "fastmail", "gmx", "web-de", "orange", "sfr", "mail-ru", "ionos"], feature: "image-avif", name: "an AVIF" },
+  svg: { clients: ["mail-ru"], feature: "image-svg", name: "an SVG" },
 };
 
-function imageFormat(node: ResolvedNode, d: Diagnostics): void {
-  const src = node.props.src === undefined ? undefined : assetParts(node.props.src as Asset).src;
-  const format = src && (/^data:image\/(webp|avif|svg)/i.exec(src) ?? /\.(webp|avif|svg)(?:[?#]|$)/i.exec(src))?.[1].toLowerCase();
+const FORMAT_IN = [/^data:image\/(webp|avif|svg)/i, /\.(webp|avif|svg)(?:[?#]|$)/i, /[?&](?:fm|format|f)=(webp|avif)\b/i, /\/f_(webp|avif)[,/]/i];
+
+function imageFormat(node: ResolvedNode, key: "src" | "thumbnail", d: Diagnostics): void {
+  const src = assetParts(node.props[key] as Asset).src;
+  const format = FORMAT_IN.map((pattern) => pattern.exec(src)?.[1]).find(Boolean)?.toLowerCase();
   const known = format ? IMAGE_FORMATS[format] : undefined;
-  if (!format || !known) return;
-  addForClients(d, "email/image-format", "warning", `This Image is ${format === "svg" ? "an SVG" : `a ${format.toUpperCase()}`} file, which these email clients don't show`, `${node.path}.props.src`, node.id, {
+  if (!known) return;
+  const what = key === "src" ? "This Image is" : "This Video's thumbnail is";
+  d.warning("email/image-format", `${what} ${known.name} file, which these email clients don't show`, `${node.path}.props.${key}`, node.id, {
     clients: known.clients,
     fix: "use a PNG, JPEG or GIF file",
     see: caniemail(known.feature),
@@ -85,10 +101,8 @@ function fallback(node: ResolvedNode, webFonts: Set<string>, d: Diagnostics): vo
   const families = fontStack(stack);
   const last = families[families.length - 1];
   if (!last || !webFonts.has(last.toLowerCase())) return;
-  addForClients(
-    d,
+  d.warning(
     "email/font-fallback",
-    "warning",
     `This font stack ends with the web font "${last}": where it doesn't load, the email client picks its own font`,
     `${node.path}.style.fontFamily`,
     node.id,
@@ -158,7 +172,7 @@ function structure(node: ResolvedNode, d: Diagnostics): void {
  * tables say (`feature`, checked against them with what the captures add: test/caniemail.test.ts). Elements writes
  * none of these itself.
  */
-export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string }> = [
+export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string; use?: string }> = [
   { pattern: /!\s*(?!important\b)[iI][mM][pP][oO][rR][tT][aA][nN][tT]\b/, clients: ["gmail"], removes: "!important not written in lowercase: Gmail removes the whole style attribute, or the whole <style>, that holds it", fix: "write !important in lowercase" },
   { pattern: /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i, clients: ["gmail", "outlook-com"], removes: "a negative margin: the client removes the whole margin declaration", fix: "move it with padding on what holds it instead" },
   {
@@ -169,6 +183,15 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
     feature: "css-position",
   },
   {
+    // Outlook.com removes every position (captures); the others keep relative.
+    pattern: /(^|[\s;{"'])position\s*:\s*relative\b/i,
+    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "mail-ru"],
+    removes: "position: relative: the client removes it, and what it moves stays where it is",
+    fix: "move it with padding instead",
+    feature: "css-position",
+    use: "relative",
+  },
+  {
     pattern: /var\(\s*--|(^|[\s;{"'])--[\w-]+\s*:/i,
     clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol", "orange", "mail-ru", "fastmail", "gmx", "web-de"],
     removes: "CSS variables: the client removes var() and their declarations",
@@ -177,7 +200,7 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   },
   {
     pattern: /gradient\(/i,
-    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail-app", "gmail-app-other", "yahoo", "aol", "samsung-email", "orange", "gmx", "web-de"],
+    clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail-app", "gmail-app-other", "yahoo", "aol", "orange", "gmx", "web-de"],
     removes: "a gradient: the client removes it",
     fix: "give it a solid background color too, or use an image",
     feature: "css-linear-gradient",
@@ -204,7 +227,7 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
     feature: "css-object-fit",
   },
   {
-    pattern: /aspect-ratio\s*:/i,
+    pattern: /(^|[\s;{"'])aspect-ratio\s*:/i,
     clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol", "samsung-email", "thunderbird", "fastmail", "gmx", "web-de", "orange"],
     removes: "aspect-ratio: the client removes it",
     fix: "give it a width and a height",
@@ -212,9 +235,12 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   },
 ];
 
+/** What only classic Outlook reads (`<!--[if mso]>…<![endif]-->`): the others never see it. */
+const OUTLOOK_ONLY = /<!--\[if\s+(?:(?:gte?|lte?)\s+)?mso[^\]]*\]>[\s\S]*?<!\[endif\]-->/gi;
+
 function htmlBlock(node: ResolvedNode, d: Diagnostics): void {
-  const markup = node.props.html;
-  if (typeof markup !== "string") return;
+  if (typeof node.props.html !== "string") return;
+  const markup = node.props.html.replace(OUTLOOK_ONLY, "");
   for (const check of HTML_CSS) {
     if (check.pattern.test(markup)) {
       d.add("email/html-css", "info", `This Html block's markup may have ${check.removes}`, `${node.path}.props.html`, node.id, { clients: check.clients, fix: check.fix, see: check.feature && caniemail(check.feature) });
