@@ -1,11 +1,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-// Rebuild the README chart from the same recorded runs as the website benchmark.
+// Rebuild the shared README/docs chart from the website's recorded benchmark runs.
 // Run from any directory: node scripts/generate-readme-benchmark.mjs
 // Use the complete four-kit batch, not the earlier MJML-only run or the old batch.
 const source = new URL("../apps/website/benchmark/results/2026-11-08-sonnet.jsonl", import.meta.url);
-const destination = new URL("../assets/hyper-elements-agent-benchmark.svg", import.meta.url);
+const destination = new URL("../apps/website/public/img/hyper-elements-agent-benchmark.svg", import.meta.url);
 const runs = readFileSync(source, "utf8").trim().split("\n").map((line) => JSON.parse(line));
 const median = (values) => {
   const sorted = [...values].sort((a, b) => a - b);

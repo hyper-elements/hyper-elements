@@ -133,7 +133,7 @@ In our benchmark of five email briefs, Hyper Elements reached a passing email **
 
 <p align="center">
   <a href="https://hyperelements.dev/docs/benchmark">
-    <img src="./assets/hyper-elements-agent-benchmark.svg" alt="Agent benchmark: Hyper Elements took 33 seconds, used 1,831 output tokens, and passed on the first check in 16 of 16 runs. MJML: 43 seconds, 2,762 output tokens, 16 of 16 first-check passes. Hand-written HTML: 60 seconds, 4,903 output tokens, 6 of 16 first-check passes. React Email: 86 seconds, 6,215 output tokens, 12 of 16 first-check passes. Time and token counts are medians." width="1000" />
+    <img src="./apps/website/public/img/hyper-elements-agent-benchmark.svg" alt="Agent benchmark: Hyper Elements took 33 seconds, used 1,831 output tokens, and passed on the first check in 16 of 16 runs. MJML: 43 seconds, 2,762 output tokens, 16 of 16 first-check passes. Hand-written HTML: 60 seconds, 4,903 output tokens, 6 of 16 first-check passes. React Email: 86 seconds, 6,215 output tokens, 12 of 16 first-check passes. Time and token counts are medians." width="1000" />
   </a>
 </p>
 
