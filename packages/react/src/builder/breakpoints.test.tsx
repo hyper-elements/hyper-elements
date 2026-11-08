@@ -14,6 +14,7 @@ describe("a Page's phone width in the builder's design", () => {
     );
     expect(toDesign(template({ mobile: 600 })).report).toContainEqual(expect.stringContaining("props.breakpoints"));
     expect(toDesign(template()).report.filter((line) => line.includes("breakpoints"))).toEqual([]);
+    expect(toDesign(<Page width={900} breakpoints={{}}><Column><Text>Words</Text></Column></Page>).report.filter((line) => line.includes("breakpoints"))).toEqual([]);
   });
 
   it("keeps it in a block drawn as markup, so the block's phone styles switch where the page's do", () => {

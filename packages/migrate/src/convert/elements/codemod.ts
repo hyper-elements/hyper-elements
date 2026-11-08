@@ -519,21 +519,31 @@ export async function migrateElements(source: string, options: MigrateElementsOp
 
   // ─── Writing the new JSX ───────────────────────────────────────────────────
 
+  /** Marks a component's style entries and its phone entries until element() writes them as one style. */
+  const STYLE_PART = "\u0000style:";
+  const PHONE_PART = "\u0000mobile:";
+
   const element = (component: string, attributes: Array<string | false | undefined>, children: string[] = []) => {
     used.add(component);
     const tag = nameOf(component);
     const attrs = withPhoneInStyle(attributes.filter((a): a is string => !!a)).join(" ");
     return children.length ? `<${tag}${attrs ? ` ${attrs}` : ""}>${children.join("")}</${tag}>` : `<${tag}${attrs ? ` ${attrs}` : ""} />`;
   };
-  /** Phone styles in the component's style (`style={{ …, mobile: { … } }}`), where the mobile={…} prop was written. */
+  /**
+   * A component's style, its phone styles in it: styleAttr() and mobileAttr() hand element() their entries (marked, not
+   * written yet), and it writes one style={{ …, mobile: { … } }} of them.
+   */
   const withPhoneInStyle = (attributes: string[]): string[] => {
-    const phone = attributes.findIndex((a) => a.startsWith("mobile={{") && a.endsWith("}}"));
-    if (phone < 0) return attributes;
-    const block = attributes[phone].slice("mobile={".length, -1);
-    const style = attributes.findIndex((a) => a.startsWith("style={{") && a.endsWith("}}"));
-    if (style < 0) return attributes.map((a, i) => (i === phone ? `style={{ mobile: ${block} }}` : a));
-    const own = attributes[style].slice("style={{".length, -2).trim();
-    return attributes.flatMap((a, i) => (i === phone ? [] : i === style ? [`style={{ ${own ? `${own}, ` : ""}mobile: ${block} }}`] : [a]));
+    const own = attributes.find((a) => a.startsWith(STYLE_PART))?.slice(STYLE_PART.length);
+    const phone = attributes.find((a) => a.startsWith(PHONE_PART))?.slice(PHONE_PART.length);
+    const style = [own, phone && `mobile: { ${phone} }`].filter(Boolean).join(", ");
+    let written = false;
+    return attributes.flatMap((a) => {
+      if (!a.startsWith(STYLE_PART) && !a.startsWith(PHONE_PART)) return [a];
+      if (written) return [];
+      written = true;
+      return [`style={{ ${style} }}`];
+    });
   };
   const attr = (name: string, value: Value | undefined) =>
     value && (isLiteral(value) && value.code === undefined && typeof value.literal === "string" && !/["\\&{}\n]/.test(value.literal) ? `${name}="${value.literal}"` : `${name}={${code(value)}}`);
@@ -541,9 +551,11 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     const set = entries.filter((entry): entry is [string, Value] => entry[1] !== undefined);
     return set.length ? `{{ ${set.map(([key, value]) => `${key}: ${code(value)}`).join(", ")} }}` : undefined;
   };
+  /** The entries of an object, written ("a: 1, b: 2"), or none. */
+  const entriesOf = (entries: Array<[string, Value | undefined]>) => object(entries)?.slice(3, -3);
   const styleAttr = (entries: Array<[string, Value | undefined]>) => {
-    const value = object(entries);
-    return value && `style=${value}`;
+    const value = entriesOf(entries);
+    return value && `${STYLE_PART}${value}`;
   };
   const lit = (value: unknown): Value => ({ literal: value });
   const given = (props: Props, name: string, fallback?: unknown): Value | undefined => props.get(name) ?? (fallback === undefined ? undefined : lit(fallback));
@@ -630,8 +642,8 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     return out;
   };
   const mobileAttr = (entries: Array<[string, Value | undefined]>) => {
-    const value = object(entries);
-    return value && `mobile=${value}`;
+    const value = entriesOf(entries);
+    return value && `${PHONE_PART}${value}`;
   };
   /**
    * A text block's words as today's draw them: a Paragraph's children, else its `text` (plain text: markup in it

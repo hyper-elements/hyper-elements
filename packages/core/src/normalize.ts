@@ -253,8 +253,9 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
       continue;
     }
     const parsed = spec.kind.parse(value);
-    if (parsed.ok) out[key] = parsed.value;
-    else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
+    if (parsed.ok) {
+      if (!spec.kind.empty?.(parsed.value)) out[key] = parsed.value;
+    } else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
   }
   for (const [key, spec] of Object.entries(definition.props)) {
     if (spec.required && !(key in out) && !(isObject(input) && input[key] !== undefined)) {

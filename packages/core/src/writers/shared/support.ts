@@ -12,7 +12,8 @@ import { blockOf, CONDITIONS, shownAnywhere } from "../../conditions";
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
 import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
-import type { Support, SupportByTarget, Target } from "../../define";
+import type { Target } from "../../define";
+import { reportDeclared } from "../../declared";
 
 const isNode = (child: ResolvedNode | string): child is ResolvedNode => typeof child !== "string";
 const same = (a: Json | undefined, b: Json | undefined) => JSON.stringify(a) === JSON.stringify(b);
@@ -48,32 +49,4 @@ export function support(root: ResolvedNode, target: Target): Diagnostic[] {
   };
   visit(root);
   return d.list;
-}
-
-/**
- * The diagnostics a declaration gives for a value at `at` (`key` names it in the message), on this node: nothing where
- * it's shown as asked. Classic Outlook's notes are left out where `outlook` is false (a block it never applies).
- */
-export function reportDeclared(
-  d: Diagnostics,
-  node: { type: string; id?: string; props: Record<string, Json> },
-  at: string,
-  key: string,
-  value: Json,
-  declared: SupportByTarget[Target] | undefined,
-  target: Target,
-  outlook = true
-): void {
-  if (!declared) return;
-  for (const rule of ([] as Support[]).concat(declared)) {
-    if (rule.level === "full") continue;
-    if (rule.level === "outlook" && !outlook) continue;
-    if (rule.values && !rule.values.some((v) => same(v, value))) continue;
-    if (rule.when && !rule.when(value, node)) continue;
-    const asked = typeof value === "string" ? `${key}: "${value}"` : key;
-    const output = target === "web" ? "a page" : target;
-    if (rule.level === "none") d.warning(`${target}/unsupported`, `${asked} isn't possible in ${output}: ${rule.shows}`, at, node.id);
-    else if (rule.level === "partial") d.add(`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`, at, node.id);
-    else d.add("email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`, at, node.id);
-  }
 }

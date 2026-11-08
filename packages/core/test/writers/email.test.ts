@@ -115,7 +115,7 @@ describe("email HTML", () => {
     );
     // Hover changes the background where it's set (the cell) and the text's color where it's set (the link).
     const [, cell, link] = /<td align="center" bgcolor="#0879a1" class="(e[0-9a-z]{5})"[^>]*><a href="https:\/\/example.com" class="(e[0-9a-z]{5})"/.exec(body)!;
-    expect(head).toContain(`.${cell}:hover,.${cell}:focus-visible{background-color:#000!important}`);
+    expect(head).toContain(`.${cell}:hover,.${cell}:focus-within{background-color:#000!important}`);
     expect(head).toContain(`.${link}:hover,.${link}:focus-visible{color:#fff!important}`);
     // A button with a width fills it: a 200px table (Word's width), its link a block.
     expect(body).toContain('<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:200px;border-collapse:separate"><tr><td align="center"');

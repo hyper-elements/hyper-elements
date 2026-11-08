@@ -16,7 +16,7 @@ type Condition = (typeof CONDITIONS)[number];
 export interface StyleBlocksOptions {
   /** Whether an import specifier is the Hyper Elements package (default: "@hyper-elements/react"). */
   isPackage?: (specifier: string) => boolean;
-  /** Parse as TypeScript (default) or JavaScript. */
+  /** Parse as JavaScript (JSX) rather than by the file's extension. */
   typescript?: boolean;
 }
 
@@ -38,7 +38,8 @@ interface Edit {
 
 export function styleBlocks(source: string, file = "template.tsx", options: StyleBlocksOptions = {}): StyleBlocksResult {
   const isPackage = options.isPackage ?? ((specifier) => specifier === "@hyper-elements/react");
-  const kind = options.typescript === false ? ts.ScriptKind.JSX : ts.ScriptKind.TSX;
+  // By its extension: a .ts file's <T>value is a type assertion, not JSX; .js and .jsx may hold JSX.
+  const kind = options.typescript === false || /\.[cm]?jsx?$/.test(file) ? ts.ScriptKind.JSX : /\.[cm]?ts$/.test(file) ? ts.ScriptKind.TS : ts.ScriptKind.TSX;
   const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind);
 
   // The local names Hyper Elements' components go by: `import { Text, Button as Cta } from "@hyper-elements/react"`.

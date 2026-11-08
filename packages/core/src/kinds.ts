@@ -35,6 +35,8 @@ export interface Kind<In = unknown, Out extends Json = Json> {
   /** What it accepts, in words (for messages and descriptions). */
   readonly accepts: string;
   parse(input: unknown): Parsed<Out>;
+  /** Whether a value it parsed sets nothing (`breakpoints={{}}`): the prop is then left out, as if not given. */
+  empty?(value: Out): boolean;
   jsonSchema(): JsonSchema;
   /** Type only: what it accepts as input. */
   readonly __in?: In;
@@ -819,6 +821,7 @@ export function breakpoints(): Kind<{ mobile?: number }, { mobile?: number } & {
       if (typeof mobile !== "number" || !Number.isInteger(mobile) || mobile < MIN_PHONE_WIDTH) return fail(`mobile is the widest window its phone styles apply to, an integer from ${MIN_PHONE_WIDTH}, not ${show(mobile)}`);
       return ok({ mobile });
     },
+    empty: (value) => value.mobile === undefined,
     jsonSchema: () => ({ type: "object", properties: { mobile: { type: "integer", minimum: MIN_PHONE_WIDTH } }, additionalProperties: false }),
   });
 }

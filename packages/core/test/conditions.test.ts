@@ -79,6 +79,13 @@ describe("support for conditions", () => {
     }
   });
 
+  it("says nothing about a phone style on a node hidden on phones", () => {
+    const grid = { type: "Grid", hidden: { mobile: true }, mobile: { rowGap: 8 }, children: [{ type: "Text", children: ["a"] }, { type: "Text", children: ["b"] }] };
+    const text = { type: "Text", hidden: { mobile: true }, mobile: { lineHeight: "normal" }, children: ["c"] };
+    const { diagnostics } = prepareTemplate({ root: { type: "Email", children: [grid, text] } });
+    expect(diagnostics.filter((d) => d.path.includes(".mobile."))).toEqual([]);
+  });
+
   it("warns about a page root's phone text styles, which it doesn't write", () => {
     const { diagnostics } = prepareTemplate({ root: { type: "Page", mobile: { fontSize: 14, gap: 8 }, children: [{ type: "Text", children: ["a"] }] } });
     expect(diagnostics.filter((d) => d.path.startsWith("root.mobile"))).toEqual([expect.objectContaining({ code: "web/unsupported", path: "root.mobile.fontSize" })]);

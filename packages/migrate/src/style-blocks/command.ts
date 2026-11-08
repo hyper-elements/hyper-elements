@@ -48,7 +48,7 @@ export async function styleBlocksCommand(paths: string[], args: Args, io: StyleB
   for (const file of files) {
     try {
       const source = await readFile(file, "utf8");
-      const result = styleBlocks(source, file, { typescript: !/\.[cm]?jsx?$/.test(file) });
+      const result = styleBlocks(source, file);
       if (result.template && (result.moved || result.report.length)) results.push({ file, code: result.code, report: result.report, moved: result.moved });
     } catch (error) {
       failed.push({ file, error: (error as Error).message });
@@ -60,12 +60,15 @@ export async function styleBlocksCommand(paths: string[], args: Args, io: StyleB
     return failed.length ? 2 : 0;
   }
   const changed = results.filter((r) => r.moved);
+  // What it left: those props fail as prop/unknown (the components don't take them), so the run doesn't pass.
+  const left = results.reduce((sum, r) => sum + r.report.length, 0);
+  const code = failed.length || left ? 2 : 0;
 
   // One template, not written: the rewritten template itself, on stdout (what stayed, on stderr).
   if (!args.flag("write") && paths.length === 1 && files.length === 1) {
     io.stdout(results[0].code);
     for (const line of results[0].report) io.stderr(`${name(results[0].file)}: ${line}\n`);
-    return failed.length ? 2 : 0;
+    return code;
   }
   if (args.flag("write") && changed.length) {
     const unsafe = args.flag("allow-dirty") ? [] : await helpers.notRestorable(changed.map((r) => r.file));
@@ -84,5 +87,6 @@ export async function styleBlocksCommand(paths: string[], args: Args, io: StyleB
     for (const line of r.report) io.stdout(`  - ${line}\n`);
   }
   if (!args.flag("write")) io.stdout("Nothing was written: pass --write to replace them (or give one template to print it).\n");
-  return failed.length ? 2 : 0;
+  if (left) io.stderr(`${left} ${left === 1 ? "prop was" : "props were"} left as ${left === 1 ? "it is" : "they are"}: move ${left === 1 ? "it" : "them"} into style by hand (as listed); the components don't take them as props.\n`);
+  return code;
 }

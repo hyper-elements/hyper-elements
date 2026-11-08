@@ -309,8 +309,18 @@ async function checkHover(page) {
   if (focused.background !== "rgb(29, 78, 216)") problems.push(`keyboard-focus background is ${focused.background}, expected rgb(29, 78, 216)`);
   if (focused.color !== "rgb(255, 255, 0)") problems.push(`keyboard-focus color is ${focused.color}, expected rgb(255, 255, 0)`);
 
+  // In an email the button's background is its cell's: keyboard focus on the link inside gives the cell its hover color too.
+  const email = DOCUMENTS.find((d) => d.name === "email");
+  await page.setContent(email.html, { waitUntil: "load" });
+  const cellColors = () => page.$eval(selector, (a) => ({ background: getComputedStyle(a.closest("td")).backgroundColor, color: getComputedStyle(a).color }));
+  const emailBase = await cellColors();
+  for (let i = 0; i < 20 && !(await page.$eval(selector, (a) => a === document.activeElement)); i++) await page.keyboard.press("Tab");
+  const emailFocused = await cellColors();
+  if (emailFocused.background !== "rgb(29, 78, 216)") problems.push(`email keyboard-focus background is ${emailFocused.background} (unfocused ${emailBase.background}), expected rgb(29, 78, 216)`);
+  if (emailFocused.color !== "rgb(255, 255, 0)") problems.push(`email keyboard-focus color is ${emailFocused.color}, expected rgb(255, 255, 0)`);
+
   if (problems.length) fail("hover", problems);
-  else pass("hover", "button hover and keyboard focus apply configured background + text colors");
+  else pass("hover", "button hover and keyboard focus apply configured background + text colors, on a page and in an email");
 }
 
 /** Section 4: RTL — the root's dir reaches the computed direction. */
