@@ -103,6 +103,7 @@ export interface ThemeValues {
   readonly colors?: { readonly [name: string]: unknown };
   readonly spacing?: { readonly [name: string]: unknown };
   readonly fontSizes?: { readonly [name: string]: unknown };
+  readonly lineHeights?: { readonly [name: string]: unknown };
   readonly fonts?: { readonly [name: string]: unknown };
   readonly radii?: { readonly [name: string]: unknown };
 }

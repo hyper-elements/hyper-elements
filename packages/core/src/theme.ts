@@ -10,12 +10,12 @@
 import { CONDITIONS, CONDITION_NAMES } from "./conditions";
 import type { ComponentDefinition, StyleSpecs } from "./define";
 import type { Diagnostics } from "./diagnostics";
-import { color, fontFamily, length, radius as radiusKind, type Kind } from "./kinds";
+import { color, fontFamily, length, lineHeight, radius as radiusKind, type Kind } from "./kinds";
 import type { Json } from "./model";
 import { nearest } from "./nearest";
 import { length as cssLength, radius as cssRadius } from "./writers/shared/css";
 
-export const TOKEN_GROUPS = ["colors", "spacing", "fontSizes", "fonts", "radii"] as const;
+export const TOKEN_GROUPS = ["colors", "spacing", "fontSizes", "lineHeights", "fonts", "radii"] as const;
 export type TokenGroup = (typeof TOKEN_GROUPS)[number];
 
 /** The kinds of root a theme's `formats` override it for. */
@@ -44,6 +44,7 @@ const GROUP_KIND: Record<TokenGroup, Kind<any, Json>> = {
   colors: color(),
   spacing: lengthKind,
   fontSizes: lengthKind,
+  lineHeights: lineHeight(),
   fonts: fontFamily(),
   radii: radiusKind(),
 };
@@ -231,6 +232,8 @@ function groupsAt(kind: string, keyPath: readonly string[]): readonly TokenGroup
       return ["radii"];
     case "fontFamily":
       return ["fonts"];
+    case "lineHeight":
+      return ["lineHeights"];
     case "border":
     case "line":
       return leaf === "color" ? ["colors"] : leaf === "width" ? ["spacing"] : [];
@@ -297,7 +300,7 @@ export interface ThemeReadContext {
 export function readTheme(input: unknown, at: string, rootType: string, context: ThemeReadContext): ThemeData | null {
   const { d } = context;
   if (!isObject(input)) {
-    d.error("theme/schema", `A theme is an object (defineTheme({ colors, spacing, fontSizes, fonts, radii, components, styles, formats })), not ${show(input)}`, at);
+    d.error("theme/schema", `A theme is an object (defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })), not ${show(input)}`, at);
     return null;
   }
   const checked = checkThemeShape(input, at, context, true);

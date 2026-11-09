@@ -94,7 +94,7 @@ interface Themed {
 /** A scope's tokens: over the theme's for it and what it holds (an inverted band: `{ colors: { background, foreground } }`). */
 type ScopeTree = { [name: string]: string | number | Token | readonly (string | number)[] | ScopeTree };
 interface Scoped {
-  tokens?: { colors?: ScopeTree; spacing?: ScopeTree; fontSizes?: ScopeTree; fonts?: ScopeTree; radii?: ScopeTree };
+  tokens?: { colors?: ScopeTree; spacing?: ScopeTree; fontSizes?: ScopeTree; lineHeights?: ScopeTree; fonts?: ScopeTree; radii?: ScopeTree };
 }
 
 // Each component's props and style have names of their own (HeadingProps, HeadingStyle), so a type error names them

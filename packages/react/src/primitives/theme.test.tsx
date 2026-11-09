@@ -72,6 +72,55 @@ describe("roles", () => {
     expect(child(root, 3).style.borderTop).toEqual({ width: 1, style: "solid", color: "#e5e7eb" });
   });
 
+  it("give the root its body text's size and line height, which Text and table cells inherit, and a Button the size", () => {
+    const theme = defineTheme({ colors: { foreground: "#1d1b2f" }, fonts: { body: "Inter, Arial, sans-serif" }, fontSizes: { body: 18 }, lineHeights: { body: 1.6 } });
+    const { root } = laid(
+      <Email theme={theme}>
+        <Text>Body</Text>
+        <Button href="https://example.com">Go</Button>
+      </Email>
+    );
+    expect(root.style).toMatchObject({ color: "#1d1b2f", fontFamily: "Inter, Arial, sans-serif", fontSize: 18, lineHeight: 1.6 });
+    expect(child(root, 0).text).toMatchObject({ fontSize: 18, lineHeight: 1.6 });
+    expect(child(root, 1).style.fontSize).toBe(18);
+    // A Button keeps its own line height and, without fontSizes.body, its own size.
+    expect(child(root, 1).style.lineHeight).toBe(1.2);
+    const plain = laid(
+      <Email theme={defineTheme({ colors: { primary: "#0f766e" } })}>
+        <Button href="https://example.com">Go</Button>
+      </Email>
+    ).root;
+    expect(child(plain, 0).style.fontSize).toBe(14);
+    expect(plain.style.lineHeight).toBe(1.5);
+  });
+
+  it("take a line height as a multiple, a percentage or px, and token() one in a template", () => {
+    const theme = defineTheme({ lineHeights: { body: "160%", tight: "20px", heading: "{lineHeights.snug}", snug: 1.2 } });
+    const { root, diagnostics } = laid(
+      <Email theme={theme}>
+        <Heading style={{ lineHeight: token("lineHeights.heading") }}>Title</Heading>
+        <Text style={{ lineHeight: token("lineHeights.tight") }}>Body</Text>
+      </Email>
+    );
+    expect(diagnostics.filter((d) => d.severity === "error")).toEqual([]);
+    expect(root.style.lineHeight).toBe(1.6);
+    expect(child(root, 0).style.lineHeight).toBe(1.2);
+    expect(child(root, 1).style.lineHeight).toBe("20px");
+    expect(codes(errors(<Email theme={defineTheme({ lineHeights: { body: -1 } })}>x</Email>))).toContain("theme/schema");
+  });
+
+  it("set body text on a scope too: a band's own size and line height", () => {
+    const theme = defineTheme({ fontSizes: { body: 16 }, lineHeights: { body: 1.6 } });
+    const { root } = laid(
+      <Email theme={theme}>
+        <Section tokens={{ fontSizes: { body: 20 }, lineHeights: { body: 1.4 } }}>
+          <Text>Big</Text>
+        </Section>
+      </Email>
+    );
+    expect(child(root, 0).style).toMatchObject({ fontSize: 20, lineHeight: 1.4 });
+  });
+
   it("apply only where the theme defines the token", () => {
     const { root } = laid(
       <Email theme={defineTheme({ colors: { foreground: "#222222" } })}>

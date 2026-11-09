@@ -1,5 +1,5 @@
 /**
- * Themes in templates: `defineTheme()` makes one (data: colors, sizes, fonts and radii as tokens, defaults for each
+ * Themes in templates: `defineTheme()` makes one (data: colors, sizes, line heights, fonts and radii as tokens, defaults for each
  * component, variants, named styles, and overrides for one kind of root), a root takes it with `theme`, and a template
  * refers to its tokens with `token()`. Registering a theme (`interface Register { theme: typeof brand }`) types every
  * token's path, named style and variant; without one they're strings, checked when the template is read.
@@ -27,7 +27,7 @@ export interface Token<P extends string = string> {
 }
 
 type Corner = "topLeft" | "topRight" | "bottomRight" | "bottomLeft";
-type Group = "colors" | "spacing" | "fontSizes" | "fonts" | "radii";
+type Group = "colors" | "spacing" | "fontSizes" | "lineHeights" | "fonts" | "radii";
 
 /** Whether a value in a token group is a token (not a group): the same grammar as when a theme is read. */
 type IsToken<V, G> = V extends string | number | readonly unknown[] ? true : V extends { $token: string } ? true : G extends "radii" ? ([Exclude<keyof V, Corner>] extends [never] ? true : false) : false;
@@ -83,6 +83,7 @@ export interface ThemeInput {
   colors?: TokenTree;
   spacing?: TokenTree;
   fontSizes?: TokenTree;
+  lineHeights?: TokenTree;
   fonts?: TokenTree;
   radii?: TokenTree;
   components?: { [type: string]: ComponentTheme };
@@ -128,7 +129,7 @@ function clone(value: unknown): unknown {
   return value;
 }
 
-const GROUPS: readonly Group[] = ["colors", "spacing", "fontSizes", "fonts", "radii"];
+const GROUPS: readonly Group[] = ["colors", "spacing", "fontSizes", "lineHeights", "fonts", "radii"];
 
 /** References to every token in a theme, by path. */
 function refs(theme: Record<string, unknown>): Record<string, unknown> {
@@ -140,7 +141,7 @@ function refs(theme: Record<string, unknown>): Record<string, unknown> {
 }
 
 /**
- * A theme: tokens (`colors`, `spacing`, `fontSizes`, `fonts`, `radii`), each component's defaults (`components`, with
+ * A theme: tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`), each component's defaults (`components`, with
  * `by` one prop's value and `variants`), named styles (`styles`), and overrides for one kind of root (`formats`).
  * Inside a theme, a token refers to another as `"{colors.primary}"`. Data, frozen; a root takes it with `theme`.
  */

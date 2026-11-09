@@ -282,7 +282,7 @@ export const buttonColors: CompositeEditor<ButtonColors> = {
 
 export const Button = defineComponent({
   type: "Button",
-  roles: { backgroundColor: "colors.primary", color: "colors.primaryForeground" },
+  roles: { backgroundColor: "colors.primary", color: "colors.primaryForeground", fontSize: "fontSizes.body" },
   label: "Button",
   description: "A link drawn as a button.",
   categories: ["block"],
