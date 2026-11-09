@@ -17,14 +17,25 @@ export interface TextOptions {
   mergeTag?: (name: string) => string;
 }
 
+/** An email service's tag typed into text (`{{name}}`, `{% if vip %}`, `<%= name %>`, `*|FNAME|*`): its service reads it case by case. */
+const SERVICE_TAG = /(\{\{[\s\S]*?\}\}|\{%[\s\S]*?%\}|<%[\s\S]*?%>|\*\|[\s\S]*?\|\*)/;
+
+/** Text in capitals, apart from the service tags typed into it. */
+const capitals = (text: string) =>
+  text
+    .split(SERVICE_TAG)
+    .map((part, i) => (i % 2 ? part : part.toUpperCase()))
+    .join("");
+
 export function renderText(resolved: ResolvedDocument, options: TextOptions = {}): string {
   const tag = options.mergeTag ?? ((name: string) => `{{${name}}}`);
 
-  // `upper`: a large heading's words in capitals. Only its words: a merge tag or a URL in it is written as it is.
+  // `upper`: a large heading's words in capitals. Only its words: a merge tag (a MergeTag or one typed in) or a URL in
+  // it is written as it is.
   const inline = (node: ResolvedNode, upper = false): string =>
     node.children
       .map((child) => {
-        if (typeof child === "string") return upper ? child.toUpperCase() : child;
+        if (typeof child === "string") return upper ? capitals(child) : child;
         if (!shownAnywhere(child)) return "";
         switch (child.type) {
           case "LineBreak":
@@ -50,7 +61,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
 
   const image = (node: ResolvedNode, upper = false): string => {
     const alt = (node.props.alt as string | undefined)?.trim();
-    return alt ? `[${upper ? alt.toUpperCase() : alt}]` : "";
+    return alt ? `[${upper ? capitals(alt) : alt}]` : "";
   };
 
   const blocks = (node: ResolvedNode): string[] =>

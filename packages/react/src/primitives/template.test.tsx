@@ -62,6 +62,19 @@ describe("render()", () => {
     expect(text).toBe("THANKS, {{first_name}}: YOUR ORDER (https://example.com/Orders/AbC)\n\nhttps://example.com/Docs\n\n[ACME LOGO] (https://example.com/Home)");
   });
 
+  it("writes a service's tags typed into a large heading as written in plain text, as the HTML does (a service reads them case by case)", async () => {
+    const { html, text } = await render(
+      <Email>
+        <Heading level={1}>Hi {"{{first_name}}"}, your order shipped</Heading>
+        <Heading level={2}>
+          {"{% if vip %}"}Thanks for being a VIP{"{% endif %}"} {"*|fname|*"} {"<%= order.id %>"}
+        </Heading>
+      </Email>
+    );
+    expect(text).toBe("HI {{first_name}}, YOUR ORDER SHIPPED\n\n{% if vip %}THANKS FOR BEING A VIP{% endif %} *|fname|* <%= order.id %>");
+    expect(html).toContain("{{first_name}}");
+  });
+
   it("takes no compat from a template, directly or in a custom component: it was for Elements 0.2's components' lowering, and holds markup and CSS", async () => {
     const compat = (value: Record<string, unknown>) => ({ compat: value }) as object;
     const template = (
