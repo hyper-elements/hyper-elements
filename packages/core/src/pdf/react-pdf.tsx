@@ -52,7 +52,12 @@ type Fontkit = { getGlyph(id: number, characters?: number[]): Glyph | null };
 async function load(name: string, files: ReadonlyArray<{ weight: number; style: string }>): Promise<void> {
   for (const file of files) {
     const descriptor = { fontFamily: name, fontWeight: file.weight, fontStyle: file.style as "normal" | "italic" };
-    await (Font as unknown as { load(descriptor: object): Promise<void> }).load(descriptor);
+    try {
+      await (Font as unknown as { load(descriptor: object): Promise<void> }).load(descriptor);
+    } catch {
+      // A file fontkit can't read fails where it's drawn, as it did before: a document that never uses it is drawn.
+      continue;
+    }
     const font = (Font as unknown as { getFont(descriptor: object): { data?: unknown } | undefined }).getFont(descriptor)?.data as Fontkit | undefined;
     if (!font || typeof font.getGlyph !== "function" || mended.has(font)) continue;
     const getGlyph = font.getGlyph;

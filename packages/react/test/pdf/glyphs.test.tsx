@@ -39,6 +39,20 @@ describe("a PDF's text after other PDFs", () => {
     expect(await text("Amount Owing")).toBe("Amount Owing");
   });
 
+  it("draws a document given a font file that can't be read, where it doesn't use it", async () => {
+    // Each given family's files are read before the document is drawn now; one the document never uses still mustn't
+    // fail it, as it didn't when only the families drawn were read.
+    const unreadable = new Uint8Array([0x00, 0x01, 0x00, 0x00, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+    const { pdf } = await renderPdf(
+      <Document style={{ fontFamily: "Liberation Sans" }}>
+        <Text>Hello</Text>
+      </Document>,
+      { fonts: [...fonts, { family: "Unused", src: unreadable }] }
+    );
+    const page = await (await getDocument({ data: pdf.slice(), verbosity: 0 }).promise).getPage(1);
+    expect((await page.getTextContent()).items.map((item) => ("str" in item ? item.str : "")).join("")).toBe("Hello");
+  });
+
   it("keeps them when PDFs are drawn at the same time", async () => {
     const words = ["Ñandú Œuvre", "Nandu Oeuvre", "Émile", "Ending", "Çà", "Cash"];
     const drawn = await Promise.all(Array.from({ length: 24 }, (_, i) => text(words[i % words.length], i % 3 ? 400 : 700)));
