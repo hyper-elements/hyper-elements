@@ -278,6 +278,23 @@ describe("what a preview lists, and when it's incomplete", () => {
     await page.close();
   });
 
+  it("doesn't list a web font whose rules Gmail removed as a missing system font: the removed rules say it", async () => {
+    const element = (
+      <Email width={600} fonts={[{ family: "Brand", src: "https://example.test/brand.woff2", format: "woff2", weight: 400, style: "normal" }]} style={{ fontFamily: "Brand, Arial, sans-serif" }}>
+        <Text>Brand words</Text>
+      </Email>
+    );
+    for (const client of ["gmail", "apple-mail"] as const) {
+      const { previews } = await renderInEmailClients(element, { emailClients: [client] });
+      const { page, findings } = await open(`web-font-${client}.html`, previews[0]!.html);
+      expect([client, findings.missing.filter((m) => m.family === "Brand" && m.kind !== "author-font")]).toEqual([client, []]);
+      // Gmail removed its rule, so what draws is Arial, checked as a system font.
+      if (client === "gmail") expect(findings.removed).toEqual(expect.arrayContaining([{ what: "@font-face", count: 1 }]));
+      expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
+      await page.close();
+    }
+  });
+
   it("loads an image marked loading=lazy, and leaves a web font weight nothing uses unfetched", async () => {
     const element = (
       <Email

@@ -17,7 +17,7 @@ import type { BlockMap } from "@hyper-elements/react";
 import { scriptJson } from "../shell";
 import { processForClient, type Client } from "./clients";
 import { clipped, darkContrast, moreLines, type Finding, type Types } from "./findings";
-import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, withCss } from "./frames";
+import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, webFontFamilies, withCss } from "./frames";
 import { markPaths } from "./marks";
 import { checkSystemFonts } from "./system-fonts";
 
@@ -129,7 +129,8 @@ async function main(): Promise<void> {
     const report = processed.frameStep(shown.contentWindow!);
     await until(docs[0]!.fonts.ready.then(() => undefined), deadline, undefined);
     // After the client's step: classic Outlook's rules write the one font Outlook draws each run in.
-    const system = checkSystemFonts(docs[0]!, new Set([...loaded, ...standInsMissing]), config.probe, standIns);
+    // The email's web fonts as written: a client that removed their rules leaves the families in its stacks.
+    const system = checkSystemFonts(docs[0]!, new Set([...loaded, ...standInsMissing]), config.probe, standIns, webFontFamilies(docs[1]!, standIns));
     findings.missing = [...standInsMissing.map((family) => ({ kind: "font" as const, family })), ...system.missing, ...author.map((a) => ({ kind: "author-font" as const, ...a })), ...images!.map((src) => ({ kind: "image" as const, src }))];
     findings.fonts = system.fonts;
     const types: Types = new Map(config.blocks.entries.map((entry) => [entry.path, entry.type]));

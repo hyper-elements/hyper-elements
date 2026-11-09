@@ -42,9 +42,11 @@ export function present(doc: Document, family: string): boolean {
 /**
  * Each system family the frame's text draws with: for each font stack its text uses, the families in order, past web
  * fonts that loaded and stand-ins, up to the first one there (a missing one is listed, and the next one draws). A
- * family drawn by the stand-in after it (classic Outlook's rules write `"Aptos", "Aptos Stand-in"`) isn't missing.
+ * family drawn by the stand-in after it (classic Outlook's rules write `"Aptos", "Aptos Stand-in"`) isn't missing, and
+ * nor is one of the email's own web fonts that this machine doesn't have either (`webFonts`: Gmail removes their
+ * @font-face rules, classic Outlook ignores them): validate() and the removed or failed web fonts already say so.
  */
-export function checkSystemFonts(doc: Document, loaded: ReadonlySet<string>, probe: { text: string; widths: Record<string, Record<number, number>> }, standIns: ReadonlySet<string> = new Set()): FontCheck {
+export function checkSystemFonts(doc: Document, loaded: ReadonlySet<string>, probe: { text: string; widths: Record<string, Record<number, number>> }, standIns: ReadonlySet<string> = new Set(), webFonts: ReadonlySet<string> = new Set()): FontCheck {
   const stacks = new Set<string>();
   const walker = doc.createTreeWalker(doc.body ?? doc.documentElement, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -66,7 +68,7 @@ export function checkSystemFonts(doc: Document, loaded: ReadonlySet<string>, pro
       draws.set(key, there);
       if (!there) {
         const next = list[i + 1];
-        if (!(next && standIns.has(next) && loaded.has(next))) result.missing.push({ kind: "font", family });
+        if (!(next && standIns.has(next) && loaded.has(next)) && !webFonts.has(family)) result.missing.push({ kind: "font", family });
         continue;
       }
       const widths = probe.widths[family];

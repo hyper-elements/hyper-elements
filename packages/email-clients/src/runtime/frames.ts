@@ -85,6 +85,28 @@ export async function settleImages(doc: Document, deadline: number): Promise<str
  */
 export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<string>, deadline: number): Promise<Array<{ family: string; src: string }>> {
   const rules: Array<{ family: string; src: string; face: string }> = [];
+  for (const { family, style } of fontFaces(doc)) {
+    if (standIns.has(family)) continue;
+    const face = faceKey(family, style.getPropertyValue("font-style"), style.getPropertyValue("font-weight"));
+    rules.push({ family, src: style.getPropertyValue("src").match(/url\(["']?([^"')]+)/)?.[1] ?? "", face });
+  }
+  if (!rules.length) return [];
+  await until(doc.fonts.ready.then(() => undefined), deadline, undefined);
+  // Each face by its family, style and weight, so a failed italic is listed with its own file, not its regular's.
+  const failed = new Set([...doc.fonts].filter((face) => face.status === "error" || face.status === "loading").map((face) => faceKey(face.family, face.style, face.weight)));
+  return rules
+    .filter((rule) => failed.has(rule.face))
+    .filter((rule, i, all) => all.findIndex((r) => r.face === rule.face) === i)
+    .map(({ family, src }) => ({ family, src }));
+}
+
+/** The email's own web font families in `doc` (its @font-face rules, not the stand-ins'): named by family, not system fonts. */
+export function webFontFamilies(doc: Document, standIns: ReadonlySet<string>): Set<string> {
+  return new Set([...fontFaces(doc)].map(({ family }) => family).filter((family) => !standIns.has(family)));
+}
+
+/** Each @font-face rule `doc`'s style sheets hold, with its family unquoted. */
+function* fontFaces(doc: Document): Generator<{ family: string; style: CSSStyleDeclaration }> {
   for (const sheet of [...doc.styleSheets]) {
     let list: CSSRuleList;
     try {
@@ -96,19 +118,9 @@ export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<st
       if (rule.constructor.name !== "CSSFontFaceRule") continue;
       const style = (rule as CSSFontFaceRule).style;
       const family = style.getPropertyValue("font-family").replace(/^["']|["']$/g, "");
-      if (!family || standIns.has(family)) continue;
-      const face = faceKey(family, style.getPropertyValue("font-style"), style.getPropertyValue("font-weight"));
-      rules.push({ family, src: style.getPropertyValue("src").match(/url\(["']?([^"')]+)/)?.[1] ?? "", face });
+      if (family) yield { family, style };
     }
   }
-  if (!rules.length) return [];
-  await until(doc.fonts.ready.then(() => undefined), deadline, undefined);
-  // Each face by its family, style and weight, so a failed italic is listed with its own file, not its regular's.
-  const failed = new Set([...doc.fonts].filter((face) => face.status === "error" || face.status === "loading").map((face) => faceKey(face.family, face.style, face.weight)));
-  return rules
-    .filter((rule) => failed.has(rule.face))
-    .filter((rule, i, all) => all.findIndex((r) => r.face === rule.face) === i)
-    .map(({ family, src }) => ({ family, src }));
 }
 
 /** A face's family, style and weight, as one key: the descriptors as written in CSS or as a FontFace gives them. */
