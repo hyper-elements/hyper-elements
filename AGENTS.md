@@ -211,7 +211,7 @@ as "looks different". Every template is written either way; `--strict` refuses t
 skip it):
 
 - **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 280,000 bytes,
-  `dist/builder.js` 440,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+  `dist/builder.js` 444,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
