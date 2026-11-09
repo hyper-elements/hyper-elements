@@ -180,9 +180,29 @@ function structure(node: ResolvedNode, d: Diagnostics): void {
 /** The clients that remove a <style> in the email's body, with all it holds (caniemail's html-style). */
 const BODY_STYLE_REMOVED: readonly EmailClient[] = ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"];
 
-export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string; use?: string }> = [
+/**
+ * A negative margin: what /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i finds, in one pass (that regex was quadratic on a run
+ * of `margin:`s). In each piece between `;"'}`, a colon with a negative number after it and `margin` in its name.
+ */
+function hasNegativeMargin(markup: string): boolean {
+  for (const part of markup.split(/[;"'}]/)) {
+    let lastNegative = -1;
+    for (const m of part.matchAll(/\s-\d/g)) lastNegative = m.index;
+    for (let colon = part.indexOf(":"); colon !== -1; colon = part.indexOf(":", colon + 1)) {
+      if (lastNegative <= colon && !/^-\d/.test(part.slice(colon + 1, colon + 3))) continue;
+      let start = colon;
+      while (start > 0 && /\s/.test(part[start - 1]!)) start--;
+      const end = start;
+      while (start > 0 && /[A-Za-z-]/.test(part[start - 1]!)) start--;
+      if (part.slice(start, end).toLowerCase().includes("margin")) return true;
+    }
+  }
+  return false;
+}
+
+export const HTML_CSS: ReadonlyArray<{ pattern: { test(markup: string): boolean }; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string; use?: string }> = [
   { pattern: /!\s*(?!important\b)[iI][mM][pP][oO][rR][tT][aA][nN][tT]\b/, clients: ["gmail"], removes: "!important not written in lowercase: Gmail removes the whole style attribute, or the whole <style>, that holds it", fix: "write !important in lowercase" },
-  { pattern: /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i, clients: ["gmail", "outlook-com"], removes: "a negative margin: the client removes the whole margin declaration", fix: "move it with padding on what holds it instead" },
+  { pattern: { test: hasNegativeMargin }, clients: ["gmail", "outlook-com"], removes: "a negative margin: the client removes the whole margin declaration", fix: "move it with padding on what holds it instead" },
   {
     pattern: /(^|[\s;{"'])position\s*:\s*absolute\b/i,
     clients: ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "yahoo", "aol", "hey", "sfr", "laposte", "mail-ru", "gmx", "web-de"],
@@ -261,6 +281,31 @@ function selectorsOf(css: string): string[] {
   return out;
 }
 
+/**
+ * An @media inside another: what /@media[^{]*\{[^}]*@media/i finds, in one pass (that regex was quadratic on a run of
+ * @media with no `{`). Each search starts where the last one ended.
+ */
+function nestedMedia(css: string): boolean {
+  const lower = css.toLowerCase();
+  const at: number[] = [];
+  for (let i = lower.indexOf("@media"); i !== -1; i = lower.indexOf("@media", i + 1)) at.push(i);
+  let open = -1;
+  let close = -1;
+  for (let k = 0, next = 0; k < at.length; k++) {
+    if (open < at[k]! + 6) {
+      open = lower.indexOf("{", at[k]! + 6);
+      if (open === -1) return false;
+    }
+    if (close <= open) {
+      close = lower.indexOf("}", open + 1);
+      if (close === -1) close = lower.length;
+    }
+    while (next < at.length && at[next]! <= open) next++;
+    if (next < at.length && at[next]! < close) return true;
+  }
+  return false;
+}
+
 /** Whether `css` has the at-rule `name` (`supports`). */
 const hasAtRule = (css: string, name: string) => new RegExp(`@${name}\\b`, "i").test(css);
 
@@ -305,7 +350,7 @@ export const HTML_STYLE: ReadonlyArray<{ test: (css: string) => boolean; clients
     removes: `selectors in a <style> the client doesn't support (${OUTLOOK_COM_STYLE.selectors.map((part) => (part.endsWith("(") ? `${part})` : part)).join(", ")}, a class with an attribute): it removes those rules`,
     fix: "give the elements a class of their own, and select that",
   },
-  { test: (css) => /@media[^{]*\{[^}]*@media/i.test(css), clients: ["outlook-com"], removes: "an @media inside another in a <style>: the client removes it", fix: "write each query on its own", feature: "css-at-media" },
+  { test: nestedMedia, clients: ["outlook-com"], removes: "an @media inside another in a <style>: the client removes it", fix: "write each query on its own", feature: "css-at-media" },
 ];
 
 /** What only classic Outlook reads (`<!--[if mso]>…<![endif]-->`): the others never see it. */
