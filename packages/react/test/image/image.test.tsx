@@ -171,6 +171,32 @@ describe("renderImage", () => {
     expect(tidy(said(validate(template).diagnostics))).toEqual(tidy(expected));
   });
 
+  it("cuts off content far past the Canvas's edge as any other (resvg would end the process for it), drawing the same image", async () => {
+    // Content more than the Canvas's height below it (an image at 600px, a box and a line further down, in a 250px
+    // Canvas): a layer resvg can't place, so it panics, which no catch stops.
+    const src = { src: `data:image/png;base64,${Buffer.from(PNG).toString("base64")}`, width: 600, height: 300 };
+    const canvas = (children: ReactNode) => (
+      <Canvas width={600} height={250} style={{ fontFamily: "Liberation Sans", backgroundColor: "#ffffff" }}>
+        {children}
+      </Canvas>
+    );
+    const far = canvas([
+      <Image key={0} src={src} alt="" />,
+      <Image key={1} src={src} alt="" />,
+      <Image key={2} src={src} alt="" />,
+      <Column key={3} style={{ height: 100, backgroundColor: "#cc0000", border: "2px solid #000000", borderRadius: 8 }} />,
+      <Text key={4}>Far below</Text>,
+    ]);
+    const near = canvas([<Image key={0} src={src} alt="" />, <Image key={1} src={src} alt="" />]);
+    const { image, diagnostics } = await renderImage(far, { fonts });
+    expect(diagnostics.map((d) => d.code)).toContain("canvas/overflow");
+    // Nothing past the edge shows, so the image is the one without it, byte for byte, at a scale too.
+    expect(Buffer.from(image).equals(Buffer.from((await renderImage(near, { fonts })).image))).toBe(true);
+    expect(Buffer.from((await renderImage(far, { fonts, scale: 2 })).image).equals(Buffer.from((await renderImage(near, { fonts, scale: 2 })).image))).toBe(true);
+    // The SVG is Satori's as it is, all of it.
+    expect(new TextDecoder().decode((await renderImage(far, { fonts, format: "svg" })).image).match(/<image /g)).toHaveLength(3);
+  });
+
   it("needs a font, and fetches nothing: an image it isn't given is an error; given by its URL, it's drawn", async () => {
     await expect(renderImage(card)).rejects.toMatchObject({ diagnostics: [expect.objectContaining({ code: "image/font", path: "root" })] });
     const photo = (
