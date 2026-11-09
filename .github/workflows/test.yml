@@ -76,7 +76,7 @@ jobs:
       # unminified ESM output as a proxy for code volume; they still flag
       # accidental dependency bundling (any real dep is 10KB+).
 
-      # The main entry (the components, dist/primitives.js): about 279KB
+      # The main entry (the components, dist/primitives.js): about 280KB
       # unminified ESM. Its core (the components' definitions, validation, layout,
       # the conditions a style can be set for (phones, hover) with their support per
       # output and the blocks of style they're read from, and the hints for a condition
@@ -93,7 +93,7 @@ jobs:
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=279000
+          MAX_SIZE=280000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

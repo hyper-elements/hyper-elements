@@ -7,6 +7,8 @@ const email = (children: unknown[], props: Record<string, unknown> = {}) => ({ r
 const page = (children: unknown[]) => ({ root: { type: "Page", props: { width: 600 }, children } });
 const spaced = { type: "Text", style: { letterSpacing: 2 }, children: ["Spaced"] };
 const sized = { type: "Row", children: [{ type: "Column", style: { flex: "none" }, children: [{ type: "Text", children: ["x"] }] }] };
+import { OUTLOOK_COM_STYLE } from "../src/writers/email/outlook-com-style.generated";
+
 const codes = (diagnostics: Diagnostic[]) => diagnostics.map((d) => d.code);
 const html = (markup: string) => email([{ type: "Html", props: { html: markup } }]);
 const htmlChecks = (markup: string, emailClients?: EmailClient[]) => validateTemplate(html(markup), { emailClients }).diagnostics.filter((d) => d.code === "email/html-css");
@@ -180,6 +182,15 @@ describe("the rules inside an Html block's <style> that the clients keeping it r
     expect(styled("a:hover { color: red } .promo { color: #333 } td > p + p { margin: 0 } @media (max-width: 480px) { .promo { display: block } }")).toEqual([]);
     expect(htmlChecks("<p>Use @supports and @import, or .promo:hover and :not(), and @font-face { }</p>")).toEqual([]);
     expect(htmlChecks("<!--[if mso]><style>@font-face { font-family: Brand } .promo:hover { color: red }</style><![endif]--><p>x</p>")).toEqual([]);
+  });
+
+  it("follows Outlook.com's model as generated from it: each selector and at-rule it drops", () => {
+    for (const part of OUTLOOK_COM_STYLE.selectors) {
+      const selector = `p${part}${part.endsWith("(") ? "1)" : ""}`;
+      expect([selector, styled(`${selector} { color: red }`).map((d) => d.clients)]).toEqual([selector, [["outlook-com"]]]);
+    }
+    for (const name of OUTLOOK_COM_STYLE.atRules) expect([name, styled(`@${name} x { }`).length]).toEqual([name, 1]);
+    expect(OUTLOOK_COM_STYLE.onTypeOnly.test(".promo:hover")).toBe(true);
   });
 
   it("names the clients asked for only: Gmail removes the whole <style>, which its own note says", () => {
