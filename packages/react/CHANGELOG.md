@@ -104,6 +104,9 @@ validated before still validate, and render the same.
   the button grows to its longest word, as classic Outlook and Apple Mail already drew it. Found in captures of 0.3.0
   emails in Gmail on the web. Each button's link gains `word-break:normal` in its `style`; nothing else in the HTML
   changes.
+- **`validate()` and `render()`:** the check for a negative margin in an `Html` block reads its markup in one pass. On
+  a long run of `margin:` declarations with no `;` between them, its regex took time in proportion to the square of
+  the run's length (about 0.8 seconds for 100KB). It finds what it found before.
 
 ## 0.3.0
 

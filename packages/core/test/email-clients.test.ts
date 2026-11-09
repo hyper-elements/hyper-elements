@@ -8,6 +8,7 @@ const page = (children: unknown[]) => ({ root: { type: "Page", props: { width: 6
 const spaced = { type: "Text", style: { letterSpacing: 2 }, children: ["Spaced"] };
 const sized = { type: "Row", children: [{ type: "Column", style: { flex: "none" }, children: [{ type: "Text", children: ["x"] }] }] };
 import { OUTLOOK_COM_STYLE } from "../src/writers/email/outlook-com-style.generated";
+import { HTML_CSS, HTML_STYLE } from "../src/writers/email/support";
 
 const codes = (diagnostics: Diagnostic[]) => diagnostics.map((d) => d.code);
 const html = (markup: string) => email([{ type: "Html", props: { html: markup } }]);
@@ -196,6 +197,43 @@ describe("the rules inside an Html block's <style> that the clients keeping it r
   it("names the clients asked for only: Gmail removes the whole <style>, which its own note says", () => {
     const found = htmlChecks("<style>.promo:hover { color: red } @supports (display: grid) { p { color: red } }</style><p class='promo'>x</p>", ["gmail"]);
     expect(found.map((d) => d.message)).toEqual(["This Html block's markup may have a <style> in the email's body: the client removes it, and what it styles shows without it"]);
+  });
+});
+
+describe("the Html block checks that read the markup in one pass", () => {
+  const negativeMargin = HTML_CSS.find((check) => check.removes.startsWith("a negative margin"))!.pattern;
+  const nestedMedia = HTML_STYLE.find((check) => check.removes.startsWith("an @media inside another"))!.test;
+  /** Strings of `tokens`, the same each run (a fixed seed). */
+  function* samples(tokens: string[], count: number) {
+    let seed = 12345;
+    const next = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+    for (let i = 0; i < count; i++) yield Array.from({ length: Math.floor(next() * 12) }, () => tokens[Math.floor(next() * tokens.length)]).join("");
+  }
+
+  it("find what the regexes they replace found", () => {
+    const margins = [...samples(["margin", "-top", "MARGIN", ":", " ", "\n", "-1", "-", "1", ";", '"', "'", "}", "{", "x", "a-"], 20000), ...samples(["margin", "-left", ":", " ", "-2", "x"], 20000)];
+    for (const markup of margins) expect([markup, negativeMargin.test(markup)]).toEqual([markup, /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i.test(markup)]);
+    expect(margins.filter((markup) => negativeMargin.test(markup)).length).toBeGreaterThan(500);
+    for (const css of samples(["@media", "@MEDIA", "@", "media", "{", "}", " ", "x"], 20000)) {
+      expect([css, nestedMedia(css)]).toEqual([css, /@media[^{]*\{[^}]*@media/i.test(css)]);
+    }
+  });
+
+  it("take time in proportion to the markup, however long a value or a run of declarations", () => {
+    const long = 400_000;
+    const inputs = [
+      `<style>.hero { background: url(data:image/png;base64,${"A".repeat(long)}) }</style>`,
+      "margin:".repeat(long / 7),
+      `<p style="margin:${" 0".repeat(long / 2)}">x</p>`,
+      "@media ".repeat(long / 7),
+      `@media x {${" @media".repeat(long / 7)}`,
+    ];
+    for (const input of inputs) {
+      const start = performance.now();
+      negativeMargin.test(input);
+      nestedMedia(input);
+      expect([input.slice(0, 40), performance.now() - start < 250]).toEqual([input.slice(0, 40), true]);
+    }
   });
 });
 
