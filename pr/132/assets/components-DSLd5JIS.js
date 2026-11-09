@@ -1,0 +1,1 @@
+export{F as createCopyToClipboardFunction}from"./DocsRenderer-PQXLIZUC-BwFE8G6J.js";
