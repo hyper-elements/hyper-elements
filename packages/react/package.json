@@ -51,29 +51,54 @@
   "module": "./dist/primitives.js",
   "exports": {
     ".": {
-      "types": "./dist/primitives.d.ts",
-      "import": "./dist/primitives.js",
-      "require": "./dist/primitives.cjs"
+      "import": {
+        "types": "./dist/primitives.d.ts",
+        "default": "./dist/primitives.js"
+      },
+      "require": {
+        "types": "./dist/primitives.d.cts",
+        "default": "./dist/primitives.cjs"
+      }
     },
     "./builder": {
-      "types": "./dist/builder.d.ts",
-      "import": "./dist/builder.js",
-      "require": "./dist/builder.cjs"
+      "import": {
+        "types": "./dist/builder.d.ts",
+        "default": "./dist/builder.js"
+      },
+      "require": {
+        "types": "./dist/builder.d.cts",
+        "default": "./dist/builder.cjs"
+      }
     },
     "./inspect": {
-      "types": "./dist/inspect.d.ts",
-      "import": "./dist/inspect.js",
-      "require": "./dist/inspect.cjs"
+      "import": {
+        "types": "./dist/inspect.d.ts",
+        "default": "./dist/inspect.js"
+      },
+      "require": {
+        "types": "./dist/inspect.d.cts",
+        "default": "./dist/inspect.cjs"
+      }
     },
     "./pdf": {
-      "types": "./dist/pdf.d.ts",
-      "import": "./dist/pdf.js",
-      "require": "./dist/pdf.cjs"
+      "import": {
+        "types": "./dist/pdf.d.ts",
+        "default": "./dist/pdf.js"
+      },
+      "require": {
+        "types": "./dist/pdf.d.cts",
+        "default": "./dist/pdf.cjs"
+      }
     },
     "./image": {
-      "types": "./dist/image.d.ts",
-      "import": "./dist/image.js",
-      "require": "./dist/image.cjs"
+      "import": {
+        "types": "./dist/image.d.ts",
+        "default": "./dist/image.js"
+      },
+      "require": {
+        "types": "./dist/image.d.cts",
+        "default": "./dist/image.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
