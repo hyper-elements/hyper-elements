@@ -128,6 +128,7 @@
     "README.md",
     "GUIDE.md",
     "REFERENCE.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "publishConfig": {
