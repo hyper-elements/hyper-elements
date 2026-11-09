@@ -54,7 +54,10 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
 - New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
   (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
   `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
-  with spaces).
+  with spaces). Inside the block's `<style>`, it also notes what the clients that keep a `<style>` in the body remove
+  from it: `@font-face`, and in Outlook.com `@keyframes`, `@supports`, `@import`, an `@media` inside another, a hover
+  or another state on a class (`.promo:hover`, also Outlook for Mac), and selectors it doesn't support (`:not()`,
+  `:nth-child()`, `:has()`, a class with an attribute).
 - New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in
   classic Outlook; `borderRadius` in GMX, WEB.DE and Orange; `textDecoration` lines in the Gmail app with another
   account and some others; a root's `lang` and `dir` where webmail removes them.

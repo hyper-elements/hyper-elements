@@ -212,9 +212,9 @@ as "looks different". Every template is written either way; `--strict` refuses t
 skip it):
 
 - **Tests**: `pnpm build`; typechecks of react, core, migrate and email-clients; bundle budgets (`dist/primitives.js`
-  276,000 bytes, `dist/builder.js` 440,000 bytes, email-clients' `dist/index.js` 85,000 bytes, unminified ESM; raise
+  280,000 bytes, `dist/builder.js` 440,000 bytes, email-clients' `dist/index.js` 85,000 bytes, unminified ESM; raise
   one on purpose and say what grew); no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates
-  (react and email-clients); email-clients packed and installed beside the packed core and beside core 0.3.0
+  (react and email-clients); email-clients packed and installed beside the packed core and beside core 0.3.1
   (`test:pack`).
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.

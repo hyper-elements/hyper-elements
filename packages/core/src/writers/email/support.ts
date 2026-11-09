@@ -13,6 +13,7 @@ import { COMPONENTS } from "../../components";
 import { caniemail, type EmailClient } from "../../email-clients";
 import { assetParts, fontStack, videoParts, type Asset, type FontFace } from "../../kinds";
 import { NO_WEB_FONTS } from "../../roots";
+import { OUTLOOK_COM_STYLE } from "./outlook-com-style.generated";
 import type { ResolvedNode } from "../../resolve";
 import { support } from "../shared/support";
 import { wrapsPastIts, wrapsWithGap } from "../shared/estimate";
@@ -176,6 +177,9 @@ function structure(node: ResolvedNode, d: Diagnostics): void {
  * tables say (`feature`, checked against them with what the captures add: test/caniemail.test.ts). Elements writes
  * none of these itself.
  */
+/** The clients that remove a <style> in the email's body, with all it holds (caniemail's html-style). */
+const BODY_STYLE_REMOVED: readonly EmailClient[] = ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"];
+
 export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string; use?: string }> = [
   { pattern: /!\s*(?!important\b)[iI][mM][pP][oO][rR][tT][aA][nN][tT]\b/, clients: ["gmail"], removes: "!important not written in lowercase: Gmail removes the whole style attribute, or the whole <style>, that holds it", fix: "write !important in lowercase" },
   { pattern: /margin[a-z-]*\s*:([^;"'}]*\s)?-\d/i, clients: ["gmail", "outlook-com"], removes: "a negative margin: the client removes the whole margin declaration", fix: "move it with padding on what holds it instead" },
@@ -213,7 +217,7 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   { pattern: /rgba?\(\s*[\d.]+%?\s+[\d.]/i, clients: ["gmail"], removes: "rgb() with spaces between its numbers: Gmail removes the whole style attribute, or the whole <style>", fix: "separate them with commas: rgb(8, 121, 161)" },
   {
     pattern: /<style[\s>]/i,
-    clients: ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"],
+    clients: BODY_STYLE_REMOVED,
     removes: "a <style> in the email's body: the client removes it, and what it styles shows without it",
     fix: "write the styles inline, on the elements they're for",
     feature: "html-style",
@@ -247,6 +251,63 @@ export const HTML_CSS: ReadonlyArray<{ pattern: RegExp; clients: readonly EmailC
   },
 ];
 
+/** Each selector of each rule in `css` (not an at-rule's prelude). */
+function selectorsOf(css: string): string[] {
+  const out: string[] = [];
+  for (const m of css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{};]+)\{/g)) {
+    const prelude = m[1]!.trim();
+    if (prelude && !prelude.startsWith("@")) out.push(...prelude.split(",").map((part) => part.trim().toLowerCase()).filter(Boolean));
+  }
+  return out;
+}
+
+/** Whether `css` has the at-rule `name` (`supports`). */
+const hasAtRule = (css: string, name: string) => new RegExp(`@${name}\\b`, "i").test(css);
+
+/** What each at-rule Outlook.com removes does to the email; another its model adds is noted plainly. */
+const AT_RULE_NOTES: Record<string, { removes: string; fix: string; feature: string }> = {
+  keyframes: { removes: "@keyframes in a <style>: the client removes it, and nothing animates", fix: "make it read without the animation", feature: "css-at-keyframes" },
+  supports: { removes: "@supports in a <style>: the client removes it with the rules inside it", fix: "write those rules without @supports", feature: "css-at-supports" },
+  import: { removes: "@import in a <style>: the client removes it, and what it loads never arrives", fix: "put the styles in the <style> itself", feature: "css-at-import" },
+};
+
+/**
+ * What the clients that keep a <style> in the body remove from inside one, read from the <style>s of an Html block's
+ * markup. The clients that remove the whole <style> aren't named: the note on the <style> itself says what they do.
+ * Outlook.com's rules are its model's in email-renderer (outlook-com-style.generated.ts, written when email-clients
+ * moves its pin), held to the model itself by email-clients' tests.
+ */
+export const HTML_STYLE: ReadonlyArray<{ test: (css: string) => boolean; clients: readonly EmailClient[]; removes: string; fix: string; feature?: string }> = [
+  {
+    test: (css) => hasAtRule(css, "font-face"),
+    clients: NO_WEB_FONTS.filter((client) => !BODY_STYLE_REMOVED.includes(client)),
+    removes: "@font-face in a <style>: the client loads no web font, and the next font in each stack shows",
+    fix: 'end each font stack with a font the client has: "Brand, Arial, sans-serif"',
+    feature: "css-at-font-face",
+  },
+  ...OUTLOOK_COM_STYLE.atRules
+    .filter((name) => name !== "font-face")
+    .map((name) => ({
+      test: (css: string) => hasAtRule(css, name),
+      clients: ["outlook-com"] as const,
+      ...(AT_RULE_NOTES[name] ?? { removes: `@${name} in a <style>: the client removes it`, fix: `write it without @${name}` }),
+    })),
+  {
+    test: (css) => selectorsOf(css).some((selector) => selector.split(/[\s>+~]+/).some((compound) => OUTLOOK_COM_STYLE.onTypeOnly.test(compound) && !/^[a-z]/.test(compound))),
+    clients: ["outlook-com", "outlook-mac"],
+    removes: "a hover (or another state) on a class in a <style> (.promo:hover): the client takes it only on a type (a:hover), and removes the rule",
+    fix: "put it on the element's type (a:hover), or leave the state out",
+    feature: "css-pseudo-class-hover",
+  },
+  {
+    test: (css) => selectorsOf(css).some((selector) => OUTLOOK_COM_STYLE.selectors.some((part) => selector.includes(part)) || (/\[[^\]]*\]/.test(selector) && /\.[\w-]+\[/.test(selector))),
+    clients: ["outlook-com"],
+    removes: `selectors in a <style> the client doesn't support (${OUTLOOK_COM_STYLE.selectors.map((part) => (part.endsWith("(") ? `${part})` : part)).join(", ")}, a class with an attribute): it removes those rules`,
+    fix: "give the elements a class of their own, and select that",
+  },
+  { test: (css) => /@media[^{]*\{[^}]*@media/i.test(css), clients: ["outlook-com"], removes: "an @media inside another in a <style>: the client removes it", fix: "write each query on its own", feature: "css-at-media" },
+];
+
 /** What only classic Outlook reads (`<!--[if mso]>…<![endif]-->`): the others never see it. */
 const OUTLOOK_ONLY = /<!--\[if\s+(?:(?:gte?|lte?)\s+)?mso[^\]]*\]>[\s\S]*?<!\[endif\]-->/gi;
 
@@ -255,6 +316,13 @@ function htmlBlock(node: ResolvedNode, d: Diagnostics): void {
   const markup = node.props.html.replace(OUTLOOK_ONLY, "");
   for (const check of HTML_CSS) {
     if (check.pattern.test(markup)) {
+      d.add("email/html-css", "info", `This Html block's markup may have ${check.removes}`, `${node.path}.props.html`, node.id, { clients: check.clients, fix: check.fix, see: check.feature && caniemail(check.feature) });
+    }
+  }
+  const css = [...markup.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi)].map((m) => m[1]).join("\n");
+  if (!css) return;
+  for (const check of HTML_STYLE) {
+    if (check.test(css)) {
       d.add("email/html-css", "info", `This Html block's markup may have ${check.removes}`, `${node.path}.props.html`, node.id, { clients: check.clients, fix: check.fix, see: check.feature && caniemail(check.feature) });
     }
   }

@@ -7,6 +7,8 @@ const email = (children: unknown[], props: Record<string, unknown> = {}) => ({ r
 const page = (children: unknown[]) => ({ root: { type: "Page", props: { width: 600 }, children } });
 const spaced = { type: "Text", style: { letterSpacing: 2 }, children: ["Spaced"] };
 const sized = { type: "Row", children: [{ type: "Column", style: { flex: "none" }, children: [{ type: "Text", children: ["x"] }] }] };
+import { OUTLOOK_COM_STYLE } from "../src/writers/email/outlook-com-style.generated";
+
 const codes = (diagnostics: Diagnostic[]) => diagnostics.map((d) => d.code);
 const html = (markup: string) => email([{ type: "Html", props: { html: markup } }]);
 const htmlChecks = (markup: string, emailClients?: EmailClient[]) => validateTemplate(html(markup), { emailClients }).diagnostics.filter((d) => d.code === "email/html-css");
@@ -150,6 +152,50 @@ describe("an Html block's CSS that email clients remove", () => {
 
   it("names clients not checked by default where they're asked for", () => {
     expect(htmlChecks('<div style="display:flex">x</div>', ALL)[0]!.clients).toEqual(["outlook", "gmail-app-other", "orange", "gmx", "web-de"]);
+  });
+});
+
+describe("the rules inside an Html block's <style> that the clients keeping it remove", () => {
+  const styled = (css: string) => htmlChecks(`<style>${css}</style><p class="promo">x</p>`).filter((d) => !d.message.includes("a <style> in the email's body"));
+  it.each([
+    ["@font-face", "@font-face { font-family: Brand; src: url(https://example.test/b.woff2) } p { font-family: Brand, Arial }", ["outlook", "outlook-com", "outlook-mac", "outlook-app", "yahoo", "aol"], "css-at-font-face"],
+    ["@keyframes", "@keyframes pulse { from { color: #111 } to { color: #555 } }", ["outlook-com"], "css-at-keyframes"],
+    ["@supports", "@supports (color: red) { .promo { color: red } }", ["outlook-com"], "css-at-supports"],
+    ["@import", "@import url(https://example.test/s.css); p { color: red }", ["outlook-com"], "css-at-import"],
+    ["a hover on a class", ".promo:hover { color: red }", ["outlook-com", "outlook-mac"], "css-pseudo-class-hover"],
+    ["a state alone, in a media query", "@media (min-width: 600px) { :focus { outline: 0 } }", ["outlook-com", "outlook-mac"], "css-pseudo-class-hover"],
+    [":not()", "p:not(.promo) { color: red }", ["outlook-com"], undefined],
+    [":nth-child()", "tr:nth-child(2n) td { background: #eee }", ["outlook-com"], undefined],
+    ["a class with an attribute", '.promo[data-x="1"] { color: red }', ["outlook-com"], undefined],
+    ["an @media inside another", "@media screen { @media (max-width: 480px) { p { color: red } } }", ["outlook-com"], "css-at-media"],
+  ])("notes %s, for the clients that keep the <style> and remove it", (_, css, clients, feature) => {
+    const found = styled(css);
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ code: "email/html-css", severity: "info", path: "root.children[0].props.html" });
+    expect([...found[0]!.clients!].sort()).toEqual([...clients].sort());
+    expect(found[0]!.message).toMatch(/^This Html block's markup may have .* in a <style>/);
+    expect(found[0]!.fix).toBeTruthy();
+    expect(found[0]!.see).toBe(feature && `https://www.caniemail.com/features/${feature}/`);
+  });
+
+  it("notes nothing for rules they keep, or for words outside a <style>", () => {
+    expect(styled("a:hover { color: red } .promo { color: #333 } td > p + p { margin: 0 } @media (max-width: 480px) { .promo { display: block } }")).toEqual([]);
+    expect(htmlChecks("<p>Use @supports and @import, or .promo:hover and :not(), and @font-face { }</p>")).toEqual([]);
+    expect(htmlChecks("<!--[if mso]><style>@font-face { font-family: Brand } .promo:hover { color: red }</style><![endif]--><p>x</p>")).toEqual([]);
+  });
+
+  it("follows Outlook.com's model as generated from it: each selector and at-rule it drops", () => {
+    for (const part of OUTLOOK_COM_STYLE.selectors) {
+      const selector = `p${part}${part.endsWith("(") ? "1)" : ""}`;
+      expect([selector, styled(`${selector} { color: red }`).map((d) => d.clients)]).toEqual([selector, [["outlook-com"]]]);
+    }
+    for (const name of OUTLOOK_COM_STYLE.atRules) expect([name, styled(`@${name} x { }`).length]).toEqual([name, 1]);
+    expect(OUTLOOK_COM_STYLE.onTypeOnly.test(".promo:hover")).toBe(true);
+  });
+
+  it("names the clients asked for only: Gmail removes the whole <style>, which its own note says", () => {
+    const found = htmlChecks("<style>.promo:hover { color: red } @supports (display: grid) { p { color: red } }</style><p class='promo'>x</p>", ["gmail"]);
+    expect(found.map((d) => d.message)).toEqual(["This Html block's markup may have a <style> in the email's body: the client removes it, and what it styles shows without it"]);
   });
 });
 
