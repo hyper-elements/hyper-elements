@@ -105,12 +105,12 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 440KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 444KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, the email client
-      # checks, render()'s blockMap and the roots check among
-      # them (about 239KB); the main
+      # checks (with the rules inside an Html block's <style> that Outlook.com removes),
+      # render()'s blockMap and the roots check among them (about 243KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
@@ -120,7 +120,7 @@ jobs:
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=440000
+          MAX_SIZE=444000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
