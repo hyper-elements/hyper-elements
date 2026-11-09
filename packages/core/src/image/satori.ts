@@ -79,10 +79,27 @@ function withinReach(svg: string, resvg: Resvg, width: number, height: number): 
     b.y > reach(height) || b.x > reach(width) || b.y + b.height < -reach(height) || b.x + b.width < -reach(width);
   if (!box || !(box.y + box.height > reach(height) || box.x + box.width > reach(width) || box.y < -reach(height) || box.x < -reach(width))) return undefined;
   const { open, parts } = topLevel(svg);
-  const definitions = parts.filter((part) => DEFINITION.test(part)).join("");
+  // Each definition by the ids in it, so a part is measured with only those it refers to (and those refer to), in
+  // order: not every definition's images again for every part.
+  const definitions = parts.flatMap((part, index) => (DEFINITION.test(part) ? [{ part, index }] : []));
+  const byId = new Map(definitions.flatMap((definition) => Array.from(definition.part.matchAll(/\bid="([^"]+)"/g), (match) => [match[1], definition] as const)));
+  const referred = (part: string): string => {
+    const found = new Set<{ part: string; index: number }>();
+    const visit = (text: string) => {
+      for (const match of text.matchAll(/url\(#([^)"']+)\)|href="#([^"]+)"/g)) {
+        const definition = byId.get(match[1] ?? match[2]);
+        if (definition && !found.has(definition)) {
+          found.add(definition);
+          visit(definition.part);
+        }
+      }
+    };
+    visit(part);
+    return [...found].sort((a, b) => a.index - b.index).map((definition) => definition.part).join("");
+  };
   const kept = parts.filter((part) => {
     if (DEFINITION.test(part)) return true;
-    const own = new Resvg(`${open}${definitions}${part}</svg>`, { font: { loadSystemFonts: false } }).getBBox();
+    const own = new Resvg(`${open}${referred(part)}${part}</svg>`, { font: { loadSystemFonts: false } }).getBBox();
     return !own || !far(own);
   });
   return `${open}${kept.join("")}</svg>`;
