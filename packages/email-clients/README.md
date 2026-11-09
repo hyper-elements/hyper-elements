@@ -54,8 +54,9 @@ Tahoma, Trebuchet MS, Times New Roman and Courier New come from the machine open
 measured. `fonts: "url"` (the default) loads the open fonts from jsDelivr; `fonts: "inline"` puts them in each file
 (up to 2 MB) so it draws offline, apart from the email's own images and web fonts, which it lists as missing.
 
-The package builds on `@hyper-elements/react`'s public API, which it needs at ^0.3.1 (`render()`'s `blockMap`). With an
-older one it throws `email-clients/version-mismatch`, with the command to install a matching pair.
+The package builds on `@hyper-elements/react`'s public API, which it needs at ^0.3.2 (`render()`'s `blockMap` in format
+2, whose entries say each block's component). With an older one, 0.3.1 included, it throws
+`email-clients/version-mismatch`, with the command to install a matching pair.
 
 ## How the previews are made
 
@@ -69,9 +70,9 @@ email-renderer checkout: `pnpm build:fonts /path/to/email-renderer`.
 ## Releases
 
 The package follows `@hyper-elements/react`'s minor: each of its minors works with the core releases of the same minor
-from its peer floor up (`^0.3.1`, the first with `render()`'s `blockMap`), and its patches are its own (a pin move, a
+from its peer floor up (`^0.3.2`, the first whose `blockMap` gives each block's component), and its patches are its own (a pin move, a
 re-capture, a new finding). `publish.yml` releases it on its own, tagged `email-clients-v<version>`, after core when
 both change; a core release outside its range fails until the range is raised in the same change. Its first version is
-published by hand after core 0.3.1, tagged `email-clients-v0.3.0`, and then npm's trusted publishing is set up for it.
+published by hand after core 0.3.2, tagged `email-clients-v0.3.0`, and then npm's trusted publishing is set up for it.
 Each release records in the changelog the email-renderer commit its runtime comes from and the captures it was scored
 against.

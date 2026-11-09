@@ -8,7 +8,7 @@
  */
 import type React from "react";
 import type { Diagnostic, EmailClient, RenderOptions } from "@hyper-elements/react";
-import { checkCore } from "./core";
+import { checkCore, versionMismatch } from "./core";
 import { DEFAULT_PREVIEW_CLIENTS, variantsOf, type PreviewVariant, type Skipped } from "./clients";
 import { RUNTIME } from "./runtime.generated";
 import { facesToLoad, FACES, FONT_ORIGIN, fontCss, fontSources, OUTLOOK_COM_FILES, PROBE, PROBE_WIDTHS, readPackageFont, type ReadFont } from "./fonts";
@@ -56,6 +56,9 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   if (!blocks) {
     throw new core.ElementsError([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
   }
+  // The findings read each block's component from its entry: a map without them (a core whose BLOCK_MAP_VERSION
+  // claims a format it doesn't write) would leave them silently empty.
+  if (!blocks.entries.every((entry) => typeof entry.type === "string")) throw versionMismatch(["block types in render()'s blockMap"]);
   const fontOrigin = fonts === "url" ? FONT_ORIGIN : null;
   // Each font file read once, however many previews inline it.
   const cache = new Map<string, Promise<string>>();

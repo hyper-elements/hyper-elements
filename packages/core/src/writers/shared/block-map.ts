@@ -11,8 +11,11 @@
 import type { ResolvedNode } from "../../resolve";
 import { Html } from "../jsx";
 
-/** The format of render()'s `blocks`, kept by hand: raised only when the format changes (not the package's version). */
-export const BLOCK_MAP_VERSION = 1;
+/**
+ * The format of render()'s `blocks`, kept by hand: raised only when the format changes (not the package's version).
+ * 1 (0.3.1): `path`, `nodeId` and `offset`. 2: each entry's `type` as well.
+ */
+export const BLOCK_MAP_VERSION = 2;
 
 export interface BlockMapEntry {
   /** The block's place in the template (`root.children[2]`), as diagnostics give it. */

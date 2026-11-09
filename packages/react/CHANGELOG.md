@@ -70,7 +70,8 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
 `render(email, { blockMap: true })` also returns `blocks`, for tools that preview an email: each block's place in the
 template and the UTF-8 byte offset in `html` just after its outermost element's tag name
 (`{ version, unit: "utf8", entries: [{ path, nodeId?, type, offset }] }`). The HTML is the same bytes as without the option.
-`BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
+`BLOCK_MAP_VERSION` says the format: 2, since each entry now says its component (`type`); 0.3.1's map, format 1, had
+no `type`. With `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
 `BlockMapEntry` are exported. Documented in REFERENCE.md.
 
 ### Which roots take each component, prop and style

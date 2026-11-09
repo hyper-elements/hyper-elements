@@ -74,7 +74,8 @@ describe("renderInEmailClients()", () => {
     expect(file).not.toContain("</script><script>alert");
     expect(embedded(file, "email")).toBe((await render(element, { emailClients: ["gmail"] })).html);
     const config = embedded(file, "email-client-config");
-    expect(config).toMatchObject({ id: "gmail", client: "gmail", name: "Gmail", variant: "desktop", width: 820, dark: false, blocks: { version: 1, unit: "utf8" } });
+    expect(config).toMatchObject({ id: "gmail", client: "gmail", name: "Gmail", variant: "desktop", width: 820, dark: false, blocks: { version: 2, unit: "utf8" } });
+    expect(config.blocks.entries.every((entry: { type?: unknown }) => typeof entry.type === "string")).toBe(true);
     expect(scriptJson("</script>\u2028")).toBe('"\\u003c/script\\u003e\\u2028"');
   });
 
@@ -87,7 +88,7 @@ describe("renderInEmailClients()", () => {
 });
 
 describe("the version check", () => {
-  const core = { render() {}, prepare() {}, ElementsError: class {}, EMAIL_CLIENTS: {}, BLOCK_MAP_VERSION: 1 };
+  const core = { render() {}, prepare() {}, ElementsError: class {}, EMAIL_CLIENTS: {}, BLOCK_MAP_VERSION: 2 };
   const mismatch = (lib: Record<string, unknown>) => {
     try {
       checkCore(lib);
@@ -114,7 +115,8 @@ describe("the version check", () => {
       name: "email-clients/version-mismatch",
       message: `@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no BLOCK_MAP_VERSION (render()'s blockMap). Install a matching pair: npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.3`,
     });
-    expect(mismatch({ ...core, BLOCK_MAP_VERSION: 2 })!.message).toContain("a blockMap format it reads (this core's is 2, it reads 1)");
-    expect(mismatch({ BLOCK_MAP_VERSION: 1 })!.message).toContain("has no render, prepare, ElementsError, EMAIL_CLIENTS");
+    // 0.3.1's format: no block types, which the findings need.
+    expect(mismatch({ ...core, BLOCK_MAP_VERSION: 1 })!.message).toContain("a blockMap format it reads (this core's is 1, it reads 2)");
+    expect(mismatch({ BLOCK_MAP_VERSION: 2 })!.message).toContain("has no render, prepare, ElementsError, EMAIL_CLIENTS");
   });
 });

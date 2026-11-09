@@ -9,7 +9,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium, type Browser, type Page } from "playwright";
-import { Button, Column, Email, Heading, Html, Image, Row, Section, Text } from "@hyper-elements/react";
+import { Button, Column, Email, Heading, Html, Image, Row, Section, Span, Text } from "@hyper-elements/react";
 import { PREVIEW_CLIENTS, renderInEmailClients } from "../../src/index";
 
 let browser: Browser;
@@ -48,6 +48,8 @@ async function open(filename: string, html: string, options: { images?: "missing
     requests.push(url);
     const font = /^https:\/\/cdn\.jsdelivr\.net\/npm\/@hyper-elements\/email-clients@[^/]+\/fonts\/([\w.-]+\.woff2)$/.exec(url);
     if (font && options.fonts !== "unreachable") return route.fulfill({ status: 200, contentType: "font/woff2", body: readFileSync(join(FONTS, font[1]!)) });
+    // A web font that loads (one of this package's own files), beside the made-up ones that 404.
+    if (url === "https://example.test/brand-regular.woff2") return route.fulfill({ status: 200, contentType: "font/woff2", body: readFileSync(join(FONTS, "selawk.woff2")) });
     if (url.startsWith("https://example.test/")) return options.images === "missing" || !url.endsWith(".png") ? route.fulfill({ status: 404, body: "" }) : route.fulfill({ status: 200, contentType: "image/png", body: PNG });
     return route.abort();
   });
@@ -106,6 +108,13 @@ describe("a preview file in Chromium", () => {
       const box = await page.locator("#frames iframe:not([hidden])").boundingBox();
       expect(box!.width).toBe(previews[0]!.width);
       expect(box!.height).toBeGreaterThan(200);
+      // Both frames keep their width side by side in a window narrower than the two (the client's and the baseline
+      // were measured that way): a frame squeezed below the client's width would cross the email's breakpoints.
+      await page.setViewportSize({ width: 1000, height: 720 });
+      await page.evaluate(() => document.querySelectorAll("#frames iframe").forEach((f) => ((f as HTMLIFrameElement).hidden = false)));
+      const widths = await page.locator("#frames iframe").evaluateAll((frames) => frames.map((f) => f.getBoundingClientRect().width));
+      expect(widths.length).toBeGreaterThan(1);
+      expect(widths.every((w) => w === previews[0]!.width)).toBe(true);
       expect(errors).toEqual([]);
     } finally {
       await page.close();
@@ -208,6 +217,51 @@ describe("what a preview lists, and when it's incomplete", () => {
     expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
     if (MAC) expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Georgia", verified: "widths" }]));
     else expect(findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Georgia" }]));
+    await page.close();
+  });
+
+  it("finds a Heading classic Outlook draws on more lines, end to end: render()'s block map, the file, its findings", async () => {
+    // Drawn in the email's web font as written; classic Outlook skips web fonts and draws Courier New, much wider.
+    // Nothing here passes the blocks' types by hand: the findings read them from render()'s block map.
+    const words = "Your order of fresh coffee beans ships tomorrow morning from our roastery".split(" ");
+    const element = (
+      <Email width={600} fonts={[{ family: "Brand", src: "https://example.test/brand-regular.woff2", format: "woff2", weight: 700, style: "normal" }]}>
+        {[6, 7, 8, 9].map((n) => (
+          <Heading key={n} level={2} style={{ fontFamily: "Brand, 'Courier New', monospace" }}>
+            {words.slice(0, n).join(" ")}
+          </Heading>
+        ))}
+        <Text style={{ fontFamily: "Brand, 'Courier New', monospace" }}>{words.join(" ")}</Text>
+      </Email>
+    );
+    const { previews } = await renderInEmailClients(element, { emailClients: ["outlook"] });
+    const { page, findings } = await open("more-lines.html", previews[0]!.html);
+    const found = findings.diagnostics.filter((d) => d.code === "email/more-lines");
+    expect(found.length).toBeGreaterThan(0);
+    // Only Headings (and Buttons): the Text that also wraps more isn't one.
+    expect(found.every((d) => /^root\.children\[[0-3]\]$/.test(d.path) && /^This Heading takes \d lines in classic Outlook, \d as written$/.test(d.message))).toBe(true);
+    await page.close();
+  });
+
+  it("lists a web font face that fails with its own file, when another face of its family loads", async () => {
+    const element = (
+      <Email
+        width={600}
+        fonts={[
+          { family: "Brand", src: "https://example.test/brand-regular.woff2", format: "woff2", weight: 400, style: "normal" },
+          { family: "Brand", src: "https://example.test/brand-italic.woff2", format: "woff2", weight: 400, style: "italic" },
+        ]}
+        style={{ fontFamily: "Brand, Arial, sans-serif" }}
+      >
+        <Text>
+          Brand words <Span style={{ fontStyle: "italic" }}>in italics</Span>
+        </Text>
+      </Email>
+    );
+    const { previews } = await renderInEmailClients(element, { emailClients: ["apple-mail"] });
+    const { page, findings, requests } = await open("italic-font.html", previews[0]!.html);
+    expect(requests).toEqual(expect.arrayContaining(["https://example.test/brand-regular.woff2", "https://example.test/brand-italic.woff2"]));
+    expect(findings.missing.filter((m) => m.kind === "author-font")).toEqual([{ kind: "author-font", family: "Brand", src: "https://example.test/brand-italic.woff2" }]);
     await page.close();
   });
 

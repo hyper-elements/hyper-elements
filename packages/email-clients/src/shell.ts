@@ -37,7 +37,7 @@ export function contentSecurityPolicy(runtime: Runtime | null, fontOrigin: strin
 const STYLE =
   "body{margin:0;font:14px/1.4 system-ui,sans-serif;color:#1f2328;background:#f6f8fa}" +
   ".note{padding:12px 16px;border-bottom:1px solid #d0d7de;background:#fff}.note h1{margin:0 0 4px;font-size:15px}.note h2{margin:8px 0 2px;font-size:13px}.note p{margin:0}.note ul{margin:0;padding-left:20px}" +
-  "#frames{display:flex;gap:16px;padding:16px;align-items:flex-start}#frames iframe{border:0;background:#fff;box-shadow:0 0 0 1px #d0d7de}";
+  "#frames{display:flex;gap:16px;padding:16px;align-items:flex-start}#frames iframe{flex:none;border:0;background:#fff;box-shadow:0 0 0 1px #d0d7de}";
 
 /** The preview file for `config`'s client, drawing `html` (render()'s email) with `runtime`. */
 export function previewFile(html: string, config: PreviewConfig, runtime: Runtime | null): string {
