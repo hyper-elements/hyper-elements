@@ -98,7 +98,19 @@ type TokenRefsIn<T, G, Prefix extends string> = {
 export type TokenRefs<T> = { readonly [G in Group & keyof T]: TokenRefsIn<T[G], G, G> };
 
 /** A theme: its data, and `tokens`, references to them (not part of its data). */
-export type Theme<T extends ThemeInput = ThemeInput> = T & { readonly tokens: TokenRefs<T> };
+export type Theme<T = ThemeInput> = T & { readonly tokens: TokenRefs<T> };
+
+/**
+ * One theme's type with another's merged over it, as `extendTheme()` merges them: objects key by key at every depth,
+ * anything else (a list, a value) replaced. Not `B & O`, where a value both set ("#000000" and "#ffffff") is `never`.
+ */
+type Merged<B, O> = [O] extends [readonly unknown[]]
+  ? O
+  : [B] extends [readonly unknown[]]
+    ? O
+    : [B, O] extends [object, object]
+      ? { [K in keyof B | keyof O]: K extends keyof O ? (K extends keyof B ? Merged<B[K], O[K]> : O[K]) : K extends keyof B ? B[K] : never }
+      : O;
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -142,8 +154,8 @@ export function defineTheme<const T extends ThemeInput>(theme: T): Theme<T> {
  * A theme with another merged over it (a brand's or a customer's over a shared one): objects key by key at every depth,
  * anything else (a list) replaced. An override can't remove a key.
  */
-export function extendTheme<const B extends ThemeInput, const O extends ThemeInput>(base: B, overrides: O): Theme<B & O> {
-  return defineTheme(mergeTheme(clone(base) as Json, clone(overrides) as Json) as unknown as B & O);
+export function extendTheme<const B extends ThemeInput, const O extends ThemeInput>(base: B, overrides: O): Theme<Merged<B, O>> {
+  return defineTheme(mergeTheme(clone(base) as Json, clone(overrides) as Json) as ThemeInput) as unknown as Theme<Merged<B, O>>;
 }
 
 /** A reference to the theme's token at `path` ("colors.primary"), for a style or a prop: its value where it's used. */

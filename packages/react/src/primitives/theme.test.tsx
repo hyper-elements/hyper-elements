@@ -3,7 +3,7 @@
  * each node when a template is read (Decision 9 of the themes-and-pages plan).
  */
 import type { ReactElement } from "react";
-import { checkDocument, Registry, type Diagnostic, type Json, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { checkDocument, Registry, ThemeEnvironment, type Diagnostic, type Json, type ResolvedNode } from "@unlayer-internal/elements-core";
 import { toDesign } from "../builder";
 import { inspect, INSPECT_VERSION } from "../inspect";
 import { collectTemplate } from "./collect";
@@ -558,6 +558,51 @@ describe("hostile themes", () => {
     expect(found.map((d) => d.path)).toEqual(["root.theme.colors.x:0;color:red;--y", "root.theme.colors.bad", "root.theme.fonts.body", "root.theme.fonts.heading"]);
     const scoped = errors(<Page><Section tokens={{ colors: { "a}b": "#000000", c: "red;}x{" } } as never}><Text>a</Text></Section></Page>);
     expect(scoped.length).toBe(2);
+  });
+
+  describe("can't reach JavaScript's own objects through a name", () => {
+    const Card = component({ type: "acme.Polluter", label: "Polluter", props: {}, render: (_, { theme }) => <Text>{JSON.stringify(theme.colors)}</Text> });
+    afterEach(() => {
+      for (const key of ["polluted", "pollutedToo"]) delete (Object.prototype as Record<string, unknown>)[key];
+    });
+
+    it.each([
+      ["an Email", Email],
+      ["a Page", Page],
+    ])("in %s with a template's own component: refused, and nothing added to every object", async (_, Root) => {
+      const theme = defineTheme({ colors: { constructor: { prototype: { polluted: "#123456" } }, primary: "#000000" } });
+      expect(errors(<Root theme={theme}><Card /></Root>).map((d) => [d.code, d.path])).toEqual([["theme/schema", "root.theme.colors.constructor"]]);
+      await expect(render(<Root theme={theme}><Card /></Root>)).rejects.toThrow(/JavaScript keeps for its own objects/);
+      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    });
+
+    it("when a theme read before reaches the tokens a component's render sees", () => {
+      const view = ThemeEnvironment.of({ colors: { constructor: { prototype: { polluted: "#123456" } } } } as never, "root.theme").view();
+      expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+      expect(Object.getPrototypeOf(view.colors)).toBe(Object.prototype);
+      expect(JSON.parse(JSON.stringify(view))).toEqual({ colors: { constructor: { prototype: { polluted: "#123456" } } } });
+    });
+
+    it("refuses the names as a token, a scope's token, a named style or a variant, and finds none a template names", () => {
+      const reserved = (found: readonly Diagnostic[]) => found.filter((d) => /JavaScript keeps/.test(d.message)).map((d) => d.path);
+      const theme = { colors: { prototype: "#000000" }, styles: { constructor: { padding: 4 } }, components: { Button: { variants: { constructor: { color: "#000000" } } } } };
+      expect(reserved(errors(<Email theme={theme as never}><Text>a</Text></Email>))).toEqual(["root.theme.colors.prototype", "root.theme.styles.constructor", "root.theme.components.Button.variants.constructor"]);
+      expect(reserved(errors(<Page><Section tokens={{ colors: { constructor: "#000000" } } as never}><Text>a</Text></Section></Page>))).toEqual(["root.children[0].tokens.colors.constructor"]);
+      const named = errors(
+        <Email theme={brand}>
+          <Text style={{ apply: ["__proto__", "constructor", "toString"] }}>a</Text>
+          <Button href="https://example.com" variant={"constructor" as never}>a</Button>
+        </Email>,
+      );
+      expect(codes(named)).toEqual(["style/unknown-name", "style/unknown-name", "style/unknown-name", "variant/unknown"]);
+    });
+
+    it("extendTheme() keeps an override's own __proto__ as a key, adding nothing to every object", () => {
+      const merged = extendTheme(brand, JSON.parse('{"__proto__": {"pollutedToo": 1}, "colors": {"__proto__": {"pollutedToo": 2}}}'));
+      expect(({} as Record<string, unknown>).pollutedToo).toBeUndefined();
+      expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+      expect(Object.getPrototypeOf(merged.colors)).toBe(Object.prototype);
+    });
   });
 });
 

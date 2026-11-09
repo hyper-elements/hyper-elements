@@ -99,7 +99,9 @@ without one render as they did.
 
 - New: `defineTheme({ colors, spacing, fontSizes, fonts, radii, components, styles, formats })`, frozen data. Tokens
   are grouped, may nest (`colors.gray.900`) and refer to each other as `"{colors.primary}"`, the W3C Design Tokens
-  format's alias. `extendTheme(base, overrides)` merges one over another, objects key by key.
+  format's alias. A token, a group, a named style or a variant can't be named `__proto__`, `constructor` or
+  `prototype`. `extendTheme(base, overrides)` merges one over another, objects key by key, and its type is the merged
+  theme's (an overridden value too), so it can be registered.
 - New: `token("colors.primary")` in a template, for a style's value or part of one
   (`border: { width: 1, style: "solid", color: token("colors.border") }`), and for a `component()`'s color and length
   props. `brand.tokens.colors.primary` is the same, typed.

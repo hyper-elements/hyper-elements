@@ -52,6 +52,17 @@ const GROUP_LIMIT: Partial<Record<TokenGroup, (value: Json) => string | undefine
 };
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** Names a theme can't give a token, a group, a named style or a variant: they reach into JavaScript's own objects. */
+const RESERVED = new Set(["__proto__", "constructor", "prototype"]);
+const reserved = (name: string) => `${show(name)} is a name JavaScript keeps for its own objects: choose another`;
+/** A key's value only where the object holds it itself, never one it inherits ("constructor"). */
+const ownValue = <T>(object: Record<string, T>, key: string): T | undefined => (Object.prototype.hasOwnProperty.call(object, key) ? object[key] : undefined);
+/** A key set as the object's own, even "__proto__". */
+function put<T>(object: Record<string, T>, key: string, value: T): T {
+  Object.defineProperty(object, key, { value, writable: true, enumerable: true, configurable: true });
+  return value;
+}
 const show = (value: unknown) => {
   try {
     return JSON.stringify(value) ?? String(value);
@@ -95,7 +106,7 @@ export function mergeTheme<T extends Json>(base: T, over: Json | undefined): T {
   if (over === undefined) return base;
   if (!isObject(base) || !isObject(over)) return over as T;
   const out: Record<string, Json> = { ...base };
-  for (const [key, value] of Object.entries(over)) out[key] = key in out ? mergeTheme(out[key], value) : value;
+  for (const [key, value] of Object.entries(over)) put(out, key, Object.prototype.hasOwnProperty.call(out, key) ? mergeTheme(out[key], value) : value);
   return out as T;
 }
 
@@ -171,8 +182,11 @@ export class ThemeEnvironment {
       if (!resolved.ok) continue;
       const parts = path.split(".");
       let into = out;
-      for (const part of parts.slice(0, -1)) into = (into[part] ??= {}) as Record<string, Json>;
-      into[parts[parts.length - 1]] = resolved.value;
+      for (const part of parts.slice(0, -1)) {
+        const next = ownValue(into, part);
+        into = (isObject(next) ? next : put(into, part, {})) as Record<string, Json>;
+      }
+      put(into, parts[parts.length - 1], resolved.value);
     }
     return out;
   }
@@ -355,6 +369,10 @@ function readGroup(group: TokenGroup, tree: Record<string, unknown>, at: string,
       d.error("theme/schema", `A token's name is letters and digits, not ${show(name)}${/[-_.]/.test(name) ? `: nest it instead (${nested})` : ""}`, where);
       continue;
     }
+    if (RESERVED.has(name)) {
+      d.error("theme/schema", reserved(name), where);
+      continue;
+    }
     if (group === "radii" && CORNERS.includes(name)) {
       d.error("theme/schema", `${name} is a corner: in radii it names part of a token's value ({ topLeft, topRight, … }), not a token or a group`, where);
       continue;
@@ -414,7 +432,7 @@ function readBlock(value: unknown, at: string, d: Diagnostics, allowed: { by?: b
         const { apply: _, ...rest } = inner;
         out[key] = rest as Json;
       }
-    } else out[key] = inner as Json;
+    } else put(out, key, inner as Json);
   }
   return out;
 }
@@ -425,6 +443,10 @@ function readNamedStyles(value: Record<string, unknown>, at: string, d: Diagnost
     if (style === undefined) continue;
     if (!STYLE_NAME.test(name)) {
       d.error("theme/schema", `A named style's name starts with a letter and holds letters, digits, "_" and "-", not ${show(name)}`, `${at}.${name}`);
+      continue;
+    }
+    if (RESERVED.has(name)) {
+      d.error("theme/schema", reserved(name), `${at}.${name}`);
       continue;
     }
     const block = readBlock(style, `${at}.${name}`, d);
@@ -461,6 +483,10 @@ function readComponents(value: Record<string, unknown>, at: string, context: The
         for (const [name, variant] of Object.entries(block.variants)) {
           if (!STYLE_NAME.test(name)) {
             d.error("theme/schema", `A variant's name starts with a letter and holds letters, digits, "_" and "-", not ${show(name)}`, `${where}.variants.${name}`);
+            continue;
+          }
+          if (RESERVED.has(name)) {
+            d.error("theme/schema", reserved(name), `${where}.variants.${name}`);
             continue;
           }
           const read = readBlock(variant, `${where}.variants.${name}`, d);
@@ -552,7 +578,7 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
   const { d, environment, definition, path, id } = context;
   const theme = environment?.theme;
   const components = isObject(theme?.components) ? theme.components : {};
-  const defaults = isObject(components[definition.type]) ? (components[definition.type] as Record<string, Json>) : undefined;
+  const defaults = isObject(ownValue(components, definition.type)) ? (ownValue(components, definition.type) as Record<string, Json>) : undefined;
   const themeAt = environment?.at ?? "root.theme";
   const sources: Source[] = [];
 
@@ -587,7 +613,7 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
     if (isObject(by)) {
       const [prop, values] = Object.entries(by)[0] ?? [];
       const value = context.props[prop as string];
-      if (prop && isObject(values) && value !== undefined && isObject(values[String(value)])) fromTheme(values[String(value)], `${themeAt}.components.${definition.type}.by.${prop}.${String(value)}`, "default");
+      if (prop && isObject(values) && value !== undefined && isObject(ownValue(values, String(value)))) fromTheme(ownValue(values, String(value)) as Json, `${themeAt}.components.${definition.type}.by.${prop}.${String(value)}`, "default");
     }
   }
 
@@ -595,14 +621,14 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
   const variants = defaults && isObject(defaults.variants) ? defaults.variants : {};
   for (const [index, name] of namesOf(variant, `${path}.variant`, "variant", d, id).entries()) {
     const where = Array.isArray(variant) ? `${path}.variant[${index}]` : `${path}.variant`;
-    if (!isObject(variants[name])) {
+    if (!isObject(ownValue(variants, name))) {
       const known = Object.keys(variants);
       const meant = nearest(name, known);
       const has = known.length ? ` (it has ${known.join(", ")})` : theme ? `: the theme gives a ${definition.type} none` : ": the template has no theme";
       d.error("variant/unknown", `${a(definition.type)} has no variant "${name}"${meant ? `: did you mean "${meant}"?` : has}`, where, id);
       continue;
     }
-    fromTheme(variants[name], `${themeAt}.components.${definition.type}.variants.${name}`, "variant");
+    fromTheme(ownValue(variants, name) as Json, `${themeAt}.components.${definition.type}.variants.${name}`, "variant");
   }
 
   // Its own style, and the named styles it applies.
@@ -620,20 +646,20 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
         }
         ownSource.blocks[key] = block;
       } else if (CONDITION_NAMES.has(key)) ownSource.blocks[key] = value as Record<string, unknown>;
-      else ownSource.base[key] = resolveOwn(value, key, `${path}.style.${key}`, context);
+      else put(ownSource.base, key, resolveOwn(value, key, `${path}.style.${key}`, context));
     }
   }
   if (apply !== undefined) {
     const styles = isObject(theme?.styles) ? theme.styles : {};
     for (const [index, name] of namesOf(apply, `${path}.style.apply`, "apply", d, id).entries()) {
       const where = `${path}.style.apply[${index}]`;
-      if (!isObject(styles[name])) {
+      if (!isObject(ownValue(styles, name))) {
         const known = Object.keys(styles);
         const meant = nearest(name, known);
         d.error("style/unknown-name", `There's no named style "${name}"${meant ? `: did you mean "${meant}"?` : known.length ? ` (the theme has ${known.join(", ")})` : theme ? ": the theme has no named styles" : ": the template has no theme"}`, where, id);
         continue;
       }
-      fromTheme(styles[name], `${themeAt}.styles.${name}`, "named");
+      fromTheme(ownValue(styles, name) as Json, `${themeAt}.styles.${name}`, "named");
     }
   }
 
@@ -689,7 +715,7 @@ function namesOf(value: unknown, at: string, what: string, d: Diagnostics, id: s
 
 /** A value of the node's own style with its tokens resolved, or as given where they don't resolve (reported). */
 function resolveOwn(value: unknown, key: string, at: string, context: ThemeNodeContext): unknown {
-  const spec = context.definition.style[key];
+  const spec = ownValue(context.definition.style, key);
   if (!spec || !holdsToken(value)) return value;
   const problems: Problem[] = [];
   const resolved = resolveValue(value, context.environment, spec.kind.name, false, problems);
@@ -709,12 +735,12 @@ function expandApply(block: Json, at: string, theme: ThemeData | undefined, d: D
       d.error("theme/cycle", `The named styles ${[...stack, name].join(" → ")} apply each other in a loop`, where);
       continue;
     }
-    if (!isObject(styles[name])) {
+    if (!isObject(ownValue(styles, name))) {
       const meant = nearest(name, Object.keys(styles));
       d.error("style/unknown-name", `There's no named style "${name}"${meant ? `: did you mean "${meant}"?` : ""}`, where);
       continue;
     }
-    const inner = expandApply(styles[name], `${themeRoot(at)}.styles.${name}`, theme, d, [...stack, name]);
+    const inner = expandApply(ownValue(styles, name) as Json, `${themeRoot(at)}.styles.${name}`, theme, d, [...stack, name]);
     Object.assign(out.base, inner.base);
     for (const [condition, values] of Object.entries(inner.blocks)) Object.assign((out.blocks[condition] ??= {}), values);
     for (const [key, origin] of inner.origin) out.origin.set(key, origin);
@@ -748,7 +774,7 @@ function themeRoot(at: string): string {
 function themeSource(block: ReturnType<typeof expandApply>, kind: Source["kind"], environment: ThemeEnvironment | undefined, context: ThemeNodeContext): Source {
   const source: Source = { base: {}, blocks: {}, origin: block.origin, kind };
   const resolve = (key: string, value: Json, origin: string) => {
-    const spec = context.definition.style[key];
+    const spec = ownValue(context.definition.style, key);
     if (!spec) return value;
     const problems: Problem[] = [];
     const resolved = resolveValue(value, environment, spec.kind.name, true, problems);
@@ -804,6 +830,10 @@ function readScopeGroup(group: TokenGroup, tree: Record<string, unknown>, at: st
     const where = `${at}.${name}`;
     if (!NAME.test(name) || (group === "radii" && CORNERS.includes(name))) {
       d.error("theme/schema", `A token's name is letters and digits (and in radii not a corner's), not ${show(name)}`, where, id);
+      continue;
+    }
+    if (RESERVED.has(name)) {
+      d.error("theme/schema", reserved(name), where, id);
       continue;
     }
     if (isModes(value)) {

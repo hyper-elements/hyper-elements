@@ -73,6 +73,46 @@ export const TwoArguments = component({ type: "acme.Two", label: "Two", props: {
 export const notAProp = <OneArgument title={42} />;
 `;
 
+const EXTENDED = `
+import { extendTheme, defineTheme, token, Button, Email, Text } from "@hyper-elements/react";
+
+const base = defineTheme({
+  colors: { primary: "#000000", muted: "#71717a", gray: { 100: "#f4f4f5", 900: "#111111" } },
+  radii: { card: { topLeft: 4, topRight: 4 } },
+  styles: { card: { padding: 8 } },
+  components: { Button: { variants: { secondary: { color: "{colors.primary}" } } } },
+});
+// Values overridden (a string by another, a list by a list), groups nested, and keys added.
+export const brand = extendTheme(base, {
+  colors: { primary: "#ffffff", gray: { 900: "#000000" }, accent: "#ff0000" },
+  fonts: { body: ["Inter", "Arial"] },
+  radii: { card: { topLeft: 8 } },
+  components: { Button: { variants: { ghost: { color: "{colors.accent}" } } } },
+});
+
+declare module "@hyper-elements/react" {
+  interface Register {
+    theme: typeof brand;
+  }
+}
+
+export const overridden = token("colors.primary");
+export const untouched = token("colors.muted");
+export const nested = [token("colors.gray.100"), token("colors.gray.900")];
+export const added = [token("colors.accent"), token("fonts.body"), token("radii.card")];
+export const ref = brand.tokens.colors.accent;
+// @ts-expect-error Not one of the theme's tokens.
+export const typo = token("colors.primry");
+export const ok = (
+  <Email theme={brand}>
+    <Button href="https://example.com" variant={["secondary", "ghost"]}>a</Button>
+    <Text style={{ apply: ["card"], color: ref }}>b</Text>
+  </Email>
+);
+// @ts-expect-error Not one of the Button's variants.
+export const variant = <Button href="https://example.com" variant="tertiary">a</Button>;
+`;
+
 const SETTINGS: Array<[string, ts.CompilerOptions]> = [
   ["node10", { moduleResolution: ts.ModuleResolutionKind.Node10, module: ts.ModuleKind.CommonJS }],
   ["node16", { moduleResolution: ts.ModuleResolutionKind.Node16, module: ts.ModuleKind.Node16 }],
@@ -97,6 +137,10 @@ function errorsOf(source: string, options: ts.CompilerOptions): string[] {
 describe.skipIf(!BUILT)("a theme's types in an app, against the built declarations", () => {
   it.each(SETTINGS)("type the registered theme's names, under %s", (_, options) => {
     expect(errorsOf(REGISTERED, options)).toEqual([]);
+  });
+
+  it.each(SETTINGS)("type a theme made with extendTheme(), its overridden values too, under %s", (_, options) => {
+    expect(errorsOf(EXTENDED, options)).toEqual([]);
   });
 
   it.each(SETTINGS)("take strings where no theme is registered, under %s", (_, options) => {
