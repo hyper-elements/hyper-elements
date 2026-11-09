@@ -84,7 +84,7 @@ export async function settleImages(doc: Document, deadline: number): Promise<str
  * failed, or are still loading at the deadline. A face nothing uses isn't fetched, as in the client, and isn't listed.
  */
 export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<string>, deadline: number): Promise<Array<{ family: string; src: string }>> {
-  const rules: Array<{ family: string; src: string }> = [];
+  const rules: Array<{ family: string; src: string; face: string }> = [];
   for (const sheet of [...doc.styleSheets]) {
     let list: CSSRuleList;
     try {
@@ -97,12 +97,22 @@ export async function missingAuthorFonts(doc: Document, standIns: ReadonlySet<st
       const style = (rule as CSSFontFaceRule).style;
       const family = style.getPropertyValue("font-family").replace(/^["']|["']$/g, "");
       if (!family || standIns.has(family)) continue;
-      rules.push({ family, src: style.getPropertyValue("src").match(/url\(["']?([^"')]+)/)?.[1] ?? "" });
+      const face = faceKey(family, style.getPropertyValue("font-style"), style.getPropertyValue("font-weight"));
+      rules.push({ family, src: style.getPropertyValue("src").match(/url\(["']?([^"')]+)/)?.[1] ?? "", face });
     }
   }
   if (!rules.length) return [];
   await until(doc.fonts.ready.then(() => undefined), deadline, undefined);
-  const faces = [...doc.fonts].filter((face) => rules.some((rule) => rule.family === face.family.replace(/^["']|["']$/g, "")));
-  const failed = new Set(faces.filter((face) => face.status === "error" || face.status === "loading").map((face) => face.family.replace(/^["']|["']$/g, "")));
-  return rules.filter((rule) => failed.has(rule.family)).filter((rule, i, all) => all.findIndex((r) => r.family === rule.family) === i);
+  // Each face by its family, style and weight, so a failed italic is listed with its own file, not its regular's.
+  const failed = new Set([...doc.fonts].filter((face) => face.status === "error" || face.status === "loading").map((face) => faceKey(face.family, face.style, face.weight)));
+  return rules
+    .filter((rule) => failed.has(rule.face))
+    .filter((rule, i, all) => all.findIndex((r) => r.face === rule.face) === i)
+    .map(({ family, src }) => ({ family, src }));
+}
+
+/** A face's family, style and weight, as one key: the descriptors as written in CSS or as a FontFace gives them. */
+function faceKey(family: string, style: string, weight: string): string {
+  const weights: Record<string, string> = { "": "400", normal: "400", bold: "700" };
+  return [family.replace(/^["']|["']$/g, ""), style.trim() || "normal", weights[weight.trim()] ?? weight.trim()].join("|");
 }

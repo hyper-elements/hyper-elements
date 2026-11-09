@@ -3,10 +3,12 @@
 //
 // 1. Beside the packed core, in a clean project: both module formats import and write a preview for every client,
 //    with the fonts inlined from the installed files; the tarball holds dist/, the fonts and their licences.
-// 2. Beside core 0.3.0 (on npm, before render()'s blockMap): npm reports the unmet peer; installed anyway, the package
-//    imports, and its first call throws email-clients/version-mismatch, in both module formats.
+// 2. Beside core 0.3.1 (on npm: render()'s blockMap in format 1, without each block's component): npm reports the
+//    unmet peer; installed anyway, the package imports, and its first call throws email-clients/version-mismatch, in
+//    both module formats.
 //
-// The packed core is marked 0.3.1, the release that ships blockMap (its committed version is bumped at release).
+// The packed core is marked 0.3.2, the release that ships the block map's format 2 (its committed version is bumped at
+// release).
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -34,13 +36,13 @@ for (const want of ['package/dist/index.js', 'package/dist/index.cjs', 'package/
 }
 if (files.some((f) => f.includes('/src/') || f.includes('/test/'))) fail('the tarball holds src/ or test/');
 
-// The packed core as 0.3.1.
+// The packed core as 0.3.2.
 const unpacked = mkdtempSync(join(tmpdir(), 'email-clients-core-'));
 run('tar', ['-xzf', tarball('hyper-elements-react-'), '-C', unpacked], packs);
 const corePackage = join(unpacked, 'package/package.json');
-writeFileSync(corePackage, JSON.stringify({ ...JSON.parse(readFileSync(corePackage, 'utf8')), version: '0.3.1' }, null, 2));
-const core031 = join(packs, 'core-0.3.1.tgz');
-run('tar', ['-czf', core031, '-C', unpacked, 'package'], packs);
+writeFileSync(corePackage, JSON.stringify({ ...JSON.parse(readFileSync(corePackage, 'utf8')), version: '0.3.2' }, null, 2));
+const core032 = join(packs, 'core-0.3.2.tgz');
+run('tar', ['-czf', core032, '-C', unpacked, 'package'], packs);
 
 const ESM = `
 import React from "react";
@@ -77,24 +79,24 @@ const REACT = ['react@18.3.1', 'react-dom@18.3.1'];
 const all = ['outlook.html', 'outlook-com.html', 'gmail.html', 'gmail-app.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.dark.html'];
 
 // 1. Beside the core it's for.
-const matched = project([core031, extension, ...REACT]);
+const matched = project([core032, extension, ...REACT]);
 for (const format of ['esm', 'cjs']) {
   const out = matched[format];
-  if (out.error) fail(`${format} beside core 0.3.1: ${out.error}: ${out.message}`);
-  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline) fail(`${format} beside core 0.3.1 wrote ${JSON.stringify(out)}`);
+  if (out.error) fail(`${format} beside core 0.3.2: ${out.error}: ${out.message}`);
+  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline) fail(`${format} beside core 0.3.2 wrote ${JSON.stringify(out)}`);
 }
 
-// 2. Beside core 0.3.0: npm reports the unmet peer; installed anyway, the first call says what to install.
+// 2. Beside core 0.3.1: npm reports the unmet peer; installed anyway, the first call says what to install.
 try {
-  project(['@hyper-elements/react@0.3.0', extension, ...REACT]);
-  fail('npm installed it beside core 0.3.0 without reporting the unmet peer');
+  project(['@hyper-elements/react@0.3.1', extension, ...REACT]);
+  fail('npm installed it beside core 0.3.1 without reporting the unmet peer');
 } catch (error) {
   if (!/ERESOLVE|peer @hyper-elements\/react/.test(String(error.stderr ?? error.message))) throw error;
 }
-const older = project(['@hyper-elements/react@0.3.0', extension, ...REACT], ['--legacy-peer-deps']);
+const older = project(['@hyper-elements/react@0.3.1', extension, ...REACT], ['--legacy-peer-deps']);
 for (const format of ['esm', 'cjs']) {
   const out = older[format];
-  if (out.error !== 'email-clients/version-mismatch' || !out.message.includes('npm i @hyper-elements/react@^0.3.1 @hyper-elements/email-clients@^0.3')) fail(`${format} beside core 0.3.0: ${JSON.stringify(out)}`);
+  if (out.error !== 'email-clients/version-mismatch' || !out.message.includes("this core's is 1, it reads 2") || !out.message.includes('npm i @hyper-elements/react@^0.3.2 @hyper-elements/email-clients@^0.3')) fail(`${format} beside core 0.3.1: ${JSON.stringify(out)}`);
 }
 
-console.info('PACK_OK: beside the packed core, both module formats write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences; beside core 0.3.0, npm reports the unmet peer, and the first call throws email-clients/version-mismatch in both formats');
+console.info('PACK_OK: beside the packed core, both module formats write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences; beside core 0.3.1, npm reports the unmet peer, and the first call throws email-clients/version-mismatch in both formats');
