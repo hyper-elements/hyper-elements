@@ -85,6 +85,17 @@ export function referenceOf(value: unknown, aliases: boolean): string | undefine
   return undefined;
 }
 
+/**
+ * For a value that won't parse, where a template holds a theme's alias (`"{colors.night}"`, read only inside a theme):
+ * what to write instead. Empty if it holds none.
+ */
+export function aliasHint(value: unknown): string {
+  const find = (inner: unknown): string | undefined =>
+    typeof inner === "string" ? ALIAS.exec(inner)?.[1] : Array.isArray(inner) ? inner.map(find).find(Boolean) : isObject(inner) ? Object.values(inner).map(find).find(Boolean) : undefined;
+  const path = find(value);
+  return path ? `. "{${path}}" is a token only inside a theme: in a template write token("${path}")` : "";
+}
+
 /** Whether a value holds a `{ $token }` anywhere (a template's style or prop). */
 export function holdsToken(value: unknown): boolean {
   if (referenceOf(value, false) !== undefined) return true;
@@ -399,7 +410,7 @@ function readToken(group: TokenGroup, value: unknown, at: string, d: Diagnostics
   if (referenceOf(value, aliases) !== undefined) return value as Json;
   const parsed = GROUP_KIND[group].parse(value);
   if (!parsed.ok) {
-    d.error("theme/schema", `A token in ${group}: ${parsed.message}`, at);
+    d.error("theme/schema", `A token in ${group}: ${parsed.message}${aliases ? "" : aliasHint(value)}`, at);
     return undefined;
   }
   const limit = GROUP_LIMIT[group]?.(parsed.value);

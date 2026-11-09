@@ -10,7 +10,7 @@ import { type Child, type ElementsDocument, type Json, type Node } from "./model
 import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
 import { nearest } from "./nearest";
 import { COMPONENTS } from "./components";
-import { holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
+import { aliasHint, holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
 
 export interface CheckResult {
   /** The document with what could be read, or null when there's no usable root. */
@@ -464,7 +464,7 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
     const parsed = spec.kind.parse(given);
     if (parsed.ok) {
       if (!spec.kind.empty?.(parsed.value)) out[key] = parsed.value;
-    } else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
+    } else d.error("prop/invalid", `${key}: ${parsed.message}${aliasHint(value)}`, `${path}.${key}`, id);
   }
   for (const [key, spec] of Object.entries(definition.props)) {
     if (spec.required && !(key in out) && !(isObject(input) && input[key] !== undefined)) {
@@ -545,7 +545,7 @@ function readStyles(
     }
     const parsed = spec.kind.parse(value);
     if (parsed.ok) out[key] = parsed.value;
-    else d.error(`${what}/invalid`, `${key}: ${parsed.message}`, at(key), id);
+    else d.error(`${what}/invalid`, `${key}: ${parsed.message}${aliasHint(value)}`, at(key), id);
   }
   return Object.keys(out).length ? out : undefined;
 }

@@ -50,7 +50,7 @@ Each of these made an agent's first try fail:
 
 A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, given to a root as `theme`.
 
-- In a template `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme a token is `"{colors.primary}"`. Names are letters and digits: nest `gray.900`.
+- In a template `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme, and only there, a token is `"{colors.primary}"`: everywhere in a template (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.
 - Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.
 - `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
 - `styles: { card: { … } }` are named styles: `style={{ apply: ["card"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.

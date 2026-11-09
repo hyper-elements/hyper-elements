@@ -109,6 +109,21 @@ describe("roles", () => {
     expect(codes(errors(<Email theme={defineTheme({ lineHeights: { body: -1 } })}>x</Email>))).toContain("theme/schema");
   });
 
+  it("say to write token() where a template holds a theme's alias", () => {
+    const theme = defineTheme({ colors: { night: "#16132d", moon: "#f4f2ff" } });
+    const messages = errors(
+      <Email theme={theme} style={{ backgroundColor: "{colors.night}" as never }}>
+        <Section tokens={{ colors: { background: "{colors.night}" as never } }}>
+          <Divider style={{ borderTop: { width: 1, style: "solid", color: "{colors.moon}" as never } }} />
+        </Section>
+      </Email>
+    ).map((d) => d.message);
+    expect(messages).toHaveLength(3);
+    expect(messages[0]).toContain('in a template write token("colors.night")');
+    expect(messages.some((m) => m.includes('token("colors.moon")'))).toBe(true);
+    expect(messages.filter((m) => m.includes('token("colors.night")'))).toHaveLength(2);
+  });
+
   it("set body text on a scope too: a band's own size and line height", () => {
     const theme = defineTheme({ fontSizes: { body: 16 }, lineHeights: { body: 1.6 } });
     const { root } = laid(
