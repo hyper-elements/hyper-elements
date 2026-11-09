@@ -12,5 +12,6 @@ Each release records the email-renderer commit its runtime comes from and the ca
   what was missing (fonts, swapped fonts, web fonts, images), the system fonts it drew with, and `email/more-lines`,
   `email/dark-contrast` and `email/size`.
 - The runtime is email-renderer's models at f65fabe5, scored against the captures of 8 November 2026 (Elements 0.3.0).
-- Needs `@hyper-elements/react` ^0.3.1 (render()'s `blockMap`). An older core throws `email-clients/version-mismatch`
-  at the first call, with the command to install a matching pair.
+- Needs `@hyper-elements/react` ^0.3.2 (render()'s `blockMap` in format 2, whose entries say their component: the
+  findings read it). An older core, 0.3.1's format 1 included, throws `email-clients/version-mismatch` at the first
+  call, with the command to install a matching pair.

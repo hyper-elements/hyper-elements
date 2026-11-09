@@ -6,8 +6,8 @@
 import * as installed from "@hyper-elements/react";
 import { peerDependencies, version } from "../package.json";
 
-/** The `blocks` formats (core's BLOCK_MAP_VERSION) this package reads. */
-export const BLOCK_MAP_VERSIONS: readonly number[] = [1];
+/** The `blocks` formats (core's BLOCK_MAP_VERSION) this package reads: 2, whose entries say their component (1 doesn't). */
+export const BLOCK_MAP_VERSIONS: readonly number[] = [2];
 
 /** The core releases this package works with: its peer dependency on @hyper-elements/react, as package.json says it. */
 export const CORE_RANGE: string = peerDependencies["@hyper-elements/react"];
@@ -28,10 +28,13 @@ export function checkCore(core: Record<string, unknown> = installed as unknown a
   const version = core.BLOCK_MAP_VERSION;
   if (typeof version !== "number") missing.push("BLOCK_MAP_VERSION (render()'s blockMap)");
   else if (!BLOCK_MAP_VERSIONS.includes(version)) missing.push(`a blockMap format it reads (this core's is ${version}, it reads ${BLOCK_MAP_VERSIONS.join(", ")})`);
-  if (missing.length) {
-    const error = new Error(`@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no ${missing.join(", ")}. Install a matching pair: ${INSTALL}`);
-    error.name = "email-clients/version-mismatch";
-    throw error;
-  }
+  if (missing.length) throw versionMismatch(missing);
   return core as unknown as Core;
+}
+
+/** The Error for a core that lacks what's `missing`, with the command to install a matching pair. */
+export function versionMismatch(missing: readonly string[]): Error {
+  const error = new Error(`@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no ${missing.join(", ")}. Install a matching pair: ${INSTALL}`);
+  error.name = "email-clients/version-mismatch";
+  return error;
 }

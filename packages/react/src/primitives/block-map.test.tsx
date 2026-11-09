@@ -97,7 +97,7 @@ describe("render(email, { blockMap: true })", () => {
         <Button href="https://example.test">Go</Button>
       </Email>
     );
-    expect(BLOCK_MAP_VERSION).toBe(1);
+    expect(BLOCK_MAP_VERSION).toBe(2);
     expect(blocks.version).toBe(BLOCK_MAP_VERSION);
     expect(blocks.unit).toBe("utf8");
     expect(blocks.entries.map(({ path, nodeId, type }) => [path, nodeId, type])).toEqual([
