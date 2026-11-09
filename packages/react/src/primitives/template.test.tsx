@@ -73,6 +73,21 @@ describe("render()", () => {
     );
     expect(text).toBe("HI {{first_name}}, YOUR ORDER SHIPPED\n\n{% if vip %}THANKS FOR BEING A VIP{% endif %} *|fname|* <%= order.id %>");
     expect(html).toContain("{{first_name}}");
+    // A tag runs from its opening to the first close after it (what it holds is written as typed); an opening with no
+    // close is words.
+    const heading = async (words: string) => (await render(<Email><Heading level={1}>{words}</Heading></Email>)).text.trim();
+    expect(await heading("a {{ b {% c {{d}} e %} f")).toBe("A {{ b {% c {{d}} E %} F");
+    expect(await heading("{{x}}y}} *|z <%w%>")).toBe("{{x}}Y}} *|Z <%w%>");
+  });
+
+  it("writes a large heading of text from users, a run of tag openings with no close, in the time any text takes", async () => {
+    // A scan per opening (each looking for its close to the end) took seconds for 200,000 characters.
+    for (const opening of ["{{", "{%", "<%", "*|"]) {
+      const started = performance.now();
+      const { text } = await render(<Email><Heading level={1}>{opening.repeat(100_000)}</Heading></Email>);
+      expect(text.trim()).toBe(opening.repeat(100_000));
+      expect(performance.now() - started, opening).toBeLessThan(1000);
+    }
   });
 
   it("takes no compat from a template, directly or in a custom component: it was for Elements 0.2's components' lowering, and holds markup and CSS", async () => {
