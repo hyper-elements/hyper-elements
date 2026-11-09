@@ -1,0 +1,22 @@
+{
+  "id": "change",
+  "title": "Change an existing email",
+  "brief": "src/template.tsx is an email that's already written. Change three things and nothing else:\n\n- The heading \"What's new in Orbit\": 20px on phones. On desktop it stays as it is.\n- The button \"Read the update\": its background turns #4c3df0 on hover.\n- More space between the two paragraphs: at least 8px more than there is now.\n\nThe words, the colors and every other size stay as they are.",
+  "run": {
+    "start": { "src/template.tsx": "starts/change.tsx" }
+  },
+  "spec": {
+    "change": {
+      "widths": [800, 375],
+      "allow": [{ "text": "What's new in Orbit", "property": "fontSize", "width": 375 }],
+      "styles": [
+        { "text": "What's new in Orbit", "width": 375, "property": "font-size", "value": 20 },
+        { "text": "What's new in Orbit", "width": 800, "property": "font-size", "value": 28 }
+      ],
+      "hovers": [{ "text": "Read the update", "property": "background-color", "value": "#4c3df0", "width": 800 }],
+      "grows": [
+        { "above": "Templates now render twice as fast, and previews update as you type.", "below": "Dark mode is here for every email, page and document you build.", "width": 800, "min": 8 }
+      ]
+    }
+  }
+}

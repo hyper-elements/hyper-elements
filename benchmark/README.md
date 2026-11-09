@@ -4,11 +4,13 @@ How long a coding agent takes to make a correct email or social image with Hyper
 reach for otherwise, and how many tokens it spends. The email and image results are on
 [hyperelements.dev/docs/benchmark](https://hyperelements.dev/docs/benchmark).
 
-Two suites, each with its own briefs, kits and checker, run by one harness (`lib/`):
+Three suites, each with its own briefs, kits and checker, run by one harness (`lib/`):
 
 - **email** (`suites/email`): Hyper Elements, React Email, MJML and hand-written HTML.
 - **image** (`suites/image`): Hyper Elements' `<Canvas>`, an HTML page screenshotted by Playwright, and drawing with
   `@napi-rs/canvas`.
+- **skill** (`suites/skill`): evals of Hyper Elements' agent guide and skill: this checkout's against the last
+  release's, with Hyper Elements only. Its results aren't published.
 
 ## How a run works
 
@@ -23,9 +25,11 @@ Claude Code version, the engine's commit (and whether its tree was dirty), the p
 globbed the benchmark and copied its reference solutions and other runs' work. So each run is a directory of its own
 in the system's temporary folder, with its own copy of `node_modules` (cloned, no link out: `npm run setup` copies
 Hyper Elements' `dist` in), and Claude Code denies reading or editing the repository, the home folder and `/tmp`
-(`--settings`, `permissions.deny`). What a rule can't stop (`node` reading a file) the audit catches
-(`lib/audit.mjs`): every path a run's tool calls named outside its directory is recorded, and a run that got one is
-marked `valid: false` and left out of the report (a file the run made itself after it started is its own). A
+(`--settings`, `permissions.deny`). Those rules cover Claude Code's file tools, not what a `node` command opens. The
+audit (`lib/audit.mjs`) reads the paths a run's tool calls name: every path named outside its directory is recorded,
+and a run that got one is marked `valid: false` and left out of the report (a file the run made itself after it
+started is its own). A path a command builds at run time (`os.homedir()` in a `node -e`) names nothing, so the audit
+can't see it; the skill suite runs Bash in Claude Code's OS-level sandbox for that. A
 finished run is kept in `runs/<stamp>/` without its `node_modules`; `node lib/audit.mjs runs/<stamp>` audits kept
 runs again. The email results below predate this: their runs weren't isolated.
 
@@ -84,6 +88,201 @@ that only read the file.
 - **Runtime facts** (`npm run runtime`, no API): per kit, what `npm install` adds (and Playwright's browser), and
   from the references, a fresh process's import and first render, a warm render, and whether the same template gives
   the same bytes.
+
+## Skill suite
+
+Whether a change to the guide (GUIDE.md), the skill (SKILL.md) or the diagnostics agents read makes agents write
+templates better or worse. Not a merge gate: a maintainer runs it when those change, before a release, and when a new
+model ships.
+
+- **Ten tasks** (`suites/skill/briefs/`, the `core` group of `suite.json`), across the four roots: the email suite's
+  event invite and receipt; a weekly digest with phone styles, a `Menu` and `Social` (`digest`); a landing page with
+  `Section` bands, a `Grid` and its own phone width (`landing`); an A4 invoice as a PDF (`invoice`); the image suite's
+  launch card (`launch`); a change to a written email (`change`); a page from a Tailwind mockup (`tailwind`); a report
+  built from an array, with merge tags and its plain text (`report`); and a welcome email with no exact copy
+  (`welcome`). A brief's `run` replaces the suite's prompt, render command, checker, folders, specs or sources, adds
+  tools, gives start files, and can limit the kits it runs in or name a probe (`requires`) an engine must pass.
+- **Six kits** (`suites/skill/kits/`), each an engine and docs:
+
+  | Kit | Engine | Docs | How they're given |
+  |---|---|---|---|
+  | `candidate` | this checkout | its own | GUIDE.md imported from CLAUDE.md |
+  | `release` | the last release (v0.3.0) | its own | the same |
+  | `release-docs` | this checkout | the last release's | the same |
+  | `negative` | this checkout | `23e3b258`'s (the props the guide no longer teaches) | the same |
+  | `skill` | this checkout | its SKILL.md | at `.claude/skills/hyper-elements/`, the Skill tool allowed |
+  | `none` | this checkout | none | REFERENCE.md and the types are still in `node_modules` |
+
+  CLAUDE.md is the same conventions in every kit (`suites/skill/conventions/<root>.md`), with the guide's import where
+  the kit has one. An engine is a build installed under a name (`engines/<name>/`), and a docs set the guide, reference
+  and skill at a git ref (`docs-sets/<name>/`); each row records its own.
+- **The checks** (`suites/skill/check*.mjs`, copied into each run's `tools/`): `check.mjs` runs each check the brief's
+  spec names. `email` is the email suite's checker; `page` its copy, links, buttons, images and columns on a Page at
+  each width the spec lists; `styles` computed styles, hover styles, the space between two texts, what's hidden on
+  phones and bands spanning the window, in Chromium; `pdf` reads the PDF with pdf.js (pages, A4, the copy in order,
+  the table's header and right-aligned totals, the fonts embedded); `change` compares a changed email with its start's
+  render (nothing else changed, and the asked changes hold); `text` the plain-text output; `open` a brief with no
+  exact copy (no warnings, the components asked for, fits a phone, images load).
+- **Grades from evidence the agent can't write** (`lib/grade.mjs`):
+  - **The grading pass** decides `pass`. The run's sources are copied into a fresh directory, everything but `out/` and
+    `.cache/` is made read-only, the render runs, and only after it exits are the checker and its specs copied in and
+    run. A template can't replace a checker that isn't there yet. A checker that exits without its JSON result is a
+    `harnessError`, counted and left out, not a failed task. The session's own last check is kept as `sessionCheck`.
+  - **Tamper hashes**: the run's `tools/`, `docs/`, fonts, images, `.claude/`, the engine and its conventions, hashed
+    before and after the session. Any change is `tampered`.
+  - **A static scan** of the sources, with TypeScript's parser: a child process, a worker, a write through `fs` or a
+    hold on the process (`process.on`, `exit`) is `tampered`. What a template reads that the replay doesn't pin (the
+    clock through `performance`, `process`, `crypto`, a Node module, a path, a stack) is `readsUnpinned`: context, not a
+    mark. It reads calls and imports, never text, so copy that says "rm" passes.
+- **Attempts recomputed, not read** (`lib/replay.mjs`). After the session, its directory is moved aside and a pristine
+  run made at the same path; the session is replayed there in order, and every Bash call's `tsc`, render and check
+  steps run again. Each event must be replayable:
+  - a Write or Edit of a source, or a Read, Glob or Grep inside the run
+  - a tool that changes no file (TodoWrite, Skill)
+  - a Bash command Claude Code refused to run (an error with no exit code and no result line), which changed nothing.
+    One that did run, taken for refused, leaves the replay's files different, and the next step's input hash or the
+    final sources catch it.
+  - a Bash call whose steps, joined by `&&`, `||` and `;`, are each one of these:
+    - **a tool:** `npx tsc --noEmit`, the render command or `node tools/check.mjs`, run again; or one piped with
+      `2>&1` into `tail` (`node tools/render.mjs 2>&1 | tail -20`), whose replay goes through the same tail before
+      it's compared. The attempt still takes the tool's own exit code and its whole output. A tail that hides the
+      step's result line is the cutoff.
+    - **a read** of paths in the run: `ls`, `cat`, `wc`, `head`, `tail`, `grep` or `sed -n <lines>p`, or a pipeline
+      of reads (`cat src/template.tsx | head -50`), or an `echo`. Its output isn't compared, so it may not change
+      which tools run or the call's status. Any other pipeline with a tool in it is the cutoff.
+    - **a file step**, made in the replay too, in order with the tools: a `mkdir -p` in the run; `cat > <source>`
+      fed by a quoted heredoc (the lines after its end are more steps, as if joined by `;`); or a `sed -i` of plain
+      substitutions (`s|a|b|g`, no flag that writes) on sources, in this platform's form (`sed -i ''` on macOS)
+
+  `2>&1` and `2>/dev/null` are allowed after any step. The first event that isn't replayable is the *cutoff*:
+  nothing from it on is verified. The render tools and checker print a result line signed with a secret only the session's environment holds
+  (`[render] ok <out> in=<inputs> mac=…`); a call's lines must be the replay's, line for line. A call whose results
+  differ is a `mismatch`: cut off there, and listed for a maintainer, never `tampered` by itself. The render tools pin
+  what a template could read differently in a replay: the clock (`Date`, `Intl.DateTimeFormat`) at the batch's start,
+  and `Math.random`, seeded. From the verified calls: the first try (every attempt up to the first render had no
+  error), the fix rounds, and the mistakes (`prop/unknown mobile`, `ts/TS2322 mobile`), each verified only where its
+  attempts are before the cutoff.
+- **The sandbox.** The skill suite's sessions run Bash in Claude Code's OS-level sandbox: writes only in the run and
+  never to its guarded files, no reads of the repository or the home folder (node's install and Playwright's browsers
+  aside), no network, no retry outside it. Playwright's browsers live at the run root (`node lib/setup.mjs --browsers`),
+  each session's `TMPDIR` is in its run, and the checkers' Chromium runs single-process (on macOS its other processes
+  need a Mach service the sandbox refuses). `NODE_USE_SYSTEM_CA` (and `--use-system-ca`) is dropped from sessions: in
+  the sandbox node prints an error for each certificate it can't read, which agents then filter with a pipe. The run root and `/tmp` stay readable: a command must read its run's
+  parent folders, and Claude Code's Bash tool writes to `/tmp/claude-<uid>`. So a sandboxed command can read another
+  run in progress; the audit catches one that names it. Before every batch, **a sandbox probe** (one session, or `npm
+  run preflight -- --sandbox`) must pass the checker and `tsc` in the sandbox, and fail to read the home folder,
+  to run a command chained to the checker outside it, and to change `tools/check.mjs`.
+- **The preflight** (`npm run preflight`, no API; it also runs before every batch): every brief's reference solution
+  (`suites/skill/reference/`) renders and passes its checks; each engine renders its own guide's example and each start
+  file; each `requires` probe decides the tasks an engine can't run (v0.3.0 has no `breakpoints`, so `landing` is N/A
+  for `release`); and the change task's baseline is measured. `--skill-discovery` is the smoke run (one session, about
+  $0.25): the `skill` kit's session must list `hyper-elements` among its skills.
+- **The report** (`npm run report -- results/<stamp>-skill-<model>.jsonl`, `lib/report-skill.mjs`) reads the batch's
+  `plan.json` beside the results. Per arm (kit, with its engine's version and commit):
+  - **First try valid**, over the rows whose first try the replay verified, with Wilson's interval for description.
+    Each arm shows how many rows that is; runs with no render are counted on their own line.
+  - **All 3 runs valid**, for each task with three or more verified first tries (the chance three of its runs all are).
+  - **Final pass**, from the grading pass.
+  - **Median fix rounds**, with the runs that never rendered cleanly.
+  - **Warnings left**, and how many runs opened REFERENCE.md or the engine's `dist`.
+  - **Medians** of turns, tokens, cost and seconds.
+  - **Left out**: tampered, harness errors, and runs that reached outside their directory.
+
+  Below that table come:
+  - **The comparison.** Each arm against `release` (or `candidate`; `--compare <base>,<other>` picks the pair): each
+    task's first-try rate in one arm minus the other, averaged over the tasks both ran, with a 95% bootstrap
+    interval over tasks. A difference is called only when the interval excludes zero, and it's "inconclusive:
+    coverage" when either arm has under 80% of those rows verified. Tasks left out of it are named, with the reason
+    (N/A for an engine, incomplete, no verified first try).
+  - **The per-task table**, with each task's difference.
+  - **The mistakes**, by how many runs made each, per arm and task.
+  - **What cut the replays off**, per arm.
+  - **The rows left out**, and why.
+  - **The mismatch list**: each row's call, both result lines, the output, what the template read unpinned, and its
+    transcript.
+
+  A maintainer who finds a mismatch was tampering marks it in `results/<stamp>-skill-<model>.marks.json`
+  (`{ "candidate change #2": { "tampered": "ran a swapped render tool" } }`), which leaves the row out. A batch the
+  cost cap stopped, or one with rows missing against its plan, is reported as partial. Rates then cover only the
+  task and arm cells whose planned runs all finished.
+
+  When the batch has the `negative` and `candidate` arms, the report adds the negative control's verdict, with these
+  checks:
+  - the negative arm's first try is 30 points lower
+  - half its runs made a mistake naming `mobile` or `hover`
+  - the candidate passed every run
+
+  It's "inconclusive: coverage" when either arm has under 80% of its planned runs verified.
+- **Its own tests** (`npm test`, no API): kits, engines, docs sets and briefs; every reference renders, type-checks
+  and passes; and 20 references broken on purpose each fail the check named (no breakpoints, each Tailwind class
+  left out, a Letter or two-page PDF, totals on the left, Helvetica in place of Inter, another color changed, a word
+  changed, an item missing from the plain text, an image with no size, no `MergeTag`…). The replay is tested on
+  simulated sessions, and the report on fixtures:
+  - the paired interval's known answer, which changes when one arm's tasks are relabelled though its rate doesn't
+  - the 80% coverage line
+  - partial batches
+  - N/A tasks
+  - the rows left out
+  - the mismatch list and a maintainer's mark
+  - each of the negative control's verdicts
+
+```bash
+(cd .. && pnpm install && pnpm build)
+HYPER_ELEMENTS_PACKAGE=../packages/react node lib/setup.mjs --as candidate   # again after any change to the packages
+git worktree add /tmp/he-v0.3.0 v0.3.0 && (cd /tmp/he-v0.3.0 && pnpm install --frozen-lockfile)
+HYPER_ELEMENTS_PACKAGE=/tmp/he-v0.3.0/packages/react node lib/setup.mjs --as release && git worktree remove /tmp/he-v0.3.0
+node lib/setup.mjs --docs-from v0.3.0 --as release
+node lib/setup.mjs --docs-from 23e3b258 --as negative
+node lib/setup.mjs --browsers                                       # Chromium at the run root, for the sandbox
+npm test
+npm run bench -- --suite skill --kits candidate,release --briefs core --reps 3 --model claude-sonnet-5-5 --concurrency 4 --max-cost-usd 60
+npm run report -- results/<stamp>-skill-claude-sonnet-5-5.jsonl
+```
+
+Each row keeps its session's secret once the session is over, so `node lib/rereplay.mjs <results>.jsonl` replays a
+finished batch again after a change to the replay: each kept run (`runs/<stamp>/`) is put back at the session's
+path, replayed with the batch's clock, and the row's replay figures rewritten. It needs no model.
+
+`--dry-run` lists the jobs and estimates their cost; `--max-cost-usd` starts no new job once the finished runs cost
+that much (the results file then ends with `{"partial":true}`); `results/<stamp>-skill-<model>.plan.json` is the
+planned matrix. `BENCH_RUN_ROOT` sets where runs are made (the system's temporary folder by default; never under
+`/tmp`, which the sessions are denied). A candidate engine whose checkout changed since `--as candidate` is refused.
+
+### Skill: the negative control, 2026-11-09 (`results/2026-11-09b-negative-skill-claude-sonnet-5-5.jsonl`)
+
+The `negative` arm (the guide at `23e3b258`, which teaches `mobile` and `hover` as props) against `candidate`, on
+`digest`, `landing`, `change` and `tailwind`, five runs each with Sonnet: 40 runs, $33.67, plus $0.73 for the sandbox
+probe. **Passed.** The pipeline sees a regression whose cause is known.
+
+| | candidate | negative |
+|---|---|---|
+| First try valid | 20/20 | 0/20 |
+| Verified first tries | 20/20 | 20/20 |
+| Final pass | 20/20 | 20/20 |
+| Runs with a mistake naming `mobile` or `hover` | 0 | 20 |
+| Median fix rounds | 0 | 1 |
+| Opened REFERENCE.md | 13/20 | 15/20 |
+| Median turns, output tokens, cost | 8, 2,012, $0.77 | 11, 3,235, $0.90 |
+
+The difference averaged over the four tasks is −100 points, with a bootstrap interval of (−100, −100). The negative
+arm's mistakes were `prop/unknown mobile` in 20 runs and `prop/unknown hover` in 15, plus `ts/TS2322 mobile` in 4 and
+`ts/TS2322 hover` in 2, from the runs that type-checked first. Each run then fixed them, so final pass doesn't move:
+a guide's regression shows in the first try, the fix rounds and the cost, not in whether the agent gets there.
+
+Getting there took two batches and changes to the replay. The rules were tested before they were used, and none of
+the changes can verify a step on evidence it doesn't have:
+- **The first batch** (`results/2026-11-09-negative-skill-claude-sonnet-5-5.jsonl`, $33.38) was inconclusive on
+  coverage: 4 and 6 of 20 first tries verified. Sonnet opens with `ls … 2>&1; cat … | head -50`, writes the template
+  with a heredoc, and pipes each tool into `tail`. The replay then refused all three. It now takes them (above).
+- **The second batch's sandbox probe** failed before any job: Sonnet declined to append to `tools/check.mjs`, which
+  CLAUDE.md and the prompt both told it not to change. The probe's prompt now says the refusal is what's tested.
+- **The second batch** first gave 12 and 9 of 20. 19 of its cutoffs were commands Claude Code itself refused to run
+  ("Contains brace with quote character (expansion obfuscation)", for a heredoc of JSX), which the replay had run
+  anyway. A refused command is now a call that changed nothing. `lib/rereplay.mjs` replayed the batch with that
+  rule, with no new sessions: 20 and 20 of 20.
+
+What's left cuts off only after the first try: a `python3` heredoc that edits the template (9 negative runs) and a
+render piped into `head` (1). These leave fix rounds unverified for half the negative arm.
 
 ## Running it
 

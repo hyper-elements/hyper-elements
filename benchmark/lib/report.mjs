@@ -1,12 +1,31 @@
 // Summarizes results (one or more .jsonl files) per suite and kit: pass rate, and the median of each cost; then,
 // for Hyper Elements against each other kit, how often it was faster within a brief and a one-sided Mann–Whitney test.
-//   node lib/report.mjs results/a.jsonl [results/b.jsonl …] [--json]
+// The skill suite has its own report (lib/report-skill.mjs), read against the batch's plan.json and a maintainer's
+// marks.json beside the results file, where they exist.
+//   node lib/report.mjs results/a.jsonl [results/b.jsonl …] [--json] [--compare <base>,<other>]
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
+import { formatSkillReport, parseResults, skillReport } from "./report-skill.mjs";
 
-const files = process.argv.slice(2).filter((a) => !a.startsWith("--"));
-const all = (await Promise.all(files.map((f) => readFile(f, "utf8"))))
-  .flatMap((t) => t.split("\n").filter(Boolean).map((l) => JSON.parse(l)))
-  .map((r) => ({ suite: "email", ...r }));
+const flagValue = (name) => { const i = process.argv.indexOf(`--${name}`); return i < 0 ? undefined : process.argv[i + 1]; };
+const compare = flagValue("compare")?.split(",");
+const files = process.argv.slice(2).filter((a, i, xs) => !a.startsWith("--") && xs[i - 1] !== "--compare");
+const parsed = parseResults(await Promise.all(files.map((f) => readFile(f, "utf8"))));
+const beside = async (ext) => {
+  const found = files.map((f) => f.replace(/\.jsonl$/, ext)).filter((f) => existsSync(f));
+  return Promise.all(found.map(async (f) => JSON.parse(await readFile(f, "utf8"))));
+};
+const skillOut = {};
+if (parsed.rows.some((r) => r.suite === "skill")) {
+  const plans = await beside(".plan.json");
+  // One batch's plan; several results files are read as one batch only without plans.
+  if (plans.length > 1) throw new Error("the skill report reads one batch's plan.json at a time: pass one results file");
+  const marks = Object.assign({}, ...(await beside(".marks.json")));
+  const rep = skillReport({ rows: parsed.rows.filter((r) => r.suite === "skill"), partial: parsed.partial, plan: plans[0] ?? null, marks, compare });
+  console.log(`# skill\n\n${formatSkillReport(rep)}`);
+  skillOut.skill = rep;
+}
+const all = parsed.rows.filter((r) => r.suite !== "skill").map((r) => ({ suite: "email", ...r }));
 // A run that reached outside its own directory (lib/audit.mjs) counts for nothing: it may have read another's work.
 const invalid = all.filter((r) => r.valid === false);
 const rows = all.filter((r) => r.valid !== false);
@@ -43,7 +62,7 @@ function mannWhitney(a, b) {
   return { u, p: phi(z) };
 }
 
-const out = {};
+const out = { ...skillOut };
 for (const suite of [...new Set(rows.map((r) => r.suite))]) {
   const rs = rows.filter((r) => r.suite === suite);
   const kits = [...new Set(rs.map((r) => r.kit))];

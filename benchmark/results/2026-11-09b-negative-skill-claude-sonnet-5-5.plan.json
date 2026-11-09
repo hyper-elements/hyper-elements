@@ -1,0 +1,224 @@
+{
+  "stamp": "2026-11-09b-negative",
+  "suite": "skill",
+  "model": "claude-sonnet-5-5",
+  "kits": [
+    "candidate",
+    "negative"
+  ],
+  "briefs": [
+    "digest",
+    "landing",
+    "change",
+    "tailwind"
+  ],
+  "reps": 5,
+  "startedAt": "2026-11-09T10:24:17.415Z",
+  "maxCostUsd": 45,
+  "na": {
+    "candidate": [],
+    "negative": []
+  },
+  "jobs": [
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 0
+    },
+    {
+      "kit": "negative",
+      "brief": "digest",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 0
+    },
+    {
+      "kit": "negative",
+      "brief": "landing",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 0
+    },
+    {
+      "kit": "negative",
+      "brief": "change",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 0
+    },
+    {
+      "kit": "negative",
+      "brief": "tailwind",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 1
+    },
+    {
+      "kit": "negative",
+      "brief": "digest",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 1
+    },
+    {
+      "kit": "negative",
+      "brief": "landing",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 1
+    },
+    {
+      "kit": "negative",
+      "brief": "change",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 1
+    },
+    {
+      "kit": "negative",
+      "brief": "tailwind",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 2
+    },
+    {
+      "kit": "negative",
+      "brief": "digest",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 2
+    },
+    {
+      "kit": "negative",
+      "brief": "landing",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 2
+    },
+    {
+      "kit": "negative",
+      "brief": "change",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 2
+    },
+    {
+      "kit": "negative",
+      "brief": "tailwind",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 3
+    },
+    {
+      "kit": "negative",
+      "brief": "digest",
+      "rep": 3
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 3
+    },
+    {
+      "kit": "negative",
+      "brief": "landing",
+      "rep": 3
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 3
+    },
+    {
+      "kit": "negative",
+      "brief": "change",
+      "rep": 3
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 3
+    },
+    {
+      "kit": "negative",
+      "brief": "tailwind",
+      "rep": 3
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 4
+    },
+    {
+      "kit": "negative",
+      "brief": "digest",
+      "rep": 4
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 4
+    },
+    {
+      "kit": "negative",
+      "brief": "landing",
+      "rep": 4
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 4
+    },
+    {
+      "kit": "negative",
+      "brief": "change",
+      "rep": 4
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 4
+    },
+    {
+      "kit": "negative",
+      "brief": "tailwind",
+      "rep": 4
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+{ "engine": "release", "sources": ["src/"], "docs": ["GUIDE.md", "REFERENCE.md"] }

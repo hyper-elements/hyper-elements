@@ -1,0 +1,1 @@
+{ "engine": "candidate", "docsFrom": "release", "sources": ["src/"], "docs": ["GUIDE.md", "REFERENCE.md"] }

@@ -1,0 +1,43 @@
+{
+  "prompt": "Build what BRIEF.md describes, following CLAUDE.md. It's done when `node tools/check.mjs` passes.",
+  "packageName": "skill",
+  "moduleType": "module",
+  "conventions": "conventions/email.md",
+  "files": {
+    "tsconfig.json": "tsconfig.json",
+    "tools/render.mjs": "tools/render.mjs",
+    "tools/bench-runtime.mjs": "tools/bench-runtime.mjs"
+  },
+  "render": "tools/render.mjs",
+  "folders": [],
+  "ownAssets": true,
+  "specs": "by-check",
+  "checker": [
+    "check.mjs",
+    "check-lib.mjs",
+    "check-page.mjs",
+    "check-styles.mjs",
+    "check-text.mjs",
+    "check-pdf.mjs",
+    "check-change.mjs",
+    "check-open.mjs",
+    {
+      "from": "../email/check.mjs",
+      "to": "tools/email-check.mjs"
+    }
+  ],
+  "groups": {
+    "core": [
+      "event",
+      "receipt",
+      "digest",
+      "landing",
+      "invoice",
+      "launch",
+      "change",
+      "tailwind",
+      "report",
+      "welcome"
+    ]
+  }
+}

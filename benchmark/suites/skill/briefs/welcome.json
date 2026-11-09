@@ -1,0 +1,8 @@
+{
+  "id": "welcome",
+  "title": "A welcome email",
+  "brief": "A welcome email for people who just signed up to Orbit. Write the copy yourself.\n\nIt has:\n\n- the Orbit logo, https://assets.orbit.dev/img/orbit-logo.png (a 252×128 file)\n- a greeting with the reader's first name, from the merge tag `first_name`\n- three steps to get started\n- a button to https://orbit.dev/start\n\nIt should look good on desktop and on phones.",
+  "spec": {
+    "open": { "file": "out/email.html", "uses": ["<Button", "<MergeTag"], "width": 375 }
+  }
+}
