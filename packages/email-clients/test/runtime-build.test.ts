@@ -1,12 +1,13 @@
 /**
  * The runtime the preview files carry: src/runtime.generated.ts is what its sources build (scripts/build-runtime.mjs),
- * the copied email-renderer modules are the ones RUNTIME_SOURCE pins, and none of it is in core's bundle.
+ * and so is core's copy of what Outlook.com removes from a <style>; the copied email-renderer modules are the ones
+ * RUNTIME_SOURCE pins, and none of it is in core's bundle.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 // @ts-expect-error a script, without types
-import { assertInlineSafe, generated, runtimeScript } from "../scripts/build-runtime.mjs";
+import { assertInlineSafe, generated, outlookComStyle, runtimeScript } from "../scripts/build-runtime.mjs";
 import { RUNTIME } from "../src/runtime.generated";
 
 const dir = resolve(__dirname, "..");
@@ -17,6 +18,10 @@ describe("the runtime", () => {
     expect(readFileSync(join(dir, "src/runtime.generated.ts"), "utf8")).toBe(generated(built));
     expect(RUNTIME.sha256).toBe(createHash("sha256").update(RUNTIME.script, "utf8").digest("base64"));
     expect(RUNTIME.script).not.toMatch(/<\/script/i);
+  });
+
+  it("keeps core's copy of what Outlook.com removes from a <style> as the model it draws with says", () => {
+    expect(readFileSync(resolve(dir, "../core/src/writers/email/outlook-com-style.generated.ts"), "utf8")).toBe(outlookComStyle());
   });
 
   it("refuses a runtime that couldn't sit inline in the preview's <script>", () => {

@@ -64,7 +64,11 @@ Each file carries a runtime: email-renderer's models of the clients (`src/runtim
 the commit `RUNTIME_SOURCE` pins) and the lifecycle around them (`src/runtime/`), bundled into one script
 (`src/runtime.generated.ts`, committed, so the package builds without email-renderer). To move the pin: copy the
 modules from the new commit, update `RUNTIME_SOURCE`, run `pnpm build:runtime`, and show the new scores in the PR.
-`pnpm build` fails if the generated runtime isn't what its sources build. The open fonts in `fonts/` come from the same
+`pnpm build:runtime` also rewrites core's copy of what Outlook.com removes from a `<style>` it keeps
+(`packages/core/src/writers/email/outlook-com-style.generated.ts`: the selectors, at-rules and states its model
+drops), which `validate()`'s notes on an Html block's `<style>` are built from, so a pin move updates them too.
+`pnpm build`, and so CI and the release, fails if either generated file isn't what the sources build, and a browser
+test (`test/browser/validate-agrees.test.tsx`) fails if `validate()` and the model disagree on a sample rule. The open fonts in `fonts/` come from the same
 email-renderer checkout: `pnpm build:fonts /path/to/email-renderer`.
 
 ## Releases
