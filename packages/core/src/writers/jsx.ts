@@ -23,7 +23,7 @@
  */
 import { HOVER, MOBILE } from "../conditions";
 import type { Level, Media, Stylesheet } from "./shared/classes";
-import { border, css, escapeAttr, escapeText, insets, px, radius, type Declarations } from "./shared/css";
+import { border, css, escapeAttr, escapeText, insets, px, radius, shortColors, type Declarations } from "./shared/css";
 
 // ─── The render's stylesheet ────────────────────────────────────────────────
 
@@ -44,6 +44,20 @@ export function rule(media: Media, text: string, level: Level = "own"): string {
   const sheet = sheets[sheets.length - 1];
   if (!sheet) throw new Error("[Elements] Markup with phone or hover styles is written inside withStylesheet()");
   return sheet.classFor(media, text, level);
+}
+
+/**
+ * The class of a node's CSS custom properties (a theme's tokens on a Page), their values as given: only a color is
+ * shortened, and the class goes into the selector alone (a value may hold an `&`).
+ */
+export function customPropertiesClass(properties: Record<string, string> | undefined): string | undefined {
+  if (!properties) return undefined;
+  const sheet = sheets[sheets.length - 1];
+  if (!sheet) throw new Error("[Elements] Markup with custom properties is written inside withStylesheet()");
+  const text = Object.entries(properties)
+    .map(([name, value]) => `${name}:${name.startsWith("--colors-") ? shortColors(value) : value}`)
+    .join(";");
+  return sheet.classForDeclarations("all", text);
 }
 
 type Kind = "outlook" | "notOutlook";

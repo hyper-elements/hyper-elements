@@ -7,7 +7,7 @@
 import { defineComponent, prop, type SupportByTarget } from "./define";
 import { boolean, enumOf, insets } from "./kinds";
 import type { Json } from "./model";
-import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, TEXT_EDITOR } from "./roots";
+import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
 import { boxStyle, inheritedTextStyle, layoutStyle, pick } from "./styles";
 
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
@@ -66,6 +66,7 @@ const PAGE_STYLE = {
 
 export const Document = defineComponent({
   type: "Document",
+  roles: SURFACE_ROLES,
   label: "Document",
   description:
     "A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf.",

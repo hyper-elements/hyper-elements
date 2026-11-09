@@ -36,6 +36,9 @@ export const ROOT_PROPS = {
   }),
 };
 
+/** The theme's tokens a root (and a scope, for those it sets) reads as its background, text color and font. */
+export const SURFACE_ROLES = { backgroundColor: "colors.background", color: "colors.foreground", fontFamily: "fonts.body" } as const;
+
 /** A root's own style: the window's background, the text styles its content inherits, and how it stacks its children. */
 export const ROOT_STYLE = {
   ...inheritedTextStyle,

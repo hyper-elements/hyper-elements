@@ -7,7 +7,10 @@ import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
 import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
-import { CUSTOM_TYPE, registryOf, type ComponentsOption, type Registry } from "./registry";
+import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
+import { nearest } from "./nearest";
+import { COMPONENTS } from "./components";
+import { holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
 
 export interface CheckResult {
   /** The document with what could be read, or null when there's no usable root. */
@@ -15,7 +18,9 @@ export interface CheckResult {
   diagnostics: Diagnostic[];
 }
 
-const NODE_KEYS = ["id", "type", "props", "style", "mobile", "hover", "hidden", "children"];
+const NODE_KEYS = ["id", "type", "props", "style", "mobile", "hover", "hidden", "children", "variant", "tokens", "theme"];
+/** The components that take `tokens`: a scope over what they hold. */
+const SCOPES = new Set(["Section", "Row", "Column", "Grid"]);
 /** An id is written into HTML ids and CSS selectors. */
 const ID = /^[A-Za-z][A-Za-z0-9_-]*$/;
 
@@ -34,6 +39,21 @@ interface Context {
   used: Set<string>;
   /** The template's root: which conditions its nodes may have (phone styles only under one with a phone width). */
   root: ComponentDefinition | undefined;
+  /**
+   * `authored`: a template as written (collected JSX, or what a custom component renders), whose theme is merged into
+   * each node as it's read. `normalized`: a document read already (it has `theme`), which is read as it is.
+   */
+  mode: "authored" | "normalized";
+  /** The tokens this place sees: the theme's, with every enclosing scope's over them. */
+  environment?: ThemeEnvironment;
+  /** The root's theme, read (authored). */
+  theme?: ThemeData;
+  /** A scope was read (a template with scopes and no theme still gets a document theme, empty). */
+  sawScope?: boolean;
+  /** The color and font an ancestor sets itself, which a theme's component default could stop reaching its descendants. */
+  inherited?: Partial<Record<"color" | "fontFamily", { value: Json; at: string }>>;
+  /** What `theme/inherited` has said, once each. */
+  warned?: Set<string>;
 }
 
 /** Validates and normalizes a document; never throws. */
@@ -44,14 +64,36 @@ export function checkDocument(input: unknown, options?: ComponentsOption | Regis
     d.error("document/invalid", "A document is an object: { root: { type: \"Email\", … } }", "");
     return { document: null, diagnostics: d.list };
   }
-  const extra = Object.keys(input).filter((key) => key !== "root");
+  const extra = Object.keys(input).filter((key) => key !== "root" && key !== "theme");
   for (const key of extra) d.error("document/unknown-key", `"${key}" isn't part of a document (root)`, key);
 
   const rootDefinition = isObject(input.root) && typeof input.root.type === "string" ? registry.get(input.root.type) : undefined;
-  const context: Context = { d, registry, used: new Set(), root: rootDefinition };
+  const context: Context = { d, registry, used: new Set(), root: rootDefinition, mode: input.theme === undefined ? "authored" : "normalized" };
+  // A document read already keeps its theme: what a custom component renders is read against it when it's expanded.
+  let theme: ThemeData | undefined;
+  if (input.theme !== undefined) {
+    theme = readTheme(input.theme, "theme", rootDefinition?.type ?? "", themeContext(d, registry)) ?? undefined;
+    if (theme) context.environment = ThemeEnvironment.of(theme, "theme");
+  }
   const root = input.root === undefined ? null : readNode(input.root, "root", null, context);
   if (input.root === undefined) d.error("document/root", 'A document has a root: { type: "Email" }, "Page", …', "root");
-  return { document: root ? { root } : null, diagnostics: d.list };
+  if (context.mode === "authored") theme = context.theme ?? (context.sawScope ? {} : undefined);
+  return { document: root ? (theme !== undefined ? { root, theme } : { root }) : null, diagnostics: once(d.list) };
+}
+
+/** Each diagnostic once: a theme's problem is found at every node that uses it. */
+function once(list: Diagnostic[]): Diagnostic[] {
+  const seen = new Set<string>();
+  return list.filter((diagnostic) => {
+    const key = `${diagnostic.code}\n${diagnostic.path}\n${diagnostic.message}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function themeContext(d: Diagnostics, registry: Registry) {
+  return { d, definition: (type: string) => (Object.prototype.hasOwnProperty.call(COMPONENTS, type) ? registry.get(type) : undefined), types: () => Object.keys(COMPONENTS) };
 }
 
 /** Validates and normalizes a document, throwing an `ElementsError` if it has errors. */
@@ -68,12 +110,21 @@ export function parseDocument(input: unknown, options?: ComponentsOption | Regis
  */
 export function checkFragment(
   input: unknown,
-  options: { parent: ComponentDefinition; root: ComponentDefinition | undefined; idPrefix: string | null; taken: ReadonlySet<string>; registry: Registry; path: string }
+  options: {
+    parent: ComponentDefinition;
+    root: ComponentDefinition | undefined;
+    idPrefix: string | null;
+    taken: ReadonlySet<string>;
+    registry: Registry;
+    path: string;
+    /** The tokens the instance sees (its theme with its enclosing scopes'), which what it renders is read against. */
+    environment?: ThemeEnvironment;
+  }
 ): { node: Node | null; diagnostics: Diagnostic[] } {
   const d = new Diagnostics();
-  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), root: options.root };
+  const context: Context = { d, registry: options.registry, idPrefix: options.idPrefix, used: new Set(options.taken), root: options.root, mode: "authored", environment: options.environment };
   const node = readNode(input, options.path, options.parent, context);
-  return { node, diagnostics: d.list };
+  return { node, diagnostics: once(d.list) };
 }
 
 /** "an Email or a Page", "a Document": the roots something is for, in a message. */
@@ -105,27 +156,6 @@ const GUIDE = "@hyper-elements/react/GUIDE.md";
 /** A message, then where to look the component up. */
 const seeing = (message: string, type: string) => `${message}${/[?.]$/.test(message) ? "" : "."} See ${type} in ${GUIDE}`;
 const a = (type: string) => `${/^[AEIOU]/.test(type) ? "An" : "A"} ${type}`;
-
-/** The name meant, where one is a typo away (a letter or two, or its case): "colour" is "color". */
-function nearest(key: string, names: readonly string[]): string | undefined {
-  const lower = key.toLowerCase();
-  let best: { name: string; distance: number } | undefined;
-  for (const name of names) {
-    const distance = name.toLowerCase() === lower ? 0 : editDistance(lower, name.toLowerCase());
-    if (distance <= (key.length > 4 ? 2 : 1) && (!best || distance < best.distance)) best = { name, distance };
-  }
-  return best?.name;
-}
-
-function editDistance(from: string, to: string): number {
-  let row = Array.from({ length: to.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= from.length; i++) {
-    const next = [i];
-    for (let j = 1; j <= to.length; j++) next[j] = Math.min(row[j] + 1, next[j - 1] + 1, row[j - 1] + (from[i - 1] === to[j - 1] ? 0 : 1));
-    row = next;
-  }
-  return row[to.length];
-}
 
 /** What's wrong with a prop the component doesn't have, and what to write instead. */
 /** Breakpoint names other libraries use (Tailwind's, Chakra's, Bootstrap's), which Elements doesn't have. */
@@ -166,7 +196,17 @@ function conditionHint(definition: ComponentDefinition, key: string): string | u
   return undefined;
 }
 
-function unknownProp(definition: ComponentDefinition, key: string): string {
+/** Props other libraries style a component with. */
+const STYLING_PROPS = new Set(["className", "class", "sx", "variants", "css"]);
+
+function unknownProp(definition: ComponentDefinition, key: string, environment?: ThemeEnvironment): string {
+  if (STYLING_PROPS.has(key) && !CUSTOM_TYPE.test(definition.type) && !definition.categories.includes("root")) {
+    const { variants, styles } = themeNames(environment?.theme, definition.type);
+    const theme = environment?.theme
+      ? `${variants.length ? `its variants: ${variants.join(", ")}` : `the theme gives a ${definition.type} no variants`}; ${styles.length ? `the theme's named styles: ${styles.join(", ")}` : "the theme has no named styles"}`
+      : "the template has no theme";
+    return `${a(definition.type)} has no prop "${key}": a theme styles it with variant="…" or style={{ apply: ["…"] }} (${theme})`;
+  }
   const condition = conditionHint(definition, key);
   if (condition) return `${a(definition.type)} has no prop "${key}": ${condition}`;
   if (Object.prototype.hasOwnProperty.call(definition.style, key)) return `${a(definition.type)} has no prop "${key}": it's a style, style={{ ${key}: … }}`;
@@ -242,14 +282,79 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   }
 
   const node: Node = id === undefined ? { type: definition.type } : { id, type: definition.type };
+  const custom = CUSTOM_TYPE.test(definition.type);
+  const isRoot = definition.categories.includes("root");
+  const saved = { environment: context.environment, inherited: context.inherited };
 
-  const props = readProps(input.props, definition, `${path}.props`, id, d, context.root);
+  // The template's theme, on its root.
+  if (input.theme !== undefined) {
+    if (parent || context.mode === "normalized") d.error("prop/unknown", `${a(definition.type)} has no prop "theme": a theme goes on the template's root`, `${path}.theme`, id);
+    else {
+      const theme = readTheme(input.theme, `${path}.theme`, definition.type, themeContext(d, context.registry));
+      if (theme) {
+        context.theme = theme;
+        context.environment = ThemeEnvironment.of(theme, `${path}.theme`);
+      }
+    }
+  }
+
+  // A scope: tokens over the theme's, for this node and what's in it.
+  let scope: Record<string, Json> | undefined;
+  if (input.tokens !== undefined) {
+    if (!SCOPES.has(definition.type)) {
+      d.error("prop/unknown", `${a(definition.type)} has no prop "tokens": a Section, Row, Column or Grid takes tokens, for itself and what's in it`, `${path}.tokens`, id);
+    } else {
+      scope = readScope(input.tokens, `${path}.tokens`, context.environment, d, id);
+      if (scope && Object.keys(scope).length) {
+        node.tokens = scope;
+        context.environment = (context.environment ?? ThemeEnvironment.empty()).with(scope, `${path}.tokens`);
+        context.sawScope = true;
+      } else scope = undefined;
+    }
+  }
+
+  if (input.variant !== undefined && (isRoot || custom || !Object.keys(definition.style).length)) {
+    d.error("prop/unknown", `${a(definition.type)} has no prop "variant"${isRoot ? ": a root has no variants (its theme sets its style)" : ""}`, `${path}.variant`, id);
+  }
+
+  const props = readProps(input.props, definition, `${path}.props`, id, d, context.root, context);
   if (props) node.props = props;
+
+  // The theme merged into the node's style, as if the author had written it: then read as an authored style is.
+  let themedInput = input.style;
+  let origins: Map<string, string> | undefined;
+  let from: Map<string, string> | undefined;
+  if (context.mode === "authored" && !custom && (context.environment || input.variant !== undefined || (isObject(input.style) && ("apply" in input.style || holdsToken(input.style))))) {
+    const themed = themedStyle(input.style, isRoot ? undefined : input.variant, {
+      d,
+      environment: context.environment,
+      definition,
+      props: propsWithDefaults(definition, node.props),
+      roles: isRoot || !SCOPES.has(definition.type) ? "all" : scope ? scopePaths(scope) : new Set<string>(),
+      conditionAllowed: (name) => {
+        const condition = CONDITIONS.find((c) => c.name === name);
+        return !condition?.roots || condition.roots(context.root);
+      },
+      styleAllowed: (key) => {
+        const spec = Object.prototype.hasOwnProperty.call(definition.style, key) ? definition.style[key] : undefined;
+        return !spec || rootTakes(spec.roots, context.root);
+      },
+      path,
+      id,
+    });
+    themedInput = themed.style;
+    origins = themed.origins;
+    from = themed.from;
+  } else if (custom && isObject(input.style) && "apply" in input.style) {
+    d.error("style/apply-place", `A template's own component takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
+    const { apply: _, ...rest } = input.style;
+    themedInput = rest;
+  }
 
   // A condition's block written inside `style` (`style={{ mobile: { … } }}`) is read as the condition's own; a template's
   // own component (`acme.Card`) takes no condition, so in its style a block is an unknown style, as anything else is.
   const lifted: Partial<Record<string, unknown>> = {};
-  let styleInput = input.style;
+  let styleInput = themedInput;
   if (isObject(styleInput) && !CUSTOM_TYPE.test(definition.type)) {
     const rest: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(styleInput)) {
@@ -259,7 +364,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     styleInput = rest;
   }
 
-  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true, undefined, context.root);
+  const style = readStyles(styleInput, definition, definition.style, `${path}.style`, id, d, "style", () => true, undefined, context.root, origins && { origins, prefix: "" });
   if (style) node.style = style;
 
   for (const condition of CONDITIONS) {
@@ -290,8 +395,33 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
       }
       value = own;
     }
-    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for, context.root);
+    const read = readStyles(value, definition, definition.style, at, id, d, condition.name, (spec, key) => condition.allows(spec, key, definition), condition.for, context.root, origins && { origins, prefix: `${condition.name}.` });
     if (read) node[condition.name] = read;
+  }
+
+  // A theme's default for a component replaces the color or font an ancestor sets itself: said once, with the role to use.
+  if (from) {
+    for (const key of ["color", "fontFamily"] as const) {
+      const above = context.inherited?.[key];
+      const value = node.style?.[key];
+      if (value === undefined || from.get(key) !== "default" || !above || JSON.stringify(above.value) === JSON.stringify(value)) continue;
+      const said = `${above.at}\n${key}`;
+      if (context.warned?.has(said)) continue;
+      (context.warned ??= new Set()).add(said);
+      const role = key === "color" ? "colors.foreground" : "fonts.body";
+      d.warning(
+        "theme/inherited",
+        `The theme's ${definition.type} ${key} replaces the ${key} ${above.at} sets for what it holds: a theme sets text ${key === "color" ? "color" : "fonts"} with ${role} (on the root, or in a scope's tokens), which is inherited`,
+        `${path}.style.${key}`,
+        id
+      );
+    }
+  }
+  // What it passes down that it sets itself (or that its scope does).
+  for (const key of ["color", "fontFamily"] as const) {
+    const value = node.style?.[key];
+    const source = from?.get(key) ?? "own";
+    if (value !== undefined && source !== "default" && (source !== "role" || scope)) context.inherited = { ...context.inherited, [key]: { value, at: path } };
   }
 
   if (input.hidden !== undefined) {
@@ -301,10 +431,12 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
 
   const children = readChildren(input.children, definition, `${path}.children`, id, context);
   if (children.length) node.children = children;
+  context.environment = saved.environment;
+  context.inherited = saved.inherited;
   return node;
 }
 
-function readProps(input: unknown, definition: ComponentDefinition, path: string, id: string | undefined, d: Diagnostics, root: ComponentDefinition | undefined): Record<string, Json> | undefined {
+function readProps(input: unknown, definition: ComponentDefinition, path: string, id: string | undefined, d: Diagnostics, root: ComponentDefinition | undefined, context?: Context): Record<string, Json> | undefined {
   const out: Record<string, Json> = {};
   if (input !== undefined && !isObject(input)) {
     d.error("props/invalid", "props is an object", path, id);
@@ -314,14 +446,22 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
     if (value === undefined) continue;
     const spec = Object.prototype.hasOwnProperty.call(definition.props, key) ? definition.props[key] : undefined;
     if (!spec) {
-      d.error("prop/unknown", unknownProp(definition, key), `${path}.${key}`, id);
+      d.error("prop/unknown", unknownProp(definition, key, context?.environment), `${path}.${key}`, id);
       continue;
     }
     if (!rootTakes(spec.roots, root)) {
       d.error("prop/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
       continue;
     }
-    const parsed = spec.kind.parse(value);
+    // A token in a template's prop (a template's own component's color): its value where the node is.
+    let given: unknown = value;
+    if (context?.mode === "authored" && holdsToken(value)) {
+      const problems: Problem[] = [];
+      given = resolveValue(value, context.environment, spec.kind.name, false, problems);
+      for (const problem of problems) d.error(problem.code, problem.message, `${path}.${key}${problem.at}`, id);
+      if (problems.length) continue;
+    }
+    const parsed = spec.kind.parse(given);
     if (parsed.ok) {
       if (!spec.kind.empty?.(parsed.value)) out[key] = parsed.value;
     } else d.error("prop/invalid", `${key}: ${parsed.message}`, `${path}.${key}`, id);
@@ -377,8 +517,11 @@ function readStyles(
   /** For a condition, what can be set for it is set "for phones". */
   forLabel?: string,
   /** The template's root: a style declared for other roots is an error under it. */
-  root?: ComponentDefinition
+  root?: ComponentDefinition,
+  /** Where each key came from, where a theme gave it ("mobile.padding": the theme's path): diagnostics name it. */
+  from?: { origins: Map<string, string>; prefix: string }
 ): Record<string, Json> | undefined {
+  const at = (key: string) => from?.origins.get(`${from.prefix}${key}`) ?? `${path}.${key}`;
   if (input === undefined) return undefined;
   if (!isObject(input)) {
     d.error(`${what}/invalid`, `${what} is an object of style properties`, path, id);
@@ -389,20 +532,20 @@ function readStyles(
     if (value === undefined) continue;
     const spec = Object.prototype.hasOwnProperty.call(specs, key) ? specs[key] : undefined;
     if (!spec) {
-      d.error("style/unknown", seeing(`"${key}" isn't a style ${a(definition.type).replace(/^A/, "a")} takes${styleHint(definition, specs, key)}`, definition.type), `${path}.${key}`, id);
+      d.error("style/unknown", seeing(`"${key}" isn't a style ${a(definition.type).replace(/^A/, "a")} takes${styleHint(definition, specs, key)}`, definition.type), at(key), id);
       continue;
     }
     if (!rootTakes(spec.roots, root)) {
-      d.error("style/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
+      d.error("style/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, at(key), id);
       continue;
     }
     if (!allowed(spec, key)) {
-      d.error(`${what}/not-allowed`, `"${key}" can't be set ${forLabel ?? "here"}`, `${path}.${key}`, id);
+      d.error(`${what}/not-allowed`, `"${key}" can't be set ${forLabel ?? "here"}`, at(key), id);
       continue;
     }
     const parsed = spec.kind.parse(value);
     if (parsed.ok) out[key] = parsed.value;
-    else d.error(`${what}/invalid`, `${key}: ${parsed.message}`, `${path}.${key}`, id);
+    else d.error(`${what}/invalid`, `${key}: ${parsed.message}`, at(key), id);
   }
   return Object.keys(out).length ? out : undefined;
 }

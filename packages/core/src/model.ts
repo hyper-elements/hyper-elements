@@ -8,6 +8,12 @@ export type Json = string | number | boolean | null | Json[] | { [key: string]: 
 
 export interface ElementsDocument {
   root: Node;
+  /**
+   * The template's theme, checked and with its root's `formats` merged, its references kept as written: set by the
+   * first read of a template that has a theme or a scope. A document with it was read already: a later read merges
+   * nothing, and expansion resolves what a custom component renders against it.
+   */
+  theme?: { [key: string]: Json };
 }
 
 export interface Node {
@@ -24,6 +30,10 @@ export interface Node {
   /** Style while the pointer is over it, where the definition allows. */
   hover?: Record<string, Json>;
   hidden?: { mobile?: boolean; desktop?: boolean };
+  /** A scope's tokens (Section, Row, Column, Grid), their values read: over the theme's for it and what's in it. */
+  tokens?: Record<string, Json>;
+  /** On a Page, the CSS custom properties its element carries (a root's every token, a scope's that differ there). */
+  customProperties?: Record<string, string>;
   children?: Child[];
 }
 

@@ -4,7 +4,7 @@
  * between them is kept to the content width.
  */
 import type { ResolvedNode } from "../../resolve";
-import { h, type Style } from "../jsx";
+import { customPropertiesClass, h, type Style } from "../jsx";
 import { textDeclarations } from "../shared/css";
 import { runHidden } from "../shared/gaps";
 import { isNode, type Component } from "./context";
@@ -19,10 +19,12 @@ export const Page: Component = ({ node: root, style, rtl, render }) => {
   // The root's phone gap, between its children and in each run of them.
   const phone = root.mobile?.gap !== undefined ? { gap: root.mobile.gap } : undefined;
   const content = (children: ResolvedNode[]) => children.map((child) => render(child, alignSelf(child, root, rtl)));
+  // The theme's tokens, as CSS custom properties for the page's own CSS and Html blocks.
+  const tokens = customPropertiesClass(root.customProperties);
   const nodes = root.children.filter(isNode);
   if (!nodes.some((node) => node.type === "Section")) {
     return (
-      <main phone={phone} style={[{ maxWidth: width, margin: "0 auto" }, stack, wrap, textDeclarations(root.text, undefined)]}>
+      <main class={tokens} phone={phone} style={[{ maxWidth: width, margin: "0 auto" }, stack, wrap, textDeclarations(root.text, undefined)]}>
         {content(nodes)}
       </main>
     );
@@ -38,7 +40,7 @@ export const Page: Component = ({ node: root, style, rtl, render }) => {
     else parts.push([node]);
   }
   return (
-    <main phone={phone} style={[stack, wrap, textDeclarations(root.text, undefined)]}>
+    <main class={tokens} phone={phone} style={[stack, wrap, textDeclarations(root.text, undefined)]}>
       {parts.map((part) =>
         Array.isArray(part) ? (
           <div class={hidingClasses(runHidden(part))} phone={phone} style={[{ width: "100%", maxWidth: width, margin: "0 auto" }, stack]}>

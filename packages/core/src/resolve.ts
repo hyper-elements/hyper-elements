@@ -44,6 +44,8 @@ export interface ResolvedNode {
   hover?: Record<string, Json>;
   mobile?: Record<string, Json>;
   hidden?: { mobile?: boolean; desktop?: boolean };
+  /** On a Page, the theme's tokens its element carries as CSS custom properties (a root's every one, a scope's that differ). */
+  customProperties?: Record<string, string>;
   text: ResolvedText;
   /** The width its parent gives it on desktop, in px (null inside text). */
   available: number | null;
@@ -198,6 +200,7 @@ function resolveNode(node: Node, path: string, parentText: ResolvedText, availab
     ...(node.hover ? { hover: node.hover } : {}),
     ...(node.mobile ? { mobile: node.mobile } : {}),
     ...(node.hidden ? { hidden: node.hidden } : {}),
+    ...(node.customProperties ? { customProperties: node.customProperties } : {}),
     text: directed(textOf(parentText, style), props.dir, node.style?.textAlign),
     available,
     width: null,

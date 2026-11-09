@@ -18,3 +18,4 @@ export * from "./registry";
 export * from "./expand";
 export * from "./markup";
 export * from "./writers";
+export * from "./theme";

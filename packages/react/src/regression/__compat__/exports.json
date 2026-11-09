@@ -43,11 +43,14 @@
   "Text",
   "Video",
   "component",
+  "defineTheme",
+  "extendTheme",
   "formatDiagnostics",
   "outline",
   "prepare",
   "prop",
   "render",
+  "token",
   "validate"
  ],
  "./builder": [

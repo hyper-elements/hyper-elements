@@ -63,8 +63,9 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
   });
 
   it("keeps the guide short enough to read whole before writing a template", () => {
-    expect(read("GUIDE.md").length).toBeLessThan(20_000);
-    expect(read(SKILL).length).toBeLessThan(22_000);
+    // Raised by what themes took (their section, and the template's theme): 20,000 and 22,000 before.
+    expect(read("GUIDE.md").length).toBeLessThan(22_500);
+    expect(read(SKILL).length).toBeLessThan(24_500);
   });
 });
 

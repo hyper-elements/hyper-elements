@@ -6,7 +6,7 @@
  */
 import { defineComponent, prop, type PropSpecs, type SupportByTarget } from "./define";
 import { color, length, number, text } from "./kinds";
-import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, TEXT_EDITOR } from "./roots";
+import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
 import { boxStyle, css, layoutStyle, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { web: { level: "full", source: "writer" } };
@@ -15,6 +15,7 @@ const size = (label: string) => prop(number({ min: 0 }), { support: WRITTEN, lab
 
 export const Canvas = defineComponent({
   type: "Canvas",
+  roles: SURFACE_ROLES,
   label: "Canvas",
   description: "An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.",
   categories: ["root"],

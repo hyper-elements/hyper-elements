@@ -33,6 +33,8 @@ export interface ExpandContext {
   responsive: boolean;
   /** A problem found while expanding that doesn't stop it (a warning or a note), said once at the expansion's place. */
   report(diagnostic: Diagnostic): void;
+  /** The theme's tokens where the node is (its scopes' over the theme's), resolved: groups of values. */
+  theme: Record<string, Json>;
 }
 
 export interface CustomDefinition<P extends PropSpecs = PropSpecs> extends ComponentDefinition<P, typeof placementStyle> {
