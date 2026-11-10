@@ -1,0 +1,39 @@
+{
+  "id": "tailwind",
+  "title": "A page from a Tailwind mockup",
+  "brief": "A short product update, as a web page. The design comes from a Tailwind mockup: build it with Hyper Elements so it looks as the mockup's classes say.\n\n- Heading \"Orbit 3.0 is here\", `text-4xl font-bold mb-4`.\n- Intro \"Faster renders, a new editor and dark mode.\", `text-base md:text-lg` (16px on phones, 18px on wider screens).\n- Button \"Upgrade now\" linking to https://orbit.dev/upgrade, `bg-indigo-600 hover:bg-indigo-700 text-white` (#4f46e5, #4338ca on hover).\n- Footer \"Orbit Labs, 500 Market St, San Francisco\", `mt-8`: 32px of space above it.\n- White background, content 720px wide, 48px of padding around it.",
+  "run": {
+    "conventions": "conventions/page.md",
+    "render": ["tools/render.mjs", "--page"]
+  },
+  "spec": {
+    "page": {
+      "texts": [
+        "Orbit 3.0 is here",
+        "Faster renders, a new editor and dark mode.",
+        "Orbit Labs, 500 Market St, San Francisco"
+      ],
+      "buttons": [{ "text": "Upgrade now", "href": "https://orbit.dev/upgrade", "background": "#4f46e5" }],
+      "links": [],
+      "images": [],
+      "columns": [],
+      "widths": [
+        { "width": 1200, "layout": "side-by-side" },
+        { "width": 375, "layout": "stacked" }
+      ]
+    },
+    "styles": {
+      "file": "out/page.html",
+      "gaps": [
+        { "above": "Orbit 3.0 is here", "below": "Faster renders, a new editor and dark mode.", "width": 1200, "min": 16 },
+        { "above": "Orbit 3.0 is here", "below": "Faster renders, a new editor and dark mode.", "width": 375, "min": 16 },
+        { "above": "Upgrade now", "below": "Orbit Labs, 500 Market St, San Francisco", "width": 1200, "min": 32 }
+      ],
+      "styles": [
+        { "text": "Faster renders, a new editor and dark mode.", "width": 1200, "property": "font-size", "value": 18 },
+        { "text": "Faster renders, a new editor and dark mode.", "width": 375, "property": "font-size", "value": 16 }
+      ],
+      "hovers": [{ "text": "Upgrade now", "property": "background-color", "value": "#4338ca" }]
+    }
+  }
+}
