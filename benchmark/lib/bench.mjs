@@ -257,6 +257,20 @@ async function session(dir, prompt, transcript, { render = [suite.render], allow
   };
 }
 
+/**
+ * The email client problems left in a finished email, from the kit's render tool (`diagnostics` in its kit.json, run
+ * with --json): warnings and notes that name email clients, and how many of each code.
+ */
+async function emailClientsOf(dir, tool) {
+  const r = await sh("node", [tool, "--json"], { cwd: dir, timeout: 120_000 });
+  let diagnostics;
+  try { ({ diagnostics } = JSON.parse(r.out.trim().split("\n").pop())); } catch { return { error: (r.err || r.out).slice(0, 300) }; }
+  const about = diagnostics.filter((d) => d.clients?.length);
+  const codes = {};
+  for (const d of about) codes[d.code] = (codes[d.code] ?? 0) + 1;
+  return { warnings: about.filter((d) => d.severity === "warning").length, notes: about.filter((d) => d.severity === "info").length, codes };
+}
+
 const SUMMED = ["wallMs", "durationMs", "apiMs", "turns", "costUsd", "inputTokens", "cacheWriteTokens", "cacheReadTokens", "outputTokens", "toolCalls", "checkRuns", "renderRuns", "renderErrors", "imageReads"];
 
 async function one(kit, brief, rep) {
@@ -264,6 +278,7 @@ async function one(kit, brief, rep) {
   const k = kitInfo[kit];
   const run = runOf(suite, k, await briefOf(suiteName, brief));
   const { sources } = run;
+  const { diagnostics } = k;
   // The skill suite: Bash in the OS sandbox, a fixed environment, and the guarded files hashed before and after.
   const own = skillSuite ? settingsOf(denied, sandboxOf({ runDir: dir, runRoot, browsers })) : settings;
   // The sandbox lets a session write only in its run, so its temporary folder is there too.
@@ -299,6 +314,7 @@ async function one(kit, brief, rep) {
       build, change,
     };
   }
+  if (diagnostics) row.emailClients = await emailClientsOf(dir, diagnostics);
   Object.assign(row, { sourceTokens: enc.encode(source).length, sourceChars: source.length, sourceFiles: Object.keys(built).length, copies, ...provenance });
   // The skill suite: this run's own engine and docs, in place of the global engine.
   if (runProvenance[kit]) Object.assign(row, { engine: runProvenance[kit].engine, docs: runProvenance[kit].docs });

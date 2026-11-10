@@ -42,7 +42,11 @@ that only read the file.
   and an event invite. Each gives the exact copy, links and images, and the layout: columns side by side on desktop
   and stacked on phones, a line-item table, a hover color.
 - **Four kits** (`suites/email/kits/`):
-  - `he`: write `emails/email.tsx` with `@hyper-elements/react`; `node tools/render.mjs`.
+  - `he`: write `emails/email.tsx` with `@hyper-elements/react`; `node tools/render.mjs`, which prints the email's
+    problems with `formatDiagnostics()`: each with the email clients it's about, what to change and a link.
+  - `he-plain`: the `he` kit (`"extends": "he"` in its kit.json), but its render tool prints each problem without its
+    email clients, fix and link (`tools/print.mjs`), as 0.3.0 printed them. Not in the default kits: it's
+    run beside `he` to see what those fields change.
   - `react-email`: write `emails/email.tsx` with `@react-email/components`; `node tools/render.mjs`.
   - `mjml`: write `emails/email.mjml` with MJML (`mjml` 5.4.1); `node tools/render.mjs`, which prints MJML's
     validation warnings. MJML's defaults are left as they are: its default font links a Google Fonts stylesheet,
@@ -52,6 +56,13 @@ that only read the file.
   and 375px: the copy, the links, the buttons (link, color, size, hover), the images (loaded, alt text, size), table
   layout with no flex or grid, a hidden preview text, 600px content, no sideways scroll on a phone, columns side by
   side on desktop and stacked on a phone, and line items on one line with the price on the right.
+
+- **Email client warnings left** (kits whose kit.json names a `diagnostics` tool: `he`, `he-plain`): after the run,
+  the harness runs `node tools/render.mjs --json` on the finished email and records, in the row's `emailClients`,
+  the warnings and notes that name email clients (a WebP image classic Outlook doesn't show, phone styles some apps
+  ignore) and how many of each code. The check doesn't require none: this is what the email would still get wrong in
+  some app. The report gives, per kit, how many emails had none, the median left and the codes, and `he` against
+  `he-plain` (one-sided Mann–Whitney: whether printing the clients, fix and link leaves fewer).
 
 ## Image suite
 
@@ -370,6 +381,7 @@ npx playwright install chromium                                 # the email chec
 (cd .. && pnpm install && pnpm build)                           # the engine, built from this checkout
 HYPER_ELEMENTS_PACKAGE=../packages/react npm run setup          # again after every npm ci / npm install
 npm run bench -- --suite email --kits he,react-email,mjml,html --briefs all --reps 3 --model sonnet --concurrency 4
+npm run bench -- --suite email --kits he,he-plain --briefs all --reps 4 --model sonnet --concurrency 4   # the warnings' new fields
 npm run selftest                                                # the image checker's own test; no API
 npm run bench -- --suite image --kits he,playwright,canvas --briefs all --reps 4 --model sonnet --concurrency 4
 npm run report -- results/<stamp>-<suite>-sonnet.jsonl

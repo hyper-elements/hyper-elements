@@ -9,6 +9,7 @@ import { join } from "node:path";
 import * as entry from "./index";
 import Receipt from "./readme-example";
 import { primitivesGuide, primitivesReference, primitivesSkill } from "./reference";
+import { describeComponents } from "../inspect/index";
 
 const root = join(__dirname, "../..");
 const read = (file: string) => readFileSync(join(root, file), "utf8");
@@ -64,6 +65,38 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
   it("keeps the guide short enough to read whole before writing a template", () => {
     expect(read("GUIDE.md").length).toBeLessThan(20_000);
     expect(read(SKILL).length).toBeLessThan(22_000);
+  });
+});
+
+describe("roots", () => {
+  /** The roots REFERENCE.md says a component goes in, from its "Not in …" or "Only in …" line (none: every root). */
+  const referenceRoots = (reference: string, type: string): string[] => {
+    const heading = type === "DocumentPage" ? "Document.Page" : type;
+    const section = reference.split(`\n### ${heading}\n`)[1]!.split("\n### ")[0];
+    const all = ["Email", "Page", "Document", "Canvas"];
+    const not = /Not in an? (\w+)\./.exec(section)?.[1];
+    const only = /Only in ([^.]+)\./.exec(section)?.[1];
+    if (not) return all.filter((root) => root !== not);
+    if (only) return all.filter((root) => new RegExp(`\\b${root}\\b`).test(only));
+    return all;
+  };
+
+  it("are the same in REFERENCE.md and describeComponents(), for each root", () => {
+    const reference = read("REFERENCE.md");
+    for (const root of ["Email", "Page", "Document", "Canvas"] as const) {
+      const described = describeComponents({ root }).components.filter((c) => !c.categories.includes("root")).map((c) => c.type);
+      const listed = describeComponents().components.filter((c) => !c.categories.includes("root") && referenceRoots(reference, c.type).includes(root)).map((c) => c.type);
+      expect(listed, root).toEqual(described);
+    }
+  });
+
+  it("list phone styles only for components under a root with phones", () => {
+    const guide = read("GUIDE.md");
+    for (const c of describeComponents().components) {
+      const line = guide.split("\n").find((l) => l.startsWith(`- **${c.type === "DocumentPage" ? "Document.Page" : c.type}**:`))!;
+      const phones = c.roots.some((root) => root === "Email" || root === "Page");
+      if (!phones) expect(line, c.type).not.toMatch(/Phones:/);
+    }
   });
 });
 

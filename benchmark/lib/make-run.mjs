@@ -36,9 +36,15 @@ export async function suiteOf(suite) {
   return { dir, ...JSON.parse(await readFile(join(dir, "suite.json"), "utf8")) };
 }
 
+/**
+ * A kit's settings. One that `extends` another kit is that kit's files and settings, with its own files copied over
+ * them and its own settings over theirs (`dirs`: every folder copied, the base first).
+ */
 export async function kitOf(suite, kit) {
   const dir = join(bench, "suites", suite, "kits", kit);
-  return { dir, docs: [], ...JSON.parse(await readFile(join(dir, "kit.json"), "utf8")) };
+  const own = JSON.parse(await readFile(join(dir, "kit.json"), "utf8"));
+  const base = own.extends ? await kitOf(suite, own.extends) : { docs: [], dirs: [] };
+  return { ...base, ...own, dir, dirs: [...base.dirs, dir] };
 }
 
 export async function briefOf(suite, briefId) {
@@ -92,7 +98,7 @@ export async function makeRun(suite, kit, briefId, rep, root = join(bench, "runs
   const dir = join(root, `${kit}__${briefId}__${rep}`);
   await rm(dir, { recursive: true, force: true });
   await mkdir(dir, { recursive: true });
-  await cp(k.dir, dir, { recursive: true, filter: (f) => basename(f) !== "kit.json" });
+  for (const from of k.dirs) await cp(from, dir, { recursive: true, filter: (f) => basename(f) !== "kit.json" });
   await mkdir(join(dir, "tools"), { recursive: true });
   // A kit's docs (Hyper Elements' agent guide), from the installed package, its engine or its docs set, as its docs
   // tell users to set it up.

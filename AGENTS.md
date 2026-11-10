@@ -33,7 +33,7 @@ Local development uses the Node version in `.nvmrc`; CI runs Node 20.
 
 | Path | Package | Published | Purpose |
 |------|---------|-----------|---------|
-| `packages/react` | `@hyper-elements/react` | Yes | The components and `render()` (main entry); the builder adapter (`/builder`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
+| `packages/react` | `@hyper-elements/react` | Yes | The components and `render()` (main entry); the builder adapter (`/builder`); what each root takes and what a template holds, as data (`/inspect`: `describeComponents({ root })`, `inspect()`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
 | `packages/migrate` | `@hyper-elements/migrate` | Yes | The `npx @hyper-elements/migrate` CLI: converts React Email templates (`src/react-email/`, API at `@hyper-elements/migrate/react-email`) and Unlayer Elements templates (`--from unlayer-elements`: the command in `src/legacy/`, the codemod in `src/convert/elements/`, API at `@hyper-elements/migrate/elements`), checks each against its original and writes a report; `compare` checks a template migrated by hand. What the converters share is in `src/convert/` (the Elements tree, the report, the TSX printer, the content check). Fidelity benchmark in `bench/`, results in `FIDELITY.md`. |
 | `packages/core` | `@unlayer-internal/elements-core` | No (bundled into react) | The template tree (internal), component definitions, value kinds, validation, custom components, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
 | `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. |
@@ -78,6 +78,9 @@ JSX
   → the writers in packages/core/src/writers write the root's output: email, page or print HTML, and plain text
 ```
 
+- `render(email, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
+  preview an email (`packages/core/src/writers/shared/block-map.ts`): marks written in as the email is, then taken out,
+  so the HTML is the same bytes (`block-map.test.tsx` checks it over the examples and generated templates).
 - `render()` is async and rejects with an `ElementsError` listing the template's problems. `validate()` checks
   without rendering, `outline()` prints the laid-out template. A component that is async or suspends is an error
   (`jsx/async`).
@@ -114,13 +117,19 @@ Unit tests are Vitest files next to the code (`name.test.ts(x)`), plus `packages
 - **Components**: `packages/react/src/primitives/` (`template`, `custom`, `content`, `reference` tests);
   `types.test-d.tsx` is the type contract that `pnpm typecheck` checks.
 - **Generated docs**: `reference.test.tsx` fails if `GUIDE.md`, `REFERENCE.md` or `skills/hyper-elements/SKILL.md`
-  differ from what the definitions write, or if the README's template is out of date.
+  differ from what the definitions write, or if the README's template is out of date. It also checks REFERENCE.md says the same roots as `describeComponents()`.
 - **Support per output**: `packages/core/test/writers/support.test.ts`. Every style and prop declares how each
   output shows it, must change the output or give a diagnostic (nothing dropped silently), and every declared limit
   is reported by `validate()`.
 - **Hostile inputs**: `src/regression/hostile-input.test.tsx`. Markup in every user-facing value, in every root,
   must add no element or attribute (including inside Outlook's conditional comments), and the builder's design no
   markup where the builder reads HTML.
+- **Compatibility baseline**: `src/regression/cross-format-compatibility.test.tsx`. What existing templates give, recorded
+  in `src/regression/__compat__/`: every gallery and stress template (the screen ones as an Email and a Page) and
+  templates with their own components, as HTML, plain text, class names, diagnostics, outline, Unlayer design, and a
+  Document's PDF or a Canvas's image as drawn; each saved builder design read back; each entry's exports. A change
+  meant to change one rewrites it on purpose (`UPDATE_COMPAT=1 pnpm --filter @hyper-elements/react test cross-format`)
+  and says why.
 - **Render isolation**: `src/regression/render-isolation.test.tsx`. No render leaks into the next, the same input
   gives the same output, and a render reads no random numbers or the date (Next.js Cache Components fail a build on
   one).
@@ -201,8 +210,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 270,000 bytes,
-  `dist/builder.js` 434,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 276,000 bytes,
+  `dist/builder.js` 440,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.

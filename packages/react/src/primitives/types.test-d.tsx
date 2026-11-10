@@ -4,8 +4,8 @@
  */
 import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Section, Span, Svg } from "./index";
 import type { ParagraphProps, TextProps } from "./index";
-import { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, prepare, render, validate } from "./index";
-import type { Diagnostic, EmailClient, ValidateOptions } from "./index";
+import { BLOCK_MAP_VERSION, DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, prepare, render, validate } from "./index";
+import type { BlockMap, BlockMapEntry, Diagnostic, EmailClient, ValidateOptions } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
 export const textProps: TextProps = { style: { fontSize: 14, mobile: { fontSize: 12 } }, children: "Hi" };
@@ -132,6 +132,12 @@ export const validateOptions: ValidateOptions = { emailClients: ["apple-mail"] }
 export const prepared = prepare(ok, { emailClients: ["yahoo", "samsung-email"] });
 export const widened = validate(ok, { emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx"] });
 export const defaults: readonly EmailClient[] = DEFAULT_EMAIL_CLIENTS;
+export const mapped = render(ok, { blockMap: true }).then((r) => {
+  const blocks: BlockMap | undefined = r.blocks;
+  const entry: BlockMapEntry | undefined = blocks?.entries[0];
+  const offset: number | undefined = entry?.offset;
+  return [blocks?.version === BLOCK_MAP_VERSION, blocks?.unit === "utf8", entry?.path, entry?.nodeId, offset] as const;
+});
 export const fields = (d: Diagnostic): [EmailClient[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];
 export const measured: number | undefined = EMAIL_CLIENTS.outlook.measured?.wordsWithin4px;
 // @ts-expect-error an email client it doesn't know

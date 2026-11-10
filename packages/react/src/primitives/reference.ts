@@ -7,13 +7,33 @@
  * - REFERENCE.md: every prop and style, with the values it takes, its default and what it does.
  * - skills/hyper-elements/SKILL.md, at the repository's root: the guide as an agent skill.
  */
-import { describeComponents, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
+import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
 
 /** How a template writes a component whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };
 const name = (type: string) => JSX[type] ?? type;
 
-const OUTPUTS: Record<string, string> = { email: "email", web: "page", print: "print and PDF", image: "image" };
+/** The roots with phones: a component only under others has no phone styles (they're mobile/not-supported there). */
+const PHONE_ROOTS = describeConditions().find((condition) => condition.name === "mobile")!.roots;
+const hasPhones = (c: ComponentDescription) => c.roots.some((root) => PHONE_ROOTS.includes(root));
+const article = (type: string) => `${/^[AEIOU]/.test(type) ? "an" : "a"} ${type}`;
+/** The roots a component goes in, said where it isn't every root: "Not in an Email.", "Only in a Document." */
+function rootsNote(c: ComponentDescription): string {
+  if (c.categories.includes("root") || c.roots.length === ROOT_NAMES.length) return "";
+  const missing = ROOT_NAMES.filter((root) => !c.roots.includes(root));
+  const list = (roots: readonly string[]) => roots.map(article).join(missing.length === 1 ? "" : " or ").replace(/ or (?=.* or )/g, ", ");
+  return missing.length === 1 ? `Not in ${list(missing)}.` : `Only in ${list(c.roots)}.`;
+}
+/**
+ * The guide's note: only where what holds it doesn't already say so (a shape goes only in an Svg, which says it; a
+ * Document's parts only in a Document), so the guide stays short. REFERENCE.md gives every one.
+ */
+function guideRootsNote(c: ComponentDescription): string {
+  const holders = describeComponents().filter((h) => h.children.types.includes(c.type) || c.categories.some((category) => h.children.categories.includes(category)));
+  const reached = new Set(holders.flatMap((h) => (h.categories.includes("root") ? [h.type] : h.roots)));
+  const implied = holders.length > 0 && [...reached].every((root) => (c.roots as string[]).includes(root));
+  return implied ? "" : rootsNote(c);
+}
 
 const GROUPS: Array<{ title: string; about: string; has: (c: ComponentDescription) => boolean }> = [
   {
@@ -41,10 +61,16 @@ const code = (value: unknown) => `\`${JSON.stringify(value)}\``;
 const generated = (from: string) => `<!-- Written from the component definitions by ${from}: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->`;
 const GENERATED = generated("src/primitives/reference.ts");
 
-function property(p: PropertyDescription, named: Map<string, string>): string {
+function property(p: PropertyDescription, named: Map<string, string>, c: ComponentDescription): string {
   const key = p.path.slice(p.path.indexOf(".") + 1);
   const takes = named.has(p.kind) ? `*${p.kind}*` : p.accepts;
-  const notes = [p.required ? "required" : "", p.default !== undefined ? `default ${code(p.default)}` : "", p.inherited ? "inherited" : ""].filter(Boolean);
+  const notes = [
+    p.required ? "required" : "",
+    p.default !== undefined ? `default ${code(p.default)}` : "",
+    p.inherited ? "inherited" : "",
+    p.roots.length < c.roots.length ? `only in ${p.roots.join(", ")}` : "",
+    p.group ?? "",
+  ].filter(Boolean);
   return `- \`${key}\`: ${takes}${notes.length ? ` (${notes.join(", ")})` : ""}${p.description ? `. ${p.description.replace(/\.$/, "")}.` : ""}`;
 }
 
@@ -55,15 +81,15 @@ function component(c: ComponentDescription, all: ComponentDescription[], named: 
   const props = c.properties.filter((p) => p.path.startsWith("props."));
   const style = c.properties.filter((p) => p.path.startsWith("style."));
   const hover = c.properties.filter((p) => p.path.startsWith("hover.")).map((p) => `\`${p.path.slice(6)}\``);
-  const phone = NO_PHONES.has(c.type) ? [] : style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``);
+  const phone = hasPhones(c) ? style.filter((p) => p.mobile).map((p) => `\`${p.path.slice(6)}\``) : [];
   return [
     `### ${name(c.type)}`,
     "",
     c.description,
     "",
-    `Holds: ${children || "nothing"}. Drawn in: ${c.targets.map((t) => OUTPUTS[t] ?? t).join(", ")}.`,
-    ...(props.length ? ["", "Props:", ...props.map((p) => property(p, named))] : []),
-    ...(style.length ? ["", "`style`:", ...style.map((p) => property(p, named))] : []),
+    [`Holds: ${children || "nothing"}.`, rootsNote(c)].filter(Boolean).join(" "),
+    ...(props.length ? ["", "Props:", ...props.map((p) => property(p, named, c))] : []),
+    ...(style.length ? ["", "`style`:", ...style.map((p) => property(p, named, c))] : []),
     ...(hover.length ? ["", `\`style.hover\`: ${hover.join(", ")}.`] : []),
     ...(phone.length ? ["", `\`style.mobile\` (on phones): ${phone.join(", ")}.`] : []),
   ].join("\n");
@@ -103,8 +129,23 @@ export function primitivesReference(): string {
     "",
     sections.join("\n\n"),
     "",
+    BLOCK_MAP,
+    "",
   ].join("\n");
 }
+
+/** render()'s `blockMap`, a low-level option for tools: in the reference, not the guide. */
+const BLOCK_MAP = [
+  "## For tools: where each block is in an Email's HTML",
+  "",
+  "`await render(email, { blockMap: true })` also gives `blocks`, for a tool that previews an Email and needs to know which block of the template it's looking at: `{ version, unit: \"utf8\", entries: [{ path, nodeId?, offset }] }`.",
+  "",
+  "- Each block written as an element has an entry: its place in the template (`root.children[2]`, as diagnostics give it), its `id` where it has one, and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.",
+  "- Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak` and a `MergeTag` have none, nor a `Layer`'s `Image` (drawn as the Layer's background).",
+  "- The HTML is the same bytes as without the option. Merge tags are written before the offsets are taken, and the offsets count the whole document, `<head>` included.",
+  "- `version` is `BLOCK_MAP_VERSION`, which changes only when this format does.",
+  "- Not with `pretty`, which indents the HTML after the offsets are taken (`render/block-map-pretty`). Another root than an Email has no `blocks`.",
+].join("\n");
 
 // ─── The guide ─────────────────────────────────────────────────────────────
 
@@ -113,11 +154,6 @@ const TEXT = ["color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lin
 const BOX = ["width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"];
 /** The text styles that may be set on phones, named `text` among a component's phone styles. */
 const PHONE_TEXT = ["fontSize", "lineHeight", "letterSpacing", "textAlign"];
-/**
- * Components that only go under a root with no phone width (a Document, a Canvas): phone styles are an error there
- * (mobile/not-supported), so their phone styles aren't listed.
- */
-const NO_PHONES = new Set(["Document", "DocumentPage", "PageHeader", "PageFooter", "PageNumber", "PageBreak", "Canvas"]);
 const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
 
 /**
@@ -153,10 +189,11 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
   const props = of("props.").map((p) => `${p.path.slice(6)}${p.required ? "*" : ""} (${short(p, named)})`);
   const style = of("style.").map((p) => p.path.slice(6));
   const hover = of("hover.").map((p) => p.path.slice(6));
-  const phone = NO_PHONES.has(c.type) ? [] : of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6));
+  const phone = hasPhones(c) ? of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6)) : [];
   const holds = [c.children.text ? "text" : "", ...c.children.categories.map((category) => CATEGORY[category] ?? category), ...c.children.types.map(name)].filter(Boolean);
   const parts = [
     `${c.description.replace(/\.$/, "")}.`,
+    guideRootsNote(c),
     holds.length ? `Holds ${holds.join(", ")}.` : "",
     props.length ? `Props: ${props.join(", ")}.` : "",
     style.length ? `Style: ${keys(style, enumOf("style."))}.` : "",
@@ -214,6 +251,21 @@ export function primitivesSkill(example: string): string {
   ].join("\n");
 }
 
+/** An Email rendered to a file, printing its problems, in the guide. */
+const RENDER_EXAMPLE = `import { writeFile } from "node:fs/promises";
+import { ElementsError, formatDiagnostics, render } from "@hyper-elements/react";
+import Welcome from "./welcome";
+
+try {
+  const { html, diagnostics } = await render(<Welcome />);
+  await writeFile("welcome.html", html);
+  console.log(formatDiagnostics(diagnostics)); // warnings, each with its email clients and fix
+} catch (e) {
+  if (!(e instanceof ElementsError)) throw e;
+  console.error(formatDiagnostics(e.diagnostics));
+  process.exitCode = 1;
+}`;
+
 /** A Canvas written as a PNG, in the guide. */
 const CANVAS_EXAMPLE = `import { readFile } from "node:fs/promises";
 import { Canvas, Heading, Image } from "@hyper-elements/react";
@@ -251,7 +303,12 @@ function guide(example: string): string {
     "- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.",
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
     "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
-    "- `await render(element)` gives `{ html, text, diagnostics }`; a template with errors throws an `ElementsError` whose `diagnostics` give each problem's `code`, `message` and `path`. `validate(element)` runs the same checks without rendering. `outline(element)` prints the laid-out template (each block, its width, its text), to check the layout without reading the HTML.",
+    "- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).",
+    "- An Email's warnings name the email clients they're about (`clients`), with a `fix` and a `see` link. The clients most email is read in are checked; `emailClients: [...DEFAULT_EMAIL_CLIENTS, \"gmx\"]` checks more.",
+    "",
+    "```tsx",
+    RENDER_EXAMPLE,
+    "```",
     "",
     "## Common mistakes",
     "",
@@ -262,7 +319,7 @@ function guide(example: string): string {
     "- `items={[{ text: \"Home\", link: \"/\" }]}` → `items={[{ text: \"Home\", href: \"/\" }]}`. A `Menu`'s items are `{ text, href }`, a `Social`'s icons `{ name, href }`.",
     "- `style={{ marginBottom: 16 }}` → `gap: 16` on the parent. There are no margins.",
     "- `ColumnLayouts`, `layout`, `headingType`, `altText`, `html` are Unlayer Elements' props, not these: a `Row` of `Column`s, `level`, `alt`, and text as children.",
-    "- `<Image src=\"https://example.com/logo.png\">` → `src={{ src: \"https://example.com/logo.png\", width: 240, height: 80 }}`, the file's size. Without it Outlook shows the image at its file's size, and Hyper Elements warns.",
+    "- `<Image src=\"https://example.com/logo.png\">` → `src={{ src: \"https://example.com/logo.png\", width: 240, height: 80 }}`, the file's size. Without it, Outlook shows the file at its own size.",
     "- `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.",
     "",
     "## A whole template",
@@ -273,7 +330,7 @@ function guide(example: string): string {
     "",
     "## A Canvas as an image",
     "",
-    "`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: \"svg\"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise than written: a weight not given, a hover); errors throw an `ElementsError`.",
+    "`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: \"svg\"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`.",
     "",
     "```tsx",
     CANVAS_EXAMPLE,

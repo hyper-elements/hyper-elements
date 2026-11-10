@@ -115,6 +115,33 @@ for (const suite of [...new Set(rows.map((r) => r.suite))]) {
     console.table(tests);
   }
 
+  // The email client problems left in each finished email (kits whose render tool gives diagnostics), and Hyper
+  // Elements printing them with their clients, fix and link (he) against without (he-plain).
+  const measured = kits.filter((kit) => rs.some((r) => r.kit === kit && r.emailClients && !r.emailClients.error));
+  if (measured.length) {
+    const left = (kit) => rs.filter((r) => r.kit === kit && r.emailClients && !r.emailClients.error).map((r) => r.emailClients);
+    const clients = measured.map((kit) => {
+      const k = left(kit);
+      const codes = {};
+      for (const e of k) for (const [code, n] of Object.entries(e.codes)) codes[code] = (codes[code] ?? 0) + n;
+      return {
+        kit, measured: k.length, noWarnings: k.filter((e) => e.warnings === 0).length,
+        medWarnings: median(k.map((e) => e.warnings)), sumWarnings: sum(k.map((e) => e.warnings)), medNotes: median(k.map((e) => e.notes)),
+        codes: Object.entries(codes).sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c} ${n}`).join(", "),
+      };
+    });
+    console.log("Email client warnings left in the finished email:");
+    console.table(clients);
+    if (measured.includes("he") && measured.includes("he-plain")) {
+      const t = mannWhitney(left("he").map((e) => e.warnings), left("he-plain").map((e) => e.warnings));
+      console.log(`he (clients, fix and link printed) against he-plain (without): one-sided Mann–Whitney p = ${t.p.toPrecision(2)} that he doesn't leave fewer warnings.`);
+      tests.push({ other: "he-plain", measure: "emailClientWarnings", pWarnings: +t.p.toPrecision(2) });
+    }
+    const failed = rs.filter((r) => r.emailClients?.error);
+    if (failed.length) console.log(`Not measured (the render tool failed): ${failed.map((r) => `${r.kit} ${r.brief} #${r.rep}`).join(", ")}`);
+    out[suite] = { ...out[suite], clients };
+  }
+
   // Two-phase suites (multi): each phase on its own. The change runs only after a passing build.
   if (rs.some((r) => r.build)) {
     console.log("Per phase (medians; the change phase only where the build passed):");
@@ -146,6 +173,6 @@ for (const suite of [...new Set(rows.map((r) => r.suite))]) {
     console.log("Failures:");
     for (const r of fails) console.log(`- ${r.kit} ${r.brief} #${r.rep}: ${r.failed.join(" | ").slice(0, 300)}`);
   }
-  out[suite] = { table, tests };
+  out[suite] = { ...out[suite], table, tests };
 }
 if (process.argv.includes("--json")) console.log(JSON.stringify(out));

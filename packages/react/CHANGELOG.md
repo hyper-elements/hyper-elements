@@ -43,6 +43,8 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
   `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
   default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
+- Docs: `GUIDE.md` and the agent skill say what an email's warnings name (`clients`, `fix`, `see`) and how to check
+  more clients, with a script that renders an email and prints its problems with `formatDiagnostics()`.
 - New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
   apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
   on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
@@ -62,6 +64,33 @@ A component's phone and hover styles are blocks of its `style`, typed to what th
   too; `email/size` and `email/style-size` name Gmail and its apps, with a `fix`.
 - Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
   email clients are longer.
+
+### Where each block is in an Email's HTML
+
+`render(email, { blockMap: true })` also returns `blocks`, for tools that preview an email: each block's place in the
+template and the UTF-8 byte offset in `html` just after its outermost element's tag name
+(`{ version, unit: "utf8", entries: [{ path, nodeId?, offset }] }`). The HTML is the same bytes as without the option.
+`BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
+`BlockMapEntry` are exported. Documented in REFERENCE.md.
+
+### Which roots take each component, prop and style
+
+Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
+validated before still validate, and render the same.
+
+- New: `component/not-supported`, `prop/not-supported` and `style/not-supported`, errors for a component, prop or
+  style under a root that doesn't take it, naming the roots that do. They're checked inside your own components too,
+  against the root they're rendered in. A component no output of the root can draw is still `target/unsupported`, and
+  a `PageNumber` outside a Document still `document/page-number`.
+- New: a `component()`'s prop can be for some roots only: `prop.text({ label: "Motto", roots: ["Page"] })`.
+- New: `@hyper-elements/react/inspect`, what each root takes and what a template holds, as data, without rendering.
+  `describeComponents({ root })` lists the components a root takes, each prop and style with its kind, group
+  (`Typography`, `Spacing`, …), default and roots, and the style blocks (`mobile`, `hover`) the root takes;
+  `describeComponent(type, { root })` gives one. `inspect(element)` lists each component in a template with the roots
+  that take it, whether its root does (`allowed`), what it's given and its problems, and every diagnostic `validate()`
+  finds. Each result has a `version` (`INSPECT_VERSION`) that changes only with its shape.
+- Docs: `REFERENCE.md` says where a component, prop or style isn't in every root ("Not in an Email.", "only in a
+  Page"), and each style's group; `GUIDE.md` and the agent skill say it for Svg and PageNumber.
 
 ### Fixes
 

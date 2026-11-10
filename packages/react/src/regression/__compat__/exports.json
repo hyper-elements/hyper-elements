@@ -1,0 +1,63 @@
+{
+ ".": [
+  "BLOCK_MAP_VERSION",
+  "Button",
+  "Canvas",
+  "Circle",
+  "Column",
+  "DEFAULT_EMAIL_CLIENTS",
+  "Divider",
+  "Document",
+  "EMAIL_CLIENTS",
+  "ElementsError",
+  "Ellipse",
+  "Email",
+  "Grid",
+  "Heading",
+  "Html",
+  "Image",
+  "Layer",
+  "Line",
+  "LineBreak",
+  "Link",
+  "List",
+  "ListItem",
+  "Menu",
+  "MergeTag",
+  "Page",
+  "PageBreak",
+  "PageFooter",
+  "PageHeader",
+  "PageNumber",
+  "Path",
+  "Polygon",
+  "Rect",
+  "Row",
+  "Section",
+  "Social",
+  "Span",
+  "Svg",
+  "Table",
+  "TableCell",
+  "TableRow",
+  "Text",
+  "Video",
+  "component",
+  "formatDiagnostics",
+  "outline",
+  "prepare",
+  "prop",
+  "render",
+  "validate"
+ ],
+ "./builder": [
+  "fromDesign",
+  "toDesign"
+ ],
+ "./pdf": [
+  "renderPdf"
+ ],
+ "./image": [
+  "renderImage"
+ ]
+}

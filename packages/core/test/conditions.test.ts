@@ -1,4 +1,4 @@
-import { checkDocument, COMPONENTS, CONDITIONS, HOVER, MOBILE, type Target } from "../src";
+import { checkDocument, COMPONENTS, CONDITIONS, describeConditions, HOVER, MOBILE, type Target } from "../src";
 import { pagedSupport, prepareTemplate } from "../src/writers";
 
 const OUTPUT_OF: Record<string, Target> = { Email: "email", Page: "web", Document: "web", Canvas: "web" };
@@ -17,6 +17,13 @@ describe("the condition list", () => {
         expect(condition.support[target], `${condition.name} in ${root}`).toBeDefined();
       }
     }
+  });
+
+  it("says which roots each condition may be set under", () => {
+    expect(describeConditions()).toEqual([
+      { name: "mobile", on: "on phones", roots: ["Email", "Page"] },
+      { name: "hover", on: "on hover", roots: ["Email", "Page", "Document", "Canvas"] },
+    ]);
   });
 
   it("names no condition after a style or a prop", () => {

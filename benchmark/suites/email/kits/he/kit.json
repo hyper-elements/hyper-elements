@@ -1,1 +1,1 @@
-{ "sources": ["emails/email.tsx"], "docs": ["GUIDE.md", "REFERENCE.md"] }
+{ "sources": ["emails/email.tsx"], "docs": ["GUIDE.md", "REFERENCE.md"], "diagnostics": "tools/render.mjs" }

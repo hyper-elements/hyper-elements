@@ -12,6 +12,7 @@ import { support } from "./shared/support";
 import { pageBreakpoints, renderPage, type PageOptions } from "./page";
 import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
+import type { BlockMap } from "./shared/block-map";
 
 export { renderEmail, EMAIL_PHONE_MARGIN, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, type EmailHtml, type EmailOptions } from "./email";
 export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
@@ -20,6 +21,7 @@ export { emailSupport } from "./email/support";
 export { support } from "./shared/support";
 export { overflow, pagedSupport } from "./shared/paged";
 export { Stylesheet, CLASS_PREFIX, type Media } from "./shared/classes";
+export { BLOCK_MAP_VERSION, type BlockMap, type BlockMapEntry } from "./shared/block-map";
 
 export interface EmailClientsOption {
   /**
@@ -34,6 +36,11 @@ export interface EmailClientsOption {
 export interface RenderOptions extends PageOptions, EmailOptions, EmailClientsOption {
   /** The HTML indented, for reading it; for sending, the compact HTML (white space may change how some email clients show it). */
   pretty?: boolean;
+  /**
+   * For tools that preview an Email: also return `blocks`, where each block is in `html` (its template path and the
+   * UTF-8 byte offset just after its outermost element's tag name). The HTML is the same either way. Not with `pretty`.
+   */
+  blockMap?: boolean;
 }
 
 export interface RenderResult {
@@ -47,6 +54,8 @@ export interface RenderResult {
   bodyStyle: string;
   /** Warnings and notes (errors are thrown). */
   diagnostics: Diagnostic[];
+  /** With `blockMap`, for an Email: where each block is in `html`. */
+  blocks?: BlockMap;
 }
 
 /** The output each root renders to, and whether its writer exists yet. */
@@ -103,7 +112,6 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
   const found = output.target === "email" ? emailSupport(resolved.root, resolved.templatePath) : support(resolved.root, output.target);
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
-  if (root !== "Document") found.push(...pageNumbersOutside(resolved.root));
   found.push(...pageBreakpoints(resolved.root));
   diagnostics.push(...inTemplate(resolved, found));
   return done(failed() ? null : resolved, output.target);
@@ -113,19 +121,6 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
 export function inTemplate(resolved: ResolvedDocument, diagnostics: Diagnostic[]): Diagnostic[] {
   const { templatePath } = resolved;
   return templatePath ? diagnostics.map((diagnostic) => ({ ...diagnostic, path: templatePath(diagnostic.path) })) : diagnostics;
-}
-
-/** A PageNumber outside a Document: a page has no number there. */
-function pageNumbersOutside(root: ResolvedNode): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  const visit = (node: ResolvedNode) => {
-    if (node.type === "PageNumber") {
-      out.push({ code: "document/page-number", severity: "error", message: `A PageNumber is a page's number in a Document; this ${root.type} has no pages`, path: node.path, ...(node.id ? { nodeId: node.id } : {}) });
-    }
-    for (const child of node.children) if (typeof child !== "string") visit(child);
-  };
-  visit(root);
-  return out;
 }
 
 /**
@@ -146,10 +141,21 @@ export function validateTemplate(input: unknown, options: ComponentsOption & Ema
  * written. Throws an `ElementsError` listing the errors if there are any.
  */
 export function renderTemplate(input: unknown, options: RenderOptions & ComponentsOption = {}): RenderResult {
+  // Indenting rewrites the HTML after it's written, which would move every offset.
+  if (options.blockMap && options.pretty) throw new ElementsError([{ code: "render/block-map-pretty", severity: "error", message: "blockMap gives offsets in the compact HTML; leave pretty off", path: "root" }]);
   const { resolved, target, diagnostics } = prepareTemplate(input, options);
   if (!resolved) throw new ElementsError(diagnostics);
   const text = renderText(resolved, options);
   const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), diagnostics: [] };
   const shown = (html: string) => (options.pretty ? prettyHtml(html) : html);
-  return { html: shown(written.html), head: shown(written.head), body: shown(written.body), bodyStyle: written.bodyStyle, text, diagnostics: [...diagnostics, ...inTemplate(resolved, forEmailClients(written.diagnostics, options.emailClients))] };
+  const blocks = "blocks" in written ? written.blocks : undefined;
+  return {
+    html: shown(written.html),
+    head: shown(written.head),
+    body: shown(written.body),
+    bodyStyle: written.bodyStyle,
+    text,
+    diagnostics: [...diagnostics, ...inTemplate(resolved, forEmailClients(written.diagnostics, options.emailClients))],
+    ...(blocks ? { blocks } : {}),
+  };
 }
