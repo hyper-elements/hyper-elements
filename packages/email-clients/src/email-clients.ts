@@ -121,26 +121,16 @@ export interface ClientDiagnostic {
 
 /**
  * The diagnostics for the email clients asked for: one about some clients is kept where they meet the selection, with
- * its clients narrowed to them; one about none in particular is always kept. Diagnostics equal in code, path, severity
- * and message are one, with the clients of both.
+ * its clients narrowed to them; one about none in particular is always kept. Equal ones (code, path, severity and
+ * message) are merged by core, with the clients of both, as it does every plugin's.
  */
 export function forClients<D extends ClientDiagnostic>(diagnostics: readonly D[], selection: readonly string[] = DEFAULT_EMAIL_CLIENTS): D[] {
   const out: D[] = [];
-  const seen = new Map<string, D>();
   for (const d of diagnostics) {
-    if (!d.clients) {
-      out.push(d);
-      continue;
-    }
-    const clients = d.clients.filter((c) => selection.includes(c));
-    if (!clients.length) continue;
-    const key = JSON.stringify([d.code, d.path, d.severity, d.message]);
-    const same = seen.get(key);
-    if (same) same.clients = [...new Set([...same.clients!, ...clients])];
+    if (!d.clients) out.push(d);
     else {
-      const kept = { ...d, clients };
-      seen.set(key, kept);
-      out.push(kept);
+      const clients = d.clients.filter((c) => selection.includes(c));
+      if (clients.length) out.push({ ...d, clients });
     }
   }
   return out;

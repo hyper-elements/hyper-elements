@@ -32,8 +32,9 @@ validate(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlo
   one diagnostic with all of them.
 - **Await it:** `emailClients()` compiles the models' WebAssembly module once, so it returns a Promise. Passed without
   `await`, core skips it and says so (`plugin/invalid`).
-- **Where WebAssembly isn't available,** the plugin runs the checks from caniemail's tables only, and its first
-  diagnostic (`email/captured-checks`) says so.
+- **Where the models can't run** (no WebAssembly, or `@hyper-elements/email-client-models` can't be loaded), the plugin
+  runs the checks from caniemail's tables only, and its first diagnostic (`email/captured-checks`) says so. The next
+  `emailClients()` tries again.
 
 Without the plugin, `validate()` and `render()` give an Email one note, `email/more-checks`, saying where these checks
 are; `plugins: []` leaves it out.
@@ -82,10 +83,12 @@ findings are JSON in `<script type="application/json" id="email-client-findings"
 ### Fonts
 
 The previews draw with the open fonts the models were measured with, which ship in `fonts/` (SIL OFL 1.1): Selawik for
-Segoe UI, Carlito for Calibri, and Inter. Arial, Georgia, Verdana, Tahoma, Trebuchet MS, Times New Roman and Courier
+Segoe UI, Carlito for Calibri, and Inter (loaded only where the email names Inter: it's half of classic Outlook's
+fonts). Arial, Georgia, Verdana, Tahoma, Trebuchet MS, Times New Roman and Courier
 New come from the machine opening the file, as when they were measured. `fonts: "url"` (the default) loads the open
 fonts from jsDelivr; `fonts: "inline"` puts them in each file so it draws offline, apart from the email's own images and
-web fonts, which it lists as missing.
+web fonts, which it lists as missing. Inlined, classic Outlook's file is about 1 MB plus the email, and about 2 MB plus the
+email where it names Inter.
 
 ### How the previews are made
 

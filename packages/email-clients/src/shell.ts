@@ -22,6 +22,20 @@ export function scriptJson(value: unknown): string {
   return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 }
 
+/**
+ * `script` if it's safe inline in a <script>: no `</script`, and not both `<!--` and `<script` followed by a space, `/`
+ * or `>` (the HTML parser's double-escaped state, where the shell's own </script> wouldn't end it). The runtime is
+ * checked as it's built; the models' script comes from their package, so it's checked as it's written in.
+ */
+export function inlineSafe(script: string, what: string): string {
+  if (/<\/script/i.test(script) || (script.includes("<!--") && /<script[\s/>]/i.test(script))) {
+    const error = new Error(`${what} can't be written into a preview: it has text that would end its <script> (</script, or <!-- with <script). Reinstall @hyper-elements/email-clients, which brings the models package it reads`);
+    error.name = "email-clients/version-mismatch";
+    throw error;
+  }
+  return script;
+}
+
 const escapeHtml = (text: string) => text.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 
 /**
@@ -64,8 +78,8 @@ export function previewFile(html: string, config: PreviewConfig, scripts: { runt
     '<main id="frames"></main>',
     `<script type="application/json" id="email">${scriptJson(html)}</script>`,
     `<script type="application/json" id="email-client-config">${scriptJson(config)}</script>`,
-    scripts ? `<script>${scripts.models.script}</script>` : "",
-    scripts ? `<script>${scripts.runtime.script}</script>` : "",
+    scripts ? `<script>${inlineSafe(scripts.models.script, "The email client models' script")}</script>` : "",
+    scripts ? `<script>${inlineSafe(scripts.runtime.script, "The preview's runtime")}</script>` : "",
     "</body>",
     "</html>",
   ].join("\n");

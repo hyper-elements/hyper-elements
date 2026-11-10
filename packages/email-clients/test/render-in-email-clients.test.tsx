@@ -7,7 +7,7 @@ import React from "react";
 import { Button, Email, Html, Page, render, Text, type ElementsPlugin } from "@hyper-elements/react";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
 import { checkCore, CORE_RANGE } from "../src/core";
-import { contentSecurityPolicy, scriptJson } from "../src/shell";
+import { contentSecurityPolicy, inlineSafe, scriptJson } from "../src/shell";
 import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients } from "../src/index";
 import { RUNTIME } from "../src/runtime.generated";
 
@@ -98,9 +98,36 @@ describe("renderInEmailClients()", () => {
     expect(scriptJson("</script>\u2028")).toBe('"\\u003c/script\\u003e\\u2028"');
   });
 
-  it("writes each file, with its fonts inline, the models and the runtime, in under 2 MB", async () => {
+  it("writes each file, with its fonts inline, the models and the runtime, in under 2 MB; about half that for classic Outlook where the email doesn't name Inter", async () => {
     const { previews } = await renderInEmailClients(welcome, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" });
     for (const preview of previews) expect([preview.id, Buffer.byteLength(preview.html) < 2_000_000]).toEqual([preview.id, true]);
+    const outlook = previews.find((p) => p.id === "outlook")!;
+    expect(Buffer.byteLength(outlook.html)).toBeLessThan(1_100_000);
+    const config = embedded(outlook.html, "email-client-config");
+    expect(Object.keys(config.fontSources).some((file: string) => file.startsWith("InterVariable"))).toBe(false);
+    expect(config.faces.some((face: string) => face.endsWith('"Inter"'))).toBe(false);
+  });
+
+  it("loads Inter's stand-in where the email names Inter, in any of its stacks", async () => {
+    const named = (
+      <Email width={600}>
+        <Text style={{ fontFamily: "Inter, Arial, sans-serif" }}>Welcome</Text>
+      </Email>
+    );
+    const { previews } = await renderInEmailClients(named, { emailClients: ["outlook"] });
+    const config = embedded(previews[0]!.html, "email-client-config");
+    expect(Object.keys(config.fontSources).filter((file: string) => file.startsWith("InterVariable")).sort()).toEqual(["InterVariable-Italic.woff2", "InterVariable.woff2"]);
+    expect(config.faces.filter((face: string) => face.endsWith('"Inter"'))).toHaveLength(2);
+  });
+
+  it("refuses a list of clients that isn't one, as emailClients({ clients }) does", async () => {
+    await expect(renderInEmailClients(welcome, { emailClients: "gmail" as never })).rejects.toThrow(/renderInEmailClients\(\{ emailClients \}\) takes a list of outlook, /);
+  });
+
+  it("writes in no script that would end its <script> element", () => {
+    expect(inlineSafe("console.log(1)", "x")).toBe("console.log(1)");
+    expect(() => inlineSafe("a = '</script>'", "The email client models' script")).toThrow(/The email client models' script can't be written into a preview/);
+    expect(() => inlineSafe("a = '<!--'; b = '<script>'", "x")).toThrow(expect.objectContaining({ name: "email-clients/version-mismatch" }));
   });
 
   it("lets only the models and the runtime run, the models compile WebAssembly, and fetches nothing but fonts and images", () => {

@@ -16,11 +16,11 @@ import type React from "react";
 import type { Diagnostic, ElementsPlugin, RenderOptions } from "@hyper-elements/react";
 import { checkCore, versionMismatch } from "./core";
 import { DEFAULT_PREVIEW_CLIENTS, variantsOf, type PreviewVariant, type Skipped } from "./clients";
-import { EMAIL_CLIENTS, type EmailClient } from "./email-clients";
+import { checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
 import { emailClients, PLUGIN_NAME } from "./plugin";
 import { loadModelsPackage } from "./models";
 import { RUNTIME } from "./runtime.generated";
-import { FONT_ORIGIN, fontSources, readPackageFont, type ReadFont } from "./fonts";
+import { FONT_ORIGIN, fontSources, readPackageFont, unnamed, type ReadFont } from "./fonts";
 import { previewFile } from "./shell";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./core";
@@ -64,6 +64,7 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // The models' browser script, for the preview's CSP: its sha256 is the package's own.
   const script = { script: models.SCRIPT, sha256: models.SCRIPT_SHA256 };
   const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", plugins = [], ...renderOptions } = options;
+  checkClients(clients, "renderInEmailClients({ emailClients })");
   const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS);
   const own: ElementsPlugin[] = plugins.some((plugin) => plugin?.name === PLUGIN_NAME) ? [] : [await emailClients({ clients })];
   // The compact HTML: white space changes how some clients draw an email. A core that passed the check gives a block
@@ -80,6 +81,8 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // Each font file read once, however many previews inline it.
   const cache = new Map<string, Promise<string>>();
   const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readPackageFont(file)), cache.get(file)!);
+  // A stand-in for a family the email chooses (Inter) only where it names it: the rest of classic Outlook's fonts are half.
+  const skip = unnamed(rendered.html);
   const previews = await Promise.all(
     variants.map(async (variant) => {
       const { filename: _, ...rest } = variant;
@@ -89,8 +92,9 @@ export async function renderInEmailClients(element: React.ReactElement, options:
         name: info.name,
         blocks,
         fontOrigin,
-        fontSources: await fontSources(variant.client, fonts, read),
-        faces: models.facesToLoad(variant.client),
+        fontSources: await fontSources(variant.client, fonts, read, skip.files),
+        faces: models.facesToLoad(variant.client).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
+        leftOut: skip.families,
         standIns: models.standIns(variant.client),
         elements: info.measured?.elements ?? null,
         runtime: RUNTIME.sha256,

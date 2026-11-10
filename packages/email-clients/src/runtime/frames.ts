@@ -128,3 +128,13 @@ function faceKey(family: string, style: string, weight: string): string {
   const weights: Record<string, string> = { "": "400", normal: "400", bold: "700" };
   return [family.replace(/^["']|["']$/g, ""), style.trim() || "normal", weights[weight.trim()] ?? weight.trim()].join("|");
 }
+
+/** `css` without the @font-face rules of `families`. */
+export function withoutFaces(css: string, families: readonly string[]): string {
+  if (!families.length) return css;
+  const names = new Set(families.map((family) => family.toLowerCase()));
+  return css.replace(/@font-face\s*\{[^}]*\}/gi, (rule) => {
+    const family = /font-family\s*:\s*["']?([^"';}]+)/i.exec(rule)?.[1]?.trim().toLowerCase();
+    return family && names.has(family) ? "" : rule;
+  });
+}

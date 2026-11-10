@@ -102,9 +102,9 @@ describe("email clients", () => {
     await expect(emailClients({ clients: "gmail" as never })).rejects.toThrow(TypeError);
   });
 
-  it("makes one diagnostic of two the same, with the clients of both, and keeps one about no client", () => {
+  it("keeps the clients asked for, narrowed to them, and one about no client; merging equal ones is core's", () => {
     const d = (clients?: string[]) => ({ code: "email/x", severity: "info" as const, message: "m", path: "root", ...(clients ? { clients } : {}) });
-    expect(forClients([d(["gmail"]), d(["outlook"]), d()])).toEqual([d(["gmail", "outlook"]), d()]);
+    expect(forClients([d(["gmail", "yahoo"]), d(["outlook"]), d(["gmx"]), d()], ["gmail", "outlook"])).toEqual([d(["gmail"]), d(["outlook"]), d()]);
   });
 
   it("prints a diagnostic's clients, fix and how to see it on its line", () => {

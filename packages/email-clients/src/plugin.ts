@@ -10,7 +10,7 @@ import type { ElementsPlugin, PluginInput, PluginOutput } from "@hyper-elements/
 import { treeChecks, outputChecks } from "./checks";
 import { checkPlugins, checkProtocol } from "./core";
 import { DEFAULT_EMAIL_CLIENTS, checkClients, forClients, type ClientDiagnostic, type EmailClient } from "./email-clients";
-import { loadModelsPackage, type Models } from "./models";
+import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";
 
 export interface EmailClientsPluginOptions {
   /** The email clients to check for (default: DEFAULT_EMAIL_CLIENTS, the 11 most email is read in). */
@@ -20,22 +20,48 @@ export interface EmailClientsPluginOptions {
 /** The plugin's name: core's validate() and render() leave out their email/more-checks note when it's passed. */
 export const PLUGIN_NAME = "email-clients";
 
-/** Compiling the models' module, once per process: later calls reuse it. Null where it couldn't be loaded. */
-let compiling: Promise<Error | null> | undefined;
-const compile = (models: Models) => (compiling ??= models.ready().then(() => null, (error: unknown) => (error instanceof Error ? error : new Error(String(error)))));
+const asError = (error: unknown) => (error instanceof Error ? error : new Error(String(error)));
 
 /**
- * The plugin for the clients asked for. Loads the models' WebAssembly module the first time; where it can't be loaded
- * (no WebAssembly), the plugin runs the open checks only, and its first diagnostic on an Email says so.
+ * Compiling the models' module, once per process: later calls reuse it. Null where it compiled; the Error where it
+ * didn't, which isn't kept: the next emailClients() tries again (a plugin already made keeps the open checks only).
+ */
+let compiling: Promise<Error | null> | undefined;
+const compile = (models: Models) =>
+  (compiling ??= models.ready().then(
+    () => null,
+    (error: unknown) => {
+      compiling = undefined;
+      return asError(error);
+    }
+  ));
+
+/** The models package, or why it can't be loaded (the next emailClients() tries again). */
+async function loadModels(): Promise<{ models: Models; unavailable: null } | { models: null; unavailable: Error }> {
+  let models: Models;
+  try {
+    models = await loadModelsPackage();
+  } catch (error) {
+    forgetModelsPackage();
+    return { models: null, unavailable: asError(error) };
+  }
+  // A protocol this package doesn't read is a mismatched install, said as one: not a fallback.
+  checkProtocol(models.PROTOCOL);
+  const unavailable = await compile(models);
+  return unavailable ? { models: null, unavailable } : { models, unavailable: null };
+}
+
+/**
+ * The plugin for the clients asked for. Loads the models' WebAssembly module the first time; where the models package
+ * can't be imported, or its module compiled (no WebAssembly), the plugin runs the open checks only, and its first
+ * diagnostic on an Email says so.
  */
 export async function emailClients(options: EmailClientsPluginOptions = {}): Promise<ElementsPlugin> {
   checkPlugins();
   const given = options.clients;
   checkClients(given, "emailClients({ clients })");
-  const models = await loadModelsPackage();
-  checkProtocol(models.PROTOCOL);
+  const { models, unavailable } = await loadModels();
   const selection = given ?? DEFAULT_EMAIL_CLIENTS;
-  const unavailable = await compile(models);
   const forSelection = (found: ClientDiagnostic[]) => forClients(found, selection);
   return Object.freeze({
     name: PLUGIN_NAME,
@@ -47,10 +73,10 @@ export async function emailClients(options: EmailClientsPluginOptions = {}): Pro
       }
       const found: ClientDiagnostic[] = [];
       if (unavailable) {
-        found.push({ code: "email/captured-checks", severity: "warning", message: `The captured email client checks didn't load (${unavailable.message}): only the checks from caniemail's tables ran`, path: "root", fix: "run on Node 20 or later, or in a browser with WebAssembly" });
+        found.push({ code: "email/captured-checks", severity: "warning", message: `The captured email client checks didn't load (${unavailable.message}): only the checks from caniemail's tables ran`, path: "root", fix: "install @hyper-elements/email-client-models where it can load (it comes with this package): Node 20 or later, or a browser with WebAssembly" });
       }
       found.push(...treeChecks(input));
-      if (!unavailable) found.push(...captured(models, input));
+      if (models) found.push(...captured(models, input));
       return forSelection(found);
     },
     checkOutput(output: PluginOutput): ClientDiagnostic[] {

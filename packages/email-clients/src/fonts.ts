@@ -38,9 +38,37 @@ export async function readPackageFont(file: string): Promise<string> {
   }
 }
 
-/** The source each of a client's files is given: its URL, or a data: URL. */
-export async function fontSources(client: PreviewClient, how: "url" | "inline", read: ReadFont = readPackageFont): Promise<Record<string, string>> {
-  const files = (await loadModelsPackage()).fontFiles(client);
+/**
+ * The stand-ins for a family an email chooses itself (Inter, by its files here): loaded, and inlined, only where the
+ * email names the family. The others (Segoe UI, Calibri, the client's default) are what the client draws with whatever
+ * the email names. Inter's two files are half of classic Outlook's fonts.
+ */
+export const NAMED_ONLY: Readonly<Record<string, readonly string[]>> = { Inter: ["InterVariable.woff2", "InterVariable-Italic.woff2"] };
+
+const ENTITIES: Record<string, string> = { quot: '"', apos: "'", "#39": "'", "#x27": "'", amp: "&" };
+
+/** Of NAMED_ONLY's families, those a font-family in `html` names (its inline styles, <style>s and Html blocks alike). */
+export function namedFamilies(html: string): Set<string> {
+  const named = new Set<string>();
+  for (const [, value] of html.matchAll(/font-family\s*:\s*((?:&[a-z#0-9]+;|[^;}<>])+)/gi)) {
+    const decoded = value!.replace(/&([a-z#0-9]+);/gi, (entity, name: string) => ENTITIES[name.toLowerCase()] ?? entity);
+    for (const family of decoded.split(",").map((f) => f.trim().replace(/^["']+|["']+$/g, "").toLowerCase())) {
+      for (const known of Object.keys(NAMED_ONLY)) if (family === known.toLowerCase()) named.add(known);
+    }
+  }
+  return named;
+}
+
+/** The files and faces of NAMED_ONLY's families `html` doesn't name: a preview leaves them out. */
+export function unnamed(html: string): { files: Set<string>; families: string[] } {
+  const named = namedFamilies(html);
+  const families = Object.keys(NAMED_ONLY).filter((family) => !named.has(family));
+  return { files: new Set(families.flatMap((family) => NAMED_ONLY[family]!)), families };
+}
+
+/** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */
+export async function fontSources(client: PreviewClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set()): Promise<Record<string, string>> {
+  const files = (await loadModelsPackage()).fontFiles(client).filter((file) => !skip.has(file));
   const sources = await Promise.all(files.map(async (file) => [file, how === "url" ? fontUrl(file) : `data:font/woff2;base64,${await read(file)}`] as const));
   return Object.fromEntries(sources);
 }

@@ -7,3 +7,8 @@ export type Models = typeof import("@hyper-elements/email-client-models");
 let loading: Promise<Models> | undefined;
 
 export const loadModelsPackage = (): Promise<Models> => (loading ??= import("@hyper-elements/email-client-models"));
+
+/** After a failed import: the next call imports it again. */
+export const forgetModelsPackage = (): void => {
+  loading = undefined;
+};

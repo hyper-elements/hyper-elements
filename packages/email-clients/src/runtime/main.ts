@@ -18,7 +18,7 @@
 import type { BlockMap } from "@hyper-elements/react";
 import { scriptJson } from "../shell";
 import { clipped, type Finding } from "./findings";
-import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, webFontFamilies, withCss } from "./frames";
+import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, webFontFamilies, withCss, withoutFaces } from "./frames";
 import { markPaths } from "./marks";
 import { loadModels, type Client } from "./models";
 
@@ -39,6 +39,8 @@ export interface Config {
   fontSources: Record<string, string>;
   /** Each stand-in face to load before measuring, and their families (the models'). */
   faces: string[];
+  /** Families whose stand-ins aren't loaded, as the email doesn't name them (Inter): their @font-face rules are left out. */
+  leftOut: string[];
   standIns: string[];
   /** The Elements version the client's model was measured on, the runtime's sha256, and the models' script's and protocol. */
   elements: string | null;
@@ -79,7 +81,7 @@ function writeNote(findings: { ready: string; removed: Array<{ what: string; cou
   const status = document.createElement("p");
   status.textContent = findings.error ? `The preview failed: ${findings.error}` : findings.ready === "ok" ? "Drawn." : "Drawn, with something missing (listed below): it may differ from the client.";
   note.append(status);
-  list("Found", findings.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}${d.selector ? ` (${d.selector})` : ""}: ${d.message}. Fix: ${d.fix}`));
+  list("Found", findings.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}${d.selector ? ` (${d.selector})` : ""}: ${d.message}.${d.fix ? ` Fix: ${d.fix}` : ""}`));
   list("What the client removed or changed", findings.removed.map(({ what, count }) => `${what}${count > 1 ? ` (${count})` : ""}`));
   list("Missing", findings.missing.map((m) => (m.kind === "image" ? `image ${m.src}` : m.kind === "author-font" ? `web font ${m.family} (${m.src})` : m.kind === "substituted" ? `font ${m.family} (another font of other widths drew instead)` : `font ${m.family}`)));
 }
@@ -113,7 +115,7 @@ async function main(): Promise<void> {
     const mark = (text: string, limit?: number) => markPaths(text, config.blocks.entries, limit);
     const processed = models.process(config.client, html, { mark, dark: config.dark, fonts: config.fontSources });
     findings.removed = Object.entries(processed.removed).map(([what, count]) => ({ what, count }));
-    const fontCss = models.fontCss(config.client, config.fontSources);
+    const fontCss = withoutFaces(models.fontCss(config.client, config.fontSources), config.leftOut ?? []);
     // Outlook.com's version has its web font from the model itself, as its scorer's has.
     const clientHtml = config.client === "outlook-com" ? processed.html : withCss(processed.html, fontCss);
     const height = WINDOW[config.variant];

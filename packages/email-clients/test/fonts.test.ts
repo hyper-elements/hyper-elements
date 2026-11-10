@@ -5,8 +5,9 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fontFiles } from "@hyper-elements/email-client-models";
-import { fontSources, fontUrl, INLINE_BUDGET, readPackageFont } from "../src/fonts";
+import { fontSources, fontUrl, INLINE_BUDGET, namedFamilies, readPackageFont } from "../src/fonts";
 import { PREVIEW_CLIENTS } from "../src/clients";
+import { withoutFaces } from "../src/runtime/frames";
 import { version } from "../package.json";
 
 const fonts = resolve(__dirname, "../fonts");
@@ -34,6 +35,26 @@ describe("the stand-in fonts", () => {
     expect(Object.keys(inline).sort()).toEqual([...fontFiles("outlook-com")].sort());
     expect(inline["selawk.woff2"]).toBe(`data:font/woff2;base64,${await readPackageFont("selawk.woff2")}`);
     expect(await fontSources("gmail", "inline")).toEqual({});
+  });
+
+  it("finds Inter where a font-family names it: inline (escaped quotes too), in a <style>, in an Html block; not Inter Display", () => {
+    expect([...namedFamilies('<td style="font-family:Inter, Arial, sans-serif">')]).toEqual(["Inter"]);
+    expect([...namedFamilies('<p style="font-family:&quot;Inter&quot;, Arial">')]).toEqual(["Inter"]);
+    expect([...namedFamilies("<p style=\"font-family:'inter',Arial\">")]).toEqual(["Inter"]);
+    expect([...namedFamilies('<style>.a{font-family: "Inter", Arial;}</style>')]).toEqual(["Inter"]);
+    expect([...namedFamilies('<p style="font-family:&quot;Inter Display&quot;, Arial">Inter</p>')]).toEqual([]);
+    expect([...namedFamilies('<p style="font-family:Arial">Inter</p>')]).toEqual([]);
+  });
+
+  it("leaves a family's @font-face rules out of the preview's font CSS, and nothing else", () => {
+    const css = '@font-face{font-family:"Segoe UI";src:url(a)}@font-face{font-family:"Inter";src:url("undefined");font-style:italic}@font-face{font-family:Inter;src:url(b)}*{x:1}';
+    expect(withoutFaces(css, ["Inter"])).toBe('@font-face{font-family:"Segoe UI";src:url(a)}*{x:1}');
+    expect(withoutFaces(css, [])).toBe(css);
+  });
+
+  it("leaves out the files it's told to skip", async () => {
+    const skip = new Set(["InterVariable.woff2", "InterVariable-Italic.woff2"]);
+    expect(Object.keys(await fontSources("outlook", "url", undefined, skip)).sort()).toEqual(fontFiles("outlook").filter((f) => !skip.has(f)).sort());
   });
 
   it("says why inlining fails where the font files aren't beside the code (a bundled package)", async () => {

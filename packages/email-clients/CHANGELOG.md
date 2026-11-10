@@ -21,6 +21,10 @@ The first release, with core 0.4.0.
   file per email client: classic Outlook, Outlook.com, Gmail, the Gmail apps and Apple Mail (light and dark). Clients
   with no model to draw with, and dark modes not measured, are listed in `skipped` with the reason. Its `diagnostics`
   have the plugin's checks for the clients previewed.
+- A preview loads Inter's stand-in only where the email names Inter: with `fonts: "inline"`, classic Outlook's file is
+  about 1 MB plus the email, not 2 MB.
+- Where the models package can't be imported, or its WebAssembly compiled, the plugin runs the checks from caniemail's
+  tables and says so (`email/captured-checks`); the next `emailClients()` tries again.
 - Each file draws the email in a sandboxed frame beside the email as written, with the client's fonts, and says when
   it's done (`data-email-client-ready`: `ok`, `incomplete` or `error`). Its findings list what the client removed,
   what was missing (fonts, swapped fonts, web fonts, images), the system fonts it drew with, and `email/more-lines`,

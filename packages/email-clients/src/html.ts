@@ -12,7 +12,8 @@ import { NO_WEB_FONTS } from "./limits";
 export const BODY_STYLE_REMOVED: readonly EmailClient[] = ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"];
 
 export interface HtmlCheck {
-  test(markup: string): boolean;
+  /** On the markup (HTML_CSS), or on the <style>s' text and its selectors, read once (HTML_STYLE). */
+  test(markup: string, selectors: readonly string[]): boolean;
   clients: readonly EmailClient[];
   removes: string;
   fix: string;
@@ -163,14 +164,14 @@ export const HTML_STYLE: readonly HtmlCheck[] = [
       ...(AT_RULE_NOTES[name] ?? { removes: `@${name} in a <style>: the client removes it`, fix: `write it without @${name}` }),
     })),
   {
-    test: (css) => selectorsOf(css).some((selector) => selector.split(/[\s>+~]+/).some((compound) => OUTLOOK_COM_STYLE.onTypeOnly.test(compound) && !/^[a-z]/.test(compound))),
+    test: (_css, selectors) => selectors.some((selector) => selector.split(/[\s>+~]+/).some((compound) => OUTLOOK_COM_STYLE.onTypeOnly.test(compound) && !/^[a-z]/.test(compound))),
     clients: ["outlook-com", "outlook-mac"],
     removes: "a hover (or another state) on a class in a <style> (.promo:hover): the client takes it only on a type (a:hover), and removes the rule",
     fix: "put it on the element's type (a:hover), or leave the state out",
     feature: "css-pseudo-class-hover",
   },
   {
-    test: (css) => selectorsOf(css).some((selector) => OUTLOOK_COM_STYLE.selectors.some((part) => selector.includes(part)) || (/\[[^\]]*\]/.test(selector) && /\.[\w-]+\[/.test(selector))),
+    test: (_css, selectors) => selectors.some((selector) => OUTLOOK_COM_STYLE.selectors.some((part) => selector.includes(part)) || (/\[[^\]]*\]/.test(selector) && /\.[\w-]+\[/.test(selector))),
     clients: ["outlook-com"],
     removes: `selectors in a <style> the client doesn't support (${OUTLOOK_COM_STYLE.selectors.map((part) => (part.endsWith("(") ? `${part})` : part)).join(", ")}, a class with an attribute): it removes those rules`,
     fix: "give the elements a class of their own, and select that",
@@ -237,8 +238,11 @@ export function htmlNotes(html: string, path: string, nodeId: string | undefined
   const out: ClientDiagnostic[] = [];
   const note = (check: HtmlCheck) =>
     out.push({ code: "email/html-css", severity: "info", message: `This Html block's markup may have ${check.removes}`, path, ...(nodeId ? { nodeId } : {}), clients: check.clients, fix: check.fix, ...(check.feature ? { see: caniemail(check.feature) } : {}) });
-  for (const check of HTML_CSS) if (check.test(markup)) note(check);
+  for (const check of HTML_CSS) if (check.test(markup, [])) note(check);
   const css = styleTexts(markup).join("\n");
-  if (css) for (const check of HTML_STYLE) if (check.test(css)) note(check);
+  if (css) {
+    const selectors = selectorsOf(css);
+    for (const check of HTML_STYLE) if (check.test(css, selectors)) note(check);
+  }
   return out;
 }
