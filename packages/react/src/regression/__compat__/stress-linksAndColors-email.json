@@ -13,64 +13,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[3].hover",
-    "message": "hover on this Link in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[3].hover",
-    "message": "hover on this Link in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[3].hover",
-    "message": "hover on this Link in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Links and colours\"\n    Text 536px \"Sea-green text, a link with no colour of its own (https://merrow.example/a), an…\"\n    Column 536px: background #e6e3d8\n      Text 504px \"A column’s colour, inherited by its text, / overridden by a span, and highlight…\"\n      Heading h3 504px \"A heading in the column’s colour\"\n    Row 536px: 5 side by side\n      Text \"Timetable (https://merrow.example/timetable)\"\n      Text: desktop only \"·\"\n      Text \"Fares (https://merrow.example/fares)\"\n      Text: desktop only \"·\"\n      Text \"Help (https://merrow.example/help)\"\n    Column 536px\n      Link \"Down a column\" → https://merrow.example/1\n      Link \"Its second link\" → https://merrow.example/2\n    Row 536px: 2 side by side\n      Link 24px \"[Instagram]\" → https://instagram.com/merrowline\n      Link 24px \"[LinkedIn]\" → https://linkedin.com/company/merrowline",
  "design": {

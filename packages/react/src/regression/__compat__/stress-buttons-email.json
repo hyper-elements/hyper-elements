@@ -16,208 +16,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[0].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[0].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[0].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[5].children[1].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Buttons\"\n    Heading h1 536px \"Your sailing is forty minutes late.\"\n    Button: background #c93a25 \"Move me to the next sailing with the same cabin, at no extra charge, and send m…\" → https://merrow.example/rebook\n    Button 536px: background #12242e \"Keep my booking and wait\" → https://merrow.example/keep\n    Text 536px \"Would a voucher for the café help?\"\n    Row 536px: 2 side by side\n      Button 120px: background #0f6a70 \"Yes\" → https://merrow.example/voucher/yes\n      Button 120px: background transparent \"No thanks\" → https://merrow.example/voucher/no\n    Button: background #55636b \"At the end, centred on phones\" → https://merrow.example/harbour-office",
  "design": {

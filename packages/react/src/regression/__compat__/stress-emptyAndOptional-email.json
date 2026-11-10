@@ -10,46 +10,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/image-width",
-    "severity": "warning",
-    "path": "root.children[1].children[11].props.src",
-    "message": "This Image has no width: Outlook shows it at the size of its file, however wide that is. Give it a width, or the file's width in src"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/image-width",
-    "severity": "warning",
-    "path": "root.children[1].children[11].props.src",
-    "message": "This Image has no width: Outlook shows it at the size of its file, however wide that is. Give it a width, or the file's width in src"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/image-width",
-    "severity": "warning",
-    "path": "root.children[1].children[11].props.src",
-    "message": "This Image has no width: Outlook shows it at the size of its file, however wide that is. Give it a width, or the file's width in src"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px\n  Section 600px\n    Column 600px\n  Section 600px: background #f3f1ea\n    Heading h1 544px \"Sailings resume on Friday.\"\n    Text 544px \"Everything below takes only the props it must have.\"\n    Text 544px \"The harbour wall is mended, and the 08:30 is back on its old timetable.\"\n    Divider 544px\n    Button: background #0879a1 \"See the timetable\" → https://merrow.example\n    List 544px\n      ListItem 520px \"Your old ticket still works\"\n    Table 544px\n      TableRow 544px\n        TableCell 544px \"Oban to Stornoway, 08:30\"\n    Row 544px: 1 side by side\n      Text \"Timetable (https://merrow.example/timetable)\"\n    Row 544px: 1 side by side\n      Link 32px \"[Instagram]\" → https://instagram.com/merrowline\n    Video 544px \"Video\" https://www.youtube.com/watch?v=aqz-KE-bpKQ\n    Html 544px\n    Image [] data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAQ0lEQVR42…\n    Row 544px: 1 side by side, stacked on phones\n      Column 544px\n        Text 544px \"One column in a row.\"\n    Column 544px\n      Row 544px: 2 side by side, stacked on phones\n        Column 272px\n          Text 272px \"Grid cell one.\"\n        Column 272px\n          Text 272px \"Grid cell two.\"\n  Section 600px\n    Text 600px \"Merrow Line, The Pier, Oban. A section and its text, with no style at all.\"",
  "design": {

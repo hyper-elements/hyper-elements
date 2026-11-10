@@ -12,64 +12,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Fonts\"\n    Column 536px\n      Text 536px \"A web font, Newsreader, with Georgia behind it\"\n      Text 536px \"The 08:30 for Stornoway\"\n    Column 536px\n      Text 536px \"A family nobody has: Georgia shows instead\"\n      Text 536px \"Boarding closes twenty minutes before we sail.\"\n    Column 536px\n      Text 536px \"Bold italic, from the variable font’s range\"\n      Text 536px \"Mind the gap at low water.\"\n    Column 536px\n      Text 536px \"A monospace, for what mustn’t be misread\"\n      Text 536px \"0O 1lI | MRW-104\"",
  "design": {

@@ -10,6 +10,9 @@ import * as lib from "../src/react-email/index";
 import { main, withContentHash, type Io } from "../src/cli";
 import { resolutionOrder } from "../src/resolution";
 
+/** The Elements range migrated templates need: migrate's own peer range (cli.ts reads the same). */
+const ELEMENTS_RANGE: string = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "../package.json"), "utf8")).peerDependencies["@hyper-elements/react"];
+
 const dirs: string[] = [];
 afterEach(() => {
   for (const dir of dirs.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
@@ -1953,7 +1956,7 @@ describe("installing Elements, which the migrated templates import", () => {
       const app = outside({ "package.json": "{}", ...(lockfile ? { [lockfile]: "" } : {}) });
       const out = io(dir);
       expect(await main(["emails", "--out", path.join(app, "emails")], out, lib), out.out + out.err).toBe(0);
-      expect(out.out, command).toContain(`\nInstall Elements in ${path.relative(dir, app)}: ${command} "@hyper-elements/react@^0.3.0"\n`);
+      expect(out.out, command).toContain(`\nInstall Elements in ${path.relative(dir, app)}: ${command} "@hyper-elements/react@${ELEMENTS_RANGE}"\n`);
       // A dry run writes nothing: nothing to install yet.
       const dry = io(app);
       fs.mkdirSync(path.join(app, "drafts"));
@@ -1972,8 +1975,8 @@ describe("installing Elements, which the migrated templates import", () => {
     });
     const out = io(dir);
     expect(await main(["emails", "--out", path.join(app, "emails")], out, lib), out.out + out.err).toBe(1);
-    expect(out.err).toContain("needs @hyper-elements/react ^0.3.0, but this project has 0.1.22");
-    expect(out.err).toContain('yarn add "@hyper-elements/react@^0.3.0"');
+    expect(out.err).toContain(`needs @hyper-elements/react ${ELEMENTS_RANGE}, but this project has 0.1.22`);
+    expect(out.err).toContain(`yarn add "@hyper-elements/react@${ELEMENTS_RANGE}"`);
     expect(fs.existsSync(path.join(app, "emails"))).toBe(false);
   });
 });

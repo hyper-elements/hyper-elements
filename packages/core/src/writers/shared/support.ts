@@ -4,10 +4,10 @@
  * that output shows it (`support`), and so does each condition (conditions.ts)
  * and each style inside one. One pass reads it for every output, for what the
  * author set (not a component's own defaults): `none` is a warning
- * (`<output>/unsupported`), `partial` a note (`<output>/degraded`), `outlook`
- * a note (`email/outlook-degraded`), each naming the email clients it's about
- * where the rule does (declared.ts). Each output adds what no single style or
- * prop says (email: `email/support.ts`).
+ * (`<output>/unsupported`), `partial` a note (`<output>/degraded`)
+ * (declared.ts). Each output adds what no single style or prop says (email:
+ * `email/support.ts`). What email clients do with the HTML is a plugin's
+ * (`@hyper-elements/email-clients`).
  */
 import { blockOf, CONDITIONS, shownAnywhere } from "../../conditions";
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
@@ -43,7 +43,7 @@ export function support(root: ResolvedNode, target: Target): Diagnostic[] {
       if (!own || own.level === "none") continue;
       for (const [key, value] of Object.entries(block)) {
         const rules = condition.styles?.[key]?.[target] ?? definition.style[key]?.support?.[target];
-        reportDeclared(d, node, `${node.path}.${condition.name}.${key}`, key, value, rules, target, condition.outlookApplies);
+        reportDeclared(d, node, `${node.path}.${condition.name}.${key}`, key, value, rules, target);
       }
     }
     for (const child of node.children) if (isNode(child) && shownAnywhere(child)) visit(child);

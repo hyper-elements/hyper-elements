@@ -30,29 +30,40 @@ interface Diagnostic {
   message: string;                           // what's wrong, and what to do instead
   path: string;                              // where: "root.children[1].style.padding"
   nodeId?: string;                           // the node's id, where it has one
-  clients?: EmailClient[];                   // the email clients it's about; absent: every email
+  clients?: readonly string[];               // the email clients it's about (from email-clients' checks)
   fix?: string;                              // what to change
-  see?: string;                              // where to see it: caniemail's page, for a problem known from its tables
+  see?: string;                              // where to see more about it (an https URL)
 }
 ```
 
 `formatDiagnostics(diagnostics)` prints each on a line, with its clients, fix and where to see it where it has them.
 
-## Email clients
+## Email client checks
 
-An Email's problems with particular email clients name them in `clients`. Four have been measured: captures of the real clients showing Elements emails, `"outlook"` (classic Outlook for Windows), `"outlook-com"` (Outlook.com and the new Outlook), `"gmail"` (Gmail on the web) and `"apple-mail"`. What's known of the others is from [caniemail.com](https://www.caniemail.com)'s tables, which test the CSS and HTML each client keeps: `"outlook-mac"`, `"outlook-app"`, the Gmail apps `"gmail-app"` and `"gmail-app-other"` (with an account that isn't Google's), `"yahoo"`, `"aol"`, `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`, `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"` and `"rainloop"`. Either way a problem is reported at its own severity, and one from caniemail links to its page there in `see`.
-
-By default `validate()`, `render()` and `prepare()` report problems for the clients most email is read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. Name the clients your readers use to check others, or fewer:
+`@hyper-elements/react` checks the template, and what Elements' own writers can't write. What each email client
+removes or changes in the HTML comes from a separate package, `@hyper-elements/email-clients`, through a plugin:
 
 ```tsx
-validate(<Welcome />, { emailClients: ["gmail", "outlook"] });   // only these clients' problems
-render(<Welcome />, { emailClients: [] });                         // no email client problems; the email's own stay
-validate(<Welcome />, { emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx", "web-de"] });   // the default ones and two more
+import { emailClients } from "@hyper-elements/email-clients";
+
+validate(<Welcome />, { plugins: [await emailClients()] });                          // the clients most email is read in
+validate(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlook"] })] });   // only these clients
 ```
 
-A problem about clients you didn't ask for is left out, and one about several has its `clients` narrowed to those you asked for. A problem about no client in particular (`email/width`, `email/layer`) is always reported. For a `Page`, `Document` or `Canvas` the option is ignored, with an `email/clients-ignored` note.
+Its diagnostics name the clients they're about in `clients`, with a `fix`. Without the plugin, an Email gets one note,
+`email/more-checks`, saying where the client checks are; `plugins: []` leaves it out.
 
-`EMAIL_CLIENTS` says what's known of each: its name, the widths it shows an email at, and how closely it was measured (`measured`: the share of words a model of the client draws within 4px of the client, on emails it wasn't tuned on; `null` where what's known of it is caniemail's).
+Before 0.4, the client checks were part of this package, with an `emailClients` option and `EMAIL_CLIENTS`. Passing
+`emailClients` now gives an `email/clients-moved` note with the replacement, until 0.5.
+
+### Plugins
+
+A plugin is `{ name, api: PLUGIN_API, check?, checkOutput? }`. `check` sees a frozen copy of the laid-out template,
+`checkOutput` the written HTML and the root's type (`render()` only). What a plugin returns is checked: a diagnostic that doesn't fit (a
+code for another kind of root, an error, a path that isn't in the template) is left out, with a `plugin/invalid`
+warning. Another root's code is taken only as a note ending in `-ignored`, saying that what the plugin was given
+doesn't apply to this root (`email/clients-ignored` on a Page). A plugin that throws, or returns something that can't
+be read, gives a `plugin/failed` warning; the render still completes.
 
 The path walks the template from the root: `root.children[2].style.justifyContent` is the third child's `justifyContent` style.
 
@@ -134,18 +145,14 @@ try {
 | Code | Severity | What triggers it |
 |------|----------|------------------|
 | `email/unsupported` | warning | A style or prop email can't show. The message says what it shows instead: `justifyContent: "space-between"` starts children at the left |
-| `email/outlook-degraded` | info | Shown as asked, except in classic Outlook: square corners, normal letter spacing, weights under 600 as normal, `lowercase` as written (`clients: ["outlook"]`) |
-| `email/degraded` | info | Not quite as asked where the email is read, such as web fonts in Gmail and Outlook, hover in Outlook, or a `lang` some webmail removes |
-| `email/phone-styles` | info or warning | The email has phone styles or hides something, which the Gmail app with another account and some webmail don't apply on phones. A warning where something hidden on desktop would then show nowhere |
-| `email/image-format` | warning | An Image's file is WebP (classic Outlook), AVIF or SVG, which some clients don't show |
-| `email/image-width` | warning | An Image with no width: Outlook shows it at its file's size. Give `src` the file's `width` and `height` |
-| `email/width` | warning | A child of a Row takes its own size and its size isn't known, so Outlook can't lay the Row out |
-| `email/font-fallback` | warning | A font stack ends on a web font, so a client that can't load it picks its own (Gmail, Outlook, Yahoo and others) |
-| `email/html-css` | info | An Html block's markup may have CSS or HTML an email client removes: `position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`, `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb() with spaces |
+| `email/degraded` | info | Not quite as the Email writer can write it: a wrapped Row's gap between its lines, or `overflow: "hidden"` on a Column or Grid without a box of its own |
 | `email/video-thumbnail` | warning | A Vimeo Video with no `thumbnail`, which can't be found without the network |
-| `email/size` | warning | The HTML is large enough for Gmail and its apps to clip it (`render()` only) |
-| `email/style-size` | warning | The stylesheet is more than Gmail and its apps read (`render()` only) |
-| `email/clients-ignored` | info | `emailClients` given for a root that isn't an Email |
+| `email/more-checks` | info | An Email checked without email-clients' plugin: where the email client checks are (`plugins: []` leaves it out) |
+| `email/clients-moved` | info | `emailClients` passed: the option moved to email-clients' plugin (until 0.5) |
+| `plugin/invalid` | warning | An entry of `plugins` that isn't a plugin (a Promise: `emailClients()` not awaited), or diagnostics a plugin returned that don't fit |
+| `plugin/unsupported` | warning | A plugin written for another plugin `api` |
+| `plugin/duplicate` | warning | Two plugins with one `name`; the second is ignored |
+| `plugin/failed` | warning | A plugin's hook threw, or returned something other than a list |
 | `web/unsupported` | warning | The same, for a page |
 | `layout/shrunk` | warning | A Row's children's widths add up to more than it has. They're narrowed to fit, as a browser does |
 | `layout/overflow` | warning | Content wider than the space it has: a Row's children at their minimum widths, a box wider than its parent, a Table's columns wider than the Table |
@@ -163,9 +170,9 @@ try {
 
 ## Where support data comes from
 
-Each style and prop of each component declares how each output shows it: `full`, `outlook` (as asked, but classic Outlook shows something else), `partial`, or `none` (with what it shows instead). One pass reads those declarations for the styles and props you set, and turns each into a diagnostic. A test keeps the declarations true: every style and prop, at every value, either changes the output or gives a diagnostic. Nothing is dropped silently.
+Each style and prop of each component declares how each output shows it: `full`, `partial`, or `none` (with what it shows instead). One pass reads those declarations for the styles and props you set, and turns each into a diagnostic. A test keeps the declarations true: every style and prop, at every value, either changes the output or gives a diagnostic. Nothing is dropped silently.
 
-Each declaration names its evidence: captures of real classic Outlook for Windows, Gmail, Outlook.com or Apple Mail, caniemail.com's tables, the writer's own output checked in Chromium and against a model of Outlook's layout, or plain CSS. Some are marked as not checked yet: those are only ever notes, and say so. A list of clients taken from caniemail is checked against its data in the tests, with the reason for each client left out (where caniemail's result is about something Elements doesn't write).
+Each declaration names its evidence: the writer's own output checked in Chromium, or plain CSS. Some are marked as not checked yet: those are only ever notes, and say so. What email clients do with the HTML isn't declared here: it's `@hyper-elements/email-clients`' to check.
 
 ## Use it in CI and with agents
 

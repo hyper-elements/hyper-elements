@@ -12,64 +12,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[2].children[0].style.borderRadius",
-    "message": "borderRadius on this Image in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[2].children[0].style.borderRadius",
-    "message": "borderRadius on this Image in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[2].children[0].style.borderRadius",
-    "message": "borderRadius on this Image in classic Outlook: square corners"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Images\"\n    Image 536px [The tide drawn in blue lines under a low sun: full width, with its size] gallery/saltworks/low-water.png\n    Row 536px: 3 side by side\n      Image 48px [Signal flag U, red and white checks: no size given, shown at 48 px] data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAQ0lEQVR42…\n      Image 24px [Signal flag U again, at its size of 24 by 24] data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAIAAADYYG7QAAAAQ0lEQVR42…\n      Link 436px \"[The tide: a linked, rounded thumbnail]\" → https://merrow.example/gallery\n    Image 268px [The tide again: half the width at the end, centred on phones] gallery/saltworks/low-water.png",
  "design": {

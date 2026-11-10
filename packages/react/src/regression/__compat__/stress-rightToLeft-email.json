@@ -15,82 +15,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[6].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Right to left\"\n    Heading h1 536px \"مرحباً بك على متن عبّارتنا\"\n    Text 536px \"شكراً لحجزك. تبحر رحلتك رقم 10482 يوم الاثنين.\"\n    Text 536px \"MV Selkie, deck 4: an English sentence inside an Arabic email, left to right.\"\n    Row 536px: 2 side by side, stacked on phones\n      Column 263px: background #e6e3d8\n        Text 235px \"المغادرة\"\n        Text 235px \"08:30\"\n      Column 263px: background #e6e3d8\n        Text 235px \"הגעה\"\n        Text 235px \"11:45\"\n    List 536px\n      ListItem 512px \"احضر قبل الإبحار بساعة\"\n      ListItem 512px \"أظهر رمز الحجز عند البوابة\"\n    Button: background #c93a25 \"عرض الحجز\" → https://merrow.example/bookings/10482",
  "design": {

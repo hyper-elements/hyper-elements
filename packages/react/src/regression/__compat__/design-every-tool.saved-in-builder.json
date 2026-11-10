@@ -5,34 +5,10 @@
  "text": "HEADING\n\nText with a link (https://x.test) and {{first_name}}\n\nButton (https://x.test/go)\n\n[Linked image] (https://x.test/image)\n\n---\n\nDocs (https://x.test/docs) | Blog (https://x.test/blog)\n\n[Facebook] (https://facebook.com/x)\n\n[X] (https://x.com/x)\n\nVideo (https://www.youtube.com/watch?v=dQw4w9WgXcQ)\n\nDesktop only\n\na\n\nb\n\nc\n\nOver",
  "diagnostics": [
   {
-   "code": "email/outlook-degraded",
-   "severity": "info",
-   "path": "root.children[0].children[0].style.letterSpacing",
-   "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-  },
-  {
-   "code": "email/outlook-degraded",
-   "severity": "info",
-   "path": "root.children[0].children[2].children[0].style.borderRadius",
-   "message": "borderRadius on this Button in classic Outlook: square corners"
-  },
-  {
-   "code": "email/degraded",
-   "severity": "info",
-   "path": "root.children[0].children[2].children[0].hover",
-   "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-  },
-  {
-   "code": "email/html-css",
-   "severity": "info",
-   "path": "root.children[4].props.html",
-   "message": "This Html block's markup may have a <style> in the email's body: the client removes it, and what it styles shows without it"
-  },
-  {
-   "code": "email/phone-styles",
+   "code": "email/more-checks",
    "severity": "info",
    "path": "root",
-   "message": "On phones, the email's phone styles don't apply: what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
+   "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
   }
  ]
 }

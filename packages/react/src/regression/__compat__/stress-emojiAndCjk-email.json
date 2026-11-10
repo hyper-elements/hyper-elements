@@ -13,82 +13,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Emoji and CJK\"\n    Heading h1 536px \"🎉 秋の船旅セール、始まりました\"\n    Text 536px \"欢迎登船！您的船票已发送。 탑승해 주셔서 감사합니다. Family cabins 👨‍👩‍👧, party time 🥳🍰 and flags …\"\n    Table 536px\n      TableRow 536px\n        TableCell 268px \"抹茶ラテ\"\n        TableCell 268px \"¥580\"\n      TableRow 536px\n        TableCell 268px \"김치찌개 🌶️\"\n        TableCell 268px \"₩9,000\"\n    Button: background #c93a25 \"今すぐ見る →\" → https://merrow.example/sale",
  "design": {

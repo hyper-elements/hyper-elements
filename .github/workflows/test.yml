@@ -71,20 +71,25 @@ jobs:
       - name: Converter typechecks
         run: pnpm --filter @hyper-elements/migrate typecheck
 
+      # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
+      # tag, and resuming a run whose npm publish succeeded.
+      - name: Release script
+        run: node --test scripts/release.test.mjs
+
       # ── Bundle size budgets ─────────────────────────────────────
       # Each entry's ESM bundle against its budget. The budgets track the
       # unminified ESM output as a proxy for code volume; they still flag
       # accidental dependency bundling (any real dep is 10KB+).
 
-      # The main entry (the components, dist/primitives.js): about 318KB
+      # The main entry (the components, dist/primitives.js): about 314KB
       # unminified ESM. Its core (the components' definitions, validation, layout,
       # the conditions a style can be set for (phones, hover) with their support per
       # output and the blocks of style they're read from, and the hints for a condition
       # written another library's way (_hover, md), and the check that each component, prop and style is under a root
       # that takes it, about 126KB), its writers (email, page, print HTML and plain text, about
-      # 97KB), its email client checks (EMAIL_CLIENTS and its 26 clients, the emailClients
-      # filter, the checks and client lists from caniemail's tables, the Html block CSS
-      # checks, about 14KB), render()'s blockMap (marking each block as the email is
+      # 97KB), plugins (the contract, checking and merging what a plugin returns, the
+      # frozen copy of the laid-out tree it's given, about 7KB; the email client checks
+      # moved to @hyper-elements/email-clients, a plugin), render()'s blockMap (marking each block as the email is
       # written, then each one's offset, about 5KB), themes (reading a theme, its tokens,
       # roles, scopes, component defaults, variants and named styles merged into each
       # node, a Page's custom properties, refusing names that reach JavaScript's own
@@ -102,7 +107,7 @@ jobs:
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=322000
+          MAX_SIZE=316500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -111,11 +116,11 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 484KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 476KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
-      # and writers it lays out and writes locked markup with, the email client
-      # checks, render()'s blockMap, the roots check and themes (with their guard on
+      # and writers it lays out and writes locked markup with, plugins (the email
+      # client checks are email-clients'), render()'s blockMap, the roots check and themes (with their guard on
       # JavaScript's own names, body text roles, the token() hint and the checks that a
       # theme's mistakes are said) among
       # them (about 279KB); the main
@@ -128,7 +133,7 @@ jobs:
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=485500
+          MAX_SIZE=478500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

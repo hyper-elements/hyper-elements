@@ -150,7 +150,7 @@ The root's `fonts` lists the font files the template loads, one face each:
 A face is `{ family, src, format, weight, style }`. The format comes from the file's extension where you don't give it, and a variable font's weight is a range (`"100 900"`). Name the family in a `fontFamily` stack, before the fonts to show where it can't load. The browser picks the face for each weight and style.
 
 - **On a page**, each face is an `@font-face` rule with `font-display: swap`.
-- **In an email**, Apple Mail and iOS Mail load web fonts. Gmail and classic Outlook don't, and show the next font in the stack. `validate()` notes this (`email/degraded`), and warns when a stack ends on a web font (`email/font-fallback`), since a client that can't load it then picks its own.
+- **In an email**, Apple Mail and iOS Mail load web fonts. Gmail and classic Outlook don't, and show the next font in the stack, so end each stack on a font every client has. `@hyper-elements/email-clients`' checks name the clients that don't load web fonts, and warn when a stack ends on one.
 - **In a PDF or an image**, you pass the font files as bytes. See [PDF](/docs/outputs/pdf#fonts-and-images) and [Image](/docs/outputs/image#fonts-and-images).
 
 ## Text direction
@@ -165,7 +165,7 @@ A root's `dir` and a text block's own `dir` (Text, Heading, ListItem, TableCell,
 
 ## What each output can't show
 
-A familiar CSS name doesn't promise every output can show it. Each style declares, for each output, whether it's shown as asked, shown everywhere but classic Outlook, shown partly, or not at all, and `validate()` reports what your template's output can't do. Rounded corners are the common case: classic Outlook draws them square, and you get a note.
+A familiar CSS name doesn't promise every output can show it. Each style declares, for each output, whether its writer shows it as asked, partly, or not at all, and `validate()` reports what your template's output can't do. What email clients do with the HTML Elements writes comes from `@hyper-elements/email-clients`' plugin (`validate(email, { plugins: [await emailClients()] })`). Rounded corners are the common case: classic Outlook draws them square, and the plugin notes it.
 
 ```text
 info email/outlook-degraded at root.children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners

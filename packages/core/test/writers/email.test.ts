@@ -52,7 +52,8 @@ describe("email HTML", () => {
     expect(body).toContain(
       '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:300px;border-collapse:separate"><tr><td bgcolor="#ffeecc" style="padding:8px 12px;background-color:#fec;border-radius:6px"><p style="margin:0;'
     );
-    expect(diagnostics.map((d) => d.code)).toEqual(["email/outlook-degraded"]);
+    // Classic Outlook's square corners are the email-clients plugin's to say, not core's.
+    expect(diagnostics).toEqual([]);
   });
 
   it("lays out a Row as fluid hybrid: Outlook's table in conditional comments, inline-blocks of the resolver's widths for the rest", () => {
@@ -143,7 +144,8 @@ describe("email HTML", () => {
     // where it's the image's width (to the fraction of a pixel), else the width it's drawn at.
     expect(body).toContain('<img src="https://example.com/d.png" alt="" width="125" border="0" style="display:block;width:24%;max-width:124.8px;height:auto;border:0">');
     expect(body).toContain('<img src="https://example.com/e.png" alt="" width="144" border="0" style="display:block;width:24%;max-width:144px;height:auto;border:0">');
-    expect(diagnostics.filter((d) => d.code === "email/image-width").map((d) => d.path)).toEqual(["root.children[2].props.src"]);
+    // An Image without a width is shown at its file's size in classic Outlook: the email-clients plugin says so, not core.
+    expect(diagnostics.filter((d) => d.code === "email/image-width")).toEqual([]);
   });
 
   it("centers content with its own size by the stack's align, else its text alignment", () => {
@@ -444,8 +446,8 @@ describe("email HTML", () => {
     expect(head).toContain(
       '<!--[if !mso]><!--><style>@font-face{font-family:"Brand Sans";src:url("https://fonts.example.com/brand.woff2") format("woff2");font-weight:400}@font-face{font-family:"Brand Sans";src:url("https://fonts.example.com/brand-700.woff2") format("woff2");font-weight:700}</style><!--<![endif]-->'
     );
-    // One note, from what fonts declares for email.
-    expect(diagnostics.map((d) => [d.code, d.path])).toEqual([["email/degraded", "root.props.fonts"]]);
+    // Which email clients load no web font is the email-clients plugin's to say.
+    expect(diagnostics).toEqual([]);
   });
 
   it("warns where a font stack ends on a web font, leaving the client to choose", () => {
@@ -454,7 +456,8 @@ describe("email HTML", () => {
         props: { width: 600, fonts: [{ family: "Brand Sans", src: "https://fonts.example.com/brand.woff2" }] },
       })
     );
-    expect(diagnostics.filter((d) => d.code === "email/font-fallback").map((d) => d.path)).toEqual(["root.children[0].style.fontFamily"]);
+    // The clients that load no web font are the email-clients plugin's: core says nothing.
+    expect(diagnostics.filter((d) => d.code === "email/font-fallback")).toEqual([]);
   });
 
   it("adds no markup from what users write, and none inside Outlook's comments", () => {
@@ -650,7 +653,7 @@ describe("email HTML", () => {
       ["email/unsupported", "warning"],
       ["email/unsupported", "warning"],
       ["email/degraded", "info"],
-      ["email/width", "warning"],
+      // A Row child of unknown size in classic Outlook (email/width) is the email-clients plugin's.
     ]);
   });
 
@@ -671,7 +674,8 @@ describe("email HTML", () => {
     expect(outlookOnly(body).match(/<td valign="top">/g)).toHaveLength(7);
     expect(body).toContain('<table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td style="padding:5px 15px">');
     expect(menu(4).diagnostics).toEqual([]);
-    expect(menu(12).diagnostics.map((d) => [d.code, d.severity, d.path])).toEqual([["email/outlook-degraded", "info", "root.children[0]"]]);
+    // That classic Outlook can't wrap it is the email-clients plugin's to say.
+    expect(menu(12).diagnostics).toEqual([]);
     // A vertical one's links are in a Column, where a flex would be ignored: none is given.
     expect(render(email([{ type: "Menu", props: { items: items(2), layout: "vertical" } }])).diagnostics).toEqual([]);
   });
@@ -680,7 +684,8 @@ describe("email HTML", () => {
     const menu = { type: "Menu", props: { items: [{ text: "A", href: "https://a.com" }, { text: "B", href: "https://b.com" }], separator: "|" } };
     expect(render(email([menu])).diagnostics.filter((d) => d.code === "email/width")).toEqual([]);
     const button = { type: "Row", children: [{ type: "Button", props: { href: "#" }, style: { flex: "none" }, children: ["x"] }] };
-    expect(render(email([button])).diagnostics.filter((d) => d.code === "email/width")).toHaveLength(1);
+    // A Button of unknown size in a Row: classic Outlook needs its width, which the email-clients plugin says.
+    expect(render(email([button])).diagnostics.filter((d) => d.code === "email/width")).toEqual([]);
   });
 
   it("writes a Video as its thumbnail linked to it, a YouTube video's own by default; a Vimeo video without one as a link, with a warning", () => {
@@ -734,9 +739,9 @@ describe("email HTML", () => {
       for (const name of cell.className.split(" ")) expect(rules).toContain(`.${name}{`);
       expect(rules).toMatch(new RegExp(`\\.(${cell.className.split(" ").join("|")})\\{[^}]*background-image:none!important[^}]*height:auto!important`));
       expect(dom.querySelector('div[role="img"]')!.className).not.toBe("");
-      // Its height on phones is a page's: nothing to note.
-      // Where phone styles don't apply, the image shows on phones: a note.
-      expect(hidden.diagnostics.map((d) => [d.code, d.severity])).toEqual([["email/phone-styles", "info"]]);
+      // Its height on phones is a page's: nothing to note. (Clients that don't apply phone styles are the email-clients
+      // plugin's to name.)
+      expect(hidden.diagnostics).toEqual([]);
     });
 
     it("says what an email can't draw: not an Image under one child, an Image narrower than the Layer, a height it can't work out", () => {
@@ -759,20 +764,20 @@ describe("email HTML", () => {
     });
   });
 
-  it("leaves an Svg out of an email, with an error: Gmail and Outlook don't show inline SVG", () => {
-    expect(() => render(email([{ type: "Svg", props: { width: 40, height: 40 }, children: [{ type: "Circle", props: { cx: 20, cy: 20, r: 10 } }] }]))).toThrow("A Svg can't be rendered to email: Gmail and classic Outlook don't show inline SVG; use an Image of it (a PNG) instead");
+  it("leaves an Svg out of an email, with an error: the Email writer has no inline SVG", () => {
+    expect(() => render(email([{ type: "Svg", props: { width: 40, height: 40 }, children: [{ type: "Circle", props: { cx: 20, cy: 20, r: 10 } }] }]))).toThrow("A Svg can't be rendered to email: the Email writer has no inline SVG; use an Image of it (a PNG) instead");
   });
 
-  it("warns before Gmail clips a message, counting its size in UTF-8 without TextEncoder (Jest's jsdom has none)", () => {
+  it("writes a large email without TextEncoder (Jest's jsdom has none), and leaves its size to the email-clients plugin", () => {
     const many = Array.from({ length: 600 }, (_, i) => ({ type: "Text", children: [`Text ${i} with some words in it to take up room.`] }));
-    // Two-byte letters: under the limit counted as characters, over it in bytes.
-    const wide = [{ type: "Text", children: ["é".repeat(60_000)] }];
     const encoder = globalThis.TextEncoder;
     try {
       delete (globalThis as { TextEncoder?: unknown }).TextEncoder;
-      expect(render(email(many)).diagnostics.map((d) => d.code)).toContain("email/size");
-      expect(render(email(many.slice(0, 10))).diagnostics.map((d) => d.code)).not.toContain("email/size");
-      expect(render(email(wide)).diagnostics.map((d) => d.code)).toContain("email/size");
+      const big = render(email(many), { blockMap: true });
+      expect(big.html.length).toBeGreaterThan(102_400);
+      // Gmail's clip is the email-clients plugin's (its checkOutput), not core's.
+      expect(big.diagnostics.map((d) => d.code)).not.toContain("email/size");
+      expect(big.blocks!.entries.length).toBeGreaterThan(600);
     } finally {
       globalThis.TextEncoder = encoder;
     }
@@ -853,6 +858,25 @@ describe("email HTML", () => {
     const { head } = render(email([{ type: "Text", style: { lineHeight: "normal", fontSize: 14 }, mobile: { fontSize: 20 }, children: ["Words"] }]));
     expect(head).toContain("font-size:20px!important");
     expect(head).not.toContain("line-height");
+  });
+
+  it("notes overflow: hidden only on a Column or Grid it can't cut off: one without a box of its own", () => {
+    const text = (t: string) => ({ type: "Text", children: [t] });
+    const cases: Array<[string, Record<string, unknown>]> = [
+      ["Column, bare", { type: "Column", style: { overflow: "hidden" }, children: [text("a")] }],
+      ["Column, height and background", { type: "Column", style: { height: 100, backgroundColor: "#eee", overflow: "hidden" }, children: [text("a")] }],
+      ["Column, width", { type: "Column", style: { width: 300, overflow: "hidden" }, children: [text("a")] }],
+      ["Column, padding", { type: "Column", style: { padding: 8, overflow: "hidden" }, children: [text("a")] }],
+      ["Grid, bare", { type: "Grid", props: { columns: 2 }, style: { overflow: "hidden" }, children: [text("a"), text("b")] }],
+      ["Grid, height and background", { type: "Grid", props: { columns: 2 }, style: { height: 100, backgroundColor: "#eee", overflow: "hidden" }, children: [text("a"), text("b")] }],
+    ];
+    for (const [label, node] of cases) {
+      const { body, diagnostics } = render(email([node]), { plugins: [] });
+      const cut = /overflow:hidden/.test(body.replace("display:none;max-height:0;overflow:hidden", ""));
+      const noted = diagnostics.some((d) => d.code === "email/degraded" && d.path.endsWith(".style.overflow"));
+      // Noted exactly where nothing is cut off.
+      expect([label, noted]).toEqual([label, !cut]);
+    }
   });
 
   it("starts what's in a box of its own height at its top, as on a page", () => {

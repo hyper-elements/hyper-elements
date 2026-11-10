@@ -4,8 +4,8 @@
  */
 import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Section, Span, Svg } from "./index";
 import type { ParagraphProps, TextProps } from "./index";
-import { BLOCK_MAP_VERSION, DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, prepare, render, validate } from "./index";
-import type { BlockMap, BlockMapEntry, Diagnostic, EmailClient, ValidateOptions } from "./index";
+import { BLOCK_MAP_VERSION, PLUGIN_API, prepare, render, validate } from "./index";
+import type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginOutput, ValidateOptions } from "./index";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
 export const textProps: TextProps = { style: { fontSize: 14, mobile: { fontSize: 12 } }, children: "Hi" };
@@ -124,21 +124,27 @@ export const chakraHoverStyle = <Button href="https://example.com" style={{ _hov
 // @ts-expect-error No md breakpoint.
 export const tailwindBreakpoint = <Text style={{ md: { fontSize: 18 } }}>Hi</Text>;
 
-// Email clients: the option on validate(), render() and prepare(), the fields on a diagnostic, and what's known of each client.
-export const clients: EmailClient[] = ["outlook", "gmail-app"];
-export const validated = validate(ok, { emailClients: clients });
-export const rendered = render(ok, { emailClients: [], pretty: true });
-export const validateOptions: ValidateOptions = { emailClients: ["apple-mail"] };
-export const prepared = prepare(ok, { emailClients: ["yahoo", "samsung-email"] });
-export const widened = validate(ok, { emailClients: [...DEFAULT_EMAIL_CLIENTS, "gmx"] });
-export const defaults: readonly EmailClient[] = DEFAULT_EMAIL_CLIENTS;
+// Plugins: the option on validate() and render() (not prepare()), a plugin's hooks, and a diagnostic's fields.
+export const plugin: ElementsPlugin = {
+  name: "example",
+  api: PLUGIN_API,
+  check: (input: PluginInput): PluginDiagnostic[] => [{ code: "email/example", severity: "info", message: input.root.type, path: input.root.path, clients: ["gmail"] }],
+  checkOutput: (output: PluginOutput): PluginDiagnostic[] => (output.stylesheet.length > 16_384 ? [{ code: "email/example-size", severity: "warning", message: "big", path: "root" }] : []),
+};
+export const validated = validate(ok, { plugins: [plugin] });
+export const rendered = render(ok, { plugins: [], pretty: true });
+export const validateOptions: ValidateOptions = { plugins: [plugin] };
+export const prepared = prepare(ok);
+// @ts-expect-error prepare() takes no plugins
+export const preparedWithPlugins = prepare(ok, { plugins: [plugin] });
+// @ts-expect-error emailClients moved to @hyper-elements/email-clients' plugin
+export const movedOption = validate(ok, { emailClients: ["gmail"] });
+// @ts-expect-error a plugin's diagnostic is a note or a warning, never an error
+export const errorDiagnostic: PluginDiagnostic = { code: "email/x", severity: "error", message: "x", path: "root" };
 export const mapped = render(ok, { blockMap: true }).then((r) => {
   const blocks: BlockMap | undefined = r.blocks;
   const entry: BlockMapEntry | undefined = blocks?.entries[0];
   const offset: number | undefined = entry?.offset;
   return [blocks?.version === BLOCK_MAP_VERSION, blocks?.unit === "utf8", entry?.path, entry?.nodeId, offset] as const;
 });
-export const fields = (d: Diagnostic): [EmailClient[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];
-export const measured: number | undefined = EMAIL_CLIENTS.outlook.measured?.wordsWithin4px;
-// @ts-expect-error an email client it doesn't know
-export const unknownClient = validate(ok, { emailClients: ["hotmail"] });
+export const fields = (d: Diagnostic): [readonly string[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];

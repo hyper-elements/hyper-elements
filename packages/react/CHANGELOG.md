@@ -4,6 +4,37 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### ⚠️ Breaking (0.4.0): email client checks move to `@hyper-elements/email-clients`
+
+This package now checks the template, and what its own writers can't write. What each email client removes or changes
+in the HTML (classic Outlook's square corners and missing widths, Gmail's clip, caniemail's tables, the checks on an
+Html block's CSS) comes from `@hyper-elements/email-clients`, through a plugin:
+
+```tsx
+import { emailClients } from "@hyper-elements/email-clients";
+
+validate(<Welcome />, { plugins: [await emailClients()] });
+render(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlook"] })] });
+```
+
+- **Removed:** the `emailClients` option of `validate()`, `render()` and `prepare()`; `EMAIL_CLIENTS`,
+  `DEFAULT_EMAIL_CLIENTS` and the types `EmailClient`, `EmailClientInfo` and `EmailClientMeasurement`. Code that still
+  passes `emailClients` gets an `email/clients-moved` note with the replacement, until 0.5.
+- **New:** `plugins` on `validate()` and `render()`, with `PLUGIN_API` and the types `ElementsPlugin`, `PluginInput`,
+  `PluginNode`, `PluginOutput` and `PluginDiagnostic`. A plugin's `check` sees a frozen copy of the laid-out template,
+  its `checkOutput` the written HTML and which root wrote it. Core checks what a plugin returns (`plugin/invalid`, `plugin/unsupported`,
+  `plugin/duplicate`, `plugin/failed`), and a plugin can't make a render fail.
+- **Without the plugin,** an Email gets one note, `email/more-checks`, saying where the client checks are;
+  `plugins: []` leaves it out. Pages, Documents and Canvases are unchanged.
+- **The codes that moved** keep their codes and messages, through the plugin: `email/outlook-degraded`,
+  `email/width`, `email/image-width`, `email/phone-styles`, `email/image-format`, `email/font-fallback`,
+  `email/html-css`, `email/size`, `email/style-size`, and the client notes that were `email/degraded`.
+- **Unchanged:** every template's HTML, text, layout, design and PDF. `prepare()` takes no options, and
+  `Diagnostic.clients` is `readonly string[]`.
+- `overflow: "hidden"` on a Column or a Grid without a box of its own gets an `email/degraded` note: the Email writer
+  cuts content off on a box, which it writes only for a background, padding, a border, a width or a height.
+- `@hyper-elements/migrate` 0.3.0 needs 0.4: its peer range is `^0.4.0`. Projects on Elements 0.3 keep migrate 0.2.
+
 ### Themes
 
 A theme is the brand, written once and given to any root: `<Email theme={brand}>`, `<Page theme={brand}>`. Templates

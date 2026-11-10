@@ -75,7 +75,7 @@ error prop/unknown at root.props.backgroundColor: An Email has no prop "backgrou
 error style/unknown at root.children[0].style.marginBottom: "marginBottom" isn't a style a Text takes: use the parent's gap, or padding. See Text in @hyper-elements/react/GUIDE.md
 ```
 
-Each line is a fix the agent can apply without asking you. Warnings and notes leave a template valid; only errors make `valid` false. A problem with email clients names them and says what to change:
+Each line is a fix the agent can apply without asking you. Warnings and notes leave a template valid; only errors make `valid` false. With `@hyper-elements/email-clients`' plugin (`validate(email, { plugins: [await emailClients()] })`), a problem with email clients names them and says what to change:
 
 ```text
 warning email/font-fallback at root.children[0].style.fontFamily: This font stack ends with the web font "Inter": where it doesn't load (Gmail, classic Outlook) the email client picks its own font [gmail, outlook] Fix: end it with a font the client has: "Inter, Arial, sans-serif"

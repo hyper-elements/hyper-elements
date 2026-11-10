@@ -6,7 +6,7 @@
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
 import { attributes, asset, boolean, breakpoints, enumOf, insets, length, line, link, number, text, video } from "./kinds";
 import type { Json } from "./model";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
+import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
 import { Grid, Layer } from "./layouts";
 import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
@@ -155,6 +155,7 @@ export const Column = defineComponent({
   style: {
     ...inheritedTextStyle,
     ...boxStyle,
+    overflow: blockOverflow,
     ...layoutStyle,
     justifyContent: {
       ...layoutStyle.justifyContent,
@@ -233,7 +234,7 @@ export const Span = defineComponent({
       label: "Raise or lower",
       description: '"super": superscript (®, a footnote mark); "sub": subscript; as CSS vertical-align.',
       // Written as <sup> and <sub>, which every client (Word too) raises and lowers.
-      support: { email: { level: "full", source: "caniemail" }, web: css },
+      support: { email: { level: "full", source: "writer" }, web: css },
     },
   },
   children: { text: true, categories: ["inline"] },
@@ -335,8 +336,8 @@ export const Image = defineComponent({
   style: {
     ...pick(boxStyle, "width", "maxWidth", "height", "border", "borderRadius"),
     ...placementStyle,
-    alignSelf: { kind: enumOf(["start", "center", "end"]), label: "Place", description: "Where it sits in its stack on phones, where that's another place than on desktop.", mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
-    verticalAlign: { kind: enumOf(["top", "middle"]), label: "Place in its line", description: "Where it sits in a line of text it's in.", support: { email: { level: "full", source: "caniemail" }, web: css } },
+    alignSelf: { kind: enumOf(["start", "center", "end"]), label: "Place", description: "Where it sits in its stack on phones, where that's another place than on desktop.", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
+    verticalAlign: { kind: enumOf(["top", "middle"]), label: "Place in its line", description: "Where it sits in a line of text it's in.", support: { email: { level: "full", source: "writer" }, web: css } },
   },
   children: {},
   sizing: "shrink",
@@ -355,7 +356,7 @@ export const Divider = defineComponent({
   style: {
     borderTop: { kind: line(), label: "Line", description: 'The line, as CSS border-top: "1px solid #bbbbbb".', support: { email: { level: "full", source: "writer" }, web: css } },
     width: { kind: length(["px", "%"]), label: "Length", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
-    padding: { kind: insets(), label: "Padding", mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
+    padding: { kind: insets(), label: "Padding", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   },
   defaultStyle: { borderTop: { width: 1, style: "solid", color: "#bbbbbb" }, width: "100%" },
   children: {},
@@ -437,7 +438,7 @@ export const Table = defineComponent({
     ...pick(boxStyle, "width", "maxWidth", "backgroundColor", "border"),
     cellPadding: { kind: insets(), label: "Cell padding", description: "Every cell's padding, where the cell doesn't set its own.", support: { email: { level: "full", source: "writer" }, web: css } },
     rowBorder: { kind: line(), label: "Line between rows", support: { email: { level: "full", source: "writer" }, web: css } },
-    borderCollapse: { kind: enumOf(["separate", "collapse"]), label: "Cell borders", description: "Whether cells side by side draw a border each (separate) or share one (collapse).", support: { email: { level: "full", source: "caniemail" }, web: css } },
+    borderCollapse: { kind: enumOf(["separate", "collapse"]), label: "Cell borders", description: "Whether cells side by side draw a border each (separate) or share one (collapse).", support: { email: { level: "full", source: "writer" }, web: css } },
     ...placementStyle,
   },
   children: { types: ["TableRow"] },
@@ -476,7 +477,7 @@ export const TableCell = defineComponent({
     ...textStyle,
     ...pick(boxStyle, "padding", "backgroundColor", "border"),
     width: { kind: length(["px", "%"]), label: "Width", description: "Its column's width (of a cell spanning one column).", support: { email: { level: "full", source: "writer" }, web: css } },
-    verticalAlign: { kind: enumOf(["top", "middle", "bottom"]), label: "Vertical alignment", support: { email: { level: "full", source: "caniemail" }, web: css } },
+    verticalAlign: { kind: enumOf(["top", "middle", "bottom"]), label: "Vertical alignment", support: { email: { level: "full", source: "writer" }, web: css } },
   },
   children: { text: true, categories: ["inline"], types: ["Image"] },
   sizing: "none",

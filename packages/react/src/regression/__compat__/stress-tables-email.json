@@ -12,64 +12,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Tables\"\n    Heading h1 536px \"Fares to Stornoway\"\n    Table 536px\n      TableRow 534px: background #12242e\n        TableCell 366px \"Crossing\"\n        TableCell 64px \"Deck\"\n        TableCell 104px \"Fare\"\n      TableRow 534px\n        TableCell 366px \"The season, overnight, with a two-berth cabin, breakfast and a bicycle in the h…\"\n        TableCell 64px \"4\"\n        TableCell 104px \"£1,204.50\"\n      TableRow 534px\n        TableCell 430px \"Spans two columns: the total\"\n        TableCell 104px \"£1,204.50\"\n      TableRow 534px\n        TableCell 534px \"A footer row, under everything: fares include port tax.\"",
  "design": {

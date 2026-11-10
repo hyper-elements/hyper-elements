@@ -3,7 +3,6 @@
  * children, targets, support in each output and editors. Types, validation,
  * the support pass and property discovery are all read from these.
  */
-import type { EmailClient } from "./email-clients";
 import type { EditorKind, InputOf, Kind, OutputOf } from "./kinds";
 import type { Json, Node } from "./model";
 
@@ -47,38 +46,28 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
 export type SupportByTarget = Partial<Record<Target, Support | readonly Support[]>>;
 
 /**
- * Where what an output shows of a style or prop is known from: captures of
- * real classic Outlook for Windows; caniemail's client tables
- * (caniemail.com); the output's writer itself, which turns it into markup the
- * output shows (checked in Chromium, for email with and without <style>, and
- * against a model of Outlook's layout built from those captures); captures of
- * Gmail, Outlook.com or Apple Mail; CSS written as is, which browsers show as
- * asked; or assumed, not yet checked.
+ * Where what an output shows of a style or prop is known from: the output's writer itself, which turns it into markup
+ * the output shows (checked in Chromium, for email with and without <style>); CSS written as is, which browsers show as
+ * asked; or assumed, not yet checked. What email clients do with the HTML isn't declared here: it's the email-clients
+ * plugin's (plan email-client-models, D9).
  */
-export type SupportSource = "outlook-captures" | "gmail-captures" | "outlook-com-captures" | "apple-mail-captures" | "caniemail" | "writer" | "css" | "assumed";
+export type SupportSource = "writer" | "css" | "assumed";
 
 /**
  * How an output shows a style or prop, or some of its values (`values`, or
- * `when` the value, on a node with such props, is such): as asked (`full`); as asked but in classic
- * Outlook, which shows something else (`outlook`, email only: what it shows);
- * not quite as asked anywhere it's shown (`partial`: what it shows); or not at
- * all (`none`: what it does instead). Read by the support pass every output
- * runs: `outlook` and `partial` are notes, `none` a warning, whether the email
- * clients it names were captured or are from caniemail's tables; one `assumed`
- * is only ever a note.
+ * `when` the value, on a node with such props, is such): as asked (`full`);
+ * not quite as asked (`partial`: what it shows); or not at all (`none`: what it
+ * does instead). Read by the support pass every output runs: `partial` is a
+ * note, `none` a warning; one `assumed` is only ever a note.
  */
 export type Support =
   | { level: "full"; source: SupportSource }
   | {
-      level: "outlook" | "partial" | "none";
+      level: "partial" | "none";
       shows: string;
       values?: readonly Json[];
-      when?: (value: Json, node: { props: Record<string, Json> }) => boolean;
+      when?: (value: Json, node: { props: Record<string, Json>; style?: Record<string, Json>; mobile?: Record<string, Json> }) => boolean;
       source: SupportSource;
-      /** For email, the clients it's about (`outlook`: classic Outlook); absent, every email client. */
-      clients?: readonly EmailClient[];
-      /** caniemail's feature the clients are from (its slug), checked against its tables (test/caniemail.test.ts). */
-      feature?: string;
       /** What to change. */
       fix?: string;
     };
