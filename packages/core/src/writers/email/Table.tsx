@@ -3,9 +3,10 @@
  * colgroup as shares of its width (fixed layout), in its box. Header rows at
  * its top are its `<thead>`, footer rows at its end its `<tfoot>`.
  */
-import { h } from "../jsx";
+import { Fragment, h, NotOutlook, Outlook } from "../jsx";
 import { columnWidth } from "../shared/css";
 import { isNode, shown, type Component } from "./context";
+import { FIRST_ROWS } from "./TableCell";
 import { Box } from "./layout";
 import { TABLE } from "./markup";
 
@@ -17,13 +18,25 @@ export const Table: Component = ({ node, style, fill, render }) => {
   const [header, rest] = head < 0 ? [rows, []] : [rows.slice(0, head), rows.slice(head)];
   const foot = rest.findIndex((row) => row.props.footer);
   const [body, footer] = foot < 0 ? [rest, []] : [rest.slice(0, foot), rest.slice(foot)];
+  if (rows[0]) FIRST_ROWS.add(rows[0]);
   return (
     <Box node={node} fill={fill}>
       <table cellpadding={TABLE.cellpadding} cellspacing={TABLE.cellspacing} border={TABLE.border} width="100%" style={{ tableLayout: "fixed", borderCollapse: style.borderCollapse ?? "separate" }}>
         <colgroup>
-          {columns.map((width, index) => (
-            <col width={width} style={{ width: columnWidth(node, width, index, total) }} />
-          ))}
+          {columns.map((width, index) => {
+            const css = columnWidth(node, width, index, total);
+            const col = (w?: string | number) => <col width={width} style={{ width: w }} />;
+            // A free column's `width: auto` isn't for classic Outlook (Word gives it the widest column's width): Word
+            // reads the attribute alone, as TableCell writes it.
+            return css === "auto" ? (
+              <>
+                <Outlook>{col()}</Outlook>
+                <NotOutlook>{col(css)}</NotOutlook>
+              </>
+            ) : (
+              col(css)
+            );
+          })}
         </colgroup>
         {header.length > 0 && <thead>{header.map((row) => render(row))}</thead>}
         {body.length > 0 && <tbody>{body.map((row) => render(row))}</tbody>}
