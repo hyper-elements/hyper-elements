@@ -21,7 +21,7 @@ const jsonLd = {
       <a class="eyebrow" href="/blog">← All tutorials</a>
       <h1>{title}</h1>
       <p class="lede">{description}</p>
-      <p class="byline">Hyper Elements · <time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
+      <p class="byline"><time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
       <img class="hero" src={hero} alt={heroAlt} width="1600" height="912" fetchpriority="high" />
     </header>
     <nav class="contents" aria-label="In this tutorial">

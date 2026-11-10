@@ -21,7 +21,6 @@ export const mainNav = [
   { href: "/components", label: "Components" },
   { href: "/templates", label: "Templates" },
   { href: "/ai", label: "AI" },
-  { href: "/migrate", label: "Migrate" },
   { href: "/blog", label: "Blog" },
 ];
 

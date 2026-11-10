@@ -13,8 +13,6 @@ This tutorial takes a fictional shop's receipt through that loop. You'll keep or
 
 ## What does the complete receipt template look like?
 
-<figure style="margin:0 0 28px"><img src="/img/blog/claude-code-receipt-email.png" alt="Rendered Northline Supply receipt for order NL-1042: two field notebooks and one pencil set, a $30 subtotal, $5 delivery, $35 total paid, and a View your order button." width="1360" height="1060" loading="lazy" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:14px"><figcaption style="margin-top:10px;color:var(--text-2);font-size:13px;line-height:1.6">Browser screenshot of the complete template below, rendered with the fictional example order. This is not an inbox compatibility test.</figcaption></figure>
-
 Start with this template in `emails/receipt.tsx`. The example uses fictional data and a reserved example-domain link; replace the link and merchant details before a real send.
 
 ```tsx
@@ -95,6 +93,8 @@ export const exampleOrder: Order = {
   orderUrl: "https://example.com/orders/NL-1042",
 };
 ```
+
+<figure style="margin:0 0 28px"><img src="/img/blog/claude-code-receipt-email.png" alt="Rendered Northline Supply receipt for order NL-1042: two field notebooks and one pencil set, a $30 subtotal, $5 delivery, $35 total paid, and a View your order button." width="1360" height="1060" loading="lazy" style="display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:14px"><figcaption style="margin-top:10px;color:var(--text-2);font-size:13px;line-height:1.6">Browser screenshot of the complete template above, rendered with the fictional example order. This is not an inbox compatibility test.</figcaption></figure>
 
 The prices are integer cents, with a deliberately simple USD formatter. Production totals should come from your trusted order system, including its tax, discount and currency rules. Don't turn an email template into a second billing engine.
 
