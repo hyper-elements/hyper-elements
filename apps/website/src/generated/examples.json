@@ -25,9 +25,45 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[1].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Image in classic Outlook: square corners",
+          "path": "root.children[1].children[0].children[3].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[1].children[0].children[4].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[1].children[0].children[4].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[0].children[1].style.letterSpacing"
         }
       ]
     },
@@ -55,8 +91,44 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].children[1].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[0].children[2].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
         }
       ]
@@ -122,9 +194,45 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[2].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[2].children[0].style.letterSpacing"
         }
       ]
     },
@@ -152,9 +260,243 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Heading in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[1].children[0].children[1].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[1].children[2].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[1].children[2].children[0].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Text in classic Outlook: square corners",
+          "path": "root.children[0].children[3].children[1].children[0].children[0].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[3].children[1].children[0].children[0].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Text in classic Outlook: square corners",
+          "path": "root.children[0].children[3].children[1].children[0].children[1].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[3].children[1].children[0].children[1].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Text in classic Outlook: square corners",
+          "path": "root.children[0].children[3].children[1].children[0].children[2].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[3].children[1].children[0].children[2].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Text in classic Outlook: square corners",
+          "path": "root.children[0].children[3].children[1].children[0].children[3].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[3].children[1].children[0].children[3].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Heading in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[1].children[0].children[0].children[1].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[1].children[0].children[1].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[1].children[0].children[1].children[0].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[2].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[2].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[3].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[3].children[1].children[0].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[3].children[1].children[0].children[1].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[3].children[1].children[0].children[2].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[3].children[1].children[0].children[3].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[2].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[3].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[4].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this TableCell in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[4].children[1].children[0].children[5].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[1].children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[0].children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[0].children[0].children[0].style.letterSpacing"
         }
       ]
     },
@@ -182,9 +524,93 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Heading in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[1].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Span in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[1].children[4].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[3].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[4].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[4].children[0].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[4].children[0].children[1].children[1].children[0].style.letterSpacing"
         }
       ]
     },
@@ -200,9 +626,93 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[0].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Heading in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[1].children[1].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[4].children[0].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[5].children[1].children[0].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[5].children[1].children[1].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[5].children[1].children[2].children[0].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[1].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[5].children[1].children[2].children[0].style.letterSpacing"
         }
       ]
     },
@@ -218,9 +728,87 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[2].children[2].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[2].children[2].children[0].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[2].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[1].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[1].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[1].children[2].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[2].children[1].children[3].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[3].children[0].style.letterSpacing"
         }
       ]
     },
@@ -260,9 +848,93 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/degraded",
+          "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows",
+          "path": "root.props.fonts"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[1].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[1].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[1].children[2].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[1].children[3].children[1].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[1].children[3].children[2].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[1].children[3].children[3].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[1].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[0].children[1].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[3].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[4].children[0].children[0].style.letterSpacing"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[1].children[4].children[1].children[0].style.letterSpacing"
         }
       ]
     }
@@ -280,9 +952,27 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[0].children[0].hover"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/degraded",
+          "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)",
+          "path": "root.children[0].children[0].children[1].hover"
         }
       ]
     },
@@ -298,9 +988,15 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Button in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[2].style.borderRadius"
         }
       ]
     },
@@ -313,14 +1009,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding-bottom:16px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Above the line</p></td></tr><tr><td style=\"padding-bottom:16px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"40%\" style=\"border-collapse:separate\"><tr><td style=\"border-top:2px solid #ef4638;font-size:0;line-height:0;mso-line-height-rule:exactly\">&nbsp;</td></tr></table></td></tr><tr><td style=\"padding-bottom:16px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Below the line</p></td></tr><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:separate\"><tr><td style=\"border-top:1px dashed #94a3b8;font-size:0;line-height:0;mso-line-height-rule:exactly\">&nbsp;</td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "Above the line\n\n---\n\nBelow the line\n\n---",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    Text 472px \"Above the line\"\n    Divider 189px\n    Text 472px \"Below the line\"\n    Divider 472px",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "grid": {
       "slug": "grid",
@@ -334,9 +1023,39 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[2].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[3].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[4].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[5].style.borderRadius"
         }
       ]
     },
@@ -352,9 +1071,21 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
+          "code": "email/outlook-degraded",
+          "message": "fontWeight on this Heading in classic Outlook: normal weight: Word draws only normal and bold (600 and over)",
+          "path": "root.children[0].children[0].children[1].style.fontWeight"
+        },
+        {
+          "severity": "info",
+          "code": "email/phone-styles",
+          "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)",
           "path": "root"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it",
+          "path": "root.children[0].children[0].children[0].style.letterSpacing"
         }
       ]
     },
@@ -370,9 +1101,9 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Image in classic Outlook: square corners",
+          "path": "root.children[0].children[0].style.borderRadius"
         }
       ]
     },
@@ -394,9 +1125,9 @@
         },
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Layer in classic Outlook: square corners",
+          "path": "root.children[0].children[0].style.borderRadius"
         }
       ]
     },
@@ -409,14 +1140,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><table role=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr role=\"listitem\"><td aria-hidden=\"true\" width=\"24\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:right;width:24px;box-sizing:border-box;padding-right:8px;padding-bottom:6px\">1.</td><td valign=\"top\" style=\"padding-bottom:6px\"><div style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Write the template in JSX</div></td></tr><tr role=\"listitem\"><td aria-hidden=\"true\" width=\"24\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:right;width:24px;box-sizing:border-box;padding-right:8px;padding-bottom:6px\">2.</td><td valign=\"top\" style=\"padding-bottom:6px\"><div style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Render it</div><table role=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr role=\"listitem\"><td aria-hidden=\"true\" width=\"24\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:right;width:24px;box-sizing:border-box;padding-right:8px;padding-bottom:4px\">•</td><td valign=\"top\" style=\"padding-bottom:4px\"><div style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">HTML for the inbox</div></td></tr><tr role=\"listitem\"><td aria-hidden=\"true\" width=\"24\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:right;width:24px;box-sizing:border-box;padding-right:8px\">•</td><td valign=\"top\"><div style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Plain text, automatically</div></td></tr></table></td></tr><tr role=\"listitem\"><td aria-hidden=\"true\" width=\"24\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:right;width:24px;box-sizing:border-box;padding-right:8px\">3.</td><td valign=\"top\"><div style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:left\">Send it with any provider</div></td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "1. Write the template in JSX\n2. Render it\n  - HTML for the inbox\n  - Plain text, automatically\n3. Send it with any provider",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    List 472px\n      ListItem 448px \"Write the template in JSX\"\n      ListItem 448px \"Render it\"\n        List 448px\n          ListItem 424px \"HTML for the inbox\"\n          ListItem 424px \"Plain text, automatically\"\n      ListItem 448px \"Send it with any provider\"",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "menu": {
       "slug": "menu",
@@ -427,14 +1151,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}@media (max-width: 540px){.eippbt{display:none!important}}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td align=\"center\" style=\"font-size:0;text-align:center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 15px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://example.com/product\" style=\"color:#0f172a;text-decoration:none\">Product</a></p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div class=\"eippbt\" style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 0\"><p style=\"margin:0;color:#94a3b8;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\">·</p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 15px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://example.com/pricing\" style=\"color:#0f172a;text-decoration:none\">Pricing</a></p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div class=\"eippbt\" style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 0\"><p style=\"margin:0;color:#94a3b8;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\">·</p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 15px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://example.com/docs\" style=\"color:#0f172a;text-decoration:none\">Docs</a></p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div class=\"eippbt\" style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 0\"><p style=\"margin:0;color:#94a3b8;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\">·</p></td></tr></table></div><!--[if mso]></td><td valign=\"top\"><![endif]--><div style=\"display:inline-block;vertical-align:top;font-size:14px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\"><tr><td style=\"padding:5px 15px\"><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:16.8px;mso-line-height-rule:exactly;text-align:left\"><a href=\"https://example.com/blog\" style=\"color:#0f172a;text-decoration:none\">Blog</a></p></td></tr></table></div><!--[if mso]></td></tr></table><![endif]--></td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "Product (https://example.com/product) · Pricing (https://example.com/pricing) · Docs (https://example.com/docs) · Blog (https://example.com/blog)",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    Row 472px: 7 side by side\n      Text \"Product (https://example.com/product)\"\n      Text: desktop only \"·\"\n      Text \"Pricing (https://example.com/pricing)\"\n      Text: desktop only \"·\"\n      Text \"Docs (https://example.com/docs)\"\n      Text: desktop only \"·\"\n      Text \"Blog (https://example.com/blog)\"",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "row": {
       "slug": "row",
@@ -448,9 +1165,21 @@
       "diagnostics": [
         {
           "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[0].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[1].style.borderRadius"
+        },
+        {
+          "severity": "info",
+          "code": "email/outlook-degraded",
+          "message": "borderRadius on this Column in classic Outlook: square corners",
+          "path": "root.children[0].children[0].children[2].style.borderRadius"
         }
       ]
     },
@@ -463,14 +1192,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\" bgcolor=\"#0f172a\" style=\"padding-top:32px;padding-bottom:32px;background-color:#0f172a\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td style=\"padding:0 32px 0 32px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding-bottom:8px\"><h2 style=\"margin:0;color:#fff;font-family:Inter, Helvetica, Arial, sans-serif;font-size:22px;font-weight:700;line-height:27.5px;mso-line-height-rule:exactly;text-align:center\">Full-bleed band</h2></td></tr><tr><td><p style=\"margin:0;color:#94a3b8;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:24px;mso-line-height-rule:exactly;text-align:center\">Its background reaches the window's edges.</p></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "FULL-BLEED BAND\n\nIts background reaches the window's edges.",
       "outline": "Email 520px: background #ffffff\n  Section 520px: background #0f172a\n    Heading h2 456px \"Full-bleed band\"\n    Text 456px \"Its background reaches the window's edges.\"",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "social": {
       "slug": "social",
@@ -481,14 +1203,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td align=\"center\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td></td><td width=\"32\" valign=\"top\" style=\"width:32px\"><a href=\"https://x.com/example\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"X\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/rounded/x.png\" alt=\"X\" width=\"32\" border=\"0\" style=\"display:block;width:100%;max-width:32px;height:auto;border:0\"></a></td><td width=\"10\" style=\"width:10px\"></td><td width=\"32\" valign=\"top\" style=\"width:32px\"><a href=\"https://github.com/example\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"GitHub\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/rounded/github.png\" alt=\"GitHub\" width=\"32\" border=\"0\" style=\"display:block;width:100%;max-width:32px;height:auto;border:0\"></a></td><td width=\"10\" style=\"width:10px\"></td><td width=\"32\" valign=\"top\" style=\"width:32px\"><a href=\"https://linkedin.com/company/example\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"LinkedIn\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/rounded/linkedin.png\" alt=\"LinkedIn\" width=\"32\" border=\"0\" style=\"display:block;width:100%;max-width:32px;height:auto;border:0\"></a></td><td width=\"10\" style=\"width:10px\"></td><td width=\"32\" valign=\"top\" style=\"width:32px\"><a href=\"https://youtube.com/@example\" target=\"_blank\" rel=\"noopener noreferrer\" title=\"YouTube\" style=\"text-decoration:none\"><img src=\"https://cdn.tools.unlayer.com/social/icons/rounded/youtube.png\" alt=\"YouTube\" width=\"32\" border=\"0\" style=\"display:block;width:100%;max-width:32px;height:auto;border:0\"></a></td><td></td></tr></table></td></tr></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "[X] (https://x.com/example)\n\n[GitHub] (https://github.com/example)\n\n[LinkedIn] (https://linkedin.com/company/example)\n\n[YouTube] (https://youtube.com/@example)",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    Row 472px: 4 side by side\n      Link 32px \"[X]\" → https://x.com/example\n      Link 32px \"[GitHub]\" → https://github.com/example\n      Link 32px \"[LinkedIn]\" → https://linkedin.com/company/example\n      Link 32px \"[YouTube]\" → https://youtube.com/@example",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "svg": {
       "slug": "svg",
@@ -511,14 +1226,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"table-layout:fixed;border-collapse:separate\"><colgroup><col width=\"158\" style=\"width:33.47%\"><col width=\"157\" style=\"width:33.26%\"><col width=\"157\" style=\"width:33.26%\"></colgroup><thead><tr bgcolor=\"#f8fafc\" style=\"background-color:#f8fafc\"><th scope=\"col\" width=\"158\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;font-weight:700;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.47%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">Output</th><th scope=\"col\" width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;font-weight:700;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.26%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">Root</th><th scope=\"col\" width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;font-weight:700;line-height:21px;mso-line-height-rule:exactly;text-align:right;width:33.26%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">Browser needed</th></tr></thead><tbody><tr><td width=\"158\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.47%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">Email HTML</td><td width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.26%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">Email</td><td width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:right;width:33.26%;box-sizing:border-box;padding:10px 12px;border-bottom:1px solid #e2e8f0\">No</td></tr><tr><td width=\"158\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.47%;box-sizing:border-box;padding:10px 12px\">PDF</td><td width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:left;width:33.26%;box-sizing:border-box;padding:10px 12px\">Document</td><td width=\"157\" valign=\"top\" style=\"color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:14px;line-height:21px;mso-line-height-rule:exactly;text-align:right;width:33.26%;box-sizing:border-box;padding:10px 12px\">No</td></tr></tbody></table></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "Output | Root | Browser needed\nEmail HTML | Email | No\nPDF | Document | No",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    Table 472px\n      TableRow 472px: background #f8fafc\n        TableCell 158px \"Output\"\n        TableCell 157px \"Root\"\n        TableCell 157px \"Browser needed\"\n      TableRow 472px\n        TableCell 158px \"Email HTML\"\n        TableCell 157px \"Email\"\n        TableCell 157px \"No\"\n      TableRow 472px\n        TableCell 158px \"PDF\"\n        TableCell 157px \"Document\"\n        TableCell 157px \"No\"",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "text": {
       "slug": "text",
@@ -529,14 +1237,7 @@
       "html": "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional //EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\"><html xmlns=\"http://www.w3.org/1999/xhtml\" xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\"><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><meta name=\"x-apple-disable-message-reformatting\"><!--[if !mso]><!--><meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\"><!--<![endif]--><meta name=\"format-detection\" content=\"telephone=no,address=no,email=no,date=no,url=no\"><meta name=\"color-scheme\" content=\"light\"><meta name=\"supported-color-schemes\" content=\"light\"><!--[if mso]><xml><o:OfficeDocumentSettings><o:AllowPNG/><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]--><style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style></head><body style=\"margin:0;padding:0;-webkit-text-size-adjust:100%;background-color:#fff\"><div role=\"article\" aria-roledescription=\"email\" style=\"background-color:#fff;overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" bgcolor=\"#ffffff\" style=\"background-color:#fff\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"520\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:520px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td style=\"padding:24px\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td><p style=\"margin:0;color:#0f172a;font-family:Inter, Helvetica, Arial, sans-serif;font-size:16px;line-height:25.6px;mso-line-height-rule:exactly;text-align:left\">Hi {{first_name}}, your build <span style=\"font-family:Menlo, monospace;background-color:#f1f5f9\">#2705</span> passed.<br><span style=\"font-weight:700\">3 templates</span> changed. <a href=\"https://example.com/diff\" style=\"color:#00e;text-decoration:underline\">See the diff</a>.</p></td></tr></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div></body></html>",
       "text": "Hi {{first_name}}, your build #2705 passed.\n3 templates changed. See the diff (https://example.com/diff).",
       "outline": "Email 520px: background #ffffff\n  Column 520px\n    Text 472px \"Hi {{first_name}}, your build #2705 passed. / 3 templates changed. See the diff…\"",
-      "diagnostics": [
-        {
-          "severity": "info",
-          "code": "email/more-checks",
-          "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients",
-          "path": "root"
-        }
-      ]
+      "diagnostics": []
     },
     "video": {
       "slug": "video",
