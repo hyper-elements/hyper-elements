@@ -31,4 +31,4 @@ Then open:
 
 The template components and the `render()` function run completely on the server. `render()` is async, so the page and the Route Handler are async functions that await it. The component tree is never shipped to the browser; only the resulting HTML/plain-text strings are.
 
-Elements needs no entry in `next.config.ts`: Next.js bundles it into the server code like any other package.
+For emails, pages and PDFs, Elements needs no entry in `next.config.ts`: Next.js bundles it into the server code like any other package. Images (`@hyper-elements/react/image`) do: list their engines, which can't be bundled, as `serverExternalPackages: ["@resvg/resvg-js", "satori"]`.

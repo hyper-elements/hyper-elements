@@ -5,8 +5,10 @@ Image output for [Hyper Elements](https://github.com/hyper-elements/hyper-elemen
 ## Installation
 
 ```bash
-npm install @hyper-elements/react satori @resvg/resvg-js react
+npm install @hyper-elements/react satori@^0.33.5 @resvg/resvg-js react
 ```
+
+Give satori's range as above: pnpm and yarn otherwise add satori's newest version, outside the range `/image` is built for, with only a warning. In Next.js, list both engines in `next.config.ts` (`serverExternalPackages: ["@resvg/resvg-js", "satori"]`): resvg is a native addon and Satori reads a WebAssembly file, which Next.js can't bundle.
 
 `/image` is an entry of `@hyper-elements/react`. Its engines are optional peer dependencies, so a project that doesn't import `/image` installs nothing for them, and the main entry never loads them:
 
