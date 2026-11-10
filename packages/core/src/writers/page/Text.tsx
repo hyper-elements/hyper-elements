@@ -6,7 +6,7 @@ import type { ResolvedText } from "../../resolve";
 import { h, type Html } from "../jsx";
 import { textDeclarations } from "../shared/css";
 import type { Props, Component } from "./context";
-import { box } from "./layout";
+import { box, inRow } from "./layout";
 
 /**
  * A block of text as `Tag`; `always`: the text styles written even where inherited (a heading's size and weight: the
@@ -17,7 +17,7 @@ export const textBlock = ({ node, style, parent, placement, classes, children }:
     id={node.id}
     class={classes()}
     dir={node.props.dir as string | undefined}
-    style={[placement, { margin: 0 }, textDeclarations(node.text, parent.text, always), { textDecoration: style.textDecoration }, box(node, parent.type !== "Row")]}
+    style={[placement, { margin: 0 }, textDeclarations(node.text, parent.text, always), { textDecoration: style.textDecoration }, box(node, !inRow(parent))]}
   >
     {children()}
   </Tag>

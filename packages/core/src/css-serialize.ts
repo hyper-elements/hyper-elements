@@ -40,7 +40,7 @@ export const PAGE_STYLE_KEYS: ReadonlySet<string> = new Set(
 );
 
 /** Styles whose number has no unit. */
-const UNITLESS = new Set(["opacity", "zIndex", "order", "flexGrow", "flexShrink", "aspectRatio", "lineClamp"]);
+const UNITLESS = new Set(["opacity", "zIndex", "order", "flexGrow", "flexShrink", "aspectRatio", "lineClamp", "gridColumn", "gridRow", "gridArea"]);
 /** Styles whose value is a colour: shortened as today's colours are. */
 const COLORS = new Set(["borderColor"]);
 
@@ -96,6 +96,15 @@ export function pageLayout(style: Record<string, Json>): "flex" | "grid" | undef
   if (display === "grid" || display === "inline-grid") return "grid";
   const row = flexDirection === "row" || flexDirection === "row-reverse";
   return row && !BLOCKLIKE.has(display as string) ? "flex" : undefined;
+}
+
+/**
+ * Whether a Row lays its children out as a Row does (a flex row of their widths and shares), not as its page styles
+ * make it: a grid, a column, or blocks. The one rule the resolver and the writers read.
+ */
+export function laysOutAsRow(style: Record<string, Json>): boolean {
+  const { display, flexDirection } = style;
+  return pageLayout(style) !== "grid" && !BLOCKLIKE.has(display as string) && flexDirection !== "column" && flexDirection !== "column-reverse";
 }
 
 /** Displays that make a box no flex box or grid: its children in normal flow, or not shown. */

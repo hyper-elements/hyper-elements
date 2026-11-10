@@ -76,11 +76,12 @@ export function length(value: Json | undefined): string | undefined {
 export function insets(value: Json | undefined): string | undefined {
   if (!value) return undefined;
   // A Page's padding may hold rem, em or calc() sides, written as they are.
-  const sides = value as Record<keyof Insets, number | string>;
-  const [top, right, bottom, left] = (["top", "right", "bottom", "left"] as const).map((key) => length(sides[key]) ?? "0");
-  if (top === right && right === bottom && bottom === left) return top;
-  if (top === bottom && right === left) return `${top} ${right}`;
-  return `${top} ${right} ${bottom} ${left}`;
+  // Sides compared as given, then written: px as today (1.001 and 1.004 are two sides, written "1px 1px"), the rest as written.
+  const { top, right, bottom, left } = value as Record<keyof Insets, number | string>;
+  const out = (side: number | string) => length(side) ?? "0";
+  if (top === right && right === bottom && bottom === left) return out(top);
+  if (top === bottom && right === left) return `${out(top)} ${out(right)}`;
+  return `${out(top)} ${out(right)} ${out(bottom)} ${out(left)}`;
 }
 
 const side = (s: BorderSide) => `${px(s.width)} ${s.style} ${s.color}`;
@@ -132,9 +133,10 @@ const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.s
 export function textDeclarations(text: ResolvedText, parent: ResolvedText | undefined, always: ReadonlyArray<keyof ResolvedText> = []): Declarations {
   const out: Declarations = [];
   // A text metric set in rem, em or calc() on a Page is written as it was set (its px value is the resolver's).
-  const value = (of: ResolvedText, key: keyof ResolvedText) => (of.authored as Record<string, unknown> | undefined)?.[key] ?? of[key];
+  // Inherited is the computed value, not the written one: "2em" in a "2em" box is twice as big, so it's written again.
+  const written = (of: ResolvedText, key: keyof ResolvedText) => (of.authored as Record<string, unknown> | undefined)?.[key];
   for (const [key, property, write] of TEXT_CSS) {
-    if (!parent || always.includes(key) || !same(value(text, key), value(parent, key))) {
+    if (!parent || always.includes(key) || !same(text[key], parent[key]) || !same(written(text, key), written(parent, key))) {
       const authored = (text.authored as Record<string, string> | undefined)?.[key];
       out.push([property, authored ?? write(text[key] as never)]);
     }

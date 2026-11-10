@@ -15,7 +15,7 @@ import { attrs, css, escapeAttr, escapeText, styleAttr, type Declarations } from
 import { pageDeclarations } from "../../css-serialize";
 import { fontFaces } from "../shared/fonts";
 import { isNode, type PageOptions, type Props, type Component } from "./context";
-import { alignSelf, layerPlacement, pageLayout, rowPlacement } from "./layout";
+import { alignSelf, inRow, layerPlacement, pageLayout, rowPlacement } from "./layout";
 import { Box } from "./Box";
 import { classesFor } from "./styles";
 import { Button } from "./Button";
@@ -128,14 +128,16 @@ function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declaratio
       const place = (child: ResolvedNode): Declarations => {
         // A flex row or a grid its page styles make it: each child keeps no width from its longest word (Decision 7), and
         // in a flex row its `flex` share is CSS's `<n> 1 0%` ("none": its own size), as in a Row.
+        // A Row whose page styles make it a grid or a column places its children as any container does.
         const layout = pageLayout(node);
-        if (layout && node.type !== "Row") {
+        const row = inRow(node);
+        if (layout && !row) {
           const share = child.style.flex;
           const flex: Declarations = layout !== "flex" || share === undefined ? [] : share === "none" || share === 0 ? [["flex", "0 0 auto"]] : [["flex", `${share} 1 0%`]];
           return [...flex, ...(child.style.minWidth === undefined ? ([["min-width", "0"]] as Declarations) : [])];
         }
-        const own = node.type === "Row" ? rowPlacement(child, node) : node.type === "Layer" ? layerPlacement(child) : alignSelf(child, node, rtl);
-        return node.type === "Box" && child.style.minWidth === undefined && !own.some(([property]) => property === "min-width") ? [...own, ["min-width", "0"]] : own;
+        const own = row ? rowPlacement(child, node) : node.type === "Layer" ? layerPlacement(child) : alignSelf(child, node, rtl);
+        return (node.type === "Box" || node.type === "Row") && !row && child.style.minWidth === undefined && !own.some(([property]) => property === "min-width") ? [...own, ["min-width", "0"]] : own;
       };
       return <>{node.children.filter(isNode).map((child) => render(child, place(child)))}</>;
     },

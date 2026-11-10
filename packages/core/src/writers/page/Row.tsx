@@ -2,7 +2,7 @@
 import { h } from "../jsx";
 import { textDeclarations } from "../shared/css";
 import type { Component } from "./context";
-import { box, FLEX_ALIGN, JUSTIFY } from "./layout";
+import { box, FLEX_ALIGN, JUSTIFY, inRow, pageLayout } from "./layout";
 
 export const Row: Component = ({ node, style, parent, placement, classes, children }) => (
   <div
@@ -14,11 +14,12 @@ export const Row: Component = ({ node, style, parent, placement, classes, childr
       {
         display: "flex",
         gap: style.gap,
-        alignItems: FLEX_ALIGN[style.alignItems as string],
+        // Across a Row laid out as a column by its page styles, alignItems places what has its own size, as in a Column.
+        alignItems: inRow(node) || pageLayout(node) === "grid" ? FLEX_ALIGN[style.alignItems as string] : undefined,
         justifyContent: JUSTIFY[style.justifyContent as string],
         flexWrap: style.flexWrap === "wrap" || style.flexWrap === "words" ? "wrap" : undefined,
       },
-      box(node, parent.type !== "Row"),
+      box(node, !inRow(parent)),
       textDeclarations(node.text, parent.text),
     ]}
   >

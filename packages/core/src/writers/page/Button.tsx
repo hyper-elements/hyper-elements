@@ -3,11 +3,11 @@ import { h } from "../jsx";
 import { textDeclarations } from "../shared/css";
 import { link } from "../shared/link";
 import type { Component } from "./context";
-import { box } from "./layout";
+import { box, inRow } from "./layout";
 
 export const Button: Component = ({ node, parent, placement, classes, children }) => {
   const { class: own, ...attributes } = link(node.props);
-  const boxed = box(node, parent.type !== "Row");
+  const boxed = box(node, !inRow(parent));
   return (
     <a
       id={node.id}

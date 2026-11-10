@@ -2,7 +2,7 @@
 import type { ResolvedNode } from "../../resolve";
 import { h } from "../jsx";
 import { isNode, type Component } from "./context";
-import { box } from "./layout";
+import { box, inRow } from "./layout";
 
 const paint = (value: unknown) => (value === "transparent" ? "none" : (value as string | undefined));
 
@@ -34,7 +34,7 @@ export const Svg: Component = ({ node, parent, placement, classes }) => {
       aria-label={title}
       aria-hidden={title ? undefined : "true"}
       // Its padding and border around the drawing, as the resolver counts them (a framed box is border-box elsewhere).
-      style={[placement, { display: "block", flex: "none" }, { ...box(node, parent.type !== "Row"), boxSizing: undefined }]}
+      style={[placement, { display: "block", flex: "none" }, { ...box(node, !inRow(parent)), boxSizing: undefined }]}
     >
       {node.children.filter(isNode).map((shape) => h(TAGS[shape.type], shapeAttributes(shape)))}
     </svg>

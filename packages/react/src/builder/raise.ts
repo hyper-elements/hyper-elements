@@ -63,7 +63,14 @@ export function raise(element: React.ReactElement): Raised {
   };
   index(resolvedRoot);
   const at = (path: string) => resolved.get(path)!;
-  inPx(document.root, "root", resolved, baseViewport(resolvedRoot), report);
+  // The template's nodes by their place in it: a Grid's children are in the Rows and cells it's laid out in.
+  const templatePath = prepared.resolved.templatePath ?? ((path: string) => path);
+  const inTemplate = new Map<string, ResolvedNode[]>();
+  for (const node of resolved.values()) {
+    const place = templatePath(node.path);
+    inTemplate.set(place, [...(inTemplate.get(place) ?? []), node]);
+  }
+  inPx(document.root, "root", (path) => inTemplate.get(path) ?? [], baseViewport(resolvedRoot), report);
 
   /** A part, with its hidden properties. */
   const put = <T extends { values: Values }>(made: T, values: Values = {}): T => {
@@ -364,17 +371,39 @@ export function nodeOf(node: ResolvedNode): Node {
 }
 
 /**
- * A Page's padding in rem, em, % or a viewport unit as the px it comes to at the base window: the builder's rows,
- * columns and blocks take padding in px, and add it up. Said in the report.
+ * A Page's padding and gaps in rem, em, % or a viewport unit as the px they come to at the base window: the builder's
+ * rows, columns and blocks take them in px, and add them up. Said in the report. `at`: a template node's resolved node.
  */
-function inPx(node: Node, path: string, resolved: Map<string, ResolvedNode>, viewport: { width: number; height: number }, report: string[]): void {
-  const own = resolved.get(path);
+function inPx(node: Node, path: string, at: (path: string) => ResolvedNode[], viewport: { width: number; height: number }, report: string[]): void {
+  // Its resolved node, and those laid out from it (a Grid's Rows and cells), whose styles the builder also reads.
+  const all = at(path);
+  const own = all.find((resolved) => resolved.type === node.type) ?? all[0];
   for (const where of ["style", "mobile"] as const) {
+    if (!own) break;
     const padding = node[where]?.padding as Record<string, Json> | undefined;
-    if (!own || !padding || typeof padding !== "object" || !Object.values(padding).some((side) => typeof side === "string")) continue;
-    const sides = Object.fromEntries(Object.entries(padding).map(([side, value]) => [side, Math.round(lengthPx(value, own.available, own.text.fontSize, viewport) ?? 0)]));
-    report.push(`${path}: the builder's padding is in px: ${where}.padding is the ${["top", "right", "bottom", "left"].map((side) => `${sides[side]}px`).join(" ")} it comes to in the Page's widest window`);
-    node[where] = { ...node[where], padding: sides };
+    if (padding && typeof padding === "object" && Object.values(padding).some((side) => typeof side === "string")) {
+      // A padding's percentages are of the width it's in; a Section's, of the window it spans.
+      const of = own.type === "Section" ? viewport.width : own.available;
+      const sides = Object.fromEntries(Object.entries(padding).map(([side, value]) => [side, Math.max(0, Math.round(lengthPx(value, of, own.text.fontSize, viewport) ?? 0))]));
+      report.push(`${path}: the builder's padding is in px: ${where}.padding is the ${["top", "right", "bottom", "left"].map((side) => `${sides[side]}px`).join(" ")} it comes to in the Page's widest window`);
+      node[where] = { ...node[where], padding: sides };
+    }
+    for (const key of ["gap", "rowGap"] as const) {
+      const value = node[where]?.[key];
+      if (typeof value !== "string") continue;
+      // A gap's percentages are of the box's own width inside its padding.
+      const px = Math.max(0, Math.round(lengthPx(value, own.contentWidth ?? own.available, own.text.fontSize, viewport) ?? 0));
+      report.push(`${path}: the builder's gaps are in px: ${where}.${key} is the ${px}px it comes to in the Page's widest window`);
+      node[where] = { ...node[where], [key]: px };
+    }
+    // The builder reads a box's gaps from its laid-out nodes, under the keys they're laid out with (a Grid's rowGap is
+    // its arranged Column's gap): each in px too.
+    for (const resolved of all) {
+      const values = resolved[where];
+      for (const key of ["gap", "rowGap"] as const) {
+        if (values && typeof values[key] === "string") values[key] = Math.max(0, Math.round(lengthPx(values[key], resolved.contentWidth ?? resolved.available, resolved.text.fontSize, viewport) ?? 0));
+      }
+    }
   }
-  node.children?.forEach((child, index) => typeof child !== "string" && inPx(child, `${path}.children[${index}]`, resolved, viewport, report));
+  node.children?.forEach((child, index) => typeof child !== "string" && inPx(child, `${path}.children[${index}]`, at, viewport, report));
 }

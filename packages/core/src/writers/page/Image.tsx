@@ -2,7 +2,7 @@
 import { assetParts, type Asset } from "../../kinds";
 import { h } from "../jsx";
 import type { Component } from "./context";
-import { pageLayout } from "./layout";
+import { pageLayout, inRow } from "./layout";
 
 export const Image: Component = ({ node, style, parent, placement, classes }) => {
   // Under the children of a Layer with a height, it covers the Layer, cut at its sides or its top and bottom.
@@ -26,7 +26,7 @@ export const Image: Component = ({ node, style, parent, placement, classes }) =>
       {
         display: "block",
         maxWidth: style.maxWidth ?? "100%",
-        width: parent.type === "Row" ? undefined : style.width,
+        width: inRow(parent) ? undefined : style.width,
         height: style.height ?? "auto",
         alignSelf: style.alignSelf,
         verticalAlign: style.verticalAlign,

@@ -94,15 +94,16 @@ jobs:
       # top level), about 42KB; defineTheme(), extendTheme()
       # and token(), about 4KB), its JSX API (about 17KB) and the
       # render that collects a template (about 5KB), and a Page's styles (Box, the CSS value kinds
-      # that check each page style, their serializer, the flex and grid layout model and outline(),
-      # about 67KB). Raise it on purpose, with what grew.
+      # that check each page style (with calc() typed as CSS types it), their serializer, the flex
+      # and grid layout model (CSS grid's placement and track sizing, border overrides) and outline(),
+      # about 81KB). Raise it on purpose, with what grew.
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=389000
+          MAX_SIZE=404000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -118,8 +119,8 @@ jobs:
       # checks, render()'s blockMap, the roots check and themes (with their guard on
       # JavaScript's own names, body text roles, the token() hint and the checks that a
       # theme's mistakes are said), and a Page's styles (Box, their CSS value kinds and
-      # serializer, the flex and grid layout model) among
-      # them (about 279KB); the main
+      # serializer, the flex and grid layout model, a Page's padding and gaps as px) among
+      # them (about 293KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
@@ -129,7 +130,7 @@ jobs:
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=552500
+          MAX_SIZE=569000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

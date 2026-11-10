@@ -20,7 +20,7 @@ export type Term =
   | { t: "num"; value: number; unit: string }
   | { t: "word"; name: string; text: string }
   | { t: "hash"; value: string }
-  | { t: "fn"; name: string; args: Group[] }
+  | { t: "fn"; name: string; args: Group[]; text?: string }
   | { t: "str"; value: string }
   | { t: "op"; op: "/" | "+" | "-" | "*" };
 /** Space-separated terms. */
@@ -29,7 +29,7 @@ export type Seq = Term[];
 export type Group = Seq;
 
 /** Characters no value takes: they could end a declaration, a rule or the `<style>`. */
-const UNSAFE = /[;{}<>\\!@`\n\r\u0000]/;
+const UNSAFE = /[;{}<>\\!@`\u0000-\u001f\u007f]/;
 
 const LENGTH_UNITS = new Set(["px", "rem", "em", "vw", "vh", "vmin", "vmax", "svw", "svh", "dvw", "dvh", "lvw", "lvh", "ch", "ex"]);
 const ANGLE_UNITS = new Set(["deg", "turn", "rad", "grad"]);
@@ -50,7 +50,8 @@ class Reader {
 export function readTerms(input: string): Parsed<Group[]> {
   // Inside a quoted url a ; or a brace can't end anything (a data URL holds one): only quotes, angle brackets,
   // backslashes and line breaks are refused there.
-  const outside = input.replace(/url\(\s*(["'])([^"'<>\\\n\r]*)\1\s*\)/gi, "url()");
+  // A control character (a form feed is a line break to CSS) ends a string, so none is let in anywhere.
+  const outside = input.replace(/url\(\s*(["'])([^"'<>\\\u0000-\u001f\u007f]*)\1\s*\)/gi, "url()");
   if (UNSAFE.test(outside)) return fail(`${show(input)} holds a character a CSS value here can't (; { } < > \\ ! @)`);
   const reader = new Reader(input.trim());
   const groups = readGroups(reader, false);
@@ -162,7 +163,8 @@ function readTerm(reader: Reader, before: Seq): Parsed<Term> {
     const args = readGroups(reader, true);
     if (!args.ok) return args;
     reader.at++;
-    return ok({ t: "fn", name, args: args.value });
+    // Its name is compared lowercased and written as given ("translateY").
+    return ok({ t: "fn", name, args: args.value, text: word });
   }
   // A word is compared lowercased (CSS's keywords aren't case-sensitive) and written as given: an area's or a line's
   // name is.
@@ -191,7 +193,7 @@ function writeTerm(term: Term): string {
     case "op":
       return term.op;
     case "fn":
-      return term.name === "url" ? `url("${(term.args[0][0] as { value: string }).value}")` : `${term.name}(${writeTerms(term.args)})`;
+      return term.name === "url" ? `url("${(term.args[0][0] as { value: string }).value}")` : `${term.text ?? term.name}(${writeTerms(term.args)})`;
   }
 }
 
@@ -214,8 +216,51 @@ export function isLength(term: Term, options: LengthOptions = {}): boolean {
     if (term.unit === "%") return !!options.percent;
     return LENGTH_UNITS.has(term.unit);
   }
-  if (term.t === "fn" && MATH.has(term.name)) return mathArgs(term, (operand) => isLength(operand, { percent: options.percent, negative: true }) || (operand.t === "num" && operand.unit === ""));
+  if (term.t === "fn" && MATH.has(term.name)) return mathType(term, !!options.percent) === "length";
   return false;
+}
+
+/**
+ * What a math function comes to (css-values-4, "Type Checking"): a length (a percentage counts as one where the style
+ * takes it), a number, or nothing valid. + and - join the same type; * takes a number on one side; / a number on its right.
+ */
+function mathType(term: Term, percent: boolean): "length" | "number" | undefined {
+  if (term.t === "num") {
+    if (term.unit === "") return "number";
+    if (term.unit === "%") return percent ? "length" : undefined;
+    return LENGTH_UNITS.has(term.unit) ? "length" : undefined;
+  }
+  if (term.t !== "fn") return undefined;
+  if (term.name === "") return term.args.length === 1 ? sumType(term.args[0], percent) : undefined;
+  if (!MATH.has(term.name)) return undefined;
+  const count = term.args.length;
+  if (term.name === "calc" ? count !== 1 : term.name === "clamp" ? count !== 3 : count < 1) return undefined;
+  const types = term.args.map((seq) => sumType(seq, percent));
+  return types.every((type) => type !== undefined && type === types[0]) ? types[0] : undefined;
+}
+
+/** operand (op operand)*: * and / bind first, then + and - join terms of one type. */
+function sumType(seq: Seq, percent: boolean): "length" | "number" | undefined {
+  if (seq.length % 2 === 0) return undefined;
+  let sum: "length" | "number" | undefined;
+  let product = mathType(seq[0], percent);
+  for (let i = 1; i < seq.length; i += 2) {
+    const op = seq[i];
+    const right = mathType(seq[i + 1], percent);
+    if (op.t !== "op" || product === undefined || right === undefined) return undefined;
+    if (op.op === "*") {
+      if (product === "length" && right === "length") return undefined;
+      product = product === "length" || right === "length" ? "length" : "number";
+    } else if (op.op === "/") {
+      if (right !== "number") return undefined;
+    } else {
+      if (sum !== undefined && sum !== product) return undefined;
+      sum = product;
+      product = right;
+    }
+  }
+  if (product === undefined || (sum !== undefined && sum !== product)) return undefined;
+  return product;
 }
 
 /** A math function's arguments: clamp() three, min() and max() one or more, calc() one; each operands joined by operators. */
@@ -397,7 +442,14 @@ export function tracks(): Kind<string | number, string | number> {
     if (term.t === "num" && term.unit === "fr") return term.value >= 0;
     if (isLength(term, { percent: true })) return true;
     if (term.t === "word") return ["auto", "min-content", "max-content"].includes(term.name);
-    if (term.t === "fn" && term.name === "minmax") return term.args.length === 2 && term.args.every((seq) => seq.length === 1 && track(seq[0], inRepeat));
+    // minmax(<inflexible-breadth>, <track-breadth>): a length or a content size, then those or a share (fr); no function
+    // inside it (minmax(), fit-content()), and no share as its minimum.
+    if (term.t === "fn" && term.name === "minmax") {
+      if (term.args.length !== 2 || term.args.some((seq) => seq.length !== 1)) return false;
+      const [low, high] = [term.args[0][0], term.args[1][0]];
+      const inflexible = (t: Term) => isLength(t, { percent: true }) || isWord(t, "auto", "min-content", "max-content");
+      return inflexible(low) && (inflexible(high) || (high.t === "num" && high.unit === "fr" && high.value >= 0));
+    }
     if (term.t === "fn" && term.name === "fit-content") return term.args.length === 1 && term.args[0].length === 1 && isLength(term.args[0][0], { percent: true });
     if (term.t === "fn" && term.name === "repeat" && !inRepeat) {
       if (term.args.length !== 2 || term.args[0].length !== 1) return false;
@@ -416,6 +468,24 @@ export function tracks(): Kind<string | number, string | number> {
       if (!seq || !seq.length) return fail("tracks are space-separated, not comma-separated");
       if (seq.length === 1 && isWord(seq[0], "none")) return ok(true);
       for (const term of seq) if (!track(term, false)) return fail(`${show(writeTerm(term))} isn't a track`);
+      // With an auto-fill or auto-fit repeat() (one at most), every track is a fixed size, as CSS's <auto-track-list>
+      // has it: a length, or minmax() with a length at one end (and no share or content size as its minimum).
+      const autos = seq.filter((term) => term.t === "fn" && term.name === "repeat" && term.args[0][0].t === "word");
+      if (autos.length > 1) return fail("one auto-fill or auto-fit repeat() at most");
+      if (autos.length === 1) {
+        const length = (term: Term) => isLength(term, { percent: true });
+        const fixed = (term: Term): boolean => {
+          if (length(term)) return true;
+          if (term.t === "fn" && term.name === "minmax") {
+            const [low, high] = [term.args[0][0], term.args[1][0]];
+            const inflexible = length(low) || isWord(low, "auto", "min-content", "max-content");
+            return (length(low) && track(high, true)) || (inflexible && length(high));
+          }
+          if (term.t === "fn" && term.name === "repeat") return term.args[1].every(fixed);
+          return false;
+        };
+        for (const term of seq) if (!fixed(term)) return fail(`beside an auto repeat(), every track is a fixed size (a length, or minmax() with a length at one end): ${show(writeTerm(term))} isn't`);
+      }
       return ok(true);
     },
     { number: (n) => (n >= 0 ? ok(n) : fail("a track can't be less than 0")) }
@@ -437,6 +507,14 @@ export function areas(): Kind<string | readonly string[], string[]> {
       const cells = (rows as string[]).map((row) => row.trim().split(/\s+/));
       for (const row of cells) for (const cell of row) if (!AREA.test(cell)) return fail(`${show(cell)} isn't an area's name (letters, digits and hyphens) or "."`);
       if (cells.some((row) => row.length !== cells[0].length)) return fail("each row names as many cells as the first");
+      // Each named area is a rectangle: every cell of the box from its first row and column to its last holds its name.
+      const names = new Set(cells.flat().filter((cell) => !cell.startsWith(".")));
+      for (const name of names) {
+        const rows = cells.flatMap((row, r) => (row.includes(name) ? [r] : []));
+        const columns = cells.flatMap((row) => row.flatMap((cell, c) => (cell === name ? [c] : [])));
+        const [top, bottom, left, right] = [Math.min(...rows), Math.max(...rows), Math.min(...columns), Math.max(...columns)];
+        for (let r = top; r <= bottom; r++) for (let c = left; c <= right; c++) if (cells[r][c] !== name) return fail(`the area ${show(name)} isn't a rectangle`);
+      }
       return ok(cells.map((row) => row.join(" ")));
     },
     jsonSchema: () => ({ anyOf: [{ type: "string" }, { type: "array", items: { type: "string" }, minItems: 1 }] }),
@@ -667,9 +745,10 @@ function evalTerm(term: Term, context: LengthContext): number | null {
         return term.value * ROOT_FONT_SIZE;
       case "em":
         return term.value * context.fontSize;
+      // A font's own measures (its 0's width, its x-height): not known without the font.
       case "ch":
       case "ex":
-        return term.value * context.fontSize * 0.5;
+        return null;
       case "vw":
       case "svw":
       case "dvw":

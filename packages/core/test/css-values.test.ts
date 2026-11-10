@@ -151,7 +151,7 @@ describe("effects", () => {
   it("takes shadows, transforms, filters, transitions, outlines and origins", () => {
     expect(value(shadows(), "0 1px 2px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #e5e7eb")).toBe("0 1px 2px rgba(0, 0, 0, 0.1), inset 0 0 0 1px #e5e7eb");
     expect(value(shadows(), "0 -1px 0 #000")).toBe("0 -1px 0 #000");
-    expect(value(transform(), "translateY(-2px) scale(1.05) rotate(3deg)")).toBe("translatey(-2px) scale(1.05) rotate(3deg)");
+    expect(value(transform(), "translateY(-2px) scale(1.05) rotate(3deg)")).toBe("translateY(-2px) scale(1.05) rotate(3deg)");
     expect(value(filter(), "blur(4px) brightness(120%) drop-shadow(0 2px 4px #0003)")).toBe("blur(4px) brightness(120%) drop-shadow(0 2px 4px #0003)");
     expect(value(transition(), "background-color 150ms ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) 50ms")).toBe("background-color 150ms ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1) 50ms");
     expect(value(outline(), "2px solid #2563eb")).toBe("2px solid #2563eb");
@@ -195,5 +195,42 @@ describe("hostile values", () => {
     expect(readTerms('url("a;b")').ok).toBe(true);
     expect(readTerms("url(a;b)").ok).toBe(false);
     expect(readTerms('url("a\\";b")').ok).toBe(false);
+  });
+});
+
+describe("fixes from the second review", () => {
+  it("refuses a control character anywhere, quoted or not: a form feed ends a CSS string", () => {
+    for (const input of ['url("https://example.com/x\f);color:red;/*")', 'url("a\nb")', 'url("a\rb")', "url(a\u0000b)", 'url("a\u007fb")']) {
+      expect([input, readTerms(input).ok]).toEqual([input, false]);
+      rejects(images(), input);
+    }
+  });
+
+  it("types calc(): a length and a number don't add, a number multiplies, a length doesn't divide", () => {
+    const kind = richLength({ percent: true });
+    for (const input of ["calc(1px + 1)", "calc(1 + 1px)", "calc(1px * 2px)", "calc(2 / 1px)", "calc(50% - 2)", "min(1px, 2)", "calc(1px / 0px)"]) rejects(kind, input);
+    for (const input of ["calc(1px * 2)", "calc(2 * 1rem)", "calc(100% / 3)", "calc((100% - 2rem) / 3)", "min(10px, 5vw)", "clamp(1rem, 2vw + 1px, 3rem)"]) expect(value(kind, input)).toBe(input);
+  });
+
+  it("refuses a flexible minimum in minmax(), and areas that aren't rectangles", () => {
+    rejects(tracks(), "minmax(1fr, 2fr)");
+    expect(value(tracks(), "minmax(100px, 1fr)")).toBe("minmax(100px, 1fr)");
+    rejects(areas(), ["a a", "a b"]);
+    rejects(areas(), ["a b a"]);
+    rejects(areas(), ["a b", "b b"]);
+    expect(value(areas(), ["a a", "b c"])).toEqual(["a a", "b c"]);
+    expect(value(areas(), ["a a b", "a a ."])).toEqual(["a a b", "a a ."]);
+  });
+});
+
+describe("fixes from the fifth review", () => {
+  it("takes an auto repeat() only beside fixed sizes, and one at most, as CSS's <auto-track-list>", () => {
+    for (const input of ["repeat(auto-fill, 1fr)", "repeat(auto-fit, minmax(min-content, 1fr))", "repeat(auto-fill, 100px) 1fr", "repeat(auto-fill, 100px) auto", "repeat(auto-fill, 100px) repeat(auto-fit, 100px)", "repeat(auto-fill, fit-content(100px))"]) rejects(tracks(), input);
+    for (const input of ["repeat(auto-fill, minmax(200px, 1fr))", "repeat(auto-fill, minmax(auto, 200px)) 50px", "200px repeat(auto-fit, minmax(10rem, 1fr)) repeat(2, 50px)", "repeat(3, 1fr) auto"]) expect(value(tracks(), input)).toBe(input);
+  });
+
+  it("takes only a breadth at each end of minmax(): no function inside it", () => {
+    for (const input of ["minmax(100px, minmax(200px, 300px))", "minmax(fit-content(100px), 1fr)", "repeat(auto-fill, minmax(100px, fit-content(200px)))", "minmax(100px, repeat(2, 1fr))"]) rejects(tracks(), input);
+    for (const input of ["minmax(min-content, 1fr)", "minmax(auto, max-content)", "minmax(10%, 2fr)"]) expect(value(tracks(), input)).toBe(input);
   });
 });

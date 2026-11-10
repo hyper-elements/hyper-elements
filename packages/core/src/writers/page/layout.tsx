@@ -5,7 +5,7 @@
 import type { ResolvedNode } from "../../resolve";
 import type { Style } from "../jsx";
 import { length, type Declarations } from "../shared/css";
-import { pageLayout as pageLayoutOf } from "../../css-serialize";
+import { laysOutAsRow, pageLayout as pageLayoutOf } from "../../css-serialize";
 
 export const FLEX_ALIGN: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch", baseline: "baseline" };
 const TEXT_ALIGN: Record<string, string> = { left: "flex-start", justify: "flex-start", center: "center", right: "flex-end" };
@@ -21,6 +21,9 @@ export const JUSTIFY: Record<string, string> = {
   "space-evenly": "space-evenly",
   stretch: "stretch",
 };
+
+/** Whether a node is a Row that lays its children out as one (its widths and shares), not as its page styles say. */
+export const inRow = (node: ResolvedNode) => node.type === "Row" && laysOutAsRow(node.style);
 
 /** Whether a node's page styles lay its children out as a flex row or a grid (on a Page), not as its component does. */
 export const pageLayout = (node: ResolvedNode) => pageLayoutOf(node.style);
