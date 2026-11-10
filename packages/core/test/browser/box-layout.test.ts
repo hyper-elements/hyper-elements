@@ -4,7 +4,8 @@
  * spans, named areas), flex rows (a share, a basis, a fixed child beside a growing one, wrapping), a Box spanning the
  * window, nested Boxes, padding and gaps in rem, an Image in a grid cell, and the second review's cases (padded flex
  * shares, a Row's flexBasis, minmax() ranges, auto-fit after placing, a repeat beside a track, an item's minimum, a span
- * back from its end line, a cell's percentages, border overrides, a fixed box, a figure).
+ * back from its end line, a cell's percentages, border overrides, a fixed box, a figure), and the code review's (lines
+ * named by areas, reversed lines, bordered Images in a Box and a grid cell, a border side styled none).
  */
 import { chromium, type Browser, type Page } from "playwright";
 import { baseViewport, parseDocument, resolveDocument, type ResolvedNode } from "../../src";
@@ -126,6 +127,25 @@ const TEMPLATES: Record<string, Record<string, unknown>> = {
       n("Box", { width: 300, flexDirection: "row" }, [{ ...image(400, 100), style: { width: 400, flex: "none", border: "10px solid #000" } }]),
       // Images with width auto start from their files' sizes and shrink in proportion.
       n("Box", { width: 300, flexDirection: "row" }, [{ ...image(400, 100), style: { width: "auto" } }, { ...image(100, 100), style: { width: "auto" } }]),
+    ],
+  },
+  "fixes from the code review": {
+    type: "Page",
+    props: { width: 800 },
+    children: [
+      // Lines the areas name ("b", "a / b", "b-start / c-end", an area) and reversed lines.
+      n("Box", { width: 640, display: "grid", gridTemplateColumns: "100px 200px 300px", columnGap: 20, gridTemplateAreas: ["a b c"] }, [
+        n("Box", { gridColumn: "b", gridRow: "1" }, [text()]),
+        n("Box", { gridColumn: "a / b", gridRow: "2" }, [text()]),
+        n("Box", { gridColumn: "b-start / c-end", gridRow: "3" }, [text()]),
+        n("Box", { gridArea: "c" }, [text()]),
+        n("Box", { gridColumn: "3 / 2", gridRow: "4" }, [text()]),
+      ]),
+      // A bordered Image is content-box in a Box and in a grid cell: at its file's size and at a width of its own.
+      n("Box", { width: 600 }, [{ ...image(200, 100), style: { border: "10px solid #000" } }, { ...image(200, 100), style: { width: 150, border: "10px solid #000" } }]),
+      n("Box", { width: 600, display: "grid", gridTemplateColumns: "300px 300px", justifyItems: "start" }, [{ ...image(200, 100), style: { border: "10px solid #000" } }, { ...image(200, 100), style: { width: 150, border: "10px solid #000" } }]),
+      // A border side styled none takes no width.
+      n("Box", { width: 300, border: { left: { width: 10, style: "none", color: "#000000" }, right: { width: 10, style: "solid", color: "#000000" } } }, [n("Box", {}, [text()])]),
     ],
   },
   "boxes in the layout components": {

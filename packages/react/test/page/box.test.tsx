@@ -1092,6 +1092,98 @@ describe("fixes from the second review", () => {
     expect(widthOf(page, "img")).toBe(null);
   });
 
+  it("code review: a grid item placed by the lines its areas name spans those areas", () => {
+    const grid = { width: 640, display: "grid", gridTemplateColumns: "100px 200px 300px", columnGap: 20, gridTemplateAreas: ["a b c"] } as const;
+    const page = (
+      <Page width={800}>
+        <Box style={grid}>
+          <Box id="b" style={{ gridColumn: "b", gridRow: "1" }} />
+          <Box id="ab" style={{ gridColumn: "a / b", gridRow: "2" }} />
+          <Box id="lines" style={{ gridColumn: "b-start / c-end", gridRow: "3" }} />
+          <Box id="area" style={{ gridArea: "c" }} />
+        </Box>
+      </Page>
+    );
+    expect(["b", "ab", "lines", "area"].map((id) => widthOf(page, id))).toEqual([200, 320, 520, 300]);
+  });
+
+  it("code review: a name no area gives, or span <name>, leaves the grid's widths unknown", () => {
+    const grid = { width: 640, display: "grid", gridTemplateColumns: "100px 200px 300px", gridTemplateAreas: ["a b c"] } as const;
+    for (const style of [{ gridColumn: "span b" }, { gridArea: "nowhere" }, { gridColumn: "x / 3" }]) {
+      const page = (
+        <Page width={800}>
+          <Box style={grid}>
+            <Box id="named" style={style} />
+            <Box id="other" />
+          </Box>
+        </Page>
+      );
+      expect([widthOf(page, "named"), widthOf(page, "other")]).toEqual([null, null]);
+    }
+  });
+
+  it("code review: reversed grid lines swap, and lines past the explicit tracks leave the grid unknown", () => {
+    const grid = { width: 600, display: "grid", gridTemplateColumns: "100px 200px 300px" } as const;
+    const reversed = (
+      <Page width={800}>
+        <Box style={grid}>
+          <Box id="item" style={{ gridColumn: "3 / 2" }} />
+        </Box>
+      </Page>
+    );
+    expect(widthOf(reversed, "item")).toBe(200);
+    const past = (
+      <Page width={800}>
+        <Box style={grid}>
+          <Box id="item" style={{ gridColumn: "2 / span 3" }} />
+          <Box id="other" />
+        </Box>
+      </Page>
+    );
+    expect([widthOf(past, "item"), widthOf(past, "other")]).toEqual([null, null]);
+  });
+
+  it("code review: a bordered Image is content-box in a Box and a grid cell, its border outside its size", () => {
+    const file = { src: "https://example.com/a.png", width: 200, height: 100 };
+    const page = (
+      <Page width={800}>
+        <Box style={{ width: 600 }}>
+          <Image id="stack-file" src={file} alt="" style={{ border: "10px solid #000" }} />
+          <Image id="stack-width" src={file} alt="" style={{ width: 150, border: "10px solid #000" }} />
+        </Box>
+        <Box style={{ width: 600, display: "grid", gridTemplateColumns: "300px 300px", justifyItems: "start" }}>
+          <Image id="grid-file" src={file} alt="" style={{ border: "10px solid #000" }} />
+          <Image id="grid-width" src={file} alt="" style={{ width: 150, border: "10px solid #000" }} />
+        </Box>
+      </Page>
+    );
+    expect(["stack-file", "stack-width", "grid-file", "grid-width"].map((id) => widthOf(page, id))).toEqual([220, 170, 220, 170]);
+  });
+
+  it("code review: a border side styled none takes no width on a Page, as before in an Email", () => {
+    const none = { left: { width: 10, style: "none", color: "#000000" }, right: { width: 10, style: "solid", color: "#000000" } } as const;
+    const page = (
+      <Page width={800}>
+        <Box style={{ width: 300, border: none }}>
+          <Box id="inner" />
+        </Box>
+      </Page>
+    );
+    expect(widthOf(page, "inner")).toBe(290);
+    const email = (
+      <Email width={600}>
+        <Section>
+          <Row>
+            <Column style={{ border: none }}>
+              <Text id="inner">a</Text>
+            </Column>
+          </Row>
+        </Section>
+      </Email>
+    );
+    expect(widthOf(email, "inner")).toBe(580);
+  });
+
   it("round 9: an Image with its own width in a flex row is no wider than its place (max-width 100%)", () => {
     const page = (
       <Page width={600}>

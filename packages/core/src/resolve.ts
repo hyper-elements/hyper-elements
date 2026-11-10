@@ -107,6 +107,12 @@ const INHERITED = Object.keys(INITIAL_TEXT) as Array<keyof typeof INITIAL_TEXT>;
  */
 let viewport = { width: 0, height: 800 };
 
+/**
+ * Whether the document resolving is a Page: there a border side styled "none" takes no width, as the browser draws it.
+ * Another root keeps the width it always counted (its layout is held by the compatibility baseline).
+ */
+let resolvingPage = false;
+
 /** The viewport a document is resolved at: a Page's V0, else its root's width. */
 export function baseViewport(root: { type: string; props: Record<string, Json> }): { width: number; height: number } {
   const width = typeof root.props.width === "number" ? root.props.width : 0;
@@ -195,9 +201,11 @@ function frameOf(style: Record<string, Json>, of: number | null, fontSize: numbe
  */
 function borderWidths(style: Record<string, Json>, fontSize: number): { left: number | null; right: number | null } {
   const border = style.border as Border | undefined;
+  // On a Page, a side styled "none" shows none (another root counts its width, as it always has).
+  const shown = (side: BorderSide | undefined) => !!side && !(resolvingPage && side.style === "none");
   const sides = {
-    left: { width: border?.left?.width as number | null | undefined, shown: !!border?.left },
-    right: { width: border?.right?.width as number | null | undefined, shown: !!border?.right },
+    left: { width: border?.left?.width as number | null | undefined, shown: shown(border?.left) },
+    right: { width: border?.right?.width as number | null | undefined, shown: shown(border?.right) },
   };
   for (const [key, value] of Object.entries(style)) {
     if ((key === "borderLeft" || key === "borderRight") && value && typeof value === "object") {
@@ -246,11 +254,14 @@ export function resolveDocument(input: ElementsDocument, options?: ComponentsOpt
  */
 export function resolveExpanded(document: ElementsDocument, options?: ComponentsOption | Registry, paths?: TemplatePaths): ResolvedDocument {
   const around = viewport;
+  const page = resolvingPage;
   try {
     viewport = baseViewport({ type: document.root.type, props: propsWithDefaults(registryOf(options).get(document.root.type)!, document.root.props) });
+    resolvingPage = document.root.type === "Page";
     return resolveAtViewport(document, options, paths);
   } finally {
     viewport = around;
+    resolvingPage = page;
   }
 }
 
@@ -361,10 +372,11 @@ function clamp(width: number, style: Record<string, Json>, of: number | null, fo
   return width;
 }
 
-/** The size a node has of its own: an image's, when its document gives it. */
 /**
- * `fileSize`: an Image the Page writes at its file's size (in a Box, or a flex row or grid a Page's styles make), whose
- * own maxWidth replaces the 100% that otherwise keeps it inside its place.
+ * The size a node has of its own: an image's, when its document gives it. `fileSize`: an Image the Page writes at its
+ * file's size (in a Box, or a flex row or grid a Page's styles make), whose own maxWidth replaces the 100% that
+ * otherwise keeps it inside its place; it's content-box there (the Page writes no box-sizing for it), its padding and
+ * border outside that size.
  */
 function intrinsicWidth(resolved: ResolvedNode, available: number | null, fileSize = false): number | null {
   // An Svg's drawing is as wide as it says, its padding and border around it; it's never narrowed (the Page draws it
@@ -374,7 +386,8 @@ function intrinsicWidth(resolved: ResolvedNode, available: number | null, fileSi
   const own = assetParts(resolved.props.src as Asset).width ?? null;
   if (own === null) return null;
   const capped = available === null || (fileSize && resolved.style.maxWidth !== undefined) ? own : Math.min(own, available);
-  return clamp(capped, resolved.style, available, resolved.text.fontSize);
+  const content = clamp(capped, resolved.style, available, resolved.text.fontSize);
+  return fileSize ? content + horizontalFrame(resolved.style, available, resolved.text.fontSize) : content;
 }
 
 /** The width a node takes of `available` where its parent stacks its children. */
@@ -530,7 +543,9 @@ function resolveChildren(node: Node, path: string, parent: ResolvedNode, availab
         unknownWidth(resolved);
         continue;
       }
-      const width = sized ? intrinsicWidth(resolved, resolved.available, true) : stretched && resolved.available !== null ? clamp(resolved.available, resolved.style, resolved.available, resolved.text.fontSize) : stackedWidth(resolved, resolved.available);
+      let width = sized ? intrinsicWidth(resolved, resolved.available, true) : stretched && resolved.available !== null ? clamp(resolved.available, resolved.style, resolved.available, resolved.text.fontSize) : stackedWidth(resolved, resolved.available);
+      // An Image in a Box with a width of its own is content-box too: that width is inside its padding and border.
+      if (width !== null && !sized && resolved.type === "Image" && parent.type === "Box" && sizePx(resolved.style.width, resolved.available, resolved.text.fontSize) !== null) width += horizontalFrame(resolved.style, resolved.available, resolved.text.fontSize);
       if (width === null && contentSized(resolved, resolved.available)) {
         unknownWidth(resolved);
         continue;
@@ -805,14 +820,23 @@ function layOutGrid(parent: ResolvedNode, nodes: Array<{ resolved: ResolvedNode 
   const gap = gapPx ?? 0;
   const ordered = [...shown].sort((a, b) => (Number(a.resolved.style.order) || 0) - (Number(b.resolved.style.order) || 0));
   const parsed = available === null ? null : gridTracks(parent.style.gridTemplateColumns, available, gap, fontSize);
-  const count = parsed?.tracks.length ?? 1;
-  const areas = gridAreas(parent.style.gridTemplateAreas);
-  const flow = String(parent.style.gridAutoFlow ?? "row");
-  const places = gridPlaces(ordered.map(({ resolved }) => gridPlacement(resolved, areas, count)), count, flow === "row");
   if (!parsed || available === null) {
     for (const { resolved } of ordered) unknownWidth(resolved);
     return;
   }
+  const count = parsed.tracks.length;
+  const areas = gridAreas(parent.style.gridTemplateAreas);
+  // Lines a template names itself ([name]) aren't read: a name is then unknown.
+  const named = !/\[/.test(String(parent.style.gridTemplateColumns ?? "")) && !/\[/.test(String(parent.style.gridTemplateRows ?? ""));
+  const placements = ordered.map(({ resolved }) => gridPlacement(resolved, named ? areas : null, count));
+  // An item whose lines the model can't read (a name no area gives, "span <name>"), or that reaches past the explicit
+  // tracks (where CSS adds implicit ones, which every auto-placed item then counts), leaves every placement unknown.
+  if (placements.some((placement) => placement === null || (placement.start ?? 0) + placement.span > count)) {
+    for (const { resolved } of ordered) unknownWidth(resolved);
+    return;
+  }
+  const flow = String(parent.style.gridAutoFlow ?? "row");
+  const places = gridPlaces(placements as Placement[], count, flow === "row");
   // An item not placed could be in any track: which auto-fit tracks are empty, and which tracks its minimum widens,
   // aren't known, nor any width that depends on them.
   if (ordered.some(({ resolved }, index) => !places[index] && (parsed.fit.size > 0 || resolved.style.minWidth !== undefined))) {
@@ -842,9 +866,9 @@ function layOutGrid(parent: ResolvedNode, nodes: Array<{ resolved: ResolvedNode 
   ordered.forEach(({ resolved }, index) => {
     const place = places[index];
     if (!place) return unknownWidth(resolved);
-    const span = Math.max(1, Math.min(place.span, count - place.column));
-    const cells = widths.slice(place.column, place.column + span);
-    const cell = cells.length === 0 || cells.some((w) => w === null) ? null : (cells as number[]).reduce((sum, w) => sum + w, 0) + gap * (span - 1);
+    // Every placement is inside the explicit tracks (checked above).
+    const cells = widths.slice(place.column, place.column + place.span);
+    const cell = cells.some((w) => w === null) ? null : (cells as number[]).reduce((sum, w) => sum + w, 0) + gap * (place.span - 1);
     // Its percentages (a padding in %) are of its grid area.
     resolved.available = cell;
     setWidth(resolved, gridItemWidth(resolved, parent, cell));
@@ -859,7 +883,7 @@ function layOutGrid(parent: ResolvedNode, nodes: Array<{ resolved: ResolvedNode 
  * where CSS would make an implicit track (no room in a row for an item locked to it), and for an item not placed
  * where the flow isn't row-sparse (column, dense): only those given a column are placed then.
  */
-function gridPlaces(items: Array<{ start?: number; span: number; row?: number; rowSpan: number }>, count: number, rowSparse: boolean): Array<{ column: number; span: number } | null> {
+function gridPlaces(items: Placement[], count: number, rowSparse: boolean): Array<{ column: number; span: number } | null> {
   const taken = new Set<string>();
   const free = (row: number, column: number, span: number, rowSpan: number) => {
     if (column + span > count) return false;
@@ -925,7 +949,8 @@ function gridItemWidth(resolved: ResolvedNode, grid: ResolvedNode, cell: number 
   const fontSize = resolved.text.fontSize;
   const own = sizePx(resolved.style.width, cell, fontSize);
   if (contentSized(resolved, cell)) return null;
-  if (own !== null) return clamp(own, resolved.style, cell, fontSize);
+  // An Image is content-box (the Page writes no box-sizing for it): its width is inside its padding and border.
+  if (own !== null) return clamp(own, resolved.style, cell, fontSize) + (resolved.type === "Image" ? horizontalFrame(resolved.style, cell, fontSize) : 0);
   // auto (or none) follows the grid's justifyItems.
   const self = resolved.style.justifySelf;
   const justify = self !== undefined && self !== "auto" ? self : grid.style.justifyItems;
@@ -1082,36 +1107,78 @@ function gridAreas(template: Json | undefined): Map<string, Area> {
   return out;
 }
 
-/** Where a grid item starts (a column and a row, from 0) and how many it spans, from gridColumn, gridRow, gridArea or none. */
-function gridPlacement(resolved: ResolvedNode, areas: Map<string, Area>, count: number): { start?: number; span: number; row?: number; rowSpan: number } {
-  const area = typeof resolved.style.gridArea === "string" ? areas.get(resolved.style.gridArea.trim()) : undefined;
-  if (area && resolved.style.gridColumn === undefined && resolved.style.gridRow === undefined) return { start: area.start, span: area.end - area.start, row: area.row, rowSpan: area.rowEnd - area.row };
-  const parts = typeof resolved.style.gridArea === "string" && resolved.style.gridArea.includes("/") ? resolved.style.gridArea.split("/").map((part) => part.trim()) : undefined;
-  const rows = gridLines(resolved.style.gridRow ?? (parts ? `${parts[0]} / ${parts[2] ?? ""}` : undefined), Number.POSITIVE_INFINITY);
-  const columns = gridLines(resolved.style.gridColumn ?? (parts ? `${parts[1] ?? ""} / ${parts[3] ?? ""}` : undefined), count);
+/** Where a grid item starts (a column and a row, from 0, where it's given) and how many columns and rows it spans. */
+type Placement = { start?: number; span: number; row?: number; rowSpan: number };
+
+/** A name a grid line can have (CSS's custom-ident), not a keyword. */
+const LINE_NAME = /^-?[A-Za-z_][\w-]*$/;
+const lineName = (part: string | undefined) => (part !== undefined && LINE_NAME.test(part) && !/^(auto|span)$/i.test(part) ? part : undefined);
+
+/**
+ * Where a grid item is, from gridColumn, gridRow and gridArea (css-grid-1, "Line-based Placement"); null where the
+ * model can't read it. A gridArea's omitted values are a name repeated (its column start the row start's, each end its
+ * start's), else auto. A name is a line gridTemplateAreas makes (`<area>-start`, `<area>-end`, or the area's own name
+ * for the side it's on); `areas` null: names aren't known.
+ */
+function gridPlacement(resolved: ResolvedNode, areas: Map<string, Area> | null, count: number): Placement | null {
+  const { style } = resolved;
+  const area = typeof style.gridArea === "string" || typeof style.gridArea === "number" ? String(style.gridArea).split("/").map((part) => part.trim()) : [];
+  if (area.length > 4) return null;
+  const [rowStart, columnStart = lineName(rowStart), rowEnd = lineName(rowStart), columnEnd = lineName(columnStart)] = area;
+  const both = (start: string | undefined, end: string | undefined) => (end === undefined ? (start ?? "auto") : `${start ?? "auto"} / ${end}`);
+  const lineOf = (axis: "column" | "row") => (name: string, end: boolean) => {
+    if (!areas) return undefined;
+    const suffixed = /^(.+)-(start|end)$/.exec(name);
+    const found = suffixed && areas.get(suffixed[1]) ? { of: areas.get(suffixed[1])!, end: suffixed[2] === "end" } : areas.has(name) ? { of: areas.get(name)!, end } : null;
+    if (!found) return undefined;
+    return axis === "column" ? (found.end ? found.of.end : found.of.start) : found.end ? found.of.rowEnd : found.of.row;
+  };
+  const rows = gridLines(style.gridRow ?? (area.length ? both(rowStart, rowEnd) : undefined), Number.POSITIVE_INFINITY, lineOf("row"));
+  const columns = gridLines(style.gridColumn ?? (area.length ? both(columnStart, columnEnd) : undefined), count, lineOf("column"));
+  if (!rows || !columns) return null;
   return { ...(columns.start !== undefined ? { start: columns.start } : {}), span: columns.span, ...(rows.start !== undefined ? { row: rows.start } : {}), rowSpan: rows.span };
 }
 
 /**
- * A gridColumn's or gridRow's lines ("1", "1 / 3", "span 2", "2 / span 2", "span 2 / 4", "-1") as a start (from 0) and
- * a span, of `count` tracks (a negative line counts from the end, where `count` is known).
+ * A gridColumn's or gridRow's lines ("1", "1 / 3", "span 2", "2 / span 2", "span 2 / 4", "-1", "a", "a-start / b-end")
+ * as a start (from 0) and a span, of `count` tracks; null where the model can't place it: a name `named` doesn't give,
+ * "span <name>", a negative line where the tracks aren't counted, a line before the first. A single name is its start
+ * and its end; reversed lines swap, equal ones span 1 (css-grid-1, "Grid Placement Conflict Handling").
  */
-function gridLines(value: Json | undefined, count: number): { start?: number; span: number } {
+function gridLines(value: Json | undefined, count: number, named: (name: string, end: boolean) => number | undefined): { start?: number; span: number } | null {
   if (value === undefined) return { span: 1 };
-  const parts = (typeof value === "number" ? String(value) : String(value)).split("/").map((part) => part.trim());
-  const spanOf = (part: string | undefined) => (part && /^span \d+$/i.test(part) ? Number(part.slice(5)) : undefined);
-  const lineOf = (part: string | undefined) => {
-    if (!part || !/^-?\d+$/.test(part)) return undefined;
-    const line = Number(part);
-    if (line > 0) return line - 1;
-    return Number.isFinite(count) ? Math.max(0, count + 1 + line) : undefined;
+  const parts = String(value).split("/").map((part) => part.trim());
+  if (parts.length > 2) return null;
+  const read = (part: string | undefined, end: boolean): { line?: number; span?: number } | null => {
+    if (part === undefined || part === "" || /^auto$/i.test(part)) return {};
+    const span = /^span\s+(\d+)$/i.exec(part);
+    if (span) return Number(span[1]) > 0 ? { span: Number(span[1]) } : null;
+    if (/^-?\d+$/.test(part)) {
+      const line = Number(part);
+      if (line > 0) return { line: line - 1 };
+      if (line === 0 || !Number.isFinite(count) || count + 1 + line < 0) return null;
+      return { line: count + 1 + line };
+    }
+    const name = lineName(part);
+    const line = name === undefined ? undefined : named(name, end);
+    return line === undefined ? null : { line };
   };
-  const start = lineOf(parts[0]);
-  const end = lineOf(parts[1]);
-  const span = spanOf(parts[0]) ?? spanOf(parts[1]) ?? (start !== undefined && end !== undefined ? Math.max(1, end - start) : 1);
-  // "span 2 / 4": the span counts back from its end line.
-  if (start === undefined && end !== undefined && spanOf(parts[0]) !== undefined) return { start: Math.max(0, end - span), span };
-  return start !== undefined ? { start, span } : { span };
+  const first = read(parts[0], false);
+  const second = parts.length > 1 ? read(parts[1], true) : lineName(parts[0]) !== undefined ? read(parts[0], true) : {};
+  if (!first || !second) return null;
+  let start = first.line;
+  let end = second.line;
+  if (start !== undefined && end !== undefined) {
+    if (end < start) [start, end] = [end, start];
+    return { start, span: Math.max(1, end - start) };
+  }
+  if (start !== undefined) return { start, span: second.span ?? 1 };
+  // "span 2 / 4", "auto / 3": the span counts back from its end line (one before the first is an implicit track).
+  if (end !== undefined) {
+    const span = first.span ?? 1;
+    return end - span < 0 ? null : { start: end - span, span };
+  }
+  return { span: first.span ?? second.span ?? 1 };
 }
 
 /** CSS flexbox's widths for one line of items in `room` px (css-flexbox-1, "Resolving Flexible Lengths"). */
