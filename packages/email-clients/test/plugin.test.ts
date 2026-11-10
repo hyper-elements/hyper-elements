@@ -102,6 +102,17 @@ describe("email clients", () => {
     await expect(emailClients({ clients: "gmail" as never })).rejects.toThrow(TypeError);
   });
 
+  it("notes a Row kept side by side whose content looks too wide for one line: classic Outlook can't wrap it", async () => {
+    const box = (i: number) => ({ type: "Column", style: { width: 200 }, children: [{ type: "Text", children: [`Item ${i}`] }] });
+    const row = { type: "Row", props: { stackOnMobile: false }, style: { flexWrap: "wrap" }, children: [0, 1, 2, 3].map(box) };
+    const found = (await validate(email([row]))).filter((d) => d.code === "email/outlook-degraded");
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({ path: "root.children[0]", clients: ["outlook"], fix: "put less in it, or let it stack on phones (stackOnMobile)" });
+    expect(found[0]!.message).toMatch(/^What it holds looks about 800px wide on one line, wider than its 600px/);
+    // Asked for clients without classic Outlook, it's left out.
+    expect((await validate(email([row]), ["gmail"])).map((d) => d.code)).not.toContain("email/outlook-degraded");
+  });
+
   it("keeps the clients asked for, narrowed to them, and one about no client; merging equal ones is core's", () => {
     const d = (clients?: string[]) => ({ code: "email/x", severity: "info" as const, message: "m", path: "root", ...(clients ? { clients } : {}) });
     expect(forClients([d(["gmail", "yahoo"]), d(["outlook"]), d(["gmx"]), d()], ["gmail", "outlook"])).toEqual([d(["gmail"]), d(["outlook"]), d()]);

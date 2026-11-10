@@ -44,6 +44,8 @@ describe("the stand-in fonts", () => {
     expect([...namedFamilies('<style>.a{font-family: "Inter", Arial;}</style>')]).toEqual(["Inter"]);
     expect([...namedFamilies('<p style="font-family:&quot;Inter Display&quot;, Arial">Inter</p>')]).toEqual([]);
     expect([...namedFamilies('<p style="font-family:Arial">Inter</p>')]).toEqual([]);
+    // An entity it doesn't decode is left as it is.
+    expect([...namedFamilies('<p style="font-family:&nbsp;Inter, Arial">')]).toEqual([]);
   });
 
   it("leaves a family's @font-face rules out of the preview's font CSS, and nothing else", () => {

@@ -36,10 +36,8 @@ export interface Skipped {
 
 const previewable = (client: EmailClient): client is PreviewClient => (PREVIEW_CLIENTS as readonly string[]).includes(client);
 
-/** The previews of `clients` (in their order, each once, light before dark), and what's skipped. */
+/** The previews of `clients` (checked by checkClients: in their order, each once, light before dark), and what's skipped. */
 export function variantsOf(clients: readonly EmailClient[], dark: boolean, info: Readonly<Record<EmailClient, EmailClientInfo>>): { variants: PreviewVariant[]; skipped: Skipped[] } {
-  const unknown = clients.filter((client) => !info[client]);
-  if (unknown.length) throw new TypeError(`[Elements] renderInEmailClients() doesn't know the email client ${unknown.map((c) => JSON.stringify(c)).join(", ")}: the clients are EMAIL_CLIENTS' keys`);
   const variants: PreviewVariant[] = [];
   const skipped: Skipped[] = [];
   for (const client of [...new Set(clients)]) {

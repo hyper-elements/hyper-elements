@@ -138,7 +138,7 @@ export function nestedMedia(css: string): boolean {
 const hasAtRule = (css: string, name: string) => new RegExp(`@${name}\\b`, "i").test(css);
 
 /** What each at-rule Outlook.com removes does to the email; another is noted plainly. */
-const AT_RULE_NOTES: Record<string, { removes: string; fix: string; feature: string }> = {
+const AT_RULE_NOTES: Record<"keyframes" | "supports" | "import", { removes: string; fix: string; feature: string }> = {
   keyframes: { removes: "@keyframes in a <style>: the client removes it, and nothing animates", fix: "make it read without the animation", feature: "css-at-keyframes" },
   supports: { removes: "@supports in a <style>: the client removes it with the rules inside it", fix: "write those rules without @supports", feature: "css-at-supports" },
   import: { removes: "@import in a <style>: the client removes it, and what it loads never arrives", fix: "put the styles in the <style> itself", feature: "css-at-import" },
@@ -161,7 +161,7 @@ export const HTML_STYLE: readonly HtmlCheck[] = [
     .map((name): HtmlCheck => ({
       test: (css) => hasAtRule(css, name),
       clients: ["outlook-com"],
-      ...(AT_RULE_NOTES[name] ?? { removes: `@${name} in a <style>: the client removes it`, fix: `write it without @${name}` }),
+      ...AT_RULE_NOTES[name as keyof typeof AT_RULE_NOTES],
     })),
   {
     test: (_css, selectors) => selectors.some((selector) => selector.split(/[\s>+~]+/).some((compound) => OUTLOOK_COM_STYLE.onTypeOnly.test(compound) && !/^[a-z]/.test(compound))),

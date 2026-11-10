@@ -6,7 +6,7 @@ import React from "react";
 import { Email, Html, validate } from "@hyper-elements/react";
 import { emailClients } from "../src/plugin";
 
-const state = vi.hoisted(() => ({ importFails: 0, readyFails: 0, imports: 0 }));
+const state = vi.hoisted(() => ({ importFails: 0, readyFails: 0, checkFails: 0, imports: 0 }));
 
 vi.mock("../src/models", async () => {
   const real = await vi.importActual<typeof import("../src/models")>("../src/models");
@@ -20,6 +20,13 @@ vi.mock("../src/models", async () => {
       const models = await real.loadModelsPackage();
       return {
         ...models,
+        check: (input: { root: unknown }) => {
+          if (state.checkFails > 0) {
+            state.checkFails--;
+            throw new Error("unreadable tree");
+          }
+          return models.check(input);
+        },
         ready: () => {
           if (state.readyFails > 0) {
             state.readyFails--;
@@ -62,6 +69,18 @@ describe("emailClients() where the models can't run", () => {
     const compiled = await emailClients();
     expect(codes(compiled).map(([code]) => code)).not.toContain("email/captured-checks");
     expect(codes(failed)[0]![0]).toBe("email/captured-checks");
+  });
+});
+
+describe("emailClients() where the captured checks fail on an email", () => {
+  it("warns, and the open checks still stand", async () => {
+    const plugin = await emailClients();
+    state.checkFails = 1;
+    expect(codes(plugin)).toEqual([
+      ["email/html-css", undefined],
+      ["email/captured-checks", "The captured email client checks failed on this email (unreadable tree): only the checks from caniemail's tables ran"],
+    ]);
+    expect(codes(plugin).map(([code]) => code)).toEqual(["email/html-css"]);
   });
 });
 

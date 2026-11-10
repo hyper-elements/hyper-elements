@@ -6,7 +6,8 @@
 import React from "react";
 import { Button, Email, Html, Page, render, Text, type ElementsPlugin } from "@hyper-elements/react";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
-import { checkCore, CORE_RANGE } from "../src/core";
+import { checkCore, checkProtocol, CORE_RANGE, MODEL_PROTOCOLS } from "../src/core";
+import { forgetModelsPackage, loadModelsPackage } from "../src/models";
 import { contentSecurityPolicy, inlineSafe, scriptJson } from "../src/shell";
 import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients } from "../src/index";
 import { RUNTIME } from "../src/runtime.generated";
@@ -158,6 +159,21 @@ describe("the version check", () => {
   it("passes a core with render()'s blockMap in a format it reads, as the installed one is", () => {
     expect(mismatch(core)).toBeNull();
     expect(() => checkCore()).not.toThrow();
+  });
+
+  it("refuses a models package that speaks another protocol, as a mismatched install", () => {
+    expect(() => checkProtocol(MODEL_PROTOCOLS[0])).not.toThrow();
+    expect(() => checkProtocol(2)).toThrow(expect.objectContaining({ name: "email-clients/version-mismatch", message: expect.stringContaining("reads @hyper-elements/email-client-models' protocol 1; the one installed speaks 2") }));
+    expect(() => checkProtocol(undefined)).toThrow(/the one installed speaks undefined/);
+  });
+
+  it("imports the models package once, and again after it's forgotten (a failed import)", async () => {
+    const first = loadModelsPackage();
+    expect(loadModelsPackage()).toBe(first);
+    forgetModelsPackage();
+    const again = loadModelsPackage();
+    expect(again).not.toBe(first);
+    expect(await again).toBe(await first);
   });
 
   it("names what's missing and how to install a matching pair, for an older core or a format it doesn't read", () => {
