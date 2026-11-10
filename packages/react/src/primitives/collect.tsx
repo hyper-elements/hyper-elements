@@ -9,7 +9,7 @@
  * Server Components have no context.
  */
 import React from "react";
-import { checkDocument, Registry, type CheckResult, type CustomDefinition, type Diagnostic } from "@unlayer-internal/elements-core";
+import { checkDocument, CUSTOM_TYPE, Registry, type CheckResult, type CustomDefinition, type Diagnostic } from "@unlayer-internal/elements-core";
 import { isAsyncComponent, nonce, within } from "../utils/collect";
 import { renderToString } from "../utils/server-renderer";
 import { withRenderScope } from "../utils/render-scope";
@@ -107,6 +107,8 @@ const unescape = (text: string) => text.replace(/&amp;|&lt;|&gt;|&quot;|&#x27;/g
  * style; a mobile={…} or hover={…} prop is an unknown prop, whose message says so.
  */
 const NODE_KEYS = new Set(["id", "style", "hidden"]);
+/** A built-in's theme props: its variants, a scope's tokens, a root's theme. A template's own component keeps props of these names. */
+const THEME_KEYS = new Set(["variant", "tokens", "theme"]);
 
 export interface JsonNode {
   type: string;
@@ -122,7 +124,7 @@ function toJsonNode({ type, props }: Recorded, diagnostics: Diagnostic[]): JsonN
     // What Elements 0.2's components gave the writers as they lowered into the tree (markup and CSS): the engine has
     // none now, and a template never had a say in it.
     if (key === "compat") diagnostics.push({ code: "jsx/compat", severity: "warning", message: `A <${type}>'s compat isn't a prop of a template: it's left out`, path: "jsx" });
-    else if (NODE_KEYS.has(key)) node[key] = value;
+    else if (NODE_KEYS.has(key) || (THEME_KEYS.has(key) && !CUSTOM_TYPE.test(type))) node[key] = value;
     else semantic[key] = value;
   }
   if (Object.keys(semantic).length) node.props = semantic;

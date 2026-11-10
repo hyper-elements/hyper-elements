@@ -15,20 +15,31 @@ pnpm add @hyper-elements/react
 Import from `@hyper-elements/react`. A template has one root, its styles go in `style={{ }}`, and the space between blocks is their parent's `gap`.
 
 ```tsx
-import { Button, Column, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
+import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow, token } from "@hyper-elements/react";
+
+// The brand, once: every Email, Page, Document and Canvas that takes it is on brand.
+const acme = defineTheme({
+  colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
+  fonts: { body: "Inter, Arial, sans-serif" },
+  components: {
+    Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
+    Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
+  },
+  styles: { card: { backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 } },
+});
 
 export default function Receipt() {
   return (
-    <Email previewText="Your Acme receipt" style={{ backgroundColor: "#f4f4f5", fontFamily: "Inter, Arial, sans-serif", gap: 16 }}>
+    <Email theme={acme} previewText="Your Acme receipt" style={{ gap: 16 }}>
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
-      <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
-        <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
+      <Column style={{ apply: ["card"] }}>
+        <Heading level={1}>
           Thanks for your order, <MergeTag name="first_name" />
         </Heading>
         <Text>
           Order <Span style={{ fontWeight: 700 }}>#10482</Span> ships tomorrow. <Link href="https://example.com/orders/10482">Track it</Link>.
         </Text>
-        <Table style={{ cellPadding: [8, 0], rowBorder: "1px solid #e4e4e7" }}>
+        <Table style={{ cellPadding: [8, 0], rowBorder: { width: 1, style: "solid", color: token("colors.border") } }}>
           <TableRow header>
             <TableCell>Item</TableCell>
             <TableCell style={{ textAlign: "right" }}>Price</TableCell>
@@ -51,11 +62,9 @@ export default function Receipt() {
             </List>
           </Column>
         </Row>
-        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6, hover: { backgroundColor: "#374151" } }}>
-          View your order
-        </Button>
+        <Button href="https://example.com/orders/10482">View your order</Button>
       </Column>
-      <Text style={{ fontSize: 12, color: "#71717a", textAlign: "center" }}>Acme Inc., 1 Market St, San Francisco</Text>
+      <Text style={{ fontSize: 12, color: token("colors.muted"), textAlign: "center" }}>Acme Inc., 1 Market St, San Francisco</Text>
     </Email>
   );
 }
@@ -231,6 +240,56 @@ Inside `style`, `mobile` holds a component's styles on phones and `hover` its st
 ```
 
 Phones are at or below an email's width plus 20px, and at or below 480px on a page, or its own width: `<Page breakpoints={{ mobile: 600 }}>`. Hover styles apply on keyboard focus too.
+
+## Themes
+
+A theme is the brand, written once and given to any root. Its tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`) are referred to with `token()`. Some are roles the built-in components read:
+
+- the root's background, `colors.background`;
+- body text, which Text, table cells and list items inherit: `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body`;
+- a Button's colors, `colors.primary` and `colors.primaryForeground`, and its size, `fontSizes.body`;
+- a Link's color, `colors.primary`; a Heading's font, `fonts.heading`; a Divider's color, `colors.border`.
+
+`components` gives each component its defaults, by one prop's value with `by` (a type scale) and as `variants`; `styles` are named styles, applied with `style={{ apply: [...] }}`.
+
+```tsx
+import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hyper-elements/react";
+
+const brand = defineTheme({
+  colors: { background: "#ffffff", foreground: "#111827", primary: "#0f766e", primaryForeground: "#ffffff", muted: "#f3f4f6" },
+  fonts: { body: "Inter, Arial, sans-serif", heading: "Georgia, serif" },
+  fontSizes: { body: 16 },
+  lineHeights: { body: 1.6 },
+  components: {
+    Heading: { by: { level: { 1: { fontSize: 40, mobile: { fontSize: 30 } }, 2: { fontSize: 28 } } } },
+    Button: { borderRadius: 8, variants: { secondary: { backgroundColor: "{colors.muted}", color: "{colors.foreground}" } } },
+  },
+  styles: { card: { padding: 32, mobile: { padding: 16 } } },
+});
+
+<Email theme={brand}>
+  <Section style={{ apply: ["card"] }}>
+    <Heading>Welcome</Heading>
+    <Button href="https://example.com/start">Get started</Button>
+    <Button href="https://example.com/docs" variant="secondary">Read the docs</Button>
+  </Section>
+  <Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>
+    <Text style={{ color: token("colors.primary") }}>An inverted band: one prop.</Text>
+  </Section>
+</Email>
+```
+
+Inside a theme a token is `"{colors.primary}"`. `tokens` on a Section, Row, Column or Grid overrides tokens for what it holds. `formats: { email: { … } }` overrides the theme for one kind of root, and `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one. Register a theme to type every token, variant and named style:
+
+```ts
+declare module "@hyper-elements/react" {
+  interface Register {
+    theme: typeof brand;
+  }
+}
+```
+
+Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme. The [Themes page](https://hyperelements.dev/docs/themes) has the rest: which style takes which tokens, the order styles merge in, `formats`, and your own components.
 
 ## Common design patterns
 

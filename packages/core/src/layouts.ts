@@ -6,6 +6,7 @@
 import { defineComponent, prop, type SupportByTarget } from "./define";
 import { boolean, enumOf, number } from "./kinds";
 import type { Json, Node } from "./model";
+import { SURFACE_ROLES } from "./roots";
 import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
@@ -59,6 +60,7 @@ function arrangeGrid(node: Node): Node {
 
 export const Grid = defineComponent({
   type: "Grid",
+  roles: SURFACE_ROLES,
   label: "Grid",
   description: "Its children in columns of equal width, row after row; on phones, one under another.",
   categories: ["layout", "block"],

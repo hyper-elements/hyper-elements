@@ -159,6 +159,11 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
   /** Style keys that may be set for `hover`. */
   hover?: H;
   /**
+   * The theme's tokens it reads as defaults, by style ("borderTop.color" for part of one): a root's and a scope's text
+   * and background, a Button's colors. Applied where the theme (or, for a scope, the scope) defines the token.
+   */
+  roles?: Readonly<Record<string, string>>;
+  /**
    * Styles a condition takes on this component that an output doesn't show under it, by condition, style and
    * output (a Page root's phone font size): reported when the template is expanded, before a Grid is arranged.
    */

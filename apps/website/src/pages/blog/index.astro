@@ -1,0 +1,31 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+const posts = (await getCollection("blog")).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<Base title="Blog" description="Tutorials and notes on building emails, pages, PDFs and images with your coding agent, and checking them before they ship.">
+  <section class="wrap section blog-index">
+    <header class="section-head">
+      <h1 class="h-page"><span class="grad">Blog</span></h1>
+      <p class="lede">Tutorials and notes on building emails, pages, PDFs and images with your coding agent, and checking them before they ship.</p>
+    </header>
+    <div class="grid grid-2">
+      {posts.map(({ data }) => (
+        <a class="card post" href={`/blog/${data.slug}`}>
+          <img src={data.hero} alt={data.heroAlt} width="1600" height="912" />
+          <p class="eyebrow"><time datetime={data.date.toISOString().slice(0, 10)}>{data.date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
+          <h2>{data.title}</h2>
+          <p>{data.description}</p>
+          <span class="read">Read the tutorial →</span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Base>
+<style>
+  .blog-index { min-height: 65vh; }
+  .post img { width: 100%; height: auto; border-radius: 9px; margin-bottom: 22px; }
+  .post .eyebrow { margin: 0 0 12px; font-size: 11px; }
+  .post h2 { font-size: 24px; line-height: 1.2; }
+  .read { display: block; margin-top: 20px; font-size: 14px; }
+</style>

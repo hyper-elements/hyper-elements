@@ -36,6 +36,12 @@ export const ROOT_PROPS = {
   }),
 };
 
+/**
+ * The theme's tokens a root (and a scope, for those it sets) reads as its background and its body text: color, font,
+ * size and line height, which Text, table cells and list items inherit.
+ */
+export const SURFACE_ROLES = { backgroundColor: "colors.background", color: "colors.foreground", fontFamily: "fonts.body", fontSize: "fontSizes.body", lineHeight: "lineHeights.body" } as const;
+
 /** A root's own style: the window's background, the text styles its content inherits, and how it stacks its children. */
 export const ROOT_STYLE = {
   ...inheritedTextStyle,

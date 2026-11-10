@@ -1,0 +1,34 @@
+{
+  "id": "digest",
+  "title": "Weekly digest with phone styles",
+  "brief": "A weekly digest, Orbit Weekly.\n\n- Preview text: \"Three things shipped this week.\"\n- Orbit logo at the top: https://assets.orbit.dev/img/orbit-logo.png (a 252×128 file, shown 126px wide).\n- Under the logo, a menu of three links: \"Product\" to https://orbit.dev/product, \"Blog\" to https://orbit.dev/blog, \"Pricing\" to https://orbit.dev/pricing.\n- Heading: \"Three things shipped this week\", 32px on desktop and 24px on phones.\n- Paragraphs, one per item:\n  - \"Dark mode for every template.\"\n  - \"Faster renders, about twice as fast.\"\n  - \"A new keyboard shortcut panel.\"\n- A tip shown on desktop only, hidden on phones: \"Reading on a desktop? Press ? anywhere in Orbit to see every shortcut.\"\n- Footer: social links to X (https://x.com/orbit) and LinkedIn (https://www.linkedin.com/company/orbit), then \"Orbit Labs, 500 Market St, San Francisco\".\n- White background, 600px content.",
+  "spec": {
+    "email": {
+      "preview": "Three things shipped this week.",
+      "texts": [
+        "Three things shipped this week",
+        "Dark mode for every template.",
+        "Faster renders, about twice as fast.",
+        "A new keyboard shortcut panel.",
+        "Reading on a desktop? Press ? anywhere in Orbit to see every shortcut.",
+        "Orbit Labs, 500 Market St, San Francisco"
+      ],
+      "buttons": [],
+      "links": [
+        { "text": "Product", "href": "https://orbit.dev/product" },
+        { "text": "Blog", "href": "https://orbit.dev/blog" },
+        { "text": "Pricing", "href": "https://orbit.dev/pricing" }
+      ],
+      "images": ["orbit-logo.png"],
+      "columns": []
+    },
+    "styles": {
+      "file": "out/email.html",
+      "styles": [
+        { "text": "Three things shipped this week", "width": 800, "property": "font-size", "value": 32 },
+        { "text": "Three things shipped this week", "width": 375, "property": "font-size", "value": 24 }
+      ],
+      "hidden": [{ "text": "Reading on a desktop? Press ? anywhere in Orbit to see every shortcut.", "width": 375 }]
+    }
+  }
+}

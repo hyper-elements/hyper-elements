@@ -50,15 +50,16 @@ import {
   type StyleSpecs,
 } from "@unlayer-internal/elements-core";
 import { collectingPrimitives, recordPrimitive } from "./collect";
+import type { StyleName, ThemeInput, Token, Tokenized, VariantProp } from "./theme";
 
 /** The props of a primitive: its semantic props, plus its style, phone and hover styles, and children. */
-export type PrimitiveProps<D> = D extends ComponentDefinition<infer P, infer S, any> ? PropsInput<P> & Extras<StyleInput<S>, ConditionStyles<D>> : never;
+export type PrimitiveProps<D> = D extends ComponentDefinition<infer P, any, any> ? PropsInput<P> & Extras<StyleOf<D>, ConditionStyles<D>> : never;
 
 /** The styles that may be set on phones: those whose definition says `mobile: true`. */
 type MobileKeys<S extends StyleSpecs> = { [K in keyof S]-?: S[K] extends { mobile: true } ? K : never }[keyof S];
 
-/** A condition's block of the styles `K`; where it takes none, nothing can be set in it. */
-type Block<S extends StyleSpecs, K> = [K] extends [never] ? never : { [Q in K & keyof S]?: InputOf<S[Q]["kind"]> };
+/** A condition's block of the styles `K`; where it takes none, nothing can be set in it. A value may be a token. */
+type Block<S extends StyleSpecs, K> = [K] extends [never] ? never : { [Q in K & keyof S]?: Tokenized<InputOf<S[Q]["kind"]>> };
 
 /**
  * A component's condition blocks in `style`: `mobile` with the styles it takes on phones, `hover` with its hover
@@ -70,15 +71,35 @@ export type ConditionStyles<D> = D extends ComponentDefinition<any, infer S, inf
 interface Extras<Style, Conditions> {
   /** Stable id; one is assigned in document order when it's left out. */
   id?: string;
-  /** Its style, and inside it its styles on phones (`mobile`) and on hover (`hover`), where it takes them. */
-  style?: Style & Conditions;
+  /**
+   * Its style, and inside it its styles on phones (`mobile`) and on hover (`hover`), where it takes them. A value may be
+   * a theme's token (`token("colors.primary")`), and `apply` merges the theme's named styles under it, in order.
+   */
+  style?: Style & Conditions & { apply?: readonly StyleName[] };
   hidden?: { mobile?: boolean; desktop?: boolean };
   children?: React.ReactNode;
 }
 
+/** A built-in's variants: the theme's for its component, a name or a list merged in order. */
+interface Variant<C extends string> {
+  variant?: VariantProp<C>;
+}
+
+/** A root's theme. */
+interface Themed {
+  /** The template's theme (`defineTheme()`): its tokens, each component's defaults and variants, and named styles. */
+  theme?: ThemeInput;
+}
+
+/** A scope's tokens: over the theme's for it and what it holds (an inverted band: `{ colors: { background, foreground } }`). */
+type ScopeTree = { [name: string]: string | number | Token | readonly (string | number)[] | ScopeTree };
+interface Scoped {
+  tokens?: { colors?: ScopeTree; spacing?: ScopeTree; fontSizes?: ScopeTree; lineHeights?: ScopeTree; fonts?: ScopeTree; radii?: ScopeTree };
+}
+
 // Each component's props and style have names of their own (HeadingProps, HeadingStyle), so a type error names them
 // ("'marginBottom' does not exist in type 'HeadingStyle'") rather than spelling out every style the component takes.
-type StyleOf<D> = D extends ComponentDefinition<any, infer S, any> ? { [K in keyof S]?: InputOf<S[K]["kind"]> } : never;
+type StyleOf<D> = D extends ComponentDefinition<any, infer S, any> ? { [K in keyof S]?: Tokenized<InputOf<S[K]["kind"]>> } : never;
 type PropsOf<D, Style> = D extends ComponentDefinition<infer P, any, any> ? PropsInput<P> & Extras<Style, ConditionStyles<D>> : never;
 
 /** Marks a primitive's component type. */
@@ -141,83 +162,83 @@ export const Video: React.FC<VideoProps> = createPrimitive(VideoDefinition);
 export const Html = createPrimitive(HtmlDefinition) as unknown as React.FC<HtmlProps>;
 
 export interface EmailStyle extends StyleOf<typeof EmailDefinition> {}
-export interface EmailProps extends PropsOf<typeof EmailDefinition, EmailStyle> {}
+export interface EmailProps extends PropsOf<typeof EmailDefinition, EmailStyle>, Themed {}
 export interface PageStyle extends StyleOf<typeof PageDefinition> {}
-export interface PageProps extends PropsOf<typeof PageDefinition, PageStyle> {}
+export interface PageProps extends PropsOf<typeof PageDefinition, PageStyle>, Themed {}
 export interface SectionStyle extends StyleOf<typeof SectionDefinition> {}
-export interface SectionProps extends PropsOf<typeof SectionDefinition, SectionStyle> {}
+export interface SectionProps extends PropsOf<typeof SectionDefinition, SectionStyle>, Variant<"Section">, Scoped {}
 export interface RowStyle extends StyleOf<typeof RowDefinition> {}
-export interface RowProps extends PropsOf<typeof RowDefinition, RowStyle> {}
+export interface RowProps extends PropsOf<typeof RowDefinition, RowStyle>, Variant<"Row">, Scoped {}
 export interface ColumnStyle extends StyleOf<typeof ColumnDefinition> {}
-export interface ColumnProps extends PropsOf<typeof ColumnDefinition, ColumnStyle> {}
+export interface ColumnProps extends PropsOf<typeof ColumnDefinition, ColumnStyle>, Variant<"Column">, Scoped {}
 export interface TextStyle extends StyleOf<typeof TextDefinition> {}
-export interface TextProps extends PropsOf<typeof TextDefinition, TextStyle> {}
+export interface TextProps extends PropsOf<typeof TextDefinition, TextStyle>, Variant<"Text"> {}
 /** @deprecated Use `TextProps`. It stays under Elements 0.2's name for modules that import it: the migration leaves their type imports in place. */
 export type ParagraphProps = TextProps;
 export interface HeadingStyle extends StyleOf<typeof HeadingDefinition> {}
-export interface HeadingProps extends PropsOf<typeof HeadingDefinition, HeadingStyle> {}
+export interface HeadingProps extends PropsOf<typeof HeadingDefinition, HeadingStyle>, Variant<"Heading"> {}
 export interface SpanStyle extends StyleOf<typeof SpanDefinition> {}
-export interface SpanProps extends PropsOf<typeof SpanDefinition, SpanStyle> {}
+export interface SpanProps extends PropsOf<typeof SpanDefinition, SpanStyle>, Variant<"Span"> {}
 export interface LinkStyle extends StyleOf<typeof LinkDefinition> {}
-export interface LinkProps extends PropsOf<typeof LinkDefinition, LinkStyle> {}
+export interface LinkProps extends PropsOf<typeof LinkDefinition, LinkStyle>, Variant<"Link"> {}
 export interface ButtonStyle extends StyleOf<typeof ButtonDefinition> {}
-export interface ButtonProps extends PropsOf<typeof ButtonDefinition, ButtonStyle> {}
+export interface ButtonProps extends PropsOf<typeof ButtonDefinition, ButtonStyle>, Variant<"Button"> {}
 export interface ImageStyle extends StyleOf<typeof ImageDefinition> {}
-export interface ImageProps extends PropsOf<typeof ImageDefinition, ImageStyle> {}
+export interface ImageProps extends PropsOf<typeof ImageDefinition, ImageStyle>, Variant<"Image"> {}
 export interface DividerStyle extends StyleOf<typeof DividerDefinition> {}
-export interface DividerProps extends PropsOf<typeof DividerDefinition, DividerStyle> {}
+export interface DividerProps extends PropsOf<typeof DividerDefinition, DividerStyle>, Variant<"Divider"> {}
 export interface LineBreakStyle extends StyleOf<typeof LineBreakDefinition> {}
-export interface LineBreakProps extends PropsOf<typeof LineBreakDefinition, LineBreakStyle> {}
+export interface LineBreakProps extends PropsOf<typeof LineBreakDefinition, LineBreakStyle>, Variant<"LineBreak"> {}
 export interface MergeTagStyle extends StyleOf<typeof MergeTagDefinition> {}
-export interface MergeTagProps extends PropsOf<typeof MergeTagDefinition, MergeTagStyle> {}
+export interface MergeTagProps extends PropsOf<typeof MergeTagDefinition, MergeTagStyle>, Variant<"MergeTag"> {}
 export interface ListStyle extends StyleOf<typeof ListDefinition> {}
-export interface ListProps extends PropsOf<typeof ListDefinition, ListStyle> {}
+export interface ListProps extends PropsOf<typeof ListDefinition, ListStyle>, Variant<"List"> {}
 export interface ListItemStyle extends StyleOf<typeof ListItemDefinition> {}
-export interface ListItemProps extends PropsOf<typeof ListItemDefinition, ListItemStyle> {}
+export interface ListItemProps extends PropsOf<typeof ListItemDefinition, ListItemStyle>, Variant<"ListItem"> {}
 export interface TableStyle extends StyleOf<typeof TableDefinition> {}
-export interface TableProps extends PropsOf<typeof TableDefinition, TableStyle> {}
+export interface TableProps extends PropsOf<typeof TableDefinition, TableStyle>, Variant<"Table"> {}
 export interface TableRowStyle extends StyleOf<typeof TableRowDefinition> {}
-export interface TableRowProps extends PropsOf<typeof TableRowDefinition, TableRowStyle> {}
+export interface TableRowProps extends PropsOf<typeof TableRowDefinition, TableRowStyle>, Variant<"TableRow"> {}
 export interface TableCellStyle extends StyleOf<typeof TableCellDefinition> {}
-export interface TableCellProps extends PropsOf<typeof TableCellDefinition, TableCellStyle> {}
+export interface TableCellProps extends PropsOf<typeof TableCellDefinition, TableCellStyle>, Variant<"TableCell"> {}
 export interface SocialStyle extends StyleOf<typeof SocialDefinition> {}
-export interface SocialProps extends PropsOf<typeof SocialDefinition, SocialStyle> {}
+export interface SocialProps extends PropsOf<typeof SocialDefinition, SocialStyle>, Variant<"Social"> {}
 export interface MenuStyle extends StyleOf<typeof MenuDefinition> {}
-export interface MenuProps extends PropsOf<typeof MenuDefinition, MenuStyle> {}
+export interface MenuProps extends PropsOf<typeof MenuDefinition, MenuStyle>, Variant<"Menu"> {}
 export interface GridStyle extends StyleOf<typeof GridDefinition> {}
-export interface GridProps extends PropsOf<typeof GridDefinition, GridStyle> {}
+export interface GridProps extends PropsOf<typeof GridDefinition, GridStyle>, Variant<"Grid">, Scoped {}
 export interface LayerStyle extends StyleOf<typeof LayerDefinition> {}
-export interface LayerProps extends PropsOf<typeof LayerDefinition, LayerStyle> {}
+export interface LayerProps extends PropsOf<typeof LayerDefinition, LayerStyle>, Variant<"Layer"> {}
 export interface DocumentStyle extends StyleOf<typeof DocumentDefinition> {}
-export interface DocumentProps extends PropsOf<typeof DocumentDefinition, DocumentStyle> {}
+export interface DocumentProps extends PropsOf<typeof DocumentDefinition, DocumentStyle>, Themed {}
 export interface DocumentPageStyle extends StyleOf<typeof DocumentPageDefinition> {}
-export interface DocumentPageProps extends PropsOf<typeof DocumentPageDefinition, DocumentPageStyle> {}
+export interface DocumentPageProps extends PropsOf<typeof DocumentPageDefinition, DocumentPageStyle>, Variant<"DocumentPage"> {}
 export interface PageBreakStyle extends StyleOf<typeof PageBreakDefinition> {}
-export interface PageBreakProps extends PropsOf<typeof PageBreakDefinition, PageBreakStyle> {}
+export interface PageBreakProps extends PropsOf<typeof PageBreakDefinition, PageBreakStyle>, Variant<"PageBreak"> {}
 export interface PageHeaderStyle extends StyleOf<typeof PageHeaderDefinition> {}
-export interface PageHeaderProps extends PropsOf<typeof PageHeaderDefinition, PageHeaderStyle> {}
+export interface PageHeaderProps extends PropsOf<typeof PageHeaderDefinition, PageHeaderStyle>, Variant<"PageHeader"> {}
 export interface PageFooterStyle extends StyleOf<typeof PageFooterDefinition> {}
-export interface PageFooterProps extends PropsOf<typeof PageFooterDefinition, PageFooterStyle> {}
+export interface PageFooterProps extends PropsOf<typeof PageFooterDefinition, PageFooterStyle>, Variant<"PageFooter"> {}
 export interface PageNumberStyle extends StyleOf<typeof PageNumberDefinition> {}
-export interface PageNumberProps extends PropsOf<typeof PageNumberDefinition, PageNumberStyle> {}
+export interface PageNumberProps extends PropsOf<typeof PageNumberDefinition, PageNumberStyle>, Variant<"PageNumber"> {}
 export interface CanvasStyle extends StyleOf<typeof CanvasDefinition> {}
-export interface CanvasProps extends PropsOf<typeof CanvasDefinition, CanvasStyle> {}
+export interface CanvasProps extends PropsOf<typeof CanvasDefinition, CanvasStyle>, Themed {}
 export interface SvgStyle extends StyleOf<typeof SvgDefinition> {}
-export interface SvgProps extends PropsOf<typeof SvgDefinition, SvgStyle> {}
+export interface SvgProps extends PropsOf<typeof SvgDefinition, SvgStyle>, Variant<"Svg"> {}
 export interface RectStyle extends StyleOf<typeof RectDefinition> {}
-export interface RectProps extends PropsOf<typeof RectDefinition, RectStyle> {}
+export interface RectProps extends PropsOf<typeof RectDefinition, RectStyle>, Variant<"Rect"> {}
 export interface CircleStyle extends StyleOf<typeof CircleDefinition> {}
-export interface CircleProps extends PropsOf<typeof CircleDefinition, CircleStyle> {}
+export interface CircleProps extends PropsOf<typeof CircleDefinition, CircleStyle>, Variant<"Circle"> {}
 export interface EllipseStyle extends StyleOf<typeof EllipseDefinition> {}
-export interface EllipseProps extends PropsOf<typeof EllipseDefinition, EllipseStyle> {}
+export interface EllipseProps extends PropsOf<typeof EllipseDefinition, EllipseStyle>, Variant<"Ellipse"> {}
 export interface LineStyle extends StyleOf<typeof LineDefinition> {}
-export interface LineProps extends PropsOf<typeof LineDefinition, LineStyle> {}
+export interface LineProps extends PropsOf<typeof LineDefinition, LineStyle>, Variant<"Line"> {}
 export interface PolygonStyle extends StyleOf<typeof PolygonDefinition> {}
-export interface PolygonProps extends PropsOf<typeof PolygonDefinition, PolygonStyle> {}
+export interface PolygonProps extends PropsOf<typeof PolygonDefinition, PolygonStyle>, Variant<"Polygon"> {}
 export interface PathStyle extends StyleOf<typeof PathDefinition> {}
-export interface PathProps extends PropsOf<typeof PathDefinition, PathStyle> {}
+export interface PathProps extends PropsOf<typeof PathDefinition, PathStyle>, Variant<"Path"> {}
 export interface VideoStyle extends StyleOf<typeof VideoDefinition> {}
-export interface VideoProps extends PropsOf<typeof VideoDefinition, VideoStyle> {}
+export interface VideoProps extends PropsOf<typeof VideoDefinition, VideoStyle>, Variant<"Video"> {}
 export interface HtmlStyle extends StyleOf<typeof HtmlDefinition> {}
 export type HtmlProps = Omit<PropsOf<typeof HtmlDefinition, HtmlStyle>, "html" | "children"> &
   // As a string, or as JSX, which React writes.

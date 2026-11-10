@@ -43,6 +43,16 @@ export function raise(element: React.ReactElement): Raised {
     return { body: null, report: [`root: the builder edits an Email, a Page or a Document, not a ${root.type}`] };
   }
   if (holdsPageNumber(root)) report.push("root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet");
+  // The theme is written as values: what each block holds is what the theme gave it there.
+  if (document.theme && Object.keys(document.theme).length) report.push("root: the theme's tokens, variants and named styles are written as the values they give each block: the builder keeps no theme");
+  // The scopes around each node, outermost first, for a block drawn on its own (a locked block).
+  const enclosing = new Map<Node, Array<{ [key: string]: Json }>>();
+  const scopes = (node: Node, around: Array<{ [key: string]: Json }>) => {
+    enclosing.set(node, around);
+    const inner = node.tokens ? [...around, node.tokens] : around;
+    for (const child of node.children ?? []) if (typeof child !== "string") scopes(child, inner);
+  };
+  scopes(root, []);
   const prepared = prepareTemplate(document, { components });
   if (!prepared.resolved) return { body: null, report: prepared.diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
   const resolvedRoot = prepared.resolved.root;
@@ -91,7 +101,7 @@ export function raise(element: React.ReactElement): Raised {
     locked: (node, path, why, around) => {
       report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
       const own = at(path);
-      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path)));
+      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,

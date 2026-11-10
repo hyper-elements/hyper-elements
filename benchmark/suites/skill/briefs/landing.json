@@ -1,0 +1,42 @@
+{
+  "id": "landing",
+  "title": "Landing page",
+  "brief": "A landing page for Orbit, as a web page.\n\n- A hero band across the whole window, background #111827, white text:\n  - Heading: \"Ship every surface from one template\"\n  - Text: \"Orbit renders your emails, pages and PDFs from the same components.\"\n  - Button \"Start free\" linking to https://orbit.dev/signup, background #6d5efc, white text.\n- A band across the whole window, background #f1f2f6, with a grid of three features, each a title over a line of text:\n  - \"Emails\": \"Table layouts every inbox reads.\"\n  - \"Pages\": \"Responsive HTML for the web.\"\n  - \"PDFs\": \"Print-ready documents from the same code.\"\n- The three features are side by side on wide windows and stacked one under another on windows up to 640px wide (so a 600px window stacks them too).\n- A footer band, white: \"Orbit Labs, 500 Market St, San Francisco\" and a link \"Docs\" to https://orbit.dev/docs, colored #6d5efc and turning #4c3df0 on hover.\n- Content 1080px wide.",
+  "run": {
+    "conventions": "conventions/page.md",
+    "render": ["tools/render.mjs", "--page"],
+    "requires": "probes/page-breakpoints.tsx"
+  },
+  "spec": {
+    "page": {
+      "texts": [
+        "Ship every surface from one template",
+        "Orbit renders your emails, pages and PDFs from the same components.",
+        "Emails",
+        "Table layouts every inbox reads.",
+        "Pages",
+        "Responsive HTML for the web.",
+        "PDFs",
+        "Print-ready documents from the same code.",
+        "Orbit Labs, 500 Market St, San Francisco"
+      ],
+      "buttons": [{ "text": "Start free", "href": "https://orbit.dev/signup", "background": "#6d5efc" }],
+      "links": [{ "text": "Docs", "href": "https://orbit.dev/docs" }],
+      "images": [],
+      "columns": [["Table layouts every inbox reads.", "Responsive HTML for the web.", "Print-ready documents from the same code."]],
+      "widths": [
+        { "width": 1200, "layout": "side-by-side" },
+        { "width": 600, "layout": "stacked" },
+        { "width": 375, "layout": "stacked" }
+      ]
+    },
+    "styles": {
+      "file": "out/page.html",
+      "hovers": [{ "text": "Docs", "property": "color", "value": "#4c3df0" }],
+      "bands": [
+        { "text": "Ship every surface from one template", "width": 1200, "background": "#111827" },
+        { "text": "Table layouts every inbox reads.", "width": 1200, "background": "#f1f2f6" }
+      ]
+    }
+  }
+}

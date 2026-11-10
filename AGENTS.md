@@ -60,6 +60,14 @@ between blocks is the parent's `gap`. Every
 component and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
 writes from the definitions. Don't edit them by hand.
 
+A root's `theme` (`defineTheme()`) is merged into each node when the template is read (`packages/core/src/theme.ts`):
+roles (the tokens a definition's `roles` names), its component's defaults (by one prop's value with `by`), its
+`variant`s, the named styles in `style.apply`, then its own style, and tokens resolved where they're used, against the
+theme with each enclosing scope's `tokens` (Section, Row, Column, Grid) over it. The first read moves the theme to
+`ElementsDocument.theme` with `merged: true`; a document with it isn't merged again (a top-level `theme` without it is
+a template's, read as its root's), and expansion reads what a template's own component
+renders against the environment where it is.
+
 ## Components
 
 Components aren't hand-written. Each is a definition in `packages/core/src/components.ts` (props, styles, children,
@@ -105,6 +113,7 @@ JSX
 | `packages/core/src/components.ts` | Component definitions |
 | `packages/core/src/writers/{email,page}/` | One writer per component per output (`Button.tsx`, `Row.tsx`, …), in a JSX that writes strings (`packages/core/src/writers/jsx.ts`, no React); each output's document shell is its `index.tsx` |
 | `packages/core/src/resolve.ts` | Layout: the width of every block, which every output reads |
+| `packages/core/src/theme.ts` | Themes: reading one, token environments and scopes, and merging a theme into a node's style |
 | `packages/react/src/utils/` | The collecting render: `collect.ts`, `server-renderer.ts`, `render-scope.ts` |
 | `packages/react/src/builder/` | `/builder`. `toDesign()` writes a template as the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
 | `packages/react/src/builder/tool-defaults.ts` | Each tool's default values and the design's schema version, in the editor's key order |
@@ -210,8 +219,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 277,000 bytes,
-  `dist/builder.js` 441,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 322,000 bytes,
+  `dist/builder.js` 485,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.

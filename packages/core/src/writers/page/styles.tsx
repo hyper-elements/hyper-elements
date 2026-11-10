@@ -2,7 +2,7 @@
 import { HOVER, MOBILE } from "../../conditions";
 import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
-import { rule } from "../jsx";
+import { customPropertiesClass, rule } from "../jsx";
 import { border, css, insets, length, textValue, type Declarations } from "../shared/css";
 import { phoneWidthInRow } from "../shared/phone-width";
 import { FLEX_ALIGN } from "./layout";
@@ -31,6 +31,9 @@ function declarationsOf(values: Record<string, Json>): Declarations {
 /** The classes of the stylesheet's rules for the node (phone styles, hiding, hover, stacking), if any. */
 export function classesFor(node: ResolvedNode, parent: ResolvedNode): string | undefined {
   const classes: string[] = [];
+  // A scope's tokens, as CSS custom properties (a Grid's go on the Column it's laid out as).
+  const properties = customPropertiesClass(node.customProperties);
+  if (properties) classes.push(properties);
   if (node.mobile) {
     // A Divider's length is its line's.
     const { width, ...rest } = node.mobile;

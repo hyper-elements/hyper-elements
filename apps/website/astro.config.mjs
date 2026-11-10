@@ -3,7 +3,7 @@ import sitemap from "@astrojs/sitemap";
 import { hyperTheme } from "./src/lib/shiki-theme.mjs";
 
 export default defineConfig({
-  site: "https://hyperelements.dev",
+  site: "https://www.hyperelements.dev",
   trailingSlash: "never",
   build: { format: "directory" },
   // The guide's old address, already on the live site.

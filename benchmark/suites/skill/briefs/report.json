@@ -1,0 +1,19 @@
+{
+  "id": "report",
+  "title": "A report email from data",
+  "brief": "A weekly report email, built from data.\n\n- Put this array in src/template.tsx and write one row per item with a plain function over it, not a row copied per item:\n  `[{ name: \"Signups\", value: \"1,284\" }, { name: \"Active teams\", value: \"312\" }, { name: \"Emails sent\", value: \"48,902\" }]`\n- Preview text: \"Your Orbit numbers for the week.\"\n- Heading: \"Your week in Orbit\"\n- A greeting with the reader's first name, from the merge tag `first_name`: \"Hi\", the first name, then a comma.\n- Each item on a row of its own, its name on the left and its value on the right.\n- A link \"See the full report\" to https://orbit.dev/reports/weekly.\n- Footer: \"You get this email as an admin of\", the team's name from the merge tag `team_name`, then a period.\n- White background, 600px content.\n- The plain-text version (out/email.txt) has every item and both merge tags.",
+  "spec": {
+    "email": {
+      "preview": "Your Orbit numbers for the week.",
+      "texts": ["Your week in Orbit", "Signups", "1,284", "Active teams", "312", "Emails sent", "48,902", "You get this email as an admin of"],
+      "rows": [["Signups", "1,284"], ["Active teams", "312"], ["Emails sent", "48,902"]],
+      "buttons": [],
+      "links": [{ "text": "See the full report", "href": "https://orbit.dev/reports/weekly" }],
+      "images": [],
+      "columns": []
+    },
+    "text": {
+      "contains": ["Signups", "1,284", "Active teams", "312", "Emails sent", "48,902", "{{first_name}}", "{{team_name}}"]
+    }
+  }
+}

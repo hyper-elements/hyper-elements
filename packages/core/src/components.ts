@@ -9,7 +9,7 @@ import type { Json } from "./model";
 import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
 import { Grid, Layer } from "./layouts";
-import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, TEXT_EDITOR } from "./roots";
+import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
 import { Document, DocumentPage, PageBreak, PageFooter, PageHeader, PageNumber } from "./document";
 import { Canvas, SHAPES, Svg } from "./canvas";
 
@@ -25,6 +25,7 @@ const SPACING_EDITOR = { title: "Spacing", paths: ["style.padding"] };
 
 export const Email = defineComponent({
   type: "Email",
+  roles: SURFACE_ROLES,
   label: "Email",
   description: "An email. Its children are stacked down the content width, centered in the window.",
   categories: ["root"],
@@ -50,6 +51,7 @@ export const Email = defineComponent({
 
 export const Page = defineComponent({
   type: "Page",
+  roles: SURFACE_ROLES,
   label: "Page",
   description: "A web page. Its children are stacked down the content width, centered in the window.",
   categories: ["root"],
@@ -86,6 +88,7 @@ export const Page = defineComponent({
 
 export const Section = defineComponent({
   type: "Section",
+  roles: SURFACE_ROLES,
   label: "Section",
   description: "A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.",
   categories: ["section"],
@@ -99,6 +102,7 @@ export const Section = defineComponent({
 
 export const Row = defineComponent({
   type: "Row",
+  roles: SURFACE_ROLES,
   label: "Row",
   description: "Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).",
   categories: ["layout", "block"],
@@ -143,6 +147,7 @@ export const Row = defineComponent({
 
 export const Column = defineComponent({
   type: "Column",
+  roles: SURFACE_ROLES,
   label: "Column",
   description: "Stacks its children vertically, with its own spacing and box.",
   categories: ["layout", "block"],
@@ -190,6 +195,7 @@ export const Text = defineComponent({
 
 export const Heading = defineComponent({
   type: "Heading",
+  roles: { fontFamily: "fonts.heading" },
   label: "Heading",
   description: "A heading, from level 1 (the page's title) to 6.",
   categories: ["block"],
@@ -237,6 +243,7 @@ export const Span = defineComponent({
 
 export const Link = defineComponent({
   type: "Link",
+  roles: { color: "colors.primary" },
   label: "Link",
   description: "A link: text inside text, or around an Image.",
   categories: ["inline", "block"],
@@ -275,6 +282,7 @@ export const buttonColors: CompositeEditor<ButtonColors> = {
 
 export const Button = defineComponent({
   type: "Button",
+  roles: { backgroundColor: "colors.primary", color: "colors.primaryForeground", fontSize: "fontSizes.body" },
   label: "Button",
   description: "A link drawn as a button.",
   categories: ["block"],
@@ -339,6 +347,7 @@ export const Image = defineComponent({
 
 export const Divider = defineComponent({
   type: "Divider",
+  roles: { "borderTop.color": "colors.border" },
   label: "Divider",
   description: "A horizontal line.",
   categories: ["block"],

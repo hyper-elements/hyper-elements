@@ -46,7 +46,8 @@ check("no flex or grid", !flex, `uses "${flex?.[0]}", which Outlook and many cli
 const badHrefs = [...html.matchAll(/<a\b[^>]*href=["']([^"']*)["']/gi)].map((m) => m[1]).filter((h) => !/^(https?:|mailto:|tel:)/i.test(h));
 check("absolute links", badHrefs.length === 0, `relative or empty hrefs: ${badHrefs.slice(0, 3).join(", ")}`);
 
-const browser = await chromium.launch();
+// BENCH_CHROMIUM_ARGS: flags the skill suite launches it with (--single-process, which runs in Claude Code's sandbox).
+const browser = await chromium.launch({ args: (process.env.BENCH_CHROMIUM_ARGS ?? "").split(" ").filter(Boolean) });
 const page = await browser.newPage({ viewport: { width: 800, height: 1000 } });
 await page.route("**/*", async (route) => {
   const url = new URL(route.request().url());

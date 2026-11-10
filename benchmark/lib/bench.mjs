@@ -13,12 +13,19 @@
 import { execFileSync, spawn } from "node:child_process";
 import { appendFile, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { existsSync, mkdtempSync, readFileSync, realpathSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { arch, homedir, platform, release, tmpdir } from "node:os";
+import { arch, platform, release } from "node:os";
 import { getEncoding } from "js-tiktoken";
-import { applyChanges, briefsOf, kitOf, makeRun, suiteOf } from "./make-run.mjs";
+import { applyChanges, briefOf, briefsOf, docsDirOf, ENGINES, jobsOf, kitOf, makeRun, runOf, runRootOf, suiteOf } from "./make-run.mjs";
+import { browsersPath, fingerprint } from "./setup.mjs";
 import { outsideAccess } from "./audit.mjs";
+import { claudeArgs, deniedPaths, eventsOf, sandboxOf, sessionEnv, settingsOf, skillsOf } from "./claude.mjs";
+import { changedGuards, gradingPass, guardHashes, scanSources, unlock } from "./grade.mjs";
+import { replayFields, replayRun } from "./replay.mjs";
+import { randomBytes } from "node:crypto";
+import { preflight, sandboxProbe, skillDiscovery } from "./preflight.mjs";
+import { resumeOf, resumeProblems } from "./resume.mjs";
 
 const bench = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (name, def) => {
@@ -27,16 +34,24 @@ const arg = (name, def) => {
 };
 const suiteName = arg("suite", "email");
 const suite = await suiteOf(suiteName);
-const kits = arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", multi: "he,stack" }[suiteName]).split(",");
-const briefs = arg("briefs", "all") === "all" ? await briefsOf(suiteName) : arg("briefs").split(",");
-const reps = Number(arg("reps", "1"));
 const model = arg("model", "sonnet");
 const concurrency = Number(arg("concurrency", "3"));
 const timeoutMin = Number(arg("timeout", "20"));
+// --resume (the skill suite, with the batch's --stamp and --model): the stopped batch's plan.json gives the kits,
+// tasks, reps and clock, and only its jobs without a row run. --max-cost-usd then counts the whole batch.
+const resuming = process.argv.includes("--resume");
+if (resuming && (suiteName !== "skill" || arg("stamp") === undefined)) throw new Error("--resume takes the skill suite and the batch's --stamp");
+if (resuming && ["kits", "briefs", "reps"].some((a) => arg(a) !== undefined)) throw new Error("--resume takes the kits, tasks and reps from plan.json");
 const stamp = arg("stamp", new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19));
 const runsDir = join(bench, "runs", stamp);
 const resultsFile = join(bench, "results", `${stamp}-${suiteName}-${model}.jsonl`);
+const planFile = resultsFile.replace(/\.jsonl$/, ".plan.json");
 await mkdir(dirname(resultsFile), { recursive: true });
+const plan = resuming ? JSON.parse(await readFile(planFile, "utf8")) : null;
+const before = resuming ? resumeOf(plan, existsSync(resultsFile) ? await readFile(resultsFile, "utf8") : "") : null;
+const kits = plan?.kits ?? arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", multi: "he,stack", skill: "candidate,release" }[suiteName]).split(",");
+const briefs = plan?.briefs ?? await briefsOf(suiteName, arg("briefs", suite.groups ? "core" : "all"));
+const reps = plan?.reps ?? Number(arg("reps", "1"));
 
 const enc = getEncoding("o200k_base");
 
@@ -52,11 +67,93 @@ const provenance = {
 // Isolation. An agent finds what it can reach: in a run directory beside the others, agents globbed the benchmark
 // and copied its reference solutions and other runs' work. So each run is a directory of its own in the system's
 // temporary folder (its own copy of node_modules, no link out), and Claude Code is told to deny reading or editing
-// the repository, the home folder (Claude Code's own session logs are there) and /tmp. What a rule can't stop (node
-// reading a file) the audit below catches: a run that reached outside its directory is kept but marked invalid.
-const repoRoot = execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { cwd: bench, encoding: "utf8" }).trim().replace(/\/\.git$/, "");
-const denied = [...new Set([repoRoot, homedir(), "/Users", "/home", "/tmp", "/private/tmp"])];
-const settings = JSON.stringify({ permissions: { deny: denied.flatMap((p) => [`Read(/${p}/**)`, `Edit(/${p}/**)`]) } });
+// the repository, the home folder (Claude Code's own session logs are there) and /tmp. Those rules cover the file
+// tools, not what a node command opens: the audit below catches a path a tool call names (a run that reached outside its
+// directory is kept but marked invalid), not one a command builds. The skill suite runs Bash in the OS sandbox for that.
+const denied = deniedPaths(bench);
+
+const settings = settingsOf(denied);
+// Where runs are made while their session lasts: BENCH_RUN_ROOT, else the system's temporary folder. Never under a
+// denied path (on Linux the temporary folder is /tmp), where the session couldn't read its own run.
+const runRoot = runRootOf(process.env.BENCH_RUN_ROOT, denied);
+// The skill suite's sessions read Playwright's browsers at the run root (`setup.mjs --browsers`): its usual place is under
+// the home folder, which they're denied. The preflight, the sessions and the grading pass all use these.
+const browsers = browsersPath();
+if (suiteName === "skill") {
+  if (!existsSync(browsers)) throw new Error(`no browsers at ${browsers}: install them with \`node lib/setup.mjs --browsers\``);
+  process.env.PLAYWRIGHT_BROWSERS_PATH = browsers;
+  process.env.BENCH_CHROMIUM_ARGS = sessionEnv({}, { browsers }).BENCH_CHROMIUM_ARGS;
+}
+
+// The skill suite's kits name an engine and a docs set, recorded per row. A `candidate` engine must be what the
+// checkout would build now: the same fingerprint as when `setup.mjs --as candidate` installed it.
+const kitInfo = Object.fromEntries(await Promise.all(kits.map(async (k) => [k, await kitOf(suiteName, k)])));
+const sourceOf = (file) => (existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null);
+const runProvenance = Object.fromEntries(Object.entries(kitInfo).map(([name, k]) => {
+  if (!k.engine) return [name, null];
+  const engine = sourceOf(join(ENGINES, k.engine, "source.json"));
+  if (!engine) throw new Error(`kit ${name}: no engine "${k.engine}". Install it with \`HYPER_ELEMENTS_PACKAGE=… node lib/setup.mjs --as ${k.engine}\`.`);
+  const docs = k.docsFrom ? sourceOf(join(docsDirOf(k), "source.json")) : { engine: k.engine, files: engine.docs };
+  if (!docs) throw new Error(`kit ${name}: no docs set "${k.docsFrom}". Write it with \`node lib/setup.mjs --docs-from <ref> --as ${k.docsFrom}\`.`);
+  return [name, { engine, docs: { ...docs, given: k.allowSkill ? "skill" : k.docs.includes("GUIDE.md") ? "import" : "none" } }];
+}));
+for (const [name, p] of Object.entries(runProvenance)) {
+  if (p?.engine.name !== "candidate") continue;
+  if (fingerprint(p.engine.checkout) !== p.engine.fingerprint) throw new Error(`kit ${name}: the candidate engine is stale (the checkout changed since it was installed). Run \`node lib/setup.mjs --as candidate\` again.`);
+}
+// The rows record the checkout relative to this repository ("." for this checkout), not as a path on this machine.
+for (const p of Object.values(runProvenance)) {
+  if (p?.engine.checkout) p.engine = { ...p.engine, checkout: relative(resolve(bench, ".."), p.engine.checkout) || "." };
+}
+
+const dryRun = process.argv.includes("--dry-run");
+// The batch's start, in ms: the clock every render in it reads (the skill suite pins it), recorded in plan.json. A
+// resumed batch keeps its own.
+const batchClock = plan ? Date.parse(plan.startedAt) : Date.now();
+const maxCost = arg("max-cost-usd") === undefined ? Infinity : Number(arg("max-cost-usd"));
+const skillSuite = suiteName === "skill";
+
+// The skill suite's preflight, before any job: the part with no model call (references, engines, probes, task 7's
+// baseline), then the skill-discovery smoke run where the `skill` kit is selected. Any problem stops the batch.
+let na = Object.fromEntries(kits.map((k) => [k, []]));
+let extraOf = {};
+if (skillSuite && !dryRun) {
+  const root = mkdtempSync(join(runRoot, "preflight-"));
+  // A resumed batch's task 7 baselines are written again; they must come out the same.
+  const baselinesBefore = resuming && existsSync(join(runsDir, "baselines"))
+    ? Object.fromEntries(await Promise.all((await readdir(join(runsDir, "baselines"))).map(async (f) => [f, await readFile(join(runsDir, "baselines", f), "utf8")])))
+    : {};
+  console.log("Preflight…");
+  const pre = await preflight({ kits, briefs, root, baselines: join(runsDir, "baselines") });
+  await rm(root, { recursive: true, force: true });
+  if (pre.problems.length) {
+    for (const p of pre.problems) console.error(`FAIL ${p}`);
+    console.error(`Preflight failed: ${pre.problems.length} problem(s). Nothing was run.`);
+    process.exit(1);
+  }
+  ({ na, extraOf } = pre);
+  for (const [f, text] of Object.entries(baselinesBefore)) {
+    if ((await readFile(join(runsDir, "baselines", f), "utf8")) !== text) {
+      console.error(`FAIL --resume: the baseline ${f} differs from the batch's. Nothing was run.`);
+      process.exit(1);
+    }
+  }
+  const box = await sandboxProbe({ model, browsers });
+  if (!box.ok) {
+    console.error(`FAIL sandbox probe: ${box.problems.join("; ")} (${box.transcript}). Nothing was run.`);
+    process.exit(1);
+  }
+  console.log(`Sandbox probe passed ($${(box.costUsd ?? 0).toFixed(2)}).`);
+  if (kits.includes("skill")) {
+    const smoke = await skillDiscovery({ model });
+    if (!smoke.ok) {
+      console.error(`FAIL skill discovery: the session's skills are ${JSON.stringify(smoke.skills)} (${smoke.transcript}). Leave the skill kit out.`);
+      process.exit(1);
+    }
+    console.log(`Skill discovery passed ($${(smoke.costUsd ?? 0).toFixed(2)}).`);
+  }
+  for (const [k, list] of Object.entries(na)) if (list.length) console.log(`N/A for ${k}: ${list.join(", ")}`);
+}
 
 
 // A command that runs a tool, not one that only reads it (`cat tools/check.mjs`).
@@ -111,28 +208,18 @@ async function copiesOf(dir, built) {
 }
 
 /** One agent session in a run directory, until it stops: what it did, what it cost, and the check after it. */
-async function session(dir, prompt, transcript) {
+async function session(dir, prompt, transcript, { render = [suite.render], allowedTools = [], allowSkill = false, settings: own = settings, env = process.env } = {}) {
   const t0 = Date.now();
   const r = await sh(
     "claude",
-    [
-      "-p", prompt,
-      "--model", model,
-      "--output-format", "stream-json", "--verbose",
-      "--no-session-persistence",
-      "--setting-sources", "project",
-      "--permission-mode", "acceptEdits",
-      "--allowedTools", "Read", "Write", "Edit", "Glob", "Grep", "Bash(node:*)", "Bash(npx tsc:*)", "Bash(ls:*)", "Bash(cat:*)",
-      "--disallowedTools", "WebFetch", "WebSearch", "Agent", "Task", "Skill",
-      "--settings", settings,
-    ],
-    { cwd: dir, timeout: timeoutMin * 60_000, env: { ...process.env } },
+    claudeArgs({ prompt, model, settings: own, allowedTools, allowSkill, skillSuite: suiteName === "skill" }),
+    { cwd: dir, timeout: timeoutMin * 60_000, env: { ...env } },
   );
   const wall = Date.now() - t0;
   await writeFile(join(dir, transcript), r.out);
   if (r.err) await writeFile(join(dir, transcript.replace(/\.jsonl$/, ".stderr.txt").replace(/^transcript\./, "")), r.err);
 
-  const events = r.out.split("\n").filter(Boolean).flatMap((l) => { try { return [JSON.parse(l)]; } catch { return []; } });
+  const events = eventsOf(r.out);
   const final = events.findLast((e) => e.type === "result") ?? {};
   // Every tool call the agent made, and how the first check went.
   const commands = events.flatMap((e) => (e.type === "assistant" ? e.message.content : []))
@@ -142,12 +229,12 @@ async function session(dir, prompt, transcript) {
   const checks = commands.filter((c) => c.name === "Bash" && runs(c.cmd, "tools/check.mjs"));
   const firstCheck = checks[0] ? toolResults.get(checks[0].id) : null;
   const firstCheckPassed = firstCheck ? !firstCheck.is_error && /All \d+ checks passed/.test(JSON.stringify(firstCheck.content)) : null;
-  const renders = commands.filter((c) => c.name === "Bash" && runs(c.cmd, suite.render));
+  const renders = commands.filter((c) => c.name === "Bash" && runs(c.cmd, render[0]));
   const renderErrors = renders.filter((c) => toolResults.get(c.id)?.is_error).length;
 
-  const verdict = await sh("node", ["tools/check.mjs", "--json"], { cwd: dir, timeout: 180_000 });
+  const verdict = await sh("node", ["tools/check.mjs", "--json"], { cwd: dir, timeout: 180_000, env });
   let check = {};
-  try { check = JSON.parse(verdict.out.trim().split("\n").pop()); } catch { check = { pass: false, error: verdict.err.slice(0, 400) }; }
+  try { check = JSON.parse(verdict.out.trim().split("\n").pop()); } catch { check = { pass: false, error: verdict.err.slice(0, 400), crashed: true }; }
 
   const u = final.usage ?? {};
   return {
@@ -159,7 +246,12 @@ async function session(dir, prompt, transcript) {
     renderRuns: renders.length, renderErrors, firstRenderOk: renders[0] ? !toolResults.get(renders[0].id)?.is_error : null,
     imageReads: commands.filter((c) => c.name === "Read" && /\.(png|jpe?g|gif|webp)$/i.test(c.file)).length,
     warnings: check.warnings ?? null,
+    // The checker exited without its JSON result (a crash, a timeout, a missing browser): not the task's failure.
+    checkerCrashed: !!check.crashed,
     modelUsage: final.modelUsage,
+    // The skills the session loaded, and whether it used the Skill tool (the skill kit's runs).
+    skills: skillsOf(events),
+    skillCalls: commands.filter((c) => c.name === "Skill").map((c) => c.input.skill ?? c.input.command ?? null),
     // Reached outside its run directory: tried (denied) doesn't invalidate a run; got does.
     outside: outsideAccess(dir, commands, toolResults, t0),
   };
@@ -182,9 +274,22 @@ async function emailClientsOf(dir, tool) {
 const SUMMED = ["wallMs", "durationMs", "apiMs", "turns", "costUsd", "inputTokens", "cacheWriteTokens", "cacheReadTokens", "outputTokens", "toolCalls", "checkRuns", "renderRuns", "renderErrors", "imageReads"];
 
 async function one(kit, brief, rep) {
-  const dir = await makeRun(suiteName, kit, brief, rep, mkdtempSync(join(tmpdir(), "run-")), { isolated: true });
-  const { sources, diagnostics } = await kitOf(suiteName, kit);
-  const build = await session(dir, suite.prompt, "transcript.jsonl");
+  const dir = await makeRun(suiteName, kit, brief, rep, mkdtempSync(join(runRoot, "run-")), { isolated: true, extra: extraOf[brief] ?? {} });
+  const k = kitInfo[kit];
+  const run = runOf(suite, k, await briefOf(suiteName, brief));
+  const { sources } = run;
+  const { diagnostics } = k;
+  // The skill suite: Bash in the OS sandbox, a fixed environment, and the guarded files hashed before and after.
+  const own = skillSuite ? settingsOf(denied, sandboxOf({ runDir: dir, runRoot, browsers })) : settings;
+  // The sandbox lets a session write only in its run, so its temporary folder is there too.
+  if (skillSuite) await mkdir(join(dir, ".tmp"), { recursive: true });
+  // The run's secret (the render tools and checker sign their result lines with it) and the batch's start as the
+  // pinned clock, in the session's environment only: no file holds them.
+  const env = skillSuite
+    ? { ...sessionEnv(process.env, { browsers, tmp: join(dir, ".tmp") }), BENCH_SECRET: randomBytes(32).toString("hex"), BENCH_CLOCK: String(batchClock) }
+    : process.env;
+  const guardsBefore = skillSuite ? await guardHashes(dir) : null;
+  const build = await session(dir, run.prompt, "transcript.jsonl", { render: run.render, allowedTools: run.allowedTools, allowSkill: !!k.allowSkill, settings: own, env });
   const built = await sourcesOf(dir, sources);
   const source = Object.values(built).join("\n");
   const copies = await copiesOf(dir, built); // against the build's specs, before a change replaces them
@@ -211,7 +316,36 @@ async function one(kit, brief, rep) {
   }
   if (diagnostics) row.emailClients = await emailClientsOf(dir, diagnostics);
   Object.assign(row, { sourceTokens: enc.encode(source).length, sourceChars: source.length, sourceFiles: Object.keys(built).length, copies, ...provenance });
+  // The skill suite: this run's own engine and docs, in place of the global engine.
+  if (runProvenance[kit]) Object.assign(row, { engine: runProvenance[kit].engine, docs: runProvenance[kit].docs });
   row.valid = !row.outside.some((o) => o.got && !o.own);
+  if (skillSuite) {
+    // Tampering: a guarded file changed, or the sources call what no template needs. Only these, and a maintainer,
+    // mark a row `tampered`.
+    const guarded = changedGuards(guardsBefore, await guardHashes(dir));
+    const scan = scanSources(built);
+    row.tampered = [...guarded.map((p) => `changed ${p}`), ...scan.tampered];
+    row.readsUnpinned = scan.readsUnpinned;
+    // The attempts, recomputed over the verified prefix: the session replayed at its own path, its directory aside.
+    const events = eventsOf(await readFile(join(dir, "transcript.jsonl"), "utf8"));
+    const rp = await replayRun({ kit, brief, rep, root: dirname(dir), dir, events, env, extra: extraOf[brief] ?? {} });
+    // The secret too, now the session is over: `lib/rereplay.mjs` replays the batch again with it, after a change to
+    // the replay, without new sessions.
+    Object.assign(row, replayFields(rp, events), { secret: env.BENCH_SECRET });
+    // The grade: the sources rendered and checked again in a pristine directory, the checker copied in after the
+    // render. The session's own check is kept, but doesn't decide.
+    const gradeRoot = mkdtempSync(join(runRoot, "grade-"));
+    const grade = await gradingPass({ kit, brief, sourcesFrom: dir, root: gradeRoot, extra: extraOf[brief] ?? {}, env: sessionEnv(process.env, { browsers }) });
+    row.sessionCheck = { pass: row.pass, failed: row.failed, crashed: row.checkerCrashed };
+    Object.assign(row, {
+      pass: grade.pass, failed: grade.failed ?? [], rendered: grade.rendered, warningsLeft: grade.warningsLeft ?? null,
+      gradeRender: grade.rendered ? null : grade.render,
+    });
+    if (grade.harnessError) row.harnessError = grade.harnessError;
+    await unlock(gradeRoot);
+    await rm(gradeRoot, { recursive: true, force: true });
+    row.valid = row.valid && row.tampered.length === 0 && !row.harnessError;
+  }
   await appendFile(resultsFile, JSON.stringify(row) + "\n");
   // Kept in runs/<stamp>/ (everything but node_modules), out of the temporary folder.
   const keep = join(runsDir, `${kit}__${brief}__${rep}`);
@@ -224,15 +358,67 @@ async function one(kit, brief, rep) {
   return row;
 }
 
-// Interleave the kits so a slow patch of the API doesn't land on one of them.
-const jobs = [];
-for (let rep = 0; rep < reps; rep++) for (const brief of briefs) for (const kit of kits) jobs.push([kit, brief, rep]);
+// The kits interleaved; a brief with `run.kits` only in those, and no N/A task (its `requires` probe failed).
+const briefKits = Object.fromEntries(await Promise.all(briefs.map(async (b) => [b, (await briefOf(suiteName, b)).run?.kits ?? null])));
+const planned = jobsOf(kits, briefs, reps, briefKits, na);
+if (resuming && !dryRun) {
+  const problems = resumeProblems({ plan, rows: before.rows, jobs: planned, na, claudeVersion: provenance.claudeVersion, kits: runProvenance });
+  if (problems.length) {
+    for (const p of problems) console.error(`FAIL --resume: ${p}`);
+    console.error("Nothing was run.");
+    process.exit(1);
+  }
+}
+const jobs = resuming ? before.left : planned;
+
+if (dryRun) {
+  // An estimate from measured medians with Sonnet. The email and image suites: $0.43 an email or page task, $0.60 a
+  // Canvas task. The skill suite's sessions cost more (its sandbox and checks): $0.80 a task (the negative control,
+  // 2026-11-09), Canvas scaled the same, plus the sandbox probe. The `none` arm about 1.5×; Opus scaled by its price.
+  // These are the costs Claude Code reports, which --max-cost-usd counts. Claude Code 2.1.238 reports Haiku 5.5 at
+  // about twice Sonnet 5.5 ($1.60 a skill task, 2026-11-09): it prices both above their list prices.
+  const perModel = /haiku/.test(model) ? 2 : /opus/.test(model) ? 1.67 : 1;
+  const [task, canvas] = skillSuite ? [0.8, 1.12] : [0.43, 0.6];
+  const estimate = (skillSuite ? 0.75 * perModel : 0) + jobs.reduce((sum, [kit, brief]) => sum + (brief === "launch" ? canvas : task) * (kit === "none" ? 1.5 : 1) * perModel, 0);
+  for (const [kit, brief, rep] of jobs) console.log(`${kit} ${brief} #${rep}`);
+  console.log(`${jobs.length} runs (${suiteName}), model ${model}: about $${estimate.toFixed(0)} (an estimate; the N/A tasks are known after the preflight).`);
+  process.exit(0);
+}
+
+// The planned matrix, before any job starts, so a partial report knows which cells it's missing.
+// A resumed batch keeps its plan, adding when it resumed, the stops it resumed from and its new cap, and its results
+// file loses those stops' markers.
+if (skillSuite && resuming) {
+  const resumes = [...(plan.resumes ?? []), { at: new Date().toISOString(), after: before.stops, rows: before.rows.length, maxCostUsd: Number.isFinite(maxCost) ? maxCost : null }];
+  await writeFile(planFile, JSON.stringify({ ...plan, maxCostUsd: Number.isFinite(maxCost) ? maxCost : null, resumes }, null, 2) + "\n");
+  await writeFile(resultsFile, before.text);
+  console.log(`Resuming ${stamp}: ${before.rows.length} rows ($${before.spentUsd.toFixed(2)}), ${jobs.length} runs left.`);
+} else if (skillSuite) {
+  await writeFile(planFile, JSON.stringify({
+    stamp, suite: suiteName, model, kits, briefs, reps, startedAt: new Date(batchClock).toISOString(), maxCostUsd: Number.isFinite(maxCost) ? maxCost : null, na, jobs: jobs.map(([kit, brief, rep]) => ({ kit, brief, rep })),
+  }, null, 2) + "\n");
+}
 console.log(`${jobs.length} runs (${suiteName}), ${concurrency} at a time, model ${model}. Results: ${resultsFile}`);
-let next = 0;
+let next = 0, spent = before?.spentUsd ?? 0, stopped = false;
 await Promise.all(Array.from({ length: concurrency }, async () => {
   while (next < jobs.length) {
+    // --max-cost-usd: once the finished rows' cost reaches it, no new job starts; running ones finish.
+    if (spent >= maxCost) { stopped = true; break; }
     const job = jobs[next++];
-    try { await one(...job); } catch (e) { console.error(`ERROR ${job.join(" ")}: ${e.message}`); }
+    let row = null;
+    for (let attempt = 0; attempt < (skillSuite ? 2 : 1) && !row; attempt++) {
+      try { row = await one(...job); } catch (e) { console.error(`ERROR ${job.join(" ")}${skillSuite ? ` (attempt ${attempt + 1})` : ""}: ${e.message}`); }
+    }
+    // A job that threw twice is a harness error: counted, and left out.
+    if (!row && skillSuite) {
+      const [kit, brief, rep] = job;
+      await appendFile(resultsFile, JSON.stringify({ stamp, suite: suiteName, kit, brief, rep, model, harnessError: "the job threw twice", pass: false, valid: false, costUsd: 0 }) + "\n");
+    }
+    spent += row?.costUsd ?? 0;
   }
 }));
+if (stopped) {
+  await appendFile(resultsFile, JSON.stringify({ partial: true, reason: "cost", spentUsd: spent, maxCostUsd: maxCost }) + "\n");
+  console.log(`Stopped at $${spent.toFixed(2)} of $${maxCost}: ${jobs.length - next} runs not started.`);
+}
 console.log("Done.", resultsFile);

@@ -28,6 +28,7 @@ import {
   type PropsInput,
 } from "@unlayer-internal/elements-core";
 import { collectingPrimitives, collectNodes, recordPrimitive, registerUsed } from "./collect";
+import type { Token } from "./theme";
 
 type PropOptions<K extends Kind<any, any>, R extends boolean, D> = Omit<PropSpec<K, R>, "kind" | "default"> & { default?: D };
 
@@ -36,14 +37,23 @@ function kindProp<K extends Kind<any, any>>(make: () => K) {
   return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options);
 }
 
+declare const TAKES_TOKEN: unique symbol;
+/** Type only: a prop whose kind takes a theme's token in JSX (a color, a length, a font), its value where the instance is. */
+type TakesToken = { readonly [TAKES_TOKEN]: true };
+
+/** A prop helper for a kind that takes a theme's token. */
+function tokenProp<K extends Kind<any, any>>(make: () => K) {
+  return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options) as ReturnType<typeof defineProp<K, R, D>> & TakesToken;
+}
+
 /** Props of a custom component, by value kind. */
 export const prop = {
   text: kindProp(() => text()),
-  color: kindProp(() => color()),
+  color: tokenProp(() => color()),
   image: kindProp(() => asset()),
   link: kindProp(() => link()),
   boolean: kindProp(() => boolean()),
-  fontFamily: kindProp(() => fontFamily()),
+  fontFamily: tokenProp(() => fontFamily()),
   fontWeight: kindProp(() => fontWeight()),
   number: <const R extends boolean = false, const D extends number | undefined = undefined>(
     options: PropOptions<Kind<number, number>, R, D> & { min?: number; max?: number; integer?: boolean }
@@ -55,7 +65,7 @@ export const prop = {
     options: PropOptions<ReturnType<typeof length<U>>, R, D> & { units?: readonly U[]; min?: number }
   ) => {
     const { units, min, ...rest } = options;
-    return defineProp<ReturnType<typeof length<U>>, R, D>(length<U>(units, { min }), rest);
+    return defineProp<ReturnType<typeof length<U>>, R, D>(length<U>(units, { min }), rest) as ReturnType<typeof defineProp<ReturnType<typeof length<U>>, R, D>> & TakesToken;
   },
   choice: <const V extends readonly (string | number)[], const R extends boolean = false, const D extends V[number] | undefined = undefined>(
     values: V,
@@ -63,8 +73,11 @@ export const prop = {
   ) => defineProp(enumOf(values), options),
 };
 
+/** A prop's value in JSX: a color's, a length's or a font's may be a theme's token, its value where the instance is. */
+type WithTokens<T, P> = { [K in keyof T]: K extends keyof P ? (P[K] extends TakesToken ? T[K] | Token : T[K]) : T[K] };
+
 /** What a custom component takes in JSX: its props, and its place in a Row and its visibility. */
-export type CustomProps<P extends PropSpecs> = PropsInput<P> & {
+export type CustomProps<P extends PropSpecs> = WithTokens<PropsInput<P>, P> & {
   id?: string;
   style?: { flex?: number | "none" };
   hidden?: { mobile?: boolean; desktop?: boolean };
@@ -81,10 +94,27 @@ export interface ComponentSpec<P extends PropSpecs> {
   /** Where it goes: where a block goes (default), or where a Section goes (and it renders a Section). */
   placement?: "block" | "section";
   /**
-   * The component as primitives, from its props (normalized, defaults applied). Pure: no hooks or data,
-   * so it can be rendered anywhere. Returns one component.
+   * The component as primitives, from its props (normalized, defaults applied), and the theme's tokens where the
+   * instance is (its scopes' over the theme's, as values), for values a render derives. Pure: no hooks or data, so it
+   * can be rendered anywhere. Returns one component.
    */
-  render(props: ExpandProps<P>): React.ReactElement;
+  render(props: ExpandProps<P>, context: RenderContext): React.ReactElement;
+}
+
+/** What a template's own component's render gets besides its props. */
+export interface RenderContext {
+  /** The theme's tokens where the instance is, as values: `theme.colors.primary`. Empty without a theme. */
+  readonly theme: ThemeValues;
+}
+
+/** A theme's tokens as values, by group. */
+export interface ThemeValues {
+  readonly colors?: { readonly [name: string]: unknown };
+  readonly spacing?: { readonly [name: string]: unknown };
+  readonly fontSizes?: { readonly [name: string]: unknown };
+  readonly lineHeights?: { readonly [name: string]: unknown };
+  readonly fonts?: { readonly [name: string]: unknown };
+  readonly radii?: { readonly [name: string]: unknown };
 }
 
 export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): CustomComponent<P> {
@@ -95,7 +125,7 @@ export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): Cu
     props: spec.props,
     placement: spec.placement,
     expand(props, context) {
-      const { nodes, components, diagnostics } = collectNodes(spec.render(props));
+      const { nodes, components, diagnostics } = collectNodes(spec.render(props, { theme: ((context as { theme?: unknown }).theme ?? {}) as ThemeValues }));
       for (const used of components) context.register(used);
       // An error stops it; a warning or a note (a deprecated prop) is said at the instance's place.
       if (diagnostics.some((diagnostic) => diagnostic.severity === "error")) throw new Error(formatDiagnostics(diagnostics));
