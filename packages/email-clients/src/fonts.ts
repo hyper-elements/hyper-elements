@@ -6,7 +6,7 @@
  */
 import { loadModelsPackage } from "./models";
 import { version } from "../package.json";
-import type { PreviewClient } from "./clients";
+import type { Computer, PreviewClient } from "./clients";
 
 /** Where `fonts: "url"` loads the stand-ins from: this package's own files, by its version. */
 export const FONT_ORIGIN = "https://cdn.jsdelivr.net";
@@ -67,8 +67,8 @@ export function unnamed(html: string): { files: Set<string>; families: string[] 
 }
 
 /** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */
-export async function fontSources(client: PreviewClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set()): Promise<Record<string, string>> {
-  const files = (await loadModelsPackage()).fontFiles(client).filter((file) => !skip.has(file));
+export async function fontSources(client: PreviewClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set(), computer?: Computer): Promise<Record<string, string>> {
+  const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => !skip.has(file));
   const sources = await Promise.all(files.map(async (file) => [file, how === "url" ? fontUrl(file) : `data:font/woff2;base64,${await read(file)}`] as const));
   return Object.fromEntries(sources);
 }

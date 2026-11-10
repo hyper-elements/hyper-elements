@@ -13,10 +13,19 @@ export type PreviewClient = (typeof PREVIEW_CLIENTS)[number];
 /** The clients previewed when none are named: the four captured. */
 export const DEFAULT_PREVIEW_CLIENTS: readonly PreviewClient[] = ["outlook", "outlook-com", "gmail", "apple-mail"];
 
+/** The computer a webmail client is read on: its fonts are what an email's font stacks resolve against. */
+export type Computer = "windows" | "mac";
+export const COMPUTERS: readonly Computer[] = ["windows", "mac"];
+
+/** The webmail clients, read in a browser on either computer: a preview each, on Windows as `<client>`, on a Mac as `<client>.mac`. */
+export const WEBMAIL: readonly PreviewClient[] = ["outlook-com", "gmail"];
+
 export interface PreviewVariant {
-  /** `<client>` or `<client>.dark`. */
+  /** `<client>`, `<client>.mac` (webmail read on a Mac) or `<client>.dark`. */
   id: string;
   client: PreviewClient;
+  /** For webmail (Outlook.com, Gmail on the web), the computer it's read on. */
+  computer?: Computer;
   /** Desktop (820px), or a phone (375px) for the Gmail apps. */
   variant: "desktop" | "phone";
   dark: boolean;
@@ -36,8 +45,31 @@ export interface Skipped {
 
 const previewable = (client: EmailClient): client is PreviewClient => (PREVIEW_CLIENTS as readonly string[]).includes(client);
 
+/** The narrowest and widest a preview draws an email at. */
+export const PREVIEW_WIDTHS = { min: 240, max: 2560 } as const;
+
+/** Throws on `computers` that isn't a list of them. */
+export function checkComputers(computers: unknown): asserts computers is readonly Computer[] | undefined {
+  if (computers === undefined) return;
+  if (!Array.isArray(computers) || !computers.length || computers.some((c) => !COMPUTERS.includes(c))) {
+    throw new TypeError(`[Elements] renderInEmailClients({ computers }) takes a list of ${COMPUTERS.map((c) => JSON.stringify(c)).join(" and ")}, not ${JSON.stringify(computers)}`);
+  }
+}
+
+/** Throws on `widths` that aren't a width in px for clients there's a model of. */
+export function checkWidths(widths: unknown): asserts widths is Partial<Record<PreviewClient, number>> | undefined {
+  if (widths === undefined) return;
+  if (!widths || typeof widths !== "object" || Array.isArray(widths)) throw new TypeError(`[Elements] renderInEmailClients({ widths }) takes an object of widths by client, such as { "outlook-com": 540 }`);
+  for (const [client, width] of Object.entries(widths)) {
+    if (!previewable(client as EmailClient)) throw new TypeError(`[Elements] renderInEmailClients({ widths }) has ${JSON.stringify(client)}, which isn't a client there's a model of: ${PREVIEW_CLIENTS.join(", ")}`);
+    if (typeof width !== "number" || !Number.isFinite(width) || width < PREVIEW_WIDTHS.min || width > PREVIEW_WIDTHS.max) {
+      throw new TypeError(`[Elements] renderInEmailClients({ widths }) gives ${client} ${JSON.stringify(width)}: a width is a number of px from ${PREVIEW_WIDTHS.min} to ${PREVIEW_WIDTHS.max}`);
+    }
+  }
+}
+
 /** The previews of `clients` (checked by checkClients: in their order, each once, light before dark), and what's skipped. */
-export function variantsOf(clients: readonly EmailClient[], dark: boolean, info: Readonly<Record<EmailClient, EmailClientInfo>>): { variants: PreviewVariant[]; skipped: Skipped[] } {
+export function variantsOf(clients: readonly EmailClient[], dark: boolean, info: Readonly<Record<EmailClient, EmailClientInfo>>, widthsAsked: Partial<Record<PreviewClient, number>> = {}, computers: readonly Computer[] = COMPUTERS): { variants: PreviewVariant[]; skipped: Skipped[] } {
   const variants: PreviewVariant[] = [];
   const skipped: Skipped[] = [];
   for (const client of [...new Set(clients)]) {
@@ -47,9 +79,15 @@ export function variantsOf(clients: readonly EmailClient[], dark: boolean, info:
       continue;
     }
     const variant = widths.desktop !== undefined ? "desktop" : "phone";
-    const width = widths[variant] ?? (variant === "desktop" ? 820 : 375);
+    const width = Math.round(widthsAsked[client] ?? widths[variant] ?? (variant === "desktop" ? 820 : 375));
     const light = { id: client, client, variant, dark: false, width, filename: `${client}.html`, approximate } as const;
-    variants.push(light);
+    if (WEBMAIL.includes(client)) {
+      // A preview for each computer it's read on: Windows as `<client>`, a Mac as `<client>.mac`.
+      for (const computer of [...new Set(computers)]) {
+        const id = computer === "windows" ? client : `${client}.mac`;
+        variants.push({ ...light, id, computer, filename: `${id}.html` });
+      }
+    } else variants.push(light);
     if (!dark) continue;
     if (info[client].dark) variants.push({ ...light, id: `${client}.dark`, dark: true, filename: `${client}.dark.html` });
     else skipped.push({ client, dark: true, reason: `${name}'s dark mode isn't measured` });

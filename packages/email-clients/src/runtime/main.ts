@@ -30,6 +30,8 @@ export interface Config {
   client: Client;
   name: string;
   variant: "desktop" | "phone";
+  /** For webmail, the computer it's read on (its fonts). */
+  computer?: "windows" | "mac";
   dark: boolean;
   width: number;
   approximate: boolean;
@@ -113,7 +115,7 @@ async function main(): Promise<void> {
     const html = json<string>("email");
     const models = await loadModels(config.models.protocol);
     const mark = (text: string, limit?: number) => markPaths(text, config.blocks.entries, limit);
-    const processed = models.process(config.client, html, { mark, dark: config.dark, fonts: config.fontSources });
+    const processed = models.process(config.client, html, { mark, dark: config.dark, fonts: config.fontSources, computer: config.computer });
     findings.removed = Object.entries(processed.removed).map(([what, count]) => ({ what, count }));
     const fontCss = withoutFaces(models.fontCss(config.client, config.fontSources), config.leftOut ?? []);
     // Outlook.com's version has its web font from the model itself, as its scorer's has.

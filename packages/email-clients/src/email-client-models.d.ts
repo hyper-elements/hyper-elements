@@ -12,11 +12,11 @@ declare module "@hyper-elements/email-client-models" {
   /** Its build's markers and protocol. */
   export function about(): { protocol: number; build: string[] };
   /** The open font files a client's preview loads (this package gives each its URL). */
-  export function fontFiles(client: string): string[];
+  export function fontFiles(client: string, computer?: "windows" | "mac"): string[];
   /** The faces a preview frame waits for before measuring ("style weight 16px family"). */
-  export function facesToLoad(client: string): string[];
+  export function facesToLoad(client: string, computer?: "windows" | "mac"): string[];
   /** The stand-in families a client draws with, which the system font check passes over. */
-  export function standIns(client: string): string[];
+  export function standIns(client: string, computer?: "windows" | "mac"): string[];
   /** The browser script a preview inlines (it sets EmailClientModels), and its sha256 for the preview's CSP. */
   export const SCRIPT: string;
   export const SCRIPT_SHA256: string;
