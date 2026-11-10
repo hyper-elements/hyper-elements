@@ -14,12 +14,16 @@ interface Props {
   ogType?: "website" | "article";
   /** Structured data for search engines, written as JSON-LD. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
 }
-const { title, description = site.description, footer = true, noindex = false, ogType = "website", jsonLd } = Astro.props;
+const { title, description = site.description, footer = true, noindex = false, ogType = "website", jsonLd, image = "/og.png", imageAlt = "Hyper Elements: the content engine for agents", imageWidth = 1280, imageHeight = 640 } = Astro.props;
 const fullTitle = title ? `${title} · Hyper Elements` : "Hyper Elements: the content engine for agents";
 const canonical = new URL(Astro.url.pathname, site.url).href;
-const ogImage = new URL("/og.png", site.url).href;
-const ogImageAlt = "Hyper Elements: the content engine for agents";
+const ogImage = new URL(image, site.url).href;
+const ogImageAlt = imageAlt;
 ---
 <!doctype html>
 <html lang="en">
@@ -52,8 +56,8 @@ const ogImageAlt = "Hyper Elements: the content engine for agents";
     <meta property="og:type" content={ogType} />
     <meta property="og:locale" content="en_US" />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:image:width" content="1280" />
-    <meta property="og:image:height" content="640" />
+    <meta property="og:image:width" content={String(imageWidth)} />
+    <meta property="og:image:height" content={String(imageHeight)} />
     <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={fullTitle} />

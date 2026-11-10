@@ -21,4 +21,16 @@ const reference = defineCollection({
   }),
 });
 
-export const collections = { docs, reference };
+const blog = defineCollection({
+  loader: glob({ pattern: "**/*.md", base: "./src/content/blog" }),
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    date: z.coerce.date(),
+    hero: z.string(),
+    heroAlt: z.string(),
+  }),
+});
+
+export const collections = { docs, reference, blog };

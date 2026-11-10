@@ -22,6 +22,7 @@ export const mainNav = [
   { href: "/templates", label: "Templates" },
   { href: "/ai", label: "AI" },
   { href: "/migrate", label: "Migrate" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export type DocLink = { slug: string; label: string };
