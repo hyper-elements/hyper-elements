@@ -54,8 +54,9 @@ the page                      the editor and everything shown. The only part tha
 
 ## What comes back
 
-The code shares its worker's globals, so it can post any result it likes: every field is read as written by a
-stranger. `src/playground/sandbox.ts` keeps only the fields a result has, each of its type and under a size.
+The code shares its worker's globals, so it can post any result it likes (it can take over the worker's
+`postMessage` and rewrite the answer): every field is read as written by a stranger. `src/playground/sandbox.ts`
+keeps only the fields a result has, each of its type and under a size.
 
 | What | How the page uses it |
 | --- | --- |
@@ -63,7 +64,7 @@ stranger. `src/playground/sandbox.ts` keeps only the fields a result has, each o
 | The HTML | In the HTML tab as text; drawn only inside a sandboxed frame (below) |
 | A PDF | Kept only if it starts `%PDF-`; shown from a blob the page types `application/pdf`, in the browser's own viewer |
 | A PNG, an SVG | Kept only if its first bytes agree; drawn by an `<img>`, which runs nothing in it |
-| An email client's preview file | In a frame of its own, from a `data:` URL (below) |
+| An email client's preview file | In a frame of its own, from a `data:` URL, running only the package's own two scripts (below) |
 
 ## The preview
 
@@ -82,8 +83,14 @@ forms or navigation of the page. The document is put together with `DOMParser`, 
 `@hyper-elements/email-clients`' preview files measure the email in frames they make and read, which an
 origin-sandboxed document can't do. So each is loaded as `<iframe sandbox="allow-scripts allow-same-origin"
 src="data:text/html;base64,…">`. A `data:` document always has an origin of its own, so `allow-same-origin` only lets
-it reach the frames it made itself. The sandbox still takes away popups, forms, dialogs and navigation, and the policy
-written into the file takes away the network.
+it reach the frames it made itself. The sandbox still takes away popups, forms, dialogs and navigation.
+
+The file comes from the sandbox, so the code that ran can rewrite it, scripts included. The policy the page writes
+first into its head lets only the package's two scripts run (the email client models and the preview's runtime), by
+their sha256, and takes away the network. The page reads those hashes from the site, never from the sandbox:
+`/playground/runtime/preview-scripts.json`, built with the clients bundle from the same sources
+(`scripts/playground-runtime.mjs`, which stops the build if a script isn't the one its package's hash says). Without
+them the page shows no preview rather than a looser policy.
 
 **Never give that frame its document as `srcdoc` or from a `blob:` URL.** Both would have the site's origin, and with
 those two flags a script in it would have the site. The check script fails on any frame with `allow-same-origin`

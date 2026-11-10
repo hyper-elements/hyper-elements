@@ -5,6 +5,7 @@
 // The document is put together with a parser, never by searching the text: what a template writes can't move the
 // policy, navigate the frame (no <meta refresh>, no <base>), or run before the policy is read.
 import type { Result } from "../../playground/protocol";
+import { base64 } from "./dom";
 
 /** Scripts only: no same-origin access, no popups, no forms, no navigating the page. Links are opened by the page. */
 const SANDBOX = "allow-scripts";
@@ -23,16 +24,28 @@ const policy = (nonce: string) =>
     "form-action 'none'",
   ].join("; ");
 
-/** For an email client's preview file (@hyper-elements/email-clients), which runs its own two scripts: nothing but those, and no requests of their own. */
-const PREVIEW_FILE_POLICY = [
-  "default-src 'none'",
-  "script-src 'unsafe-inline' 'wasm-unsafe-eval'",
-  "style-src 'unsafe-inline' https:",
-  `img-src https: data: blob: ${location.origin}`,
-  "font-src https: data:",
-  "base-uri 'none'",
-  "form-action 'none'",
-].join("; ");
+/** The sha256 (base64) of the two scripts an email client's preview file runs: its runtime and the email client models. */
+export interface PreviewScripts {
+  runtime: string;
+  models: string;
+}
+
+/**
+ * For an email client's preview file (@hyper-elements/email-clients): its own two scripts, by their sha256, and no
+ * requests of their own. The file says as much in a policy of its own, but the file is what the sandbox answered, which
+ * the code it ran can rewrite (a template can take over its worker's postMessage). So this policy is the page's, with
+ * hashes the page read from the site (Sandbox.previewScripts): a script the package didn't write doesn't run.
+ */
+const previewFilePolicy = (scripts: PreviewScripts) =>
+  [
+    "default-src 'none'",
+    `script-src 'sha256-${scripts.models}' 'sha256-${scripts.runtime}' 'wasm-unsafe-eval'`,
+    "style-src 'unsafe-inline' https:",
+    `img-src https: data: blob: ${location.origin}`,
+    "font-src https: data:",
+    "base-uri 'none'",
+    "form-action 'none'",
+  ].join("; ");
 
 const random = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, "0")).join("");
 
@@ -268,7 +281,7 @@ export class PreviewFrame {
  * in frames it makes and reads, so its own document can't be origin-sandboxed (their documents would be closed to
  * it). It's loaded from a data: URL instead, which always gets an origin of its own, never this page's: the file's
  * scripts reach its own frames and nothing here. The sandbox still takes away popups, forms, dialogs and navigating
- * the page, and the policy written into it takes away the network.
+ * the page, and the policy written into it takes away the network and every script but the package's two.
  *
  * Never give this frame its document as `srcdoc` or from a blob: URL: a srcdoc document has this page's origin, and
  * so has a blob this page made. With these flags its scripts would then have this page. A data: URL is the only
@@ -276,14 +289,12 @@ export class PreviewFrame {
  *
  * False where the file is too long for a data: URL (browsers stop at about 2 MB): the caller says so.
  */
-export function previewFile(frame: HTMLIFrameElement, html: string): boolean {
-  const bytes = new TextEncoder().encode(documentOf(html, PREVIEW_FILE_POLICY));
+export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts): boolean {
+  const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts)));
   if (bytes.length > MAX_PREVIEW_FILE) return false;
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
   frame.setAttribute("referrerpolicy", "no-referrer");
-  frame.src = `data:text/html;charset=utf-8;base64,${btoa(binary)}`;
+  frame.src = `data:text/html;charset=utf-8;base64,${base64(bytes)}`;
   return true;
 }
 /** 1.1 MB of HTML is about 1.5 MB in base64, under the 2 MB a data: URL may be. */

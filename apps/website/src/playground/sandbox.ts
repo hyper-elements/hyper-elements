@@ -3,8 +3,12 @@
 // requests and reads each answer as something the code could have written: only the fields a result has, each of the
 // type and size it should be.
 import type { Diagnostic, PlaygroundError, Preview, Request, Result, RootName, SourceNode } from "../../playground/protocol";
+import type { PreviewScripts } from "./preview";
 
 export type Bundle = "core" | "pdf" | "image" | "clients";
+
+/** A sha256 in base64. */
+const SHA256 = /^[A-Za-z0-9+/]{43}=$/;
 
 /** The frame runs scripts and nothing else of the page's: no same-origin access, no forms, no popups, no navigation of the page. */
 const SANDBOX = "allow-scripts";
@@ -148,6 +152,7 @@ export class Sandbox {
   private pending = new Map<number, { resolve: (result: Result) => void; kind: Request["kind"]; timer: number; group?: string }>();
   private texts = new Map<string, Promise<string>>();
   private wasm: Promise<ArrayBuffer> | undefined;
+  private scripts: Promise<PreviewScripts> | undefined;
 
   constructor(private files: SandboxFiles) {
     addEventListener("message", (event) => this.receive(event));
@@ -174,6 +179,28 @@ export class Sandbox {
   preload(names: Bundle[]) {
     for (const name of names) void this.bundle(name).catch(() => undefined);
     if (names.includes("image")) void this.resvg().catch(() => undefined);
+    if (names.includes("clients")) void this.previewScripts().catch(() => undefined);
+  }
+
+  /**
+   * The only scripts an email client's preview may run, by their sha256 (src/playground/preview.ts): read from the
+   * site, which built them with the clients bundle, never from the sandbox, whose answers the code it ran can rewrite.
+   * Without them no preview is shown. A failed download is tried again by the next call.
+   */
+  previewScripts(): Promise<PreviewScripts> {
+    if (!this.scripts) {
+      const loading = fetch(this.url("preview-scripts.json")).then(async (response): Promise<PreviewScripts> => {
+        if (!response.ok) throw new Error(`preview-scripts.json: ${response.status}`);
+        const { runtime, models } = record(await response.json());
+        if (typeof runtime !== "string" || typeof models !== "string" || !SHA256.test(runtime) || !SHA256.test(models)) throw new Error("preview-scripts.json isn't two sha256 hashes");
+        return { runtime, models };
+      });
+      loading.catch(() => {
+        if (this.scripts === loading) this.scripts = undefined;
+      });
+      this.scripts = loading;
+    }
+    return this.scripts;
   }
 
   private resvg(): Promise<ArrayBuffer> {

@@ -693,19 +693,21 @@ async function drawClients() {
   const host = $("[data-clients-stage]");
   showWorking(owner, "Drawing it as each client does…");
   sandbox.cancel("editor-clients");
-  const result = await sandbox.run({ kind: "previews", code, dark: true }, ["clients"], "editor-clients");
+  // The scripts a preview may run come from the site, not with the previews: without them, no preview is shown.
+  const [result, scripts] = await Promise.all([sandbox.run({ kind: "previews", code, dark: true }, ["clients"], "editor-clients"), sandbox.previewScripts().catch((error: Error) => error)]);
   doneWorking(owner);
   if (mine !== clientsSequence || state.view !== "clients") return;
-  if (!result.ok || !result.previews?.length) {
+  if (!result.ok || !result.previews?.length || scripts instanceof Error) {
     if (result.error?.message === SUPERSEDED) return;
     tabs.replaceChildren();
-    host.replaceChildren(h("div", { class: "pg-file-card", style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "No client previews"), firstProblem(result) || "The email client models didn't load."));
+    const problem = scripts instanceof Error ? `The playground's runtime didn't load (${scripts.message}). Check your connection and try again` : firstProblem(result) || "The email client models didn't load.";
+    host.replaceChildren(h("div", { class: "pg-file-card", style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "No client previews"), problem));
     return;
   }
   clientsKey = code;
   const frames = result.previews.map((each, index) => {
     const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)} draws it`, hidden: index !== 0 });
-    if (previewFile(frame, each.html)) return frame;
+    if (previewFile(frame, each.html, scripts)) return frame;
     return h("div", { class: "pg-file-card", hidden: index !== 0, style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "Too large to preview here"), "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
   });
   const select = (index: number) => {

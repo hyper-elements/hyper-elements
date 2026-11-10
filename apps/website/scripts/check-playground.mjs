@@ -21,6 +21,9 @@
 //      own does run.
 //   5. A loop that never ends is stopped, and the page answers while it runs.
 //   6. Every frame on the page is sandboxed as playground/README.md says, the email client previews among them.
+//      6b. An email client's preview file the code rewrote (it can take over its worker's postMessage) runs no script
+//          but the package's two: the previews still draw, and a script and a handler written into them don't run.
+//          The same markup in a page of its own does run.
 //   7. A link carries the code back, and the agent paths answer (the window API, the tools, WebMCP registration).
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
@@ -43,6 +46,13 @@ assert.match(readFileSync(join(dist, "llms.txt"), "utf8"), /\[Playground\]\(http
 assert.match(readFileSync(join(dist, "sitemap-0.xml"), "utf8"), /\/playground<\/loc>/, "The sitemap has the playground");
 for (const file of ["runtime/runner.js", "runtime/core.js", "runtime/pdf.js", "runtime/image.js", "runtime/clients.js", "runtime/resvg.wasm", "fonts/LiberationSans-Regular.ttf", "starters.json", "guide.txt"]) {
   assert(statSync(join(dist, "playground", file)).size > 1000, `dist/playground/${file} is written`);
+}
+// The scripts an email client's preview may run: two sha256 hashes, each the one the clients bundle writes into a file.
+const previewScripts = JSON.parse(readFileSync(join(dist, "playground/runtime/preview-scripts.json"), "utf8"));
+assert.deepEqual(Object.keys(previewScripts).sort(), ["models", "runtime"]);
+for (const hash of Object.values(previewScripts)) {
+  assert.match(hash, /^[A-Za-z0-9+/]{43}=$/);
+  assert(readFileSync(join(dist, "playground/runtime/clients.js"), "utf8").includes(hash), `The clients bundle writes previews with the script ${hash}`);
 }
 // The page itself carries no engine: it's fetched into the sandbox.
 assert(statSync(join(dist, "playground/index.html")).size < 120_000, "The page is light: the engine isn't in it");
@@ -478,6 +488,44 @@ attempt("origin", () => { if (self.origin === "null") throw 0; return self.origi
     assert(drawn.every((ready) => ready === "ok" || ready === "incomplete"), `The previews draw: ${drawn}`);
     await page.close();
     step(`every frame is sandboxed, and the ${previews.length} email client previews are closed to the page`);
+  }
+
+  // ─── 6b. A preview file the code rewrote runs only the package's scripts ─
+  {
+    // The template takes over its worker's postMessage and rewrites each preview file the worker answers with: the
+    // file's own policy taken out, and a script and a handler written in ahead of the package's two scripts.
+    const forged = `<script>document.documentElement.dataset.forged = "script"</` + `script><img src="x" onerror="document.documentElement.dataset.forged = 'handler'">`;
+    const code = `const forged = ${JSON.stringify(forged)};
+const real = globalThis.postMessage.bind(globalThis);
+globalThis.postMessage = (message, transfer) => {
+  for (const preview of message?.result?.previews ?? []) preview.html = preview.html.replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/, "").replace("<body>", "<body>" + forged);
+  return real(message, transfer);
+};
+export default <Email><Text>A rewritten preview</Text></Email>;
+`;
+    const page = await open(`#code=${encode(code)}&view=clients`);
+    await page.locator("[data-clients-stage] iframe").first().waitFor({ timeout: 60_000 });
+    // Each preview's frame, once it has loaded its file.
+    let previews = [];
+    for (let wait = 0; wait < 100 && previews.length < 4; wait++) {
+      await page.waitForTimeout(100);
+      previews = page.frames().filter((frame) => frame.url().startsWith("data:text/html"));
+    }
+    assert(previews.length >= 4, `An email client's preview for each client: ${previews.length}`);
+    for (const frame of previews) {
+      assert.match(await frame.content(), /dataset\.forged = "script"/, "The preview is the file the code rewrote");
+      await frame.waitForFunction(() => document.documentElement.hasAttribute("data-email-client-ready"), null, { timeout: 30_000 });
+      const [ready, forgedRan] = await frame.evaluate(() => [document.documentElement.getAttribute("data-email-client-ready"), document.documentElement.dataset.forged ?? null]);
+      assert(ready === "ok" || ready === "incomplete", `The package's own scripts still draw the preview: ${ready}`);
+      assert.equal(forgedRan, null, "Neither the script nor the handler written into the preview ran");
+    }
+    // Control: the same markup in a page of its own runs, so "didn't run" above is the preview's policy's doing.
+    const loose = await context.newPage();
+    await loose.setContent(`<!doctype html><html><body>${forged}</body></html>`);
+    await loose.waitForFunction(() => document.documentElement.dataset.forged);
+    await loose.close();
+    await page.close();
+    step(`an email client's preview file the code rewrote runs only the package's two scripts (the markup runs in a page of its own)`);
   }
 
   // ─── 7. Links and agent paths ────────────────────────────────────────────

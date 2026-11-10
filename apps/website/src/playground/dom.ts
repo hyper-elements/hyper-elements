@@ -27,6 +27,12 @@ export const plural = (count: number, one: string, many = `${one}s`) => `${count
 
 export const bytes = (size: number) => (size < 1000 ? `${size} B` : size < 1e6 ? `${(size / 1000).toFixed(size < 1e4 ? 1 : 0)} kB` : `${(size / 1e6).toFixed(1)} MB`);
 
+export const base64 = (bytes: Uint8Array): string => {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary);
+};
+
 /** A file the visitor asked for, saved by the browser. */
 export function download(name: string, content: BlobPart, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));

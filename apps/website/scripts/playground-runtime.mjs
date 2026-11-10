@@ -10,10 +10,11 @@
 // The engines (react-pdf, Satori) and React are the ones packages/react is developed with, resolved from its
 // directory, as scripts/generate.mjs does. Nothing here needs `pnpm build`: the bundles are made from src/.
 import { build } from "esbuild";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = resolve(root, "../..");
@@ -109,6 +110,29 @@ export function buildRuntime(name, { fresh = false, minify = true } = {}) {
     );
   }
   return cache.get(name);
+}
+
+/**
+ * The sha256 (base64) of the two scripts an email client's preview file runs: the preview's runtime (packages/email-clients'
+ * RUNTIME) and the email client models' browser script (the models package's SCRIPT), the ones the clients bundle
+ * writes into each file. A preview runs nothing else (src/playground/preview.ts), and the page reads these from the
+ * site (/playground/runtime/preview-scripts.json), never from the sandbox, whose answers the code it ran can rewrite.
+ * Each is the hash of the script itself, and has to be the one its package says, or the build stops.
+ */
+export async function previewScripts() {
+  const generated = await build({ entryPoints: [join(clientsDir, "src/runtime.generated.ts")], bundle: true, write: false, format: "esm", platform: "neutral", logLevel: "warning" });
+  const { RUNTIME } = await import(`data:text/javascript;base64,${Buffer.from(generated.outputFiles[0].text).toString("base64")}`);
+  const models = await import(pathToFileURL(createRequire(join(clientsDir, "package.json")).resolve("@hyper-elements/email-client-models")).href);
+  const hashes = {};
+  for (const [name, script, said] of [
+    ["runtime", RUNTIME.script, RUNTIME.sha256],
+    ["models", models.SCRIPT, models.SCRIPT_SHA256],
+  ]) {
+    if (typeof script !== "string" || !script) throw new Error(`The email client previews' ${name} script wasn't found`);
+    hashes[name] = createHash("sha256").update(script, "utf8").digest("base64");
+    if (hashes[name] !== said) throw new Error(`The email client previews' ${name} script isn't the one its sha256 says (${said}): rebuild packages/email-clients' runtime, or reinstall`);
+  }
+  return hashes;
 }
 
 /** resvg's WebAssembly module, which the image bundle is given as bytes. */

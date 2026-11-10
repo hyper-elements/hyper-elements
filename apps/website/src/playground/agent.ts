@@ -2,6 +2,7 @@
 // calls as WebMCP tools where the browser has them (document.modelContext). Both run the code in the page's sandbox
 // and answer with data: the outputs, and each diagnostic with what to write instead.
 import type { Diagnostic, FontNeed, Result, RootName } from "../../playground/protocol";
+import { base64 } from "./dom";
 import type { Editor } from "./editor";
 import type { StarterInfo } from "./gallery";
 import type { View } from "./main";
@@ -49,12 +50,6 @@ export interface Summary {
   svg?: string;
   note?: string;
 }
-
-const base64 = (bytes: Uint8Array) => {
-  let binary = "";
-  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(binary);
-};
 
 function summarize(result: Result | null, include: readonly Include[] = []): Summary {
   if (!result) return { ok: false, root: null, diagnostics: [], ms: 0, error: { kind: "internal", message: "Nothing has rendered yet" } };

@@ -3,6 +3,7 @@
 //
 //   /playground/runtime/{runner,core,pdf,image,clients}.js
 //   /playground/runtime/resvg.wasm
+//   /playground/runtime/preview-scripts.json   the only scripts an email client's preview may run, by their sha256
 //   /playground/fonts/LiberationSans-{Regular,Bold}.ttf
 //
 // `astro dev` builds each on request, so a change to the engine shows on the next reload; `astro build` writes them
@@ -10,12 +11,13 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildRuntime, fallbackFont, FALLBACK_FONTS, resvgWasm, RUNTIME_BUNDLES } from "./playground-runtime.mjs";
+import { buildRuntime, fallbackFont, FALLBACK_FONTS, previewScripts, resvgWasm, RUNTIME_BUNDLES } from "./playground-runtime.mjs";
 
 /** Each file's path under the site, its content type, and how it's made. */
 const files = ({ dev }) => [
   ...RUNTIME_BUNDLES.map((name) => ({ path: `playground/runtime/${name}.js`, type: "text/javascript; charset=utf-8", make: () => buildRuntime(name, { fresh: dev, minify: !dev }) })),
   { path: "playground/runtime/resvg.wasm", type: "application/wasm", make: resvgWasm },
+  { path: "playground/runtime/preview-scripts.json", type: "application/json", make: () => previewScripts().then((hashes) => JSON.stringify(hashes)) },
   ...Object.keys(FALLBACK_FONTS).map((file) => ({ path: `playground/fonts/${file}`, type: "font/ttf", make: () => fallbackFont(file) })),
 ];
 
