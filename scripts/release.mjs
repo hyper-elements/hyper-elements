@@ -64,6 +64,7 @@ export function ownVersion({ time, since, runId, releaseRunOf }) {
  * already on npm from another run is refused.
  */
 export function decide({ published, committed, type, own }) {
+  if (!parse(committed)) throw new Error(`release: package.json's version is ${committed}, not a plain x.y.z: this workflow releases those only (publish a prerelease by hand, to a tag of its own)`);
   const current = highest(published) ?? committed;
   if (own) return { current, version: own, publish: false };
   let version = bump(current, type);

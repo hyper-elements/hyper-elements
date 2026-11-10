@@ -81,6 +81,30 @@ export const boxStyle = {
   },
 } satisfies Record<string, StyleSpec>;
 
+/** What gives a block a box of its own in an email (the Email writer's Box): on desktop, and on phones. */
+const BOX_KEYS = ["padding", "border", "borderRadius", "backgroundColor", "height", "width", "maxWidth"];
+const PHONE_BOX_KEYS = ["padding", "border", "backgroundColor", "width", "maxWidth"];
+const ownBox = (node: { style?: Record<string, unknown>; mobile?: Record<string, unknown> }) =>
+  BOX_KEYS.some((key) => node.style?.[key] !== undefined) || PHONE_BOX_KEYS.some((key) => node.mobile?.[key] !== undefined);
+
+/**
+ * A Column's or a Grid's overflow: the Email writer cuts content off on the block's box, which it writes only for a
+ * background, padding, a border, corners, a width or a height. Without one, nothing is cut off, and that's said.
+ */
+export const blockOverflow = {
+  ...boxStyle.overflow,
+  support: {
+    email: {
+      level: "partial",
+      values: ["hidden"],
+      when: (_value, node) => !ownBox(node),
+      shows: "nothing cut off: the email cuts content off on a box of its own (a background, padding, a border, corners, a width or a height), and this one has none",
+      source: "writer",
+    },
+    web: css,
+  },
+} satisfies StyleSpec;
+
 export const layoutStyle = {
   gap: { kind: length(["px"]), label: "Gap", description: "Space between children.", mobile: true, support: { email: writer, web: css }},
   alignItems: {

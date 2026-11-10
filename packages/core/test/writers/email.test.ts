@@ -860,6 +860,25 @@ describe("email HTML", () => {
     expect(head).not.toContain("line-height");
   });
 
+  it("notes overflow: hidden only on a Column or Grid it can't cut off: one without a box of its own", () => {
+    const text = (t: string) => ({ type: "Text", children: [t] });
+    const cases: Array<[string, Record<string, unknown>]> = [
+      ["Column, bare", { type: "Column", style: { overflow: "hidden" }, children: [text("a")] }],
+      ["Column, height and background", { type: "Column", style: { height: 100, backgroundColor: "#eee", overflow: "hidden" }, children: [text("a")] }],
+      ["Column, width", { type: "Column", style: { width: 300, overflow: "hidden" }, children: [text("a")] }],
+      ["Column, padding", { type: "Column", style: { padding: 8, overflow: "hidden" }, children: [text("a")] }],
+      ["Grid, bare", { type: "Grid", props: { columns: 2 }, style: { overflow: "hidden" }, children: [text("a"), text("b")] }],
+      ["Grid, height and background", { type: "Grid", props: { columns: 2 }, style: { height: 100, backgroundColor: "#eee", overflow: "hidden" }, children: [text("a"), text("b")] }],
+    ];
+    for (const [label, node] of cases) {
+      const { body, diagnostics } = render(email([node]), { plugins: [] });
+      const cut = /overflow:hidden/.test(body.replace("display:none;max-height:0;overflow:hidden", ""));
+      const noted = diagnostics.some((d) => d.code === "email/degraded" && d.path.endsWith(".style.overflow"));
+      // Noted exactly where nothing is cut off.
+      expect([label, noted]).toEqual([label, !cut]);
+    }
+  });
+
   it("starts what's in a box of its own height at its top, as on a page", () => {
     const { body } = render(email([{ type: "Column", style: { height: 40, padding: 1 }, children: [{ type: "Text", children: ["Words"] }] }]));
     expect(body).toMatch(/<td height="40" valign="top"/);

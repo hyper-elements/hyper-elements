@@ -40,6 +40,8 @@ test("numbers from the highest version at any tag, not latest", () => {
 test("a version committed ahead wins (a planned minor), and the first publish starts from it", () => {
   assert.deepEqual(decide({ published: ["0.3.1", "0.3.2"], committed: "0.4.0", type: "patch", own: null }), { current: "0.3.2", version: "0.4.0", publish: true });
   assert.deepEqual(decide({ published: [], committed: "1.0.0", type: "patch", own: null }), { current: "1.0.0", version: "1.0.1", publish: true });
+  // A committed prerelease is refused with a reason, not a TypeError.
+  assert.throws(() => decide({ published: ["0.4.0"], committed: "0.5.0-rc.1", type: "patch", own: null }), /0\.5\.0-rc\.1, not a plain x\.y\.z/);
   assert.equal(bump("0.3.9", "minor"), "0.4.0");
   assert.equal(bump("0.3.9", "major"), "1.0.0");
 });

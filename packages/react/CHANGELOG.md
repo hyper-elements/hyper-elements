@@ -33,7 +33,7 @@ render(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlook
   `Diagnostic.clients` is `readonly string[]`.
 - `overflow: "hidden"` on a Column or a Grid without a box of its own gets an `email/degraded` note: the Email writer
   cuts content off on a box, which it writes only for a background, padding, a border, a width or a height.
-- `@hyper-elements/migrate` needs 0.4: its peer range is `^0.4.0`.
+- `@hyper-elements/migrate` 0.3.0 needs 0.4: its peer range is `^0.4.0`. Projects on Elements 0.3 keep migrate 0.2.
 
 ### Themes
 

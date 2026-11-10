@@ -15,7 +15,7 @@ const same = (a: Json | undefined, b: Json | undefined) => JSON.stringify(a) ===
  */
 export function reportDeclared(
   d: Diagnostics,
-  node: { type: string; id?: string; props: Record<string, Json> },
+  node: { type: string; id?: string; props: Record<string, Json>; style?: Record<string, Json>; mobile?: Record<string, Json> },
   at: string,
   key: string,
   value: Json,

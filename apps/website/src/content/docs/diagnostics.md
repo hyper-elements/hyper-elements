@@ -61,7 +61,9 @@ Before 0.4, the client checks were part of this package, with an `emailClients` 
 A plugin is `{ name, api: PLUGIN_API, check?, checkOutput? }`. `check` sees a frozen copy of the laid-out template,
 `checkOutput` the written HTML and the root's type (`render()` only). What a plugin returns is checked: a diagnostic that doesn't fit (a
 code for another kind of root, an error, a path that isn't in the template) is left out, with a `plugin/invalid`
-warning. A plugin that throws gives a `plugin/failed` warning; the render still completes.
+warning. Another root's code is taken only as a note ending in `-ignored`, saying that what the plugin was given
+doesn't apply to this root (`email/clients-ignored` on a Page). A plugin that throws, or returns something that can't
+be read, gives a `plugin/failed` warning; the render still completes.
 
 The path walks the template from the root: `root.children[2].style.justifyContent` is the third child's `justifyContent` style.
 

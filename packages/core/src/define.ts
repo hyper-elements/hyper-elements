@@ -66,7 +66,7 @@ export type Support =
       level: "partial" | "none";
       shows: string;
       values?: readonly Json[];
-      when?: (value: Json, node: { props: Record<string, Json> }) => boolean;
+      when?: (value: Json, node: { props: Record<string, Json>; style?: Record<string, Json>; mobile?: Record<string, Json> }) => boolean;
       source: SupportSource;
       /** What to change. */
       fix?: string;

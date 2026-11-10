@@ -1,6 +1,6 @@
 {
   "name": "@hyper-elements/migrate",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Migrate React Email templates to Hyper Elements: TSX that keeps your props and logic, checked against the originals, editable in the Unlayer visual editor.",
   "license": "MIT",
   "type": "module",
