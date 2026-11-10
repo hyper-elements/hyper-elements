@@ -97,13 +97,13 @@ describe("render(email, { blockMap: true })", () => {
         <Button href="https://example.test">Go</Button>
       </Email>
     );
-    expect(BLOCK_MAP_VERSION).toBe(1);
+    expect(BLOCK_MAP_VERSION).toBe(2);
     expect(blocks.version).toBe(BLOCK_MAP_VERSION);
     expect(blocks.unit).toBe("utf8");
-    expect(blocks.entries.map(({ path, nodeId }) => [path, nodeId])).toEqual([
-      ["root", undefined],
-      ["root.children[0]", "title"],
-      ["root.children[1]", undefined],
+    expect(blocks.entries.map(({ path, nodeId, type }) => [path, nodeId, type])).toEqual([
+      ["root", undefined, "Email"],
+      ["root.children[0]", "title", "Heading"],
+      ["root.children[1]", undefined, "Button"],
     ]);
   });
 

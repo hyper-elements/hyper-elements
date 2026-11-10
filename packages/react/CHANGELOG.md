@@ -73,6 +73,9 @@ template and the UTF-8 byte offset in `html` just after its outermost element's 
 `BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
 `BlockMapEntry` are exported. Documented in REFERENCE.md.
 
+Each entry now also says its block's component, as laid out (`type`: `Heading`, `Button`, a Grid's `Row`), so a tool
+can tell blocks apart without the template. `BLOCK_MAP_VERSION` is 2; 0.3.1 wrote format 1, without `type`.
+
 ### Which roots take each component, prop and style
 
 Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
