@@ -49,6 +49,16 @@ Every docs page also has a **Copy page** button that copies it as Markdown, read
 
 > **Tip:** `GUIDE.md` is the short guide: how a template is written, the common mistakes, every component on a line. `REFERENCE.md`, next to it in the package, has every prop and style in full, with defaults.
 
+### In a browser, with nothing installed
+
+An agent with a browser can render a template in the [playground](/playground), read its diagnostics, and hand you a link to the result:
+
+- **A link.** `https://www.hyperelements.dev/playground#code=<base64url of the code>` opens the page with the template rendered. Add `&view=pdf`, `&device=phone` or `&layout=preview`.
+- **JavaScript.** `await hyperElementsPlayground.render(code, { root: "Page" })` resolves with `{ ok, root, html, text, outline, diagnostics, error }`. `hyperElementsPlayground.help()` lists every method.
+- **WebMCP.** Where the browser has it, the page registers `render_hyper_elements`, `show_hyper_elements_preview`, `get_hyper_elements_reference` and `get_playground_code`.
+
+The code runs in a sandbox in the tab: it isn't sent to a server.
+
 ## The loop
 
 Point your agent at this loop. Each step is cheap, and only the last one writes HTML.

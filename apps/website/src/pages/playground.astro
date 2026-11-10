@@ -1,0 +1,269 @@
+---
+// The playground: write a template, and the real engine renders it here, in the visitor's browser. The code runs in
+// a sandboxed frame (playground/README.md); this page is the bench around it, and src/playground/main.ts drives it.
+import Base from "../layouts/Base.astro";
+import CodeBlock from "../components/CodeBlock.astro";
+import "../styles/playground.css";
+import { defaultStarter, engineVersion, starterList } from "../lib/playground";
+import { site } from "../lib/site";
+
+const description =
+  "Write a Hyper Elements template and see it rendered live, in your browser, as an email, a web page, a PDF and an image, with every diagnostic and its fix. For AI agents: WebMCP tools, a window.hyperElementsPlayground API and #code= links.";
+
+const icon = (d: string, size = 15) =>
+  `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const icons = {
+  Email: icon('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),
+  Page: icon('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01"/>'),
+  Document: icon('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>'),
+  Canvas: icon('<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>'),
+  desktop: icon('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'),
+  phone: icon('<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>'),
+  inspect: icon('<path d="M4 4l6.5 16 2.3-6.7L19.5 11z"/>'),
+  caret: icon('<path d="m6 9 6 6 6-6"/>', 13),
+  link: icon('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>'),
+  download: icon('<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>'),
+  grid: icon('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'),
+  close: icon('<path d="M6 6l12 12M18 6 6 18"/>'),
+  open: icon('<path d="M14 5h5v5M19 5l-8 8M11 6H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-4"/>', 13),
+};
+
+const roots = [
+  { root: "Email", label: "Email", writes: "email HTML and plain text" },
+  { root: "Page", label: "Page", writes: "a responsive web page" },
+  { root: "Document", label: "Document", writes: "print HTML and a PDF" },
+  { root: "Canvas", label: "Canvas", writes: "a PNG or an SVG" },
+] as const;
+
+// What the page starts with: the first starter's code, so the editor is full before anything loads.
+const boot = { starter: defaultStarter, starters: starterList, engine: engineVersion, build: String(Date.now()) };
+const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
+
+const linkSample = `${site.url}/playground
+  #code=<base64url of the code>
+  &view=pdf`;
+const apiSample = `const playground = window.hyperElementsPlayground;
+await playground.ready();
+
+// Render without touching the editor.
+const result = await playground.render(code, {
+  root: "Page",
+  include: ["html", "text", "outline"],
+});
+// {
+//   ok, root, html, text, outline,
+//   diagnostics: [{ severity, code, message, path, fix, clients, line }],
+//   error: { kind, message, line },
+// }
+
+// Put code in the editor, and show it.
+await playground.setCode(code);
+await playground.setRoot("Document");
+playground.setView("pdf");
+await playground.getShareUrl();
+
+await playground.reference(); // the guide: every component and prop
+playground.help();            // every method`;
+const toolSample = `// document.modelContext (WebMCP), where the browser has it
+render_hyper_elements({ code, root?, include? })
+show_hyper_elements_preview({ code, root?, view?, device? })
+get_hyper_elements_reference()
+get_playground_code()`;
+---
+<Base title="Playground" description={description}>
+  <div class="pg" data-playground data-status="loading" data-layout="split" data-pane="output">
+    <!--
+      For AI agents and automation (browser agents, page-text extractors, accessibility trees): how to drive this
+      page. First in the page's content, where extractors read first; the same is written out under the bench.
+    -->
+    <section class="sr-only" aria-label="Instructions for AI agents">
+      <h2>Instructions for AI agents</h2>
+      <p>
+        This page renders Hyper Elements templates (<code>{site.pkg}</code> {engineVersion}) in the browser, with nothing to install:
+        email HTML and plain text, a web page, print HTML and a PDF, a PNG or SVG image, the template's outline and its diagnostics.
+        Write a module that exports the template (<code>export default function Welcome() &#123; return &lt;Email&gt;…&lt;/Email&gt;; &#125;</code>),
+        or JSX alone (<code>&lt;Email&gt;&lt;Text&gt;Hi&lt;/Text&gt;&lt;/Email&gt;</code>). The root decides the output: Email, Page, Document or Canvas.
+      </p>
+      <p>
+        1. WebMCP tools, where the browser has <code>document.modelContext</code>: <code>render_hyper_elements</code> (code, root, include: returns the outputs and diagnostics without changing the page),
+        <code>show_hyper_elements_preview</code> (code, root, view, device: shows it and returns a share link), <code>get_hyper_elements_reference</code> (the guide to read before writing) and <code>get_playground_code</code>.
+      </p>
+      <p>
+        2. JavaScript: <code>await hyperElementsPlayground.render(code, &#123; root, include &#125;)</code> resolves with <code>&#123; ok, root, html, text, outline, diagnostics, error &#125;</code>;
+        <code>await hyperElementsPlayground.setCode(code)</code> also shows it; <code>hyperElementsPlayground.reference()</code> is the guide and <code>hyperElementsPlayground.help()</code> lists every method.
+      </p>
+      <p>
+        3. A link: open this page with <code>#code=BASE64URL</code> (the UTF-8 code, base64url-encoded), and optionally <code>&amp;view=preview|html|text|pdf|png|svg|clients</code>,
+        <code>&amp;device=phone</code> and <code>&amp;layout=preview</code> (the output alone). The <code>data-render-status</code> attribute of the html element becomes <code>ok</code> or <code>error</code> when it has rendered.
+        Each diagnostic says what's wrong and what to write instead: fix what they say and render again.
+      </p>
+    </section>
+
+    <div class="pg-top">
+      <div class="pg-id">
+        <h1>Playground</h1>
+        <span class="pg-engine" title="The engine this page runs, in your browser">engine {engineVersion}</span>
+      </div>
+      <button class="pg-starter" type="button" data-starters-open aria-haspopup="dialog">
+        <span class="pg-starter-icon" set:html={icons.grid} />
+        <span class="pg-starter-text"><span class="pg-starter-kicker">Starter</span><span class="pg-starter-name" data-starter-name>{defaultStarter.title}</span></span>
+        <span class="pg-caret" set:html={icons.caret} />
+      </button>
+      <p class="pg-tagline">Write a template. The engine itself renders it, here in your browser.</p>
+      <span class="pg-origin" data-origin hidden></span>
+      <div class="pg-top-actions">
+        <button class="btn btn-ghost btn-sm" type="button" data-share><span set:html={icons.link} /><span class="pg-label">Share</span></button>
+        <div class="pg-menu" data-menu="export">
+          <button class="btn btn-primary btn-sm" type="button" data-menu-button aria-haspopup="menu" aria-expanded="false"><span set:html={icons.download} /><span class="pg-label">Export</span></button>
+          <div class="pg-menu-list" role="menu" data-menu-list hidden></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pg-switcher" role="tablist" aria-label="Show">
+      <button type="button" role="tab" data-show="code" aria-selected="false">Code</button>
+      <button type="button" role="tab" data-show="output" aria-selected="true">Output</button>
+      <button type="button" role="tab" data-show="checks" aria-selected="false">Checks <span class="pg-count" data-count="problems" hidden></span></button>
+    </div>
+
+    <div class="pg-bench" data-bench>
+      <section class="pg-panel pg-code surface-dark" data-panel="code" aria-label="Code">
+        <header class="pg-bar">
+          <span class="pg-file"><span class="dots"><i></i><i></i><i></i></span>template.tsx</span>
+          <span class="pg-hint"><kbd>⌘</kbd><kbd>↵</kbd> render now</span>
+        </header>
+        <div class="pg-editor" data-editor></div>
+      </section>
+
+      <div class="pg-split pg-split-x" data-split="x" role="separator" aria-orientation="vertical" aria-label="Resize the code and the output" tabindex="0"></div>
+
+      <section class="pg-panel pg-out surface-dark" data-panel="output" aria-label="Output">
+        <header class="pg-bar pg-bar-roots">
+          <div class="pg-roots" role="radiogroup" aria-label="Root: the output this template writes" data-roots>
+            {roots.map((r) => (
+              <button type="button" role="radio" aria-checked="false" data-root={r.root} title={`<${r.root}>: ${r.writes}`}>
+                <span set:html={icons[r.root]} /><span class="pg-root-name">{r.label}</span>
+              </button>
+            ))}
+          </div>
+          <span class="pg-writes" data-writes></span>
+        </header>
+        <div class="pg-bar pg-bar-views">
+          <div class="pg-views" role="tablist" aria-label="View" data-views></div>
+          <div class="pg-tools">
+            <div class="pg-file-tools" data-file-tools hidden></div>
+            <div class="pg-seg" role="radiogroup" aria-label="Preview width" data-devices>
+              <button type="button" role="radio" aria-checked="true" data-device="desktop" title="Desktop width" aria-label="Desktop width" set:html={icons.desktop} />
+              <button type="button" role="radio" aria-checked="false" data-device="phone" title="Phone width: phone styles apply" aria-label="Phone width" set:html={icons.phone} />
+            </div>
+            <button class="pg-toggle" type="button" aria-pressed="true" data-inspect title="Inspect: point at a block to find it in the code" aria-label="Inspect blocks" set:html={icons.inspect} />
+          </div>
+        </div>
+        <div class="pg-stage" data-stage data-view="preview" data-device="desktop">
+          <div class="pg-view pg-view-preview" data-view-pane="preview">
+            <div class="pg-device" data-device-frame><div class="pg-device-screen" data-preview></div></div>
+          </div>
+          <div class="pg-view pg-view-clients" data-view-pane="clients" hidden>
+            <div class="pg-clients-tabs" role="tablist" aria-label="Email client" data-clients-tabs></div>
+            <div class="pg-clients-stage" data-clients-stage></div>
+          </div>
+          <div class="pg-view pg-view-source" data-view-pane="html" hidden><pre class="pg-source" data-source="html" tabindex="0"></pre></div>
+          <div class="pg-view pg-view-source" data-view-pane="text" hidden><pre class="pg-source pg-source-text" data-source="text" tabindex="0"></pre></div>
+          <div class="pg-view pg-view-file" data-view-pane="pdf" hidden><div class="pg-file-host" data-file="pdf"></div></div>
+          <div class="pg-view pg-view-file" data-view-pane="png" hidden><div class="pg-file-host" data-file="png"></div></div>
+          <div class="pg-view pg-view-file" data-view-pane="svg" hidden><div class="pg-file-host" data-file="svg"></div></div>
+          <div class="pg-veil" data-veil>
+            <div class="pg-veil-card">
+              <span class="pg-spinner" aria-hidden="true"></span>
+              <p class="pg-veil-title" data-veil-title>Loading the engine</p>
+              <p class="pg-veil-note" data-veil-note>Hyper Elements {engineVersion}, into a sandbox in this tab.</p>
+            </div>
+          </div>
+          <div class="pg-linkbar" data-linkbar hidden>
+            <span class="pg-linkbar-label">Link</span><span class="pg-linkbar-href" data-linkbar-href></span>
+            <a class="pg-linkbar-open" data-linkbar-open target="_blank" rel="noopener noreferrer">Open <span set:html={icons.open} /></a>
+          </div>
+        </div>
+        <footer class="pg-status">
+          <span class="pg-dot" aria-hidden="true"></span>
+          <span class="pg-status-text" data-status-text role="status" aria-live="polite">Loading the engine…</span>
+          <span class="pg-status-meta" data-status-meta></span>
+        </footer>
+      </section>
+
+      <div class="pg-split pg-split-y" data-split="y" role="separator" aria-orientation="horizontal" aria-label="Resize the code and the checks" tabindex="0"></div>
+
+      <section class="pg-panel pg-checks surface-dark" data-panel="checks" aria-label="Checks">
+        <header class="pg-bar">
+          <div class="pg-views" role="tablist" aria-label="Checks">
+            <button type="button" role="tab" aria-selected="true" data-check="diagnostics">Diagnostics <span class="pg-count" data-count="diagnostics" hidden></span></button>
+            <button type="button" role="tab" aria-selected="false" data-check="outline">Outline</button>
+            <button type="button" role="tab" aria-selected="false" data-check="console">Console <span class="pg-count" data-count="console" hidden></span></button>
+          </div>
+          <label class="pg-check-clients" title="What classic Outlook, Gmail, Apple Mail and other clients remove or change, from @hyper-elements/email-clients">
+            <input type="checkbox" data-clients-check checked aria-label="Email client checks" /><span class="pg-switch" aria-hidden="true"></span><span class="pg-switch-label">Email clients</span>
+          </label>
+        </header>
+        <div class="pg-check-panes">
+          <div class="pg-check-pane" data-check-pane="diagnostics"><ul class="pg-diags" data-diagnostics></ul></div>
+          <div class="pg-check-pane" data-check-pane="outline" hidden><div class="pg-outline" data-outline></div></div>
+          <div class="pg-check-pane" data-check-pane="console" hidden><ul class="pg-logs" data-console></ul></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <dialog class="pg-gallery" data-gallery aria-label="Starters">
+    <header class="pg-gallery-head">
+      <div>
+        <p class="eyebrow">Starters</p>
+        <h2>Start from something real.</h2>
+      </div>
+      <button class="icon-link" type="button" data-gallery-close aria-label="Close" set:html={icons.close} />
+    </header>
+    <div class="pg-gallery-body" data-gallery-body></div>
+  </dialog>
+
+  <div class="pg-toast" data-toast role="status" aria-live="polite" hidden></div>
+
+  <section class="section pg-docs" id="agents">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">For agents</p>
+        <h2 class="h-section">An agent can drive this page.</h2>
+        <p class="lede">Render a template without installing anything, read what's wrong with it and how to fix it, then hand a person a link to the result. Three ways in, all of them the same sandbox.</p>
+      </div>
+      <div class="pg-ways">
+        <article class="card pg-way-link">
+          <span class="tag">A link</span>
+          <h3>The code in the URL</h3>
+          <p>Put the template in the hash and the page opens with it rendered. <code>#code=</code> is the UTF-8 code in base64url; Share writes <code>#z=</code>, the same deflated. Add <code>view</code> (<code>preview</code>, <code>html</code>, <code>text</code>, <code>pdf</code>, <code>png</code>, <code>svg</code>, <code>clients</code>), <code>device=phone</code> or <code>layout=preview</code> for the output alone.</p>
+          <CodeBlock code={linkSample} lang="text" />
+          <p><code>&lt;html data-render-status&gt;</code> becomes <code>ok</code> or <code>error</code> when it has rendered.</p>
+        </article>
+        <article class="card pg-way-script">
+          <span class="tag">JavaScript</span>
+          <h3>window.hyperElementsPlayground</h3>
+          <p>For an agent that can run script in the page. Every call answers with data: the outputs, and each diagnostic with its code, its path, the line it's on and what to write instead.</p>
+          <CodeBlock code={apiSample} lang="js" />
+        </article>
+        <article class="card pg-way-tools">
+          <span class="tag">WebMCP</span>
+          <h3>Tools the browser offers</h3>
+          <p>Where the browser has <a href="https://webmachinelearning.github.io/webmcp/">WebMCP</a>, the page registers four tools. The same four are <code>hyperElementsPlayground.tools</code>, to call directly.</p>
+          <CodeBlock code={toolSample} lang="js" />
+          <p>Read the reference first, render, fix what the diagnostics say, render again.</p>
+        </article>
+      </div>
+      <div class="pg-safe">
+        <h3>What runs where</h3>
+        <p>The code runs in a sandboxed frame with an origin of its own and no network, in a worker that's thrown away after each render and stopped if it runs longer than a few seconds. It can't read this page, its storage or the site. What it returns is shown as text, or as HTML inside another sandboxed frame. A link runs the code it carries, so read code from a link before you export what it makes.</p>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="playground-boot" set:html={json(boot)} />
+  <script>
+    import "../playground/main.ts";
+  </script>
+</Base>
