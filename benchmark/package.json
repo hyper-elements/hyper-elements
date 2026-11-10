@@ -10,6 +10,7 @@
     "setup": "node lib/setup.mjs",
     "bench": "node lib/bench.mjs",
     "report": "node lib/report.mjs",
+    "charts": "node lib/charts.mjs",
     "selftest": "node suites/image/check/selftest.mjs",
     "runtime": "node lib/runtime.mjs",
     "preflight": "node lib/preflight.mjs",
