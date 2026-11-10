@@ -2,7 +2,17 @@
 
 Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
-## Unreleased
+## Unreleased (0.4.1)
+
+### Fixed
+
+- **A Layer's picture in Gmail and Outlook.com.** An Email wrote the picture as `background-image:url("…")`, and Gmail
+  and Outlook.com on the web drop a whole `style` attribute that has a quoted `url()` in it: the picture showed at its
+  own size from its top left corner, uncropped, with square corners. The URL is now unquoted, with the characters an
+  unquoted URL can't hold (quotes, parentheses, a backslash, whitespace) percent-encoded. Classic Outlook (VML) and the
+  cell's `background` attribute are unchanged. Found by comparing with Mailgun Inspect's screenshots.
+
+## 0.4.0
 
 ### ⚠️ Breaking (0.4.0): email client checks move to `@hyper-elements/email-clients`
 

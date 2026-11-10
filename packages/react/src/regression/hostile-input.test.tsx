@@ -145,13 +145,14 @@ describe("a URL written into CSS", () => {
   const BREAKS = ["\n", "\r", "\f", "\r\n"];
   /**
    * The page's CSS (its style attributes, as parsed, and its stylesheets) once each `url("…")` that's one whole string
-   * (nothing inside that ends one) is taken out. The URL is in HTML attributes too (`background`, VML's `src`), where
-   * a line break is nothing.
+   * (nothing inside that ends one), and each unquoted `url(…)` that's one whole URL token (no quote, parenthesis,
+   * whitespace or backslash but an escape in it), is taken out. The URL is in HTML attributes too (`background`, VML's
+   * `src`), where a line break is nothing.
    */
   const outsideUrls = (html: string) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
     const css = [...Array.from(doc.querySelectorAll("[style]"), (el) => el.getAttribute("style") ?? ""), ...Array.from(doc.querySelectorAll("style"), (el) => el.textContent ?? "")].join("\n");
-    return css.replace(/url\("(?:[^"\\\n\r\f]|\\[0-9a-f]{1,6} ?)*"\)/gi, "url()");
+    return css.replace(/url\("(?:[^"\\\n\r\f]|\\[0-9a-f]{1,6} ?)*"\)/gi, "url()").replace(/url\((?:[^"'()\\\s]|\\[0-9a-f]{1,6} ?)*\)/gi, "url()");
   };
 
   it.each(BREAKS.map((brk) => [JSON.stringify(brk), brk]))("can't add CSS after %s, in a Layer's image", async (_, brk) => {
