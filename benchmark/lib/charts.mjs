@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 // Rebuild both shared README/docs charts from their final recorded batches.
-// Run from any directory: node scripts/generate-readme-benchmark.mjs
+// Run from any directory: node benchmark/lib/charts.mjs (or `npm run charts` in benchmark/)
 const charts = [
   {
     suite: "email",
@@ -63,8 +63,8 @@ const passes = (x, y, count, active, total) => {
 };
 
 function generateChart(chart) {
-  const source = new URL(`../benchmark/results/${chart.source}`, import.meta.url);
-  const destination = new URL(`../apps/website/public/img/${chart.destination}`, import.meta.url);
+  const source = new URL(`../results/${chart.source}`, import.meta.url);
+  const destination = new URL(`../../apps/website/public/img/${chart.destination}`, import.meta.url);
   const runs = readFileSync(source, "utf8").trim().split("\n").map((line) => JSON.parse(line));
   const groups = chart.kits.map(([kit, label, note]) => {
     const records = runs.filter((run) => run.kit === kit);
