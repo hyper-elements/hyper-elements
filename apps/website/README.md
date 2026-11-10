@@ -70,4 +70,4 @@ Write Markdown in `src/content/blog/` with `title`, `description`, `slug`, `date
 
 Review articles and infrastructure through a pull request. Opening a PR does not publish the article; only merging to main can deploy it. Conceptual article artwork is an illustration, not an output preview.
 
-After `build`, run `pnpm --filter @hyper-elements/website check:blog` to check the first article’s routes, metadata, internal links, anchors, hero and sitemap. This checks site integration only, not the reader’s sample project.
+After `build`, run `pnpm --filter @hyper-elements/website check:blog` to check both articles’ routes, metadata, internal links, anchors, images, screenshot placement and sitemap. This checks site integration only, not the reader’s sample project.

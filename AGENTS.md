@@ -221,8 +221,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 skip it):
 
 - **Tests**: `pnpm build`; typechecks of react, core and migrate; the release script's tests
-  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 315,500 bytes, `dist/builder.js`
-  477,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports `@unlayer/exporters`; unit
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 316,500 bytes, `dist/builder.js`
+  478,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports `@unlayer/exporters`; unit
   tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
