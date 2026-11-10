@@ -1,6 +1,6 @@
 ---
 title: "Page"
-description: "What a Page root renders to: semantic HTML and flexbox with inline styles, a small stylesheet for phones and hover, no client JavaScript, ready to embed."
+description: "What a Page root renders to: semantic HTML with CSS's flex, grid and position, inline styles, a small stylesheet for phones and hover, no client JavaScript, ready to embed."
 ---
 
 A `<Page>` root renders to a responsive web page: one element per component, semantic tags, inline styles and flexbox. Use it for the web version of an email, a receipt behind a login, or a landing page you generate on the server.
@@ -47,7 +47,7 @@ The HTML above, shortened where it says `…`:
 </html>
 ```
 
-- **Semantic tags**: `main`, `section`, `h1` to `h6`, `p`, `ul` and `ol`, `table`, `a`, `img`.
+- **Semantic tags**: `main`, `section`, `h1` to `h6`, `p`, `ul` and `ol`, `table`, `a`, `img`, and a `Box`'s own: `header`, `nav`, `article`, `aside`, `footer`, `figure` and the rest. A `Span as="strong"` is a `<strong>`.
 - **Styles inline**, with flexbox for Rows and stacks.
 - **A small stylesheet** for what inline styles can't say: phone styles, hiding, hover, and a Row stacking on phones. Its classes are short and named after their rule, so the same template always gets the same classes.
 - **No client-side JavaScript** and no React hydration markers. The page is plain HTML.
@@ -55,6 +55,35 @@ The HTML above, shortened where it says `…`:
 The content is centered and as wide as the Page's `width` at most, 1200px by default. A `Section`'s background spans the window, with its content at that width. On phones, at 480px and narrower, Rows stack and `mobile` styles apply.
 
 A `Video` is its player on a page: YouTube's or Vimeo's embed, in a 16:9 box. Web fonts in `fonts` are `@font-face` rules with `font-display: swap`.
+
+## Box and CSS layout
+
+On a Page, `Box` and the page styles write CSS's own layout: flex rows, grids, sticky headers, gradients, shadows. A page style is written after what the component writes for itself, and its value as given.
+
+```tsx
+import { Box, Heading, Page, Text } from "@hyper-elements/react";
+
+<Page width={1200}>
+  <Box as="main" style={{ maxWidth: 1200, padding: "4rem 1.5rem", display: "grid", gridTemplateColumns: "1fr 2fr", gap: "clamp(1rem, 3vw, 2rem)" }}>
+    <Box as="aside" style={{ position: "sticky", top: "1rem" }}><Text>Contents</Text></Box>
+    <Box as="article" style={{ gap: "1rem" }}>
+      <Heading level={1} style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)" }}>Title</Heading>
+      <Text>Body</Text>
+    </Box>
+  </Box>
+</Page>
+```
+
+```html
+<div …>
+  <main style="width:100%;align-self:center;display:flex;flex-direction:column;…;max-width:1200px;padding:4rem 1.5rem;display:grid;grid-template-columns:1fr 2fr">
+    <aside style="min-width:0;…;position:sticky;top:1rem">…</aside>
+    <article style="min-width:0;…">…</article>
+  </main>
+</div>
+```
+
+The page's own wrapper is a `div` when a Box is its `main`. Lengths take rem, em, %, vw, vh and `calc()` here, written as given. See [Layout](/docs/layout#box-css-layout-on-a-page) and [Styles](/docs/styles#on-a-page).
 
 ## Embed it in your own page
 
@@ -83,4 +112,6 @@ A `Document` renders to print HTML with the same page writer, plus a CSS `@page`
 ## Limits
 
 - The layout gives every box a width in px without measuring text. A box with less room than its words needs overflows on a page. See [Layout](/docs/layout#every-box-gets-a-px-width).
+- In a Box's flex rows and grids, a width that depends on its content (an `auto` track, a flex child with no basis) isn't worked out: `outline()` says it "fits its content".
+- Page styles have no phone or hover blocks yet, and a Page has one breakpoint, its phones: a grid that changes on phones uses `repeat(auto-fill, minmax(…))` or `clamp()` for now.
 - `validate()` reports what a page can't show as asked (`web/unsupported`).
