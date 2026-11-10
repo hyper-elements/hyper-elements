@@ -63,7 +63,8 @@ keeps only the fields a result has, each of its type and under a size.
 | Diagnostics, the outline, plain text, logs, errors | As text, never as markup |
 | The HTML | In the HTML tab as text; drawn only inside a sandboxed frame (below) |
 | A PDF | Kept only if it starts `%PDF-`; shown from a blob the page types `application/pdf`, in the browser's own viewer |
-| A PNG, an SVG | Kept only if its first bytes agree; drawn by an `<img>`, which runs nothing in it |
+| A PNG | Kept only if its first bytes agree; drawn by an `<img>` from a blob typed `image/png` |
+| An SVG | Kept only if its first bytes agree; drawn by an `<img>`, which runs nothing in it, from a `data:` URL. An SVG can hold a script, and a blob the page makes has the site's origin: opened on its own ("Open image in new tab"), its script would run on the site. A `data:` document never has it |
 | An email client's preview file | In a frame of its own, from a `data:` URL, running only the package's own two scripts (below) |
 
 ## The preview

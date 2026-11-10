@@ -24,6 +24,8 @@
 //      6b. An email client's preview file the code rewrote (it can take over its worker's postMessage) runs no script
 //          but the package's two: the previews still draw, and a script and a handler written into them don't run.
 //          The same markup in a page of its own does run.
+//      6c. An SVG the code rewrote doesn't run on the site's origin: the page shows it from a data: URL, whose
+//          document has an origin of its own. The same file from a blob the page makes has the site's origin.
 //   7. A link carries the code back, and the agent paths answer (the window API, the tools, WebMCP registration).
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
@@ -526,6 +528,57 @@ export default <Email><Text>A rewritten preview</Text></Email>;
     await loose.close();
     await page.close();
     step(`an email client's preview file the code rewrote runs only the package's two scripts (the markup runs in a page of its own)`);
+  }
+
+  // ─── 6c. An SVG the code rewrote doesn't run on the site's origin ────────
+  {
+    // The template rewrites the SVG its worker answers with: one whose script says where it ran.
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120"><text x="10" y="60">A rewritten SVG</text><script>parent.postMessage({ ran: String(self.origin), storage: (() => { try { localStorage.length; return "read"; } catch { return "closed"; } })() }, "*")</` + `script></svg>`;
+    const code = `const svg = ${JSON.stringify(svg)};
+const real = globalThis.postMessage.bind(globalThis);
+globalThis.postMessage = (message, transfer) => {
+  const result = message?.result;
+  if (result?.kind === "image" && result.bytes && new TextDecoder().decode(result.bytes.subarray(0, 4)) === "<svg") {
+    result.bytes = new TextEncoder().encode(svg);
+    return real(message, [result.bytes.buffer]);
+  }
+  return real(message, transfer);
+};
+export default <Canvas width={400} height={120}><Text>A Canvas</Text></Canvas>;
+`;
+    const page = await open(`#code=${encode(code)}&view=svg`);
+    const image = page.locator('[data-file="svg"] img');
+    await image.waitFor({ timeout: 60_000 });
+    const src = await image.getAttribute("src");
+    assert(src.startsWith("data:image/svg+xml"), `The SVG is shown from a data: URL, not ${src.slice(0, 30)}`);
+    assert.match(Buffer.from(src.slice(src.indexOf(",") + 1), "base64").toString(), /A rewritten SVG/, "The SVG shown is the one the code rewrote");
+    // The SVG as a document of its own, as "Open image in new tab" shows it, with no sandbox around it.
+    const opened = (url) =>
+      page.evaluate(
+        (url) =>
+          new Promise((resolve) => {
+            const frame = document.createElement("iframe");
+            const listen = (event) => event.source === frame.contentWindow && event.data?.ran && done(event.data);
+            const done = (outcome) => {
+              removeEventListener("message", listen);
+              frame.remove();
+              resolve(outcome);
+            };
+            addEventListener("message", listen);
+            setTimeout(() => done({ ran: "nothing ran" }), 3000);
+            frame.src = url;
+            document.body.append(frame);
+          }),
+        url,
+      );
+    const fromData = await opened(src);
+    assert.notEqual(fromData.ran, origin, "The SVG's script doesn't have the site's origin");
+    assert.notEqual(fromData.storage, "read", "The SVG's script can't read the site's storage");
+    // Control: the same file from a blob this page makes (how the page showed an SVG before) has the site's origin.
+    const blob = await page.evaluate((src) => fetch(src).then((response) => response.blob()).then((file) => URL.createObjectURL(new Blob([file], { type: "image/svg+xml" }))), src);
+    assert.deepEqual(await opened(blob), { ran: origin, storage: "read" }, "The same SVG from the page's blob runs on the site");
+    await page.close();
+    step("an SVG the code rewrote is shown from a data: URL, and on its own it doesn't run on the site (from the page's blob, it would)");
   }
 
   // ─── 7. Links and agent paths ────────────────────────────────────────────

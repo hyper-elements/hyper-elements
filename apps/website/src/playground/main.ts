@@ -598,6 +598,23 @@ const SIGNATURES: Record<FileKind, (file: Uint8Array) => boolean> = {
 };
 let fileSequence = 0;
 
+/**
+ * Where the page shows a file from. A PDF and a PNG are blobs of their own type: neither runs anything. An SVG can hold
+ * a script, and a blob this page makes has its origin, so an SVG opened on its own ("Open image in new tab") would run
+ * on the site. An SVG is a data: URL instead, whose document never has this page's origin. (Read by a FileReader, so a
+ * large file doesn't hold up the page.)
+ */
+function fileUrl(kind: FileKind, bytes: Uint8Array): Promise<string> {
+  const blob = new Blob([bytes as BlobPart], { type: FILE_TYPES[kind] });
+  if (kind !== "svg") return Promise.resolve(URL.createObjectURL(blob));
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
 /** The file of the last good render, drawn by the sandbox with the fonts and images this page fetched for it. */
 async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: FontNeed[]; images: string[] } | undefined = state.good?.assets, group = "editor-file"): Promise<{ drawn?: Drawn; result: Result; missing: string[] }> {
   const key = `${kind}|${kind === "png" ? state.scale : 1}|${code}`;
@@ -608,9 +625,9 @@ async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: Fon
   if (!result.ok || !result.bytes) return { result, missing: assets.missing };
   // It says it's a PDF (a PNG, an SVG): it's kept only if its first bytes agree, as a file of that type and no other.
   if (!SIGNATURES[kind](result.bytes)) return { result: { ...result, ok: false, error: { kind: "internal", message: `The sandbox answered with something that isn't ${kind === "svg" ? "an SVG" : `a ${kind.toUpperCase()}`}` } }, missing: assets.missing };
-  const drawn: Drawn = { key, bytes: result.bytes, url: URL.createObjectURL(new Blob([result.bytes as BlobPart], { type: FILE_TYPES[kind] })), size: result.size };
+  const drawn: Drawn = { key, bytes: result.bytes, url: await fileUrl(kind, result.bytes), size: result.size };
   if (group === "editor-file") {
-    if (files[kind]) URL.revokeObjectURL(files[kind]!.url);
+    if (files[kind]?.url.startsWith("blob:")) URL.revokeObjectURL(files[kind]!.url);
     files[kind] = drawn;
   }
   return { drawn, result, missing: assets.missing };
