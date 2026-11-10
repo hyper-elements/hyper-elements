@@ -12,12 +12,15 @@
 // the fix rounds and the mistakes.
 import { spawnSync } from "node:child_process";
 import { createHmac } from "node:crypto";
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, normalize, relative, resolve } from "node:path";
+import { GUARDED } from "./claude.mjs";
 
 /** Tools that change no file: replayed as nothing. */
 const NOOP = new Set(["TodoWrite", "Skill"]);
+/** `$?` in double quotes, as parseCommand keeps it. */
+const STATUS = "\u0002";
 const LINE = /^\[(render|check)\] (ok|failed|pass|fail)(?: ([0-9a-f]{64}))? in=([0-9a-f]{64}) mac=([0-9a-f]{64})$/;
 
 /**
@@ -27,6 +30,14 @@ const LINE = /^\[(render|check)\] (ok|failed|pass|fail)(?: ([0-9a-f]{64}))? in=(
  * redirections, subshells, variables, expansions or line breaks: `{ error }` for anything else.
  */
 export function parseCommand(command) {
+  // `P=/the/run; sed -n 1,20p $P/docs/REFERENCE.md`: leading assignments of plain values, each `$P` or `${P}` replaced
+  // by its value, as the shell expands it in a command with no single quotes or heredoc to keep it literal.
+  const assign = /^\s*([A-Za-z_]\w*)=([\w./@+-]+)\s*;/;
+  if (assign.test(command) && !/['<]/.test(command)) {
+    for (let m; (m = assign.exec(command)); ) {
+      command = command.slice(m[0].length).replace(new RegExp(`\\$(?:${m[1]}(?!\\w)|\\{${m[1]}\\})`, "g"), m[2]);
+    }
+  }
   // A quoted heredoc (`<<'EOF'`, or `<<EOF` whose text has nothing to expand) on the first line. The lines after its
   // end line are more commands, each joined as by `;`.
   let heredoc = null;
@@ -60,7 +71,11 @@ export function parseCommand(command) {
     if (!endStage()) return false;
     const step = { op, words: stages[0] };
     if (stages.length > 1) { step.pipe = stages.slice(1); step.merged = merged; }
-    if (redirect !== null) {
+    if (redirect === "/dev/null") {
+      // `ls node_modules/x >/dev/null`: the step's output is dropped. Only a read may do that (stepKind).
+      step.quiet = true;
+      redirect = null;
+    } else if (redirect !== null) {
       // Only `cat > <file>` fed by the heredoc.
       if (redirect === "pending" || heredoc === null || stages.length > 1 || !(step.words.length === 1 && step.words[0] === "cat")) return "redirect";
       step.words = ["cat", ">", redirect];
@@ -80,12 +95,15 @@ export function parseCommand(command) {
       word = (word ?? "") + cmd.slice(i + 1, end);
       i = end;
     } else if (c === '"') {
-      // Inside double quotes a backslash escapes only $ ` " \; before anything else it's itself (`grep "a\|b"`).
+      // Inside double quotes a backslash escapes only $ ` " \; before anything else it's itself (`grep "a\|b"`). A `$`
+      // that can't start an expansion is itself (`grep "^### Table$\|^### Row$"`); `$?` is kept as STATUS, which only
+      // an `echo` may print (stepKind).
       let j = i + 1, inner = "";
       for (; j < cmd.length && cmd[j] !== '"'; j++) {
         if (cmd[j] === "\\" && j + 1 < cmd.length) {
           if ('$`"\\'.includes(cmd[j + 1])) { inner += cmd[j + 1]; j++; } else inner += "\\";
-        } else if (cmd[j] === "$" || cmd[j] === "`") return { error: "an expansion in double quotes" };
+        } else if (cmd[j] === "$" && cmd[j + 1] === "?") { inner += STATUS; j++; }
+        else if (cmd[j] === "`" || (cmd[j] === "$" && /[\w{(#@*!$-]/.test(cmd[j + 1] ?? ""))) return { error: "an expansion in double quotes" };
         else inner += cmd[j];
       }
       if (j >= cmd.length) return { error: "an unclosed quote" };
@@ -117,7 +135,7 @@ export function parseCommand(command) {
   if (words.length) {
     const r = endStep(null);
     if (r === "redirect") return { error: "a redirection" };
-  } else if (op) return { error: `nothing after ${op}` };
+  } else if (op && op !== ";") return { error: `nothing after ${op}` }; // a trailing `;` ends the last step
   if (!steps.length) return { error: "no command" };
   if (heredoc !== null && heredoc !== "used") return { error: "a heredoc not fed to cat > <file>" };
   return { steps };
@@ -144,11 +162,30 @@ export function readKind(words, inRun) {
     // `head -n 20`: a count after -n or -c; `ls -I node_modules`: a pattern after -I.
     return args.every((a, i) => FLAGS[cmd].test(a) || (/^\d+$/.test(a) && /^-[nc]$/.test(args[i - 1] ?? "")) || (cmd === "ls" && args[i - 1] === "-I" && !a.startsWith("-")) || path(a));
   }
+  // `file images/logo.png`: what a file is.
+  if (cmd === "file") return args.length > 0 && args.every((a) => /^-[bLhiI]+$/.test(a) || a === "--mime-type" || path(a));
+  // `cut -c1-400`: in a pipeline, or of paths.
+  if (cmd === "cut") return args.length > 0 && args.every((a, i) => /^-[cbf][\d,-]+$/.test(a) || (/^[\d,-]+$/.test(a) && /^-[cbf]$/.test(args[i - 1] ?? "")) || /^-[cbf]$/.test(a) || path(a));
+  // `find images tools -maxdepth 2 -type f -name '*.png'`: paths in the run, then tests only (no -exec, -delete…).
+  if (cmd === "find") {
+    let i = 0;
+    for (; i < args.length && !args[i].startsWith("-"); i++) if (!path(args[i])) return false;
+    if (i === 0) return false;
+    for (; i < args.length; i++) {
+      const a = args[i], v = args[i + 1];
+      if ((a === "-maxdepth" || a === "-mindepth") && /^\d+$/.test(v ?? "")) i++;
+      else if (a === "-type" && /^[fdl]$/.test(v ?? "")) i++;
+      else if ((a === "-name" || a === "-iname") && v !== undefined) i++;
+      else return false;
+    }
+    return true;
+  }
   if (cmd === "grep") {
     let pattern = false;
     for (let i = 0; i < args.length; i++) {
       const a = args[i];
       if (/^-[nivwclLhHrREFosx]+$/.test(a) || /^-[ABCm]\d+$/.test(a)) continue;
+      if (/^--(include|exclude|exclude-dir)=[\w.*?{},-]+$/.test(a) || a === "--color=never") continue;
       if (/^-[ABCm]$/.test(a) && /^\d+$/.test(args[i + 1] ?? "")) { i++; continue; }
       if (a === "-e" && i + 1 < args.length) { i++; pattern = true; continue; }
       if (!pattern) { pattern = true; continue; } // the pattern: any text
@@ -166,6 +203,12 @@ export function readKind(words, inRun) {
 /** The line count of `tail`, `tail -N` or `tail -n N` (10 for `tail` alone), or null. */
 export const tailOf = (w) => (w[0] === "tail" && w.length === 1 ? 10 : w[0] === "tail" && w.length === 2 && /^-\d+$/.test(w[1]) ? Number(w[1].slice(1)) : w[0] === "tail" && w.length === 3 && w[1] === "-n" && /^\d+$/.test(w[2]) ? Number(w[2]) : null);
 
+/** The line count of `head`, `head -N` or `head -n N`, or null. */
+export const headOf = (w) => tailOf(["tail", ...w.slice(1)]) !== null && w[0] === "head" ? tailOf(["tail", ...w.slice(1)]) : null;
+
+/** The first `n` lines, as `head -n` shows them. */
+const headText = (text, n) => (text.endsWith("\n") ? text.slice(0, -1) : text).split("\n").slice(0, n).join("\n");
+
 /** The last `n` lines of a tool's output, as `tail -n` shows them. */
 const tailText = (text, n) => { const lines = (text.endsWith("\n") ? text.slice(0, -1) : text).split("\n"); return n === 0 ? "" : lines.slice(-n).join("\n"); };
 
@@ -181,12 +224,22 @@ const tailText = (text, n) => { const lines = (text.endsWith("\n") ? text.slice(
  */
 export function stepKind(step, render, inRun, isSource = () => false, platform = process.platform) {
   const words = Array.isArray(step) ? step : step.words;
+  // `$?` only in an `echo` (`echo "exit $?"`), whose output isn't compared.
+  if ([words, ...(step.pipe ?? [])].flat().some((w) => w.includes(STATUS)) && (words[0] !== "echo" || step.pipe)) return null;
+  // `ls x >/dev/null`: only a read may drop its output.
+  if (step.quiet) {
+    const kind = stepKind({ ...step, quiet: false }, render, inRun, isSource, platform);
+    return kind === "read" || kind === "echo" ? kind : null;
+  }
+  // `cd docs`: a folder in the run. Claude Code keeps the folder for the calls after it, as the replay does.
+  if (words[0] === "cd" && !step.pipe) return words.length === 2 && PLAIN.test(words[1]) && inRun(words[1]) ? "cd" : null;
   if (step.pipe) {
     if ([words, ...step.pipe].every((w) => readKind(w, inRun))) return "read";
     // `node tools/render.mjs 2>&1 | tail -20`: the tool, with the same tail applied to the replay's output. Not
     // `head`, which can stop the tool mid-write.
     const tool = stepKind({ words }, render, inRun, isSource, platform);
-    return ["tsc", "render", "check"].includes(tool) && step.merged.every(Boolean) && step.pipe.every((w) => tailOf(w) !== null) ? tool : null;
+    // `head` only after `tsc`: it writes no file, so a tsc stopped by head's closed pipe changes nothing.
+    return ["tsc", "render", "check"].includes(tool) && step.merged.every(Boolean) && step.pipe.every((w) => tailOf(w) !== null || (tool === "tsc" && headOf(w) !== null)) ? tool : null;
   }
   if (step.heredoc !== undefined) return words.length === 3 && PLAIN.test(words[2]) && inRun(words[2]) && isSource(words[2]) ? "write" : null;
   if (same(words, ["npx", "tsc", "--noEmit"])) return "tsc";
@@ -200,10 +253,15 @@ export function stepKind(step, render, inRun, isSource = () => false, platform =
   // tool steps, which is the cutoff.
   if (words[0] === "echo") return "echo";
   // `mkdir -p` of folders in the run (agents make `src/` before writing to it): an empty folder can change what `ls`
-  // shows, so the replay makes them too.
+  // shows, so the replay makes them too. A new folder in a guarded one fails as the sandbox fails it, making nothing.
   if (words[0] === "mkdir") return words.length > 2 && words[1] === "-p" && words.slice(2).every((a) => PLAIN.test(a) && !a.startsWith("-") && inRun(a)) ? "mkdir" : null;
   // `sed -i` of substitutions on sources, in this platform's form only, so no path is read as a script: on macOS
   // `-i ''` (BSD sed takes the next word as the backup suffix), elsewhere `-i` alone.
+  // On macOS, `sed -i '<script>' <file>` (GNU sed's form): BSD sed takes the script as the backup suffix and the
+  // path as the script, and always fails ("unterminated substitute pattern", or no input). The replay records the
+  // failure; a session where it changed the file anyway leaves the replay's files different, which the next step's
+  // input hash or the final sources catch.
+  if (platform === "darwin" && words.length === 4 && words[0] === "sed" && words[1] === "-i" && words[2] !== "" && !words[2].startsWith("-") && PLAIN.test(words[3]) && inRun(words[3])) return "failed-edit";
   if (words[0] === "sed" && words.includes("-i")) {
     const rest = words.slice(1);
     const lead = platform === "darwin" ? ["-i", ""] : ["-i"];
@@ -260,8 +318,10 @@ export const mistakeKey = (d) => {
 export async function replay({ events, dir, run, env, finalSources = null }) {
   const secret = env.BENCH_SECRET;
   const roots = [dir, ...(existsSync(dir) ? [realpathSync(dir)] : [])];
+  // The shell's folder in the run ("" for the run itself): a `cd` moves it, and Claude Code keeps it for the next call.
+  let cwd = "";
   const relOf = (p) => {
-    const abs = isAbsolute(p) ? normalize(p) : resolve(dir, p);
+    const abs = isAbsolute(p) ? normalize(p) : resolve(dir, cwd, p);
     for (const r of roots) if (abs === r || abs.startsWith(r + "/")) return relative(r, abs);
     return null;
   };
@@ -276,17 +336,36 @@ export async function replay({ events, dir, run, env, finalSources = null }) {
   const cut = (k, call, reason, extra = {}) => { cutoff = { call: k, tool: call.name, input: call.input?.command ?? call.input?.file_path ?? null, reason, ...extra }; };
 
   let captures = 0;
+  // A read step (readKind: cat, ls, grep… of paths in the run, or a pipeline of them), run for its status only. Its
+  // words are quoted, but a glob of plain characters (`tools/checks/*/spec.json`) is left to expand, as in the session.
+  const runRead = (step) => {
+    const q = (w) => (/^[\w./@+*?-]+$/.test(w) && /[*?]/.test(w) && !w.includes("..") ? w : `'${w.replace(/'/g, "'\\''")}'`);
+    const command = [step.words, ...(step.pipe ?? [])].map((w) => w.map(q).join(" ")).join(" | ");
+    return spawnSync("bash", ["-c", command], { cwd: join(dir, cwd), env: { PATH: process.env.PATH }, stdio: "ignore", timeout: 60_000 }).status ?? 1;
+  };
   const runTool = (kind, step) => {
     const words = step.words;
     // File steps: made in the replay as the session made them, in order with the tools.
     const done = (code) => ({ kind, code, out: "", lines: [], tsErrors: [] });
     if (kind === "mkdir") {
-      try { for (const d of words.slice(2)) mkdirSync(join(dir, relOf(d)), { recursive: true }); return done(0); } catch { return done(1); }
+      // The sandbox denies writes to the guarded files: `mkdir -p docs` succeeds (it exists), `mkdir -p docs/src` fails.
+      // Like BSD mkdir, the other folders are still made.
+      let code = 0;
+      for (const d of words.slice(2)) {
+        const rel = relOf(d);
+        if (existsSync(join(dir, rel))) continue;
+        if (GUARDED.some((g) => rel === g || rel.startsWith(`${g}/`))) { code = 1; continue; }
+        try { mkdirSync(join(dir, rel), { recursive: true }); } catch { code = 1; }
+      }
+      return done(code);
     }
     if (kind === "write") {
       try { mkdirSync(dirname(join(dir, relOf(words[2]))), { recursive: true }); writeFileSync(join(dir, relOf(words[2])), step.heredoc); return done(0); } catch { return done(1); }
     }
-    if (kind === "edit") return done(spawnSync("sed", words.slice(1), { cwd: dir, encoding: "utf8", timeout: 30_000 }).status ?? 1);
+    if (kind === "edit") return done(spawnSync("sed", words.slice(1), { cwd: join(dir, cwd), encoding: "utf8", timeout: 30_000 }).status ?? 1);
+    // BSD sed's misread `sed -i '<script>' <file>` (stepKind): it fails without changing anything. Not run here, since
+    // the path would be read as a script.
+    if (kind === "failed-edit") return done(1);
     mkdirSync(join(dir, ".tmp"), { recursive: true });
     const file = join(dir, ".tmp", `replay-${captures++}.out`);
     const fd = openSync(file, "w");
@@ -301,7 +380,7 @@ export async function replay({ events, dir, run, env, finalSources = null }) {
     const lines = out.split("\n").filter((l) => LINE.test(l));
     const ran = { kind, code: r.status ?? 1, out, lines, tsErrors: kind === "tsc" ? tsErrorsOf(out) : [] };
     if (!step.pipe) return ran;
-    const shown = step.pipe.reduce((t, w) => tailText(t, tailOf(w)), out);
+    const shown = step.pipe.reduce((t, w) => (tailOf(w) !== null ? tailText(t, tailOf(w)) : headText(t, headOf(w))), out);
     return { ...ran, flow: 0, shownLines: shown.split("\n").filter((l) => LINE.test(l)), shownTs: (shown.match(/error TS\d+/g) ?? []).length };
   };
 
@@ -356,35 +435,31 @@ export async function replay({ events, dir, run, env, finalSources = null }) {
     }
     const parsed = parseCommand(input.command ?? "");
     if (parsed.error) { cut(k, call, `a command with ${parsed.error}`); break; }
-    const kinds = parsed.steps.map((s) => stepKind(s, run.render, inRun, (p) => isSource(relOf(p) ?? "")));
-    if (kinds.some((x) => x === null)) { const s = parsed.steps[kinds.indexOf(null)]; cut(k, call, `a step that isn't replayable: ${[s.words, ...(s.pipe ?? [])].map((w) => w.join(" ")).join(" | ")}`); break; }
-
-    // Only read steps (`ls`, `cat`, `grep`… inside the run, `echo`): nothing runs and nothing changes, like a Read.
-    if (kinds.every((x) => x === "read" || x === "echo")) {
-      if (out.split("\n").some((l) => LINE.test(l.trim()))) { cut(k, call, "more result lines than tool steps"); break; }
-      verified.push({ call: k, tool: "Bash", command: input.command, steps: [] });
-      continue;
+    // The steps in order, as the shell ran them, each judged where it runs (after a `cd`, in that folder); a step that
+    // can't be replayed is the cutoff only if it runs. Read steps run here too: up to this call the replay's files are
+    // the session's, so a read's status (`cat out/email.txt` after the render, `cd docs`) is the session's. The call's
+    // overall status is compared with the session's below. The tools run only from the run itself.
+    let status = 0, refused = null;
+    const ran = [];
+    for (const [i, s] of parsed.steps.entries()) {
+      if (i > 0 && ((s.op === "&&" && status !== 0) || (s.op === "||" && status === 0))) continue;
+      const kind = stepKind(s, run.render, inRun, (p) => isSource(relOf(p) ?? ""));
+      if (kind === null) { refused = `a step that isn't replayable: ${[s.words, ...(s.pipe ?? [])].map((w) => w.join(" ")).join(" | ")}`; break; }
+      if (cwd !== "" && ["tsc", "render", "check"].includes(kind)) { refused = `a tool run from ${cwd}, not the run`; break; }
+      if (kind === "echo") { status = 0; continue; }
+      if (kind === "read") { status = runRead(s); continue; }
+      if (kind === "cd") {
+        const to = relOf(s.words[1]);
+        status = existsSync(join(dir, to)) && statSync(join(dir, to)).isDirectory() ? 0 : 1;
+        if (status === 0) cwd = to;
+        continue;
+      }
+      const r = runTool(kind, s);
+      status = r.flow ?? r.code;
+      ran.push(r);
     }
-    // Determined: the same overall status and the same tool steps run whatever the read steps did (at most three).
-    const reads = kinds.map((x, i) => (x === "read" ? i : -1)).filter((i) => i >= 0);
-    if (reads.length > 3) { cut(k, call, "more than three read steps"); break; }
-    const ran = new Map();
-    const outcomes = [];
-    for (let combo = 0; combo < 1 << reads.length; combo++) {
-      let status = 0;
-      const set = [];
-      parsed.steps.forEach((s, i) => {
-        if (i > 0 && ((s.op === "&&" && status !== 0) || (s.op === "||" && status === 0))) return;
-        if (kinds[i] === "read") { status = combo & (1 << reads.indexOf(i)) ? 1 : 0; return; }
-        if (kinds[i] === "echo") { status = 0; return; }
-        if (!ran.has(i)) ran.set(i, runTool(kinds[i], s));
-        status = ran.get(i).flow ?? ran.get(i).code;
-        set.push(i);
-      });
-      outcomes.push({ failed: status !== 0, set: set.join(",") });
-    }
-    if (!outcomes.every((o) => o.failed === outcomes[0].failed && o.set === outcomes[0].set)) { cut(k, call, "a call whose result depends on its read steps"); break; }
-    const steps = outcomes[0].set ? outcomes[0].set.split(",").map(Number).map((i) => ran.get(i)) : [];
+    if (refused) { cut(k, call, refused); break; }
+    const steps = ran;
 
     // A pipeline that hid a step's result line leaves nothing to compare it by.
     if (steps.some((s) => s.shownLines && s.shownLines.length !== s.lines.length)) { cut(k, call, "a pipeline that hides a result line"); break; }
@@ -402,8 +477,9 @@ export async function replay({ events, dir, run, env, finalSources = null }) {
       break;
     }
     const tsGot = (out.match(/error TS\d+/g) ?? []).length, tsWant = steps.reduce((n, s) => n + (s.shownTs ?? s.tsErrors.length), 0);
-    const failed = outcomes[0].failed;
-    if (tsGot !== tsWant || failed !== !!result.is_error) {
+    const failed = status !== 0;
+    // tsc's error count only where tsc ran: a read may show text that looks like one (`grep -n "error TS" notes.md`).
+    if ((steps.some((s) => s.kind === "tsc") && tsGot !== tsWant) || failed !== !!result.is_error) {
       cut(k, call, tsGot !== tsWant ? "tsc's errors differ from the replay's" : "the call's status differs from the replay's", { mismatch: true, output: out.slice(-2000) });
       break;
     }
@@ -428,7 +504,15 @@ export async function replay({ events, dir, run, env, finalSources = null }) {
 export function attemptsOf(verified, cutoff, sourcesMatch = true) {
   const attempts = verified.filter((v) => v.tool === "Bash" && v.steps.some((s) => s.kind === "render" || s.kind === "tsc")).map((v) => {
     const steps = v.steps.filter((s) => s.kind === "render" || s.kind === "tsc");
-    const diagnostics = steps.filter((s) => s.kind === "render").flatMap((s) => diagnosticsOf(s.out));
+    // A failed render with no diagnostic still made a mistake: the bundler's syntax error (`src/template.tsx:11
+    // Expected ">" but found "style"`) is `build/syntax`, anything else `render/failed`.
+    const diagnostics = steps.filter((s) => s.kind === "render").flatMap((s) => {
+      const found = diagnosticsOf(s.out);
+      if (s.code === 0 || found.some((d) => d.severity === "error")) return found;
+      const syntax = /^(?:src|cards)\/\S+:\d+ (.+)$/m.exec(s.out);
+      const last = s.out.split("\n").filter((l) => l.trim() && !LINE.test(l.trim())).pop() ?? "";
+      return [...found, { severity: "error", code: syntax ? "build/syntax" : "render/failed", path: "", message: syntax ? syntax[0] : last }];
+    });
     const tsErrors = steps.flatMap((s) => s.tsErrors);
     return {
       call: v.call, rendered: steps.some((s) => s.kind === "render"), error: steps.some((s) => s.code !== 0),
@@ -461,12 +545,15 @@ export async function replayRun({ suite = "skill", kit, brief, rep, root, dir, e
   const { sourcesOf } = await import("./grade.mjs");
   const run = runOf(await suiteOf(suite), await kitOf(suite, kit), await briefOf(suite, brief));
   const finalSources = await sourcesOf(dir, run.sources);
+  // Claude Code makes `.claude/.cc-writes` in the session's folder when it starts, so `ls .claude` succeeds there.
+  const ccWrites = existsSync(join(dir, ".claude/.cc-writes"));
   const aside = `${dir}.session`;
   await rename(dir, aside);
   try {
     const fresh = await makeRun(suite, kit, brief, rep, root, { isolated: true, extra });
     if (fresh !== dir) throw new Error(`the replay's directory ${fresh} isn't the session's ${dir}`);
     await mkdir(join(dir, ".tmp"), { recursive: true });
+    if (ccWrites) await mkdir(join(dir, ".claude/.cc-writes"), { recursive: true });
     return await replay({ events, dir, run, env: { ...env, TMPDIR: join(dir, ".tmp") }, finalSources });
   } finally {
     await rm(dir, { recursive: true, force: true });

@@ -1,0 +1,332 @@
+{
+  "stamp": "2026-11-09-baseline-haiku",
+  "suite": "skill",
+  "model": "claude-haiku-5-5",
+  "kits": [
+    "candidate",
+    "release"
+  ],
+  "briefs": [
+    "event",
+    "receipt",
+    "digest",
+    "landing",
+    "invoice",
+    "launch",
+    "change",
+    "tailwind",
+    "report",
+    "welcome"
+  ],
+  "reps": 3,
+  "startedAt": "2026-11-09T15:49:51.551Z",
+  "maxCostUsd": 100,
+  "na": {
+    "candidate": [],
+    "release": [
+      "landing"
+    ]
+  },
+  "jobs": [
+    {
+      "kit": "candidate",
+      "brief": "event",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "event",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "receipt",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "receipt",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "digest",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "invoice",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "invoice",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "launch",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "launch",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "change",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "tailwind",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "report",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "report",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "welcome",
+      "rep": 0
+    },
+    {
+      "kit": "release",
+      "brief": "welcome",
+      "rep": 0
+    },
+    {
+      "kit": "candidate",
+      "brief": "event",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "event",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "receipt",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "receipt",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "digest",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "invoice",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "invoice",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "launch",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "launch",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "change",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "tailwind",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "report",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "report",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "welcome",
+      "rep": 1
+    },
+    {
+      "kit": "release",
+      "brief": "welcome",
+      "rep": 1
+    },
+    {
+      "kit": "candidate",
+      "brief": "event",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "event",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "receipt",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "receipt",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "digest",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "digest",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "landing",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "invoice",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "invoice",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "launch",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "launch",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "change",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "change",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "tailwind",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "tailwind",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "report",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "report",
+      "rep": 2
+    },
+    {
+      "kit": "candidate",
+      "brief": "welcome",
+      "rep": 2
+    },
+    {
+      "kit": "release",
+      "brief": "welcome",
+      "rep": 2
+    }
+  ],
+  "resumes": [
+    {
+      "at": "2026-11-09T19:18:44.528Z",
+      "after": [
+        {
+          "partial": true,
+          "reason": "cost",
+          "spentUsd": 31.423802999999996,
+          "maxCostUsd": 25
+        }
+      ],
+      "rows": 19,
+      "maxCostUsd": 100
+    }
+  ]
+}

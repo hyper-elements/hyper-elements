@@ -144,17 +144,28 @@ model ships.
     final sources catch it.
   - a Bash call whose steps, joined by `&&`, `||` and `;`, are each one of these:
     - **a tool:** `npx tsc --noEmit`, the render command or `node tools/check.mjs`, run again; or one piped with
-      `2>&1` into `tail` (`node tools/render.mjs 2>&1 | tail -20`), whose replay goes through the same tail before
-      it's compared. The attempt still takes the tool's own exit code and its whole output. A tail that hides the
-      step's result line is the cutoff.
-    - **a read** of paths in the run: `ls`, `cat`, `wc`, `head`, `tail`, `grep` or `sed -n <lines>p`, or a pipeline
-      of reads (`cat src/template.tsx | head -50`), or an `echo`. Its output isn't compared, so it may not change
-      which tools run or the call's status. Any other pipeline with a tool in it is the cutoff.
+      `2>&1` into `tail` (`node tools/render.mjs 2>&1 | tail -20`), or `tsc` into `head`, whose replay goes
+      through the same filter before it's compared. The attempt still takes the tool's own exit code and its whole
+      output. A filter that hides the step's result line is the cutoff.
+    - **a read** of paths in the run: `ls`, `cat`, `wc`, `head`, `tail`, `cut`, `file`, `grep` (with `--include`),
+      `sed -n <lines>p` or `find` with tests only (`-maxdepth`, `-type`, `-name`), or a pipeline of reads
+      (`cat src/template.tsx | head -50`), maybe with `>/dev/null`; or an `echo`, which may print `$?`
+      (`echo "exit $?"`). It runs in the replay too, whose files are the session's at that point, so its status
+      decides what runs next as it did in the session (`node tools/check.mjs; cat out/email.txt`). Its output isn't
+      compared; the call's status is, read-only calls included. Any other pipeline with a tool in it is the cutoff.
+    - **a `cd`** to a folder in the run. Claude Code keeps the folder for the calls after it, and so does the replay:
+      reads and file steps there take their paths from it, and a tool run from anywhere but the run is the cutoff.
     - **a file step**, made in the replay too, in order with the tools: a `mkdir -p` in the run; `cat > <source>`
       fed by a quoted heredoc (the lines after its end are more steps, as if joined by `;`); or a `sed -i` of plain
-      substitutions (`s|a|b|g`, no flag that writes) on sources, in this platform's form (`sed -i ''` on macOS)
+      substitutions (`s|a|b|g`, no flag that writes) on sources, in this platform's form (`sed -i ''` on macOS).
+      On macOS, GNU's form `sed -i '<script>' <file>` is recorded as a failure that changes nothing, without
+      running it: BSD sed takes the script as the backup suffix and the path as the script, and always fails.
 
-  `2>&1` and `2>/dev/null` are allowed after any step. The first event that isn't replayable is the *cutoff*:
+  `2>&1` and `2>/dev/null` are allowed after any step, and a trailing `;`. Leading assignments of plain values
+  (`P=/the/run; sed -n 1,20p $P/docs/REFERENCE.md`) are expanded where the command has no single quote or heredoc. In
+  double quotes a `$` that can't start an expansion is itself (`grep "^### Table$\|^### Row$"`). A step is judged
+  when it runs, so one that a `&&` or `||` skipped isn't the cutoff. The replay makes Claude Code's own
+  `.claude/.cc-writes` where the session's folder has it. The first event that isn't replayable is the *cutoff*:
   nothing from it on is verified. The render tools and checker print a result line signed with a secret only the session's environment holds
   (`[render] ok <out> in=<inputs> mac=…`); a call's lines must be the replay's, line for line. A call whose results
   differ is a `mismatch`: cut off there, and listed for a maintainer, never `tampered` by itself. The render tools pin
@@ -245,8 +256,75 @@ path, replayed with the batch's clock, and the row's replay figures rewritten. I
 
 `--dry-run` lists the jobs and estimates their cost; `--max-cost-usd` starts no new job once the finished runs cost
 that much (the results file then ends with `{"partial":true}`); `results/<stamp>-skill-<model>.plan.json` is the
-planned matrix. `BENCH_RUN_ROOT` sets where runs are made (the system's temporary folder by default; never under
+planned matrix. `--resume` with the batch's `--stamp` and `--model` finishes a batch that stopped: the kits, tasks,
+reps and clock come from its plan.json, only the jobs without a row run, and `--max-cost-usd` counts the whole batch.
+It refuses when the job list, the N/A tasks, task 7's baseline, Claude Code's version or a kit's engine or docs
+differ from the batch's. The stops it resumed from move from the results file to plan.json's `resumes`.
+`BENCH_RUN_ROOT` sets where runs are made (the system's temporary folder by default; never under
 `/tmp`, which the sessions are denied). A candidate engine whose checkout changed since `--as candidate` is refused.
+
+### Skill: the first baseline, 2026-11-09 (`results/2026-11-09-baseline-skill-claude-sonnet-5-5.jsonl`)
+
+`candidate` (this checkout at `493e649c`) against `release` (v0.3.0), the 10 core tasks, three runs each with Sonnet:
+57 runs (`landing` is N/A for release, which has no `breakpoints`), $45.29, plus $0.73 for the sandbox probe.
+**No clear difference, and the tasks are near saturation for Sonnet.**
+
+| | candidate | release |
+|---|---|---|
+| First try valid | 28/29 (97%) | 26/27 (96%) |
+| Verified first tries | 29/30 | 27/27 |
+| All 3 runs valid | 9/9 tasks | 8/9 tasks |
+| Final pass | 30/30 | 27/27 |
+| Median fix rounds | 0 | 0 |
+| Opened REFERENCE.md | 15/30 | 9/27 |
+| Median turns, output tokens, cost | 8, 2,490, $0.79 | 8, 2,438, $0.78 |
+| Mistakes | `build/syntax` ×1 (`report`) | `style/unknown padding` and `ts/TS2353 padding` ×1 (`welcome`) |
+
+The difference averaged over the 9 shared tasks is −2 points (−17, +11). Two first tries in 56 failed:
+- **candidate `report`:** a heredoc that wrote `<RowstackOnMobile`, a JSX syntax error.
+- **release `welcome`:** `padding` on the Email root, though both guides list it among their common mistakes.
+
+Every other first try was valid. The tasks count as saturated when first-try validity is 95% or more on every task,
+for Sonnet and Haiku both; then the check stops being worth running until harder tasks are added. For Sonnet that holds, apart from a typo. For Haiku it doesn't (below). The
+candidate opened REFERENCE.md in half its runs, more than the release did (9 of 27), though every first try was
+valid either way.
+
+Replayed again offline after two changes to the replay, which moved coverage from 90% and 81% to 97% and 100%:
+- read steps now run in the replay. Every `report` run checked its plain text with `…; cat out/email.txt`, whose
+  status the replay had treated as unknown.
+- `tsc | head` is accepted, and BSD sed's misread `-i` form is recorded as the failure it is.
+
+### Skill: the Haiku baseline, 2026-11-09 (`results/2026-11-09-baseline-haiku-skill-claude-haiku-5-5.jsonl`)
+
+The same 57 runs with Haiku 5.5. The cost cap stopped it after 19 runs, and `--resume` finished the other 38 as the
+same batch (same clock, engines and plan). $93.81 as Claude Code 2.1.238 counts it, which prices Haiku 5.5 at about
+twice Sonnet 5.5. **No clear difference, and the tasks aren't saturated for Haiku.**
+
+| | candidate | release |
+|---|---|---|
+| First try valid | 25/28 (89%) | 23/24 (96%) |
+| Verified first tries | 28/30 | 24/27 |
+| All 3 runs valid | 6/8 tasks | 5/6 tasks |
+| Final pass | 30/30 | 27/27 |
+| Median fix rounds | 0 | 0 |
+| Opened REFERENCE.md | 19/30 | 16/27 |
+| Median turns, output tokens, cost | 9, 5,589, $1.60 | 9, 6,116, $1.67 |
+
+The difference averaged over the 9 shared tasks is −6 points (−20, +7). Four first tries failed. Three were fixed in
+one round, and the replay of `landing` stopped before its fix:
+- **candidate `receipt`:** `borderTop`, a Divider's style, on another block.
+- **candidate `landing`:** `previewText`, an Email's prop, on the Page.
+- **candidate `welcome`:** an `alignSelf` the phone styles don't take.
+- **release `launch`:** an Image's `width` and `height` as props, not in `src` or `style`.
+
+Below 95% on a task: candidate `receipt` (1 of 2 verified), `landing` and `welcome` (2 of 3), and release `launch`
+(2 of 3). So the tasks aren't saturated. Haiku made more of the guide's kind of mistake than Sonnet
+did, and opened REFERENCE.md more often. Every run passed in the end.
+
+Haiku looks around with commands Sonnet didn't use, so the replay grew to cover them before the batch was rated:
+`file`, `find`, `cut`, `grep --include`, `echo "… $?"`, `>/dev/null`, `P=<path>; … $P`, and `cd`, whose folder
+Claude Code keeps from call to call. A `mkdir -p` in a guarded folder fails in the replay as the sandbox fails it.
+Replaying the other batches again changed none of their figures.
 
 ### Skill: the negative control, 2026-11-09 (`results/2026-11-09b-negative-skill-claude-sonnet-5-5.jsonl`)
 

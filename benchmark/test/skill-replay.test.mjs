@@ -1,6 +1,6 @@
 // The skill suite's replay (lib/replay.mjs), on sessions played without a model: each command really run in a run
 // directory with the run's secret and pinned clock, recorded as Claude Code's transcript records it, then replayed at
-// the same path. Follows the plan's list of replay tests.
+// the same path.
 //
 //   node --test test/skill-replay.test.mjs
 import { spawnSync } from "node:child_process";
@@ -45,6 +45,9 @@ async function play(actions, { brief = "event" } = {}) {
   const env = { ...sessionEnv(process.env, { browsers, tmp: join(dir, ".tmp") }), BENCH_SECRET: secret, BENCH_CLOCK: clock };
   const events = [];
   let id = 0;
+  // The shell's folder, kept from call to call as Claude Code keeps it.
+  let cwd = dir;
+  const cwdFile = join(dir, ".tmp", "cwd");
   const record = (name, input, content, isError = false) => {
     const tool_use_id = `t${id++}`;
     events.push({ type: "assistant", message: { content: [{ type: "tool_use", id: tool_use_id, name, input }] } });
@@ -69,10 +72,12 @@ async function play(actions, { brief = "event" } = {}) {
       if (a.ran) spawnSync("bash", ["-c", a.refused], { cwd: dir, env, encoding: "utf8" });
       record("Bash", { command: a.refused }, "Contains brace with quote character (expansion obfuscation)", true);
     } else if (a.bash) {
-      const r = spawnSync("bash", ["-c", a.bash], { cwd: dir, env, encoding: "utf8", timeout: 240_000 });
+      const command = typeof a.bash === "function" ? a.bash(dir) : a.bash;
+      const r = spawnSync("bash", ["-c", 'eval "$1"; s=$?; pwd > "$2"; exit $s', "_", command, cwdFile], { cwd, env, encoding: "utf8", timeout: 240_000 });
+      cwd = readFileSync(cwdFile, "utf8").trim();
       const out = a.output ? a.output(`${r.stdout}${r.stderr}`, { secret, dir }) : `${r.stdout}${r.stderr}`;
       const code = a.code ?? r.status;
-      record("Bash", { command: a.bash, ...(a.background ? { run_in_background: true } : {}) }, `${code ? `Exit code ${code}\n` : ""}${out}`, code !== 0);
+      record("Bash", { command, ...(a.background ? { run_in_background: true } : {}) }, `${code ? `Exit code ${code}\n` : ""}${out}`, code !== 0);
     } else record(a.tool, a.input, a.result ?? "ok");
     if (a.then) await a.then(dir);
   }
@@ -134,6 +139,15 @@ test('"tsc passes, render fails with jsx/markup, fixed, render passes" is one fi
   assert.equal(r.cutoff, null, JSON.stringify(r.cutoff));
   assert.equal(r.attempts.length, 3);
   assert.deepEqual(r.fixRounds, { verified: true, rounds: 1, neverValid: false });
+});
+
+test("a render that fails on a syntax error, with no diagnostic, is the mistake build/syntax", async () => {
+  // As a Sonnet run did: an edit that lost the space in `<Row stackOnMobile`.
+  const r = await play([{ write: src, content: template().replace("<Heading level={1}", "<Headinglevel={1}") }, { bash: RENDER }]);
+  assert.equal(r.cutoff, null, JSON.stringify(r.cutoff));
+  assert.deepEqual(r.firstTry, { verified: true, valid: false });
+  assert.deepEqual(r.mistakes.map((m) => m.key), ["build/syntax"]);
+  assert.match(r.mistakes[0].text, /^src\/template\.tsx:\d+ /);
 });
 
 test("Write and Edit rebuild the final sources byte for byte, with replace_all, skipping an Edit that failed", async () => {
@@ -228,12 +242,23 @@ test("compound commands recompute only the steps that ran, and match the session
   assert.deepEqual(orTsc.firstTry, { verified: true, valid: false }, "decided by the next call in which a render ran");
 });
 
-test("read steps: determined when they can't change the result, the cutoff when they can", async () => {
+test("read steps run in the replay, whose files are the session's: their status decides what runs, as in the session", async () => {
   const failing = await play([{ write: src, content: template({ edit: BOLD }) }, { bash: `${RENDER} && cat out/typo.html` }]);
   assert.equal(failing.cutoff, null, "the render fails, so the cat never runs");
-  const passing = await play([{ write: src, content: template() }, { bash: `${RENDER} && cat out/typo.html` }]);
-  assert.equal(passing.cutoff?.call, 1);
-  for (const cmd of [`cat missing.txt || ${RENDER}`, `${RENDER} ; cat out/email.html`]) assert.equal((await play([{ write: src, content: template() }, { bash: cmd }])).cutoff?.call, 1, cmd);
+  // The report task's check of its plain text, after the tools: the cat's status is the call's.
+  for (const cmd of [`${RENDER} && cat out/typo.html`, `${RENDER} ; cat out/email.html`, `${RENDER} && ${TSC} && ${CHECK}; cat out/email.txt`, `cat missing.txt || ${RENDER}`]) {
+    const r = await play([{ write: src, content: template() }, { bash: cmd }]);
+    assert.equal(r.cutoff, null, `${cmd}: ${JSON.stringify(r.cutoff)}`);
+    assert.deepEqual(r.firstTry, { verified: true, valid: true }, cmd);
+  }
+  // A read that succeeds skips the render after ||: no attempt.
+  const skipped = await play([{ write: src, content: template() }, { bash: `cat src/template.tsx || ${RENDER}` }]);
+  assert.equal(skipped.cutoff, null);
+  assert.equal(skipped.attempts.length, 0);
+  // A read whose status in the session isn't the replay's: the call's status differs, a mismatch.
+  const differs = await play([{ write: src, content: template() }, { bash: `${RENDER} ; cat out/email.html`, code: 1 }]);
+  assert.match(differs.cutoff?.reason ?? "", /the call's status differs/);
+  assert.equal(differs.cutoff?.mismatch, true);
   // Only read steps: nothing runs and nothing changes, whatever they print or exit with.
   const looks = await play([
     { bash: "ls -la" }, { bash: "cat missing.txt" }, { bash: "ls src out && cat BRIEF.md" },
@@ -302,9 +327,9 @@ test("a heredoc written with cat and a sed -i of substitutions are made in the r
   assert.deepEqual(done.firstTry, { verified: true, valid: true });
   assert.deepEqual(done.attempts.map((a) => a.error), [false, true, false]);
   assert.deepEqual(done.mistakes.map((m) => m.key), ["jsx/markup"]);
-  // What isn't replayed: sed -i of a file that isn't a source, a flag that writes, BSD sed's -i without its suffix
-  // (it reads the next word as the suffix and the path as the script), and a heredoc into out/.
-  for (const bash of [`${sedEdit} 's/a/b/' BRIEF.md`, `${sedEdit} 's/a/b/w copy' ${src}`, ...(process.platform === "darwin" ? [`sed -i 's/a/b/' ${src}`] : []), "cat > out/email.html <<'EOF'\n<p>x</p>\nEOF"]) {
+  // What isn't replayed: sed -i of a file that isn't a source, a flag that writes, and a heredoc into out/. (BSD
+  // sed's misread -i form is replayed as a failure: see below.)
+  for (const bash of [`${sedEdit} 's/a/b/' BRIEF.md`, `${sedEdit} 's/a/b/w copy' ${src}`, "cat > out/email.html <<'EOF'\n<p>x</p>\nEOF"]) {
     assert.equal((await play([{ write: src, content: body }, { bash }])).cutoff?.call, 1, bash);
   }
 });
@@ -356,6 +381,69 @@ test("a command Claude Code refused to run changed nothing; one recorded as refu
   assert.match(ran.cutoff?.reason ?? "", /inputs differ/);
 });
 
+test("tsc piped into head; BSD sed's misread -i form fails and changes nothing", async () => {
+  const r = await play([
+    { write: src, content: template({ edit: MOBILE }) },
+    { bash: `${TSC} 2>&1 | head -3; ${RENDER} 2>&1 | tail -20` },
+  ]);
+  assert.equal(r.cutoff, null, JSON.stringify(r.cutoff));
+  assert.deepEqual(r.attempts.map((a) => a.error), [true]);
+  assert.ok(r.mistakes.some((m) => m.key === "ts/TS2322 mobile"), "from tsc's whole output, not head's");
+  assert.equal((await play([{ write: src, content: template() }, { bash: `${RENDER} 2>&1 | head -3` }])).cutoff?.call, 1, "head after a tool that writes files");
+  if (process.platform === "darwin") {
+    const bsd = await play([
+      { write: src, content: template() },
+      { bash: `sed -i 's/A day of talks/A day/' ${src} && ${RENDER}; ${RENDER}` },
+    ]);
+    assert.equal(bsd.cutoff, null, JSON.stringify(bsd.cutoff));
+    assert.equal(bsd.sourcesMatch, true);
+    assert.equal(bsd.attempts.length, 1, "the && skipped the first render");
+  }
+});
+
+test("how Haiku looks around: file, find, cut, a literal $, echo of $?, >/dev/null, a trailing ;, P=<path>, and cd kept from call to call", async () => {
+  const r = await play([
+    // Claude Code's own folder, made in the session only: the replay makes it too, so `ls .claude` succeeds there.
+    { write: src, content: template(), then: (d) => mkdir(join(d, ".claude/.cc-writes"), { recursive: true }) },
+    { bash: "ls out .claude .tmp" },
+    { bash: "file images/event-hero.png; find images tools -maxdepth 1 -type f | head -5; ls node_modules/@hyper-elements/react >/dev/null && echo \"engine ok\";" },
+    // A `$` before `\|` or a closing quote is itself; the folder is docs after this call.
+    { bash: 'cd docs && grep -n -i "^### Table$\\|^### Row$" REFERENCE.md | head -5; grep -rn "Section" . --include=*.md | cut -c1-40 | head -3' },
+    // From docs: `cd docs` fails (there's no docs/docs), the reads after `;` run in docs.
+    { bash: "cd docs && ls; sed -n 1,3p REFERENCE.md | cut -c1-40" },
+    { bash: (d) => `P=${d}; ls $P/src; cd $P && ${RENDER}; echo "render exit $?"; ${TSC}; echo "tsc exit $?"` },
+  ]);
+  assert.equal(r.cutoff, null, JSON.stringify(r.cutoff));
+  assert.deepEqual(r.firstTry, { verified: true, valid: true });
+  assert.equal(r.attempts.length, 1);
+  // A tool run from a folder other than the run: the cutoff.
+  const sub = await play([{ write: src, content: template() }, { bash: "cd src" }, { bash: RENDER }]);
+  assert.equal(sub.cutoff?.call, 2);
+  assert.match(sub.cutoff.reason, /a tool run from src/);
+  // A step that isn't replayable after a && that skipped it: not the cutoff, since it never ran.
+  const skipped = await play([{ write: src, content: template() }, { bash: `cat missing.txt && node -e "1" ; ${RENDER}` }]);
+  assert.equal(skipped.cutoff, null, JSON.stringify(skipped.cutoff));
+  assert.deepEqual(skipped.firstTry, { verified: true, valid: true });
+  // `$P` in single quotes isn't expanded: no assignment is taken, and `P=src` is a step that isn't replayable.
+  assert.deepEqual(parseCommand("P=src; ls '$P'").steps?.map((s) => s.words), [["P=src"], ["ls", "$P"]]);
+  assert.deepEqual(parseCommand("P=src; ls $P/x ${P}").steps?.map((s) => s.words), [["ls", "src/x", "src"]]);
+});
+
+test("mkdir -p in a guarded folder fails as the sandbox fails it; one that exists succeeds", async () => {
+  // Haiku's release invoice #1: still in docs from an earlier cd, `mkdir -p src` failed (the sandbox denies writes to
+  // docs). This session runs unsandboxed, so it's recorded as the sandbox reported it.
+  const r = await play([
+    { bash: "cd docs && ls" },
+    { bash: "mkdir -p src && ls src", code: 1, output: () => "mkdir: src: Operation not permitted\n" },
+    { bash: "mkdir -p ../docs && ls" },
+    { bash: (d) => `cd ${d} && mkdir -p src` },
+    { write: src, content: template() },
+    { bash: RENDER },
+  ]);
+  assert.equal(r.cutoff, null, JSON.stringify(r.cutoff));
+  assert.deepEqual(r.firstTry, { verified: true, valid: true });
+});
+
 test("a kept run replays again offline with its row's secret: the same figures, and the session's path free again", async () => {
   const played = await play([
     { bash: "ls src 2>&1; cat BRIEF.md | head -5" }, { write: src, content: template({ edit: BOLD }) },
@@ -389,7 +477,10 @@ test("the cutoff: each of these, and nothing after it is verified", async () => 
     { write: "out/email.html", content: "<p>x</p>" },
     { read: src, lie: true },
     { bash: "npx @hyper-elements/migrate src --from unlayer-elements" },
-    { bash: "cd src && ls" },
+    { bash: "cd .. && ls" },
+    { bash: `${RENDER} >/dev/null` },
+    { bash: `grep "$?" BRIEF.md` },
+    { bash: "find . -name '*.tsx' -delete" },
     { bash: "npx tsc .cache/entry.tsx --noEmit" },
     { bash: "pwd" },
     { bash: RENDER, background: true },

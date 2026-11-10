@@ -13,7 +13,7 @@
 import { execFileSync, spawn } from "node:child_process";
 import { appendFile, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { existsSync, mkdtempSync, readFileSync, realpathSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { arch, platform, release } from "node:os";
 import { getEncoding } from "js-tiktoken";
@@ -25,6 +25,7 @@ import { changedGuards, gradingPass, guardHashes, scanSources, unlock } from "./
 import { replayFields, replayRun } from "./replay.mjs";
 import { randomBytes } from "node:crypto";
 import { preflight, sandboxProbe, skillDiscovery } from "./preflight.mjs";
+import { resumeOf, resumeProblems } from "./resume.mjs";
 
 const bench = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const arg = (name, def) => {
@@ -33,16 +34,24 @@ const arg = (name, def) => {
 };
 const suiteName = arg("suite", "email");
 const suite = await suiteOf(suiteName);
-const kits = arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", multi: "he,stack", skill: "candidate,release" }[suiteName]).split(",");
-const briefs = await briefsOf(suiteName, arg("briefs", suite.groups ? "core" : "all"));
-const reps = Number(arg("reps", "1"));
 const model = arg("model", "sonnet");
 const concurrency = Number(arg("concurrency", "3"));
 const timeoutMin = Number(arg("timeout", "20"));
+// --resume (the skill suite, with the batch's --stamp and --model): the stopped batch's plan.json gives the kits,
+// tasks, reps and clock, and only its jobs without a row run. --max-cost-usd then counts the whole batch.
+const resuming = process.argv.includes("--resume");
+if (resuming && (suiteName !== "skill" || arg("stamp") === undefined)) throw new Error("--resume takes the skill suite and the batch's --stamp");
+if (resuming && ["kits", "briefs", "reps"].some((a) => arg(a) !== undefined)) throw new Error("--resume takes the kits, tasks and reps from plan.json");
 const stamp = arg("stamp", new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19));
 const runsDir = join(bench, "runs", stamp);
 const resultsFile = join(bench, "results", `${stamp}-${suiteName}-${model}.jsonl`);
+const planFile = resultsFile.replace(/\.jsonl$/, ".plan.json");
 await mkdir(dirname(resultsFile), { recursive: true });
+const plan = resuming ? JSON.parse(await readFile(planFile, "utf8")) : null;
+const before = resuming ? resumeOf(plan, existsSync(resultsFile) ? await readFile(resultsFile, "utf8") : "") : null;
+const kits = plan?.kits ?? arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", multi: "he,stack", skill: "candidate,release" }[suiteName]).split(",");
+const briefs = plan?.briefs ?? await briefsOf(suiteName, arg("briefs", suite.groups ? "core" : "all"));
+const reps = plan?.reps ?? Number(arg("reps", "1"));
 
 const enc = getEncoding("o200k_base");
 
@@ -92,10 +101,15 @@ for (const [name, p] of Object.entries(runProvenance)) {
   if (p?.engine.name !== "candidate") continue;
   if (fingerprint(p.engine.checkout) !== p.engine.fingerprint) throw new Error(`kit ${name}: the candidate engine is stale (the checkout changed since it was installed). Run \`node lib/setup.mjs --as candidate\` again.`);
 }
+// The rows record the checkout relative to this repository ("." for this checkout), not as a path on this machine.
+for (const p of Object.values(runProvenance)) {
+  if (p?.engine.checkout) p.engine = { ...p.engine, checkout: relative(resolve(bench, ".."), p.engine.checkout) || "." };
+}
 
 const dryRun = process.argv.includes("--dry-run");
-// The batch's start, in ms: the clock every render in it reads (the skill suite pins it), recorded in plan.json.
-const batchClock = Date.now();
+// The batch's start, in ms: the clock every render in it reads (the skill suite pins it), recorded in plan.json. A
+// resumed batch keeps its own.
+const batchClock = plan ? Date.parse(plan.startedAt) : Date.now();
 const maxCost = arg("max-cost-usd") === undefined ? Infinity : Number(arg("max-cost-usd"));
 const skillSuite = suiteName === "skill";
 
@@ -105,6 +119,10 @@ let na = Object.fromEntries(kits.map((k) => [k, []]));
 let extraOf = {};
 if (skillSuite && !dryRun) {
   const root = mkdtempSync(join(runRoot, "preflight-"));
+  // A resumed batch's task 7 baselines are written again; they must come out the same.
+  const baselinesBefore = resuming && existsSync(join(runsDir, "baselines"))
+    ? Object.fromEntries(await Promise.all((await readdir(join(runsDir, "baselines"))).map(async (f) => [f, await readFile(join(runsDir, "baselines", f), "utf8")])))
+    : {};
   console.log("Preflight…");
   const pre = await preflight({ kits, briefs, root, baselines: join(runsDir, "baselines") });
   await rm(root, { recursive: true, force: true });
@@ -114,6 +132,12 @@ if (skillSuite && !dryRun) {
     process.exit(1);
   }
   ({ na, extraOf } = pre);
+  for (const [f, text] of Object.entries(baselinesBefore)) {
+    if ((await readFile(join(runsDir, "baselines", f), "utf8")) !== text) {
+      console.error(`FAIL --resume: the baseline ${f} differs from the batch's. Nothing was run.`);
+      process.exit(1);
+    }
+  }
   const box = await sandboxProbe({ model, browsers });
   if (!box.ok) {
     console.error(`FAIL sandbox probe: ${box.problems.join("; ")} (${box.transcript}). Nothing was run.`);
@@ -320,14 +344,24 @@ async function one(kit, brief, rep) {
 
 // The kits interleaved; a brief with `run.kits` only in those, and no N/A task (its `requires` probe failed).
 const briefKits = Object.fromEntries(await Promise.all(briefs.map(async (b) => [b, (await briefOf(suiteName, b)).run?.kits ?? null])));
-const jobs = jobsOf(kits, briefs, reps, briefKits, na);
+const planned = jobsOf(kits, briefs, reps, briefKits, na);
+if (resuming && !dryRun) {
+  const problems = resumeProblems({ plan, rows: before.rows, jobs: planned, na, claudeVersion: provenance.claudeVersion, kits: runProvenance });
+  if (problems.length) {
+    for (const p of problems) console.error(`FAIL --resume: ${p}`);
+    console.error("Nothing was run.");
+    process.exit(1);
+  }
+}
+const jobs = resuming ? before.left : planned;
 
 if (dryRun) {
   // An estimate from measured medians with Sonnet. The email and image suites: $0.43 an email or page task, $0.60 a
   // Canvas task. The skill suite's sessions cost more (its sandbox and checks): $0.80 a task (the negative control,
-  // 2026-11-09), Canvas scaled the same, plus the sandbox probe. The `none` arm about 1.5×; Haiku measured at about a
-  // quarter of Sonnet in the skill suite, Opus scaled by its price.
-  const perModel = /haiku/.test(model) ? 0.27 : /opus/.test(model) ? 1.67 : 1;
+  // 2026-11-09), Canvas scaled the same, plus the sandbox probe. The `none` arm about 1.5×; Opus scaled by its price.
+  // These are the costs Claude Code reports, which --max-cost-usd counts. Claude Code 2.1.238 reports Haiku 5.5 at
+  // about twice Sonnet 5.5 ($1.60 a skill task, 2026-11-09): it prices both above their list prices.
+  const perModel = /haiku/.test(model) ? 2 : /opus/.test(model) ? 1.67 : 1;
   const [task, canvas] = skillSuite ? [0.8, 1.12] : [0.43, 0.6];
   const estimate = (skillSuite ? 0.75 * perModel : 0) + jobs.reduce((sum, [kit, brief]) => sum + (brief === "launch" ? canvas : task) * (kit === "none" ? 1.5 : 1) * perModel, 0);
   for (const [kit, brief, rep] of jobs) console.log(`${kit} ${brief} #${rep}`);
@@ -336,13 +370,20 @@ if (dryRun) {
 }
 
 // The planned matrix, before any job starts, so a partial report knows which cells it's missing.
-if (skillSuite) {
-  await writeFile(resultsFile.replace(/\.jsonl$/, ".plan.json"), JSON.stringify({
+// A resumed batch keeps its plan, adding when it resumed, the stops it resumed from and its new cap, and its results
+// file loses those stops' markers.
+if (skillSuite && resuming) {
+  const resumes = [...(plan.resumes ?? []), { at: new Date().toISOString(), after: before.stops, rows: before.rows.length, maxCostUsd: Number.isFinite(maxCost) ? maxCost : null }];
+  await writeFile(planFile, JSON.stringify({ ...plan, maxCostUsd: Number.isFinite(maxCost) ? maxCost : null, resumes }, null, 2) + "\n");
+  await writeFile(resultsFile, before.text);
+  console.log(`Resuming ${stamp}: ${before.rows.length} rows ($${before.spentUsd.toFixed(2)}), ${jobs.length} runs left.`);
+} else if (skillSuite) {
+  await writeFile(planFile, JSON.stringify({
     stamp, suite: suiteName, model, kits, briefs, reps, startedAt: new Date(batchClock).toISOString(), maxCostUsd: Number.isFinite(maxCost) ? maxCost : null, na, jobs: jobs.map(([kit, brief, rep]) => ({ kit, brief, rep })),
   }, null, 2) + "\n");
 }
 console.log(`${jobs.length} runs (${suiteName}), ${concurrency} at a time, model ${model}. Results: ${resultsFile}`);
-let next = 0, spent = 0, stopped = false;
+let next = 0, spent = before?.spentUsd ?? 0, stopped = false;
 await Promise.all(Array.from({ length: concurrency }, async () => {
   while (next < jobs.length) {
     // --max-cost-usd: once the finished rows' cost reaches it, no new job starts; running ones finish.
