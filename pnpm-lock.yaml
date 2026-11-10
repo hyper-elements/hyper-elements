@@ -195,7 +195,7 @@ importers:
   packages/migrate:
     dependencies:
       '@hyper-elements/react':
-        specifier: workspace:^0.3.0
+        specifier: workspace:^0.4.0
         version: link:../react
       '@react-email/components':
         specifier: ^1.0.12

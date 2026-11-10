@@ -19,46 +19,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Nested\"\n    Row 536px: 2 side by side, stacked on phones\n      Column 295px\n        Text 295px \"Oban to Stornoway\"\n        Row 295px: 2 side by side\n          Column 149px: background #e6e3d8\n            Text 129px \"Deck 4\"\n          Column 140px: background #e6e3d8\n            Row 128px: 2 side by side\n              Column 62px: background #f3f1ea\n                Text 50px \"Row B\"\n              Column 62px: background #f3f1ea\n                Text 50px \"Seat 2\"\n      Column 197px\n        Row 197px: 2 side by side, stacked on phones\n          Column 96px\n            Column 96px: background #e6e3d8\n              Text 80px \"One car\"\n          Column 95px\n            Column 95px: background #e6e3d8\n              Text 79px \"Two bikes\"\n        Row 197px: 2 side by side, stacked on phones\n          Column 96px\n            Column 96px: background #e6e3d8\n              Text 80px \"One dog\"\n          Column 95px\n            Column 95px: background #e6e3d8\n              Text 79px \"One cabin\"\n    Layer 536px\n      Image 536px [The tide drawn in blue lines under a low sun] gallery/saltworks/low-water.png\n      Column 536px\n        Text 508px \"Words over the picture\"",
  "design": {

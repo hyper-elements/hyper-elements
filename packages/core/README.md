@@ -44,10 +44,13 @@ The props hold what every component needs, worked out once by the folder's `inde
 included, but a run inside text has only its own: CSS carries the text's to it); in page `placement` (what its parent's layout adds) and `classes()`.
 
 What an output can't do as a template asks isn't in the components. Each style and prop declares,
-for each output, how it's shown there (`support: { email, web }`: full, Outlook-only, partial or none,
-with its source); `shared/support.ts` reports from that data in one pass for any output, and email adds
-a few structural checks (`email/support.ts`: an image without a width). `test/writers/support.test.ts` keeps it
-true for every output with a writer: everything declared, nothing dropped silently.
+for each output, how its writer shows it there (`support: { email, web }`: full, partial or none, with
+its source: `writer`, `css` or `assumed`); `shared/support.ts` reports from that data in one pass for any
+output, and email adds the email writer's structural checks (`email/support.ts`: a Layer it can't draw, a
+TableCell, a Vimeo Video without a thumbnail). `test/writers/support.test.ts` keeps it true for every
+output with a writer: everything declared, nothing dropped silently. What a particular email client
+removes or changes isn't declared here: those checks are a plugin (`src/plugins.ts`),
+`@hyper-elements/email-clients`.
 
 The JSX (`src/writers/jsx.ts`) writes strings, and:
 

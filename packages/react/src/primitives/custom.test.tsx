@@ -190,7 +190,8 @@ describe("component()", () => {
         </Row>
       </Email>
     );
-    expect(result).toMatchObject({ valid: true, diagnostics: [{ code: "email/unsupported", severity: "warning", path: "root.children[0].style.justifyContent" }] });
+    // Then React's note that the email client checks come from email-clients' plugin.
+    expect(result).toMatchObject({ valid: true, diagnostics: [{ code: "email/unsupported", severity: "warning", path: "root.children[0].style.justifyContent" }, { code: "email/more-checks", severity: "info" }] });
   });
 
   it("can't share its type with another custom component in one template", async () => {

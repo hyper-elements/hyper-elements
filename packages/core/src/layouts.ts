@@ -7,7 +7,7 @@ import { defineComponent, prop, type SupportByTarget } from "./define";
 import { boolean, enumOf, number } from "./kinds";
 import type { Json, Node } from "./model";
 import { SURFACE_ROLES } from "./roots";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pageBackgroundStyle, pageBorderStyle, pageEffectsStyle, pagePlacementStyle, pagePositionStyle, pageSizeStyle, pick, placementStyle } from "./styles";
+import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pageBackgroundStyle, pageBorderStyle, pageEffectsStyle, pagePlacementStyle, pagePositionStyle, pageSizeStyle, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
 
@@ -83,6 +83,7 @@ export const Grid = defineComponent({
     ...pageEffectsStyle,
     ...inheritedTextStyle,
     ...boxStyle,
+    overflow: blockOverflow,
     gap: { ...layoutStyle.gap, description: "Space between its children, across and down (unless rowGap is set)." },
     rowGap: { ...layoutStyle.gap, label: "Row gap", description: "Space between its rows (gap by default); on phones, where the children stack, gap is between them." },
     alignItems: { ...layoutStyle.alignItems, description: "Where each child sits in its row's height, as CSS align-items." },

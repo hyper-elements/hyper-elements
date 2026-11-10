@@ -47,39 +47,39 @@ const pageLength = <I, O extends Json, const W extends string = never>(base: Kin
 export const textStyle = {
   color: { kind: color(), label: "Text color", inherited: true, support: { email: writer, web: css }},
   // A web font in a stack is reported from the root's fonts (whether it loads depends on the client).
-  fontFamily: { kind: fontFamily(), label: "Font", inherited: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
+  fontFamily: { kind: fontFamily(), label: "Font", inherited: true, support: { email: { level: "full", source: "writer" }, web: css } },
   // Word rounds sizes to half points (13px is 10pt): a fraction of a px.
-  fontSize: { kind: length(["px"], { min: 1 }), pageKind: pageLength(length(["px"], { min: 1 }), { percent: true, min: 1 }), label: "Font size", inherited: true, mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
+  fontSize: { kind: length(["px"], { min: 1 }), pageKind: pageLength(length(["px"], { min: 1 }), { percent: true, min: 1 }), label: "Font size", inherited: true, mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   fontWeight: {
     kind: fontWeight(),
     label: "Font weight",
     inherited: true,
-    support: { email: { level: "outlook", values: [100, 200, 300, 500], shows: "normal weight: Word draws only normal and bold (600 and over)", source: "caniemail", feature: "css-font-weight" }, web: css },
+    support: { email: { level: "full", source: "writer" }, web: css },
   },
-  fontStyle: { kind: enumOf(["normal", "italic"]), label: "Font style", inherited: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
+  fontStyle: { kind: enumOf(["normal", "italic"]), label: "Font style", inherited: true, support: { email: { level: "full", source: "writer" }, web: css } },
   // Written in px with mso-line-height-rule: exactly, which Word keeps (it drops unitless ones).
-  lineHeight: { kind: lineHeight(), pageKind: widened(lineHeight(), richLineHeight()), label: "Line height", inherited: true, mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
+  lineHeight: { kind: lineHeight(), pageKind: widened(lineHeight(), richLineHeight()), label: "Line height", inherited: true, mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   letterSpacing: {
     kind: length(["px"], { min: -100 }),
     pageKind: pageLength(length(["px"], { min: -100 }), { negative: true }),
     label: "Letter spacing",
     inherited: true,
     mobile: true,
-    support: { email: { level: "outlook", shows: "normal spacing: Word keeps letter spacing but doesn't draw it", source: "outlook-captures" }, web: css },
+    support: { email: { level: "full", source: "writer" }, web: css },
   },
-  textAlign: { kind: enumOf(["left", "center", "right", "justify"]), label: "Alignment", inherited: true, mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
+  textAlign: { kind: enumOf(["left", "center", "right", "justify"]), label: "Alignment", inherited: true, mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   textTransform: {
     kind: enumOf(["none", "uppercase", "lowercase", "capitalize"]),
     label: "Letter case",
     inherited: true,
-    support: { email: { level: "outlook", values: ["lowercase"], shows: "the text as written: Word doesn't lowercase it", source: "caniemail", feature: "css-text-transform" }, web: css },
+    support: { email: { level: "full", source: "writer" }, web: css },
   },
   textDecoration: {
     kind: enumOf(["none", "underline", "line-through"]),
     label: "Decoration",
     support: {
       // Removed, so "none" leaves a link the client's own underline: said only where a line is asked for.
-      email: { level: "partial", values: ["underline", "line-through"], shows: "no line: the client removes it", source: "caniemail", feature: "css-text-decoration", clients: ["gmail-app-other", "protonmail", "orange", "sfr"] },
+      email: { level: "full", source: "writer" },
       web: css,
     },
   },
@@ -95,18 +95,15 @@ export const boxStyle = {
   maxWidth: { kind: length(["px", "%"]), pageKind: pageLength(length(["px", "%"]), { percent: true, words: MAX_WORDS }), label: "Maximum width", mobile: true, support: { email: writer, web: css }},
   height: { kind: length(["px"]), pageKind: pageLength(length(["px"]), { percent: true, words: SIZE_WORDS }), label: "Height", support: { email: writer, web: css }},
   // Cell padding, which Word keeps (it drops a div's).
-  padding: { kind: insets(), pageKind: widened(insets(), richInsets()), label: "Padding", mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
+  padding: { kind: insets(), pageKind: widened(insets(), richInsets()), label: "Padding", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   backgroundColor: { kind: color(), label: "Background color", support: { email: writer, web: css }},
-  border: { kind: border(), label: "Border", mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
+  border: { kind: border(), label: "Border", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
   borderRadius: {
     kind: radius(),
     pageKind: widened(radius(), richRadius()),
     label: "Corner radius",
     support: {
-      email: [
-        { level: "outlook", shows: "square corners", source: "caniemail", feature: "css-border-radius" },
-        { level: "partial", shows: "square corners", source: "caniemail", feature: "css-border-radius", clients: ["gmx", "web-de", "orange"] },
-      ],
+      email: { level: "full", source: "writer" },
       web: css,
     },
   },
@@ -115,9 +112,33 @@ export const boxStyle = {
     pageKind: enumOf(["visible", "hidden", "clip", "scroll", "auto"]),
     label: "Overflow",
     description: "Whether content past a set height is cut off.",
-    support: { email: { level: "outlook", shows: "content past the height: Word doesn't cut it off", values: ["hidden"], source: "caniemail" }, web: css },
+    support: { email: { level: "full", source: "writer" }, web: css },
   },
 } satisfies Record<string, StyleSpec>;
+
+/** What gives a block a box of its own in an email (the Email writer's Box): on desktop, and on phones. */
+const BOX_KEYS = ["padding", "border", "borderRadius", "backgroundColor", "height", "width", "maxWidth"];
+const PHONE_BOX_KEYS = ["padding", "border", "backgroundColor", "width", "maxWidth"];
+const ownBox = (node: { style?: Record<string, unknown>; mobile?: Record<string, unknown> }) =>
+  BOX_KEYS.some((key) => node.style?.[key] !== undefined) || PHONE_BOX_KEYS.some((key) => node.mobile?.[key] !== undefined);
+
+/**
+ * A Column's or a Grid's overflow: the Email writer cuts content off on the block's box, which it writes only for a
+ * background, padding, a border, corners, a width or a height. Without one, nothing is cut off, and that's said.
+ */
+export const blockOverflow = {
+  ...boxStyle.overflow,
+  support: {
+    email: {
+      level: "partial",
+      values: ["hidden"],
+      when: (_value, node) => !ownBox(node),
+      shows: "nothing cut off: the email cuts content off on a box of its own (a background, padding, a border, corners, a width or a height), and this one has none",
+      source: "writer",
+    },
+    web: css,
+  },
+} satisfies StyleSpec;
 
 export const layoutStyle = {
   gap: { kind: length(["px"]), pageKind: pageLength(length(["px"]), { percent: true }), label: "Gap", description: "Space between children.", mobile: true, support: { email: writer, web: css }},

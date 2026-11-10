@@ -83,12 +83,14 @@ Create a project (https://example.com/projects/new)
 Acme Inc., 1 Market St, San Francisco
 ```
 
-`diagnostics` holds warnings and notes. This template gets two notes, because classic Outlook draws square corners:
+`diagnostics` holds warnings and notes. This template gets one note, saying where the email client checks are:
 
 ```text
-info email/outlook-degraded at root.children[1].style.borderRadius: borderRadius on this Column in classic Outlook: square corners
-info email/outlook-degraded at root.children[1].children[2].style.borderRadius: borderRadius on this Button in classic Outlook: square corners
+info email/more-checks at root: Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients Fix: npm i @hyper-elements/email-clients, then validate(email, { plugins: [await emailClients()] })
 ```
+
+With that plugin passed, you get the client notes instead: here, that classic Outlook draws the Column's and the
+Button's corners square.
 
 A template with errors doesn't render: `render()` rejects with an `ElementsError` that lists each one. See [Diagnostics](/docs/diagnostics).
 

@@ -18,82 +18,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
+    "code": "email/more-checks",
     "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "warning",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on desktop shows nowhere, what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
+    "code": "email/more-checks",
     "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "warning",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on desktop shows nowhere, what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].style.borderRadius",
-    "message": "borderRadius on this Button in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[2].children[4].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "warning",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on desktop shows nowhere, what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px: background #12242e, desktop only\n    Text 536px \"A band only desktops show: print your boarding pass.\"\n  Section 600px: background #c93a25, phones only\n    Text 560px \"A band only phones show: your pass is in the app.\"\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Hidden blocks\"\n    Row 536px: 3 side by side, stacked on phones\n      Column 263px: background #e6e3d8\n        Text 235px \"Always here\"\n        Text 235px \"The 08:30 to Stornoway\"\n      Column 263px: background #e6e3d8, desktop only\n        Text 235px \"Desktop’s column\"\n        Text 235px \"Print and fold it\"\n      Column 536px: background #e6e3d8, phones only\n        Text 508px \"Phone’s column\"\n        Text 508px \"Turn the brightness up\"\n    Image 536px: desktop only [The tide drawn in blue lines under a low sun: the desktop's picture] gallery/saltworks/low-water.png\n    Text 536px: phones only \"Phones get these words instead of the picture.\"\n    Button: background #c93a25, phones only \"Open the app\" → https://merrow.example/app",
  "design": {

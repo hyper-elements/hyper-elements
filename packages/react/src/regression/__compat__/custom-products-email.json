@@ -14,100 +14,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[1](acme.ProductCard).children[3].hover",
-    "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: what's hidden on phones shows, it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 640px\n  Section 640px: background #f3f4f6\n    Heading h1 592px \"New arrivals\"\n    Row 592px: 2 side by side, stacked on phones\n      Column 288px: background #ffffff\n        Image 254px [Trail runner] https://example.com/shoe.png\n        Heading h3 254px \"Trail runner\"\n        Text 254px \"$120\"\n        Button: background #0f766e \"Buy Trail runner\" → https://example.com/trail\n      Column 288px: background #ffffff\n        Image 254px [City walker] https://example.com/shoe.png\n        Heading h3 254px \"City walker\"\n        Text 254px \"$95\"\n        Button: background #7c3aed \"Buy City walker\" → https://example.com/city\n    Text 592px: desktop only \"Free shipping on every order.\"",
  "design": {

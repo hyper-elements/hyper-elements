@@ -3,8 +3,6 @@
  * naming the node (by id where it has one) and the path to the value.
  */
 
-import type { EmailClient } from "./email-clients";
-
 export type Severity = "error" | "warning" | "info";
 
 export interface Diagnostic {
@@ -16,17 +14,17 @@ export interface Diagnostic {
   path: string;
   /** The node's id, once it has one. */
   nodeId?: string;
-  /** The email clients it's about; absent: every email, never left out by `emailClients`. */
-  clients?: EmailClient[];
+  /** The email clients it's about (a plugin's, such as email-clients'); absent: none in particular. */
+  clients?: readonly string[];
   /** What to change. */
   fix?: string;
-  /** Where to see it: for a problem known from caniemail's tables, its page there. */
+  /** Where to see more about it (an https URL). */
   see?: string;
 }
 
-/** What an email client problem adds to a diagnostic. */
+/** What a diagnostic may add: the email clients it's about, what to change, where to see more. */
 export interface ClientFields {
-  clients?: readonly EmailClient[];
+  clients?: readonly string[];
   fix?: string;
   see?: string;
 }

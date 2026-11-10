@@ -115,6 +115,7 @@ JSX
 |------|---------|
 | `packages/react/src/primitives/index.ts` | The main entry: the components, `component()`, `render()`, `validate()`, `outline()`, `prepare()` |
 | `packages/core/src/components.ts` | Component definitions |
+| `packages/core/src/plugins.ts` | Plugins: what a package outside core adds to `validate()` and `render()` (`check` on a frozen copy of the laid-out tree, `checkOutput` on the written HTML), and how core checks, maps and merges what they return. Email client checks are a plugin, `@hyper-elements/email-clients`; core has none of its own |
 | `packages/core/src/writers/{email,page}/` | One writer per component per output (`Button.tsx`, `Row.tsx`, …), in a JSX that writes strings (`packages/core/src/writers/jsx.ts`, no React); each output's document shell is its `index.tsx` |
 | `packages/core/src/resolve.ts` | Layout: the width of every block, which every output reads |
 | `packages/core/src/theme.ts` | Themes: reading one, token environments and scopes, and merging a theme into a node's style |
@@ -225,9 +226,10 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 405,000 bytes,
-  `dist/builder.js` 570,000 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
-  `@unlayer/exporters`; unit tests with coverage; the CSP gate.
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; the release script's tests
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 400,000 bytes, `dist/builder.js`
+  563,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports `@unlayer/exporters`; unit
+  tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
 - **Browser**: the content-workflows example's typecheck and tests; the demo app builds; browser runtime; browser

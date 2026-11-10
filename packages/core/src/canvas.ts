@@ -53,7 +53,7 @@ export const Svg = defineComponent({
   children: { categories: ["shape"] },
   sizing: "shrink",
   targets: { web: {} },
-  unsupported: { email: "Gmail and classic Outlook don't show inline SVG; use an Image of it (a PNG) instead" },
+  unsupported: { email: "the Email writer has no inline SVG; use an Image of it (a PNG) instead" },
   editor: { groups: [{ title: "Drawing", paths: ["props.width", "props.height", "props.viewBox", "props.title"] }] },
 });
 

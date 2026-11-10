@@ -159,7 +159,7 @@ describe("checkTarget", () => {
     expect(checkTarget(document, "pdf").map((d) => d.path)).toEqual(["root"]);
     const drawing = parseDocument({ root: { type: "Email", children: [{ type: "Svg", props: { width: 40, height: 40 }, children: [{ type: "Circle", props: { r: 10 } }, { type: "Rect", props: { width: 4, height: 4 } }] }] } });
     expect(checkTarget(drawing, "email").map((d) => [d.path, d.message])).toEqual([
-      ["root.children[0]", "A Svg can't be rendered to email: Gmail and classic Outlook don't show inline SVG; use an Image of it (a PNG) instead"],
+      ["root.children[0]", "A Svg can't be rendered to email: the Email writer has no inline SVG; use an Image of it (a PNG) instead"],
     ]);
   });
 });

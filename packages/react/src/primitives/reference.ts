@@ -295,7 +295,7 @@ import Welcome from "./welcome";
 try {
   const { html, diagnostics } = await render(<Welcome />);
   await writeFile("welcome.html", html);
-  console.log(formatDiagnostics(diagnostics)); // warnings, each with its email clients and fix
+  console.log(formatDiagnostics(diagnostics)); // warnings and notes, each with what to change
 } catch (e) {
   if (!(e instanceof ElementsError)) throw e;
   console.error(formatDiagnostics(e.diagnostics));
@@ -341,7 +341,7 @@ function guide(example: string): string {
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
     "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
     "- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).",
-    "- An Email's warnings name the email clients they're about (`clients`), with a `fix` and a `see` link. The clients most email is read in are checked; `emailClients: [...DEFAULT_EMAIL_CLIENTS, \"gmx\"]` checks more.",
+    "- Email client checks come from `@hyper-elements/email-clients`: `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and other clients remove or change, each naming its `clients`, with a `fix`. Without it, an Email gets one note (`email/more-checks`) saying so; `plugins: []` leaves it out.",
     "",
     "```tsx",
     RENDER_EXAMPLE,

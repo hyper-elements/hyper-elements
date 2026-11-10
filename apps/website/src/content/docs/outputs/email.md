@@ -67,16 +67,16 @@ Web fonts in `fonts` are written as `@font-face` rules where classic Outlook doe
 
 ## Size budgets
 
-`render()` warns before Gmail clips a message (`email/size`, at about 100 KB of HTML) and when the stylesheet is more than Gmail reads, 16 KB (`email/style-size`).
+Gmail clips a message after about 100 KB of HTML, and reads 16 KB of a `<style>`. `@hyper-elements/email-clients`' plugin warns about both when it's passed to `render()` (`email/size`, `email/style-size`).
 
 ## What email can't do
 
-`validate()` tells you each of these for your template, with the path:
+`validate()` tells you each of these for your template, with the path; the ones about particular clients come from `@hyper-elements/email-clients`' plugin:
 
-- **Svg.** Gmail and classic Outlook drop inline SVG, so an `Svg` in an email is an error. Use an `Image` of it, a PNG.
+- **Svg.** The Email writer has no inline SVG (Gmail and classic Outlook drop it), so an `Svg` in an email is an error. Use an `Image` of it, a PNG.
 - **Layer.** An email draws one shape of it: an Image as wide as the Layer, with one child over it. The image is the cell's background, with VML for Outlook.
 - **`justifyContent: "space-between"`.** The children start at the left.
-- **Rounded corners and letter spacing in classic Outlook.** Corners are square, and letter spacing is normal. You get a note (`email/outlook-degraded`).
+- **Rounded corners and letter spacing in classic Outlook.** Corners are square, and letter spacing is normal. The plugin notes it (`email/outlook-degraded`).
 - **A Vimeo video's thumbnail.** It can't be found without the network, so give the `Video` a `thumbnail`.
 - **An Image without its file's size.** Outlook shows it at the file's size, however wide that is. Give `src` its `width` and `height`.
 

@@ -29,7 +29,6 @@
  * wrapped inside the shape's fixed size.
  */
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
-import type { EmailClient } from "../../email-clients";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, raw, withStylesheet, type Html } from "../jsx";
 import { BLOCK_MAP_VERSION, BlockMarks, MARK_PAIRS, markBlock, readMarks, withBlockMarks, type BlockMap } from "../shared/block-map";
@@ -150,7 +149,9 @@ export interface EmailHtml {
   body: string;
   /** The `<body>`'s own style. */
   bodyStyle: string;
-  /** What only the written email shows: its size against Gmail's limits. (What email can't do as asked is `emailSupport`'s, found before writing.) */
+  /** The `<style>` text it wrote (its resets and rules), for a plugin's checkOutput (Gmail reads 16 KB of a `<style>`). */
+  stylesheet: string;
+  /** What only the written email shows. None today: email clients' size limits are the email-clients plugin's (checkOutput). */
   diagnostics: Diagnostic[];
   /** With `blockMap`, where each block is in `html`. */
   blocks?: BlockMap;
@@ -158,14 +159,11 @@ export interface EmailHtml {
 
 /** An email is on a phone below its content width plus this. */
 export const EMAIL_PHONE_MARGIN = 20;
-/** Gmail clips a message at this many bytes of HTML ("[Message clipped]"). */
-export const GMAIL_CLIP_BYTES = 102_400;
-/** Gmail reads this much of a `<style>`. */
-export const GMAIL_STYLE_BYTES = 16_384;
 
 export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & { blockMap?: boolean } = {}): EmailHtml {
   const root = resolved.root;
-  // What email can't do as asked is found before writing (prepareTemplate: emailSupport); here, only what needs the written email.
+  // What email can't do as asked is found before writing (prepareTemplate: emailSupport); here, only what needs the written
+  // email (nothing today: email clients' size limits are the email-clients plugin's checkOutput).
   const d = new Diagnostics();
   const fonts = fontFaces(root, { swap: false });
   const width = root.width ?? 600;
@@ -234,23 +232,7 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & 
     `<head>${head}</head><body${styleAttr(bodyDeclarations)}>`;
   const html = `${shell}${body}</body></html>`;
 
-  const bytes = utf8Bytes(html);
-  // Measured in Gmail on the web; the apps are likely the same.
-  const gmails: EmailClient[] = ["gmail", "gmail-app", "gmail-app-other"];
-  if (bytes > GMAIL_CLIP_BYTES) {
-    d.warning("email/size", `The email is ${Math.round(bytes / 1024)} KB; Gmail clips a message after ${GMAIL_CLIP_BYTES / 1024} KB ("[Message clipped]")`, "root", undefined, {
-      clients: gmails,
-      fix: "shorten the email, or move long sections to a page: what follows the clip is behind a link",
-    });
-  }
-  const styleBytes = utf8Bytes(stylesheet);
-  if (styleBytes > GMAIL_STYLE_BYTES) {
-    d.warning("email/style-size", `The stylesheet is ${Math.round(styleBytes / 1024)} KB; Gmail reads ${GMAIL_STYLE_BYTES / 1024} KB of a <style>`, "root", undefined, {
-      clients: gmails,
-      fix: "use fewer phone and hover styles: each one adds a rule",
-    });
-  }
-  return { html, head, body, bodyStyle, diagnostics: d.list, ...(marked ? { blocks: blockMap(resolved, marked.found, email, utf8Bytes(shell + preheader + opening)) } : {}) };
+  return { html, head, body, bodyStyle, stylesheet, diagnostics: d.list, ...(marked ? { blocks: blockMap(resolved, marked.found, email, utf8Bytes(shell + preheader + opening)) } : {}) };
 }
 
 /** Each mark's block, at its offset in UTF-8 bytes: `start` bytes before the email's markup, and its markup up to the mark. */
