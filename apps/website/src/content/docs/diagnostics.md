@@ -59,7 +59,7 @@ Before 0.4, the client checks were part of this package, with an `emailClients` 
 ### Plugins
 
 A plugin is `{ name, api: PLUGIN_API, check?, checkOutput? }`. `check` sees a frozen copy of the laid-out template,
-`checkOutput` the written HTML (`render()` only). What a plugin returns is checked: a diagnostic that doesn't fit (a
+`checkOutput` the written HTML and the root's type (`render()` only). What a plugin returns is checked: a diagnostic that doesn't fit (a
 code for another kind of root, an error, a path that isn't in the template) is left out, with a `plugin/invalid`
 warning. A plugin that throws gives a `plugin/failed` warning; the render still completes.
 

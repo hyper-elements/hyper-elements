@@ -48,9 +48,10 @@ describe("plugins", () => {
     expect(seen!.builtIn("root.children[0](Menu).children[1]")).toBe(true);
   });
 
-  it("gives checkOutput the compact output and the Email's stylesheet, even with pretty", () => {
+  it("gives checkOutput the root's type, the compact output and the Email's stylesheet, even with pretty", () => {
     let seen: PluginOutput | undefined;
     const { head } = renderTemplate(email([text("Hi", { mobile: { fontSize: 12 } })]), { pretty: true, plugins: [plugin("out", { checkOutput: (o) => ((seen = o), []) })] });
+    expect(seen!.root).toBe("Email");
     expect(seen!.html.startsWith("<!DOCTYPE")).toBe(true);
     expect(seen!.html).not.toContain("\n  ");
     expect(head).toContain("\n");
@@ -59,6 +60,7 @@ describe("plugins", () => {
     expect(Object.isFrozen(seen)).toBe(true);
     let pageOutput: PluginOutput | undefined;
     renderTemplate(page([text("Hi")]), { plugins: [plugin("out", { checkOutput: (o) => ((pageOutput = o), []) })] });
+    expect(pageOutput!.root).toBe("Page");
     expect(pageOutput!.stylesheet).toBe("");
   });
 

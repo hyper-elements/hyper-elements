@@ -54,6 +54,8 @@ export interface PluginInput {
 
 /** The written output, compact (before `pretty`): `stylesheet` is the `<style>` text an Email's writer wrote ("" otherwise). */
 export interface PluginOutput {
+  /** The root's type (`Email`, `Page`, `Document`, `Canvas`): which output this is. */
+  root: string;
   html: string;
   head: string;
   body: string;

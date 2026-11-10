@@ -137,7 +137,7 @@ export function renderTemplate(input: unknown, options: RenderOptions & Componen
   const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), stylesheet: "", diagnostics: [] };
   // The plugins' checks on the written output, compact (what `pretty` would change isn't what an email client receives).
   const { plugins } = acceptPlugins(options.plugins);
-  const outputChecks = pluginOutputChecks(plugins, { html: written.html, head: written.head, body: written.body, stylesheet: written.stylesheet }, resolved);
+  const outputChecks = pluginOutputChecks(plugins, { root: resolved.root.type, html: written.html, head: written.head, body: written.body, stylesheet: written.stylesheet }, resolved);
   const shown = (html: string) => (options.pretty ? prettyHtml(html) : html);
   const blocks = "blocks" in written ? written.blocks : undefined;
   return {

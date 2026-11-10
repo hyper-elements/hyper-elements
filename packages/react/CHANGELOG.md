@@ -22,7 +22,7 @@ render(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlook
   passes `emailClients` gets an `email/clients-moved` note with the replacement, until 0.5.
 - **New:** `plugins` on `validate()` and `render()`, with `PLUGIN_API` and the types `ElementsPlugin`, `PluginInput`,
   `PluginNode`, `PluginOutput` and `PluginDiagnostic`. A plugin's `check` sees a frozen copy of the laid-out template,
-  its `checkOutput` the written HTML. Core checks what a plugin returns (`plugin/invalid`, `plugin/unsupported`,
+  its `checkOutput` the written HTML and which root wrote it. Core checks what a plugin returns (`plugin/invalid`, `plugin/unsupported`,
   `plugin/duplicate`, `plugin/failed`), and a plugin can't make a render fail.
 - **Without the plugin,** an Email gets one note, `email/more-checks`, saying where the client checks are;
   `plugins: []` leaves it out. Pages, Documents and Canvases are unchanged.
