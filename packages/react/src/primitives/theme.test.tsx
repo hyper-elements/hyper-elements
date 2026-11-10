@@ -501,6 +501,58 @@ describe("theme/inherited", () => {
     expect(said(<Email theme={theme}><Section style={{ color: "#ffffff" }}><Text style={{ color: "#ffffff" }}>own</Text></Section></Email>)).toEqual([]);
     expect(said(<Email theme={follows}><Section tokens={{ colors: { foreground: "#ffffff" } }}><Text>scope</Text></Section></Email>)).toEqual([]);
   });
+
+  it("says it for body text's size and line height too, not for a Heading's type scale or a Button's size", () => {
+    const sized = defineTheme({ fontSizes: { body: 16 }, components: { Text: { fontSize: 14, lineHeight: 1.2 }, Heading: { by: { level: { 1: { fontSize: 40 } } } }, Button: { fontSize: 15 } } });
+    const found = validate(
+      <Email theme={sized}>
+        <Section tokens={{ fontSizes: { body: 18 }, lineHeights: { body: 1.6 } }}>
+          <Text>a</Text>
+          <Heading level={1}>b</Heading>
+          <Button href="https://example.com">c</Button>
+        </Section>
+      </Email>
+    ).diagnostics.filter((d) => d.code === "theme/inherited");
+    expect(found.map((d) => d.path)).toEqual(["root.children[0].children[0].style.fontSize", "root.children[0].children[0].style.lineHeight"]);
+    expect(found.map((d) => d.message)).toEqual([expect.stringContaining("fontSizes.body"), expect.stringContaining("lineHeights.body")]);
+  });
+});
+
+describe("checks a theme makes no mistake it would keep quiet", () => {
+  it("checks the references of every root's formats, not only this root's", () => {
+    const theme = defineTheme({ colors: { primary: "#ff0000", link: "{colors.primary}" }, formats: { page: { colors: { link: "{colors.nope}" } }, document: { colors: { primary: "#000000" } } } });
+    expect(errors(<Email theme={theme}><Text>a</Text></Email>).map((d) => [d.code, d.path])).toEqual([["theme/missing-token", "root.theme.formats.page.colors.link"]]);
+    expect(errors(<Page theme={theme}><Text>a</Text></Page>).map((d) => [d.code, d.path])).toEqual([["theme/missing-token", "root.theme.colors.link"]]);
+  });
+
+  it("refuses a `by` value its prop never has, with the one meant", () => {
+    const theme = { components: { Heading: { by: { level: { 1: { fontSize: 40 }, 7: { fontSize: 50 } } } }, Row: { by: { stackOnMobile: { flase: { gap: 0 }, true: { gap: 8 } } } } } };
+    const found = errors(<Email theme={theme as never}><Heading>a</Heading></Email>);
+    expect(found.map((d) => [d.code, d.path])).toEqual([
+      ["theme/schema", "root.theme.components.Heading.by.level.7"],
+      ["theme/schema", "root.theme.components.Row.by.stackOnMobile.flase"],
+    ]);
+    expect(found[0].message).toContain("(it's 1, 2, 3, 4, 5, 6)");
+    expect(found[1].message).toContain('did you mean "false"');
+  });
+
+  it("refuses variants on a root, which a template has one of", () => {
+    const theme = { components: { Email: { backgroundColor: "#ffffff", variants: { dark: { backgroundColor: "#000000" } } } } };
+    expect(errors(<Email theme={theme as never}><Text>a</Text></Email>).map((d) => [d.code, d.path])).toEqual([["theme/schema", "root.theme.components.Email.variants"]]);
+  });
+
+  it("reads a theme at a document's top level as its root's, refuses one in both places, and doesn't merge a read document again", () => {
+    const theme = { colors: { background: "#111111", primary: "#ff0000" }, components: { Button: { variants: { ghost: { backgroundColor: "#00ff00" } } } } };
+    const button = { type: "Button", variant: "ghost", props: { href: "https://example.com" }, children: ["Go"] };
+    const top = checkDocument({ theme, root: { type: "Email", children: [button] } });
+    expect(top.diagnostics.filter((d) => d.severity === "error")).toEqual([]);
+    expect(top.document!.root.style).toMatchObject({ backgroundColor: "#111111" });
+    expect((top.document!.root.children![0] as { style?: unknown }).style).toMatchObject({ backgroundColor: "#00ff00" });
+    expect(top.document!.merged).toBe(true);
+    const both = checkDocument({ theme, root: { type: "Email", theme, children: [button] } });
+    expect(both.diagnostics.map((d) => [d.code, d.path])).toContainEqual(["theme/schema", "theme"]);
+    expect(checkDocument({ ...top.document, merged: "yes" }).diagnostics.map((d) => d.path)).toContain("merged");
+  });
 });
 
 describe("extendTheme() and formats", () => {
@@ -710,5 +762,27 @@ describe("the builder", () => {
     );
     const json = JSON.stringify(design);
     expect(json).toContain("#f00");
+  });
+
+  it("reads the scopes around a locked block as rendering does: a scope's token where the theme has a group keeps the group's tokens", async () => {
+    const theme = defineTheme({ colors: { accent: { light: "#eeeeee" } } });
+    const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Column style={{ backgroundColor: token("colors.accent.light"), color: token("colors.accent") }}><Text>a</Text></Column> });
+    const template = (
+      <Email theme={theme}>
+        <Section tokens={{ colors: { accent: "#ff0000" } }}>
+          <Row>
+            <Column>
+              <Card />
+            </Column>
+          </Row>
+        </Section>
+      </Email>
+    );
+    const { html } = await render(template);
+    expect(html).toContain("#eee");
+    const { design, report } = toDesign(template);
+    expect(report.filter((line) => /error|missing/i.test(line))).toEqual([]);
+    expect(JSON.stringify(design)).toContain("#eee");
+    expect(JSON.stringify(design)).toContain("#f00");
   });
 });

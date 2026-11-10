@@ -8,7 +8,7 @@ import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
 import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
-import { nearest } from "./nearest";
+import { a, nearest } from "./nearest";
 import { COMPONENTS } from "./components";
 import { aliasHint, holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
 
@@ -19,6 +19,10 @@ export interface CheckResult {
 }
 
 const NODE_KEYS = ["id", "type", "props", "style", "mobile", "hover", "hidden", "children", "variant", "tokens", "theme"];
+/** The body text styles a box passes down, each with the role a theme sets it with. */
+const BODY_ROLES = { color: ["color", "colors.foreground"], fontFamily: ["font", "fonts.body"], fontSize: ["size", "fontSizes.body"], lineHeight: ["line height", "lineHeights.body"] } as const;
+type InheritedKey = keyof typeof BODY_ROLES;
+const INHERITED = Object.keys(BODY_ROLES) as InheritedKey[];
 /** The components that take `tokens`: a scope over what they hold. */
 const SCOPES = new Set(["Section", "Row", "Column", "Grid"]);
 /** An id is written into HTML ids and CSS selectors. */
@@ -48,10 +52,12 @@ interface Context {
   environment?: ThemeEnvironment;
   /** The root's theme, read (authored). */
   theme?: ThemeData;
+  /** A theme given at the document's top level of a template (authored): read as its root's. */
+  documentTheme?: unknown;
   /** A scope was read (a template with scopes and no theme still gets a document theme, empty). */
   sawScope?: boolean;
   /** The color and font an ancestor sets itself, which a theme's component default could stop reaching its descendants. */
-  inherited?: Partial<Record<"color" | "fontFamily", { value: Json; at: string }>>;
+  inherited?: Partial<Record<InheritedKey, { value: Json; at: string }>>;
   /** What `theme/inherited` has said, once each. */
   warned?: Set<string>;
 }
@@ -64,21 +70,24 @@ export function checkDocument(input: unknown, options?: ComponentsOption | Regis
     d.error("document/invalid", "A document is an object: { root: { type: \"Email\", … } }", "");
     return { document: null, diagnostics: d.list };
   }
-  const extra = Object.keys(input).filter((key) => key !== "root" && key !== "theme");
+  const extra = Object.keys(input).filter((key) => key !== "root" && key !== "theme" && key !== "merged");
   for (const key of extra) d.error("document/unknown-key", `"${key}" isn't part of a document (root)`, key);
+  if (input.merged !== undefined && input.merged !== true) d.error("document/unknown-key", `merged is true, on a document read already (its theme merged into its nodes), not ${JSON.stringify(input.merged)}`, "merged");
 
   const rootDefinition = isObject(input.root) && typeof input.root.type === "string" ? registry.get(input.root.type) : undefined;
-  const context: Context = { d, registry, used: new Set(), root: rootDefinition, mode: input.theme === undefined ? "authored" : "normalized" };
-  // A document read already keeps its theme: what a custom component renders is read against it when it's expanded.
+  // A document read already keeps its theme, with `merged`: what a custom component renders is read against it when
+  // it's expanded. A theme at a template's top level without it is read as its root's.
+  const merged = input.merged === true && input.theme !== undefined;
+  const context: Context = { d, registry, used: new Set(), root: rootDefinition, mode: merged ? "normalized" : "authored", documentTheme: merged ? undefined : input.theme };
   let theme: ThemeData | undefined;
-  if (input.theme !== undefined) {
+  if (merged) {
     theme = readTheme(input.theme, "theme", rootDefinition?.type ?? "", themeContext(d, registry)) ?? undefined;
     if (theme) context.environment = ThemeEnvironment.of(theme, "theme");
   }
   const root = input.root === undefined ? null : readNode(input.root, "root", null, context);
   if (input.root === undefined) d.error("document/root", 'A document has a root: { type: "Email" }, "Page", …', "root");
   if (context.mode === "authored") theme = context.theme ?? (context.sawScope ? {} : undefined);
-  return { document: root ? (theme !== undefined ? { root, theme } : { root }) : null, diagnostics: once(d.list) };
+  return { document: root ? (theme !== undefined ? { root, theme, merged: true } : { root }) : null, diagnostics: once(d.list) };
 }
 
 /** Each diagnostic once: a theme's problem is found at every node that uses it. */
@@ -155,7 +164,6 @@ function allowedIn(parent: ComponentDefinition, child: ComponentDefinition): boo
 const GUIDE = "@hyper-elements/react/GUIDE.md";
 /** A message, then where to look the component up. */
 const seeing = (message: string, type: string) => `${message}${/[?.]$/.test(message) ? "" : "."} See ${type} in ${GUIDE}`;
-const a = (type: string) => `${/^[AEIOU]/.test(type) ? "An" : "A"} ${type}`;
 
 /** What's wrong with a prop the component doesn't have, and what to write instead. */
 /** Breakpoint names other libraries use (Tailwind's, Chakra's, Bootstrap's), which Elements doesn't have. */
@@ -286,14 +294,20 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const isRoot = definition.categories.includes("root");
   const saved = { environment: context.environment, inherited: context.inherited };
 
-  // The template's theme, on its root.
-  if (input.theme !== undefined) {
+  // The template's theme, on its root (or at the document's top level, read as the root's).
+  let themeInput = input.theme;
+  let themeAt = `${path}.theme`;
+  if (!parent && context.documentTheme !== undefined) {
+    if (themeInput !== undefined) d.error("theme/schema", "A template has one theme: it's given both at the document's top level and on its root", "theme");
+    else [themeInput, themeAt] = [context.documentTheme, "theme"];
+  }
+  if (themeInput !== undefined) {
     if (parent || context.mode === "normalized") d.error("prop/unknown", `${a(definition.type)} has no prop "theme": a theme goes on the template's root`, `${path}.theme`, id);
     else {
-      const theme = readTheme(input.theme, `${path}.theme`, definition.type, themeContext(d, context.registry));
+      const theme = readTheme(themeInput, themeAt, definition.type, themeContext(d, context.registry));
       if (theme) {
         context.theme = theme;
-        context.environment = ThemeEnvironment.of(theme, `${path}.theme`);
+        context.environment = ThemeEnvironment.of(theme, themeAt);
       }
     }
   }
@@ -399,26 +413,27 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (read) node[condition.name] = read;
   }
 
-  // A theme's default for a component replaces the color or font an ancestor sets itself: said once, with the role to use.
+  // A theme's default for a component replaces the body text an ancestor sets itself: said once, with the role to use.
+  // A Heading's and a Button's size are their own (a type scale, a Button's role), not the body's.
   if (from) {
-    for (const key of ["color", "fontFamily"] as const) {
+    for (const key of INHERITED) {
+      if ((key === "fontSize" || key === "lineHeight") && (definition.type === "Heading" || definition.type === "Button")) continue;
       const above = context.inherited?.[key];
       const value = node.style?.[key];
       if (value === undefined || from.get(key) !== "default" || !above || JSON.stringify(above.value) === JSON.stringify(value)) continue;
       const said = `${above.at}\n${key}`;
       if (context.warned?.has(said)) continue;
       (context.warned ??= new Set()).add(said);
-      const role = key === "color" ? "colors.foreground" : "fonts.body";
       d.warning(
         "theme/inherited",
-        `The theme's ${definition.type} ${key} replaces the ${key} ${above.at} sets for what it holds: a theme sets text ${key === "color" ? "color" : "fonts"} with ${role} (on the root, or in a scope's tokens), which is inherited`,
+        `The theme's ${definition.type} ${key} replaces the ${key} ${above.at} sets for what it holds: a theme sets body text's ${BODY_ROLES[key][0]} with ${BODY_ROLES[key][1]} (on the root, or in a scope's tokens), which is inherited`,
         `${path}.style.${key}`,
         id
       );
     }
   }
   // What it passes down that it sets itself (or that its scope does).
-  for (const key of ["color", "fontFamily"] as const) {
+  for (const key of INHERITED) {
     const value = node.style?.[key];
     const source = from?.get(key) ?? "own";
     if (value !== undefined && source !== "default" && (source !== "role" || scope)) context.inherited = { ...context.inherited, [key]: { value, at: path } };

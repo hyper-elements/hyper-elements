@@ -71,6 +71,10 @@ export const OneArgument = component({ type: "acme.One", label: "One", props: { 
 export const TwoArguments = component({ type: "acme.Two", label: "Two", props: {}, render: (_, { theme }) => <Text>{String(theme.colors?.primary)}</Text> });
 // @ts-expect-error A number isn't a text prop's value.
 export const notAProp = <OneArgument title={42} />;
+// @ts-expect-error A text prop takes no token: only a color's, a length's or a font's does.
+export const textToken = <OneArgument title={token("colors.primary")} />;
+export const Sized = component({ type: "acme.Sized", label: "Sized", props: { gap: prop.length({ label: "Gap" }), font: prop.fontFamily({ label: "Font" }) }, render: () => <Text>a</Text> });
+export const sized = <Sized gap={token("spacing.md")} font={token("fonts.body")} />;
 `;
 
 const EXTENDED = `

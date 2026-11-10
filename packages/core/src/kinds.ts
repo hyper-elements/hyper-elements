@@ -4,6 +4,7 @@
  * discovery). Component definitions are made of these, so types, validation
  * and editors come from one place.
  */
+import { show } from "./nearest";
 import type { Json } from "./model";
 
 export type JsonSchema = { [key: string]: unknown };
@@ -47,13 +48,6 @@ export type OutputOf<K> = K extends Kind<unknown, infer O> ? O : never;
 
 const ok = <T>(value: T): Parsed<T> => ({ ok: true, value });
 const fail = (message: string): Parsed<never> => ({ ok: false, message });
-const show = (input: unknown): string => {
-  try {
-    return typeof input === "string" ? JSON.stringify(input) : typeof input === "function" ? "a function" : JSON.stringify(input) ?? String(input);
-  } catch {
-    return String(input);
-  }
-};
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
 function kind<In, Out extends Json>(spec: Omit<Kind<In, Out>, "__in">): Kind<In, Out> {

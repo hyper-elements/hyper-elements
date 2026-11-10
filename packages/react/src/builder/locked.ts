@@ -14,12 +14,18 @@ type Sides = { top: number; right: number; bottom: number; left: number };
  * An HTML block of the node's own markup, drawn at its width, with `around` its place's spacing and `inherited` the
  * text styles its ancestors give it (beyond the root's).
  */
-export function lockedHtml(node: Node, width: number, root: Node, components: unknown, around: Sides, inherited: Record<string, Json> = {}, theme?: { [key: string]: Json }): Block {
-  return { ...block("html"), values: { html: renderSubtree(node, width, root, components, inherited, theme), containerPadding: cssSides(around) } };
+export function lockedHtml(node: Node, width: number, root: Node, components: unknown, around: Sides, inherited: Record<string, Json> = {}, themed: Themed = {}): Block {
+  return { ...block("html"), values: { html: renderSubtree(node, width, root, components, inherited, themed), containerPadding: cssSides(around) } };
+}
+
+/** The template's theme (read already), and the tokens of each scope around a node, outermost first. */
+export interface Themed {
+  theme?: { [key: string]: Json };
+  scopes?: ReadonlyArray<{ [key: string]: Json }>;
 }
 
 /** A node drawn on its own by the new engine, at its width, in the root's output: its HTML, with its stylesheet. */
-function renderSubtree(node: Node, width: number, root: Node, components: unknown, inherited: Record<string, Json>, theme?: { [key: string]: Json }): string {
+function renderSubtree(node: Node, width: number, root: Node, components: unknown, inherited: Record<string, Json>, { theme, scopes = [] }: Themed): string {
   // Drawn at its width in a page at least as wide as a root can be (a Document's block as a page's), the root's text
   // styles around it, and the text styles its ancestors give it in a Column around it.
   const drawn = Math.round(width);
@@ -30,10 +36,11 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
   const around = { ...inherited, ...(drawn < 200 ? { width: drawn } : {}) };
   // A Page's own phone width, so the block's phone styles switch where the page's do.
   const breakpoints: Record<string, Json> = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
-  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own] };
-  // The theme it sees where it is (the template's, with the scopes around it over it): what a template's own
-  // component in it renders is themed as it was in place.
-  const { head, body } = renderTemplate(theme ? { root: page, theme } : { root: page }, { components: components as never });
+  // The theme it sees where it is: the template's, with each scope around it in a Column of its tokens, read as they
+  // are in place, so what a template's own component in it renders is themed as it was there.
+  const placed = scopes.reduceRight<Node>((inner, tokens) => ({ type: "Column", tokens, children: [inner] }), Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own);
+  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [placed] };
+  const { head, body } = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never });
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
   // A page's <main> is centered by its margins: in a flex box, which the builder may draw a block in, those shrink it to its words. It fills its block.
   const filled = body.replace(/^<main style="/, '<main style="width:100%;');

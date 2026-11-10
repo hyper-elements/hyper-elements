@@ -1,3 +1,15 @@
+/** A value in a message: a string quoted, a function named as one, anything else as JSON. */
+export const show = (input: unknown): string => {
+  try {
+    return typeof input === "string" ? JSON.stringify(input) : typeof input === "function" ? "a function" : (JSON.stringify(input) ?? String(input));
+  } catch {
+    return String(input);
+  }
+};
+
+/** A component's type with its article: "An Image", "A Button". */
+export const a = (type: string) => `${/^[AEIOU]/.test(type) ? "An" : "A"} ${type}`;
+
 /** The name meant, where one is a typo away (a letter or two, or its case): "colour" is "color". */
 export function nearest(key: string, names: Iterable<string>): string | undefined {
   const lower = key.toLowerCase();

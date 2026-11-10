@@ -64,7 +64,8 @@ A root's `theme` (`defineTheme()`) is merged into each node when the template is
 roles (the tokens a definition's `roles` names), its component's defaults (by one prop's value with `by`), its
 `variant`s, the named styles in `style.apply`, then its own style, and tokens resolved where they're used, against the
 theme with each enclosing scope's `tokens` (Section, Row, Column, Grid) over it. The first read moves the theme to
-`ElementsDocument.theme`; a document with one isn't merged again, and expansion reads what a template's own component
+`ElementsDocument.theme` with `merged: true`; a document with it isn't merged again (a top-level `theme` without it is
+a template's, read as its root's), and expansion reads what a template's own component
 renders against the environment where it is.
 
 ## Components
@@ -218,8 +219,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 `.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 318,000 bytes,
-  `dist/builder.js` 481,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
+- **Tests**: `pnpm build`; typechecks of react, core and migrate; bundle budgets (`dist/primitives.js` 321,000 bytes,
+  `dist/builder.js` 484,500 bytes, unminified ESM; raise one on purpose and say what grew); no bundle imports
   `@unlayer/exporters`; unit tests with coverage; the CSP gate.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.

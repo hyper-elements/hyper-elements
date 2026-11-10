@@ -172,6 +172,6 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     node.children?.forEach((child) => isNode(child) && collectIds(child));
   };
 
-  const { theme: _, ...rest } = document;
+  const { theme: _, merged: __, ...rest } = document;
   return { document: { ...rest, root: visit(document.root, "root", 0) }, diagnostics: d.list, paths };
 }

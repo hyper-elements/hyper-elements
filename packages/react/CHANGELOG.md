@@ -97,17 +97,19 @@ validated before still validate, and render the same.
 A theme is the brand, written once and given to any root: `<Email theme={brand}>`, `<Page theme={brand}>`. Templates
 without one render as they did.
 
-- New: `defineTheme({ colors, spacing, fontSizes, fonts, radii, components, styles, formats })`, frozen data. Tokens
+- New: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, frozen data. Tokens
   are grouped, may nest (`colors.gray.900`) and refer to each other as `"{colors.primary}"`, the W3C Design Tokens
   format's alias. A token, a group, a named style or a variant can't be named `__proto__`, `constructor` or
   `prototype`. `extendTheme(base, overrides)` merges one over another, objects key by key, and its type is the merged
   theme's (an overridden value too), so it can be registered.
 - New: `token("colors.primary")` in a template, for a style's value or part of one
-  (`border: { width: 1, style: "solid", color: token("colors.border") }`), and for a `component()`'s color and length
-  props. `brand.tokens.colors.primary` is the same, typed.
-- New: roles. With the theme defining them, `colors.background`, `colors.foreground` and `fonts.body` are the root's
-  background, text color and font; `fonts.heading` a Heading's; `colors.primary` and `colors.primaryForeground` a
-  Button's, `colors.primary` a Link's; `colors.border` a Divider's.
+  (`border: { width: 1, style: "solid", color: token("colors.border") }`), and for a `component()`'s color, length
+  and font props (its types take a token there only). `brand.tokens.colors.primary` is the same, typed.
+- New: roles. With the theme defining them, `colors.background` is the root's background, and `colors.foreground`,
+  `fonts.body`, `fontSizes.body` and `lineHeights.body` its body text's color, font, size and line height, which Text,
+  table cells and list items inherit; `fonts.heading` is a Heading's font; `colors.primary` and
+  `colors.primaryForeground` a Button's colors and `fontSizes.body` its size (a theme that defines it makes Buttons
+  that size, not 14px); `colors.primary` a Link's; `colors.border` a Divider's.
 - New: `components.X` gives every X its default style; `by: { level: { 1: { … } } }` by one prop's value (a type
   scale); `variants`, picked with the new `variant` prop on each built-in component but the roots
   (`variant={["outline", "small"]}` merges in order).
@@ -124,8 +126,8 @@ without one render as they did.
 - New: `interface Register { theme: typeof brand }` (in `declare module "@hyper-elements/react"`) types every token's
   path, variant and named style; without it they're strings, checked when the template is read.
 - New: `theme/schema`, `theme/missing-token`, `theme/value`, `theme/cycle`, `variant/unknown`, `style/unknown-name` and
-  `style/apply-place` errors, and the `theme/inherited` warning (a theme's default for a component replaces the color
-  or font a box sets for what it holds). A `className`, `class`, `sx` or `variants` prop's error points to `variant`
+  `style/apply-place` errors, and the `theme/inherited` warning (a theme's default for a component replaces the body
+  text's color, font, size or line height a box sets for what it holds). A `className`, `class`, `sx` or `variants` prop's error points to `variant`
   and `apply`.
 - New: `inspect()` lists the theme (its tokens, the roles it defines, its named styles and variants), so
   `INSPECT_VERSION` is 2. `toDesign()` writes a theme's values and says it keeps no theme.

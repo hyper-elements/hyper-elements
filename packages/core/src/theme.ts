@@ -12,7 +12,7 @@ import type { ComponentDefinition, StyleSpecs } from "./define";
 import type { Diagnostics } from "./diagnostics";
 import { color, fontFamily, length, lineHeight, radius as radiusKind, type Kind } from "./kinds";
 import type { Json } from "./model";
-import { nearest } from "./nearest";
+import { a, nearest, show } from "./nearest";
 import { length as cssLength, radius as cssRadius } from "./writers/shared/css";
 
 export const TOKEN_GROUPS = ["colors", "spacing", "fontSizes", "lineHeights", "fonts", "radii"] as const;
@@ -57,6 +57,7 @@ const isObject = (value: unknown): value is Record<string, unknown> => typeof va
 /** Names a theme can't give a token, a group, a named style or a variant: they reach into JavaScript's own objects. */
 const RESERVED = new Set(["__proto__", "constructor", "prototype"]);
 const reserved = (name: string) => `${show(name)} is a name JavaScript keeps for its own objects: choose another`;
+const withoutKey = (object: Record<string, unknown>, key: string): Record<string, unknown> => Object.fromEntries(Object.entries(object).filter(([name]) => name !== key));
 /** A key's value only where the object holds it itself, never one it inherits ("constructor"). */
 const ownValue = <T>(object: Record<string, T>, key: string): T | undefined => (Object.prototype.hasOwnProperty.call(object, key) ? object[key] : undefined);
 /** A key set as the object's own, even "__proto__". */
@@ -64,13 +65,6 @@ function put<T>(object: Record<string, T>, key: string, value: T): T {
   Object.defineProperty(object, key, { value, writable: true, enumerable: true, configurable: true });
   return value;
 }
-const show = (value: unknown) => {
-  try {
-    return JSON.stringify(value) ?? String(value);
-  } catch {
-    return String(value);
-  }
-};
 
 /** A theme as a template gives it (`defineTheme()`'s data): checked when the template is read. */
 export type ThemeData = { [key: string]: Json };
@@ -320,13 +314,28 @@ export function readTheme(input: unknown, at: string, rootType: string, context:
   const { formats: _, ...rest } = checked;
   const merged = family && formats?.[family] !== undefined ? mergeTheme(rest as Json, formats[family]) : (rest as Json);
   const theme = merged as ThemeData;
-  // References between tokens: each resolves, with no loop, to a token of its kind.
-  const environment = ThemeEnvironment.of(theme, at);
-  for (const path of environment.paths()) {
-    const resolved = environment.resolve(path);
-    if (!resolved.ok) d.error(resolved.code, resolved.message, `${at}.${path}`);
+  // References between tokens: each resolves, with no loop, to a token of its kind; under this root, and under every
+  // other root its formats are for (a shared theme is checked wherever it's read).
+  const check = (data: ThemeData, where: (path: string) => string) => {
+    const environment = ThemeEnvironment.of(data, at);
+    for (const path of environment.paths()) {
+      const resolved = environment.resolve(path);
+      if (!resolved.ok) d.error(resolved.code, resolved.message, where(path));
+    }
+  };
+  check(theme, (path) => `${at}.${path}`);
+  for (const [other, overrides] of Object.entries(formats ?? {})) {
+    if (other === family || !isObject(overrides)) continue;
+    check(mergeTheme(rest as Json, overrides) as ThemeData, (path) => (holds(overrides, path) ? `${at}.formats.${other}.${path}` : `${at}.${path}`));
   }
   return theme;
+}
+
+/** Whether a theme's data sets the token at `path` ("colors.primary") itself. */
+function holds(data: Record<string, Json>, path: string): boolean {
+  let at: Json | undefined = data;
+  for (const part of path.split(".")) at = isObject(at) ? ownValue(at as Record<string, Json>, part) : undefined;
+  return at !== undefined;
 }
 
 function checkThemeShape(input: Record<string, unknown>, at: string, context: ThemeReadContext, top: boolean): Record<string, Json> {
@@ -481,7 +490,11 @@ function readComponents(value: Record<string, unknown>, at: string, context: The
       d.error("theme/schema", `${show(type)} isn't a built-in component${meant ? `: did you mean "${meant}"?` : ""} (a template's own component is styled in its render)`, where);
       continue;
     }
-    const block = readBlock(defaults, where, d, { by: true, variants: !definition.categories.includes("root") });
+    const isRoot = definition.categories.includes("root");
+    if (isRoot && isObject(defaults) && defaults.variants !== undefined) {
+      d.error("theme/schema", `${a(type)} has no variants: a template has one root, whose style the theme's ${type} defaults set`, `${where}.variants`);
+    }
+    const block = readBlock(isRoot && isObject(defaults) ? withoutKey(defaults, "variants") : defaults, where, d, { by: true, variants: !isRoot });
     if (!block) continue;
     if (block.by !== undefined) {
       const by = readBy(block.by, definition, `${where}.by`, d);
@@ -539,8 +552,17 @@ function readBy(value: unknown, definition: ComponentDefinition, at: string, d: 
     d.error("theme/schema", `by.${prop} is a style for each of its values, not ${show(values)}`, `${at}.${prop}`);
     return undefined;
   }
+  // Each value one the prop can take: a style for another is never applied.
+  const schema = spec.kind.jsonSchema() as { enum?: readonly unknown[] };
+  const takes = spec.kind.name === "boolean" ? ["true", "false"] : (schema.enum ?? []).map(String);
   const out: Record<string, Json> = {};
   for (const [key, style] of Object.entries(values)) {
+    if (!takes.includes(key)) {
+      // A number a digit away isn't a typo of it (a level 7 isn't a 1).
+      const meant = /^\d+$/.test(key) ? undefined : nearest(key, takes);
+      d.error("theme/schema", `${a(definition.type)}'s ${prop} is never ${show(key)}${meant ? `: did you mean "${meant}"?` : ` (it's ${takes.join(", ")})`}`, `${at}.${prop}.${key}`);
+      continue;
+    }
     const block = readBlock(style, `${at}.${prop}.${key}`, d);
     if (block) out[key] = block;
   }
@@ -715,8 +737,6 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
   for (const condition of CONDITIONS) if (blocks[condition.name] !== undefined) style[condition.name] = blocks[condition.name];
   return { style: Object.keys(style).length || own !== undefined ? style : undefined, origins, from };
 }
-
-const a = (type: string) => `${/^[AEIOU]/.test(type) ? "An" : "A"} ${type}`;
 
 /** A name or a list of them, as `variant` and `apply` take. */
 function namesOf(value: unknown, at: string, what: string, d: Diagnostics, id: string | undefined): string[] {

@@ -7,7 +7,7 @@
  * its HTML. What a tool has no field for is a hidden property of it (hide.ts); what no tool shows (a Layer, an Svg, a
  * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said.
  */
-import { mergeTheme, prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
 import type React from "react";
 import { collectTemplate } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
@@ -45,14 +45,14 @@ export function raise(element: React.ReactElement): Raised {
   if (holdsPageNumber(root)) report.push("root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet");
   // The theme is written as values: what each block holds is what the theme gave it there.
   if (document.theme && Object.keys(document.theme).length) report.push("root: the theme's tokens, variants and named styles are written as the values they give each block: the builder keeps no theme");
-  // The tokens each node sees from the scopes around it, for a block drawn on its own (a locked block).
-  const enclosing = new Map<Node, { [key: string]: Json } | undefined>();
-  const scopes = (node: Node, around: { [key: string]: Json } | undefined) => {
+  // The scopes around each node, outermost first, for a block drawn on its own (a locked block).
+  const enclosing = new Map<Node, Array<{ [key: string]: Json }>>();
+  const scopes = (node: Node, around: Array<{ [key: string]: Json }>) => {
     enclosing.set(node, around);
-    const inner = node.tokens ? (mergeTheme((around ?? document.theme ?? {}) as Json, node.tokens as Json) as { [key: string]: Json }) : around;
+    const inner = node.tokens ? [...around, node.tokens] : around;
     for (const child of node.children ?? []) if (typeof child !== "string") scopes(child, inner);
   };
-  if (document.theme) scopes(root, document.theme);
+  scopes(root, []);
   const prepared = prepareTemplate(document, { components });
   if (!prepared.resolved) return { body: null, report: prepared.diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
   const resolvedRoot = prepared.resolved.root;
@@ -101,7 +101,7 @@ export function raise(element: React.ReactElement): Raised {
     locked: (node, path, why, around) => {
       report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
       const own = at(path);
-      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), enclosing.get(node) ?? document.theme));
+      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,

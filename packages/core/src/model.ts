@@ -9,11 +9,13 @@ export type Json = string | number | boolean | null | Json[] | { [key: string]: 
 export interface ElementsDocument {
   root: Node;
   /**
-   * The template's theme, checked and with its root's `formats` merged, its references kept as written: set by the
-   * first read of a template that has a theme or a scope. A document with it was read already: a later read merges
-   * nothing, and expansion resolves what a custom component renders against it.
+   * The template's theme. With `merged`, set by the first read of a template that has a theme or a scope: checked, its
+   * root's `formats` merged and its references kept as written, which expansion resolves what a custom component
+   * renders against. Without it, a template's theme given here rather than on its root, and read as the root's.
    */
   theme?: { [key: string]: Json };
+  /** The theme is merged into the nodes already (the document was read): a later read merges nothing. */
+  merged?: true;
 }
 
 export interface Node {

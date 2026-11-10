@@ -89,7 +89,9 @@ jobs:
       # roles, scopes, component defaults, variants and named styles merged into each
       # node, a Page's custom properties, refusing names that reach JavaScript's own
       # objects, body text's size and line height as roles, and the hint to write token()
-      # where a template holds a theme's alias, about 40KB; defineTheme(), extendTheme()
+      # where a template holds a theme's alias, and checks that a theme's mistakes are
+      # said (every root's formats, `by` values, root variants, a theme at a document's
+      # top level), about 42KB; defineTheme(), extendTheme()
       # and token(), about 4KB), its JSX API (about 17KB) and the
       # render that collects a template (about 5KB). Raise it on purpose, with what grew.
       - name: Check main entry bundle size
@@ -98,7 +100,7 @@ jobs:
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=318500
+          MAX_SIZE=321000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -107,12 +109,13 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 482KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 484KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, the email client
       # checks, render()'s blockMap, the roots check and themes (with their guard on
-      # JavaScript's own names, body text roles and the token() hint) among
+      # JavaScript's own names, body text roles, the token() hint and the checks that a
+      # theme's mistakes are said) among
       # them (about 279KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
@@ -123,7 +126,7 @@ jobs:
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=482000
+          MAX_SIZE=484500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

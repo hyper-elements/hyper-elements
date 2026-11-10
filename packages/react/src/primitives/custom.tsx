@@ -37,14 +37,23 @@ function kindProp<K extends Kind<any, any>>(make: () => K) {
   return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options);
 }
 
+declare const TAKES_TOKEN: unique symbol;
+/** Type only: a prop whose kind takes a theme's token in JSX (a color, a length, a font), its value where the instance is. */
+type TakesToken = { readonly [TAKES_TOKEN]: true };
+
+/** A prop helper for a kind that takes a theme's token. */
+function tokenProp<K extends Kind<any, any>>(make: () => K) {
+  return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options) as ReturnType<typeof defineProp<K, R, D>> & TakesToken;
+}
+
 /** Props of a custom component, by value kind. */
 export const prop = {
   text: kindProp(() => text()),
-  color: kindProp(() => color()),
+  color: tokenProp(() => color()),
   image: kindProp(() => asset()),
   link: kindProp(() => link()),
   boolean: kindProp(() => boolean()),
-  fontFamily: kindProp(() => fontFamily()),
+  fontFamily: tokenProp(() => fontFamily()),
   fontWeight: kindProp(() => fontWeight()),
   number: <const R extends boolean = false, const D extends number | undefined = undefined>(
     options: PropOptions<Kind<number, number>, R, D> & { min?: number; max?: number; integer?: boolean }
@@ -56,7 +65,7 @@ export const prop = {
     options: PropOptions<ReturnType<typeof length<U>>, R, D> & { units?: readonly U[]; min?: number }
   ) => {
     const { units, min, ...rest } = options;
-    return defineProp<ReturnType<typeof length<U>>, R, D>(length<U>(units, { min }), rest);
+    return defineProp<ReturnType<typeof length<U>>, R, D>(length<U>(units, { min }), rest) as ReturnType<typeof defineProp<ReturnType<typeof length<U>>, R, D>> & TakesToken;
   },
   choice: <const V extends readonly (string | number)[], const R extends boolean = false, const D extends V[number] | undefined = undefined>(
     values: V,
@@ -64,11 +73,11 @@ export const prop = {
   ) => defineProp(enumOf(values), options),
 };
 
-/** A prop's value in JSX: a color or a length may be a theme's token, its value where the instance is. */
-type WithTokens<T> = { [K in keyof T]: T[K] extends string | number | undefined ? T[K] | Token : T[K] };
+/** A prop's value in JSX: a color's, a length's or a font's may be a theme's token, its value where the instance is. */
+type WithTokens<T, P> = { [K in keyof T]: K extends keyof P ? (P[K] extends TakesToken ? T[K] | Token : T[K]) : T[K] };
 
 /** What a custom component takes in JSX: its props, and its place in a Row and its visibility. */
-export type CustomProps<P extends PropSpecs> = WithTokens<PropsInput<P>> & {
+export type CustomProps<P extends PropSpecs> = WithTokens<PropsInput<P>, P> & {
   id?: string;
   style?: { flex?: number | "none" };
   hidden?: { mobile?: boolean; desktop?: boolean };
