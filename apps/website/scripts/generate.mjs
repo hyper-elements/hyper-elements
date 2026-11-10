@@ -12,13 +12,16 @@
 // The PDFs and PNGs need the templates' fonts as TTF files (react-pdf and Satori don't read WOFF2):
 // they're fetched from Google Fonts by family and weight, once, into node_modules/.cache.
 //
+// Emails are rendered with the email client checks (`@hyper-elements/email-clients`' plugin), as the site tells readers
+// to: their diagnostics are what an agent sees with it.
+//
 // The examples import `@hyper-elements/react`, which resolves to the workspace's. To use another build
 // (a PR's checkout, say), point HYPER_ELEMENTS_PACKAGE at its packages/react directory; it must be built.
 import { build } from "esbuild";
 import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cacheDir = join(root, ".cache");
@@ -32,6 +35,10 @@ const packageDir = override ?? dirname(siteRequire.resolve(`${NAME}/package.json
 // One copy of React: the one the Elements build resolves.
 const elementsRequire = createRequire(join(packageDir, "package.json"));
 
+// The email client checks, bundled with each example (on the same core); the models they load stay their package's own.
+const clientsDir = dirname(siteRequire.resolve("@hyper-elements/email-clients/package.json"));
+const models = pathToFileURL(createRequire(join(clientsDir, "package.json")).resolve("@hyper-elements/email-client-models")).href;
+
 const resolvePlugin = {
   name: "hyper-elements",
   setup(b) {
@@ -41,6 +48,8 @@ const resolvePlugin = {
       return { path: join(packageDir, "dist", `${subpath}.cjs`) };
     });
     b.onResolve({ filter: /^react(-dom)?(\/.*)?$/ }, ({ path }) => ({ path: elementsRequire.resolve(path) }));
+    b.onResolve({ filter: /^@hyper-elements\/email-clients$/ }, () => ({ path: join(clientsDir, "dist/index.js") }));
+    b.onResolve({ filter: /^@hyper-elements\/email-client-models$/ }, () => ({ path: models, external: true }));
   },
 };
 
@@ -56,12 +65,13 @@ async function renderAll(kind) {
       [
         `import Example, * as mod from ${JSON.stringify(join(dir, file))};`,
         `import { outline, render } from "${NAME}";`,
+        `import { emailClients } from "@hyper-elements/email-clients";`,
         `export const meta = mod.meta ?? {};`,
         `export const element = () => <Example />;`,
         // The root a template returns, for its fonts: the PDF and PNG are drawn in them.
         `export const rootElement = () => Example({});`,
         `export async function run() {`,
-        `  const { html, text, diagnostics } = await render(<Example />);`,
+        `  const { html, text, diagnostics } = await render(<Example />, { plugins: [await emailClients()] });`,
         `  return { html, text, diagnostics, outline: outline(<Example />) };`,
         `}`,
       ].join("\n"),

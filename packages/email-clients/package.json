@@ -1,0 +1,82 @@
+{
+  "name": "@hyper-elements/email-clients",
+  "version": "0.4.0",
+  "description": "Email client checks for Hyper Elements (classic Outlook, Outlook.com, Gmail, Apple Mail and others), as a plugin for validate() and render(), and a preview file per client of how each draws the email.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyper-elements/hyper-elements.git",
+    "directory": "packages/email-clients"
+  },
+  "homepage": "https://github.com/hyper-elements/hyper-elements/tree/main/packages/email-clients",
+  "keywords": [
+    "email",
+    "email-clients",
+    "email-preview",
+    "outlook",
+    "gmail",
+    "apple-mail",
+    "hyper-elements",
+    "react"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "fonts",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build-runtime.mjs --check && tsup",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test:csp": "node --disallow-code-generation-from-strings scripts/csp-probe.mjs",
+    "build:runtime": "node scripts/build-runtime.mjs",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "build:fonts": "node scripts/build-fonts.mjs",
+    "test:pack": "node scripts/pack-check.mjs"
+  },
+  "dependencies": {
+    "@hyper-elements/email-client-models": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@hyper-elements/react": "^0.4.0",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@hyper-elements/react": "workspace:*",
+    "@types/node": "24.9.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@unlayer-internal/elements-core": "workspace:*",
+    "@vitest/coverage-v8": "^3.2.4",
+    "esbuild": "0.25.11",
+    "playwright": "1.60.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tsup": "^8.0.1",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.4",
+    "wawoff2": "2.0.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

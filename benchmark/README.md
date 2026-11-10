@@ -59,7 +59,8 @@ that only read the file.
 
 - **Email client warnings left** (kits whose kit.json names a `diagnostics` tool: `he`, `he-plain`): after the run,
   the harness runs `node tools/render.mjs --json` on the finished email and records, in the row's `emailClients`,
-  the warnings and notes that name email clients (a WebP image classic Outlook doesn't show, phone styles some apps
+  the warnings and notes that name email clients (from Elements 0.4, where `@hyper-elements/email-clients` is installed
+  beside the engine: the render tool passes its plugin) (a WebP image classic Outlook doesn't show, phone styles some apps
   ignore) and how many of each code. The check doesn't require none: this is what the email would still get wrong in
   some app. The report gives, per kit, how many emails had none, the median left and the codes, and `he` against
   `he-plain` (one-sided Mann–Whitney: whether printing the clients, fix and link leaves fewer).
