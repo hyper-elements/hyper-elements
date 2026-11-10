@@ -1,6 +1,6 @@
 ---
 title: "AI agents"
-description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates: write, validate, outline, render."
+description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates: write, validate, outline, render, and preview in the email clients."
 ---
 
 If an agent writes your templates, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email faster with Hyper Elements than with MJML (1.3×), hand-written HTML (1.8×) or React Email (2.6×).
@@ -51,7 +51,7 @@ Every docs page also has a **Copy page** button that copies it as Markdown, read
 
 ## The loop
 
-Point your agent at this loop. Each step is cheap, and only the last one writes HTML.
+Point your agent at this loop. Each step is cheap, and only the last two write HTML.
 
 ### 1. Write
 
@@ -120,6 +120,21 @@ const { html, text, diagnostics } = await render(<Welcome />);
 ```
 
 A template with errors rejects with an `ElementsError` whose `diagnostics` hold the same `code`, `message` and `path` as `validate()`. `diagnostics` on success holds warnings. A few checks need the written output, such as an email's size against Gmail's limits, so they only run here.
+
+### 5. Preview in the email clients
+
+An agent with a browser can see the email as classic Outlook, Outlook.com, Gmail and Apple Mail show it, free and locally, with no Litmus account or screenshot API: `renderInEmailClients()` from `@hyper-elements/email-clients` writes one HTML file per client, and each lists what that client changed, as JSON the agent reads.
+
+```tsx
+import { mkdir, writeFile } from "node:fs/promises";
+import { renderInEmailClients } from "@hyper-elements/email-clients";
+
+const { previews } = await renderInEmailClients(<Welcome />);
+await mkdir("previews", { recursive: true });
+for (const preview of previews) await writeFile(`previews/${preview.filename}`, preview.html);
+```
+
+Open each file, wait for `<html data-email-client-ready>`, and read `#email-client-findings`. See [Email client previews](/docs/email-clients).
 
 ## Common mistakes
 
