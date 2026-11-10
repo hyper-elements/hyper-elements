@@ -28,6 +28,7 @@
 Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed components. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
 
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
+- **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
 - **Render in your own app.** Generate output on your server, with no browser, hosted service, or API key required.
 
@@ -157,6 +158,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 
 - **Start from a design:** [Templates](https://hyperelements.dev/templates) · [Component gallery](https://hyperelements.dev/components)
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
+- **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
 - **Use it in your app:** [Next.js example](./examples/nextjs-app-router) · [Email providers](./packages/react/docs/email-providers.md)
 - **Bring existing templates:** [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Move from Unlayer Elements](./packages/react/docs/migrating-from-unlayer-elements.md)
 - **Let teammates edit visually:** [Optional Unlayer editor integration](./packages/react/docs/visual-editing.md)
