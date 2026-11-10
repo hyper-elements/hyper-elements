@@ -36,8 +36,6 @@ export interface Condition {
   styles?: Record<string, SupportByTarget>;
   /** What a PDF or an image writes for it, where it can reach one. */
   paged?: (node: Named, where: string) => string;
-  /** Whether classic Outlook for Windows ever applies it: a style's `outlook` note inside it is skipped where it doesn't. */
-  outlookApplies: boolean;
   /** A node hidden here doesn't need its block: the support pass skips it. */
   hiddenKey?: "mobile" | "desktop";
 }
@@ -55,7 +53,6 @@ export const MOBILE: Condition = {
     // The email's phone text styles are rules that override a size; "normal" isn't one.
     lineHeight: { email: { level: "none", values: ["normal"], shows: "the line height it has on desktop", source: "writer" } },
   },
-  outlookApplies: false,
   hiddenKey: "mobile",
 };
 
@@ -69,18 +66,10 @@ export const HOVER: Condition = {
   allows: (_, key, definition) => !!definition.hover?.includes(key),
   support: {
     web: { level: "full", source: "css" },
-    // On type selectors only in Outlook.com and Outlook for Mac (Elements' are classes); the phone apps' results don't
-    // matter, as nothing hovers there.
-    email: {
-      level: "partial",
-      shows: "no change (where it shows, keyboard focus gets it too)",
-      source: "caniemail",
-      feature: "css-pseudo-class-hover",
-      clients: ["outlook", "outlook-com", "outlook-mac", "gmx", "web-de", "sfr", "laposte", "mail-ru"],
-    },
+    // The Email writer writes hover rules; which email clients apply them is the email-clients plugin's.
+    email: { level: "full", source: "writer" },
   },
   paged: (node, where) => `A hover isn't possible in ${where}: nothing points at it. The ${node.type} shows its own colors`,
-  outlookApplies: false,
 };
 
 /** In the order a node's blocks are read and reported. */

@@ -18,46 +18,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 600px: background #f3f1ea\n  Section 600px\n    Row 536px: 2 side by side\n      Column 150px\n        Text 150px \"Merrow Line\"\n      Column 386px\n        Text 386px \"Many columns\"\n    Text 536px \"Five columns, stacked on phones\"\n    Row 536px: 5 side by side, stacked on phones\n      Column 103px: background #e6e3d8\n        Text 83px \"Mon\"\n        Text 83px \"08:30\"\n      Column 103px: background #e6e3d8\n        Text 83px \"Tue\"\n        Text 83px \"08:30\"\n      Column 102px: background #e6e3d8\n        Text 82px \"Wed\"\n        Text 82px \"11:15\"\n      Column 102px: background #e6e3d8\n        Text 82px \"Thu\"\n        Text 82px \"08:30\"\n      Column 102px: background #e6e3d8\n        Text 82px \"Fri\"\n        Text 82px \"16:40\"\n    Text 536px \"A Grid of four, side by side on phones\"\n    Column 536px\n      Row 536px: 4 side by side\n        Column 130px\n          Column 130px: background #12242e\n            Text 122px \"12k\"\n            Text 122px \"aboard\"\n        Column 130px\n          Column 130px: background #12242e\n            Text 122px \"3.4%\"\n            Text 122px \"late\"\n        Column 129px\n          Column 129px: background #12242e\n            Text 121px \"£98\"\n            Text 121px \"a cabin\"\n        Column 129px\n          Column 129px: background #12242e\n            Text 121px \"41\"\n            Text 121px \"sailings\"\n    Text 536px \"Three side by side on phones, one of them fixed\"\n    Row 536px: 3 side by side\n      Column 64px: background #e6e3d8\n        Text 44px \"Fixed\"\n      Column 160px: background #e6e3d8\n        Text 140px \"Shares what’s left\"\n      Column 300px: background #e6e3d8\n        Text 280px \"Takes twice as much of it\"",
  "design": {

@@ -41,19 +41,9 @@ describe("the condition list", () => {
 });
 
 describe("support for conditions", () => {
-  it("notes once that an email's hover doesn't show everywhere", () => {
+  it("says nothing about an email's hover: which clients apply it is the email-clients plugin's", () => {
     const { diagnostics } = prepareTemplate({ root: { type: "Email", children: [button({ hover: { backgroundColor: "#000000" } })] } });
-    const notes = diagnostics.filter((d) => d.code === "email/degraded");
-    expect(notes).toHaveLength(1);
-    // The desktop clients that don't show it, from caniemail's tables, with its page there.
-    expect(notes[0]).toMatchObject({
-      severity: "info",
-      path: "root.children[0].hover",
-      nodeId: "go",
-      clients: ["outlook", "outlook-com", "outlook-mac"],
-      see: "https://www.caniemail.com/features/css-pseudo-class-hover/",
-    });
-    expect(notes[0]!.message).toBe("hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)");
+    expect(diagnostics.filter((d) => d.path.includes("hover"))).toEqual([]);
   });
 
   it("says nothing about a page's hover, nor a document's print HTML", () => {

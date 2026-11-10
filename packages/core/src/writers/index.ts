@@ -1,7 +1,7 @@
 import { checkDocument } from "../normalize";
 import { checkTargetExpanded, resolveExpanded, type ResolvedDocument, type ResolvedNode } from "../resolve";
 import { ElementsError, type Diagnostic } from "../diagnostics";
-import { checkEmailClients, forEmailClients, type EmailClient } from "../email-clients";
+import { acceptPlugins, pluginChecks, pluginOutputChecks, type PluginsOption } from "../plugins";
 import { expandDocument } from "../expand";
 import { registryOf, type ComponentsOption } from "../registry";
 import type { Target } from "../define";
@@ -14,7 +14,7 @@ import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
 import type { BlockMap } from "./shared/block-map";
 
-export { renderEmail, EMAIL_PHONE_MARGIN, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, type EmailHtml, type EmailOptions } from "./email";
+export { renderEmail, EMAIL_PHONE_MARGIN, type EmailHtml, type EmailOptions } from "./email";
 export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
 export { renderText, type TextOptions } from "./plain-text";
 export { emailSupport } from "./email/support";
@@ -23,17 +23,7 @@ export { overflow, pagedSupport } from "./shared/paged";
 export { Stylesheet, CLASS_PREFIX, type Media } from "./shared/classes";
 export { BLOCK_MAP_VERSION, type BlockMap, type BlockMapEntry } from "./shared/block-map";
 
-export interface EmailClientsOption {
-  /**
-   * For an Email, the email clients to report problems for (default: `DEFAULT_EMAIL_CLIENTS`, the ones most email is
-   * read in: classic Outlook, Outlook.com, Outlook for Mac, the Outlook and Gmail apps, Gmail, Apple Mail, Yahoo, AOL
-   * and Samsung Email). A problem about other clients is left out; `[]` leaves out every email client problem, not the
-   * problems of the email itself.
-   */
-  emailClients?: readonly EmailClient[];
-}
-
-export interface RenderOptions extends PageOptions, EmailOptions, EmailClientsOption {
+export interface RenderOptions extends PageOptions, EmailOptions, PluginsOption {
   /** The HTML indented, for reading it; for sending, the compact HTML (white space may change how some email clients show it). */
   pretty?: boolean;
   /**
@@ -80,23 +70,20 @@ export interface Prepared {
 /**
  * What both validating and rendering do, once: the template checked, its
  * custom components expanded (each rendered once), checked against the output
- * its root says, laid out, and what that output can't do as asked found.
- * Only what needs the written output (an email's size against Gmail's limits)
- * is left to rendering.
+ * its root says, laid out, and what that output can't do as asked found; then
+ * what the plugins find on the laid-out tree (their `check`). What needs the
+ * written output is left to rendering (their `checkOutput`).
  */
-export function prepareTemplate(input: unknown, options: ComponentsOption & EmailClientsOption = {}): Prepared {
-  checkEmailClients(options.emailClients);
+export function prepareTemplate(input: unknown, options: ComponentsOption & PluginsOption = {}): Prepared {
+  const accepted = acceptPlugins(options.plugins);
   const registry = registryOf(options);
   const checked = checkDocument(input, registry);
   const diagnostics = [...checked.diagnostics];
   const failed = () => diagnostics.some((d) => d.severity === "error");
-  if (!checked.document || failed()) return { resolved: null, target: null, diagnostics };
+  if (!checked.document || failed()) return { resolved: null, target: null, diagnostics: [...diagnostics, ...accepted.diagnostics] };
   const root = checked.document.root.type;
-  /** What it found, an Email's problems with email clients for the clients asked for (expansion's too: a condition's notes). */
-  const done = (resolved: ResolvedDocument | null, target: Target | null): Prepared => {
-    if (root !== "Email" && options.emailClients) diagnostics.push({ code: "email/clients-ignored", severity: "info", message: `emailClients is for an Email; a ${root} isn't checked for email clients`, path: "root" });
-    return { resolved, target, diagnostics: root === "Email" ? forEmailClients(diagnostics, options.emailClients) : diagnostics };
-  };
+  /** What it found, then what core said about the plugins passed (their `check` runs only on a template laid out without errors). */
+  const done = (resolved: ResolvedDocument | null, target: Target | null, checks: Diagnostic[] = []): Prepared => ({ resolved, target, diagnostics: [...diagnostics, ...accepted.diagnostics, ...checks] });
   const output = OUTPUTS[root];
   if (!output?.ready) {
     diagnostics.push({ code: "output/unavailable", severity: "error", message: output?.later ?? `A ${root} can't be rendered yet`, path: "root" });
@@ -109,12 +96,13 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Emai
   if (failed()) return done(null, output.target);
   const resolved = resolveExpanded(expanded.document, registry, expanded.paths);
   diagnostics.push(...resolved.diagnostics);
-  const found = output.target === "email" ? emailSupport(resolved.root, resolved.templatePath) : support(resolved.root, output.target);
+  const found = output.target === "email" ? emailSupport(resolved.root) : support(resolved.root, output.target);
   // A Document's page and a Canvas are a fixed size: content that can't fit is cut off.
   if (root === "Document" || root === "Canvas") found.push(...overflow(resolved.root));
   found.push(...pageBreakpoints(resolved.root));
   diagnostics.push(...inTemplate(resolved, found));
-  return done(failed() ? null : resolved, output.target);
+  if (failed()) return done(null, output.target);
+  return done(resolved, output.target, pluginChecks(accepted.plugins, resolved));
 }
 
 /** Diagnostics found on the tree as laid out, at their places in the template (a Grid's children, a custom component's). */
@@ -127,7 +115,7 @@ export function inTemplate(resolved: ResolvedDocument, diagnostics: Diagnostic[]
  * A template's problems, without writing it: errors make it invalid, warnings and notes don't. A Document's are its
  * PDF's too, and a Canvas's its image's (what they can't show that its HTML can).
  */
-export function validateTemplate(input: unknown, options: ComponentsOption & EmailClientsOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
+export function validateTemplate(input: unknown, options: ComponentsOption & PluginsOption = {}): { valid: boolean; diagnostics: Diagnostic[] } {
   const { diagnostics, resolved } = prepareTemplate(input, options);
   const root = resolved?.root;
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];
@@ -146,7 +134,10 @@ export function renderTemplate(input: unknown, options: RenderOptions & Componen
   const { resolved, target, diagnostics } = prepareTemplate(input, options);
   if (!resolved) throw new ElementsError(diagnostics);
   const text = renderText(resolved, options);
-  const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), diagnostics: [] };
+  const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), stylesheet: "", diagnostics: [] };
+  // The plugins' checks on the written output, compact (what `pretty` would change isn't what an email client receives).
+  const { plugins } = acceptPlugins(options.plugins);
+  const outputChecks = pluginOutputChecks(plugins, { html: written.html, head: written.head, body: written.body, stylesheet: written.stylesheet }, resolved);
   const shown = (html: string) => (options.pretty ? prettyHtml(html) : html);
   const blocks = "blocks" in written ? written.blocks : undefined;
   return {
@@ -155,7 +146,7 @@ export function renderTemplate(input: unknown, options: RenderOptions & Componen
     body: shown(written.body),
     bodyStyle: written.bodyStyle,
     text,
-    diagnostics: [...diagnostics, ...inTemplate(resolved, forEmailClients(written.diagnostics, options.emailClients))],
+    diagnostics: [...diagnostics, ...inTemplate(resolved, written.diagnostics), ...outputChecks],
     ...(blocks ? { blocks } : {}),
   };
 }

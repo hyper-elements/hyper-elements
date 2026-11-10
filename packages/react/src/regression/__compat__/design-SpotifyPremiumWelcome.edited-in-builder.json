@@ -5,40 +5,10 @@
  "text": "[Spotify]\n\n[Live music]\n\nSPOTIFY PREMIUM\n\nPREMIUM STARTS TODAY.\n\nNo ads. No limits. Just the music you love — now in lossless quality, online or off.\n\nStart listening (https://open.spotify.com)\n\n---\n\nWHAT'S INCLUDED\n\n✓ Ad-free music\n\nUninterrupted listening — no ad breaks, ever.\n\n✓ Lossless audio\n\nHear every detail in up to 24-bit quality.\n\n✓ Offline listening\n\nDownload your favorites and play anywhere.\n\n✓ Full control\n\nPick any track, skip freely, repeat at will.\n\nYou're receiving this because you subscribed to Spotify Premium.",
  "diagnostics": [
   {
-   "code": "email/outlook-degraded",
-   "severity": "info",
-   "path": "root.children[2].children[0].style.letterSpacing",
-   "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-  },
-  {
-   "code": "email/outlook-degraded",
-   "severity": "info",
-   "path": "root.children[3].children[0].children[0].style.borderRadius",
-   "message": "borderRadius on this Button in classic Outlook: square corners"
-  },
-  {
-   "code": "email/degraded",
-   "severity": "info",
-   "path": "root.children[3].children[0].children[0].hover",
-   "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-  },
-  {
-   "code": "email/outlook-degraded",
-   "severity": "info",
-   "path": "root.children[5].children[0].style.letterSpacing",
-   "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-  },
-  {
-   "code": "email/image-width",
-   "severity": "warning",
-   "path": "root.children[1].children[0].children[0].props.src",
-   "message": "This Image has no width: Outlook shows it at the size of its file, however wide that is. Give it a width, or the file's width in src"
-  },
-  {
-   "code": "email/phone-styles",
+   "code": "email/more-checks",
    "severity": "info",
    "path": "root",
-   "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+   "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
   }
  ]
 }

@@ -200,7 +200,8 @@ describe("render()", () => {
     expect(html).toContain("mso-padding-alt:10px 20px");
     expect(html).not.toMatch(/display:flex/);
     expect(text).toBe("THANKS\n\nLeft\n\nRight\n\nTrack it (https://example.com)");
-    expect(diagnostics).toEqual([]);
+    // Only the note that the email client checks come from email-clients' plugin.
+    expect(diagnostics.map((d) => d.code)).toEqual(["email/more-checks"]);
   });
 
   it("renders lists and tables written in JSX, in email and on a page", async () => {

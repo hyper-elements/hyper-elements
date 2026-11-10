@@ -28,7 +28,8 @@ const jsonLd = [
 
 // Real output for the feature tiles.
 const plain = showcase.email.text.split("\n").filter(Boolean).slice(0, 3).join("\n") + "\n…";
-const note = showcase.email.diagnostics.find((d) => d.code === "email/outlook-degraded");
+// A client note where the examples were rendered with email-clients' plugin; else the note saying where those checks are.
+const note = showcase.email.diagnostics.find((d) => d.code === "email/outlook-degraded") ?? showcase.email.diagnostics.find((d) => d.code === "email/more-checks");
 // The strip mixes outputs: emails, a web page, a printed document.
 const kinds: Record<string, string> = { Email: "Email", Page: "Web page", Document: "PDF", Canvas: "Image" };
 const items = [

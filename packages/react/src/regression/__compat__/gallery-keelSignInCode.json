@@ -11,136 +11,21 @@
  "diagnostics": {
   "validate": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.fontWeight",
-    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
   "render": [
    {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.fontWeight",
-    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
+    "code": "email/more-checks",
     "severity": "info",
     "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+    "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
    }
   ],
-  "prepare": [
-   {
-    "code": "email/degraded",
-    "severity": "info",
-    "path": "root.props.fonts",
-    "message": "fonts on this Email in some email clients: no web font loads: the next font in each stack shows"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[1].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Heading in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].style.borderRadius",
-    "message": "borderRadius on this Column in classic Outlook: square corners"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.fontWeight",
-    "message": "fontWeight on this Text in classic Outlook: normal weight: Word draws only normal and bold (600 and over)"
-   },
-   {
-    "code": "email/outlook-degraded",
-    "severity": "info",
-    "path": "root.children[0].children[2].children[0].style.letterSpacing",
-    "message": "letterSpacing on this Text in classic Outlook: normal spacing: Word keeps letter spacing but doesn't draw it"
-   },
-   {
-    "code": "email/phone-styles",
-    "severity": "info",
-    "path": "root",
-    "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
-   }
-  ]
+  "prepare": []
  },
  "outline": "Email 480px: background #ffffff\n  Section 480px\n    Text 432px \"keel. (https://keel.example)\"\n    Column 432px\n      Heading h1 432px \"Your sign-in code\"\n      Text 432px \"Enter it in the Keel app to finish signing in. It works once, for the next ten …\"\n    Column 432px: background #f3f4f2\n      Text 376px \"482 913\"\n      Text 376px \"Expires at 06:52 GMT\"\n    Column 432px\n      Text 432px \"Who asked for it\"\n      Table 432px\n        TableRow 432px\n          TableCell 96px \"Device\"\n          TableCell 336px \"Safari on a Mac\"\n        TableRow 432px\n          TableCell 96px \"Near\"\n          TableCell 336px \"Lisbon, Portugal\"\n        TableRow 432px\n          TableCell 96px \"When\"\n          TableCell 336px \"06:42 GMT, Friday 6 November\"\n    Row 432px: 1 side by side\n      Column 416px\n        Text 416px \"Not you?\"\n        Text 416px \"Don’t share this code with anyone, even someone who says they’re from Keel. Fre…\"\n    Text 432px \"We’ll never ask for this code by phone, email or text. Keel Bank Ltd, 12 Lanter…\"",
  "design": {

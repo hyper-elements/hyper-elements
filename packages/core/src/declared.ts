@@ -4,7 +4,6 @@
  * check of what a condition takes but an output doesn't show (expand.ts).
  */
 import { Diagnostics, type Severity } from "./diagnostics";
-import { caniemail } from "./email-clients";
 import type { Json } from "./model";
 import type { Support, SupportByTarget, Target } from "./define";
 
@@ -12,8 +11,7 @@ const same = (a: Json | undefined, b: Json | undefined) => JSON.stringify(a) ===
 
 /**
  * The diagnostics a declaration gives for a value at `at` (`key` names it in the message), on this node: nothing where
- * it's shown as asked. Classic Outlook's notes are left out where `outlook` is false (a block it never applies). For
- * email, a rule's clients go on its diagnostics (`outlook` is classic Outlook's), with caniemail's page where it's from there.
+ * it's shown as asked.
  */
 export function reportDeclared(
   d: Diagnostics,
@@ -22,27 +20,19 @@ export function reportDeclared(
   key: string,
   value: Json,
   declared: SupportByTarget[Target] | undefined,
-  target: Target,
-  outlook = true
+  target: Target
 ): void {
   if (!declared) return;
   for (const rule of ([] as Support[]).concat(declared)) {
     if (rule.level === "full") continue;
-    if (rule.level === "outlook" && !outlook) continue;
     if (rule.values && !rule.values.some((v) => same(v, value))) continue;
     if (rule.when && !rule.when(value, node)) continue;
     const asked = typeof value === "string" ? `${key}: "${value}"` : key;
-    // For email, the clients it's about (`outlook`: classic Outlook).
-    const clients = target === "email" ? (rule.clients ?? (rule.level === "outlook" ? (["outlook"] as const) : undefined)) : undefined;
-    const output = clients ? "some email clients" : target === "web" ? "a page" : target;
+    const output = target === "web" ? "a page" : target;
     const [code, severity, message]: [string, Severity, string] =
-      rule.level === "none"
-        ? [`${target}/unsupported`, "warning", `${asked} isn't possible in ${output}: ${rule.shows}`]
-        : rule.level === "partial"
-          ? [`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`]
-          : ["email/outlook-degraded", "info", `${asked} on this ${node.type} in classic Outlook: ${rule.shows}`];
+      rule.level === "none" ? [`${target}/unsupported`, "warning", `${asked} isn't possible in ${output}: ${rule.shows}`] : [`${target}/degraded`, "info", `${asked} on this ${node.type} in ${output}: ${rule.shows}`];
     // What Elements assumes, unchecked, is a note that says so.
     const [said, as] = rule.source === "assumed" ? (["info", `${message} (not checked)`] as const) : [severity, message];
-    d.add(code, said, as, at, node.id, { clients, fix: rule.fix, see: rule.feature && caniemail(rule.feature) });
+    d.add(code, said, as, at, node.id, { fix: rule.fix });
   }
 }

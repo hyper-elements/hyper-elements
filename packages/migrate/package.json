@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@react-email/components": "^1.0.12",
-    "@hyper-elements/react": "workspace:^0.3.0",
+    "@hyper-elements/react": "workspace:^0.4.0",
     "prettier": "^3.3.3",
     "tsx": "^4.20.5",
     "typescript": "^5.6.3"
@@ -83,7 +83,7 @@
   },
   "peerDependencies": {
     "@react-email/components": ">=0.0.30",
-    "@hyper-elements/react": "^0.3.0",
+    "@hyper-elements/react": "^0.4.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
   }

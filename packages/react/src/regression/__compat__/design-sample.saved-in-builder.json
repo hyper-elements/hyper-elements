@@ -5,22 +5,10 @@
  "text": "TITLE\n\nHello link (https://x.test) bold\n\nA\n\nGo (https://b.test)\n\n[x]\n\nOver",
  "diagnostics": [
   {
-   "code": "email/degraded",
-   "severity": "info",
-   "path": "root.children[1].children[0].children[1].children[0].hover",
-   "message": "hover on this Button in some email clients: no change (where it shows, keyboard focus gets it too)"
-  },
-  {
-   "code": "email/html-css",
-   "severity": "info",
-   "path": "root.children[3].props.html",
-   "message": "This Html block's markup may have a <style> in the email's body: the client removes it, and what it styles shows without it"
-  },
-  {
-   "code": "email/phone-styles",
+   "code": "email/more-checks",
    "severity": "info",
    "path": "root",
-   "message": "On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack)"
+   "message": "Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients"
   }
  ]
 }

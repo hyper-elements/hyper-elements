@@ -71,6 +71,8 @@ export const Grid = defineComponent({
   style: {
     ...inheritedTextStyle,
     ...boxStyle,
+    // The Email writer cuts content off on the block's box: one it writes only for a background, padding, a border, a width or a height.
+    overflow: { ...boxStyle.overflow, support: { email: { level: "partial", values: ["hidden"], shows: "nothing cut off unless it has a box of its own (a background, padding, border, width or height)", source: "writer" }, web: css } },
     gap: { ...layoutStyle.gap, description: "Space between its children, across and down (unless rowGap is set)." },
     rowGap: { ...layoutStyle.gap, label: "Row gap", description: "Space between its rows (gap by default); on phones, where the children stack, gap is between them." },
     alignItems: { ...layoutStyle.alignItems, description: "Where each child sits in its row's height, as CSS align-items." },

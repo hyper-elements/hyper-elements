@@ -43,7 +43,7 @@ export function support(root: ResolvedNode, target: Target): Diagnostic[] {
       if (!own || own.level === "none") continue;
       for (const [key, value] of Object.entries(block)) {
         const rules = condition.styles?.[key]?.[target] ?? definition.style[key]?.support?.[target];
-        reportDeclared(d, node, `${node.path}.${condition.name}.${key}`, key, value, rules, target, condition.outlookApplies);
+        reportDeclared(d, node, `${node.path}.${condition.name}.${key}`, key, value, rules, target);
       }
     }
     for (const child of node.children) if (isNode(child) && shownAnywhere(child)) visit(child);

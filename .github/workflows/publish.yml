@@ -7,7 +7,8 @@
 #   3. A reviewer approves each publish in the Actions UI (environment gate)
 #   4. The package is published to npm via trusted publishing (OIDC)
 #
-# Version: reads the latest published version from npm and bumps from that.
+# Version: bumps from the highest version published at any tag (scripts/release.mjs), so a release held on
+# next (the repository variable NPM_RELEASE_TAG) isn't numbered again; a re-attempt reuses its run's version.
 # Defaults to patch. Add a `release:minor` or `release:major` PR label to
 # override. Manual dispatch also supports bump selection. A version
 # committed ahead of npm (a planned minor or major) wins over the bump.
@@ -266,28 +267,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # The next version from the highest published at any tag (not latest: a held release is on next), or the committed
+      # version where it's ahead. A re-attempt of a run whose npm publish succeeded gets that version back with
+      # publish=false, and only finishes the tag and the release (scripts/release.mjs, tested by release.test.mjs).
       - name: Determine version
         id: version
-        working-directory: packages/react
-        run: |
-          COMMITTED=$(node -p "require('./package.json').version")
-          # Read latest published version from npm (falls back to package.json for first publish)
-          CURRENT=$(npm view @hyper-elements/react version 2>/dev/null || echo "$COMMITTED")
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
+        run: node scripts/release.mjs version @hyper-elements/react "${{ steps.bump.outputs.type }}" packages/react >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Write current version to package.json so npm version can bump from it
-          npm version "$CURRENT" --no-git-tag-version --allow-same-version
-
-          # Bump
-          VERSION=$(npm version ${{ steps.bump.outputs.type }} --no-git-tag-version)
-          VERSION="${VERSION#v}"
-
-          # A version committed ahead of npm (a planned minor or major) wins
-          if [ "$COMMITTED" != "$VERSION" ] && [ "$(printf '%s\n%s\n' "$VERSION" "$COMMITTED" | sort -V | tail -1)" = "$COMMITTED" ]; then
-            npm version "$COMMITTED" --no-git-tag-version --allow-same-version
-            VERSION="$COMMITTED"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Stamp the version and this run's id
+        run: node scripts/release.mjs stamp packages/react "${{ steps.version.outputs.version }}"
 
       # Published @hyper-elements/migrate refuses an Elements outside its range (^0.2.0 holds 0.2.x only). A release
       # outside it (a minor, 0.3.0) must raise the range in packages/migrate/package.json in the same change, so
@@ -338,12 +328,16 @@ jobs:
       # version numbers, then npm publish handles OIDC trusted publishing.
       # npm publish alone does NOT understand workspace: and would ship a broken manifest.
       # No --provenance flag yet: the repository is public now, so it can be added.
+      # The dist-tag is the repository variable NPM_RELEASE_TAG while a release is held (next), else latest.
       - name: Publish to npm (trusted publishing)
+        if: steps.version.outputs.publish == 'true'
         working-directory: packages/react
         run: |
           pnpm pack --pack-destination /tmp
           TARBALL=$(ls /tmp/hyper-elements-react-*.tgz)
-          npm publish "$TARBALL" --access public
+          npm publish "$TARBALL" --access public --tag "$(node ../../scripts/release.mjs tag)"
+        env:
+          NPM_RELEASE_TAG: ${{ vars.NPM_RELEASE_TAG }}
 
       - name: Tag release
         run: |
@@ -463,21 +457,15 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # As Elements: from the highest version published at any tag, and a re-attempt reuses what its run published.
       - name: Determine version
         id: version
-        working-directory: packages/migrate
-        run: |
-          COMMITTED=$(node -p "require('./package.json').version")
-          CURRENT=$(npm view @hyper-elements/migrate version 2>/dev/null || echo "$COMMITTED")
-          echo "current=$CURRENT" >> $GITHUB_OUTPUT
-          npm version "$CURRENT" --no-git-tag-version --allow-same-version
-          VERSION=$(npm version ${{ steps.bump.outputs.type }} --no-git-tag-version)
-          VERSION="${VERSION#v}"
-          if [ "$COMMITTED" != "$VERSION" ] && [ "$(printf '%s\n%s\n' "$VERSION" "$COMMITTED" | sort -V | tail -1)" = "$COMMITTED" ]; then
-            npm version "$COMMITTED" --no-git-tag-version --allow-same-version
-            VERSION="$COMMITTED"
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        run: node scripts/release.mjs version @hyper-elements/migrate "${{ steps.bump.outputs.type }}" packages/migrate >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Stamp the version and this run's id
+        run: node scripts/release.mjs stamp packages/migrate "${{ steps.version.outputs.version }}"
 
       # Packing writes the Elements range committed in package.json
       # (`workspace:^0.2.0` → `^0.2.0`): the oldest Elements the converter
@@ -509,12 +497,16 @@ jobs:
           echo "| **Elements range** | ${{ steps.elements.outputs.range }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Trigger** | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
 
+      # NPM_RELEASE_TAG holds migrate on next with Elements, including a publish a lockfile change sets off.
       - name: Publish to npm (trusted publishing)
+        if: steps.version.outputs.publish == 'true'
         working-directory: packages/migrate
         run: |
           pnpm pack --pack-destination /tmp
           TARBALL=$(ls /tmp/hyper-elements-migrate-*.tgz)
-          npm publish "$TARBALL" --access public
+          npm publish "$TARBALL" --access public --tag "$(node ../../scripts/release.mjs tag)"
+        env:
+          NPM_RELEASE_TAG: ${{ vars.NPM_RELEASE_TAG }}
 
       - name: Tag release
         run: |
