@@ -55,15 +55,17 @@ Without `emailClients`, you get classic Outlook, Outlook.com, Gmail and Apple Ma
 
 ## How accurate they are
 
+Accuracy is the share of an email's lines of text that sit where the real client puts them, across 11 emails, from a sign-in code to a newsletter with hand-written HTML:
+
 | Client | Accuracy |
 |--------|----------|
-| Outlook.com | Matches the real client |
-| Gmail on the web | Matches the real client |
-| Apple Mail, light and dark | Matches the real client |
-| Classic Outlook | Close: most text sits where Outlook puts it, but some lines break at another word. The file says it's approximate |
-| Gmail app | Approximate |
+| Apple Mail, light and dark | 99.6% |
+| Gmail on the web | 99.3% |
+| Outlook.com | 98.8% |
+| Classic Outlook | 67% |
+| Gmail app | 55%, at the app's width (`widths: { "gmail-app": 365 }`) |
 
-Each preview file says which of these it is (`approximate` on each preview). A font the client uses that your machine doesn't have is drawn with one of the same widths, so lines still break where they would, and the file lists it.
+Outlook.com, Gmail on the web and Apple Mail are as good as a screenshot for layout. Classic Outlook and the Gmail app are approximate: what's removed or changed (square corners, dropped CSS, fonts) is right, but some lines break at another word, and everything below them moves. Their files say so (`approximate` on each preview). A font the client uses that your machine doesn't have is drawn with one of the same widths where there is one, and listed.
 
 ## Compared with screenshot services
 
