@@ -243,7 +243,14 @@ Phones are at or below an email's width plus 20px, and at or below 480px on a pa
 
 ## Themes
 
-A theme is the brand, written once and given to any root. Its tokens (`colors`, `spacing`, `fontSizes`, `fonts`, `radii`) are referred to with `token()`; some are roles the built-in components read (`colors.background`, `colors.foreground` and `fonts.body` for the root, `colors.primary` and `colors.primaryForeground` for a Button, `colors.border` for a Divider, `fonts.heading` for a Heading). `components` gives each component its defaults, by one prop's value with `by` (a type scale) and as `variants`; `styles` are named styles, applied with `style={{ apply: [...] }}`.
+A theme is the brand, written once and given to any root. Its tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`) are referred to with `token()`. Some are roles the built-in components read:
+
+- the root's background, `colors.background`;
+- body text, which Text, table cells and list items inherit: `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body`;
+- a Button's colors, `colors.primary` and `colors.primaryForeground`, and its size, `fontSizes.body`;
+- a Link's color, `colors.primary`; a Heading's font, `fonts.heading`; a Divider's color, `colors.border`.
+
+`components` gives each component its defaults, by one prop's value with `by` (a type scale) and as `variants`; `styles` are named styles, applied with `style={{ apply: [...] }}`.
 
 ```tsx
 import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hyper-elements/react";
@@ -251,6 +258,8 @@ import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hype
 const brand = defineTheme({
   colors: { background: "#ffffff", foreground: "#111827", primary: "#0f766e", primaryForeground: "#ffffff", muted: "#f3f4f6" },
   fonts: { body: "Inter, Arial, sans-serif", heading: "Georgia, serif" },
+  fontSizes: { body: 16 },
+  lineHeights: { body: 1.6 },
   components: {
     Heading: { by: { level: { 1: { fontSize: 40, mobile: { fontSize: 30 } }, 2: { fontSize: 28 } } } },
     Button: { borderRadius: 8, variants: { secondary: { backgroundColor: "{colors.muted}", color: "{colors.foreground}" } } },
@@ -280,7 +289,7 @@ declare module "@hyper-elements/react" {
 }
 ```
 
-Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme.
+Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme. The [Themes page](https://hyperelements.dev/docs/themes) has the rest: which style takes which tokens, the order styles merge in, `formats`, and your own components.
 
 ## Common design patterns
 

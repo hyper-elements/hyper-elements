@@ -18,6 +18,7 @@ Styles go in `style`, never as props. `<Email backgroundColor="#fff">` is an err
 - **A number is px.** `padding: 16` is 16px, `fontSize: 15` is 15px.
 - **Names are CSS's** where the meaning is the same: `alignItems`, `justifyContent: "space-between"`, `textTransform`, `borderRadius`. Where a behavior isn't CSS, it's a prop (`<Row stackOnMobile={false}>`).
 - **Each component takes its own list.** A style a component doesn't take is an error (`style/unknown`), which names what to use instead where there's an equivalent. Each component's page lists its styles, with their defaults.
+- **A value may be a theme's token**, `color: token("colors.primary")`, and `apply` merges a theme's named styles under the rest: `style={{ apply: ["card"], gap: 16 }}`. See [Themes](/docs/themes).
 
 ### Values
 
@@ -65,6 +66,8 @@ The root's defaults are `color: "#000000"`, `fontFamily: "Arial, Helvetica, sans
 In an email, every text style is written on the text itself, since Outlook doesn't pass styles down through tables. You don't have to think about it.
 
 Box styles (`width`, `padding`, `backgroundColor`, `border`, `borderRadius` and the rest) aren't inherited.
+
+A [theme](/docs/themes) sets the root's text styles for every template that takes it, with its roles: `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body`.
 
 ### No margins
 

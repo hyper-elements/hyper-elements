@@ -86,9 +86,9 @@ error prop/invalid at root.children[0].props.size: size: expected one of "compac
 | `description` | Optional: what it's for |
 | `props` | Its props, made with `prop.*` |
 | `placement` | `"block"` (the default) goes where a block goes. `"section"` goes where a Section goes, and renders a Section |
-| `render` | The block as built-in components, from its props with defaults applied |
+| `render` | The block as built-in components, from its props with defaults applied, and `{ theme }`: the theme's tokens where the instance is |
 
-`render` is a pure function of its props: no hooks and no data, so it renders anywhere. It returns one component, which takes the custom component's place.
+`render` is a pure function of its props: no hooks and no data, so it renders anywhere. It returns one component, which takes the custom component's place. Its second argument holds the [theme](/docs/themes)'s tokens as values, scopes around the instance included (`theme.colors.primary`), for values it works out itself; it's empty without a theme.
 
 ### Props
 
@@ -105,11 +105,11 @@ error prop/invalid at root.children[0].props.size: size: expected one of "compac
 | `prop.fontFamily()` | A font stack |
 | `prop.fontWeight()` | A font weight |
 
-Each takes `label`, and optionally a `description`, `required: true` or a `default`. Their types carry through to `render`'s props and to the JSX.
+Each takes `label`, and optionally a `description`, `required: true` or a `default`. Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, `<ProductCard accent={token("colors.primary")} />`, and `render` gets its value where the instance is.
 
 ### On each instance
 
-Beside its own props, an instance takes `id`, `hidden`, and `style={{ flex }}` for its share of a Row. Its `flex` and `hidden` go onto the component it renders.
+Beside its own props, an instance takes `id`, `hidden`, and `style={{ flex }}` for its share of a Row. Its `flex` and `hidden` go onto the component it renders. It takes no `variant` or named styles: apply those in what it renders.
 
 Ids inside a custom component are prefixed with the instance's `id`. Without one, they're left out (with an `id/dropped` note), so two instances never share an id.
 
