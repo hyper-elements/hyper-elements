@@ -25,7 +25,7 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     const email = React.createElement(core.Email, { width: 600 }, React.createElement(core.Text, null, "Hi"));
     for (const entry of [esm, cjs]) {
       expect(entry.renderInEmailClients).toBeTypeOf("function");
-      const { previews } = await entry.renderInEmailClients(email, { emailClients: ["gmail"] });
+      const { previews } = await entry.renderInEmailClients(email, { emailClients: ["gmail"], computers: ["windows"] });
       expect(previews.map((p: { filename: string }) => p.filename)).toEqual(["gmail.html"]);
       // Its font files, read from beside dist/ in either format.
       const inline = await entry.renderInEmailClients(email, { emailClients: ["outlook-com"], fonts: "inline" });

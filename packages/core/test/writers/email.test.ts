@@ -726,7 +726,7 @@ describe("email HTML", () => {
     });
 
     it("writes its picture's URL unquoted in the style, which Gmail and Outlook.com keep, with what would end it encoded", () => {
-      // A quoted url() makes Gmail and Outlook.com drop the whole style attribute (Mailgun Inspect, November 2026).
+      // A quoted url() makes Gmail and Outlook.com on the web drop the whole style attribute.
       expect(render(layer([image(), over])).body).not.toContain("url(&quot;");
       const odd = { ...photo, src: "https://example.com/a b/(c)'d\"e\\f.jpg" };
       const { body } = render(layer([image(undefined, odd), over]));

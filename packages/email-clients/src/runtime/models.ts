@@ -28,7 +28,7 @@ export interface EmailClientModels {
   PROTOCOL: number;
   /** Compiles the WebAssembly module (once): every call below needs it. */
   ready(): Promise<void>;
-  process(client: Client, html: string, options: { mark: (html: string, limit?: number) => string; dark?: boolean; fonts?: Record<string, string> }): Processed;
+  process(client: Client, html: string, options: { mark: (html: string, limit?: number) => string; dark?: boolean; fonts?: Record<string, string>; computer?: "windows" | "mac" }): Processed;
   findings(client: Client, options: { shown: Document; baseline: Document; report?: FrameReport; types: ReadonlyMap<string, string>; dark?: boolean }): Array<Diagnostic & { selector?: string }>;
   fontCss(client: Client, sources: Record<string, string>): string;
   checkSystemFonts(doc: Document, options: { loaded: Iterable<string>; standIns?: Iterable<string>; webFonts?: Iterable<string> }): { missing: Missing[]; fonts: Array<{ family: string; verified: "present" | "widths" }> };

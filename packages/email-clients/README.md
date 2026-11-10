@@ -48,6 +48,8 @@ import { renderInEmailClients } from "@hyper-elements/email-clients";
 const { previews, skipped, diagnostics } = await renderInEmailClients(<Welcome />, {
   emailClients: ["outlook", "gmail", "apple-mail"], // default: classic Outlook, Outlook.com, Gmail and Apple Mail
   dark: true, // also a dark preview where the client's dark mode was measured (Apple Mail)
+  widths: { "outlook-com": 540 }, // optional: Outlook.com's reading pane beside its message list
+  computers: ["windows", "mac"], // the default: Outlook.com and Gmail on the web as read on each
 });
 for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
 ```
@@ -55,7 +57,14 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
 Each preview is one self-contained HTML file. Open it in Chromium: it draws the email as that client does and lists
 what the client changed. To show a preview, write the files and open them in your browser; otherwise give the paths.
 
-- `previews`: `{ id, client, variant, dark, width, filename, html, approximate }` for each client and variant, in the
+- `widths`: the width a client's preview draws the email at, where it isn't the client's own (820px on desktop, 375px
+  for the Gmail apps). Outlook.com and Gmail on the web match an email's media queries at the browser window, not the
+  pane the email is in, so at 540px Outlook.com keeps the email's desktop styles, as it does for its readers.
+- `computers`: Outlook.com and Gmail on the web are read in a browser, whose fonts are the reader's computer's. Each is
+  previewed on Windows (`outlook-com`, `gmail`: font stacks resolved against Windows' fonts, as Chrome there does, so
+  `Didot, Georgia` draws Georgia even on a Mac) and on a Mac (`outlook-com.mac`, `gmail.mac`: the fonts of the Mac the
+  preview is opened on). `computers: ["windows"]` keeps one.
+- `previews`: `{ id, client, computer, variant, dark, width, filename, html, approximate }` for each client and variant, in the
   order asked for, light before dark.
 - `skipped`: what wasn't previewed, and why (a client with no model to draw with, a dark mode not measured).
 - `diagnostics`: `render()`'s, with the plugin's checks for the clients previewed (unless you passed your own

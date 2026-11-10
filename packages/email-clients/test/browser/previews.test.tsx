@@ -344,7 +344,7 @@ describe("what a preview lists, and when it's incomplete", () => {
     for (const preview of previews) {
       const { page, findings } = await open(`clip-${preview.filename}`, preview.html);
       const size = findings.diagnostics.filter((d) => d.code === "email/size");
-      expect([preview.id, size.map((d) => [d.severity, d.clients])]).toEqual([preview.id, [[preview.id === "gmail" ? "warning" : "info", [preview.id]]]]);
+      expect([preview.id, size.map((d) => [d.severity, d.clients])]).toEqual([preview.id, [[preview.client === "gmail" ? "warning" : "info", [preview.client]]]]);
       expect(size[0]!.path).toMatch(/^root\.children\[\d+\]$/);
       expect(findings.removed.map((r) => r.what)).toContain("content past 102,400 bytes (clipped)");
       await page.close();

@@ -23,12 +23,14 @@ const welcome = (
 const embedded = (html: string, id: string) => JSON.parse(new RegExp(`<script type="application/json" id="${id}">([^<]*)</script>`).exec(html)![1]!);
 
 describe("renderInEmailClients()", () => {
-  it("writes one file per client asked for, the four captured by default, each with its id, width and file name", async () => {
+  it("writes one file per client asked for, the four captured by default (webmail on Windows and a Mac), each with its id, width and file name", async () => {
     const { previews, skipped, diagnostics } = await renderInEmailClients(welcome);
-    expect(previews.map(({ id, client, variant, dark, width, filename, approximate }) => ({ id, client, variant, dark, width, filename, approximate }))).toEqual([
+    expect(previews.map(({ id, client, computer, variant, dark, width, filename, approximate }) => ({ id, client, computer, variant, dark, width, filename, approximate }))).toEqual([
       { id: "outlook", client: "outlook", variant: "desktop", dark: false, width: 820, filename: "outlook.html", approximate: true },
-      { id: "outlook-com", client: "outlook-com", variant: "desktop", dark: false, width: 820, filename: "outlook-com.html", approximate: false },
-      { id: "gmail", client: "gmail", variant: "desktop", dark: false, width: 820, filename: "gmail.html", approximate: false },
+      { id: "outlook-com", client: "outlook-com", computer: "windows", variant: "desktop", dark: false, width: 820, filename: "outlook-com.html", approximate: false },
+      { id: "outlook-com.mac", client: "outlook-com", computer: "mac", variant: "desktop", dark: false, width: 820, filename: "outlook-com.mac.html", approximate: false },
+      { id: "gmail", client: "gmail", computer: "windows", variant: "desktop", dark: false, width: 820, filename: "gmail.html", approximate: false },
+      { id: "gmail.mac", client: "gmail", computer: "mac", variant: "desktop", dark: false, width: 820, filename: "gmail.mac.html", approximate: false },
       { id: "apple-mail", client: "apple-mail", variant: "desktop", dark: false, width: 820, filename: "apple-mail.html", approximate: false },
     ]);
     expect(DEFAULT_PREVIEW_CLIENTS).toEqual(["outlook", "outlook-com", "gmail", "apple-mail"]);
@@ -119,6 +121,29 @@ describe("renderInEmailClients()", () => {
     const config = embedded(previews[0]!.html, "email-client-config");
     expect(Object.keys(config.fontSources).filter((file: string) => file.startsWith("InterVariable")).sort()).toEqual(["InterVariable-Italic.woff2", "InterVariable.woff2"]);
     expect(config.faces.filter((face: string) => face.endsWith('"Inter"'))).toHaveLength(2);
+  });
+
+  it("draws a client's preview at the width asked for (Outlook.com's reading pane), the others at their own", async () => {
+    const { previews } = await renderInEmailClients(welcome, { emailClients: ["outlook-com", "gmail"], widths: { "outlook-com": 540 }, computers: ["windows"] });
+    expect(previews.map((p) => [p.id, p.width])).toEqual([["outlook-com", 540], ["gmail", 820]]);
+    expect(embedded(previews[0]!.html, "email-client-config").width).toBe(540);
+  });
+
+  it("previews webmail as read on Windows and on a Mac, or on the computers asked for; the rest once", async () => {
+    const both = await renderInEmailClients(welcome, { emailClients: ["outlook", "outlook-com", "gmail", "gmail-app"] });
+    expect(both.previews.map((p) => [p.id, p.computer ?? null])).toEqual([["outlook", null], ["outlook-com", "windows"], ["outlook-com.mac", "mac"], ["gmail", "windows"], ["gmail.mac", "mac"], ["gmail-app", null]]);
+    expect(embedded(both.previews[1]!.html, "email-client-config")).toMatchObject({ client: "outlook-com", computer: "windows" });
+    const mac = await renderInEmailClients(welcome, { emailClients: ["outlook-com"], computers: ["mac"] });
+    expect(mac.previews.map((p) => p.filename)).toEqual(["outlook-com.mac.html"]);
+    await expect(renderInEmailClients(welcome, { computers: ["linux"] as never })).rejects.toThrow(/takes a list of "windows" and "mac", not \["linux"\]/);
+    await expect(renderInEmailClients(welcome, { computers: [] })).rejects.toThrow(/takes a list of "windows" and "mac"/);
+  });
+
+  it("refuses widths that aren't a width for a client there's a model of", async () => {
+    await expect(renderInEmailClients(welcome, { widths: { yahoo: 540 } as never })).rejects.toThrow(/"yahoo", which isn't a client there's a model of/);
+    await expect(renderInEmailClients(welcome, { widths: { "outlook-com": 100 } })).rejects.toThrow(/a width is a number of px from 240 to 2560/);
+    await expect(renderInEmailClients(welcome, { widths: { "outlook-com": "540" as never } })).rejects.toThrow(/gives outlook-com "540"/);
+    await expect(renderInEmailClients(welcome, { widths: [540] as never })).rejects.toThrow(/takes an object of widths by client/);
   });
 
   it("refuses a list of clients that isn't one, as emailClients({ clients }) does", async () => {
