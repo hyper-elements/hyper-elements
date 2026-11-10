@@ -5,8 +5,12 @@
 import type { FontFace, FontFormat } from "../../kinds";
 import type { ResolvedNode } from "../../resolve";
 
-/** A CSS string, with what could end it or the stylesheet escaped. */
-const cssString = (value: string) => `"${value.replace(/[\\"\n\r<>]/g, (c) => `\\${c.charCodeAt(0).toString(16)} `)}"`;
+/**
+ * A CSS string, with what could end it or the stylesheet escaped: a quote, a backslash, `<` and `>`, and every control
+ * character (`\n`, `\r` and `\f` end a CSS string; the others have no place in one).
+ */
+// eslint-disable-next-line no-control-regex
+const cssString = (value: string) => `"${value.replace(/[\\"<>\u0000-\u001f\u007f]/g, (c) => `\\${c.charCodeAt(0).toString(16)} `)}"`;
 
 /** A file's format from its extension, where the face doesn't say. */
 function formatOf(face: FontFace): FontFormat | undefined {

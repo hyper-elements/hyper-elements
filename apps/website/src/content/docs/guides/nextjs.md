@@ -3,7 +3,7 @@ title: "Next.js"
 description: "Render emails in Next.js App Router route handlers and Server Components, with output that stays the same from one render to the next."
 ---
 
-Hyper Elements runs on the server, so it fits the App Router as it is. No entry in `next.config.ts`, no client bundle, no extra build step: Next.js bundles it into your server code like any other package. Only the HTML and text strings ever reach the browser.
+Hyper Elements runs on the server, so it fits the App Router as it is. No client bundle, no extra build step, and for emails, pages and PDFs no entry in `next.config.ts`: Next.js bundles it into your server code like any other package. Images (`@hyper-elements/react/image`) need one, as their engines can't be bundled: `serverExternalPackages: ["@resvg/resvg-js", "satori"]` (see [Image output](/docs/outputs/image#install)). Only the HTML and text strings ever reach the browser.
 
 ## A template
 

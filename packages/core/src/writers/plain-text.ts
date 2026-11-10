@@ -17,14 +17,45 @@ export interface TextOptions {
   mergeTag?: (name: string) => string;
 }
 
+/** An email service's tag typed into text (`{{name}}`, `{% if vip %}`, `<%= name %>`, `*|FNAME|*`), by its ends: its service reads it case by case. */
+const SERVICE_TAGS = [
+  ["{{", "}}"],
+  ["{%", "%}"],
+  ["<%", "%>"],
+  ["*|", "|*"],
+] as const;
+
+/**
+ * Text in capitals, apart from the service tags typed into it: each from its opening to the first close after it,
+ * the earliest first. Each end's next place is kept and only ever looked for further on, so the text is read once
+ * and a run of openings with no close (text from users) costs what any text does.
+ */
+function capitals(text: string): string {
+  const next: Record<string, number> = {};
+  const find = (end: string, from: number) => (next[end] === -1 || next[end] >= from ? next[end] : (next[end] = text.indexOf(end, from)));
+  let out = "";
+  for (let at = 0; ; ) {
+    let tag: [number, number] | undefined;
+    for (const [open, close] of SERVICE_TAGS) {
+      const start = find(open, at);
+      const end = start < 0 ? -1 : find(close, start + open.length);
+      if (end >= 0 && (!tag || start < tag[0])) tag = [start, end + close.length];
+    }
+    if (!tag) return out + text.slice(at).toUpperCase();
+    out += text.slice(at, tag[0]).toUpperCase() + text.slice(tag[0], tag[1]);
+    at = tag[1];
+  }
+}
+
 export function renderText(resolved: ResolvedDocument, options: TextOptions = {}): string {
   const tag = options.mergeTag ?? ((name: string) => `{{${name}}}`);
 
-  // `upper`: a large heading's words in capitals. Only its words: a merge tag or a URL in it is written as it is.
+  // `upper`: a large heading's words in capitals. Only its words: a merge tag (a MergeTag or one typed in) or a URL in
+  // it is written as it is.
   const inline = (node: ResolvedNode, upper = false): string =>
     node.children
       .map((child) => {
-        if (typeof child === "string") return upper ? child.toUpperCase() : child;
+        if (typeof child === "string") return upper ? capitals(child) : child;
         if (!shownAnywhere(child)) return "";
         switch (child.type) {
           case "LineBreak":
@@ -50,7 +81,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
 
   const image = (node: ResolvedNode, upper = false): string => {
     const alt = (node.props.alt as string | undefined)?.trim();
-    return alt ? `[${upper ? alt.toUpperCase() : alt}]` : "";
+    return alt ? `[${upper ? capitals(alt) : alt}]` : "";
   };
 
   const blocks = (node: ResolvedNode): string[] =>
