@@ -93,26 +93,43 @@ export interface AcceptedPlugins {
 }
 
 const isThenable = (v: unknown): boolean => !!v && (typeof v === "object" || typeof v === "function") && typeof (v as { then?: unknown }).then === "function";
+/** An error's message, whatever was thrown (one that can't be turned into text too). */
+const reason = (error: unknown): string => {
+  try {
+    return String((error as Error)?.message ?? error).slice(0, 500);
+  } catch {
+    return "something that can't be shown as text was thrown";
+  }
+};
 const describe = (v: unknown): string => (v === null ? "null" : Array.isArray(v) ? "an array" : typeof v === "object" ? "an object without a name and api" : typeof v);
 
+/** Throws where `plugins` isn't a list: the caller's mistake, as a bad option is (called before the template is read). */
+export function checkPluginsOption(plugins: unknown): void {
+  if (plugins !== undefined && !Array.isArray(plugins)) throw new TypeError(`[Elements] plugins takes a list of plugins (such as [await emailClients()]), not ${describe(plugins)}`);
+}
+
 /**
- * Checks `plugins` itself, before any hook runs. Not a list is the caller's mistake and throws, as a bad option does;
- * an entry that isn't a plugin is skipped with a warning (a Promise: `emailClients()` not awaited).
+ * Checks `plugins` itself, before any hook runs. Not a list throws (checkPluginsOption); an entry that isn't a plugin is
+ * skipped with a warning (a Promise: `emailClients()` not awaited). Reading an entry can't throw past here.
  */
 export function acceptPlugins(plugins: unknown): AcceptedPlugins {
   const out: AcceptedPlugins = { plugins: [], diagnostics: [] };
+  checkPluginsOption(plugins);
   if (plugins === undefined) return out;
-  if (!Array.isArray(plugins)) throw new TypeError(`[Elements] plugins takes a list of plugins (such as [await emailClients()]), not ${describe(plugins)}`);
   const names = new Set<string>();
-  plugins.forEach((entry: unknown, i) => {
+  (plugins as unknown[]).forEach((entry: unknown, i) => {
     const at = (code: string, message: string) => out.diagnostics.push({ code, severity: "warning", message, path: "root" });
-    if (isThenable(entry)) return at("plugin/invalid", `plugins[${i}] got a Promise: pass \`await emailClients()\`, not \`emailClients()\``);
-    const p = entry as Partial<ElementsPlugin> | null;
-    if (!p || typeof p !== "object" || typeof p.name !== "string" || !p.name || !("api" in p)) return at("plugin/invalid", `plugins[${i}] isn't a plugin: it got ${describe(entry)}`);
-    if (p.api !== PLUGIN_API) return at("plugin/unsupported", `The plugin "${p.name}" is written for plugin api ${JSON.stringify(p.api)}; this core reads api ${PLUGIN_API}`);
-    if (names.has(p.name)) return at("plugin/duplicate", `The plugin "${p.name}" is passed twice; the second is ignored`);
-    names.add(p.name);
-    out.plugins.push(p as ElementsPlugin);
+    try {
+      if (isThenable(entry)) return at("plugin/invalid", `plugins[${i}] got a Promise: pass \`await emailClients()\`, not \`emailClients()\``);
+      const p = entry as Partial<ElementsPlugin> | null;
+      if (!p || typeof p !== "object" || typeof p.name !== "string" || !p.name || !("api" in p)) return at("plugin/invalid", `plugins[${i}] isn't a plugin: it got ${describe(entry)}`);
+      if (p.api !== PLUGIN_API) return at("plugin/unsupported", `The plugin "${p.name}" is written for plugin api ${JSON.stringify(p.api)}; this core reads api ${PLUGIN_API}`);
+      if (names.has(p.name)) return at("plugin/duplicate", `The plugin "${p.name}" is passed twice; the second is ignored`);
+      names.add(p.name);
+      out.plugins.push(p as ElementsPlugin);
+    } catch (error) {
+      at("plugin/invalid", `plugins[${i}] couldn't be read: ${reason(error)}`);
+    }
   });
   return out;
 }
@@ -159,13 +176,24 @@ function pluginNode(node: ResolvedNode): PluginNode {
   };
 }
 
+/** Each laid-out node by its path, once per laid-out tree (both hooks and the path check read it). */
+const indexes = new WeakMap<ResolvedDocument, Map<string, ResolvedNode>>();
+function nodeIndex(resolved: ResolvedDocument): Map<string, ResolvedNode> {
+  let byPath = indexes.get(resolved);
+  if (!byPath) {
+    const index = (node: ResolvedNode) => {
+      byPath!.set(node.path, node);
+      for (const c of node.children) if (typeof c !== "string") index(c);
+    };
+    byPath = new Map();
+    index(resolved.root);
+    indexes.set(resolved, byPath);
+  }
+  return byPath;
+}
+
 function pluginInput(resolved: ResolvedDocument): PluginInput {
-  const byPath = new Map<string, ResolvedNode>();
-  const index = (node: ResolvedNode) => {
-    byPath.set(node.path, node);
-    for (const c of node.children) if (typeof c !== "string") index(c);
-  };
-  index(resolved.root);
+  const byPath = nodeIndex(resolved);
   const row = (path: string) => {
     const node = byPath.get(path);
     if (!node) throw new Error(`[Elements] estimate: no node at ${path}`);
@@ -183,7 +211,7 @@ const PREFIX: Record<string, string> = { Email: "email", Page: "page", Document:
 const KEY = /^[A-Za-z][\w-]*$/;
 
 /** Whether `path` is one a plugin may report at: root, a node, or a node's prop, style, condition or condition key. */
-function validPath(path: string, nodes: ReadonlySet<string>): boolean {
+function validPath(path: string, nodes: ReadonlyMap<string, unknown>): boolean {
   if (path === "root" || nodes.has(path)) return true;
   for (let end = path.lastIndexOf("."); end > 0; end = path.lastIndexOf(".", end - 1)) {
     const node = path.slice(0, end);
@@ -198,13 +226,15 @@ function validPath(path: string, nodes: ReadonlySet<string>): boolean {
 }
 
 /** Copies what a plugin returned that fits the contract, field by field; null for one that doesn't. */
-function accept(d: unknown, rootType: string, nodes: ReadonlySet<string>): Diagnostic | null {
+function accept(d: unknown, rootType: string, nodes: ReadonlyMap<string, unknown>): Diagnostic | null {
   if (!d || typeof d !== "object") return null;
   const r = d as Record<string, unknown>;
   const code = r.code;
   if (typeof code !== "string" || !/^(email|page|document|canvas)\/[a-z][a-z-]*$/.test(code)) return null;
-  if (code.split("/")[0] !== PREFIX[rootType] && code !== "email/clients-ignored") return null;
   if (r.severity !== "info" && r.severity !== "warning") return null;
+  // Another root's code only as a plugin's note that what it was given doesn't apply to this root (`email/clients-ignored`
+  // on a Page): an info ending in -ignored.
+  if (code.split("/")[0] !== PREFIX[rootType] && !(r.severity === "info" && code.endsWith("-ignored"))) return null;
   if (typeof r.message !== "string" || !r.message) return null;
   if (typeof r.path !== "string" || !validPath(r.path, nodes)) return null;
   for (const k of ["nodeId", "fix", "see"] as const) if (r[k] !== undefined && typeof r[k] !== "string") return null;
@@ -248,34 +278,50 @@ function run(
   arg: () => PluginInput | PluginOutput,
   resolved: ResolvedDocument
 ): Diagnostic[] {
-  const withHook = plugins.filter((p) => typeof p[hook] === "function");
-  if (!withHook.length) return [];
-  const nodes = new Set<string>();
-  const index = (node: ResolvedNode) => {
-    nodes.add(node.path);
-    for (const c of node.children) if (typeof c !== "string") index(c);
-  };
-  index(resolved.root);
-  const input = arg();
   const out: Diagnostic[] = [];
-  for (const plugin of withHook) {
+  const withHook: Array<{ plugin: ElementsPlugin; fn: (a: unknown) => unknown }> = [];
+  for (const plugin of plugins) {
+    try {
+      const fn = plugin[hook];
+      if (typeof fn === "function") withHook.push({ plugin, fn: fn as (a: unknown) => unknown });
+    } catch (error) {
+      out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" failed in ${hook}: ${reason(error)}`, path: "root" });
+    }
+  }
+  if (!withHook.length) return out;
+  const nodes = nodeIndex(resolved);
+  const input = arg();
+  for (const { plugin, fn } of withHook) {
     let returned: unknown;
     try {
-      returned = (plugin[hook] as (a: unknown) => unknown)(input);
+      returned = fn.call(plugin, input);
     } catch (error) {
-      out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" failed in ${hook}: ${String((error as Error)?.message ?? error).slice(0, 500)}`, path: "root" });
+      out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" failed in ${hook}: ${reason(error)}`, path: "root" });
       continue;
     }
-    if (!Array.isArray(returned)) {
-      out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" returned ${describe(returned)} from ${hook}, not a list of diagnostics`, path: "root" });
-      continue;
-    }
+    // What it returned is read with care too: a getter, or a Proxy, that throws is the plugin failing, not the render.
+    const kept: Diagnostic[] = [];
     let dropped = 0;
-    for (const d of returned) {
-      const kept = accept(d, resolved.root.type, nodes);
-      if (kept) out.push(kept);
-      else dropped++;
+    try {
+      if (!Array.isArray(returned)) {
+        out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" returned ${describe(returned)} from ${hook}, not a list of diagnostics`, path: "root" });
+        continue;
+      }
+      for (const d of returned as unknown[]) {
+        let one: Diagnostic | null;
+        try {
+          one = accept(d, resolved.root.type, nodes);
+        } catch {
+          one = null;
+        }
+        if (one) kept.push(one);
+        else dropped++;
+      }
+    } catch (error) {
+      out.push({ code: "plugin/failed", severity: "warning", message: `The plugin "${plugin.name}" returned a list from ${hook} that couldn't be read: ${reason(error)}`, path: "root" });
+      continue;
     }
+    out.push(...kept);
     if (dropped) out.push({ code: "plugin/invalid", severity: "warning", message: `The plugin "${plugin.name}" returned ${dropped} diagnostic${dropped === 1 ? "" : "s"} from ${hook} that core can't show (a code, severity, message or path it doesn't take)`, path: "root" });
   }
   const { templatePath } = resolved;

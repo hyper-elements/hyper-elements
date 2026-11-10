@@ -7,7 +7,7 @@ import { defineComponent, prop, type SupportByTarget } from "./define";
 import { boolean, enumOf, number } from "./kinds";
 import type { Json, Node } from "./model";
 import { SURFACE_ROLES } from "./roots";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle } from "./styles";
+import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
 
@@ -71,8 +71,7 @@ export const Grid = defineComponent({
   style: {
     ...inheritedTextStyle,
     ...boxStyle,
-    // The Email writer cuts content off on the block's box: one it writes only for a background, padding, a border, a width or a height.
-    overflow: { ...boxStyle.overflow, support: { email: { level: "partial", values: ["hidden"], shows: "nothing cut off unless it has a box of its own (a background, padding, border, width or height)", source: "writer" }, web: css } },
+    overflow: blockOverflow,
     gap: { ...layoutStyle.gap, description: "Space between its children, across and down (unless rowGap is set)." },
     rowGap: { ...layoutStyle.gap, label: "Row gap", description: "Space between its rows (gap by default); on phones, where the children stack, gap is between them." },
     alignItems: { ...layoutStyle.alignItems, description: "Where each child sits in its row's height, as CSS align-items." },

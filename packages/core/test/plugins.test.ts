@@ -119,9 +119,9 @@ describe("plugins", () => {
     expect("unknown" in diagnostics.find((d) => d.code === "email/clients-ignored")!).toBe(false);
   });
 
-  it("takes email/clients-ignored on any root, and no other email/ code on a Page", () => {
-    const p = plugin("p", { check: () => [note("root", { code: "email/clients-ignored" }), note("root"), note("root", { code: "page/example" })] });
-    expect(codes(validateTemplate(page([text("x")]), { plugins: [p] }).diagnostics)).toEqual(["email/clients-ignored", "page/example", "plugin/invalid"]);
+  it("takes another root's code only as a note that what a plugin was given doesn't apply (-ignored), from any plugin", () => {
+    const p = plugin("p", { check: () => [note("root", { code: "email/clients-ignored" }), note("root", { code: "email/fonts-ignored" }), note("root"), note("root", { code: "page/example" }), note("root", { code: "email/x-ignored", severity: "warning" })] });
+    expect(codes(validateTemplate(page([text("x")]), { plugins: [p] }).diagnostics)).toEqual(["email/clients-ignored", "email/fonts-ignored", "page/example", "plugin/invalid"]);
   });
 
   it("never fails a render: a hook that throws or returns something else is a warning", () => {
@@ -137,6 +137,34 @@ describe("plugins", () => {
       'The plugin "throws" failed in check: boom',
       'The plugin "odd" returned an object without a name and api from check, not a list of diagnostics',
     ]);
+  });
+
+  it("never fails a render, whatever a plugin throws or returns: what can't be shown as text, getters and Proxies that throw", () => {
+    const revoked = Proxy.revocable([], {});
+    revoked.revoke();
+    const plugins = [
+      plugin("no-prototype", {
+        check: () => {
+          throw Object.create(null);
+        },
+      }),
+      plugin("getter", { check: () => [{ ...note("root"), get code(): string { throw new Error("no code"); } } as never, note("root", { code: "email/kept" })] }),
+      plugin("revoked", { check: () => revoked.proxy as never }),
+      Object.defineProperty({ name: "hook-getter", api: PLUGIN_API }, "check", { get() { throw new Error("no hook"); }, enumerable: true }) as ElementsPlugin,
+    ];
+    const result = renderTemplate(email([text("x")]), { plugins });
+    expect(result.html).toContain("x");
+    expect(result.diagnostics.filter((d) => d.code.startsWith("plugin/") || d.code === "email/kept").map((d) => [d.code, d.message])).toEqual([
+      ["plugin/failed", 'The plugin "hook-getter" failed in check: no hook'],
+      ["plugin/failed", `The plugin "no-prototype" failed in check: something that can't be shown as text was thrown`],
+      ["email/kept", "An example"],
+      ["plugin/invalid", `The plugin "getter" returned 1 diagnostic from check that core can't show (a code, severity, message or path it doesn't take)`],
+      ["plugin/failed", expect.stringMatching(/^The plugin "revoked" returned a list from check that couldn't be read: /)],
+    ]);
+  });
+
+  it("throws on plugins that isn't a list, before reading the template", () => {
+    expect(() => validateTemplate({ nope: true }, { plugins: "x" as never })).toThrow(/plugins takes a list of plugins/);
   });
 
   it("checks the entries before any hook: a Promise, a non-plugin, another api, a duplicate name", () => {

@@ -77,8 +77,26 @@ describe("plugins in validate() and render()", () => {
     expect(codes(validate(page, { emailClients: [] } as never).diagnostics)).toEqual(["email/clients-moved"]);
   });
 
-  it("leave prepare() without plugins or notes", () => {
+  it("leave prepare() without plugins or notes, except that emailClients moved", () => {
     expect(prepare(email).diagnostics).toEqual([]);
+    expect(codes(prepare(email, { emailClients: ["gmail"] } as never).diagnostics)).toEqual(["email/clients-moved"]);
+  });
+
+  it("throw on plugins that isn't a list, whether or not the template has errors", async () => {
+    const broken = (
+      <Email width={600}>
+        <Text style={{ nope: 1 } as never}>Hi</Text>
+      </Email>
+    );
+    for (const template of [email, broken]) {
+      expect(() => validate(template, { plugins: "x" as never })).toThrow(/plugins takes a list of plugins/);
+      await expect(render(template, { plugins: "x" as never })).rejects.toThrow(/plugins takes a list of plugins/);
+    }
+  });
+
+  it("keep the note where email-clients' plugin was passed but core refused it (another plugin api)", () => {
+    const future = { name: "email-clients", api: 2 } as never;
+    expect(codes(validate(email, { plugins: [future] }).diagnostics)).toEqual(["plugin/unsupported", "email/more-checks"]);
   });
 
   it("are React's only: core's validateTemplate, prepareTemplate and renderTemplate add neither note", () => {

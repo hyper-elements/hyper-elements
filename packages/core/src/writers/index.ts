@@ -1,7 +1,7 @@
 import { checkDocument } from "../normalize";
 import { checkTargetExpanded, resolveExpanded, type ResolvedDocument, type ResolvedNode } from "../resolve";
 import { ElementsError, type Diagnostic } from "../diagnostics";
-import { acceptPlugins, pluginChecks, pluginOutputChecks, type PluginsOption } from "../plugins";
+import { acceptPlugins, pluginChecks, pluginOutputChecks, type ElementsPlugin, type PluginsOption } from "../plugins";
 import { expandDocument } from "../expand";
 import { registryOf, type ComponentsOption } from "../registry";
 import type { Target } from "../define";
@@ -65,6 +65,8 @@ export interface Prepared {
   target: Target | null;
   /** Everything found: errors, warnings and notes. */
   diagnostics: Diagnostic[];
+  /** The plugins passed that can run (their `checkOutput` runs on the written output). */
+  plugins: ElementsPlugin[];
 }
 
 /**
@@ -80,10 +82,10 @@ export function prepareTemplate(input: unknown, options: ComponentsOption & Plug
   const checked = checkDocument(input, registry);
   const diagnostics = [...checked.diagnostics];
   const failed = () => diagnostics.some((d) => d.severity === "error");
-  if (!checked.document || failed()) return { resolved: null, target: null, diagnostics: [...diagnostics, ...accepted.diagnostics] };
+  if (!checked.document || failed()) return { resolved: null, target: null, diagnostics: [...diagnostics, ...accepted.diagnostics], plugins: accepted.plugins };
   const root = checked.document.root.type;
   /** What it found, then what core said about the plugins passed (their `check` runs only on a template laid out without errors). */
-  const done = (resolved: ResolvedDocument | null, target: Target | null, checks: Diagnostic[] = []): Prepared => ({ resolved, target, diagnostics: [...diagnostics, ...accepted.diagnostics, ...checks] });
+  const done = (resolved: ResolvedDocument | null, target: Target | null, checks: Diagnostic[] = []): Prepared => ({ resolved, target, diagnostics: [...diagnostics, ...accepted.diagnostics, ...checks], plugins: accepted.plugins });
   const output = OUTPUTS[root];
   if (!output?.ready) {
     diagnostics.push({ code: "output/unavailable", severity: "error", message: output?.later ?? `A ${root} can't be rendered yet`, path: "root" });
@@ -131,12 +133,11 @@ export function validateTemplate(input: unknown, options: ComponentsOption & Plu
 export function renderTemplate(input: unknown, options: RenderOptions & ComponentsOption = {}): RenderResult {
   // Indenting rewrites the HTML after it's written, which would move every offset.
   if (options.blockMap && options.pretty) throw new ElementsError([{ code: "render/block-map-pretty", severity: "error", message: "blockMap gives offsets in the compact HTML; leave pretty off", path: "root" }]);
-  const { resolved, target, diagnostics } = prepareTemplate(input, options);
+  const { resolved, target, diagnostics, plugins } = prepareTemplate(input, options);
   if (!resolved) throw new ElementsError(diagnostics);
   const text = renderText(resolved, options);
   const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), stylesheet: "", diagnostics: [] };
   // The plugins' checks on the written output, compact (what `pretty` would change isn't what an email client receives).
-  const { plugins } = acceptPlugins(options.plugins);
   const outputChecks = pluginOutputChecks(plugins, { root: resolved.root.type, html: written.html, head: written.head, body: written.body, stylesheet: written.stylesheet }, resolved);
   const shown = (html: string) => (options.pretty ? prettyHtml(html) : html);
   const blocks = "blocks" in written ? written.blocks : undefined;

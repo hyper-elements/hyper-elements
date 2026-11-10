@@ -6,7 +6,7 @@
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
 import { attributes, asset, boolean, breakpoints, enumOf, insets, length, line, link, number, text, video } from "./kinds";
 import type { Json } from "./model";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
+import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
 import { Grid, Layer } from "./layouts";
 import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
@@ -155,8 +155,7 @@ export const Column = defineComponent({
   style: {
     ...inheritedTextStyle,
     ...boxStyle,
-    // The Email writer cuts content off on the block's box: one it writes only for a background, padding, a border, a width or a height.
-    overflow: { ...boxStyle.overflow, support: { email: { level: "partial", values: ["hidden"], shows: "nothing cut off unless it has a box of its own (a background, padding, border, width or height)", source: "writer" }, web: css } },
+    overflow: blockOverflow,
     ...layoutStyle,
     justifyContent: {
       ...layoutStyle.justifyContent,

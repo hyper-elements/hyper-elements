@@ -290,9 +290,11 @@ jobs:
       - name: Stamp the version and this run's id
         run: node scripts/release.mjs stamp packages/react "${{ steps.version.outputs.version }}"
 
-      # Published @hyper-elements/migrate refuses an Elements outside its range (^0.2.0 holds 0.2.x only). A release
-      # outside it (a minor, 0.3.0) must raise the range in packages/migrate/package.json in the same change, so
+      # Published @hyper-elements/migrate refuses an Elements outside its range (^0.4.0 holds 0.4.x only). A release
+      # outside it (a minor, 0.5.0) must raise the range in packages/migrate/package.json in the same change, so
       # migrate publishes after it with the new range; otherwise every published migrate refuses the newest Elements.
+      # Raising it drops the Elements before, so migrate's committed version takes a minor too (0.4 came with migrate
+      # 0.3.0): as a patch, projects on the old Elements would get a migrate they can't install.
       - name: Check migrate supports this Elements
         working-directory: packages/react
         run: |

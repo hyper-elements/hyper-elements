@@ -1,5 +1,7 @@
 import React from "react";
 import {
+  acceptPlugins,
+  checkPluginsOption,
   ElementsError,
   LAYOUT_VERSION,
   pagedSupport,
@@ -36,20 +38,26 @@ const MORE_CHECKS: Diagnostic = {
  * goes in 0.5), and for an Email without errors, where its client checks are. `plugins: []` passed turns that one off.
  */
 function callNotes(rootType: string | undefined, diagnostics: readonly Diagnostic[], options: { plugins?: unknown; emailClients?: unknown }): Diagnostic[] {
-  const out: Diagnostic[] = [];
-  if (options.emailClients !== undefined) {
-    out.push({
+  const out: Diagnostic[] = movedNote(options);
+  const plugins = Array.isArray(options.plugins) ? options.plugins : null;
+  // email-clients' plugin as core accepted it: one core refused (written for another plugin api) ran no checks.
+  const passed = plugins ? acceptPlugins(plugins).plugins.some((p) => p.name === "email-clients") : false;
+  if (rootType === "Email" && !passed && !(plugins && plugins.length === 0) && !diagnostics.some((d) => d.severity === "error")) out.push(MORE_CHECKS);
+  return out;
+}
+
+/** `emailClients` passed: it moved to email-clients' plugin in 0.4 (this note goes in 0.5). */
+function movedNote(options: { emailClients?: unknown } | undefined): Diagnostic[] {
+  if (options?.emailClients === undefined) return [];
+  return [
+    {
       code: "email/clients-moved",
       severity: "info",
       message: "emailClients isn't an option of @hyper-elements/react any more: the email client checks moved to @hyper-elements/email-clients",
       path: "root",
       fix: "npm i @hyper-elements/email-clients, then validate(email, { plugins: [await emailClients({ clients: [...] })] })",
-    });
-  }
-  const plugins = Array.isArray(options.plugins) ? options.plugins : null;
-  const passed = plugins?.some((p) => !!p && typeof p === "object" && (p as { name?: unknown }).name === "email-clients") ?? false;
-  if (rootType === "Email" && !passed && !(plugins && plugins.length === 0) && !diagnostics.some((d) => d.severity === "error")) out.push(MORE_CHECKS);
-  return out;
+    },
+  ];
 }
 
 /**
@@ -60,6 +68,7 @@ function callNotes(rootType: string | undefined, diagnostics: readonly Diagnosti
  * template has errors (see `validate()`).
  */
 export async function render(element: React.ReactElement, options: RenderOptions = {}): Promise<RenderResult> {
+  checkPluginsOption(options.plugins);
   const { document, diagnostics, components } = template(element, "render");
   if (!document || diagnostics.some((d) => d.severity === "error")) throw new ElementsError(diagnostics);
   const rendered = renderTemplate(document, { ...options, components });
@@ -88,6 +97,7 @@ export interface ValidationResult {
  * @hyper-elements/email-clients; without it, an Email gets one note saying so.
  */
 export function validate(element: React.ReactElement, options: ValidateOptions = {}): ValidationResult {
+  checkPluginsOption(options.plugins);
   const { document, diagnostics, components } = template(element, "validate");
   const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? validateTemplate(document, { components, plugins: options.plugins }).diagnostics : [])];
   const withNotes = [...all, ...callNotes(document?.root.type, all, options)];
@@ -115,14 +125,16 @@ export function outline(element: React.ReactElement): string {
  * errors. The tree is the writers' input, not a format to store: it changes with Elements, and `layout` says which
  * format it's in (a writer refuses one it doesn't read).
  */
-export function prepare(element: React.ReactElement): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
+export function prepare(element: React.ReactElement, options?: Record<string, never>): { root: ResolvedNode | null; diagnostics: Diagnostic[]; layout: number } {
   const { document, diagnostics, components } = template(element, "prepare");
-  if (!document || diagnostics.some((d) => d.severity === "error")) return { root: null, diagnostics, layout: LAYOUT_VERSION };
+  // It takes no options since 0.4: `emailClients` from code written for 0.3 gets the note validate() and render() give, last.
+  const moved = movedNote(options as { emailClients?: unknown } | undefined);
+  if (!document || diagnostics.some((d) => d.severity === "error")) return { root: null, diagnostics: [...diagnostics, ...moved], layout: LAYOUT_VERSION };
   const prepared = prepareTemplate(document, { components });
   const root = prepared.resolved?.root ?? null;
   // A Document is prepared for its PDF and a Canvas for its image: what they can't show that the HTML can.
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];
-  return { root, diagnostics: [...diagnostics, ...prepared.diagnostics, ...paged], layout: LAYOUT_VERSION };
+  return { root, diagnostics: [...diagnostics, ...prepared.diagnostics, ...paged, ...moved], layout: LAYOUT_VERSION };
 }
 
 export type { RenderOptions, RenderResult, ResolvedNode };
