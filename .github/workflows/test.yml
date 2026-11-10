@@ -71,6 +71,9 @@ jobs:
       - name: Converter typechecks
         run: pnpm --filter @hyper-elements/migrate typecheck
 
+      - name: Email client previews typecheck
+        run: pnpm --filter @hyper-elements/email-clients typecheck
+
       # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
       # tag, and resuming a run whose npm publish succeeded.
       - name: Release script
@@ -139,6 +142,25 @@ jobs:
           fi
           echo "✅ /builder bundle within budget"
 
+      # The email client checks and previews (@hyper-elements/email-clients, dist/index.js):
+      # about 43KB unminified ESM: the plugin and its checks from caniemail's tables, the
+      # preview shell, and the runtime each preview file carries (the frames, fonts, images
+      # and findings around the models, minified, about 8KB). The models are their own
+      # package (a dependency, not bundled), and so is core (external). Set from that plus
+      # 10%. Raise it on purpose, with what grew.
+      - name: Check email client previews bundle size
+        run: |
+          BUNDLE="packages/email-clients/dist/index.js"
+          test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+          MAX_SIZE=47000
+          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
+          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
+            exit 1
+          fi
+          echo "✅ Email client previews bundle within budget"
+
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
         run: |
@@ -160,7 +182,15 @@ jobs:
       # --disallow-code-generation-from-strings (a CSP without 'unsafe-eval').
       # HARD gate: fails if this package evaluates a string at import/render.
       - name: CSP safety gate
-        run: pnpm --filter @hyper-elements/react test:csp
+        run: pnpm --filter @hyper-elements/react test:csp && pnpm --filter @hyper-elements/email-clients test:csp
+
+      # The email client checks and previews packed and installed in a clean project: beside the packed core and the
+      # models package from npm, both module formats check an email with the plugin and write every preview with the
+      # fonts inlined, and the tarball holds the fonts and their licences and none of the models; beside core 0.3.1, npm
+      # reports the unmet peer and the first call throws email-clients/version-mismatch
+      # (packages/email-clients/scripts/pack-check.mjs).
+      - name: Email client checks and previews, packed and installed
+        run: pnpm --filter @hyper-elements/email-clients test:pack
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
@@ -368,6 +398,11 @@ jobs:
       # with the same font file: pixel by pixel, the edges of shapes and letters aside (packages/react/test/image/browser).
       - name: Image drawn as its Canvas's HTML
         run: pnpm --filter @hyper-elements/react test:browser test/image
+
+      # The email client previews opened in Chromium: each client's file draws the email with every block's path,
+      # says it's done, and runs none of the email's scripts, handlers or navigation (packages/email-clients/test/browser).
+      - name: Email client previews in Chromium
+        run: pnpm --filter @hyper-elements/email-clients test:browser
 
       # ── Migration fidelity smoke test ───────────────────────────
       # Converts the committed fixture templates both ways (codemod and
