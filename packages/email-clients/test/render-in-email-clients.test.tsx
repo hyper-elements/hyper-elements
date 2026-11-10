@@ -59,7 +59,7 @@ describe("renderInEmailClients()", () => {
   it("keeps the order asked for, each client once, light before dark; skips what can't be previewed, saying why", async () => {
     const { previews, skipped } = await renderInEmailClients(welcome, { emailClients: ["gmail-app", "apple-mail", "yahoo", "outlook", "apple-mail"], dark: true });
     expect(previews.map((p) => [p.id, p.filename, p.variant, p.width])).toEqual([
-      ["gmail-app", "gmail-app.html", "phone", 375],
+      ["gmail-app", "gmail-app.html", "phone", 380],
       ["apple-mail", "apple-mail.html", "desktop", 820],
       ["apple-mail.dark", "apple-mail.dark.html", "desktop", 820],
       ["outlook", "outlook.html", "desktop", 820],

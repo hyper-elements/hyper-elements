@@ -2,7 +2,17 @@
 
 Each release records the models package it was tested with.
 
-## Unreleased (0.4.1)
+## Unreleased (0.4.2)
+
+- **The Gmail app's previews draw with Android's fonts**, as the app on Android does: a font stack resolves against
+  Android's fonts (Arial, Helvetica and sans-serif are Roboto; Georgia, Times and serif are Noto Serif; Courier and
+  monospace are Droid Sans Mono), with Roboto, Noto Serif and Noto Sans Mono shipped in `fonts/` (SIL OFL 1.1). Before,
+  they drew with the fonts of the machine opening the file, and listed Roboto as missing.
+- **The Gmail apps' previews are 380px wide**, the width the Gmail app on Android lays an email out at (375px before),
+  and their text 7% larger, as the app draws it (models 1.7.0).
+- Requires `@hyper-elements/email-client-models` 1.7.0.
+
+## 0.4.1
 
 - **New: `renderInEmailClients(element, { widths })`**: the width a client's preview draws the email at, where it isn't
   the client's own, such as `{ "outlook-com": 540 }` for Outlook.com's reading pane beside its message list. With the

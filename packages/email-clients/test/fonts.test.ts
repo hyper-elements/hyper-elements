@@ -16,7 +16,7 @@ describe("the stand-in fonts", () => {
   it("are each in fonts/, as WOFF2, beside their licences", () => {
     const files = new Set(PREVIEW_CLIENTS.flatMap((client) => fontFiles(client)));
     expect([...files].sort()).toEqual(readdirSync(fonts).filter((f) => f.endsWith(".woff2")).sort());
-    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "inter-LICENSE.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
+    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "inter-LICENSE.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
   });
 
   it("inline within the budget for each client: 2,000,000 base64 bytes at most", () => {

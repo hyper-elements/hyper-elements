@@ -57,8 +57,8 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
 Each preview is one self-contained HTML file. Open it in Chromium: it draws the email as that client does and lists
 what the client changed. To show a preview, write the files and open them in your browser; otherwise give the paths.
 
-- `widths`: the width a client's preview draws the email at, where it isn't the client's own (820px on desktop, 375px
-  for the Gmail apps). Outlook.com and Gmail on the web match an email's media queries at the browser window, not the
+- `widths`: the width a client's preview draws the email at, where it isn't the client's own (820px on desktop, 380px
+  for the Gmail apps, the width the Gmail app on Android lays an email out at). Outlook.com and Gmail on the web match an email's media queries at the browser window, not the
   pane the email is in, so at 540px Outlook.com keeps the email's desktop styles, as it does for its readers.
 - `computers`: Outlook.com and Gmail on the web are read in a browser, whose fonts are the reader's computer's. Each is
   previewed on Windows (`outlook-com`, `gmail`: font stacks resolved against Windows' fonts, as Chrome there does, so
@@ -93,7 +93,8 @@ findings are JSON in `<script type="application/json" id="email-client-findings"
 
 The previews draw with the open fonts the models were measured with, which ship in `fonts/` (SIL OFL 1.1): Selawik for
 Segoe UI, Carlito for Calibri, and Inter (loaded only where the email names Inter: it's half of classic Outlook's
-fonts). Arial, Georgia, Verdana, Tahoma, Trebuchet MS, Times New Roman and Courier
+fonts); and for the Gmail apps, Android's own fonts: Roboto, Noto Serif, and Noto Sans Mono for Droid Sans Mono, whose
+widths it shares. Arial, Georgia, Verdana, Tahoma, Trebuchet MS, Times New Roman and Courier
 New come from the machine opening the file, as when they were measured. `fonts: "url"` (the default) loads the open
 fonts from jsDelivr; `fonts: "inline"` puts them in each file so it draws offline, apart from the email's own images and
 web fonts, which it lists as missing. Inlined, classic Outlook's file is about 1 MB plus the email, and about 2 MB plus the
