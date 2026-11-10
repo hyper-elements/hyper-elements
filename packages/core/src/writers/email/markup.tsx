@@ -42,12 +42,13 @@ export function OutlookWidth({ width, children }: { width: number; children?: Ch
 }
 
 /**
- * A URL as a CSS `url("…")`: the characters that would end its string (a quote, a backslash, a line break: `\n`, `\r`
- * and `\f` end a CSS string) or that a URL never holds as they are, percent-encoded, so nothing after them is read as
- * CSS.
+ * A URL as a CSS `url(…)`, unquoted: Gmail and Outlook.com drop a whole `style` attribute that has a quoted `url()` in
+ * it (its corners, background size and position with it), so a background picture showed at its own size from its
+ * top left corner. The characters an unquoted URL can't hold (a quote, a parenthesis, a backslash, whitespace) or that
+ * a URL never holds as they are (control characters) are percent-encoded, so nothing after them is read as CSS.
  */
 // eslint-disable-next-line no-control-regex
-const cssUrl = (src: string) => `url("${src.replace(/["\\\u0000-\u001f\u007f]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`)}")`;
+export const cssUrl = (src: string) => `url(${src.replace(/["'()\\\s\u0000-\u001f\u007f]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`)})`;
 
 /** A color Word reads as a `bgcolor` attribute (hex only). */
 export const bgcolor = (value: Json | undefined) => (typeof value === "string" && /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(value) ? value : undefined);

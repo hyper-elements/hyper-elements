@@ -15,7 +15,7 @@
 import type React from "react";
 import type { Diagnostic, ElementsPlugin, RenderOptions } from "@hyper-elements/react";
 import { checkCore, versionMismatch } from "./core";
-import { DEFAULT_PREVIEW_CLIENTS, variantsOf, type PreviewVariant, type Skipped } from "./clients";
+import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 import { checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
 import { emailClients, PLUGIN_NAME } from "./plugin";
 import { loadModelsPackage } from "./models";
@@ -24,7 +24,7 @@ import { FONT_ORIGIN, fontSources, readPackageFont, unnamed, type ReadFont } fro
 import { previewFile } from "./shell";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./core";
-export { DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
+export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
 export { emailClients, PLUGIN_NAME, type EmailClientsPluginOptions } from "./plugin";
 
@@ -35,6 +35,18 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   dark?: boolean;
   /** Where the preview's stand-in fonts come from: a URL (default), or inlined in each file, to draw offline. */
   fonts?: "url" | "inline";
+  /**
+   * The width (px) a client's preview draws the email at, where it isn't the client's own: `{ "outlook-com": 540 }` for
+   * Outlook.com's reading pane beside its message list. Outlook.com and Gmail on the web still apply the email's media
+   * queries at a desktop window's width, as they do (models 1.4.0 and later), so a narrow pane keeps the desktop styles.
+   */
+  widths?: Partial<Record<PreviewClient, number>>;
+  /**
+   * The computers Outlook.com and Gmail on the web are previewed as read on (default both): `"windows"` resolves each
+   * font stack against Windows' fonts, as Chrome there does (Georgia where a Mac has Didot), `"mac"` draws with the
+   * fonts of the Mac the preview is opened on. Each is a preview of its own: `outlook-com` (Windows), `outlook-com.mac`.
+   */
+  computers?: readonly Computer[];
 }
 
 export interface EmailClientPreview extends PreviewVariant {
@@ -63,9 +75,11 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   const models = await loadModelsPackage();
   // The models' browser script, for the preview's CSP: its sha256 is the package's own.
   const script = { script: models.SCRIPT, sha256: models.SCRIPT_SHA256 };
-  const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", plugins = [], ...renderOptions } = options;
+  const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", plugins = [], widths, computers, ...renderOptions } = options;
+  checkWidths(widths);
+  checkComputers(computers);
   checkClients(clients, "renderInEmailClients({ emailClients })");
-  const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS);
+  const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS, widths, computers);
   const own: ElementsPlugin[] = plugins.some((plugin) => plugin?.name === PLUGIN_NAME) ? [] : [await emailClients({ clients })];
   // The compact HTML: white space changes how some clients draw an email. A core that passed the check gives a block
   // map for an Email, and none for another root: only an Email is previewed.
@@ -92,10 +106,10 @@ export async function renderInEmailClients(element: React.ReactElement, options:
         name: info.name,
         blocks,
         fontOrigin,
-        fontSources: await fontSources(variant.client, fonts, read, skip.files),
-        faces: models.facesToLoad(variant.client).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
+        fontSources: await fontSources(variant.client, fonts, read, skip.files, variant.computer),
+        faces: models.facesToLoad(variant.client, variant.computer).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
         leftOut: skip.families,
-        standIns: models.standIns(variant.client),
+        standIns: models.standIns(variant.client, variant.computer),
         elements: info.measured?.elements ?? null,
         runtime: RUNTIME.sha256,
         models: { script: script.sha256, protocol: models.PROTOCOL },

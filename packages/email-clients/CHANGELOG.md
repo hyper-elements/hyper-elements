@@ -2,7 +2,27 @@
 
 Each release records the models package it was tested with.
 
-## Unreleased (0.4.0)
+## Unreleased (0.4.1)
+
+- **New: `renderInEmailClients(element, { widths })`**: the width a client's preview draws the email at, where it isn't
+  the client's own, such as `{ "outlook-com": 540 }` for Outlook.com's reading pane beside its message list. With the
+  models package 1.4.0 or later, Outlook.com and Gmail on the web apply the email's media queries at the browser
+  window's width, as the real clients do, so a narrow pane keeps the email's desktop styles.
+
+- **New: Outlook.com and Gmail on the web previewed on Windows and on a Mac** (`computers`, both by default): on Windows
+  each font stack resolves against Windows' fonts, as Chrome there does (`Didot, Georgia` draws Georgia, `system-ui`
+  Segoe UI, `monospace` Consolas), with stand-ins of the same widths where the machine opening the preview lacks one;
+  on a Mac, the Mac's own fonts. The Windows previews keep their ids (`outlook-com`, `gmail`); the Mac ones are
+  `outlook-com.mac` and `gmail.mac`. Needs the models package 1.5.0.
+
+- **Requires `@hyper-elements/email-client-models` 1.6.0**, whose previews draw more of what both Outlooks change:
+  classic Outlook draws Arial Black and the other Windows fonts a stack names, words over a picture from its top,
+  Word's automatic text colour, and table cells styled `width: auto` as Word sizes them, and leaves out what Word
+  doesn't draw (a div's height, `nth-child` rules, a `<button>`'s box); Outlook.com and Gmail drop a style attribute
+  with a `url()` in double quotes, `gap` and `row-gap`, and Gmail the `flex` shorthand.
+- The bundle budget is 49,000 bytes (it was 47,000): the widths and computers options.
+
+## 0.4.0
 
 The first release, with core 0.4.0.
 

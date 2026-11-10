@@ -81,7 +81,7 @@ function project(deps, npmFlags = []) {
 }
 
 const REACT = ['react@18.3.1', 'react-dom@18.3.1'];
-const all = ['outlook.html', 'outlook-com.html', 'gmail.html', 'gmail-app.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.dark.html'];
+const all = ['outlook.html', 'outlook-com.html', 'outlook-com.mac.html', 'gmail.html', 'gmail.mac.html', 'gmail-app.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.dark.html'];
 
 // 1. Beside the core it's for.
 const matched = project([packedCore, extension, ...REACT]);
