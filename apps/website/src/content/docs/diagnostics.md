@@ -53,6 +53,9 @@ validate(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlo
 Its diagnostics name the clients they're about in `clients`, with a `fix`. Without the plugin, an Email gets one note,
 `email/more-checks`, saying where the client checks are; `plugins: []` leaves it out.
 
+The same package draws the email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, on your machine, with
+what each client changed: see [Email client previews](/docs/email-clients).
+
 Before 0.4, the client checks were part of this package, with an `emailClients` option and `EMAIL_CLIENTS` (now
 exported by `@hyper-elements/email-clients`). Passing `emailClients` now gives an `email/clients-moved` note with the
 replacement, until 0.5. Where WebAssembly isn't available, the plugin runs only the checks from caniemail's tables, and

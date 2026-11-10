@@ -9,7 +9,7 @@ export const site = {
   migrate: "npx @hyper-elements/migrate",
   skill: "npx skills add hyper-elements/hyper-elements",
   /** The engine's version line, shown in the header; links to the releases. */
-  version: "0.3",
+  version: "0.4",
   releases: "https://github.com/hyper-elements/hyper-elements/releases",
   repo: "hyper-elements/hyper-elements",
   description:
@@ -45,6 +45,7 @@ export const docsNav: DocGroup[] = [
       { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
       { slug: "diagnostics", label: "Diagnostics" },
+      { slug: "email-clients", label: "Email client previews" },
       { slug: "custom-components", label: "Your own components" },
     ],
   },
