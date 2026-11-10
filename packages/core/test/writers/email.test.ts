@@ -714,7 +714,7 @@ describe("email HTML", () => {
 
     it("draws its Image as the cell's background, as tall as the image at the Layer's width, for every client and Outlook", () => {
       const { body, diagnostics } = render(layer([image(), over], { alignItems: "center", justifyItems: "center" }));
-      expect(body).toContain('<td background="https://example.com/hero.jpg" height="300" valign="middle" align="center" style="height:300px;background-image:url(&quot;https://example.com/hero.jpg&quot;);background-size:cover;background-position:center;background-repeat:no-repeat">');
+      expect(body).toContain('<td background="https://example.com/hero.jpg" height="300" valign="middle" align="center" style="height:300px;background-image:url(https://example.com/hero.jpg);background-size:cover;background-position:center;background-repeat:no-repeat">');
       // Outlook takes neither: a VML rectangle the image fills, with the words in its text box.
       expect(outlookOnly(body)).toContain('<v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" alt="Sea" style="width:600px;height:300px"><v:fill type="frame" src="https://example.com/hero.jpg"></v:fill><v:textbox inset="0,0,0,0">');
       expect(outlookOnly(body)).toContain("</v:textbox></v:rect>");
@@ -723,6 +723,16 @@ describe("email HTML", () => {
       // Without a height it keeps the desktop one on phones, which a page doesn't: noted.
       expect(diagnostics.map((d) => [d.code, d.severity, d.path])).toEqual([["email/layer-phone", "info", "root.children[0].style.height"]]);
       expect(render(layer([image(), over], { height: 240 })).body).toContain('height="240"');
+    });
+
+    it("writes its picture's URL unquoted in the style, which Gmail and Outlook.com keep, with what would end it encoded", () => {
+      // A quoted url() makes Gmail and Outlook.com drop the whole style attribute (Mailgun Inspect, November 2026).
+      expect(render(layer([image(), over])).body).not.toContain("url(&quot;");
+      const odd = { ...photo, src: "https://example.com/a b/(c)'d\"e\\f.jpg" };
+      const { body } = render(layer([image(undefined, odd), over]));
+      expect(body).toContain("background-image:url(https://example.com/a%20b/%28c%29%27d%22e%5Cf.jpg);");
+      // The attribute and Outlook's VML keep the URL as it was (escaped as HTML).
+      expect(body).toContain('background="https://example.com/a b/(c)&#39;d&quot;e\\f.jpg"');
     });
 
     it("reads its Image's alternate text out, and leaves the image out on phones where it's hidden there", () => {
