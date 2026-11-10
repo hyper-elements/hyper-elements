@@ -1,0 +1,69 @@
+---
+import Base from "./Base.astro";
+import { site } from "../lib/site";
+interface Props {
+  title: string; description: string; slug: string; date: Date;
+  hero: string; heroAlt: string;
+  headings: { depth: number; slug: string; text: string }[];
+}
+const { title, description, slug, date, hero, heroAlt, headings } = Astro.props;
+const url = new URL(`/blog/${slug}`, site.url).href;
+const jsonLd = {
+  "@context": "https://schema.org", "@type": "TechArticle", headline: title,
+  description, url, image: new URL(hero, site.url).href, inLanguage: "en",
+  author: { "@type": "Organization", name: site.name, url: site.url },
+  isPartOf: { "@type": "Blog", name: "Hyper Elements developer tutorials", url: new URL("/blog", site.url).href },
+};
+---
+<Base title={title} description={description} ogType="article" jsonLd={jsonLd} image={hero} imageAlt={heroAlt} imageWidth={1600} imageHeight={912}>
+  <article class="wrap blog-article">
+    <header>
+      <a class="eyebrow" href="/blog">← All tutorials</a>
+      <h1>{title}</h1>
+      <p class="lede">{description}</p>
+      <p class="byline">Hyper Elements · <time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
+      <img class="hero" src={hero} alt={heroAlt} width="1600" height="912" fetchpriority="high" />
+    </header>
+    <nav class="contents" aria-label="In this tutorial">
+      <p>In this tutorial</p>
+      <ul>{headings.filter((h) => h.depth === 2).map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ul>
+    </nav>
+    <div class="prose"><slot /></div>
+    <footer class="article-footer"><a href="/docs/quickstart">Build your first template →</a><a href="/blog">All tutorials</a></footer>
+  </article>
+</Base>
+<style>
+  .blog-article { max-width: 860px; padding-top: 56px; padding-bottom: 64px; }
+  h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1.07; letter-spacing: -0.04em; margin: 8px 0 22px; font-weight: 600; }
+  .byline { color: var(--text-2); font: 400 12px var(--mono); margin: 24px 0; }
+  .hero { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: var(--radius); }
+  .contents { border-block: 1px solid var(--line); padding: 24px 0; margin: 32px 0; }
+  .contents p { margin: 0 0 12px; font-weight: 600; }
+  .contents ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+  .contents a { color: var(--text-2); font-size: 14px; text-underline-offset: 3px; }
+  .article-footer { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+
+  .prose { font-size: 16px; line-height: 1.75; color: var(--prose); }
+  .prose :global(h2) { font-size: 26px; letter-spacing: -0.03em; line-height: 1.2; color: var(--text); margin: 56px 0 16px; font-weight: 600; }
+  .prose :global(h3) { font-size: 19px; letter-spacing: -0.02em; color: var(--text); margin: 36px 0 12px; font-weight: 600; }
+  .prose :global(h4) { font-size: 16px; color: var(--text); margin: 28px 0 8px; }
+  .prose :global(> :first-child) { margin-top: 0; }
+  .prose :global(p), .prose :global(ul), .prose :global(ol) { margin: 0 0 18px; }
+  .prose :global(li) { margin: 6px 0; }
+  .prose :global(li::marker) { color: var(--text-3); }
+  .prose :global(a) { color: var(--text); text-decoration: underline; text-decoration-color: var(--line-3); text-underline-offset: 3px; }
+  .prose :global(a:hover) { text-decoration-color: var(--text); }
+  .prose :global(strong) { color: var(--text); font-weight: 600; }
+  .prose > :global(pre) { margin: 0 0 22px; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px !important; font: 400 13.5px/1.7 var(--mono); overflow: auto; background: #0e0e0e !important; }
+  .prose :global(blockquote) { margin: 0 0 22px; padding: 14px 18px; border: 1px solid var(--line); border-left: 3px solid var(--line-3); border-radius: 10px; background: rgba(239, 70, 56, 0.05); color: var(--text-2); }
+  .prose :global(blockquote p:last-child) { margin-bottom: 0; }
+  .prose :global(table) { width: 100%; border-collapse: collapse; margin: 0 0 22px; font-size: 14.5px; display: block; overflow-x: auto; }
+  .prose :global(th), .prose :global(td) { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .prose :global(th) { color: var(--text); font-weight: 600; font-size: 13px; border-bottom-color: var(--line-2); }
+  /* Code in a table stays on one line, so a tag like <Document> or a path isn't split; a wide table scrolls. */
+  .prose :global(td code), .prose :global(th code) { white-space: nowrap; }
+  .prose :global(hr) { border: 0; height: 1px; background: var(--line); margin: 40px 0; }
+  .prose :global(h2 a), .prose :global(h3 a) { text-decoration: none; }
+
+
+</style>

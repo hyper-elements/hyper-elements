@@ -49,6 +49,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/components` | The component gallery |
 | `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
 | `/ai`, `/migrate` | Landing pages |
+| `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page and component, for AI agents |
 
 Names and links (package names, GitHub, install commands) are in `src/lib/site.ts`. The docs pages repeat the package names in their text, so a rename also needs a search and replace in `src/content/docs/`.
@@ -62,3 +63,11 @@ A page is Markdown with a quoted `title` and `description` in its frontmatter, n
 `dist/` is a static site: Cloudflare Pages, Vercel, Netlify or GitHub Pages all serve it with `hyperelements.dev` as the custom domain. Build command `pnpm --filter @hyper-elements/website build`, output `apps/website/dist`, on Node.js 22.23.4 or later (set the host's Node version to match).
 
 On Vercel, only `main` deploys: `vercel.json` turns off deployments for every other branch, so pull requests get no site preview. Check a change locally with `dev` or `build` and `preview`.
+
+## Blog articles
+
+Write Markdown in `src/content/blog/` with `title`, `description`, `slug`, `date`, `hero` and `heroAlt` frontmatter. `slug` is the URL segment, and `date` is the editorial date (set it to the intended publication day at review). Store article images under `public/img/blog/`. The index and article pages reuse the site layout, theme and code highlighting. Article pages set their own social image and canonical URL; the sitemap includes them at build time.
+
+Review articles and infrastructure through a pull request. Opening a PR does not publish the article; only merging to main can deploy it. Conceptual article artwork is an illustration, not an output preview.
+
+After `build`, run `pnpm --filter @hyper-elements/website check:blog` to check the first article’s routes, metadata, internal links, anchors, hero and sitemap. This checks site integration only, not the reader’s sample project.
