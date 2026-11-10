@@ -73,6 +73,35 @@ A [theme](/docs/themes) sets the root's text styles for every template that take
 
 There are no margins. Space between blocks is their parent's `gap`, and space inside a box is its `padding`. See [Layout](/docs/layout#gap-and-padding-no-margins).
 
+## On a Page
+
+A `Page` takes more of CSS: its page styles, and richer lengths. They're checked against CSS's syntax for each, written as given, and on a Page only: under another root a page style is an error (`style/not-supported`) that says what that root does instead.
+
+```tsx
+<Box style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "clamp(1rem, 3vw, 2rem)", padding: "4rem 1.5rem" }}>
+  <Heading level={1} style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", gridColumn: "1 / -1" }}>Plans</Heading>
+  <Column style={{ boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)", borderRadius: "1rem", transition: "transform 150ms ease" }}>…</Column>
+</Box>
+```
+
+**Lengths.** On a Page a length style (`width`, `maxWidth`, `padding`, `gap`, `fontSize`, `lineHeight`, `letterSpacing`, `borderRadius`, …) also takes rem, em, %, `vw`, `vh` and `calc()`, `min()`, `max()`, `clamp()` of them. A number is still px, and a value an Email takes keeps its meaning: `lineHeight: "150%"` is still the multiple 1.5.
+
+**Page styles**, by group:
+
+| Group | Styles | Taken by |
+|-------|--------|----------|
+| Layout | `display`, `flexDirection`, `flexWrap`, `gridTemplateColumns`, `gridTemplateRows`, `gridTemplateAreas`, `gridAutoFlow`, `rowGap`, `columnGap`, `alignContent`, `justifyItems` | Box, Section, Row, Column |
+| Place | `alignSelf`, `justifySelf`, `order`, `flexGrow`, `flexShrink`, `flexBasis`, `gridColumn`, `gridRow`, `gridArea` | every block |
+| Size | `minHeight`, `maxHeight`, `aspectRatio`; an Image's `objectFit` and `objectPosition` | Box, the containers, Text, Heading |
+| Position | `position` (`sticky`, `absolute`, …), `top`, `right`, `bottom`, `left`, `inset`, `zIndex` | Box, the containers, Text, Heading, Button, Image, Layer |
+| Spacing | `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | Box, the containers, Text, Heading |
+| Wrapping | `whiteSpace`, `textOverflow`, `lineClamp` | Box, Text, Heading (Span: `whiteSpace`) |
+| Background | `backgroundImage` (url()s and gradients, in layers), `backgroundSize`, `backgroundPosition`, `backgroundRepeat` | Box, the containers, Text, Heading |
+| Border | `borderTop`, `borderRight`, `borderBottom`, `borderLeft`, `borderColor`, `borderStyle`, `borderWidth`, `outline` | Box, the containers, Text, Heading, Button |
+| Effects | `opacity`, `boxShadow`, `transform`, `transformOrigin`, `transition`, `filter`, `backdropFilter`, `mixBlendMode`, `maskImage`, `cursor`, `pointerEvents` | Box, the containers, Text, Heading, Button, Image, Layer |
+
+A page style is written after what the component writes for itself, so `<Column style={{ display: "grid" }}>` is a grid. Each component's page lists the page styles it takes. `animation` comes with motion, and phone and hover blocks for page styles with the Page's breakpoints and states.
+
 ## mobile
 
 The `mobile` block of a component's `style` holds its styles on phones, in an Email or a Page:

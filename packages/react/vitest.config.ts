@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { coverageConfigDefaults, defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
-/** What each of src/pdf's and src/image's tests (test/pdf, test/image) runs in: Node, with these files' own timeout. */
+/** What src/pdf's, src/image's and a Page's tests (test/pdf, test/image, test/page) run in: Node, with these files' own timeout. */
 const output = (name: string) => ({
   extends: true as const,
   test: {
@@ -52,6 +52,7 @@ export default defineConfig({
       },
       output('pdf'),
       output('image'),
+      output('page'),
     ],
   },
 });

@@ -6,6 +6,7 @@ import type { Border, BorderSide, FontFamily, Insets, LineHeight, Radius } from 
 import type { Json } from "../../model";
 import type { ResolvedNode, ResolvedText } from "../../resolve";
 
+
 /** A width as a share of `of`, in %. */
 export const share = (width: number, of: number) => `${Math.round((width / of) * 1e4) / 100}%`;
 
@@ -31,13 +32,25 @@ export function attrs(values: Record<string, string | number | undefined | null 
     .join("");
 }
 
-export type Declarations = Array<[string, string | number | undefined]>;
+/** A value written as it is: not shortened, not rewritten (a page style's: a URL, a gradient). */
+export class Verbatim {
+  constructor(readonly text: string) {}
+  toString(): string {
+    return this.text;
+  }
+}
+
+/** A style's name as CSS's property: `backgroundColor` is `background-color`. */
+export const kebab = (key: string) => key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
+
+/** A declaration's value: `Verbatim` is written as it is (a page style's: a URL, a gradient), the rest with colours shortened. */
+export type Declarations = Array<[string, string | number | Verbatim | undefined]>;
 
 /** Declarations as a style attribute's text, skipping absent values. */
 export function css(declarations: Declarations, important = false): string {
   return declarations
-    .filter((d): d is [string, string | number] => d[1] !== undefined && d[1] !== "")
-    .map(([property, value]) => `${property}:${shortColors(String(value))}${important ? "!important" : ""}`)
+    .filter((d): d is [string, string | number | Verbatim] => d[1] !== undefined && d[1] !== "")
+    .map(([property, value]) => `${property}:${value instanceof Verbatim ? value.text : shortColors(String(value))}${important ? "!important" : ""}`)
     .join(";");
 }
 
@@ -62,10 +75,12 @@ export function length(value: Json | undefined): string | undefined {
 
 export function insets(value: Json | undefined): string | undefined {
   if (!value) return undefined;
-  const { top, right, bottom, left } = value as Insets;
-  if (top === right && right === bottom && bottom === left) return px(top);
-  if (top === bottom && right === left) return `${px(top)} ${px(right)}`;
-  return `${px(top)} ${px(right)} ${px(bottom)} ${px(left)}`;
+  // A Page's padding may hold rem, em or calc() sides, written as they are.
+  const sides = value as Record<keyof Insets, number | string>;
+  const [top, right, bottom, left] = (["top", "right", "bottom", "left"] as const).map((key) => length(sides[key]) ?? "0");
+  if (top === right && right === bottom && bottom === left) return top;
+  if (top === bottom && right === left) return `${top} ${right}`;
+  return `${top} ${right} ${bottom} ${left}`;
 }
 
 const side = (s: BorderSide) => `${px(s.width)} ${s.style} ${s.color}`;
@@ -80,6 +95,8 @@ export function border(value: Json | undefined): Declarations {
 
 export function radius(value: Json | undefined): string | undefined {
   if (value === undefined) return undefined;
+  // A Page's radius may be one to four lengths as CSS writes them ("1rem", "50%").
+  if (typeof value === "string") return value;
   const r = value as Radius;
   return typeof r === "number" ? px(r) : `${px(r.topLeft)} ${px(r.topRight)} ${px(r.bottomRight)} ${px(r.bottomLeft)}`;
 }
@@ -96,11 +113,11 @@ export function lineHeight(value: LineHeight): string {
 const TEXT_CSS: Array<[keyof ResolvedText, string, (value: never) => string]> = [
   ["color", "color", (v: string) => v],
   ["fontFamily", "font-family", fontFamily],
-  ["fontSize", "font-size", px],
+  ["fontSize", "font-size", (v: number | string) => length(v)!],
   ["fontWeight", "font-weight", (v: number) => String(v)],
   ["fontStyle", "font-style", (v: string) => v],
   ["lineHeight", "line-height", lineHeight],
-  ["letterSpacing", "letter-spacing", px],
+  ["letterSpacing", "letter-spacing", (v: number | string) => length(v)!],
   ["textAlign", "text-align", (v: string) => v],
   ["textTransform", "text-transform", (v: string) => v],
 ];
@@ -114,8 +131,13 @@ const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.s
  */
 export function textDeclarations(text: ResolvedText, parent: ResolvedText | undefined, always: ReadonlyArray<keyof ResolvedText> = []): Declarations {
   const out: Declarations = [];
+  // A text metric set in rem, em or calc() on a Page is written as it was set (its px value is the resolver's).
+  const value = (of: ResolvedText, key: keyof ResolvedText) => (of.authored as Record<string, unknown> | undefined)?.[key] ?? of[key];
   for (const [key, property, write] of TEXT_CSS) {
-    if (!parent || always.includes(key) || !same(text[key], parent[key])) out.push([property, write(text[key] as never)]);
+    if (!parent || always.includes(key) || !same(value(text, key), value(parent, key))) {
+      const authored = (text.authored as Record<string, string> | undefined)?.[key];
+      out.push([property, authored ?? write(text[key] as never)]);
+    }
   }
   return out;
 }

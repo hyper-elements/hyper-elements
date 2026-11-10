@@ -61,8 +61,12 @@ export const noSrc = <Image alt="x" />;
 // @ts-expect-error headings go from 1 to 6
 export const level = <Heading level={7}>x</Heading>;
 
-// @ts-expect-error em isn't a unit a width takes
-export const em = <Column style={{ width: "2em" }} />;
+// A width in em, rem or calc() is a Page's (on another root it's an error when the template is read).
+export const em = <Column style={{ width: "2em", maxWidth: "min(100%, 40rem)", padding: "1rem 2rem" }} />;
+// @ts-expect-error a width is a length: a number with a unit it takes, or calc(), min(), max(), clamp()
+export const unit = <Column style={{ width: "2ems" }} />;
+// @ts-expect-error a word a width doesn't take
+export const word = <Column style={{ width: "big" }} />;
 
 // @ts-expect-error no margins: space between siblings is the parent's gap
 export const margin = <Text style={{ margin: 8 }}>x</Text>;

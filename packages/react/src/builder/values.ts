@@ -13,9 +13,9 @@ export type { Values };
 const round = (n: number) => Math.round(n * 100) / 100;
 export const cssPx = (n: number) => `${round(n)}px`;
 
-/** Sides as CSS, in as few values as say them ("10px", "10px 20px"). */
-export function cssSides(s: Insets): string {
-  const [t, r, b, l] = [s.top, s.right, s.bottom, s.left].map(cssPx);
+/** Sides as CSS, in as few values as say them ("10px", "10px 20px"); a Page's side in rem, em or calc() as written. */
+export function cssSides(s: Insets | Record<keyof Insets, number | string>): string {
+  const [t, r, b, l] = [s.top, s.right, s.bottom, s.left].map((side) => (typeof side === "number" ? cssPx(side) : String(side)));
   if (t === r && r === b && b === l) return t;
   if (t === b && r === l) return `${t} ${r}`;
   if (r === l) return `${t} ${r} ${b}`;
@@ -68,6 +68,8 @@ export function encode(kind: string, value: Json): unknown {
     case "line":
       return builderBorder({ top: value as Border["top"] });
     case "radius":
+      // A Page's radius in rem, em or % is CSS as written ("1rem", "50%").
+      if (typeof value === "string") return value;
       return typeof value === "number" ? cssPx(value) : [value as Record<string, number>].map((c) => [c.topLeft, c.topRight, c.bottomRight, c.bottomLeft].map(cssPx).join(" "))[0];
     case "lineHeight":
       return cssLineHeight(value);

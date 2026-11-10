@@ -6,12 +6,18 @@ import type { Component } from "./context";
 const TAGS: Record<string, string> = { super: "sup", sub: "sub" };
 
 export const Span: Component = ({ node, style, parent, classes, children }) => {
-  const Tag = TAGS[style.verticalAlign as string] ?? "span";
+  // On a Page, `as` gives it its meaning (strong, em, code…); raised or lowered, it's a sup or a sub.
+  const raised = TAGS[style.verticalAlign as string];
+  const Tag = (node.props.as as string | undefined) ?? raised ?? "span";
   return (
     <Tag
       id={node.id}
       class={classes()}
-      style={[textDeclarations(node.text, parent.text), { textDecoration: style.textDecoration, backgroundColor: style.backgroundColor, lineHeight: Tag === "span" ? undefined : "0" }]}
+      style={[
+        textDeclarations(node.text, parent.text),
+        // Written as another element (`as`), a raised or lowered run says so itself: only a sup or a sub is raised by its tag.
+        { textDecoration: style.textDecoration, backgroundColor: style.backgroundColor, lineHeight: raised ? "0" : undefined, verticalAlign: raised && Tag !== raised ? style.verticalAlign : undefined },
+      ]}
     >
       {children()}
     </Tag>

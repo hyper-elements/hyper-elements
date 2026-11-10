@@ -7,12 +7,18 @@ import { defineComponent, prop, type SupportByTarget } from "./define";
 import { boolean, enumOf, number } from "./kinds";
 import type { Json, Node } from "./model";
 import { SURFACE_ROLES } from "./roots";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle } from "./styles";
+import { boxStyle, css, inheritedTextStyle, layoutStyle, pageBackgroundStyle, pageBorderStyle, pageEffectsStyle, pagePlacementStyle, pagePositionStyle, pageSizeStyle, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
 
 /** Styles of a Grid that are its box's (the Column it is), not its rows'. */
-const BOX = [...Object.keys(boxStyle), "flex", ...Object.keys(inheritedTextStyle)];
+// A Grid's page styles (its place in its parent, its size, position, background, border and effects) go onto the Column it's laid out as.
+const BOX = [
+  ...Object.keys(boxStyle),
+  "flex",
+  ...Object.keys(inheritedTextStyle),
+  ...Object.keys({ ...pagePlacementStyle, ...pageSizeStyle, ...pagePositionStyle, ...pageBackgroundStyle, ...pageBorderStyle, ...pageEffectsStyle }),
+];
 
 const only = (style: Record<string, Json> | undefined, keys: readonly string[]) => {
   const out = Object.fromEntries(Object.entries(style ?? {}).filter(([key]) => keys.includes(key)));
@@ -69,6 +75,12 @@ export const Grid = defineComponent({
     stackOnMobile: prop(boolean(), { support: WRITTEN, label: "Stack on phones", description: "Its children one under another on phones (in an Email or a Page).", default: true }),
   },
   style: {
+    ...pagePlacementStyle,
+    ...pageSizeStyle,
+    ...pagePositionStyle,
+    ...pageBackgroundStyle,
+    ...pageBorderStyle,
+    ...pageEffectsStyle,
     ...inheritedTextStyle,
     ...boxStyle,
     gap: { ...layoutStyle.gap, description: "Space between its children, across and down (unless rowGap is set)." },
@@ -109,6 +121,9 @@ export const Layer = defineComponent({
   categories: ["layout", "block"],
   props: {},
   style: {
+    ...pagePlacementStyle,
+    ...pagePositionStyle,
+    ...pageEffectsStyle,
     ...inheritedTextStyle,
     ...pick(boxStyle, "width", "minWidth", "maxWidth", "backgroundColor", "border", "borderRadius"),
     height: { ...boxStyle.height, description: "Its height: the image under its children covers it, cut at its sides or its top and bottom." },

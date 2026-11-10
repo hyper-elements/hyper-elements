@@ -4,6 +4,7 @@
  */
 import type React from "react";
 import {
+  Box as BoxDefinition,
   Button as ButtonDefinition,
   Column as ColumnDefinition,
   Divider as DividerDefinition,
@@ -58,8 +59,11 @@ export type PrimitiveProps<D> = D extends ComponentDefinition<infer P, any, any>
 /** The styles that may be set on phones: those whose definition says `mobile: true`. */
 type MobileKeys<S extends StyleSpecs> = { [K in keyof S]-?: S[K] extends { mobile: true } ? K : never }[keyof S];
 
+/** What a style takes: its kind's values, and on a Page its page kind's (rem, em, calc(), …), which the types can't tell apart. */
+type StyleInputOf<Spec> = Spec extends { kind: infer K } ? InputOf<K> | (Spec extends { pageKind: infer P } ? InputOf<P> : never) : never;
+
 /** A condition's block of the styles `K`; where it takes none, nothing can be set in it. A value may be a token. */
-type Block<S extends StyleSpecs, K> = [K] extends [never] ? never : { [Q in K & keyof S]?: Tokenized<InputOf<S[Q]["kind"]>> };
+type Block<S extends StyleSpecs, K> = [K] extends [never] ? never : { [Q in K & keyof S]?: Tokenized<StyleInputOf<S[Q]>> };
 
 /**
  * A component's condition blocks in `style`: `mobile` with the styles it takes on phones, `hover` with its hover
@@ -99,7 +103,7 @@ interface Scoped {
 
 // Each component's props and style have names of their own (HeadingProps, HeadingStyle), so a type error names them
 // ("'marginBottom' does not exist in type 'HeadingStyle'") rather than spelling out every style the component takes.
-type StyleOf<D> = D extends ComponentDefinition<any, infer S, any> ? { [K in keyof S]?: Tokenized<InputOf<S[K]["kind"]>> } : never;
+type StyleOf<D> = D extends ComponentDefinition<any, infer S, any> ? { [K in keyof S]?: Tokenized<StyleInputOf<S[K]>> } : never;
 type PropsOf<D, Style> = D extends ComponentDefinition<infer P, any, any> ? PropsInput<P> & Extras<Style, ConditionStyles<D>> : never;
 
 /** Marks a primitive's component type. */
@@ -125,6 +129,8 @@ export const Page: React.FC<PageProps> = createPrimitive(PageDefinition);
 export const Section: React.FC<SectionProps> = createPrimitive(SectionDefinition);
 export const Row: React.FC<RowProps> = createPrimitive(RowDefinition);
 export const Column: React.FC<ColumnProps> = createPrimitive(ColumnDefinition);
+/** A page's general element (on a Page only): any structure, laid out with page styles. */
+export const Box: React.FC<BoxProps> = createPrimitive(BoxDefinition);
 export const Text: React.FC<TextProps> = createPrimitive(TextDefinition);
 export const Heading: React.FC<HeadingProps> = createPrimitive(HeadingDefinition);
 export const Span: React.FC<SpanProps> = createPrimitive(SpanDefinition);
@@ -171,6 +177,8 @@ export interface RowStyle extends StyleOf<typeof RowDefinition> {}
 export interface RowProps extends PropsOf<typeof RowDefinition, RowStyle>, Variant<"Row">, Scoped {}
 export interface ColumnStyle extends StyleOf<typeof ColumnDefinition> {}
 export interface ColumnProps extends PropsOf<typeof ColumnDefinition, ColumnStyle>, Variant<"Column">, Scoped {}
+export interface BoxStyle extends StyleOf<typeof BoxDefinition> {}
+export interface BoxProps extends PropsOf<typeof BoxDefinition, BoxStyle>, Variant<"Box">, Scoped {}
 export interface TextStyle extends StyleOf<typeof TextDefinition> {}
 export interface TextProps extends PropsOf<typeof TextDefinition, TextStyle>, Variant<"Text"> {}
 /** @deprecated Use `TextProps`. It stays under Elements 0.2's name for modules that import it: the migration leaves their type imports in place. */

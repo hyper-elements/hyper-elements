@@ -35,10 +35,13 @@ describe("property discovery", () => {
     expect(describeComponents().length).toBe(Object.keys(COMPONENTS).length);
     const html = describeComponent("Html")!;
     expect(describeComponents().map((d) => d.type)).toContain("Html");
+    // Its props, and on a Page its place in a flex box or a grid (Decision 5's page styles).
     expect(html.properties.map((p) => [p.path, p.required])).toEqual([
       ["props.html", true],
       ["props.text", false],
+      ...["alignSelf", "justifySelf", "order", "flexGrow", "flexShrink", "flexBasis", "gridColumn", "gridRow", "gridArea"].map((key) => [`style.${key}`, false]),
     ]);
+    expect(html.properties.filter((p) => p.path.startsWith("style.")).every((p) => p.roots?.join() === "Page")).toBe(true);
     expect(html.categories).toEqual(["block"]);
   });
 

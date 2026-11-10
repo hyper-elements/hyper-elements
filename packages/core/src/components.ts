@@ -6,7 +6,10 @@
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
 import { attributes, asset, boolean, breakpoints, enumOf, insets, length, line, link, number, text, video } from "./kinds";
 import type { Json } from "./model";
-import { boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
+import { boxStyle, css, inheritedTextStyle, layoutStyle, PAGE_BLOCK, PAGE_CONTAINER, PAGE_CONTROL, PAGE_PICTURE, PAGE_TEXT_BLOCK, pageTextStyle, pick, placementStyle, textStyle } from "./styles";
+
+/** Written by the Page writer, which is the only one that draws it. */
+const ON_PAGE: SupportByTarget = { web: { level: "full", source: "writer" } };
 import { Menu, Social } from "./composites";
 import { Grid, Layer } from "./layouts";
 import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
@@ -93,7 +96,7 @@ export const Section = defineComponent({
   description: "A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.",
   categories: ["section"],
   props: {},
-  style: { ...inheritedTextStyle, ...pick(boxStyle, "backgroundColor", "padding", "border"), ...pick(layoutStyle, "gap", "alignItems") },
+  style: { ...PAGE_CONTAINER, ...inheritedTextStyle, ...pick(boxStyle, "backgroundColor", "padding", "border"), ...pick(layoutStyle, "gap", "alignItems") },
   children: { categories: ["layout", "block"] },
   sizing: "stretch",
   targets: { email: {}, web: {} },
@@ -111,6 +114,7 @@ export const Row = defineComponent({
     ...TEXT_DIR,
   },
   style: {
+    ...PAGE_CONTAINER,
     ...inheritedTextStyle,
     ...boxStyle,
     ...layoutStyle,
@@ -153,6 +157,7 @@ export const Column = defineComponent({
   categories: ["layout", "block"],
   props: {},
   style: {
+    ...PAGE_CONTAINER,
     ...inheritedTextStyle,
     ...boxStyle,
     ...layoutStyle,
@@ -173,7 +178,37 @@ export const Column = defineComponent({
   },
 });
 
+/** The elements a Box may be written as: structure and sectioning, never script, style, iframe or form controls. */
+export const BOX_TAGS = ["div", "section", "header", "footer", "nav", "main", "article", "aside", "figure", "figcaption", "blockquote", "address", "ul", "ol", "li"] as const;
+
+export const Box = defineComponent({
+  type: "Box",
+  roles: SURFACE_ROLES,
+  label: "Box",
+  description:
+    "A page's general element: any structure, laid out with page styles (flex, grid, position). A flex column with its gap unless its display says otherwise; directly in a Page it spans the window, as a Section does, and its own maxWidth and padding set its content's width.",
+  categories: ["layout", "block"],
+  props: {
+    as: prop(enumOf(BOX_TAGS), { support: ON_PAGE, label: "Element", description: "The HTML element it's written as, for its meaning: a page's header, nav, main, footer, an article, a list.", default: "div" }),
+  },
+  style: {
+    ...PAGE_CONTAINER,
+    ...pageTextStyle,
+    ...inheritedTextStyle,
+    ...boxStyle,
+    ...layoutStyle,
+    ...placementStyle,
+  },
+  children: { categories: ["layout", "block"] },
+  sizing: "stretch",
+  targets: { web: {} },
+  unsupported: { email: "it's a Page's element; an Email is laid out with Section, Row and Column" },
+  roots: ["Page"],
+  notAllowed: { code: "component/not-supported", message: (root) => `A Box is a Page's element; a ${root} is laid out with its own components` },
+});
+
 const TEXT_BLOCK_STYLE = {
+  ...PAGE_TEXT_BLOCK,
   ...textStyle,
   ...pick(boxStyle, "width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"),
   ...placementStyle,
@@ -225,8 +260,16 @@ export const Span = defineComponent({
   label: "Span",
   description: "Styled text inside text; raised or lowered (superscript, subscript) with verticalAlign.",
   categories: ["inline"],
-  props: {},
+  props: {
+    as: prop(enumOf(["strong", "em", "code", "kbd", "time", "mark", "abbr", "sup", "sub", "small", "cite", "q"]), {
+      support: ON_PAGE,
+      roots: ["Page"],
+      label: "Meaning",
+      description: "The inline element it's written as, for its meaning: strong, em, code, kbd, time, mark, abbr, sup, sub, small, cite or q. On a Page only.",
+    }),
+  },
   style: {
+    ...pick(pageTextStyle, "whiteSpace"),
     ...RUN_STYLE,
     verticalAlign: {
       kind: enumOf(["baseline", "super", "sub"]),
@@ -253,7 +296,7 @@ export const Link = defineComponent({
     "aria-label": prop(text(), { support: WRITTEN, label: "Label for screen readers", description: "What a screen reader says for it, where its text alone doesn't say enough (\"Read more about pricing\")." }),
     attrs: prop(attributes(), { support: WRITTEN, editable: false, label: "More attributes", description: "More attributes for it: a class, a `data-` attribute." }),
   },
-  style: { ...RUN_STYLE, ...placementStyle },
+  style: { ...PAGE_BLOCK, ...RUN_STYLE, ...placementStyle },
   defaultStyle: { color: "#0000ee", textDecoration: "underline" },
   hover: ["color", "textDecoration", "backgroundColor"],
   children: { text: true, categories: ["inline"], types: ["Image"] },
@@ -293,6 +336,7 @@ export const Button = defineComponent({
     attrs: prop(attributes(), { support: WRITTEN, editable: false, label: "More attributes", description: "More attributes for its link: a class, a `data-` attribute." }),
   },
   style: {
+    ...PAGE_CONTROL,
     ...textStyle,
     ...pick(boxStyle, "width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"),
     boxSizing: { kind: enumOf(["border-box", "content-box"]), label: "Width holds", description: "Whether its width holds its padding and border (border-box), or they go on top of it (content-box).", support: { email: { level: "none", shows: "a width that holds them", source: "writer" }, web: css } },
@@ -333,6 +377,7 @@ export const Image = defineComponent({
     title: prop(text(), { support: WRITTEN, label: "Title", description: "Shown as a tooltip by mail clients and browsers that show one." }),
   },
   style: {
+    ...PAGE_PICTURE,
     ...pick(boxStyle, "width", "maxWidth", "height", "border", "borderRadius"),
     ...placementStyle,
     alignSelf: { kind: enumOf(["start", "center", "end"]), label: "Place", description: "Where it sits in its stack on phones, where that's another place than on desktop.", mobile: true, support: { email: { level: "full", source: "caniemail" }, web: css } },
@@ -353,6 +398,7 @@ export const Divider = defineComponent({
   categories: ["block"],
   props: {},
   style: {
+    ...PAGE_BLOCK,
     borderTop: { kind: line(), label: "Line", description: 'The line, as CSS border-top: "1px solid #bbbbbb".', support: { email: { level: "full", source: "writer" }, web: css } },
     width: { kind: length(["px", "%"]), label: "Length", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
     padding: { kind: insets(), label: "Padding", mobile: true, support: { email: { level: "full", source: "outlook-captures" }, web: css } },
@@ -400,6 +446,7 @@ export const List = defineComponent({
     start: prop(number({ min: 0, integer: true }), { support: WRITTEN, label: "Starts at", description: "The first item's number, in a numbered list.", default: 1 }),
   },
   style: {
+    ...PAGE_BLOCK,
     ...inheritedTextStyle,
     ...pick(boxStyle, "width", "maxWidth", "padding", "backgroundColor", "border"),
     gap: { kind: length(["px"]), label: "Gap", description: "Space between items.", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
@@ -433,6 +480,7 @@ export const Table = defineComponent({
   categories: ["block"],
   props: {},
   style: {
+    ...PAGE_BLOCK,
     ...inheritedTextStyle,
     ...pick(boxStyle, "width", "maxWidth", "backgroundColor", "border"),
     cellPadding: { kind: insets(), label: "Cell padding", description: "Every cell's padding, where the cell doesn't set its own.", support: { email: { level: "full", source: "writer" }, web: css } },
@@ -499,7 +547,7 @@ export const Video = defineComponent({
     }),
     title: prop(text(), { support: WRITTEN, label: "Title", description: "The player's title on a page, the thumbnail's alternate text in an email.", default: "Video" }),
   },
-  style: { ...pick(boxStyle, "width", "maxWidth"), ...placementStyle },
+  style: { ...PAGE_BLOCK, ...pick(boxStyle, "width", "maxWidth"), ...placementStyle },
   children: {},
   sizing: "stretch",
   targets: { email: {}, web: {} },
@@ -520,7 +568,7 @@ export const Html = defineComponent({
     html: prop(text(), { support: WRITTEN, label: "HTML", required: true, description: "The markup, written as it is: only markup you trust. Or give it as JSX inside the block, which React writes." }),
     text: prop(text(), { support: WRITTEN, label: "Plain text", description: "What it reads as in the plain-text version, and in a PDF or an image (its markup's words where there's none)." }),
   },
-  style: {},
+  style: { ...PAGE_BLOCK },
   children: {},
   sizing: "stretch",
   targets: { email: {}, web: {} },
@@ -529,7 +577,7 @@ export const Html = defineComponent({
 
 export const COMPONENTS: Readonly<Record<string, ComponentDefinition>> = Object.freeze(
   Object.fromEntries(
-    [Email, Page, Document, DocumentPage, PageBreak, PageHeader, PageFooter, PageNumber, Canvas, Svg, ...SHAPES, Section, Row, Column, Grid, Layer, Text, Heading, Span, Link, Button, Image, Divider, LineBreak, MergeTag, List, ListItem, Table, TableRow, TableCell, Video, Social, Menu, Html].map((d) => [
+    [Email, Page, Document, DocumentPage, PageBreak, PageHeader, PageFooter, PageNumber, Canvas, Svg, ...SHAPES, Section, Row, Column, Box, Grid, Layer, Text, Heading, Span, Link, Button, Image, Divider, LineBreak, MergeTag, List, ListItem, Table, TableRow, TableCell, Video, Social, Menu, Html].map((d) => [
       d.type,
       d as unknown as ComponentDefinition,
     ])

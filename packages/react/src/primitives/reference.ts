@@ -7,7 +7,24 @@
  * - REFERENCE.md: every prop and style, with the values it takes, its default and what it does.
  * - skills/hyper-elements/SKILL.md, at the repository's root: the guide as an agent skill.
  */
-import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
+import {
+  describeComponents,
+  describeConditions,
+  pageBackgroundStyle,
+  pageBorderStyle,
+  pageEffectsStyle,
+  pageLayoutStyle,
+  pageObjectStyle,
+  pagePlacementStyle,
+  pagePositionStyle,
+  pageSizeStyle,
+  pageSpacingStyle,
+  pageTextStyle,
+  PAGE_STYLE_KEYS,
+  ROOT_NAMES,
+  type ComponentDescription,
+  type PropertyDescription,
+} from "@unlayer-internal/elements-core";
 
 /** How a template writes a component whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };
@@ -71,7 +88,9 @@ function property(p: PropertyDescription, named: Map<string, string>, c: Compone
     p.roots.length < c.roots.length ? `only in ${p.roots.join(", ")}` : "",
     p.group ?? "",
   ].filter(Boolean);
-  return `- \`${key}\`: ${takes}${notes.length ? ` (${notes.join(", ")})` : ""}${p.description ? `. ${p.description.replace(/\.$/, "")}.` : ""}`;
+  // What a Page takes beyond it (rem, em, calc(), more keywords), where the component goes in one.
+  const page = p.onPage && c.roots.includes("Page") ? `; on a Page, ${p.onPage.accepts}` : "";
+  return `- \`${key}\`: ${takes}${page}${notes.length ? ` (${notes.join(", ")})` : ""}${p.description ? `. ${p.description.replace(/\.$/, "")}.` : ""}`;
 }
 
 function component(c: ComponentDescription, all: ComponentDescription[], named: Map<string, string>): string {
@@ -152,6 +171,21 @@ const BLOCK_MAP = [
 /** Styles most components share, named as a group on a component's line. */
 const TEXT = ["color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "textAlign", "textTransform"];
 const BOX = ["width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"];
+/** A Page's styles (Decision 5 of the plan), by the group the guide names them as: a component lists its groups. */
+const PAGE_GROUPS: ReadonlyArray<readonly [string, readonly string[]]> = [
+  ["layout", Object.keys(pageLayoutStyle)],
+  ["place", Object.keys(pagePlacementStyle)],
+  ["size", Object.keys(pageSizeStyle)],
+  ["picture", Object.keys(pageObjectStyle)],
+  ["position", Object.keys(pagePositionStyle)],
+  ["sides", Object.keys(pageSpacingStyle)],
+  ["wrap", Object.keys(pageTextStyle)],
+  ["background", Object.keys(pageBackgroundStyle)],
+  ["border", Object.keys(pageBorderStyle)],
+  ["effects", Object.keys(pageEffectsStyle)],
+];
+/** A style for a Page only: listed in the guide by its group, under "Page". */
+const pageOnly = (p: PropertyDescription) => p.path.startsWith("style.") && PAGE_STYLE_KEYS.has(p.path.slice(6)) && p.roots.length === 1 && p.roots[0] === "Page";
 /** The text styles that may be set on phones, named `text` among a component's phone styles. */
 const PHONE_TEXT = ["fontSize", "lineHeight", "letterSpacing", "textAlign"];
 const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
@@ -187,7 +221,8 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
     return /^one of /.test(p.accepts) ? `${key} (${short(p, named)})` : key;
   };
   const props = of("props.").map((p) => `${p.path.slice(6)}${p.required ? "*" : ""} (${short(p, named)})`);
-  const style = of("style.").map((p) => p.path.slice(6));
+  const style = of("style.").filter((p) => !pageOnly(p)).map((p) => p.path.slice(6));
+  const page = of("style.").filter(pageOnly).map((p) => p.path.slice(6));
   const hover = of("hover.").map((p) => p.path.slice(6));
   const phone = hasPhones(c) ? of("style.").filter((p) => p.mobile).map((p) => p.path.slice(6)) : [];
   const holds = [c.children.text ? "text" : "", ...c.children.categories.map((category) => CATEGORY[category] ?? category), ...c.children.types.map(name)].filter(Boolean);
@@ -197,6 +232,7 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
     holds.length ? `Holds ${holds.join(", ")}.` : "",
     props.length ? `Props: ${props.join(", ")}.` : "",
     style.length ? `Style: ${keys(style, enumOf("style."))}.` : "",
+    page.length ? `On a Page: ${keys(page, undefined, PAGE_GROUPS)}.` : "",
     hover.length ? `Hover: ${hover.join(", ")}.` : "",
     phone.length ? `Phones: ${keys(phone, undefined, [["text", PHONE_TEXT]])}.` : "",
   ].filter(Boolean);
@@ -285,7 +321,8 @@ const { image, diagnostics } = await renderImage(
 /** The guide itself, from "How a template is written" on: the same in GUIDE.md and the skill. */
 function guide(example: string): string {
   const all = describeComponents();
-  const named = glossary(all);
+  // The guide lists a Page's styles by group, not each with its kind: its Values are the other properties' kinds.
+  const named = glossary(all.map((c) => ({ ...c, properties: c.properties.filter((p) => !pageOnly(p)) })));
   const placed = new Set<string>();
   const sections = GROUPS.map((group) => {
     const members = all.filter((c) => !placed.has(c.type) && group.has(c));
@@ -331,8 +368,18 @@ function guide(example: string): string {
     "- Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.",
     "- `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant=\"secondary\"` (a list merges in order).",
     "- `styles: { card: { … } }` are named styles: `style={{ apply: [\"card\"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.",
-    "- `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: \"#111827\", foreground: \"#ffffff\" } }}>`.",
+    "- `tokens` on a Section, Row, Column, Grid or Box overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: \"#111827\", foreground: \"#ffffff\" } }}>`.",
     "- `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module \"@hyper-elements/react\" { interface Register { theme: typeof brand } }` types every name.",
+    "",
+    "## Pages",
+    "",
+    "A `Page` takes CSS's own layout, with typed styles: on a Page only (elsewhere they're `style/not-supported`).",
+    "",
+    "- `<Box as=\"header\">` is its general element (`as`: div, section, header, footer, nav, main, article, aside, figure, figcaption, blockquote, address, ul, ol, li). A flex column with its `gap` until its styles say otherwise: `display: \"grid\", gridTemplateColumns: \"repeat(auto-fill, minmax(16rem, 1fr))\"`, or `flexDirection: \"row\"` (a flex box is a column unless it says row). Directly in a Page it spans the window, like a Section; give it `maxWidth` and `padding` for its content.",
+    "- Lengths on a Page also take rem, em, %, vw, vh and calc(), min(), max(), clamp(): `fontSize: \"clamp(2rem, 5vw, 3.5rem)\"`, `padding: \"4rem 1.5rem\"`. A number is still px.",
+    "- Page style groups, as components list them: " + PAGE_GROUPS.map(([group, members]) => `*${group}* ${members.join(", ")}`).join("; ") + ".",
+    "- `Span as=\"strong\"` (strong, em, code, kbd, time, mark, abbr, sup, sub, small, cite, q) gives a run its meaning.",
+    "- Section, Row, Column and Grid still work on a Page, and stay the way to write an email.",
     "",
     "## A whole template",
     "",
@@ -350,7 +397,7 @@ function guide(example: string): string {
     "",
     "## Components",
     "",
-    `\\* required. *text* styles: ${TEXT.join(", ")}. *box* styles: ${BOX.join(", ")}.`,
+    `\\* required. *text* styles: ${TEXT.join(", ")}. *box* styles: ${BOX.join(", ")}. "On a Page": its page styles, by group (Pages, above).`,
     "",
     sections.join("\n\n"),
     "",

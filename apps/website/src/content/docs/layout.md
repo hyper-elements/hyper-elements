@@ -1,6 +1,6 @@
 ---
 title: "Layout"
-description: "Arrange blocks with Section, Row, Column, Grid and Layer. Space with gap and padding, size with widths and flex shares, and stack on phones."
+description: "Arrange blocks with Section, Row, Column, Grid and Layer, and on a Page with Box and CSS's flex and grid. Space with gap and padding, size with widths and flex shares, and stack on phones."
 ---
 
 Five components arrange blocks: `Section`, `Row`, `Column`, `Grid` and `Layer`. None is required, since a root stacks its children. Reach for them when you want bands, columns, cards or words over an image.
@@ -152,6 +152,36 @@ A [`Layer`](/docs/components/layer) puts its children over each other, in one bo
 
 > **Note:** An email draws one shape of Layer: an Image as wide as the Layer (100%) with one child over it. Any other shape is an error for email (`email/layer`).
 
+## Box: CSS layout on a Page
+
+On a `Page`, `Box` is the general element: a header, a nav, a grid of cards, a sidebar beside an article. It's written as the element its `as` names (`div` by default; `section`, `header`, `footer`, `nav`, `main`, `article`, `aside`, `figure`, `figcaption`, `blockquote`, `address`, `ul`, `ol`, `li`), and laid out with CSS's own flex and grid styles:
+
+```tsx
+import { Box, Heading, Image, Page, Text } from "@hyper-elements/react";
+
+const page = (
+  <Page width={1200}>
+    <Box as="header" style={{ flexDirection: "row", alignItems: "center", gap: 24, padding: "1rem 2rem", position: "sticky", top: 0 }}>
+      <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
+    </Box>
+    <Box as="main" style={{ maxWidth: 1200, padding: "2rem", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(16rem, 1fr))", gap: "1.5rem" }}>
+      <Box as="article" style={{ padding: 24, borderRadius: 12, boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)" }}>
+        <Heading level={2}>A card</Heading>
+        <Text>Cards fill the row, as many as fit.</Text>
+      </Box>
+    </Box>
+  </Page>
+);
+```
+
+- A Box is a flex column with its `gap` until its styles say otherwise. `flexDirection: "row"` makes it a row (a flex box is a column unless it says row), `display: "grid"` a grid.
+- Directly in a Page, a Box spans the window, as a Section does. Its own `maxWidth` and `padding` set its content's width, and a `maxWidth` keeps it centered.
+- Its children get `min-width: 0`, so a long word doesn't widen its column.
+- A Box holds any block and layout component, Boxes included, and goes anywhere they go on a Page. Section, Row, Column and Grid still work there; they stay the way to write an email.
+- On a Page, Section, Row and Column take the layout styles too (`<Column style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>`), and every block takes its place in a flex box or grid (`gridColumn: "span 2"`, `alignSelf`, `order`, `flexGrow`).
+
+Box is for a Page only: in an Email, a Document or a Canvas it's an error that says what to use instead. [Styles](/docs/styles#on-a-page) lists every page style.
+
 ## Alignment
 
 `alignItems` places children across the layout's direction: vertically in a Row, horizontally in a Column. `justifyContent` places them along it. The values are CSS's: `"start"`, `"center"`, `"end"`, plus `"stretch"` for `alignItems` and `"space-between"` for `justifyContent`.
@@ -180,6 +210,8 @@ A Button can place itself with `alignSelf` (`"start"`, `"center"` or `"end"`), w
 ## Every box gets a px width
 
 Before anything is written, the layout resolver works out every box's width in px, from the root's width down, and every text's styles. Each output's writer reads the same layout, so the email (which needs px widths for Outlook's tables) and the page agree.
+
+On a Page, flex rows and grids are worked out the way Chromium lays them out, at the Page's widest window without a phone style: grid tracks in px, rem, %, `fr`, `minmax()` and `repeat()` (with `auto-fill` and `auto-fit`), spans and named areas, and flex rows by their basis, `flex` share and `flexGrow`. A size that depends on its content (an `auto` track, a flex child with no basis or width) isn't worked out: `outline()` says it "fits its content". A test holds these widths to Chromium's.
 
 Rows are resolved the way CSS flexbox resolves them: each child starts from its width or its own size, what's left is shared by `flex`, and a child that reaches its `minWidth` or `maxWidth` keeps it. When widths don't fit, they're narrowed as a browser narrows them, with a warning (`layout/shrunk`). Minimums that can't fit are reported too (`layout/overflow`).
 

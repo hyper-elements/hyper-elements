@@ -7,7 +7,7 @@
  * its HTML. What a tool has no field for is a hidden property of it (hide.ts); what no tool shows (a Layer, an Svg, a
  * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said.
  */
-import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { baseViewport, lengthPx, prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
 import type React from "react";
 import { collectTemplate } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
@@ -63,6 +63,7 @@ export function raise(element: React.ReactElement): Raised {
   };
   index(resolvedRoot);
   const at = (path: string) => resolved.get(path)!;
+  inPx(document.root, "root", resolved, baseViewport(resolvedRoot), report);
 
   /** A part, with its hidden properties. */
   const put = <T extends { values: Values }>(made: T, values: Values = {}): T => {
@@ -82,14 +83,15 @@ export function raise(element: React.ReactElement): Raised {
   const inheritedText = (path: string): Record<string, Json> => {
     const parent = resolved.get(path.replace(/\.children\[\d+\]$/, ""));
     if (!parent) return {};
-    const { lineHeightPx: _px, ...text } = parent.text;
+    // (Its text metrics as px: what they came to, not as written in rem or em.)
+    const { lineHeightPx: _px, authored: _authored, ...text } = parent.text;
     return Object.fromEntries(Object.entries(text).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(resolvedRoot.text[key as keyof typeof text]))) as Record<string, Json>;
   };
   /** The text styles markup takes from around it that it wouldn't get in the builder: the body holds the root's color, font and weight, and nothing else takes a browser's defaults' place. */
   const textAround = (path: string): Record<string, Json> => {
     const parent = resolved.get(path.replace(/\.children\[\d+\]$/, ""));
     if (!parent) return {};
-    const { lineHeightPx: _px, ...text } = parent.text;
+    const { lineHeightPx: _px, authored: _authored, ...text } = parent.text;
     const given: Record<string, unknown> = { ...BROWSER_TEXT, color: resolvedRoot.text.color, fontFamily: resolvedRoot.text.fontFamily, fontWeight: resolvedRoot.text.fontWeight };
     return Object.fromEntries(Object.entries(text).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(given[key]))) as Record<string, Json>;
   };
@@ -359,4 +361,20 @@ export function nodeOf(node: ResolvedNode): Node {
     ...(node.hidden ? { hidden: node.hidden } : {}),
     children: node.children.map((child) => (typeof child === "string" ? child : nodeOf(child))),
   };
+}
+
+/**
+ * A Page's padding in rem, em, % or a viewport unit as the px it comes to at the base window: the builder's rows,
+ * columns and blocks take padding in px, and add it up. Said in the report.
+ */
+function inPx(node: Node, path: string, resolved: Map<string, ResolvedNode>, viewport: { width: number; height: number }, report: string[]): void {
+  const own = resolved.get(path);
+  for (const where of ["style", "mobile"] as const) {
+    const padding = node[where]?.padding as Record<string, Json> | undefined;
+    if (!own || !padding || typeof padding !== "object" || !Object.values(padding).some((side) => typeof side === "string")) continue;
+    const sides = Object.fromEntries(Object.entries(padding).map(([side, value]) => [side, Math.round(lengthPx(value, own.available, own.text.fontSize, viewport) ?? 0)]));
+    report.push(`${path}: the builder's padding is in px: ${where}.padding is the ${["top", "right", "bottom", "left"].map((side) => `${sides[side]}px`).join(" ")} it comes to in the Page's widest window`);
+    node[where] = { ...node[where], padding: sides };
+  }
+  node.children?.forEach((child, index) => typeof child !== "string" && inPx(child, `${path}.children[${index}]`, resolved, viewport, report));
 }

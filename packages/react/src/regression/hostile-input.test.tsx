@@ -6,7 +6,21 @@
  */
 import { describe, expect, it } from "vitest";
 import React from "react";
-import { Button, Column, Document, ElementsError, Email, Heading, Html, Image, Link, List, ListItem, MergeTag, Menu, Page, Text, Row, Section, Social, Span, Table, TableCell, TableRow, Video, render } from "../primitives/index";
+import {
+  pageBackgroundStyle,
+  pageBorderStyle,
+  pageEffectsStyle,
+  pageLayoutStyle,
+  pagePlacementStyle,
+  pagePositionStyle,
+  pageSizeStyle,
+  pageSpacingStyle,
+  pageTextStyle,
+} from "@unlayer-internal/elements-core";
+import { Box, Button, Column, Document, ElementsError, Email, Heading, Html, Image, Link, List, ListItem, MergeTag, Menu, Page, Text, Row, Section, Social, Span, Table, TableCell, TableRow, Video, render } from "../primitives/index";
+
+/** A Box's page styles, by group (Decision 5 of the themes and pages plan). */
+const PAGE_GROUPS = { pageLayoutStyle, pagePlacementStyle, pageSizeStyle, pagePositionStyle, pageSpacingStyle, pageTextStyle, pageBackgroundStyle, pageBorderStyle, pageEffectsStyle };
 import { toDesign } from "../builder/index";
 import { textJsonHtml } from "../builder/text-json";
 
@@ -95,6 +109,58 @@ describe.each(Object.entries(ROOTS))("%s", (_, Root) => {
     for (const payload of PAYLOADS) {
       const html = await htmlOf(<R {...props(payload)}><Text>Hello</Text></R>);
       if (html !== null) expect(injected(html), payload).toEqual([]);
+    }
+  });
+});
+
+describe("a Page's CSS values (page styles, rich lengths, a Box's element)", () => {
+  // Every page style, each payload as its whole value, in a url() and in a gradient: refused, or written where it adds
+  // no element or attribute and can't leave its declaration.
+  const keys = [...new Set(Object.values(PAGE_GROUPS).flatMap((group) => Object.keys(group)))];
+  const values = (v: string) => [v, `url("https://example.com/${v}.png")`, `url(https://example.com/${v}.png)`, `linear-gradient(#000000, #ffffff ${v})`, `calc(100% - ${v})`, `1px solid ${v}`];
+
+  // Payloads the kinds refuse aren't written: a harmless word is, so the cases below are known to render something.
+  let rendered = 0;
+  it.each(keys)("%s can't add markup", async (key) => {
+    for (const payload of [...PAYLOADS, "safe"]) {
+      for (const value of values(payload)) {
+        const html = await htmlOf(<Page width={600}><Box style={{ [key]: key === "gridTemplateAreas" ? [value] : value } as never}><Text>Hi</Text></Box></Page>);
+        if (html === null) continue;
+        rendered++;
+        expect(injected(html), `${key}: ${value}`).toEqual([]);
+        // A value can't end its declaration: the Box's style attribute holds it whole.
+        expect(html, `${key}: ${value}`).not.toMatch(/<div[^>]*style="[^"]*(?:<|>)/);
+      }
+    }
+  });
+
+  it("renders some of them: the cases above aren't all refused (backgrounds, masks, borders and lengths take these forms)", () => {
+    expect(rendered).toBeGreaterThanOrEqual(5);
+  });
+
+  // An element's own text in an attribute (alt, title, a label, attrs) beside the page styles written into its style.
+  it.each([
+    ["an Image's alt and title", (v: string) => <Image src={{ src: "https://example.com/a.png", width: 10, height: 10 }} alt={v} title={v} style={{ objectFit: "cover", opacity: 0.5 }} />],
+    ["a Button's title, label and attribute", (v: string) => <Button href="https://example.com" title={v} aria-label={v} attrs={{ "data-x": v }} style={{ boxShadow: "0 1px 2px #000000", opacity: 0.5 }}>Go</Button>],
+    ["a Link's title and label", (v: string) => <Text><Link href="https://example.com" title={v} aria-label={v} style={{ order: 2 }}>a</Link></Text>],
+  ])("%s can't take an element's page styles or add markup", async (_, element) => {
+    for (const payload of [...PAYLOADS, "Set style=", 'a style="color:red"', "style= x"]) {
+      const html = await htmlOf(<Page width={600}><Box>{element(payload)}</Box></Page>);
+      if (html === null) continue;
+      expect(injected(html), payload).toEqual([]);
+      // Its page styles are in its own style attribute, and its text attributes are as given.
+      const tag = /<(img|a)\b[^>]*>/.exec(html)![0];
+      const style = / style="([^"]*)"/.exec(tag.replace(/ (alt|title|aria-label|data-x)="[^"]*"/g, ""))?.[1] ?? "";
+      expect(style, payload).toMatch(/opacity:0.5|order:2/);
+    }
+  });
+
+  it("a rich length or a padding can't add markup either", async () => {
+    for (const payload of PAYLOADS) {
+      for (const style of [{ width: `calc(1px + ${payload})` }, { padding: `1rem ${payload}` }, { fontSize: `clamp(1rem, ${payload}, 2rem)` }]) {
+        const html = await htmlOf(<Page width={600}><Box style={style as never}><Text>Hi</Text></Box></Page>);
+        if (html !== null) expect(injected(html), payload).toEqual([]);
+      }
     }
   });
 });

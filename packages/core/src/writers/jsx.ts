@@ -23,7 +23,7 @@
  */
 import { HOVER, MOBILE } from "../conditions";
 import type { Level, Media, Stylesheet } from "./shared/classes";
-import { border, css, escapeAttr, escapeText, insets, px, radius, shortColors, type Declarations } from "./shared/css";
+import { border, css, escapeAttr, escapeText, insets, kebab, px, radius, shortColors, type Declarations } from "./shared/css";
 
 // ─── The render's stylesheet ────────────────────────────────────────────────
 
@@ -105,7 +105,6 @@ function pieces(children: Child, out: Html[] = []): Html[] {
 
 const VOID = new Set(["img", "br", "hr", "meta", "link", "col", "wbr"]);
 const UNITLESS = new Set(["fontWeight", "lineHeight", "flex", "flexGrow", "flexShrink", "opacity", "zIndex", "order"]);
-const kebab = (key: string) => key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 
 function declaration(key: string, value: unknown, out: Declarations): void {
   if (value === undefined || value === null || value === false) return;
