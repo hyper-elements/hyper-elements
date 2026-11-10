@@ -85,7 +85,9 @@ export type {
   VideoProps,
   HtmlProps,
 } from "./components";
-export { component, prop, type ComponentSpec, type CustomComponent, type CustomProps } from "./custom";
+export { component, prop, type ComponentSpec, type CustomComponent, type CustomProps, type RenderContext, type ThemeValues } from "./custom";
+export { defineTheme, extendTheme, token } from "./theme";
+export type { Alias, ComponentTheme, Register, StyleName, Theme, ThemeInput, ThemeStyle, Token, TokenPath, TokenPaths, TokenRefs, Tokenized, VariantName, VariantProp } from "./theme";
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type ValidateOptions, type ValidationResult } from "./render";
 export { BLOCK_MAP_VERSION, DEFAULT_EMAIL_CLIENTS, ElementsError, EMAIL_CLIENTS, formatDiagnostics } from "@unlayer-internal/elements-core";
 export type { BlockMap, BlockMapEntry, Diagnostic, EmailClient, EmailClientInfo, EmailClientMeasurement, Severity } from "@unlayer-internal/elements-core";

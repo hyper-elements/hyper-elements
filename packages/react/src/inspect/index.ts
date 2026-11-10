@@ -13,6 +13,7 @@ import {
   describeComponents as describeAll,
   describeConditions,
   Registry,
+  ThemeEnvironment,
   validateTemplate,
   CONDITION_NAMES,
   CUSTOM_TYPE,
@@ -21,6 +22,7 @@ import {
   type ConditionName,
   type CustomDefinition,
   type Diagnostic,
+  type Json,
   type PropertyDescription,
   type RootName,
   type StyleGroup,
@@ -30,7 +32,7 @@ import { collectTemplate, type JsonNode } from "../primitives/collect";
 export type { ComponentDescription, ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
 
 /** The shape of what this entry returns: a new version is a new shape. */
-export const INSPECT_VERSION = 1;
+export const INSPECT_VERSION = 2;
 
 /** A template's own component (made with `component()`), described alongside the built-in ones. */
 interface WithDefinition {
@@ -104,8 +106,22 @@ export interface InspectedNode {
   problems: Diagnostic[];
 }
 
+/** A template's theme, as `inspect()` lists it: what an agent can refer to. */
+export interface ThemeDescription {
+  /** Each token, its group, and its value at the root (null where it doesn't resolve). */
+  tokens: Array<{ path: string; group: string; value: Json | null }>;
+  /** The roles it defines: the tokens built-in components read ("colors.primary" for a Button). */
+  roles: string[];
+  /** Its named styles' names, for `style={{ apply: [...] }}`. */
+  styles: string[];
+  /** Each component it gives defaults: its variants' names, and the prop its `by` styles go by. */
+  components: Array<{ type: string; variants: string[]; by?: string }>;
+}
+
 export interface Inspection {
   version: typeof INSPECT_VERSION;
+  /** The template's theme (with its root's `formats`), or null where it has none. */
+  theme: ThemeDescription | null;
   /** The template's root, or null where it has none Elements knows. */
   root: RootName | null;
   /** No errors (there may be warnings and notes), as `validate()` says. */
@@ -153,7 +169,25 @@ export function inspect(element: React.ReactElement): Inspection {
   // The tree as collected, not as read: reading leaves out a component its root doesn't take (and merges text), and
   // what's listed here is every component written, at the paths diagnostics name.
   if (document && collected) visit(collected, "root");
-  return { version: INSPECT_VERSION, root, valid: !diagnostics.some((d) => d.severity === "error"), nodes, diagnostics };
+  return { version: INSPECT_VERSION, root, theme: describeTheme(document?.theme, registry), valid: !diagnostics.some((d) => d.severity === "error"), nodes, diagnostics };
+}
+
+/** A theme, as `inspect()` lists it. */
+function describeTheme(theme: { [key: string]: Json } | undefined, registry: Registry): ThemeDescription | null {
+  if (!theme) return null;
+  const environment = ThemeEnvironment.of(theme, "root.theme");
+  const tokens = environment.paths().map((path) => {
+    const resolved = environment.resolve(path);
+    return { path, group: path.split(".")[0], value: resolved.ok ? resolved.value : null };
+  });
+  const roles = [...new Set(registry.all().flatMap((definition) => Object.values(definition.roles ?? {})))].filter((path) => environment.has(path));
+  const isObject = (value: unknown): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
+  const components = Object.entries(isObject(theme.components) ? theme.components : {}).map(([type, defaults]) => {
+    const own = isObject(defaults) ? defaults : {};
+    const by = isObject(own.by) ? Object.keys(own.by)[0] : undefined;
+    return { type, variants: isObject(own.variants) ? Object.keys(own.variants) : [], ...(by ? { by } : {}) };
+  });
+  return { tokens, roles, styles: isObject(theme.styles) ? Object.keys(theme.styles) : [], components };
 }
 
 /**
@@ -166,7 +200,8 @@ function given(node: JsonNode): string[] {
   const lifts = !CUSTOM_TYPE.test(node.type);
   const own = Object.keys(style).filter((key) => !(lifts && CONDITION_NAMES.has(key)));
   const condition = (name: string) => [...keys(name, node[name]), ...(lifts ? keys(name, style[name]) : [])];
-  return [...keys("props", node.props), ...own.map((key) => `style.${key}`), ...condition("mobile"), ...condition("hover"), ...keys("hidden", node.hidden)];
+  const themed = ["variant", "tokens", "theme"].filter((key) => node[key] !== undefined);
+  return [...keys("props", node.props), ...themed, ...own.map((key) => `style.${key}`), ...condition("mobile"), ...condition("hover"), ...keys("hidden", node.hidden)];
 }
 
 /** Whether a diagnostic's path is on a node itself (or what it renders), not on one of its children. */

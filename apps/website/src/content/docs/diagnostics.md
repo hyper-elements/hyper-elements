@@ -117,6 +117,13 @@ try {
 | `component/not-supported` | A component under a root that doesn't take it. The message names the roots that do |
 | `prop/not-supported` | A prop for some roots only (a `component()`'s, made with `roots`), under another |
 | `style/not-supported` | A style for some roots only, under another, in `style` or in its `mobile` or `hover` block |
+| `theme/schema` | A theme that isn't one: a token name that isn't letters and digits (`gray-900`: nest it as `gray.900`) or is `__proto__`, `constructor` or `prototype`, a value its group doesn't take, a `{ base, dark }` value (modes come later), a second `by` prop or a `by` value its prop never has, `variants` on a root, a group that isn't one yet (`shadows`), or a theme given both at a document's top level and on its root |
+| `theme/missing-token` | A token that doesn't exist (the message suggests the one meant), or a token in a template with no theme |
+| `theme/value` | A token from another group than the place takes: a `spacing` token as a color |
+| `theme/cycle` | Tokens, or named styles, that refer to each other in a loop |
+| `variant/unknown` | A `variant` the theme doesn't give that component (the message lists those it does) |
+| `style/unknown-name` | A named style in `apply` the theme doesn't have |
+| `style/apply-place` | `apply` inside `mobile` or `hover`, or on a template's own component |
 | `email/layer` | A Layer email can't draw: in an email it's an Image as wide as the Layer with one child over it |
 | `custom/render` | A custom component's `render` throws, or returns something other than one component |
 | `custom/depth` | Custom components expanding into each other too deep, as when one contains itself |
@@ -145,6 +152,7 @@ try {
 | `style/ignored` | warning | A style that does nothing where it is, such as `flex` on a child that isn't in a Row |
 | `email/layer-phone` | info | On phones, an email keeps a Layer's height and cuts its image at the sides |
 | `hidden/everywhere` | warning | Hidden on phones and on desktop, so it never shows |
+| `theme/inherited` | warning | A theme's default for a component (`components.Text.color`) replaces the body text's color, font, size or line height a box sets for what it holds. Set them with the roles `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` |
 | `id/dropped` | info | An `id` inside a custom component used without one of its own is left out |
 | `mobile/not-shown` | warning | A custom component's `mobile` style that nothing it renders has a phone version of |
 | `jsx/compat` | warning | A `compat` prop on a root, which is left out |

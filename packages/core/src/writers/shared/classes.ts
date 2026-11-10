@@ -47,6 +47,18 @@ export class Stylesheet {
    * `&:hover{…}`, `&>*{…}`), under `media`, at `level`.
    */
   classFor(media: Media, rule: string, level: Level = "own"): string {
+    return this.add(media, rule, level, (name) => rule.replace(/&/g, `.${name}`));
+  }
+
+  /**
+   * The class for one rule on the element itself, `declarations` its body as written: the class goes into the
+   * selector only, so a value may hold an `&` (a font named "R&D Sans").
+   */
+  classForDeclarations(media: Media, declarations: string, level: Level = "own"): string {
+    return this.add(media, `{${declarations}}`, level, (name) => `.${name}{${declarations}}`);
+  }
+
+  private add(media: Media, rule: string, level: Level, text: (name: string) => string): string {
     const key = `${media}\n${rule}`;
     const known = this.names.get(key);
     if (known) return known;
@@ -56,7 +68,7 @@ export class Stylesheet {
     for (let size = 6; this.keys.has(name); size++) name = size <= 7 ? `${this.prefix}${hash.slice(-size)}` : `${name}x`;
     this.names.set(key, name);
     this.keys.set(name, key);
-    this.rules[media].push({ level, text: rule.replace(/&/g, `.${name}`) });
+    this.rules[media].push({ level, text: text(name) });
     return name;
   }
 

@@ -44,24 +44,47 @@ Each of these made an agent's first try fail:
 - `ColumnLayouts`, `layout`, `headingType`, `altText`, `html` are Unlayer Elements' props, not these: a `Row` of `Column`s, `level`, `alt`, and text as children.
 - `<Image src="https://example.com/logo.png">` → `src={{ src: "https://example.com/logo.png", width: 240, height: 80 }}`, the file's size. Without it, Outlook shows the file at its own size.
 - `mobile={{ fontSize: 20 }}`, `hover={{ … }}`, `_hover` or `md: { … }` → `style={{ fontSize: 24, mobile: { fontSize: 20 }, hover: { … } }}`. Phone and hover styles are blocks of `style`, and there's one breakpoint: phones.
+- `className="secondary"` or `sx={…}` → `variant="secondary"` (the theme's) or `style={{ apply: ["card"] }}`.
+
+## Themes
+
+A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, given to a root as `theme`.
+
+- In a template `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme, and only there, a token is `"{colors.primary}"`: everywhere in a template (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.
+- Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.
+- `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
+- `styles: { card: { … } }` are named styles: `style={{ apply: ["card"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.
+- `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
+- `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module "@hyper-elements/react" { interface Register { theme: typeof brand } }` types every name.
 
 ## A whole template
 
 ```tsx
-import { Button, Column, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow } from "@hyper-elements/react";
+import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow, token } from "@hyper-elements/react";
+
+// The brand, once: every Email, Page, Document and Canvas that takes it is on brand.
+const acme = defineTheme({
+  colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
+  fonts: { body: "Inter, Arial, sans-serif" },
+  components: {
+    Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
+    Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
+  },
+  styles: { card: { backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 } },
+});
 
 export default function Receipt() {
   return (
-    <Email previewText="Your Acme receipt" style={{ backgroundColor: "#f4f4f5", fontFamily: "Inter, Arial, sans-serif", gap: 16 }}>
+    <Email theme={acme} previewText="Your Acme receipt" style={{ gap: 16 }}>
       <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
-      <Column style={{ backgroundColor: "#ffffff", padding: 32, gap: 16, borderRadius: 8 }}>
-        <Heading level={1} style={{ fontSize: 24, mobile: { fontSize: 20 } }}>
+      <Column style={{ apply: ["card"] }}>
+        <Heading level={1}>
           Thanks for your order, <MergeTag name="first_name" />
         </Heading>
         <Text>
           Order <Span style={{ fontWeight: 700 }}>#10482</Span> ships tomorrow. <Link href="https://example.com/orders/10482">Track it</Link>.
         </Text>
-        <Table style={{ cellPadding: [8, 0], rowBorder: "1px solid #e4e4e7" }}>
+        <Table style={{ cellPadding: [8, 0], rowBorder: { width: 1, style: "solid", color: token("colors.border") } }}>
           <TableRow header>
             <TableCell>Item</TableCell>
             <TableCell style={{ textAlign: "right" }}>Price</TableCell>
@@ -84,11 +107,9 @@ export default function Receipt() {
             </List>
           </Column>
         </Row>
-        <Button href="https://example.com/orders/10482" style={{ backgroundColor: "#111827", borderRadius: 6, hover: { backgroundColor: "#374151" } }}>
-          View your order
-        </Button>
+        <Button href="https://example.com/orders/10482">View your order</Button>
       </Column>
-      <Text style={{ fontSize: 12, color: "#71717a", textAlign: "center" }}>Acme Inc., 1 Market St, San Francisco</Text>
+      <Text style={{ fontSize: 12, color: token("colors.muted"), textAlign: "center" }}>Acme Inc., 1 Market St, San Francisco</Text>
     </Email>
   );
 }
