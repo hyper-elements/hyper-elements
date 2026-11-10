@@ -385,8 +385,14 @@ npm run bench -- --suite email --kits he,he-plain --briefs all --reps 4 --model 
 npm run selftest                                                # the image checker's own test; no API
 npm run bench -- --suite image --kits he,playwright,canvas --briefs all --reps 4 --model sonnet --concurrency 4
 npm run report -- results/<stamp>-<suite>-sonnet.jsonl
+npm run charts                                                  # the README's and the website's two charts; no API
 HYPER_ELEMENTS_PACKAGE=../packages/react npm run runtime
 ```
+
+`npm run charts` (`lib/charts.mjs`) draws `apps/website/public/img/hyper-elements-agent-benchmark.svg` and
+`hyper-elements-image-benchmark.svg`, which the repository's README and the website's benchmark page show, from the
+batches named at the top of the file. To chart a new batch, change its `source` there, and the labels and notes that
+describe its results.
 
 `claude` must be signed in. A run costs about $0.25–$1. The image suite's fonts' and images' sources and hashes are
 in `suites/image/fonts/MANIFEST.json` and `suites/image/assets/MANIFEST.json` (`node suites/image/assets/make.mjs`
