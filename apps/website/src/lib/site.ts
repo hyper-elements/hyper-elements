@@ -44,8 +44,6 @@ export const docsNav: DocGroup[] = [
       { slug: "styles", label: "Styles, phones and hover" },
       { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
-      { slug: "diagnostics", label: "Diagnostics" },
-      { slug: "email-clients", label: "Email client previews" },
       { slug: "custom-components", label: "Your own components" },
     ],
   },
@@ -56,6 +54,13 @@ export const docsNav: DocGroup[] = [
       { slug: "outputs/page", label: "Web pages" },
       { slug: "outputs/pdf", label: "Documents and PDF" },
       { slug: "outputs/image", label: "Images" },
+    ],
+  },
+  {
+    title: "Validation",
+    items: [
+      { slug: "diagnostics", label: "Diagnostics" },
+      { slug: "email-clients", label: "Email client previews" },
     ],
   },
   {
