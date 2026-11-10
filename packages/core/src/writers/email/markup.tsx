@@ -41,6 +41,14 @@ export function OutlookWidth({ width, children }: { width: number; children?: Ch
   );
 }
 
+/**
+ * A URL as a CSS `url("…")`: the characters that would end its string (a quote, a backslash, a line break: `\n`, `\r`
+ * and `\f` end a CSS string) or that a URL never holds as they are, percent-encoded, so nothing after them is read as
+ * CSS.
+ */
+// eslint-disable-next-line no-control-regex
+const cssUrl = (src: string) => `url("${src.replace(/["\\\u0000-\u001f\u007f]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`)}")`;
+
 /** A color Word reads as a `bgcolor` attribute (hex only). */
 export const bgcolor = (value: Json | undefined) => (typeof value === "string" && /^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(value) ? value : undefined);
 
@@ -55,7 +63,7 @@ export function pictureCell(
 ): { background: string; style: Style; open: Html; close: Html } {
   return {
     background: src,
-    style: { backgroundImage: `url("${src.replace(/"/g, "%22")}")`, backgroundSize: size, backgroundPosition: position, backgroundRepeat: repeat },
+    style: { backgroundImage: cssUrl(src), backgroundSize: size, backgroundPosition: position, backgroundRepeat: repeat },
     open: (
       <Outlook>
         {open(h("v:rect", { "xmlns:v": "urn:schemas-microsoft-com:vml", fill: "true", stroke: "false", alt, style: { width, height } }))}

@@ -4,97 +4,6 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
-### Phone and hover styles go in `style`
-
-A component's phone and hover styles are blocks of its `style`, typed to what the component takes there. They replace
-0.3.0's separate `mobile` and `hover` props.
-
-```tsx
-<Heading style={{ fontSize: 32, mobile: { fontSize: 24 } }}>Title</Heading>
-<Button href="…" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Go</Button>
-```
-
-### What's new
-
-- `<Page breakpoints={{ mobile: 600 }}>` sets where a Page's phone styles start (480px where it isn't set).
-- Hover styles apply on keyboard focus too. Each hover rule's class name changes.
-- More is said about what an output doesn't show: hover in an email (a note: classic Outlook and some apps don't show
-  it), and phone styles that were silently ignored (a Page root's phone text styles, a stacking Grid's phone `rowGap`,
-  an email Image's or TableCell's phone `border`, an email phone `lineHeight: "normal"`).
-- A warning inside a `component()`'s render is said at the component's place, instead of failing the render.
-
-### Email clients in diagnostics
-
-- New: a diagnostic about an Email's problems with particular email clients names them in `clients`, says what to
-  change in `fix`, and, where it's known from caniemail.com's tables, links to its page there in `see`. All three are
-  optional.
-- New: 26 email clients. Four were measured, from captures of the real clients showing 0.3.0 emails (`"outlook"`,
-  classic Outlook for Windows; `"outlook-com"`; `"gmail"`; `"apple-mail"`); what's known of the rest is from
-  caniemail's tables (`"outlook-mac"`, `"outlook-app"`, `"gmail-app"`, `"gmail-app-other"`, `"yahoo"`, `"aol"`,
-  `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`,
-  `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"`, `"rainloop"`). A problem is
-  reported at its own severity for either; only one Elements assumes, unchecked, is a note.
-- New: `validate(element, { emailClients })`, `render(element, { emailClients })` and
-  `prepare(element, { emailClients })` report problems for the clients named. The default is the clients most email is
-  read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
-  `email/layer`). For a root that isn't an Email the option is ignored, with an `email/clients-ignored` note. An
-  unknown client throws a `TypeError`.
-- New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
-  (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
-  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
-  default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
-- Docs: `GUIDE.md` and the agent skill say what an email's warnings name (`clients`, `fix`, `see`) and how to check
-  more clients, with a script that renders an email and prints its problems with `formatDiagnostics()`.
-- New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
-  apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
-  on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
-- New: `email/image-format`, a warning on an Image or a Video's thumbnail whose file is WebP (classic Outlook), AVIF
-  or SVG, by its data: type, the format an image CDN is asked for (`?fm=webp`, `f_avif`, which wins over the file's
-  extension) or its extension.
-- New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
-  (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
-  `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
-  with spaces).
-- New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in
-  classic Outlook; `borderRadius` in GMX, WEB.DE and Orange; `textDecoration` lines in the Gmail app with another
-  account and some others; a root's `lang` and `dir` where webmail removes them.
-- Changed: the note on hover in an email names the clients that don't show it (`clients`), and its message no longer
-  does. `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` names every client that loads no
-  web font, and its advice moves from the message to `fix`; the web fonts note (`email/degraded` on `fonts`) names them
-  too; `email/size` and `email/style-size` name Gmail and its apps, with a `fix`.
-- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
-  email clients are longer.
-
-### Where each block is in an Email's HTML
-
-`render(email, { blockMap: true })` also returns `blocks`, for tools that preview an email: each block's place in the
-template and the UTF-8 byte offset in `html` just after its outermost element's tag name
-(`{ version, unit: "utf8", entries: [{ path, nodeId?, offset }] }`). The HTML is the same bytes as without the option.
-`BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
-`BlockMapEntry` are exported. Documented in REFERENCE.md.
-
-Each entry now also says its block's component, as laid out (`type`: `Heading`, `Button`, a Grid's `Row`), so a tool
-can tell blocks apart without the template. `BLOCK_MAP_VERSION` is 2; 0.3.1 wrote format 1, without `type`.
-
-### Which roots take each component, prop and style
-
-Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
-validated before still validate, and render the same.
-
-- New: `component/not-supported`, `prop/not-supported` and `style/not-supported`, errors for a component, prop or
-  style under a root that doesn't take it, naming the roots that do. They're checked inside your own components too,
-  against the root they're rendered in. A component no output of the root can draw is still `target/unsupported`, and
-  a `PageNumber` outside a Document still `document/page-number`.
-- New: a `component()`'s prop can be for some roots only: `prop.text({ label: "Motto", roots: ["Page"] })`.
-- New: `@hyper-elements/react/inspect`, what each root takes and what a template holds, as data, without rendering.
-  `describeComponents({ root })` lists the components a root takes, each prop and style with its kind, group
-  (`Typography`, `Spacing`, …), default and roots, and the style blocks (`mobile`, `hover`) the root takes;
-  `describeComponent(type, { root })` gives one. `inspect(element)` lists each component in a template with the roots
-  that take it, whether its root does (`allowed`), what it's given and its problems, and every diagnostic `validate()`
-  finds. Each result has a `version` (`INSPECT_VERSION`) that changes only with its shape.
-- Docs: `REFERENCE.md` says where a component, prop or style isn't in every root ("Not in an Email.", "only in a
-  Page"), and each style's group; `GUIDE.md` and the agent skill say it for Svg and PageNumber.
-
 ### Themes
 
 A theme is the brand, written once and given to any root: `<Email theme={brand}>`, `<Page theme={brand}>`. Templates
@@ -171,6 +80,133 @@ A `Page` takes CSS's own layout, with typed styles. Templates that use none of i
   the text metrics as written (`authored`), its numbers being what they come to.
 - The builder (`toDesign()`) draws a Box as an HTML block of its own markup, and says which page styles its tools have
   no place for.
+
+### Where each block is in an Email's HTML
+
+Each entry of `render(email, { blockMap: true })`'s `blocks` now also says its block's component, as laid out
+(`type`: `Heading`, `Button`, a Grid's `Row`), so a tool can tell blocks apart without the template.
+`BLOCK_MAP_VERSION` is 2; 0.3.1 wrote format 1, without `type`.
+
+### Fixes
+
+- **PDF:** a PDF's text (what's copied, searched and read aloud) no longer loses letters after another PDF in the
+  same process. Once a PDF drew a letter only with an accent ("Café", no plain "e"), every later PDF drawn with that
+  font wrote that letter as nothing or a control character in its text: "Peter Jones" was copied as "tr Jons". The
+  pages looked right. react-pdf keeps one font for the process, and the plain letter's glyph, made as part of the
+  accented one, kept no character; it now gets its character the first time it's drawn.
+- **Image:** content that overflows a Canvas by more than the Canvas's own size (an image or a box twice its height
+  down) no longer ends the process. resvg panicked on it, which nothing could catch, so one card took a server down.
+  What lies that far out is cut off as before, and the PNG is the same; the SVG is unchanged.
+- **Email:** an image URL written into CSS can't add CSS. A line break or form feed in a Layer's image URL ended its
+  `url("…")` and let what followed style the cell (in a browser, a box over the whole window, and a request to another
+  site); a form feed in a font's URL did the same to the stylesheet, in every root. Both are encoded now.
+- **Plain text:** a service's tag typed into a large heading (`{{first_name}}`, `{% if vip %}`, `<%= name %>`,
+  `*|FNAME|*`) is written as typed, as the HTML has it, instead of in capitals that its service doesn't read.
+- **TypeScript:** a CommonJS project (`"module": "node16"` or `"nodenext"`) gets the CommonJS declarations each entry
+  ships (`.d.cts`), instead of the ES module ones, which TypeScript refused to `require` (TS1479).
+
+### Docs
+
+- Image output: name satori's range when installing (pnpm and yarn otherwise add a newer satori than `/image` is built
+  for, with only a warning, and it draws some Canvases wrong); in Next.js, list the engines in
+  `serverExternalPackages`; and limit the length of text from users, as Satori lays out all of it.
+
+## 0.3.1
+
+### ⚠️ Breaking: phone and hover styles go in `style`
+
+A component's phone and hover styles are blocks of its `style`, typed to what the component takes there. They replace
+0.3.0's separate `mobile` and `hover` props, which are gone: a template that still has them fails with `prop/unknown`,
+whose message says where each goes. To upgrade, move each prop's object into the component's `style`:
+
+```tsx
+// 0.3.0
+<Heading style={{ fontSize: 32 }} mobile={{ fontSize: 24 }}>Title</Heading>
+// 0.3.1
+<Heading style={{ fontSize: 32, mobile: { fontSize: 24 } }}>Title</Heading>
+<Button href="…" style={{ backgroundColor: "#111827", hover: { backgroundColor: "#374151" } }}>Go</Button>
+```
+
+Templates written by `@hyper-elements/migrate` 0.2.0 have the props too: migrate them again with 0.2.1, which writes
+the new form.
+
+### What's new
+
+- `<Page breakpoints={{ mobile: 600 }}>` sets where a Page's phone styles start (480px where it isn't set).
+- Hover styles apply on keyboard focus too. Each hover rule's class name changes.
+- More is said about what an output doesn't show: hover in an email (a note: classic Outlook and some apps don't show
+  it), and phone styles that were silently ignored (a Page root's phone text styles, a stacking Grid's phone `rowGap`,
+  an email Image's or TableCell's phone `border`, an email phone `lineHeight: "normal"`).
+- A warning inside a `component()`'s render is said at the component's place, instead of failing the render.
+
+### Email clients in diagnostics
+
+- New: a diagnostic about an Email's problems with particular email clients names them in `clients`, says what to
+  change in `fix`, and, where it's known from caniemail.com's tables, links to its page there in `see`. All three are
+  optional.
+- New: 26 email clients. Four were measured, from captures of the real clients showing 0.3.0 emails (`"outlook"`,
+  classic Outlook for Windows; `"outlook-com"`; `"gmail"`; `"apple-mail"`); what's known of the rest is from
+  caniemail's tables (`"outlook-mac"`, `"outlook-app"`, `"gmail-app"`, `"gmail-app-other"`, `"yahoo"`, `"aol"`,
+  `"samsung-email"`, `"thunderbird"`, `"protonmail"`, `"fastmail"`, `"hey"`, `"gmx"`, `"web-de"`, `"orange"`,
+  `"sfr"`, `"laposte"`, `"free-fr"`, `"t-online-de"`, `"mail-ru"`, `"ionos"`, `"wp-pl"`, `"rainloop"`). A problem is
+  reported at its own severity for either; only one Elements assumes, unchecked, is a note.
+- New: `validate(element, { emailClients })`, `render(element, { emailClients })` and
+  `prepare(element, { emailClients })` report problems for the clients named. The default is the clients most email is
+  read in: the four measured, Outlook for Mac, the Outlook and Gmail apps, Yahoo, AOL and Samsung Email. `[]` leaves out every email client problem, not the email's own (`email/width`,
+  `email/layer`). For a root that isn't an Email the option is ignored, with an `email/clients-ignored` note. An
+  unknown client throws a `TypeError`.
+- New: `EMAIL_CLIENTS`, what's known of each client, with how closely the four were measured on 0.3.0 emails
+  (classic Outlook 0.85 of words within 4px; Outlook.com, Gmail and Apple Mail about 1), and the types
+  `EmailClient`, `EmailClientInfo`, `EmailClientMeasurement` and `ValidateOptions`. `DEFAULT_EMAIL_CLIENTS` lists the
+  default ones, to report for them and more (`[...DEFAULT_EMAIL_CLIENTS, "gmx"]`).
+- Docs: `GUIDE.md` and the agent skill say what an email's warnings name (`clients`, `fix`, `see`) and how to check
+  more clients, with a script that renders an email and prints its problems with `formatDiagnostics()`.
+- New: `email/phone-styles`, said once for an Email with phone styles or hidden content, for the clients that don't
+  apply them on phones (the Gmail app with another account, some webmail): a note, or a warning where something hidden
+  on desktop would then show nowhere. What a built-in component hides itself (a Menu's separators) doesn't count.
+- New: `email/image-format`, a warning on an Image or a Video's thumbnail whose file is WebP (classic Outlook), AVIF
+  or SVG, by its data: type, the format an image CDN is asked for (`?fm=webp`, `f_avif`, which wins over the file's
+  extension) or its extension.
+- New: `email/html-css`, a note on an Html block whose markup may have CSS or HTML an email client removes
+  (`position`, CSS variables, gradients, box and text shadows, flex and grid, opacity, `object-fit`,
+  `aspect-ratio`, a `<style>` in the body, newer color syntax, negative margins, `!IMPORTANT` in capitals, rgb()
+  with spaces).
+- New notes from caniemail's tables: `fontWeight` under 600 (other than 400) and `textTransform: "lowercase"` in
+  classic Outlook; `borderRadius` in GMX, WEB.DE and Orange; `textDecoration` lines in the Gmail app with another
+  account and some others; a root's `lang` and `dir` where webmail removes them.
+- Changed: the note on hover in an email names the clients that don't show it (`clients`), and its message no longer
+  does. `email/outlook-degraded` has `clients: ["outlook"]`; `email/font-fallback` names every client that loads no
+  web font, and its advice moves from the message to `fix`; the web fonts note (`email/degraded` on `fonts`) names them
+  too; `email/size` and `email/style-size` name Gmail and its apps, with a `fix`.
+- Changed: `formatDiagnostics()` adds a diagnostic's clients, fix and where to see it to its line, so lines about
+  email clients are longer.
+
+### Where each block is in an Email's HTML
+
+`render(email, { blockMap: true })` also returns `blocks`, for tools that preview an email: each block's place in the
+template and the UTF-8 byte offset in `html` just after its outermost element's tag name
+(`{ version, unit: "utf8", entries: [{ path, nodeId?, offset }] }`). The HTML is the same bytes as without the option.
+`BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
+`BlockMapEntry` are exported. Documented in REFERENCE.md.
+
+### Which roots take each component, prop and style
+
+Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
+validated before still validate, and render the same.
+
+- New: `component/not-supported`, `prop/not-supported` and `style/not-supported`, errors for a component, prop or
+  style under a root that doesn't take it, naming the roots that do. They're checked inside your own components too,
+  against the root they're rendered in. A component no output of the root can draw is still `target/unsupported`, and
+  a `PageNumber` outside a Document still `document/page-number`.
+- New: a `component()`'s prop can be for some roots only: `prop.text({ label: "Motto", roots: ["Page"] })`.
+- New: `@hyper-elements/react/inspect`, what each root takes and what a template holds, as data, without rendering.
+  `describeComponents({ root })` lists the components a root takes, each prop and style with its kind, group
+  (`Typography`, `Spacing`, …), default and roots, and the style blocks (`mobile`, `hover`) the root takes;
+  `describeComponent(type, { root })` gives one. `inspect(element)` lists each component in a template with the roots
+  that take it, whether its root does (`allowed`), what it's given and its problems, and every diagnostic `validate()`
+  finds. Each result has a `version` (`INSPECT_VERSION`) that changes only with its shape.
+- Docs: `REFERENCE.md` says where a component, prop or style isn't in every root ("Not in an Email.", "only in a
+  Page"), and each style's group; `GUIDE.md` and the agent skill say it for Svg and PageNumber.
 
 ### Fixes
 

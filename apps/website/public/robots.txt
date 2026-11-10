@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /search.json
 
-Sitemap: https://hyperelements.dev/sitemap-index.xml
+Sitemap: https://www.hyperelements.dev/sitemap-index.xml

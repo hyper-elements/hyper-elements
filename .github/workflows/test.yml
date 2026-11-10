@@ -96,14 +96,15 @@ jobs:
       # render that collects a template (about 5KB), and a Page's styles (Box, the CSS value kinds
       # that check each page style (with calc() typed as CSS types it), their serializer, the flex
       # and grid layout model (CSS grid's placement and track sizing, border overrides) and outline(),
-      # about 81KB). Raise it on purpose, with what grew.
+      # about 81KB). Raise it on purpose, with what grew: 405KB with plain text's one-pass scan of
+      # service tags in large headings and the email's encoding of URLs in CSS (about 1KB).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=404000
+          MAX_SIZE=405000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -112,7 +113,7 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 552KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 570KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, the email client
@@ -124,13 +125,13 @@ jobs:
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
-      # grew.
+      # grew: 570KB with the same scan and encoding, in the writers it shares (about 1KB).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=569000
+          MAX_SIZE=570000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

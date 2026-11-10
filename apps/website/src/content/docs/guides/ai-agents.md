@@ -141,3 +141,7 @@ Each of these made an agent's first try fail:
 - Build reusable trees with a plain synchronous function that returns the root. Fetch data first: a component that is async or suspends is an error.
 - Pass dynamic values as children or props, which Hyper Elements escapes. Only put markup you trust in an `Html` block.
 - To move React Email templates, run `npx @hyper-elements/migrate` instead of rewriting them by hand. It keeps their logic and checks the result. Exit code `2` means a template failed to convert or lost content: report it, with the file and the reason. Don't pass `--force` to hide it. See [From React Email](/docs/migrate/react-email).
+
+## A complete receipt-email walkthrough
+
+For a worked example with Claude Code, order data, a diagnostic repair and a test send, follow [Build and validate React emails with Claude Code](/blog/react-emails-claude-code).

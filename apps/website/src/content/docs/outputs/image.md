@@ -40,8 +40,10 @@ Use it for social cards, Open Graph images, banners, or any image you'd otherwis
 ## Install
 
 ```bash
-npm install @hyper-elements/react satori @resvg/resvg-js react react-dom
+npm install @hyper-elements/react satori@^0.33.5 @resvg/resvg-js react react-dom
 ```
+
+Give satori's range as above. pnpm and yarn otherwise add satori's newest version, outside the range `/image` is built for, with only a warning, and it draws some Canvases wrong.
 
 | Peer dependency | Version | Why |
 |-----------------|---------|-----|
@@ -54,6 +56,15 @@ npm install @hyper-elements/react satori @resvg/resvg-js react react-dom
 It runs in Node.js only. If it loads a second copy of `@hyper-elements/react` that lays templates out in another version, `renderImage()` throws an `ElementsError` (`image/version`) rather than drawing the template wrong.
 
 > **Note:** Satori runs WebAssembly, which a Content-Security-Policy without `'wasm-unsafe-eval'` blocks. That's one reason image output is its own entry, `@hyper-elements/react/image`, which the main entry never loads.
+
+In Next.js, list both engines in `next.config.ts`, so Next.js loads them from `node_modules` instead of bundling them: resvg is a native addon, and Satori reads a WebAssembly file when it runs. Without it, `next build` fails on resvg, and a route that draws an image fails on Satori's file.
+
+```ts
+// next.config.ts
+export default { serverExternalPackages: ["@resvg/resvg-js", "satori"] };
+```
+
+Satori lays out all of a Canvas's text, the part that's cut off too, so a very long text takes time and memory in proportion: about 1 GB for a 100,000-character title. Limit the length of text that comes from users to what the Canvas can show.
 
 ## The Canvas
 

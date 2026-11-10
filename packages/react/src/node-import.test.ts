@@ -53,25 +53,34 @@ describe("each entry's types, for every moduleResolution", () => {
     const installed = join(project, "node_modules", "@hyper-elements", "react");
     mkdirSync(join(project, "node_modules", "@hyper-elements"), { recursive: true });
     symlinkSync(dir, installed, "dir");
-    // The declarations each entry names, which a build writes: there for the resolver whether built or not.
-    const entries = Object.entries(pkg.exports as Record<string, { types?: string }>).filter(([, entry]) => typeof entry === "object" && entry.types);
+    // The declarations each entry names, which a build writes: there for the resolver whether built or not. An import
+    // gets the ES module's (`.d.ts`, the package being "type": "module"), a require the CommonJS one's (`.d.cts`):
+    // TypeScript reads a `.d.ts` here as an ES module, which a CommonJS file can't require (TS1479).
+    type Entry = { import: { types: string }; require: { types: string } };
+    const entries = Object.entries(pkg.exports as Record<string, Entry | string>).filter((pair): pair is [string, Entry] => typeof pair[1] === "object");
     expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./inspect", "./pdf", "./image"]);
-    const declared = new Set(entries.map(([, entry]) => join(dir, entry.types!)));
+    for (const [, entry] of entries) expect(entry.require.types).toBe(entry.import.types.replace(/\.d\.ts$/, ".d.cts"));
+    const declared = new Set(entries.flatMap(([, entry]) => [join(dir, entry.import.types), join(dir, entry.require.types)]));
     const inPackage = (file: string) => (file.startsWith(installed) ? join(dir, file.slice(installed.length)) : file);
     const host: ts.ModuleResolutionHost = { ...ts.sys, fileExists: (file) => declared.has(inPackage(file)) || ts.sys.fileExists(file) };
-    const settings: Array<[string, ts.CompilerOptions]> = [
-      ["node10", { moduleResolution: ts.ModuleResolutionKind.Node10, module: ts.ModuleKind.CommonJS }],
-      ["node16", { moduleResolution: ts.ModuleResolutionKind.Node16, module: ts.ModuleKind.Node16 }],
-      ["bundler", { moduleResolution: ts.ModuleResolutionKind.Bundler, module: ts.ModuleKind.ESNext }],
+    // Each setting, the file importing (its extension makes it an ES module or CommonJS under node16) and the
+    // declarations it must get.
+    const settings: Array<[string, ts.CompilerOptions, string, "import" | "require"]> = [
+      ["node10", { moduleResolution: ts.ModuleResolutionKind.Node10, module: ts.ModuleKind.CommonJS }, "index.ts", "import"],
+      ["node16 ES module", { moduleResolution: ts.ModuleResolutionKind.Node16, module: ts.ModuleKind.Node16 }, "index.mts", "import"],
+      ["node16 CommonJS", { moduleResolution: ts.ModuleResolutionKind.Node16, module: ts.ModuleKind.Node16 }, "index.cts", "require"],
+      ["bundler", { moduleResolution: ts.ModuleResolutionKind.Bundler, module: ts.ModuleKind.ESNext }, "index.ts", "import"],
     ];
     const found: Record<string, string> = {};
     const want: Record<string, string> = {};
     for (const [subpath, entry] of entries) {
       const name = `@hyper-elements/react${subpath.slice(1)}`;
-      for (const [setting, options] of settings) {
-        const resolved = ts.resolveModuleName(name, join(project, "index.ts"), options, host).resolvedModule?.resolvedFileName;
+      for (const [setting, options, file, condition] of settings) {
+        // How a file of that extension imports, which a program tells the resolver from the file.
+        const mode = file.endsWith(".mts") ? ts.ModuleKind.ESNext : file.endsWith(".cts") ? ts.ModuleKind.CommonJS : undefined;
+        const resolved = ts.resolveModuleName(name, join(project, file), options, host, undefined, undefined, mode).resolvedModule?.resolvedFileName;
         found[`${setting} ${name}`] = resolved ? inPackage(resolved) : "(not found)";
-        want[`${setting} ${name}`] = join(dir, entry.types!);
+        want[`${setting} ${name}`] = join(dir, entry[condition].types);
       }
     }
     expect(found).toEqual(want);

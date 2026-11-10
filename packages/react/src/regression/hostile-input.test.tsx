@@ -17,7 +17,7 @@ import {
   pageSpacingStyle,
   pageTextStyle,
 } from "@unlayer-internal/elements-core";
-import { Box, Button, Column, Document, ElementsError, Email, Heading, Html, Image, Link, List, ListItem, MergeTag, Menu, Page, Text, Row, Section, Social, Span, Table, TableCell, TableRow, Video, render } from "../primitives/index";
+import { Box, Button, Column, Document, ElementsError, Email, Heading, Html, Image, Layer, Link, List, ListItem, MergeTag, Menu, Page, Text, Row, Section, Social, Span, Table, TableCell, TableRow, Video, render } from "../primitives/index";
 
 /** A Box's page styles, by group (Decision 5 of the themes and pages plan). */
 const PAGE_GROUPS = { pageLayoutStyle, pagePlacementStyle, pageSizeStyle, pagePositionStyle, pageSpacingStyle, pageTextStyle, pageBackgroundStyle, pageBorderStyle, pageEffectsStyle };
@@ -199,5 +199,49 @@ describe("the builder's design", () => {
   it("is checked where the builder reads HTML: texts, headings, buttons, and what's locked as markup", () => {
     const design = toDesign(<Email>{Object.values(CASES).map((make, index) => <React.Fragment key={index}>{make(PAYLOADS[0])}</React.Fragment>)}</Email>).design;
     expect(markupIn(design).filter((html) => html.includes("&lt;x-pwn&gt;")).length).toBeGreaterThanOrEqual(9);
+  });
+});
+
+/**
+ * A URL written into CSS (an Email Layer's image, the root's fonts) can't end its string: a line break or form feed
+ * there (`\n`, `\r`, `\f` end a CSS string) followed by CSS would be read as CSS, a style on the cell or a rule of the
+ * stylesheet, where `<`, `>` and quotes never get out of it as markup.
+ */
+describe("a URL written into CSS", () => {
+  const BREAKS = ["\n", "\r", "\f", "\r\n"];
+  /**
+   * The page's CSS (its style attributes, as parsed, and its stylesheets) once each `url("…")` that's one whole string
+   * (nothing inside that ends one) is taken out. The URL is in HTML attributes too (`background`, VML's `src`), where
+   * a line break is nothing.
+   */
+  const outsideUrls = (html: string) => {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const css = [...Array.from(doc.querySelectorAll("[style]"), (el) => el.getAttribute("style") ?? ""), ...Array.from(doc.querySelectorAll("style"), (el) => el.textContent ?? "")].join("\n");
+    return css.replace(/url\("(?:[^"\\\n\r\f]|\\[0-9a-f]{1,6} ?)*"\)/gi, "url()");
+  };
+
+  it.each(BREAKS.map((brk) => [JSON.stringify(brk), brk]))("can't add CSS after %s, in a Layer's image", async (_, brk) => {
+    const src = `https://cdn.example.com/hero.png${brk});position:fixed;x-pwn:1;x:(`;
+    const html = await htmlOf(
+      <Email>
+        <Layer>
+          <Image src={{ src, width: 600, height: 300 }} alt="Hero" />
+          <Text>Sale</Text>
+        </Layer>
+      </Email>
+    );
+    expect(html).not.toBeNull();
+    expect(outsideUrls(html!)).not.toContain("x-pwn");
+  });
+
+  it.each(Object.entries(ROOTS).flatMap(([name, Root]) => BREAKS.map((brk) => [name, JSON.stringify(brk), Root, brk] as const)))("can't add a rule after %s %s, in a font's URL", async (_, __, Root, brk) => {
+    const R = Root as React.FC<Record<string, unknown> & { children?: React.ReactNode }>;
+    const html = await htmlOf(
+      <R fonts={[{ family: "Brand", src: `https://fonts.example.com/brand.woff2${brk});}x-pwn{display:none}x{` }]}>
+        <Text>Hello</Text>
+      </R>
+    );
+    expect(html).not.toBeNull();
+    expect(outsideUrls(html!)).not.toContain("x-pwn");
   });
 });

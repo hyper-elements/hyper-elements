@@ -1,7 +1,7 @@
 /** Names and links in one place, so the rename is one edit. */
 export const site = {
   name: "Hyper Elements",
-  url: "https://hyperelements.dev",
+  url: "https://www.hyperelements.dev",
   github: "https://github.com/hyper-elements/hyper-elements",
   npm: "https://www.npmjs.com/org/hyper-elements",
   pkg: "@hyper-elements/react",
@@ -21,7 +21,7 @@ export const mainNav = [
   { href: "/components", label: "Components" },
   { href: "/templates", label: "Templates" },
   { href: "/ai", label: "AI" },
-  { href: "/migrate", label: "Migrate" },
+  { href: "/blog", label: "Blog" },
 ];
 
 export type DocLink = { slug: string; label: string };
