@@ -4,6 +4,53 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### Themes
+
+A theme is the brand, written once and given to any root: `<Email theme={brand}>`, `<Page theme={brand}>`. Templates
+without one render as they did.
+
+- New: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, frozen data. Tokens
+  are grouped, may nest (`colors.gray.900`) and refer to each other as `"{colors.primary}"`, the W3C Design Tokens
+  format's alias. A token, a group, a named style or a variant can't be named `__proto__`, `constructor` or
+  `prototype`. `extendTheme(base, overrides)` merges one over another, objects key by key, and its type is the merged
+  theme's (an overridden value too), so it can be registered.
+- New: `token("colors.primary")` in a template, for a style's value or part of one
+  (`border: { width: 1, style: "solid", color: token("colors.border") }`), and for a `component()`'s color, length
+  and font props (its types take a token there only). `brand.tokens.colors.primary` is the same, typed.
+- New: roles. With the theme defining them, `colors.background` is the root's background, and `colors.foreground`,
+  `fonts.body`, `fontSizes.body` and `lineHeights.body` its body text's color, font, size and line height, which Text,
+  table cells and list items inherit; `fonts.heading` is a Heading's font; `colors.primary` and
+  `colors.primaryForeground` a Button's colors and `fontSizes.body` its size (a theme that defines it makes Buttons
+  that size, not 14px); `colors.primary` a Link's; `colors.border` a Divider's.
+- New: `components.X` gives every X its default style; `by: { level: { 1: { … } } }` by one prop's value (a type
+  scale); `variants`, picked with the new `variant` prop on each built-in component but the roots
+  (`variant={["outline", "small"]}` merges in order).
+- New: named styles, `styles: { card: { … } }`, applied with `style={{ apply: ["card"] }}`; a named style, a variant or
+  a default may apply others. A key an element sets in its own style also replaces that key's phone and hover values
+  from the theme.
+- New: `tokens` on a Section, Row, Column or Grid overrides tokens for what it holds, and sets the roles it names on
+  itself: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
+- New: `formats: { email, page, document, canvas }` overrides the theme for one kind of root. What a root doesn't take
+  is left out (a theme's phone styles in a Document).
+- New: `component()`'s render gets a second argument, `{ theme }`, the tokens' values where the instance is.
+- New: a Page writes its tokens as CSS custom properties (`--colors-primary`; a scope's where they differ), for its own
+  CSS and `Html` blocks. Elements' own styles are written as values, as in every output.
+- New: `interface Register { theme: typeof brand }` (in `declare module "@hyper-elements/react"`) types every token's
+  path, variant and named style; without it they're strings, checked when the template is read.
+- New: `theme/schema`, `theme/missing-token`, `theme/value`, `theme/cycle`, `variant/unknown`, `style/unknown-name` and
+  `style/apply-place` errors, and the `theme/inherited` warning (a theme's default for a component replaces the body
+  text's color, font, size or line height a box sets for what it holds). A `className`, `class`, `sx` or `variants` prop's error points to `variant`
+  and `apply`.
+- New: `inspect()` lists the theme (its tokens, the roles it defines, its named styles and variants), so
+  `INSPECT_VERSION` is 2. `toDesign()` writes a theme's values and says it keeps no theme.
+- Docs: `GUIDE.md` and the agent skill have a Themes section, and the README's template uses a theme.
+
+### Where each block is in an Email's HTML
+
+Each entry of `render(email, { blockMap: true })`'s `blocks` now also says its block's component, as laid out
+(`type`: `Heading`, `Button`, a Grid's `Row`), so a tool can tell blocks apart without the template.
+`BLOCK_MAP_VERSION` is 2; 0.3.1 wrote format 1, without `type`.
+
 ### Fixes
 
 - **PDF:** a PDF's text (what's copied, searched and read aloud) no longer loses letters after another PDF in the
@@ -106,9 +153,6 @@ template and the UTF-8 byte offset in `html` just after its outermost element's 
 `BLOCK_MAP_VERSION` says the format; with `pretty` it's an error (`render/block-map-pretty`). The types `BlockMap` and
 `BlockMapEntry` are exported. Documented in REFERENCE.md.
 
-Each entry now also says its block's component, as laid out (`type`: `Heading`, `Button`, a Grid's `Row`), so a tool
-can tell blocks apart without the template. `BLOCK_MAP_VERSION` is 2; 0.3.1 wrote format 1, without `type`.
-
 ### Which roots take each component, prop and style
 
 Every component, prop and style now says which roots (`Email`, `Page`, `Document`, `Canvas`) take it. Templates that
@@ -127,47 +171,6 @@ validated before still validate, and render the same.
   finds. Each result has a `version` (`INSPECT_VERSION`) that changes only with its shape.
 - Docs: `REFERENCE.md` says where a component, prop or style isn't in every root ("Not in an Email.", "only in a
   Page"), and each style's group; `GUIDE.md` and the agent skill say it for Svg and PageNumber.
-
-### Themes
-
-A theme is the brand, written once and given to any root: `<Email theme={brand}>`, `<Page theme={brand}>`. Templates
-without one render as they did.
-
-- New: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, frozen data. Tokens
-  are grouped, may nest (`colors.gray.900`) and refer to each other as `"{colors.primary}"`, the W3C Design Tokens
-  format's alias. A token, a group, a named style or a variant can't be named `__proto__`, `constructor` or
-  `prototype`. `extendTheme(base, overrides)` merges one over another, objects key by key, and its type is the merged
-  theme's (an overridden value too), so it can be registered.
-- New: `token("colors.primary")` in a template, for a style's value or part of one
-  (`border: { width: 1, style: "solid", color: token("colors.border") }`), and for a `component()`'s color, length
-  and font props (its types take a token there only). `brand.tokens.colors.primary` is the same, typed.
-- New: roles. With the theme defining them, `colors.background` is the root's background, and `colors.foreground`,
-  `fonts.body`, `fontSizes.body` and `lineHeights.body` its body text's color, font, size and line height, which Text,
-  table cells and list items inherit; `fonts.heading` is a Heading's font; `colors.primary` and
-  `colors.primaryForeground` a Button's colors and `fontSizes.body` its size (a theme that defines it makes Buttons
-  that size, not 14px); `colors.primary` a Link's; `colors.border` a Divider's.
-- New: `components.X` gives every X its default style; `by: { level: { 1: { … } } }` by one prop's value (a type
-  scale); `variants`, picked with the new `variant` prop on each built-in component but the roots
-  (`variant={["outline", "small"]}` merges in order).
-- New: named styles, `styles: { card: { … } }`, applied with `style={{ apply: ["card"] }}`; a named style, a variant or
-  a default may apply others. A key an element sets in its own style also replaces that key's phone and hover values
-  from the theme.
-- New: `tokens` on a Section, Row, Column or Grid overrides tokens for what it holds, and sets the roles it names on
-  itself: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
-- New: `formats: { email, page, document, canvas }` overrides the theme for one kind of root. What a root doesn't take
-  is left out (a theme's phone styles in a Document).
-- New: `component()`'s render gets a second argument, `{ theme }`, the tokens' values where the instance is.
-- New: a Page writes its tokens as CSS custom properties (`--colors-primary`; a scope's where they differ), for its own
-  CSS and `Html` blocks. Elements' own styles are written as values, as in every output.
-- New: `interface Register { theme: typeof brand }` (in `declare module "@hyper-elements/react"`) types every token's
-  path, variant and named style; without it they're strings, checked when the template is read.
-- New: `theme/schema`, `theme/missing-token`, `theme/value`, `theme/cycle`, `variant/unknown`, `style/unknown-name` and
-  `style/apply-place` errors, and the `theme/inherited` warning (a theme's default for a component replaces the body
-  text's color, font, size or line height a box sets for what it holds). A `className`, `class`, `sx` or `variants` prop's error points to `variant`
-  and `apply`.
-- New: `inspect()` lists the theme (its tokens, the roles it defines, its named styles and variants), so
-  `INSPECT_VERSION` is 2. `toDesign()` writes a theme's values and says it keeps no theme.
-- Docs: `GUIDE.md` and the agent skill have a Themes section, and the README's template uses a theme.
 
 ### Fixes
 
