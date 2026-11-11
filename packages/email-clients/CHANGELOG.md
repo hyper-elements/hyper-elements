@@ -10,6 +10,8 @@ Each release records the models package it was tested with.
   they drew with the fonts of the machine opening the file, and listed Roboto as missing.
 - **The Gmail apps' previews are 380px wide**, the width the Gmail app on Android lays an email out at (375px before),
   and their text 7% larger, as the app draws it (models 1.7.0).
+- **Classic Outlook's previews no longer load Inter**: Windows doesn't have it, so a font stack naming Inter draws in
+  its next font, as classic Outlook does (models 1.7.0). Inter's files and licence leave `fonts/`.
 - Requires `@hyper-elements/email-client-models` 1.7.0.
 
 ## 0.4.1

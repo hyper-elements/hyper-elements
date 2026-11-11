@@ -17,13 +17,12 @@ mkdirSync(out, { recursive: true });
 const FILES = {
   selawik: ['selawkl.ttf', 'selawksl.ttf', 'selawk.ttf', 'selawksb.ttf', 'selawkb.ttf'],
   carlito: ['Carlito-Regular.ttf', 'Carlito-Bold.ttf'],
-  inter: ['InterVariable.ttf', 'InterVariable-Italic.ttf'],
   // The Gmail app on Android: Android's own fonts.
   roboto: ['Roboto-Variable.woff2', 'Roboto-Italic-Variable.woff2'],
   'noto-serif': ['NotoSerif-Variable.woff2', 'NotoSerif-Italic-Variable.woff2'],
   'noto-sans-mono': ['NotoSansMono-Variable.woff2'],
 };
-const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', inter: 'LICENSE.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt' };
+const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt' };
 for (const [family, files] of Object.entries(FILES)) {
   for (const file of files) {
     const source = readFileSync(join(fonts, family, file));

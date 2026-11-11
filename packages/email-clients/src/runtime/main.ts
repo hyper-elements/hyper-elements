@@ -41,7 +41,7 @@ export interface Config {
   fontSources: Record<string, string>;
   /** Each stand-in face to load before measuring, and their families (the models'). */
   faces: string[];
-  /** Families whose stand-ins aren't loaded, as the email doesn't name them (Inter): their @font-face rules are left out. */
+  /** Families whose stand-ins aren't loaded, as the email doesn't name them (NAMED_ONLY): their @font-face rules are left out. */
   leftOut: string[];
   standIns: string[];
   /** The Elements version the client's model was measured on, the runtime's sha256, and the models' script's and protocol. */

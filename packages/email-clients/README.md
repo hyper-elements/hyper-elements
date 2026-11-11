@@ -92,13 +92,11 @@ findings are JSON in `<script type="application/json" id="email-client-findings"
 ### Fonts
 
 The previews draw with the open fonts the models were measured with, which ship in `fonts/` (SIL OFL 1.1): Selawik for
-Segoe UI, Carlito for Calibri, and Inter (loaded only where the email names Inter: it's half of classic Outlook's
-fonts); and for the Gmail apps, Android's own fonts: Roboto, Noto Serif, and Noto Sans Mono for Droid Sans Mono, whose
+Segoe UI and Carlito for Calibri; and for the Gmail apps, Android's own fonts: Roboto, Noto Serif, and Noto Sans Mono for Droid Sans Mono, whose
 widths it shares. Arial, Georgia, Verdana, Tahoma, Trebuchet MS, Times New Roman and Courier
 New come from the machine opening the file, as when they were measured. `fonts: "url"` (the default) loads the open
 fonts from jsDelivr; `fonts: "inline"` puts them in each file so it draws offline, apart from the email's own images and
-web fonts, which it lists as missing. Inlined, classic Outlook's file is about 1 MB plus the email, and about 2 MB plus the
-email where it names Inter.
+web fonts, which it lists as missing. Inlined, classic Outlook's file is about 1 MB plus the email.
 
 ### How the previews are made
 

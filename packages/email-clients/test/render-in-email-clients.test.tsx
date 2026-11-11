@@ -101,7 +101,7 @@ describe("renderInEmailClients()", () => {
     expect(scriptJson("</script>\u2028")).toBe('"\\u003c/script\\u003e\\u2028"');
   });
 
-  it("writes each file, with its fonts inline, the models and the runtime, in under 2 MB; about half that for classic Outlook where the email doesn't name Inter", async () => {
+  it("writes each file, with its fonts inline, the models and the runtime, in under 2 MB; about half that for classic Outlook", async () => {
     const { previews } = await renderInEmailClients(welcome, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" });
     for (const preview of previews) expect([preview.id, Buffer.byteLength(preview.html) < 2_000_000]).toEqual([preview.id, true]);
     const outlook = previews.find((p) => p.id === "outlook")!;
@@ -111,7 +111,7 @@ describe("renderInEmailClients()", () => {
     expect(config.faces.some((face: string) => face.endsWith('"Inter"'))).toBe(false);
   });
 
-  it("loads Inter's stand-in where the email names Inter, in any of its stacks", async () => {
+  it("draws a stack naming Inter in its next font in classic Outlook, as Windows has no Inter: no Inter is loaded", async () => {
     const named = (
       <Email width={600}>
         <Text style={{ fontFamily: "Inter, Arial, sans-serif" }}>Welcome</Text>
@@ -119,8 +119,8 @@ describe("renderInEmailClients()", () => {
     );
     const { previews } = await renderInEmailClients(named, { emailClients: ["outlook"] });
     const config = embedded(previews[0]!.html, "email-client-config");
-    expect(Object.keys(config.fontSources).filter((file: string) => file.startsWith("InterVariable")).sort()).toEqual(["InterVariable-Italic.woff2", "InterVariable.woff2"]);
-    expect(config.faces.filter((face: string) => face.endsWith('"Inter"'))).toHaveLength(2);
+    expect(Object.keys(config.fontSources).filter((file: string) => file.startsWith("InterVariable"))).toEqual([]);
+    expect(config.faces.filter((face: string) => face.endsWith('"Inter"'))).toEqual([]);
   });
 
   it("draws a client's preview at the width asked for (Outlook.com's reading pane), the others at their own", async () => {
