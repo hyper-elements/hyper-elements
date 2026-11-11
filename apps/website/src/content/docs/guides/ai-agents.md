@@ -123,7 +123,7 @@ A template with errors rejects with an `ElementsError` whose `diagnostics` hold 
 
 ### 5. Check it in the email client emulator
 
-An agent with a browser can see the email as each email client shows it, free and locally, with no Litmus account or screenshot API, in the email client emulator that comes with Hyper Elements: `renderInEmailClients()` from `@hyper-elements/email-clients` writes one HTML file per client, and each lists what that client changed, as JSON the agent reads.
+An agent with a browser can see the email as each email client shows it, free and locally, with no screenshot service account or API, in the email client emulator that comes with Hyper Elements: `renderInEmailClients()` from `@hyper-elements/email-clients` returns an HTML preview per client, which the agent can open, screenshot or save, and each lists what that client changed, as JSON the agent reads.
 
 ```tsx
 import { mkdir, writeFile } from "node:fs/promises";

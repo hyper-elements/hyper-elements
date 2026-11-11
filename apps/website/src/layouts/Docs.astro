@@ -116,6 +116,18 @@ const isCurrent = (s: string) => s === slug;
       </div>
     </aside>
   </div>
+  <dialog class="lightbox" aria-label="Image at full size">
+    <div class="lightbox-bar">
+      <p class="lightbox-caption"></p>
+      <div class="lightbox-actions">
+        <button type="button" data-step="-1" aria-label="Previous image">←</button>
+        <button type="button" data-step="1" aria-label="Next image">→</button>
+        <a class="lightbox-open" target="_blank" rel="noopener">Open in a new tab</a>
+        <button type="button" data-close aria-label="Close" autofocus>✕</button>
+      </div>
+    </div>
+    <div class="lightbox-body"><img alt="" /></div>
+  </dialog>
   {markdown && <script type="text/markdown" id="page-markdown" set:html={absoluteLinks(`# ${title}\n\n${description}\n\n${markdown.replaceAll("</script", "<\\/script")}`)}></script>}
 </Base>
 
@@ -124,6 +136,49 @@ const isCurrent = (s: string) => s === slug;
   const mobile = document.querySelector<HTMLDetailsElement>(".side-mobile");
   const side = document.querySelector<HTMLElement>(".docs-side");
   mobile?.addEventListener("toggle", () => side?.classList.toggle("open", mobile.open));
+
+  // A gallery image opens at full size in a lightbox, with the gallery's other images a step away.
+  const box = document.querySelector<HTMLDialogElement>(".lightbox");
+  if (box) {
+    const img = box.querySelector("img")!;
+    const caption = box.querySelector<HTMLElement>(".lightbox-caption")!;
+    const open = box.querySelector<HTMLAnchorElement>(".lightbox-open")!;
+    const steps = box.querySelectorAll<HTMLButtonElement>("[data-step]");
+    let links: HTMLAnchorElement[] = [];
+    let at = 0;
+    const show = (i: number) => {
+      at = (i + links.length) % links.length;
+      const link = links[at];
+      const thumb = link.querySelector("img");
+      img.src = link.href;
+      img.alt = thumb?.alt ?? "";
+      // The email (the label before the gallery) and the client (the figure's caption).
+      const email = link.closest(".client-gallery")?.previousElementSibling?.textContent?.trim();
+      const client = link.closest("figure")?.querySelector("figcaption")?.textContent?.trim();
+      caption.textContent = [email, client].filter(Boolean).join(" · ") || thumb?.alt || "";
+      open.href = link.href;
+      box.querySelector(".lightbox-body")!.scrollTop = 0;
+    };
+    document.addEventListener("click", (event) => {
+      const link = (event.target as Element).closest<HTMLAnchorElement>(".prose .client-gallery a");
+      if (!link || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+      event.preventDefault();
+      links = [...link.closest(".client-gallery")!.querySelectorAll<HTMLAnchorElement>("a")];
+      steps.forEach((b) => (b.hidden = links.length < 2));
+      show(links.indexOf(link));
+      box.showModal();
+    });
+    steps.forEach((b) => b.addEventListener("click", () => show(at + Number(b.dataset.step))));
+    box.querySelector("[data-close]")!.addEventListener("click", () => box.close());
+    // A click outside the picture closes it.
+    box.addEventListener("click", (event) => {
+      if (event.target === box || (event.target as Element).classList.contains("lightbox-body")) box.close();
+    });
+    box.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") show(at + (event.key === "ArrowLeft" ? -1 : 1));
+    });
+    box.addEventListener("close", () => img.removeAttribute("src"));
+  }
 </script>
 
 <style>
@@ -189,6 +244,28 @@ const isCurrent = (s: string) => s === slug;
   .prose :global(td code), .prose :global(th code) { white-space: nowrap; }
   .prose :global(hr) { border: 0; height: 1px; background: var(--line); margin: 40px 0; }
   .prose :global(h2 a), .prose :global(h3 a) { text-decoration: none; }
+  /* Email client emulator: an email's previews side by side, one per client. */
+  /* Three desktop previews (820px) and the Gmail app's (380px), at one scale. */
+  .prose :global(.client-gallery) { display: grid; grid-template-columns: repeat(3, minmax(0, 820fr)) minmax(0, 380fr); gap: 12px; align-items: start; margin: 0 0 28px; }
+  .prose :global(.client-gallery figure) { margin: 0; min-width: 0; }
+  .prose :global(.client-gallery img) { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+  .prose :global(.client-gallery figcaption) { margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--text-3); }
+  @media (max-width: 760px) { .prose :global(.client-gallery) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .prose :global(.client-gallery) { grid-template-columns: minmax(0, 1fr); } .prose :global(.client-gallery img[width="380"]) { max-width: 380px; } }
+  .prose :global(.client-gallery a) { cursor: zoom-in; }
+  .lightbox { width: min(980px, calc(100vw - 32px)); max-width: none; height: calc(100vh - 48px); max-height: none; margin: auto; padding: 0; border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--bg-1); color: var(--text); box-shadow: var(--shadow); overflow: hidden; }
+  .lightbox[open] { display: flex; flex-direction: column; }
+  .lightbox::backdrop { background: rgba(0, 0, 0, 0.72); }
+  .lightbox-bar { display: flex; align-items: center; gap: 12px; padding: 10px 12px 10px 18px; border-bottom: 1px solid var(--line); }
+  .lightbox-caption { margin: 0; flex: 1; min-width: 0; font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lightbox-actions { display: flex; align-items: center; gap: 6px; }
+  .lightbox-actions button, .lightbox-open { height: 32px; min-width: 32px; padding: 0 10px; border: 1px solid var(--line-2); border-radius: var(--radius-sm); background: var(--bg-2); color: var(--text); font: 500 13px var(--sans); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .lightbox-actions button:hover, .lightbox-open:hover { background: var(--hover-2); }
+  .lightbox-actions button:focus-visible, .lightbox-open:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+  .lightbox-actions [hidden] { display: none; }
+  .lightbox-body { flex: 1; overflow: auto; padding: 20px; display: flex; justify-content: center; align-items: flex-start; cursor: zoom-out; }
+  .lightbox-body img { display: block; max-width: 100%; height: auto; border-radius: 6px; cursor: default; }
+  @media (max-width: 560px) { .lightbox { width: 100vw; height: 100dvh; border-radius: 0; border: 0; } .lightbox-open { display: none; } .lightbox-body { padding: 12px; } }
 
   @media (max-width: 1180px) {
     .docs { grid-template-columns: 220px minmax(0, 1fr); }

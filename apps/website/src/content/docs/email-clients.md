@@ -1,16 +1,15 @@
 ---
 title: "Email client emulator"
-description: "Hyper Elements comes with an email client emulator: see your email as each email client shows it, on your own machine. Free, with no Litmus, Email on Acid or API, no test sends and nothing uploaded."
+description: "Hyper Elements comes with an email client emulator: see your email as each email client shows it, on your own machine. Free, no test sends and nothing uploaded."
 ---
 
-Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services such as Litmus and Email on Acid: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` writes one HTML file per client; open it in a browser to see the email as that client shows it.
+Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` returns a preview per client: a self-contained HTML page that shows the email as that client does when Chromium opens it.
 
 ```bash
 npm i @hyper-elements/email-clients
 ```
 
 ```tsx
-import { mkdir, writeFile } from "node:fs/promises";
 import { Button, Column, Email, Heading, Text } from "@hyper-elements/react";
 import { renderInEmailClients } from "@hyper-elements/email-clients";
 
@@ -24,13 +23,52 @@ const welcome = (
   </Email>
 );
 
-const { previews } = await renderInEmailClients(welcome, { dark: true });
-await mkdir("previews", { recursive: true });
-for (const preview of previews) await writeFile(`previews/${preview.filename}`, preview.html);
-// One file per client and variant, such as previews/outlook.html and previews/apple-mail.dark.html
+const { previews, skipped, diagnostics } = await renderInEmailClients(welcome, { dark: true });
+
+previews.map((preview) => preview.id);
+// ["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.dark"]
+
+const outlook = previews.find((preview) => preview.id === "outlook");
+// { id: "outlook", client: "outlook", variant: "desktop", dark: false, width: 820,
+//   approximate: true, filename: "outlook.html", html: "<!doctype html>…" }
+
+skipped[0];
+// { client: "outlook", dark: true, reason: "Classic Outlook's dark mode isn't measured" }
+
+diagnostics[0].message;
+// "borderRadius on this Column in classic Outlook: square corners"
 ```
 
-Open `previews/outlook.html` in Chrome and the card and the button have square corners, as classic Outlook draws them; open `apple-mail.dark.html` and the email is in Apple Mail's dark mode.
+What happens next is up to you or your agent: write `outlook.html` to a file and open it, load it in Playwright and take a screenshot, or read what the client changed (see [What a preview tells you](#what-a-preview-tells-you)). Opened in Chromium, the Outlook preview shows the card and the button with square corners, as classic Outlook draws them.
+
+Here's what the emulator draws for three emails, each in four clients, the Gmail app at a phone's width. Open an image to see it at full size.
+
+**The welcome email above**
+
+<div class="client-gallery">
+<figure><a href="/generated/email-clients/welcome-outlook.png" title="Open the welcome email in Classic Outlook at full size"><img src="/generated/email-clients/welcome-outlook.png" width="820" height="189" loading="lazy" alt="The welcome email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
+<figure><a href="/generated/email-clients/welcome-gmail.png" title="Open the welcome email in Gmail on the web at full size"><img src="/generated/email-clients/welcome-gmail.png" width="820" height="188" loading="lazy" alt="The welcome email in Gmail on the web, drawn by the email client emulator"></a><figcaption>Gmail on the web</figcaption></figure>
+<figure><a href="/generated/email-clients/welcome-apple-mail.png" title="Open the welcome email in Apple Mail at full size"><img src="/generated/email-clients/welcome-apple-mail.png" width="820" height="187" loading="lazy" alt="The welcome email in Apple Mail, drawn by the email client emulator"></a><figcaption>Apple Mail</figcaption></figure>
+<figure><a href="/generated/email-clients/welcome-gmail-app.png" title="Open the welcome email in the Gmail app on Android at full size"><img src="/generated/email-clients/welcome-gmail-app.png" width="380" height="193" loading="lazy" alt="The welcome email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
+</div>
+
+**[Tarn order shipped](/templates/tarn-shipped)**
+
+<div class="client-gallery">
+<figure><a href="/generated/email-clients/tarn-shipped-outlook.png" title="Open the Tarn order shipped email in Classic Outlook at full size"><img src="/generated/email-clients/tarn-shipped-outlook.png" width="820" height="1373" loading="lazy" alt="The Tarn order shipped email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
+<figure><a href="/generated/email-clients/tarn-shipped-gmail.png" title="Open the Tarn order shipped email in Gmail on the web at full size"><img src="/generated/email-clients/tarn-shipped-gmail.png" width="820" height="1373" loading="lazy" alt="The Tarn order shipped email in Gmail on the web, drawn by the email client emulator"></a><figcaption>Gmail on the web</figcaption></figure>
+<figure><a href="/generated/email-clients/tarn-shipped-apple-mail.png" title="Open the Tarn order shipped email in Apple Mail at full size"><img src="/generated/email-clients/tarn-shipped-apple-mail.png" width="820" height="1365" loading="lazy" alt="The Tarn order shipped email in Apple Mail, drawn by the email client emulator"></a><figcaption>Apple Mail</figcaption></figure>
+<figure><a href="/generated/email-clients/tarn-shipped-gmail-app.png" title="Open the Tarn order shipped email in the Gmail app on Android at full size"><img src="/generated/email-clients/tarn-shipped-gmail-app.png" width="380" height="1506" loading="lazy" alt="The Tarn order shipped email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
+</div>
+
+**[Keel sign-in code](/templates/keel-sign-in-code)**
+
+<div class="client-gallery">
+<figure><a href="/generated/email-clients/keel-sign-in-code-outlook.png" title="Open the Keel sign-in code email in Classic Outlook at full size"><img src="/generated/email-clients/keel-sign-in-code-outlook.png" width="820" height="851" loading="lazy" alt="The Keel sign-in code email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
+<figure><a href="/generated/email-clients/keel-sign-in-code-gmail.png" title="Open the Keel sign-in code email in Gmail on the web at full size"><img src="/generated/email-clients/keel-sign-in-code-gmail.png" width="820" height="831" loading="lazy" alt="The Keel sign-in code email in Gmail on the web, drawn by the email client emulator"></a><figcaption>Gmail on the web</figcaption></figure>
+<figure><a href="/generated/email-clients/keel-sign-in-code-apple-mail.png" title="Open the Keel sign-in code email in Apple Mail at full size"><img src="/generated/email-clients/keel-sign-in-code-apple-mail.png" width="820" height="823" loading="lazy" alt="The Keel sign-in code email in Apple Mail, drawn by the email client emulator"></a><figcaption>Apple Mail</figcaption></figure>
+<figure><a href="/generated/email-clients/keel-sign-in-code-gmail-app.png" title="Open the Keel sign-in code email in the Gmail app on Android at full size"><img src="/generated/email-clients/keel-sign-in-code-gmail-app.png" width="380" height="817" loading="lazy" alt="The Keel sign-in code email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
+</div>
 
 ## Why it matters
 
@@ -58,13 +96,13 @@ Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without
 
 ## Compared with screenshot services
 
-| | Email client emulator | Screenshot services (Litmus, Email on Acid) |
+| | Email client emulator | Screenshot services |
 |---|---|---|
 | Cost | Free | Paid, per test or per seat |
 | Setup | `npm i` | An account and an API key |
 | Where it runs | Your machine, your CI, your agent | Their servers, with your email uploaded |
-| Speed | As long as a render | Minutes per test |
-| What you get | An HTML file per client, with what the client changed, as text and JSON | A screenshot per client |
+| Speed | Milliseconds | Minutes per test |
+| What you get | A preview per client, and what each one changed | A screenshot per client |
 | Clients | The clients above, with more on the way | Dozens, on real devices |
 
 Use the emulator in the loop, on every change; use a screenshot service, or a real inbox, for a final check across many clients.
@@ -77,7 +115,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 | `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail today) |
 | `widths` | The width a client's preview draws the email at, where it isn't the client's own: `{ "outlook-com": 540 }` for Outlook.com's reading pane beside the message list. Webmail matches media queries at the browser window's width, not the pane's, so a narrow pane keeps the email's desktop styles, as it does for its readers |
 | `computers` | Webmail draws with the reader's computer's fonts. Outlook.com and Gmail on the web are each previewed on Windows (`outlook-com`, `gmail`) and on a Mac (`outlook-com.mac`, `gmail.mac`). `computers: ["windows"]` keeps one |
-| `fonts` | `"url"` (the default) loads the open fonts the previews draw with from a CDN; `"inline"` puts them in each file, so it draws offline |
+| `fonts` | `"url"` (the default) loads the open fonts the previews draw with from a CDN; `"inline"` puts them in each preview, so it draws offline |
 | `plugins`, and `render()`'s other options | Passed to `render()`. The email client checks for the clients emulated are added for you |
 
 `renderInEmailClients()` returns:
@@ -90,27 +128,12 @@ A preview isn't the email you send: that's `render()`'s `html`.
 
 ## What a preview tells you
 
-Each file lists, at its top, what the client changed and anything it couldn't draw as the client does:
+Each preview lists, at its top, what the client changed and anything it couldn't draw as the client does:
 
 - **Removed:** what the client removed or rewrote, and how often (rounded corners, `rgba()` colours, a `<style>` rule).
-- **Missing:** a font the machine opening the file doesn't have, the email's own web font where it didn't load, an image that didn't load.
+- **Missing:** a font the machine opening the preview doesn't have, the email's own web font where it didn't load, an image that didn't load.
 - **Fonts:** the system fonts it drew with.
 - **Findings:** a Heading or Button that a client draws on more lines, text that doesn't read in dark mode, and where Gmail clips the email.
-
-For a script or an agent, the same is JSON. Open the file in Chromium, wait for `<html data-email-client-ready>` (`ok`, `incomplete` when a font or image was missing or 10 seconds passed, `error`), and read `<script type="application/json" id="email-client-findings">`. With Playwright:
-
-```ts
-import { chromium } from "playwright";
-
-const browser = await chromium.launch();
-const page = await browser.newPage();
-await page.goto(new URL("previews/outlook.html", `file://${process.cwd()}/`).href);
-await page.waitForSelector("html[data-email-client-ready]");
-const findings = JSON.parse(await page.textContent("#email-client-findings"));
-console.log(findings.removed); // [{ what: "border-radius", count: 3 }]
-await page.screenshot({ path: "previews/outlook.png", fullPage: true });
-await browser.close();
-```
 
 ## Checks and the emulator
 
@@ -131,5 +154,3 @@ The checks cover more clients than the emulator (Yahoo, AOL, Outlook for Mac and
 - **Open previews in a Chromium browser** (Chrome, Edge, Arc, or Playwright's Chromium). The previews are drawn by the browser opening them.
 - **Dark mode where a client has it in the table above.** Other clients' dark modes are on the way.
 - **For an email that matters, send a test too.** The emulator is the fast loop; a real inbox is the final check.
-
-`@hyper-elements/email-clients` is MIT. It installs `@hyper-elements/email-client-models` with it, which is free to use under its own licence.
