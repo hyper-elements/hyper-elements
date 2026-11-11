@@ -71,7 +71,7 @@ Gmail clips a message after about 100 KB of HTML, and reads 16 KB of a `<style>`
 
 ## Seeing it in the clients
 
-`renderInEmailClients()` from `@hyper-elements/email-clients` draws the email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, as HTML files you open in a browser, with what each client changed listed. Nothing is sent or uploaded. See [Email client previews](/docs/email-clients).
+The email client emulator, `renderInEmailClients()` from `@hyper-elements/email-clients`, shows the email as each email client shows it, as HTML files you open in a browser, with what each client changed listed. Nothing is sent or uploaded. See [Email client emulator](/docs/email-clients).
 
 ## What email can't do
 

@@ -137,7 +137,7 @@ import { writeFile } from "node:fs/promises";
 await writeFile("welcome.html", html);
 ```
 
-A browser shows you the layout, not what each inbox does to it. To see the email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, without sending it anywhere, add `@hyper-elements/email-clients`:
+A browser shows you the layout, not what each inbox does to it. To see the email as each email client shows it, without sending it anywhere, use the email client emulator that comes with Hyper Elements, `@hyper-elements/email-clients`:
 
 ```tsx
 import { mkdir, writeFile } from "node:fs/promises";
@@ -149,7 +149,7 @@ await mkdir("previews", { recursive: true });
 for (const preview of previews) await writeFile(`previews/${preview.filename}`, preview.html);
 ```
 
-Open the files in Chrome. Each one lists what that client changed. See [Email client previews](/docs/email-clients).
+Open the files in Chrome. Each one lists what that client changed. See [Email client emulator](/docs/email-clients).
 
 ## Check it without rendering
 
