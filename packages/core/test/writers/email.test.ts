@@ -601,10 +601,17 @@ describe("email HTML", () => {
 
   it("keeps a column's share of the table beside one of its own px, the column with no width taking what's left", () => {
     const { body } = render(email([{ type: "Table", children: [{ type: "TableRow", children: [{ type: "TableCell", style: { width: "40%" }, children: ["Share"] }, { type: "TableCell", children: ["Free"] }, { type: "TableCell", style: { width: 120 }, children: ["Px"] }] }] }]));
-    expect(body).toMatch(/<col width="\d+" style="width:40%"><col width="\d+" style="width:auto"><col width="120" style="width:120px">/);
-    expect(body).toMatch(/style="[^"]*width:40%[^"]*">Share</);
-    expect(body).toMatch(/style="[^"]*width:auto[^"]*">Free</);
-    expect(body).toMatch(/style="[^"]*width:120px[^"]*">Px</);
+    const others = body.replace(/<!--\[if mso\]>[\s\S]*?<!\[endif\]-->|<!--\[if !mso\]><!-->|<!--<!\[endif\]-->/g, "");
+    expect(others).toMatch(/<col width="\d+" style="width:40%"><col width="\d+" style="width:auto"><col width="120" style="width:120px">/);
+    expect(others).toMatch(/style="[^"]*width:40%[^"]*">Share</);
+    expect(others).toMatch(/style="[^"]*width:auto[^"]*">Free</);
+    expect(others).toMatch(/style="[^"]*width:120px[^"]*">Px</);
+    // Classic Outlook reads `width: auto` as no width, its attribute unused, and gives the column the widest column's
+    // width: it gets the free column's col and cell with the attribute alone.
+    const word = body.replace(/<!--\[if !mso\]><!-->[\s\S]*?<!--<!\[endif\]-->/g, "").replace(/<!--\[if mso\]>|<!\[endif\]-->/g, "");
+    expect(word).not.toContain("width:auto");
+    expect(word).toMatch(/<col width="\d+" style="width:40%"><col width="(\d+)"><col width="120" style="width:120px">/);
+    expect(word).toMatch(/<td width="\d+" valign="top" style="(?![^"]*width:)[^"]*">Free</);
   });
 
   it("writes a table whose cells share their borders, a row's height and footer rows in tfoot", () => {
