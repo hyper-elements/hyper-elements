@@ -1,6 +1,7 @@
 /**
  * The fonts a preview draws with: the open stand-ins the captures were scored with (Selawik for Segoe UI, Carlito for
- * Calibri, Inter itself; SIL OFL 1.1, in fonts/ with their licences, as WOFF2), loaded from a URL or inlined. Which
+ * Calibri, Android's own fonts for the Gmail apps; SIL OFL 1.1, in fonts/ with their licences, as WOFF2), loaded from a
+ * URL or inlined. Which
  * files each client loads, and the faces drawn from them, are the models package's (fontFiles, and its browser
  * script's fontCss).
  */
@@ -39,31 +40,32 @@ export async function readPackageFont(file: string): Promise<string> {
 }
 
 /**
- * The stand-ins for a family an email chooses itself (Inter, by its files here): loaded, and inlined, only where the
- * email names the family. The others (Segoe UI, Calibri, the client's default) are what the client draws with whatever
- * the email names. Inter's two files are half of classic Outlook's fonts.
+ * The stand-ins for a family an email chooses itself, by their files here: loaded, and inlined, only where the email
+ * names the family. The others (Segoe UI, Calibri, the client's default) are what the client draws with whatever the
+ * email names. None since models 1.7.0: Inter was one, until the models learnt Windows doesn't have it (a stack naming
+ * it draws in its next font, as classic Outlook does).
  */
-export const NAMED_ONLY: Readonly<Record<string, readonly string[]>> = { Inter: ["InterVariable.woff2", "InterVariable-Italic.woff2"] };
+export const NAMED_ONLY: Readonly<Record<string, readonly string[]>> = {};
 
 const ENTITIES: Record<string, string> = { quot: '"', apos: "'", "#39": "'", "#x27": "'", amp: "&" };
 
-/** Of NAMED_ONLY's families, those a font-family in `html` names (its inline styles, <style>s and Html blocks alike). */
-export function namedFamilies(html: string): Set<string> {
+/** Of `families` (NAMED_ONLY's), those a font-family in `html` names (its inline styles, <style>s and Html blocks alike). */
+export function namedFamilies(html: string, families: Readonly<Record<string, readonly string[]>> = NAMED_ONLY): Set<string> {
   const named = new Set<string>();
   for (const [, value] of html.matchAll(/font-family\s*:\s*((?:&[a-z#0-9]+;|[^;}<>])+)/gi)) {
     const decoded = value!.replace(/&([a-z#0-9]+);/gi, (entity, name: string) => ENTITIES[name.toLowerCase()] ?? entity);
     for (const family of decoded.split(",").map((f) => f.trim().replace(/^["']+|["']+$/g, "").toLowerCase())) {
-      for (const known of Object.keys(NAMED_ONLY)) if (family === known.toLowerCase()) named.add(known);
+      for (const known of Object.keys(families)) if (family === known.toLowerCase()) named.add(known);
     }
   }
   return named;
 }
 
-/** The files and faces of NAMED_ONLY's families `html` doesn't name: a preview leaves them out. */
-export function unnamed(html: string): { files: Set<string>; families: string[] } {
-  const named = namedFamilies(html);
-  const families = Object.keys(NAMED_ONLY).filter((family) => !named.has(family));
-  return { files: new Set(families.flatMap((family) => NAMED_ONLY[family]!)), families };
+/** The files and faces of `known`'s families (NAMED_ONLY's) `html` doesn't name: a preview leaves them out. */
+export function unnamed(html: string, known: Readonly<Record<string, readonly string[]>> = NAMED_ONLY): { files: Set<string>; families: string[] } {
+  const named = namedFamilies(html, known);
+  const families = Object.keys(known).filter((family) => !named.has(family));
+  return { files: new Set(families.flatMap((family) => known[family]!)), families };
 }
 
 /** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */

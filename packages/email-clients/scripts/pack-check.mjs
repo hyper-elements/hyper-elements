@@ -29,7 +29,7 @@ const extension = tarball('hyper-elements-email-clients-');
 
 // What the tarball holds.
 const files = run('tar', ['-tzf', extension], packs).split('\n').filter(Boolean);
-for (const want of ['package/dist/index.js', 'package/dist/index.cjs', 'package/dist/index.d.ts', 'package/dist/index.d.cts', 'package/fonts/selawk.woff2', 'package/fonts/InterVariable.woff2', 'package/fonts/Carlito-Regular.woff2', 'package/fonts/selawik-LICENSE.txt', 'package/fonts/carlito-OFL.txt', 'package/fonts/inter-LICENSE.txt']) {
+for (const want of ['package/dist/index.js', 'package/dist/index.cjs', 'package/dist/index.d.ts', 'package/dist/index.d.cts', 'package/fonts/selawk.woff2', 'package/fonts/Carlito-Regular.woff2', 'package/fonts/selawik-LICENSE.txt', 'package/fonts/carlito-OFL.txt', 'package/fonts/Roboto-Variable.woff2', 'package/fonts/NotoSerif-Variable.woff2', 'package/fonts/NotoSansMono-Variable.woff2', 'package/fonts/roboto-OFL.txt']) {
   if (!files.includes(want)) fail(`the tarball has no ${want.slice('package/'.length)}`);
 }
 if (files.some((f) => f.includes('/src/') || f.includes('/test/'))) fail('the tarball holds src/ or test/');

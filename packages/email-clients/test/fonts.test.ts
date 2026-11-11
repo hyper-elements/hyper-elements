@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fontFiles } from "@hyper-elements/email-client-models";
-import { fontSources, fontUrl, INLINE_BUDGET, namedFamilies, readPackageFont } from "../src/fonts";
+import { fontSources, fontUrl, INLINE_BUDGET, namedFamilies as named, readPackageFont, unnamed } from "../src/fonts";
 import { PREVIEW_CLIENTS } from "../src/clients";
 import { withoutFaces } from "../src/runtime/frames";
 import { version } from "../package.json";
@@ -16,7 +16,7 @@ describe("the stand-in fonts", () => {
   it("are each in fonts/, as WOFF2, beside their licences", () => {
     const files = new Set(PREVIEW_CLIENTS.flatMap((client) => fontFiles(client)));
     expect([...files].sort()).toEqual(readdirSync(fonts).filter((f) => f.endsWith(".woff2")).sort());
-    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "inter-LICENSE.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
+    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
   });
 
   it("inline within the budget for each client: 2,000,000 base64 bytes at most", () => {
@@ -37,7 +37,9 @@ describe("the stand-in fonts", () => {
     expect(await fontSources("gmail", "inline")).toEqual({});
   });
 
-  it("finds Inter where a font-family names it: inline (escaped quotes too), in a <style>, in an Html block; not Inter Display", () => {
+  it("finds a named-only family where a font-family names it: inline (escaped quotes too), in a <style>, in an Html block; not Inter Display", () => {
+    const families = { Inter: ["InterVariable.woff2", "InterVariable-Italic.woff2"] };
+    const namedFamilies = (html: string) => named(html, families);
     expect([...namedFamilies('<td style="font-family:Inter, Arial, sans-serif">')]).toEqual(["Inter"]);
     expect([...namedFamilies('<p style="font-family:&quot;Inter&quot;, Arial">')]).toEqual(["Inter"]);
     expect([...namedFamilies("<p style=\"font-family:'inter',Arial\">")]).toEqual(["Inter"]);
@@ -46,6 +48,11 @@ describe("the stand-in fonts", () => {
     expect([...namedFamilies('<p style="font-family:Arial">Inter</p>')]).toEqual([]);
     // An entity it doesn't decode is left as it is.
     expect([...namedFamilies('<p style="font-family:&nbsp;Inter, Arial">')]).toEqual([]);
+  });
+
+  it("leaves nothing out by default: no family is named-only since models 1.7.0 (Windows has no Inter)", () => {
+    const leftOut = unnamed('<p style="font-family:Arial">Hi</p>');
+    expect([[...leftOut.files], leftOut.families]).toEqual([[], []]);
   });
 
   it("leaves a family's @font-face rules out of the preview's font CSS, and nothing else", () => {
