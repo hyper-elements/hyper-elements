@@ -2,7 +2,17 @@
 
 Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
-## Unreleased (0.4.1)
+## Unreleased
+
+### Fixed
+
+- **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
+  width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
+  cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow
+  column. Classic Outlook now gets its own `<col>` and opening tag for that column, with the width attribute alone,
+  which Word scales to the table with the others; every other client reads `width: auto` as before.
+
+## 0.4.1
 
 ### Fixed
 
