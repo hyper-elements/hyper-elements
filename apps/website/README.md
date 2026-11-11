@@ -6,6 +6,7 @@ The Hyper Elements website: an [Astro](https://astro.build) site, built to stati
 pnpm --filter @hyper-elements/website dev        # http://localhost:4321
 pnpm --filter @hyper-elements/website build      # static site in dist/
 pnpm --filter @hyper-elements/website generate   # re-render the examples and the component reference
+pnpm --filter @hyper-elements/website check:playground   # after build: the playground, in a browser
 ```
 
 ## Every preview is real output
@@ -53,11 +54,23 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/docs/components/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
 | `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
+| `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/ai`, `/migrate` | Landing pages |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page and component, for AI agents |
 
 Names and links (package names, GitHub, install commands) are in `src/lib/site.ts`. The docs pages repeat the package names in their text, so a rename also needs a search and replace in `src/content/docs/`.
+
+## The playground
+
+`/playground` renders a template in the visitor's browser with the engine itself: an Email, a Page, a Document (print HTML and a PDF) or a Canvas (a PNG or an SVG), with its diagnostics, its outline and, for an Email, the email client checks and previews.
+
+- **The engine it runs is this repository's, from its sources.** `scripts/playground-runtime.mjs` bundles `packages/*/src` with esbuild into the scripts the page's sandbox loads (`/playground/runtime/*.js`), so the playground needs no `pnpm build` and always runs the checkout it's built from. It does need the workspace installed: React, react-pdf and Satori are resolved from `packages/react` and `packages/core`, as `generate` resolves them.
+- **The code runs in a sandbox**: a frame with an origin of its own and no network, in a worker that's closed after each render. `playground/README.md` says how, and what the page does with what comes back. Read it before changing a frame's `sandbox` or how a preview's document is made.
+- **Starters** are `playground/starters/*.tsx` (the playground's own: they aren't rendered by `generate`, and one of them has errors on purpose) and the site's examples, listed in `src/lib/playground.ts`.
+- **Agents** drive it by a link (`#code=`), by `window.hyperElementsPlayground` or by WebMCP tools (`src/playground/agent.ts`). The page documents all three under the bench.
+
+After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It opens the built page in Chromium (Playwright's, from `packages/react`) and checks that every root renders, that a broken template shows its diagnostics, that a mismatched closing tag and a misspelled import are errors with their lines, that code from a link can't reach the site's origin or the network and isn't kept as the visitor's draft, that markup in a template doesn't run in the preview, and that a loop is stopped. It makes no requests off this machine.
 
 ## Writing docs
 
