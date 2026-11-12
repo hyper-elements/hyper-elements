@@ -175,6 +175,17 @@ export async function renderInEmailClients(element, options) {
       expect(preview.findings.missing).toContainEqual(expect.objectContaining({ kind: "image", src: "http://127.0.0.1:9/missing.png" }));
     }
   });
+
+  it("draws an HTML email's previews, from a file and from stdin, with nothing installed", async () => {
+    const html = `<!DOCTYPE html>\n<html>\n<body style="margin:0">\n<table role="presentation" width="600"><tr><td style="font-family: Arial, sans-serif; padding: 24px">Your order is on its way</td></tr></table>\n</body>\n</html>\n`;
+    const dir = project({ "mail/order.html": html }, { modules: [] });
+    const ran = await cli(dir, ["preview", "mail/order.html", "--findings", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
+    const line = expectDrawn(ran, /, playwright$/);
+    expect(line).toMatchObject({ file: "mail/order.html", input: "html", root: null, status: "ok" });
+    expect(line.previews.map((p: any) => p.path)).toEqual(["out/clients/order/gmail.html", "out/clients/order/gmail.mac.html", "out/clients/order/apple-mail.html"]);
+    const stdin = await cli(dir, ["preview", "-", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000, input: html });
+    expect(expectDrawn(stdin, /, playwright$/).previews.map((p: any) => p.path)).toEqual(["out/clients/stdin/gmail.html", "out/clients/stdin/gmail.mac.html"]);
+  });
 });
 
 const hasBun = (() => {

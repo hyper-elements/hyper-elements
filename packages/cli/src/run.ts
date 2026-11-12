@@ -15,6 +15,7 @@ import { ALL_RENDER_OUTPUTS, RENDER_OUTPUTS } from "./commands/render";
 import { cliDiagnostic } from "./commands/shared";
 import { planDestinations, removeTemporaries, writeAtomically, type Planned } from "./destinations";
 import { errorLine } from "./errors";
+import { checkHtml, readStdin } from "./html";
 import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, type Input } from "./inputs";
 import { killTree } from "./kill";
 import { cleanFiles, ownToken, parseToken, stale } from "./loader-module";
@@ -27,6 +28,8 @@ export interface Io {
   /** Resolves once written (and flushed, for a pipe). */
   stdout(data: string | Uint8Array): Promise<void>;
   stderr(text: string): void;
+  /** All of stdin, as UTF-8 text (`-`, an HTML email); process.stdin where it's not given. */
+  stdin?(): Promise<string>;
 }
 
 const bun = typeof (process.versions as Record<string, string | undefined>).bun === "string";
@@ -226,8 +229,11 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     if (!folder) throw new UsageError(`--public ${args.public} isn't a folder.`);
   }
   const props = args.props === undefined ? undefined : readProps(args.props, cwd);
-  const found = await findInputs(args.positional, cwd);
+  const found = await findInputs(args.positional, cwd, undefined, { html: args.command === "check" || args.command === "preview" });
   const { inputs } = found;
+  // HTML emails run in this process (no template code, no loader module); templates in children.
+  const templates = inputs.filter((input) => input.kind !== "html");
+  const htmlInputs = inputs.filter((input) => input.kind === "html");
   if (args.command === "outline" && inputs.length !== 1) throw new UsageError(`outline takes one template; ${args.positional[0]} holds ${inputs.length}.`);
   if (args.stdout && inputs.length !== 1) throw new UsageError(`--stdout writes one template's output: this run has ${inputs.length} templates.`);
   for (const link of found.links) io.stderr(`- ${displayPath(cwd, link)}: a symbolic link to a folder, not followed (give the folder itself to include what's in it)\n`);
@@ -237,7 +243,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
 
   const token = ownToken();
   state.token = token;
-  for (const input of inputs) state.folders.add(dirname(input.file));
+  for (const input of templates) state.folders.add(dirname(input.file));
 
   const outcomes = new Map<number, Outcome & { pending?: Record<string, string>; binary?: string[]; pendingPreviews?: PreviewFile[] }>();
   const usage = new Set<number>();
@@ -247,14 +253,14 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   // What earlier runs left (killed before they cleaned up): only files their tokens prove a CLI run on this host made,
   // for a process that isn't running.
   const firstIn = new Map<string, number>();
-  for (const input of inputs) if (!firstIn.has(dirname(input.file))) firstIn.set(dirname(input.file), input.id);
+  for (const input of templates) if (!firstIn.has(dirname(input.file))) firstIn.set(dirname(input.file), input.id);
   for (const problem of cleanFiles(state.folders, (owner) => stale(owner))) {
-    note(firstIn.get(problem.folder) ?? inputs[0].id, cliDiagnostic("cleanup", "warning", `Couldn't delete ${displayPath(cwd, problem.file)}, left by an earlier run: ${problem.message}`));
+    note(firstIn.get(problem.folder) ?? templates[0].id, cliDiagnostic("cleanup", "warning", `Couldn't delete ${displayPath(cwd, problem.file)}, left by an earlier run: ${problem.message}`));
   }
 
   // A JavaScript template beside its TypeScript twin: tsx would load the twin for it.
   const runnable: Input[] = [];
-  for (const input of inputs) {
+  for (const input of templates) {
     const twin = typeScriptTwin(input.file);
     if (!twin) {
       runnable.push(input);
@@ -345,6 +351,22 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     lateFrom(group.group, report, group.inputs);
   }
 
+  // HTML emails: email-clients' renderInEmailClients(html), in this process: no template code runs for them.
+  if (htmlInputs.length) {
+    const probe = process.env.HYPER_ELEMENTS_CLI_PROBE ? (text: string) => io.stderr(`[probe] ${text}\n`) : undefined;
+    for (const input of htmlInputs) {
+      let html: string | Error;
+      try {
+        html = input.stdin ? await (io.stdin ? io.stdin() : readStdin()) : readFileSync(input.file, "utf8");
+      } catch (error) {
+        html = error instanceof Error ? error : new Error(String(error));
+      }
+      const result = await checkHtml(args.command as "check" | "preview", input, html, { clients: args.clients, dark: args.dark, fonts: args.fonts, probe });
+      if (result.usage) usage.add(input.id);
+      outcomes.set(input.id, { ...result.outcome, ...(result.previews ? { pendingPreviews: result.previews } : {}) });
+    }
+  }
+
   // Nothing left of this run's: loader modules and tsconfigs (a child that crashed leaves them).
   const own = parseToken(`// ${token}`)!;
   cleanFiles(state.folders, (owner) => !!owner && owner.host === own.host && owner.pid === own.pid && owner.random === own.random);
@@ -430,7 +452,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     if (args.command !== "outline" || exitCode !== 0) io.stderr(summaryText(summary));
     if (stdoutText !== undefined) await io.stdout(stdoutText);
   } else {
-    await io.stdout(all.map(inputText).join("") + summaryText(summary));
+    await io.stdout(all.map(inputText).join("") + summaryText(summary, htmlInputs.length ? (templates.length ? "input" : "email") : "template"));
   }
   if (args.maxWarnings !== undefined && warnings > args.maxWarnings && !args.json) {
     io.stderr(`✗ ${warnings} warnings, more than --max-warnings ${args.maxWarnings}\n`);

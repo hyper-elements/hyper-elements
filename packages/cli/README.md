@@ -11,6 +11,7 @@ npx hyper-elements check emails/ --json    # validate() and the email client che
 npx hyper-elements outline emails/welcome.tsx
 npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/welcome/outlook.html, … drawn in Chromium
 npx hyper-elements describe Button --root Email --json
+npx @hyper-elements/cli check email.html   # any HTML email: the email client checks, with nothing installed
 ```
 
 A template is a module whose default export is a component that renders an `<Email>`, a `<Page>`, a `<Document>` or a
@@ -35,9 +36,9 @@ Welcome.PreviewProps = { name: "Ada" };
 | Command | What it does |
 |---|---|
 | `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the folder holding every input: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. |
-| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. |
+| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
-| `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<name>/`, named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews). |
+| `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<name>/`, named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
 | `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
 | `describe [Component]` | Lists every component a template can use (or one), with its props and styles, from `describeComponents()` (or `describeComponent()`); `--root Email` narrows it to what that root takes. No template is loaded: it reads the `@hyper-elements/react` the current folder resolves. |
 | `migrate …` | Runs [`@hyper-elements/migrate`](https://www.npmjs.com/package/@hyper-elements/migrate) with the arguments given, unchanged: the project's, else `npx @hyper-elements/migrate`. Its output and exit codes are migrate's. |
@@ -108,6 +109,48 @@ Nothing is sent anywhere to be drawn. The requests a preview makes are its stand
 puts them in each file instead) and, once drawn, the email's own images and web fonts; `--install-browser` downloads
 Chromium.
 
+## Any HTML email
+
+`check` and `preview` also take an HTML email however it was made (MJML, React Email, by hand, an email builder's
+export): an `.html` or `.htm` file given by name, or `-` to read one from stdin (named `stdin`, its previews in
+`<out>/clients/stdin/`). A folder's HTML files aren't picked up, since a folder of templates often holds the HTML
+rendered from them: give them by name (`check emails/*.html`). `render`, `outline` and `inspect` exit 2 for HTML: it's
+already HTML.
+
+```bash
+npx @hyper-elements/cli check email.html --json
+cat email.html | npx @hyper-elements/cli preview - --findings
+```
+
+Both call `@hyper-elements/email-clients`' `renderInEmailClients(html)`. `check` keeps only its diagnostics, for the
+clients `--clients` names or, by default, those the plugin checks a template for (Yahoo and AOL among them, which have
+no model to preview with: their checks still run), and writes nothing. `preview` writes the previews, with `--findings`,
+`--screenshots` and `--serve` as for a template.
+
+No template code runs, so neither React nor Elements is needed, or loaded: `npx @hyper-elements/cli check email.html`
+installs neither. email-clients is the one the HTML file's folder resolves where it's 0.4.3 or later (the first to take
+HTML); otherwise the CLI's own copy, with an `info` note, `cli/email-clients-copy`, naming the project's version where
+it has one.
+
+An HTML email's diagnostics are email-clients' as it gives them: `path: "html"`, the `line` in the file (or `null`, for
+one about the email as a whole) and an `excerpt` of it; the text output prints them at `file:line`. Their JSON line has
+`"input": "html"` and `"root": null`:
+
+```json
+{"version":1,"command":"check","file":"email.html","input":"html","root":null,"status":"ok","outputs":[],"diagnostics":[{"code":"email/html-css","severity":"info","message":"This email may have position: absolute: the client removes it","clients":["outlook","gmail","yahoo"],"fix":"lay it out without position (a Layer puts content over an image)","see":"https://www.caniemail.com/features/css-position/","path":"html","line":3,"excerpt":"<head><style>.card { position: absolute; }</style></head>"}]}
+```
+
+A file that isn't a whole email (no `<html>` or no `<body>` tag) is that input's `error`, with email-clients' message.
+Where the email client models can't be used, both commands do as email-clients does:
+
+| What fails | `check` and `preview` |
+|---|---|
+| `@hyper-elements/email-client-models` doesn't import | the input's `error` (previews need the package): exit 1 |
+| its WebAssembly doesn't compile | an `email/captured-checks` warning; the checks from caniemail's tables run, and the previews are made |
+| it speaks a protocol email-clients doesn't read | `email-clients/version-mismatch`: the input's an error, exit 1 |
+| it's from before 1.8.0 (checks templates only) | an `info` `email/captured-checks`; the checks from caniemail's tables run |
+| its check throws on this email | an `email/captured-checks` warning; the checks from caniemail's tables run |
+
 ## Output and exit codes
 
 Text by default, with each template's diagnostics as `formatDiagnostics()` writes them. With `--json`, stdout holds one
@@ -118,6 +161,7 @@ JSON line per template, then a summary line, and nothing else: what templates pr
 {"version":1,"summary":{"templates":1,"errors":0,"warnings":0,"skipped":0,"late":[]},"exitCode":0}
 ```
 
+An HTML email's line has `"input": "html"` and `"root": null` ([Any HTML email](#any-html-email)).
 `inspect --json` writes `{"version":1,"command":"inspect","file","status","inspection"}` per template, `inspection`
 being `inspect()`'s result as it is (`null`, with `diagnostics` and `error`, where the template didn't load), then the
 summary line. `describe --json` writes one line, `describeComponents()`'s or `describeComponent()`'s result as it is,
@@ -125,8 +169,9 @@ with its own `version`. `outline` is text only.
 
 - **0**: every template rendered, checked or previewed without errors.
 - **1**: a template has errors, failed to load or threw, loads two copies of React, ran past `--timeout`, needs a PDF
-  or image engine that isn't installed, or names a URL that isn't cached with `--offline`; a preview failed in the
-  browser; or the run passed `--max-warnings`.
+  or image engine that isn't installed, or names a URL that isn't cached with `--offline`; an HTML email isn't a whole
+  email, or the email client models can't be used for it (see [Any HTML email](#any-html-email)); a preview failed in
+  the browser; or the run passed `--max-warnings`.
 - **2**: the run couldn't do what it was asked: a usage error, an unsupported runtime, no templates, Elements missing or
   outside the supported range, outputs that would collide, a template that called `process.exit`, template code that
   threw outside a render, or a Document's PDF on Bun; `preview` without email-clients, or `--findings` with no browser

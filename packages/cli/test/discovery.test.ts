@@ -41,10 +41,10 @@ describe("discovery", () => {
     expect(ran.stderr).toContain("emails/linked: a symbolic link to a folder, not followed");
   });
 
-  it("refuses an HTML file (HTML input comes later)", async () => {
+  it("render refuses an HTML file: it's already HTML (check and preview take one, test/html.test.ts)", async () => {
     const dir = project({ "email.html": "<html><body>Hi</body></html>" });
-    const ran = await cli(dir, ["check", "email.html"]);
+    const ran = await cli(dir, ["render", "email.html"]);
     expect(ran.code).toBe(2);
-    expect(ran.stderr).toContain("HTML");
+    expect(ran.stderr).toContain("it's already HTML");
   });
 });

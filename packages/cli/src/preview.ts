@@ -24,12 +24,16 @@ export function clientsFolder(out: string, cwd: string): string {
  * `render`'s destinations are, exit 2 with nothing written.
  */
 export function planPreviewFolders(inputs: Input[], base: string, out: string, cwd: string): Map<number, string> {
-  // `render`'s refusals of --out (the filesystem root, the home folder, a project's root, a folder holding an input).
-  planDestinations(inputs, base, out, cwd, []);
+  // `render`'s refusals of --out (the filesystem root, the home folder, a project's root, a folder holding an input):
+  // stdin is no file. A preview can be an input only where --out holds it, which this refuses.
+  planDestinations(inputs.filter((input) => !input.stdin), base, out, cwd, []);
   const folders = new Map<number, string>();
   const taken = new Map<string, Input>();
   for (const input of inputs) {
-    const folder = join(clientsFolder(out, cwd), relative(base, dirname(input.file)), basename(input.file, extname(input.file)));
+    // stdin's previews: `<out>/clients/stdin/`.
+    const folder = input.stdin
+      ? join(clientsFolder(out, cwd), "stdin")
+      : join(clientsFolder(out, cwd), relative(base, dirname(input.file)), basename(input.file, extname(input.file)));
     const key = foldPath(canonicalPath(folder));
     const other = taken.get(key);
     if (other) throw new UsageError(`${other.display} and ${input.display} would both write their previews in ${displayPath(cwd, folder)}: rename one, or preview them in separate runs. Nothing was written.`);

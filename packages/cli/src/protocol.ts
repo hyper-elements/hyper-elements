@@ -13,6 +13,10 @@ export interface Diagnostic {
   clients?: readonly string[];
   fix?: string;
   see?: string;
+  /** An HTML email's diagnostic (email-clients' EmailHtmlDiagnostic, `path: "html"`): its line (from 1, or null). */
+  line?: number | null;
+  /** Up to 80 characters of that line. */
+  excerpt?: string;
 }
 
 export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate";
@@ -130,7 +134,8 @@ export interface InputLine {
   version: 1;
   command: Command;
   file: string;
-  input: "template";
+  /** "html": an HTML email (`check` and `preview`), whose `root` is null. */
+  input: "template" | "html";
   root: Root | null;
   status: "ok" | "error" | "skipped";
   outputs: string[];

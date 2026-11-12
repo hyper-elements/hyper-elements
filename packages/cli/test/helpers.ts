@@ -86,6 +86,10 @@ export interface RunOptions {
   timeout?: number;
   /** Reads nothing from stdout for this long (milliseconds): a slow pipe, which the CLI's writes wait on. */
   slowStdout?: number;
+  /** What the CLI reads on stdin (`-`); nothing where it's not given. */
+  input?: string;
+  /** The runtime's own arguments, before the CLI's (`--import`, `--preload`). */
+  runtimeArgs?: string[];
 }
 
 /**
@@ -102,7 +106,12 @@ export function cliEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
 export function cli(cwd: string, args: string[], options: RunOptions = {}): Promise<Ran> {
   const runtime = options.runtime ?? RUNTIME;
   return new Promise((resolve, reject) => {
-    const child = spawn(runtime === "bun" ? "bun" : process.execPath, [BIN, ...args], { cwd, env: cliEnv(options.env), stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(runtime === "bun" ? "bun" : process.execPath, [...(options.runtimeArgs ?? []), BIN, ...args], {
+      cwd,
+      env: cliEnv(options.env),
+      stdio: [options.input === undefined ? "ignore" : "pipe", "pipe", "pipe"] as ["pipe", "pipe", "pipe"],
+    });
+    if (options.input !== undefined) child.stdin.end(options.input);
     let stdout = "";
     let stderr = "";
     child.stdout.on("data", (d) => (stdout += d));

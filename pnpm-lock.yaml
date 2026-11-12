@@ -191,6 +191,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@hyper-elements/email-clients':
+        specifier: ^0.4.3
+        version: 0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       playwright-core:
         specifier: 1.60.0
         version: 1.60.0
@@ -201,9 +204,6 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
     devDependencies:
-      '@hyper-elements/email-clients':
-        specifier: workspace:*
-        version: link:../email-clients
       '@hyper-elements/react':
         specifier: workspace:*
         version: link:../react
@@ -1350,6 +1350,20 @@ packages:
   '@hyper-elements/email-client-models@1.8.1':
     resolution: {integrity: sha512-NFi/gmMlW68lwDJOT8RjjuZ1YF5iADf9n9qbLT2SnpaSVrJF9TAPbZC2eydrhR61bDx2FTDxA4kMtTshpNcOyQ==}
     engines: {node: '>=20'}
+
+  '@hyper-elements/email-clients@0.4.3':
+    resolution: {integrity: sha512-kFLMdZJwBr0HkBr9JGyJnaMdMekRh9IOCFrTSeQ4SDHBU19DvrxMhM55ACAGWpF2QE9/J7fCoW0J5R8Xwi9nvg==}
+    peerDependencies:
+      '@hyper-elements/react': ^0.4.0
+      react: '>=18'
+      react-dom: '>=18'
+    peerDependenciesMeta:
+      '@hyper-elements/react':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -7063,6 +7077,14 @@ snapshots:
       '@hapi/hoek': 11.0.7
 
   '@hyper-elements/email-client-models@1.8.1': {}
+
+  '@hyper-elements/email-clients@0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@hyper-elements/email-client-models': 1.8.1
+    optionalDependencies:
+      '@hyper-elements/react': link:packages/react
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@img/colour@1.1.0':
     optional: true

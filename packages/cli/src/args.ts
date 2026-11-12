@@ -28,12 +28,15 @@ render   writes each template's output under --out, its path relative to the
          files relative to the template, /paths from --public, and http(s)
          URLs, fetched once and cached.
 check    validates each template (with @hyper-elements/email-clients' email
-         client checks where the project has it) and writes nothing.
+         client checks where the project has it) and writes nothing. Given
+         an HTML email (a .html or .htm file by name, or - for stdin), it
+         runs the email client checks on it.
 outline  prints a template laid out: each block with its width.
 preview  writes each Email as the email clients draw it, one file per client
          and variant (with @hyper-elements/email-clients), under
          out/clients/<name>/. --findings opens each in Chromium and reports
-         what it found.
+         what it found. An HTML email (a .html or .htm file, or - for stdin,
+         under out/clients/stdin/) is previewed as it is.
 inspect  lists what a template holds: each component, what it's given,
          whether its root takes it, and the problems found on it.
 describe lists the components a template can use (or one), with their props
@@ -256,6 +259,5 @@ export function parseArgs(argv: string[]): Args {
   if (args.command === "outline" && args.json) throw new UsageError("outline is text only: it has no --json.");
   if (args.command === "outline" && positional.length > 1) throw new UsageError("outline takes one template.");
   if (args.stdout && args.json) throw new UsageError("--stdout and --json both write to stdout: give one.");
-  if (positional.includes("-")) throw new UsageError("Reading a template from stdin isn't supported: give its file.");
   return args;
 }
