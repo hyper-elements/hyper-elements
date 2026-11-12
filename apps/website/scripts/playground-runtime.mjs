@@ -104,7 +104,7 @@ export function buildRuntime(name, { fresh = false, minify = true } = {}) {
         // The engines and React read these; nothing else of Node's `process` is in a browser.
         // (A classic script has no import.meta.url: react-pdf's PDF library makes a URL from it when it loads, for a
         // file it reads only for PDF/A.)
-        define: { "process.env.NODE_ENV": '"production"', __UNLAYER_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"' },
+        define: { "process.env.NODE_ENV": '"production"', __HYPER_ELEMENTS_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"' },
         plugins: [plugin(name)],
       }).then((result) => result.outputFiles[0].text),
     );
