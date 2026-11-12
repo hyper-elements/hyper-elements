@@ -165,6 +165,16 @@ describe("the built package's own requires", () => {
   });
 });
 
+describe("the built package's declarations", () => {
+  // The core is bundled in and never installed: a type of its that an entry gives (the /pdf and /image entries'
+  // templateAssets() fonts) is written into that entry's declarations, not imported from it.
+  it("name no package that isn't installed with it", () => {
+    const declarations = fs.readdirSync(dist).filter((file) => /\.d\.c?ts$/.test(file));
+    expect(declarations).toEqual(expect.arrayContaining(["primitives.d.ts", "builder.d.ts", "inspect.d.ts", "pdf.d.ts", "pdf.d.cts", "image.d.ts", "image.d.cts"]));
+    for (const file of declarations) expect(fs.readFileSync(path.join(dist, file), "utf8"), file).not.toMatch(/@unlayer-internal\//);
+  });
+});
+
 describe("a bundle with React in it, which renders with react-dom/server", () => {
   // There Elements has no other module of react-dom's that renders with that React (a browser bundle, a bundled
   // server): called in a component that render renders, it renders with the module it's in.

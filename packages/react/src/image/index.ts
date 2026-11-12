@@ -8,8 +8,10 @@
  *
  * Nothing is fetched: fonts are given (`fonts`, or the Canvas's `fonts` as data: URIs), and so are images (`images`
  * by URL, or data: URIs). An image needs at least one font: its text is drawn with the fonts it's given.
+ * templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
-import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font, type FontFace } from "@unlayer-internal/elements-core/image";
+import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font } from "@unlayer-internal/elements-core/image";
+import type { FontFace } from "@unlayer-internal/elements-core";
 import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 
@@ -45,12 +47,7 @@ export interface ImageResult {
 
 /** A Canvas written as an image. Rejects with an `ElementsError` listing the problems if it has errors. */
 export async function renderImage(element: ReactElement, options: ImageOptions = {}): Promise<ImageResult> {
-  const { root, diagnostics, layout } = prepare(element);
-  readable(layout, "image");
-  if (!root) throw new ElementsError(diagnostics);
-  if (root.type !== "Canvas") {
-    throw new ElementsError([...diagnostics, { code: "image/root", severity: "error", message: `Image output is a Canvas's: this template is a ${root.type}`, path: "root" }]);
-  }
+  const { root, diagnostics } = canvasOf(element);
   const found: Diagnostic[] = [];
   const fonts = fontsOf(root, options.fonts ?? [], found);
   const images = imageSources(root, options.images ?? {}, found);
@@ -65,6 +62,34 @@ export async function renderImage(element: ReactElement, options: ImageOptions =
   if (options.format === "svg") return { image: await satoriResvg(canvas, { format: "svg", scale }), width, height, diagnostics: [...diagnostics, ...found] };
   const image = await satoriResvg(canvas, { format: "png", scale });
   return { image, width: Math.round(width * scale), height: Math.round(height * scale), diagnostics: [...diagnostics, ...found] };
+}
+
+export interface TemplateAssets {
+  /** The Canvas's own font faces (its `fonts` prop), as it gives them: a file for each goes in renderImage's `fonts`, by its family, weight and style. */
+  fonts: FontFace[];
+  /** Each Image's URL as the template gives it, once, in the order they're drawn: its file goes in renderImage's `images`, by that URL. */
+  images: string[];
+}
+
+/**
+ * The font and image sources renderImage() looks for in a Canvas, from the walks it makes itself: what a tool loads and
+ * gives it in `fonts` and `images`. A data: URI is read as it is (a font's, where no file is given in `fonts` for its
+ * family). Rejects a template as renderImage() does: with errors, or with a root other than a Canvas.
+ */
+export function templateAssets(element: ReactElement): TemplateAssets {
+  const { root } = canvasOf(element);
+  return { fonts: [...facesOf(root)], images: [...new Set(imagesOf(root).map(({ src }) => src))] };
+}
+
+/** The Canvas a template is, with prepare()'s diagnostics; a template with errors, or another root, throws. */
+function canvasOf(element: ReactElement): { root: ResolvedNode; diagnostics: Diagnostic[] } {
+  const { root, diagnostics, layout } = prepare(element);
+  readable(layout, "image");
+  if (!root) throw new ElementsError(diagnostics);
+  if (root.type !== "Canvas") {
+    throw new ElementsError([...diagnostics, { code: "image/root", severity: "error", message: `Image output is a Canvas's: this template is a ${root.type}`, path: "root" }]);
+  }
+  return { root, diagnostics };
 }
 
 /**
@@ -96,6 +121,9 @@ const weight = (value: number | undefined) => (Math.min(900, Math.max(100, Math.
 /** A WOFF2 file, by its first bytes: an image draws TTF, OTF and WOFF files, not these. */
 const woff2 = (bytes: ArrayBuffer | Uint8Array) => String.fromCharCode(...new Uint8Array(buffer(bytes)).subarray(0, 4)) === "wOF2";
 
+/** The Canvas's own font faces (its `fonts` prop): the files renderImage's fonts option gives, or data: URIs. */
+const facesOf = (root: ResolvedNode): FontFace[] => (root.props.fonts as FontFace[] | undefined) ?? [];
+
 function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[]): Font[] {
   const drawn = (family: string, bytes: ArrayBuffer | Uint8Array) => {
     if (!woff2(bytes)) return true;
@@ -104,7 +132,7 @@ function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[]): F
   };
   const out: Font[] = given.filter((font) => drawn(font.family, font.src)).map((font) => ({ family: font.family, data: buffer(font.src), weight: weight(font.weight), style: font.style ?? "normal" }));
   const named = new Set(out.map((font) => font.family.toLowerCase()));
-  for (const face of (root.props.fonts as FontFace[] | undefined) ?? []) {
+  for (const face of facesOf(root)) {
     if (named.has(face.family.toLowerCase())) continue;
     const data = /^data:[^,]*;base64,(.*)$/.exec(face.src)?.[1];
     if (data && !drawn(face.family, Uint8Array.from(Buffer.from(data, "base64")))) continue;
@@ -175,24 +203,30 @@ const DRAWN = /^data:image\/(png|jpeg|jpg|gif|svg\+xml)[;,]/;
 /** Each image's source as an engine loads it without the network: a data URI; an image without one, an error. */
 function imageSources(root: ResolvedNode, given: Record<string, Uint8Array | ArrayBuffer>, found: Diagnostic[]): Map<string, string> {
   const out = new Map<string, string>();
+  for (const { node, src } of imagesOf(root)) {
+    const bytes = given[src] ? new Uint8Array(buffer(given[src])) : undefined;
+    const type = bytes && mime(bytes);
+    if (DRAWN.test(src)) out.set(src, src);
+    else if (bytes && type) out.set(src, `data:${type};base64,${Buffer.from(bytes).toString("base64")}`);
+    else {
+      found.push({
+        code: "image/image",
+        severity: "error",
+        message: bytes ? "This image's file isn't a PNG, JPEG, GIF or SVG" : "Image output loads no images: give this one's file in renderImage's images option (by its URL), or its src as a data: URI",
+        path: `${node.path}.props.src`,
+        ...(node.id ? { nodeId: node.id } : {}),
+      });
+    }
+  }
+  return out;
+}
+
+/** Each Image the canvas draws, in order, with its src (a Video is drawn as its title). Content hidden on desktop isn't drawn. */
+function imagesOf(root: ResolvedNode): Array<{ node: ResolvedNode; src: string }> {
+  const out: Array<{ node: ResolvedNode; src: string }> = [];
   const visit = (node: ResolvedNode) => {
     if (node.hidden?.desktop) return;
-    if (node.type === "Image") {
-      const { src } = assetParts(node.props.src as Asset);
-      const bytes = given[src] ? new Uint8Array(buffer(given[src])) : undefined;
-      const type = bytes && mime(bytes);
-      if (DRAWN.test(src)) out.set(src, src);
-      else if (bytes && type) out.set(src, `data:${type};base64,${Buffer.from(bytes).toString("base64")}`);
-      else {
-        found.push({
-          code: "image/image",
-          severity: "error",
-          message: bytes ? "This image's file isn't a PNG, JPEG, GIF or SVG" : "Image output loads no images: give this one's file in renderImage's images option (by its URL), or its src as a data: URI",
-          path: `${node.path}.props.src`,
-          ...(node.id ? { nodeId: node.id } : {}),
-        });
-      }
-    }
+    if (node.type === "Image") out.push({ node, src: assetParts(node.props.src as Asset).src });
     for (const child of node.children) if (typeof child !== "string") visit(child);
   };
   visit(root);
