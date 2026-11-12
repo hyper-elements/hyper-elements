@@ -305,6 +305,8 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
 
   const outcomes = new Map<number, Outcome & { pending?: Record<string, string>; binary?: string[]; pendingPreviews?: PreviewFile[] }>();
   const usage = new Set<number>();
+  /** The inputs skipped because they aren't templates: a run where every input is one has no templates (exit 2). */
+  const notTemplates = new Set<number>();
   const extra = new Map<number, Diagnostic[]>();
   const note = (id: number, diagnostic: Diagnostic) => extra.set(id, [...(extra.get(id) ?? []), diagnostic]);
 
@@ -358,6 +360,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   const settle = (input: Input, result: ResultMessage | undefined, ended: ChildReport["ended"]) => {
     if (result) {
       if (result.usage) usage.add(input.id);
+      if (result.notTemplate) notTemplates.add(input.id);
       outcomes.set(input.id, {
         file: input.display,
         root: result.root,
@@ -489,7 +492,13 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   const errors = all.filter((o) => o.status === "error").length;
   const warnings = all.reduce((n, o) => n + o.diagnostics.filter((d) => d.severity === "warning").length, 0);
   const skipped = all.filter((o) => o.status === "skipped").length;
-  const exitCode: 0 | 1 | 2 = usage.size || late.length || noBrowser ? 2 : errors || (args.maxWarnings !== undefined && warnings > args.maxWarnings) ? 1 : 0;
+  // No input turned out to be a template (each a module whose default export isn't one): the run had nothing to do.
+  const none = inputs.length > 0 && inputs.every((input) => notTemplates.has(input.id));
+  if (none) {
+    const which = inputs.length === 1 ? "the input isn't one" : `none of the ${inputs.length} inputs is one`;
+    io.stderr(`hyper-elements: no templates: ${which} (a template is a module whose default export is a component that renders an Email, a Page, a Document or a Canvas).\n`);
+  }
+  const exitCode: 0 | 1 | 2 = usage.size || late.length || noBrowser || none ? 2 : errors || (args.maxWarnings !== undefined && warnings > args.maxWarnings) ? 1 : 0;
   const summary: SummaryLine = { version: 1, summary: { templates: all.length, errors, warnings, skipped, late }, exitCode };
 
   // preview --serve: the previews served until Ctrl-C (exit 0), their URLs written, and no summary.

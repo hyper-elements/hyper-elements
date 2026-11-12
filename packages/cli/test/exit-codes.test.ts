@@ -24,6 +24,14 @@ describe("exit 0", () => {
     expect(exists(join(dir, "out/b.txt"))).toBe(true);
   });
 
+  it("with a template beside inputs that aren't: those are skipped", async () => {
+    const dir = project({ "emails/a.tsx": email("A"), "emails/value.ts": `export default { not: "a component" };\n` });
+    const ran = await cli(dir, ["check", "emails/a.tsx", "emails/value.ts", "--json"]);
+    expect(ran.code).toBe(0);
+    expect(lines(ran).map((l) => l.status ?? l.exitCode)).toEqual(["ok", "skipped", 0]);
+    expect(ran.stderr).not.toContain("no templates");
+  });
+
   it("with warnings, up to --max-warnings", async () => {
     const dir = project({ "emails/wide.tsx": WIDE });
     expect((await cli(dir, ["check", "emails"])).code).toBe(0);
@@ -75,6 +83,27 @@ describe("exit 2", () => {
     const dir = project({ "emails/notes.md": "# no templates", "emails/helper.ts": "export const x = 1;\n" });
     expect((await cli(dir, ["render", "emails"])).code).toBe(2);
     expect((await cli(dir, ["render", "missing"])).code).toBe(2);
+  });
+
+  it("when no input turns out to be a template, given by name or found in a folder, each still listed", async () => {
+    const dir = project({
+      "emails/named.tsx": `import { Email, Text } from "@hyper-elements/react";\nexport function Named() { return <Email><Text>Hi</Text></Email>; }\nexport default "not a component";\n`,
+      "emails/element.tsx": `import { Email, Text } from "@hyper-elements/react";\nexport default <Email><Text>Hi</Text></Email>;\n`,
+      "emails/value.ts": `export default { not: "a component" };\n`,
+    });
+    const one = await cli(dir, ["check", "emails/named.tsx", "--json"]);
+    expect(one.code).toBe(2);
+    expect(lines(one)).toEqual([
+      expect.objectContaining({ file: "emails/named.tsx", status: "skipped", diagnostics: [expect.objectContaining({ code: "cli/not-a-template" })] }),
+      expect.objectContaining({ summary: expect.objectContaining({ templates: 1, skipped: 1 }), exitCode: 2 }),
+    ]);
+    expect(one.stderr).toContain("hyper-elements: no templates");
+    const folder = await cli(dir, ["render", "emails"]);
+    expect(folder.code).toBe(2);
+    for (const name of ["named.tsx", "element.tsx", "value.ts"]) expect(folder.stdout).toContain(`- emails/${name} skipped`);
+    expect(folder.stdout).toContain("3 templates: 0 errors, 0 warnings, 3 skipped");
+    expect(folder.stderr).toContain("none of the 3 inputs is one");
+    expect(exists(join(dir, "out"))).toBe(false);
   });
 
   it("where the template's folder has no Elements", async () => {

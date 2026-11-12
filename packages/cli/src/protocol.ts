@@ -105,6 +105,8 @@ export interface ResultMessage {
   described?: unknown;
   /** The run can't do what it was asked for this template (Elements missing or out of range, process.exit): exit 2. */
   usage?: boolean;
+  /** Skipped because it isn't a template (its default export isn't a component, or renders no root): a run of none exits 2. */
+  notTemplate?: boolean;
 }
 
 /** More than one React in a group's process: the parent runs each of its templates again, alone. */

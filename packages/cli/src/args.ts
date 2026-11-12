@@ -66,8 +66,8 @@ Options:
   --refresh             render: fetch http(s) fonts and images again
   --offline             render, dev: fetch nothing; a URL not in the cache
                         fails
-  --clients <a,b>       check, preview, dev: the email clients to check for,
-                        or to preview
+  --clients <a,b>       render, check, preview, dev: the email clients to
+                        check for, or to preview
   --max-warnings <n>    check: fail (exit 1) with more than n warnings
   --rendered            check: also render, for the checks only the written
                         HTML has (Gmail's size limit)
@@ -147,7 +147,7 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   public: { value: true, commands: ["render"] },
   refresh: { value: false, commands: ["render"] },
   offline: { value: false, commands: ["render"] },
-  clients: { value: true, commands: ["check", "preview"] },
+  clients: { value: true, commands: ["render", "check", "preview"] },
   "max-warnings": { value: true, commands: ["check"] },
   rendered: { value: false, commands: ["check"] },
   dark: { value: false, commands: ["preview"] },
