@@ -1,9 +1,9 @@
 /**
  * The checks on a whole email's HTML (documentNotes(), and renderInEmailClients(html)'s diagnostics over them): each where its pattern is,
  * at its first line with an excerpt, once per check; a <style> by where it is; Gmail's limits as Gmail applies them;
- * classic Outlook's conditional comments blanked so lines stay the given HTML's.
+ * comments (Outlook's conditional ones among them) and scripts blanked, so lines stay the given HTML's.
  */
-import { blankOutlookOnly, documentNotes, withoutOutlookOnly } from "../src/html";
+import { blankUnread, documentNotes, withoutOutlookOnly } from "../src/html";
 import { renderInEmailClients } from "../src/index";
 import { NO_MEDIA_QUERIES, NO_WEB_FONTS, STYLE_REMOVED } from "../src/limits";
 
@@ -33,13 +33,48 @@ describe("documentNotes(): the checks on a whole email", () => {
   it("blanks what only classic Outlook reads, keeping every later line where it is", () => {
     const html = email({ body: ["<!--[if mso]>", '<table style="position:absolute"><tr><td>', "<![endif]-->", '<div style="display:flex;margin:-4px">x</div>'] });
     // What's blanked is spaces, newlines kept: the same length, the same lines.
-    const blanked = blankOutlookOnly(html);
+    const blanked = blankUnread(html);
     expect(blanked.length).toBe(html.length);
     expect(blanked.split("\n").length).toBe(html.split("\n").length);
     expect(withoutOutlookOnly(html)).not.toContain("position:absolute");
     // Inside the conditional comment: not seen. After it: on its own line, 9.
     expect(about(html, "position: absolute")).toEqual([]);
     expect(about(html, "display: flex")[0]).toMatchObject({ line: 9 });
+  });
+
+  it("blanks every conditional comment for Outlook, whatever its condition, and keeps what's shown to all but Outlook", () => {
+    const html = email({
+      body: [
+        "<!--[if (gte mso 9)|(IE)]>",
+        '<v:rect style="position:absolute;width:600px"><v:fill type="tile" /></v:rect>',
+        "<![endif]-->",
+        "<!--[if mso | IE]><table style=\"opacity:0.5\"><tr><td><![endif]-->",
+        "<!--[if !mso]><!-->",
+        '<div style="display:flex">for all but Outlook</div>',
+        "<!--<![endif]-->",
+      ],
+    });
+    expect(about(html, "position: absolute")).toEqual([]);
+    expect(about(html, "opacity")).toEqual([]);
+    expect(about(html, "display: flex")).toEqual([expect.objectContaining({ line: 11 })]);
+  });
+
+  it("reads nothing inside an ordinary comment or a <script>, and still reads CSS a <style> wraps in <!-- -->", () => {
+    const html = email({
+      head: ["<!-- <body> -->", "<style><!--", ".a { color: red; }", "@media (max-width: 620px) { .a { color: blue; } }", "--></style>", "<script>var css = 'display:flex';</script>"],
+      body: ['<!-- <style>.old { position: absolute; }</style> <img src="old.webp"> -->', '<p class="a">Hi</p>'],
+    });
+    // The <style> is still in the <head> (the <body> in a comment isn't one), and its @media is read.
+    expect(about(html, "in its <body>")).toEqual([]);
+    expect(about(html, "applies no media query")).toEqual([expect.objectContaining({ line: 5 })]);
+    expect(about(html, "display: flex")).toEqual([]);
+    expect(about(html, "position: absolute")).toEqual([]);
+    expect(documentNotes(html).filter((d) => d.code === "email/image-format")).toEqual([]);
+    // Only the one <style> outside comments: noted once.
+    expect(about(html, "removes every <style>")).toEqual([expect.objectContaining({ line: 5 })]);
+    const blanked = blankUnread(html);
+    expect(blanked.length).toBe(html.length);
+    expect(blanked).toContain("<style><!--");
   });
 
   it("notes a <style> anywhere for the clients that remove every <style>, and one in the <body> for those that remove that one", () => {
@@ -75,6 +110,11 @@ describe("documentNotes(): the checks on a whole email", () => {
     expect(found).toEqual([expect.objectContaining({ line: 4, clients: [...NO_WEB_FONTS] })]);
     const onlyFace = email({ head: ["<style>@font-face { font-family: Brand; src: url(b.woff2); }</style>"] });
     expect(documentNotes(onlyFace).filter((d) => d.message.includes("@font-face"))).toHaveLength(1);
+    // A font service's stylesheet is a web font; a stylesheet of the email's own isn't.
+    const google = email({ head: ['<link href="https://fonts.googleapis.com/css2?family=Inter" rel="stylesheet">'] });
+    expect(documentNotes(google).filter((d) => d.message.includes("web font"))).toEqual([expect.objectContaining({ line: 4 })]);
+    const own = email({ head: ['<link rel="stylesheet" href="https://example.com/email.css">'] });
+    expect(documentNotes(own).filter((d) => d.message.includes("web font"))).toEqual([]);
   });
 
   it("notes a stylesheet rule some clients remove at its <style>'s line", () => {
@@ -106,11 +146,12 @@ describe("documentNotes(): the checks on a whole email", () => {
   });
 
   it("warns for each image in a format some clients don't show, at its line", () => {
-    const html = email({ body: ['<img src="https://cdn.example/a.webp" alt="a">', '<img alt="b" src="https://cdn.example/b.png">', "<img src='https://cdn.example/c.avif?w=2'>"] });
+    const html = email({ body: ['<img src="https://cdn.example/a.webp" alt="a">', '<img alt="b" src="https://cdn.example/b.png">', "<img src='https://cdn.example/c.avif?w=2'>", "<img src=https://cdn.example/d.webp alt=d>"] });
     const images = documentNotes(html).filter((d) => d.code === "email/image-format");
     expect(images.map(({ line, clients }) => ({ line, clients }))).toEqual([
       { line: 6, clients: ["outlook"] },
       { line: 8, clients: ["outlook", "fastmail", "gmx", "web-de", "orange", "sfr", "mail-ru", "ionos"] },
+      { line: 9, clients: ["outlook"] },
     ]);
   });
 

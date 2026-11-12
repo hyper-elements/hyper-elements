@@ -21,6 +21,11 @@ export interface EmailClientsPluginOptions {
 /** The plugin's name: core's validate() and render() leave out their email/more-checks note when it's passed. */
 export const PLUGIN_NAME = "email-clients";
 
+/**
+ * The plugin for the clients asked for. Loads the models' WebAssembly module the first time; where the models package
+ * can't be imported, or its module compiled (no WebAssembly), the plugin runs the open checks only, and its first
+ * diagnostic on an Email says so.
+ */
 export async function emailClients(options: EmailClientsPluginOptions = {}): Promise<ElementsPlugin> {
   checkPlugins(await loadCore());
   const given = options.clients;

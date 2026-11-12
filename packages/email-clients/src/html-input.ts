@@ -4,7 +4,7 @@
  */
 import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type EmailClientPreview, type PreviewClient, type Skipped } from "./clients";
 import { APPROXIMATE_FOR_HTML, checkClients, EMAIL_CLIENTS, forClients, type EmailClient } from "./email-clients";
-import { documentNotes, type EmailHtmlDiagnostic } from "./html";
+import { documentNotes, lineExcerpt, type EmailHtmlDiagnostic } from "./html";
 import { asError, loadModels } from "./load-models";
 import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";
 import { NO_BLOCKS, previewsOf } from "./previews";
@@ -66,16 +66,14 @@ export async function previewHtml(html: string, options: HtmlOptions = {}): Prom
   const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS, widths, computers);
   // HTML not built with Hyper Elements: approximate where the models are weak on it, or haven't been measured on it.
   const marked = variants.map((variant) => (APPROXIMATE_FOR_HTML.includes(variant.id) ? { ...variant, approximate: true } : variant));
-  const previews = await previewsOf(html, NO_BLOCKS, marked, loaded, { fonts, source: "html" });
-  // The checks for the clients previewed, as a template's render() gets them.
-  return { previews, skipped, diagnostics: await checksOf(html, clients) };
+  // The previews, and the checks for the clients previewed (as a template's render() gets them), side by side.
+  const [previews, diagnostics] = await Promise.all([previewsOf(html, NO_BLOCKS, marked, loaded, { fonts, source: "html" }), checksOf(html, clients)]);
+  return { previews, skipped, diagnostics };
 }
 
 /** A diagnostic about the checks themselves: no clients, no line. */
 const aboutTheChecks = (severity: "info" | "warning", message: string, fix: string): EmailHtmlDiagnostic => ({ code: "email/captured-checks", severity, message, fix, path: "html", line: null });
 
-/** The line's excerpt in `html`, as documentNotes() gives it. */
-const excerptAt = (html: string, line: number | null) => (line === null ? {} : { excerpt: (html.split("\n")[line - 1] ?? "").trim().slice(0, 80) });
 
 /**
  * The open checks on `html` (documentNotes()), and the models' captured ones where they can run (check({ html }), models
@@ -89,8 +87,10 @@ async function checksOf(html: string, clients: readonly EmailClient[]): Promise<
     found.push(aboutTheChecks("warning", `The captured email client checks didn't load (${unavailable.message}): only the checks from caniemail's tables ran`, "install @hyper-elements/email-client-models where it can load (it comes with this package): Node 20 or later, or a browser with WebAssembly"));
   } else {
     try {
+      const lines = html.split("\n");
       for (const entry of models.check({ html })) {
-        found.push({ code: entry.code, severity: entry.severity, message: entry.message, clients: entry.clients as EmailClient[], ...(entry.fix ? { fix: entry.fix } : {}), path: "html", line: entry.line ?? null, ...excerptAt(html, entry.line ?? null) });
+        const line = entry.line ?? null;
+        found.push({ code: entry.code, severity: entry.severity, message: entry.message, clients: entry.clients as EmailClient[], ...(entry.fix ? { fix: entry.fix } : {}), path: "html", line, ...(line === null ? {} : { excerpt: lineExcerpt(lines, line) }) });
       }
     } catch (error) {
       const message = asError(error).message;

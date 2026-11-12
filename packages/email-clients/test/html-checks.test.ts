@@ -95,9 +95,25 @@ describe("renderInEmailClients(html)'s diagnostics and the models package", () =
     }
   });
 
-  it("checks with the installed models package (1.7: only templates) and says so", async () => {
+  it("checks with the installed models package: says so where it checks only templates (before 1.8.0), runs its checks where it checks HTML", async () => {
     const { renderInEmailClients } = await import("../src/index");
+    const models = await import("@hyper-elements/email-client-models");
+    await models.ready();
+    const checksHtml = (() => {
+      try {
+        models.check({ html: email });
+        return true;
+      } catch {
+        return false;
+      }
+    })();
     const { diagnostics } = await renderInEmailClients(email, { emailClients: ["outlook", "gmail"], computers: ["windows"] });
     expect(openChecks(diagnostics)[0]!.clients).toEqual(["outlook", "gmail"]);
+    if (checksHtml) {
+      expect(aboutTheChecks(diagnostics)).toEqual([]);
+      expect(diagnostics.find((d) => d.message.startsWith("This email's markup may have rgb()"))).toMatchObject({ line: 5, clients: ["gmail"] });
+    } else {
+      expect(aboutTheChecks(diagnostics)).toEqual([expect.objectContaining({ severity: "info", message: expect.stringContaining("1.8.0 and later check HTML too") })]);
+    }
   });
 });
