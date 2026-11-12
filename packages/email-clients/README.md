@@ -102,6 +102,22 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
   without `@hyper-elements/react` installed is `email-clients/version-mismatch` too, with what to install.
 - In TypeScript without React and core, the declarations name their types: keep `skipLibCheck` on (the default).
 
+`renderInEmailClients(html)` returns its checks, for the clients it previews, as its `diagnostics`.
+Each is `{ code, severity, message, clients, fix, see, path: "html", line, excerpt }`: the line in the given HTML and up
+to 80 characters of it.
+
+- The CSS and stylesheet rules from caniemail's tables, over the whole email, once each, at their first line. Classic
+  Outlook's conditional comments, other comments and scripts are left out, as clients other than classic Outlook read
+  none of them, keeping every other line where it is.
+- A `<style>` for the clients that remove every `<style>` (the Gmail apps with another account, and some webmail), one in
+  the `<body>` for those that remove that one (Gmail), and an `@media` for those that apply none (classic Outlook).
+- A web font (`@font-face`, or a font service's stylesheet `<link>`), and each image in a format some clients don't show.
+- Gmail's limits as Gmail applies them: each `<style>` in the `<head>` over 16 KB on its own, and the whole email over
+  102 KB.
+- With `@hyper-elements/email-client-models` 1.8.0 or later, the checks only captures found, too. Without them, or where
+  the models package can't load, a diagnostic about the checks says so (`email/captured-checks`, with no clients and no
+  line), and the rest still run.
+
 ### What a preview says
 
 An agent with a browser opens a file, waits for `<html data-email-client-ready>`, and reads its value: `ok`;

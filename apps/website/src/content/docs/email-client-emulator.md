@@ -86,6 +86,14 @@ const { previews } = await renderInEmailClients(html, { emailClients: ["outlook"
 
 It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 
+Its `diagnostics` list what each client previewed removes or changes in the HTML, each with its line:
+
+```ts
+const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail", "gmail-app"] });
+// [{ code: "email/html-css", severity: "info", line: 5, excerpt: "<style>", clients: ["outlook"],
+//    message: "This email may have an @media in a <style>: the client applies no media query, …", fix: "…" }]
+```
+
 ## Why it matters
 
 - **No send-and-wait loop.** A preview takes as long as a render, so you can check every change, not only the last one before a campaign.

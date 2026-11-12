@@ -22,6 +22,7 @@ import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type 
 import { checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
 import { emailClients, PLUGIN_NAME } from "./plugin";
 import { loadModelsPackage } from "./models";
+import type { EmailHtmlDiagnostic } from "./html";
 import { previewHtml } from "./html-input";
 import { previewsOf } from "./previews";
 
@@ -29,6 +30,7 @@ export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./
 export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type EmailClientPreview, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
 export { emailClients, PLUGIN_NAME, type EmailClientsPluginOptions } from "./plugin";
+export type { EmailHtmlDiagnostic } from "./html";
 
 export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blockMap"> {
   /** The email clients to preview (default: the four captured: classic Outlook, Outlook.com, Gmail and Apple Mail). */
@@ -51,13 +53,16 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   computers?: readonly Computer[];
 }
 
-export interface EmailClientsResult {
+export interface EmailClientsResult<D = Diagnostic> {
   /** One file per client and variant, in the order asked for, light before dark. */
   previews: EmailClientPreview[];
   /** What wasn't previewed, and why: a client with no model, a dark mode not measured. */
   skipped: Skipped[];
-  /** render()'s diagnostics, with the email client checks for the clients previewed. (What a preview finds is in the file, once it's opened.) */
-  diagnostics: Diagnostic[];
+  /**
+   * The email client checks for the clients previewed: render()'s diagnostics, with the plugin's, for a template; for
+   * HTML, what's found in it, each with its line. (What a preview finds is in the file, once it's opened.)
+   */
+  diagnostics: D[];
 }
 
 /**
@@ -74,9 +79,9 @@ export interface EmailClientsResult {
  * clients: those previews are approximate. It rejects with the import's error where @hyper-elements/email-client-models
  * can't be loaded, and with `email-clients/version-mismatch` where the one installed speaks another protocol.
  */
-export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult>;
+export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult<EmailHtmlDiagnostic>>;
 export function renderInEmailClients(element: React.ReactElement, options?: EmailClientsOptions): Promise<EmailClientsResult>;
-export async function renderInEmailClients(input: React.ReactElement | string, options: EmailClientsOptions = {}): Promise<EmailClientsResult> {
+export async function renderInEmailClients(input: React.ReactElement | string, options: EmailClientsOptions = {}): Promise<EmailClientsResult | EmailClientsResult<EmailHtmlDiagnostic>> {
   if (typeof input === "string") return previewHtml(input, options as Parameters<typeof previewHtml>[1]);
   // HTML read as bytes (readFile() without an encoding) isn't a template: say how to pass it.
   if (input instanceof Uint8Array || input instanceof ArrayBuffer) throw new TypeError("[Elements] renderInEmailClients() takes an email's HTML as a string, not bytes: read it as text (readFile(path, \"utf8\")), or decode it (new TextDecoder().decode(bytes))");

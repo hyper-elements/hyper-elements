@@ -99,11 +99,12 @@ run().then((out) => console.log(JSON.stringify(out)), (error) => console.log(JSO
 const HTML_ESM = ALONE('import { renderInEmailClients, PREVIEW_CLIENTS } from "@hyper-elements/email-clients";');
 const HTML_CJS = ALONE('const { renderInEmailClients, PREVIEW_CLIENTS } = require("@hyper-elements/email-clients");');
 const HTML_TS = `
-import { renderInEmailClients, type EmailClientsResult } from "@hyper-elements/email-clients";
-export async function preview(html: string): Promise<EmailClientsResult> {
+import { renderInEmailClients, type EmailClientsResult, type EmailHtmlDiagnostic } from "@hyper-elements/email-clients";
+export async function preview(html: string): Promise<EmailClientsResult<EmailHtmlDiagnostic>> {
   const result = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"], dark: true });
   const ids: string[] = result.previews.map((p) => p.id);
-  return ids.length ? result : result;
+  const lines: Array<number | null> = result.diagnostics.map((d) => d.line);
+  return ids.length + lines.length ? result : result;
 }
 `;
 
@@ -146,7 +147,8 @@ const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gm
 for (const format of ['esm', 'cjs']) {
   const out = alone[format];
   if (out.error) fail(`${format}, installed alone: ${out.error}: ${out.message}`);
-  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || JSON.stringify(out.diagnostics) !== '[]') fail(`${format}, installed alone wrote ${JSON.stringify(out)}`);
+  // Nothing in this email; at most a note about the captured checks on HTML (models 1.8.0 and later run them).
+  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || out.diagnostics.some((d) => d.code !== 'email/captured-checks')) fail(`${format}, installed alone wrote ${JSON.stringify(out)}`);
   if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, installed alone marked ${JSON.stringify(out.approximate)} approximate`);
   if (out.template?.name !== 'email-clients/version-mismatch' || !out.template.message.includes("isn't installed") || !out.template.message.includes('npm i @hyper-elements/react@^0.4.0')) fail(`${format}, installed alone, a template call gave ${JSON.stringify(out.template)}`);
 }

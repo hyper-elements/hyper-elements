@@ -3,7 +3,9 @@
  * builder's export): the same previews, with no core and no React loaded. Nothing this module reaches imports them.
  */
 import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type EmailClientPreview, type PreviewClient, type Skipped } from "./clients";
-import { APPROXIMATE_FOR_HTML, checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
+import { APPROXIMATE_FOR_HTML, checkClients, EMAIL_CLIENTS, forClients, type EmailClient } from "./email-clients";
+import { documentNotes, lineExcerpt, type EmailHtmlDiagnostic } from "./html";
+import { asError, loadModels } from "./load-models";
 import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";
 import { NO_BLOCKS, previewsOf } from "./previews";
 import { checkProtocol } from "./protocol";
@@ -53,7 +55,7 @@ async function models(): Promise<Models> {
  * An HTML email as each email client draws it: one preview file per client (and dark variant). The HTML is previewed as
  * given (it's what a client receives), as data inside the file: none of its scripts, handlers or navigation run.
  */
-export async function previewHtml(html: string, options: HtmlOptions = {}): Promise<{ previews: EmailClientPreview[]; skipped: Skipped[]; diagnostics: [] }> {
+export async function previewHtml(html: string, options: HtmlOptions = {}): Promise<{ previews: EmailClientPreview[]; skipped: Skipped[]; diagnostics: EmailHtmlDiagnostic[] }> {
   checkWholeEmail(html);
   checkOptions(options, "renderInEmailClients(html, options)", HTML_OPTIONS);
   const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", widths, computers } = options;
@@ -64,6 +66,38 @@ export async function previewHtml(html: string, options: HtmlOptions = {}): Prom
   const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS, widths, computers);
   // HTML not built with Hyper Elements: approximate where the models are weak on it, or haven't been measured on it.
   const marked = variants.map((variant) => (APPROXIMATE_FOR_HTML.includes(variant.id) ? { ...variant, approximate: true } : variant));
-  const previews = await previewsOf(html, NO_BLOCKS, marked, loaded, { fonts, source: "html" });
-  return { previews, skipped, diagnostics: [] };
+  // The previews, and the checks for the clients previewed (as a template's render() gets them), side by side.
+  const [previews, diagnostics] = await Promise.all([previewsOf(html, NO_BLOCKS, marked, loaded, { fonts, source: "html" }), checksOf(html, clients)]);
+  return { previews, skipped, diagnostics };
+}
+
+/** A diagnostic about the checks themselves: no clients, no line. */
+const aboutTheChecks = (severity: "info" | "warning", message: string, fix: string): EmailHtmlDiagnostic => ({ code: "email/captured-checks", severity, message, fix, path: "html", line: null });
+
+
+/**
+ * The open checks on `html` (documentNotes()), and the models' captured ones where they can run (check({ html }), models
+ * 1.8.0 and later), for `clients`, by line. Without them, or where the models can't run, a diagnostic about the checks
+ * says so and the open checks stand; a protocol this package doesn't read throws.
+ */
+async function checksOf(html: string, clients: readonly EmailClient[]): Promise<EmailHtmlDiagnostic[]> {
+  const found = documentNotes(html);
+  const { models, unavailable } = await loadModels();
+  if (unavailable) {
+    found.push(aboutTheChecks("warning", `The captured email client checks didn't load (${unavailable.message}): only the checks from caniemail's tables ran`, "install @hyper-elements/email-client-models where it can load (it comes with this package): Node 20 or later, or a browser with WebAssembly"));
+  } else {
+    try {
+      const lines = html.split("\n");
+      for (const entry of models.check({ html })) {
+        const line = entry.line ?? null;
+        found.push({ code: entry.code, severity: entry.severity, message: entry.message, clients: entry.clients as EmailClient[], ...(entry.fix ? { fix: entry.fix } : {}), path: "html", line, ...(line === null ? {} : { excerpt: lineExcerpt(lines, line) }) });
+      }
+    } catch (error) {
+      const message = asError(error).message;
+      // Models before 1.8.0 check only a template's tree: given HTML, they say there's no root.
+      if (/\bno root$/.test(message)) found.push(aboutTheChecks("info", "The installed @hyper-elements/email-client-models checks only templates (1.8.0 and later check HTML too): only the checks from caniemail's tables ran", "update it: npm update @hyper-elements/email-client-models"));
+      else found.push(aboutTheChecks("warning", `The captured email client checks failed on this email (${message}): only the checks from caniemail's tables ran`, "report it, with the email, to Hyper Elements"));
+    }
+  }
+  return forClients(found, clients).sort((a, b) => (a.line ?? Infinity) - (b.line ?? Infinity));
 }

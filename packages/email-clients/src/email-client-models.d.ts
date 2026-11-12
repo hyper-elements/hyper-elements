@@ -9,6 +9,11 @@ declare module "@hyper-elements/email-client-models" {
   export function ready(): Promise<void>;
   /** The checks only captures found, on core's PluginInput (synchronous, after ready()). */
   export function check(input: { root: unknown }): Array<{ code: string; severity: "info" | "warning"; message: string; path: string; nodeId?: string; clients: string[]; fix?: string; see?: string }>;
+  /**
+   * The same checks on a whole email's HTML (1.8.0 and later; before, it throws "no root"): at most one finding each, at
+   * its first line, with classic Outlook's conditional comments blanked.
+   */
+  export function check(input: { html: string }): Array<{ code: string; severity: "info" | "warning"; message: string; clients: string[]; fix?: string; line: number | null }>;
   /** Its build's markers and protocol. */
   export function about(): { protocol: number; build: string[] };
   /** The open font files a client's preview loads (this package gives each its URL). */

@@ -8,6 +8,11 @@ Each release records the models package it was tested with.
   `renderInEmailClients(html, { emailClients, dark, fonts, widths, computers })` takes the whole email and writes the same
   preview files. That loads neither React nor `@hyper-elements/react`: core is loaded only for a template, in the
   caller's module format.
+- **Its `diagnostics` for HTML** are what the clients previewed remove or change in it, each with its line in the HTML
+  and an excerpt: the CSS and stylesheet rules from caniemail's tables; a `<style>` by where it is (every `<style>` for
+  the clients that remove them all, one in the `<body>` for Gmail); an `@media` for the clients that apply none; a web
+  font; images in formats some clients don't show; Gmail's 16 KB limit for each head `<style>` on its own, and its clip.
+  With models 1.8.0 or later, the checks only captures found run on HTML too.
 - Previews of HTML not built with Hyper Elements are `approximate` where the models are under 95% on such emails or
   aren't measured on them (`APPROXIMATE_FOR_HTML`), and their header says the email wasn't built with Hyper Elements.
 - `@hyper-elements/react`, `react` and `react-dom` are optional peers: npm doesn't install them with this package. A
