@@ -69,6 +69,28 @@ export const IMAGE_FORMATS: Readonly<Record<string, { clients: readonly EmailCli
   svg: { clients: ["mail-ru"], feature: "image-svg", name: "an SVG" },
 };
 
+/**
+ * Where an image's format is said, first to last: its data: type, then the format an image CDN is asked for (which it
+ * serves whatever the file's extension), then its extension. The first found is the format, even one every client shows.
+ */
+export const FORMAT_IN: readonly RegExp[] = [/^data:image\/([a-z]+)/i, /[?&](?:fm|format|f)=(webp|avif|svg|png|jpe?g|gif)\b/i, /\/f_(webp|avif|svg|png|jpe?g|gif)[,/]/i, /\.([a-z]+)(?:[?#]|$)/i];
+
+/** The format of the image at `src` some clients don't show (IMAGE_FORMATS), or undefined. */
+export function imageFormatOf(src: string): (typeof IMAGE_FORMATS)[string] | undefined {
+  const format = FORMAT_IN.map((pattern) => pattern.exec(src)?.[1]).find(Boolean)?.toLowerCase();
+  return format && Object.prototype.hasOwnProperty.call(IMAGE_FORMATS, format) ? IMAGE_FORMATS[format] : undefined;
+}
+
+/**
+ * The clients that remove every <style>, wherever it is in the email, which then shows with its inline styles only
+ * (caniemail's html-style): those it marks as not supporting it, and the Gmail apps with another account than Google's
+ * ("not supported with non Google accounts"). Partial support for another reason (not inside the <body>) doesn't count.
+ */
+export const STYLE_REMOVED: readonly EmailClient[] = ["gmail-app-other", "gmx", "web-de", "sfr", "laposte", "rainloop"];
+
+/** The clients that apply no media query at all (caniemail's css-at-media: not supported), so phones get the desktop layout. */
+export const NO_MEDIA_QUERIES: readonly EmailClient[] = ["outlook", "thunderbird", "sfr", "laposte"];
+
 /** Gmail clips a message at this many bytes of HTML ("[Message clipped]"). */
 export const GMAIL_CLIP_BYTES = 102_400;
 /** Gmail reads this much of a `<style>`. */

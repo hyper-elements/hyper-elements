@@ -1,16 +1,16 @@
 /**
- * What this package needs of core (@hyper-elements/react), checked on each call before anything is rendered: core is
- * imported as a namespace, so a core without one of these is found here, with the command to install a matching pair,
- * not when the module is linked.
+ * What this package needs of core (@hyper-elements/react), checked on each call that renders a template: core is loaded
+ * when it's first needed, as a namespace, so a core that's missing, or lacks one of these, is found here, with the command
+ * to install a matching pair, not when the module is linked. HTML a caller gives needs no core: nothing loads it.
  */
-import * as installed from "@hyper-elements/react";
+import type * as CoreModule from "@hyper-elements/react";
 import { peerDependencies, version } from "../package.json";
 
 /** The plugin contract (core's PLUGIN_API) this package's plugin is written for. */
 export const PLUGIN_APIS: readonly number[] = [1];
 
-/** The models package's message formats (its PROTOCOL) this package reads. */
-export const MODEL_PROTOCOLS: readonly number[] = [1];
+// The models' protocol check lives apart: the HTML a caller gives is previewed without loading core.
+export { checkProtocol, MODEL_PROTOCOLS } from "./protocol";
 
 /** The `blocks` formats (core's BLOCK_MAP_VERSION) this package reads: 2, whose entries say their component (1 doesn't). */
 export const BLOCK_MAP_VERSIONS: readonly number[] = [2];
@@ -22,7 +22,53 @@ export const CORE_RANGE: string = peerDependencies["@hyper-elements/react"];
 export const INSTALL = `npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^${version.split(".").slice(0, 2).join(".")}`;
 
 /** What's used of core, by name. */
-export type Core = typeof installed;
+export type Core = typeof CoreModule;
+
+/** Set by the build (tsup.config.ts): true in the CommonJS build. Unset (tests, a bundle of the source): false. */
+declare const __CJS__: boolean | undefined;
+
+let loading: Promise<Record<string, unknown>> | undefined;
+
+/**
+ * Whether `error`, thrown loading core, says core itself isn't installed: not found, naming @hyper-elements/react as
+ * what's missing. A module core needs that's missing (react-dom, say) names that module, and is rethrown as it is.
+ */
+export function isCoreMissing(error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown };
+  if (code !== "ERR_MODULE_NOT_FOUND" && code !== "MODULE_NOT_FOUND") return false;
+  // Node: "Cannot find module '@hyper-elements/react'" (require), "Cannot find package '@hyper-elements/react' imported
+  // from …" (import). A module missing inside core names itself, with core's path unquoted after "imported from".
+  return typeof message === "string" && /\bCannot find (?:module|package) ['"]@hyper-elements\/react['"]/.test(message);
+}
+
+/** Core, in this build's module format; core not installed is `email-clients/version-mismatch`, with what to install. */
+async function importCore(): Promise<Record<string, unknown>> {
+  try {
+    if (typeof __CJS__ !== "undefined" && __CJS__) return require("@hyper-elements/react") as Record<string, unknown>;
+    return (await import("@hyper-elements/react")) as unknown as Record<string, unknown>;
+  } catch (error) {
+    if (!isCoreMissing(error)) throw error;
+    const missing = new Error(`@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE} to preview a template, and it isn't installed. Install it: ${INSTALL} (HTML needs none: pass the email's HTML as a string)`);
+    missing.name = "email-clients/version-mismatch";
+    throw missing;
+  }
+}
+
+/**
+ * Core (@hyper-elements/react), loaded on first use in the module format of this build: require() in the CommonJS
+ * build, import() in the ES module one, so a caller's core and this package's are the same copy (one ElementsError).
+ * Loaded once; a load that fails isn't kept, in either build, so the next call tries again.
+ */
+export function loadCore(): Promise<Record<string, unknown>> {
+  if (!loading) {
+    const attempt = importCore();
+    loading = attempt;
+    attempt.catch(() => {
+      if (loading === attempt) loading = undefined;
+    });
+  }
+  return loading;
+}
 
 /** What's missing for the plugin: a core whose PLUGIN_API is one it's written for. */
 function pluginApi(core: Record<string, unknown>): string[] {
@@ -32,17 +78,9 @@ function pluginApi(core: Record<string, unknown>): string[] {
 }
 
 /** For emailClients(): core takes plugins this package's plugin is written for. */
-export function checkPlugins(core: Record<string, unknown> = installed as unknown as Record<string, unknown>): void {
+export function checkPlugins(core: Record<string, unknown>): void {
   const missing = pluginApi(core);
   if (missing.length) throw versionMismatch(missing);
-}
-
-/** The models package installed speaks a protocol this package reads. */
-export function checkProtocol(protocol: unknown): void {
-  if (typeof protocol === "number" && MODEL_PROTOCOLS.includes(protocol)) return;
-  const error = new Error(`@hyper-elements/email-clients reads @hyper-elements/email-client-models' protocol ${MODEL_PROTOCOLS.join(", ")}; the one installed speaks ${JSON.stringify(protocol)}. Reinstall @hyper-elements/email-clients, which brings the models package it reads`);
-  error.name = "email-clients/version-mismatch";
-  throw error;
 }
 
 /**
@@ -50,7 +88,7 @@ export function checkProtocol(protocol: unknown): void {
  * BLOCK_MAP_VERSION is a format this package reads. Otherwise an Error named `email-clients/version-mismatch` (core's
  * ElementsError may be what's missing).
  */
-export function checkCore(core: Record<string, unknown> = installed as unknown as Record<string, unknown>): Core {
+export function checkCore(core: Record<string, unknown>): Core {
   const missing = ["render", "prepare", "ElementsError"].filter((name) => typeof core[name] !== "function");
   missing.push(...pluginApi(core));
   const version = core.BLOCK_MAP_VERSION;
