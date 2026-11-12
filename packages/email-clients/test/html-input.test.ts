@@ -1,12 +1,14 @@
 /**
- * @hyper-elements/email-clients/html: previews of any HTML email. Which files a call writes and which are approximate,
+ * renderInEmailClients(html): previews of any HTML email. Which files a call writes and which are approximate,
  * the HTML embedded exactly as given (as data, never markup), the header that says where the email came from, and what
  * it refuses. No React or core here: this file imports neither.
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
-import { APPROXIMATE_FOR_HTML, checkWholeEmail, renderInEmailClients } from "../src/html-entry";
+import { APPROXIMATE_FOR_HTML } from "../src/email-clients";
+import { checkWholeEmail } from "../src/html-input";
+import { renderInEmailClients } from "../src/index";
 import { contentSecurityPolicy } from "../src/shell";
 import { RUNTIME } from "../src/runtime.generated";
 
@@ -16,7 +18,7 @@ const receipt = fixture("receipt.html");
 /** The JSON a file embeds under `id`. */
 const embedded = (html: string, id: string) => JSON.parse(new RegExp(`<script type="application/json" id="${id}">([^<]*)</script>`).exec(html)![1]!);
 
-describe("renderInEmailClients(html) from /html", () => {
+describe("renderInEmailClients(html)", () => {
   it("writes one file per client asked for, the four captured by default, approximate where the models are weak on HTML or haven't measured it", async () => {
     const { previews, skipped, diagnostics } = await renderInEmailClients(receipt);
     expect(previews.map(({ id, approximate }) => ({ id, approximate }))).toEqual([
@@ -83,7 +85,7 @@ describe("renderInEmailClients(html) from /html", () => {
     expect(() => checkWholeEmail("<!-- <html><body> --><p>Hi</p>")).toThrow(TypeError);
     expect(() => checkWholeEmail("<htmlx><bodyx>")).toThrow(TypeError);
     await expect(renderInEmailClients("<p>Hi</p>")).rejects.toThrow(TypeError);
-    await expect(renderInEmailClients(42 as unknown as string)).rejects.toThrow(/as a string, not number/);
+    expect(() => checkWholeEmail(42)).toThrow(/as a string, not number/);
   });
 
   it("refuses an option it doesn't take, such as render()'s, and a client it doesn't know", async () => {

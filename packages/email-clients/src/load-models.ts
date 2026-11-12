@@ -1,6 +1,6 @@
 /**
- * The models package, loaded and compiled for the checks: by the plugin (emailClients()) and by the HTML entry's
- * checkInEmailClients() alike. A package that can't be imported, or whose WebAssembly doesn't compile, leaves the open
+ * The models package, loaded and compiled for the checks: by the plugin (emailClients()) and by renderInEmailClients()
+ * for HTML alike. A package that can't be imported, or whose WebAssembly doesn't compile, leaves the open
  * checks to run alone (the caller says so); a protocol this package doesn't read is a mismatched install, and throws.
  */
 import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";

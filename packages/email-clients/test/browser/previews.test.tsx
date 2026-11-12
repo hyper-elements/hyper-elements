@@ -366,11 +366,11 @@ describe.runIf(process.platform === "linux")("on Linux, without the Mac's fonts"
   });
 });
 
-describe("HTML from /html", () => {
+describe("HTML given as a string", () => {
   const fixture = (name: string) => readFileSync(join(__dirname, "../fixtures/html", name), "utf8");
 
   it("previews a hand-written email and one with a head stylesheet in every client, words and all", async () => {
-    const { renderInEmailClients: renderHtml } = await import("../../src/html-entry");
+    const renderHtml = renderInEmailClients;
     for (const [name, words] of [["receipt.html", "Thanks for your order"], ["newsletter.html", "The weekly letter"]] as const) {
       const { previews } = await renderHtml(fixture(name), { emailClients: [...PREVIEW_CLIENTS], dark: true });
       expect(previews.length).toBe(PREVIEW_CLIENTS.length + 3);
@@ -391,7 +391,7 @@ describe("HTML from /html", () => {
   });
 
   it("runs none of a hostile email's scripts, handlers or navigation, a <base href> included, and fetches only its images", async () => {
-    const { renderInEmailClients: renderHtml } = await import("../../src/html-entry");
+    const renderHtml = renderInEmailClients;
     const hostile = [
       "<!DOCTYPE html><html><head>",
       '<base href="https://evil.example/">',

@@ -260,7 +260,7 @@ export function htmlNotes(html: string, path: string, nodeId: string | undefined
   return out;
 }
 
-/** Something found in a whole email's HTML (the HTML entry): its line and an excerpt, and the clients it's about. */
+/** Something found in a whole email's HTML (renderInEmailClients(html)): its line and an excerpt, and the clients it's about. */
 export interface EmailHtmlDiagnostic {
   code: string;
   severity: "info" | "warning";
@@ -307,7 +307,7 @@ const NOT_ON_A_DOCUMENT = new Set<HtmlCheck>([
 const utf8Bytes = (text: string) => new TextEncoder().encode(text).length;
 
 /**
- * What a whole email's HTML has that email clients remove or change, each at its first line (the HTML entry's checks,
+ * What a whole email's HTML has that email clients remove or change, each at its first line (renderInEmailClients(html)'s checks,
  * from caniemail's tables and Gmail's limits). Classic Outlook's conditional comments are blanked first, keeping lines.
  */
 export function documentNotes(html: string): EmailHtmlDiagnostic[] {

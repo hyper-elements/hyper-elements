@@ -37,14 +37,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./html": {
-      "types": {
-        "import": "./dist/html.d.ts",
-        "require": "./dist/html.d.cts"
-      },
-      "import": "./dist/html.js",
-      "require": "./dist/html.cjs"
-    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",

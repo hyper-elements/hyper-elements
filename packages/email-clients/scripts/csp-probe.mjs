@@ -2,20 +2,20 @@
 // Run with: node --disallow-code-generation-from-strings scripts/csp-probe.mjs
 //
 // CSP safety gate for @hyper-elements/email-clients: importing the built package, checking an email with the plugin
-// (which compiles the models' WebAssembly) and writing previews, from the main entry and from /html (an HTML email, with
-// no React or core imported first), evaluates no string (eval / new Function), so it runs where a
+// (which compiles the models' WebAssembly) and writing previews, of a template and of an HTML email (first, with no
+// React or core imported), evaluates no string (eval / new Function), so it runs where a
 // Content-Security-Policy has no 'unsafe-eval'. (The preview files themselves run in a browser, under their own
 // CSP: the runtime's tests check those.)
 
 const CSP_ERROR = /Code generation from strings disallowed/;
 
 try {
-  // /html first, before anything imports React or core.
-  const html = await import('../dist/html.js');
+  // HTML first, before anything imports React or core: previewing it loads neither.
+  const html = await import('../dist/index.js');
   const email = '<!DOCTYPE html><html><body><table><tr><td style="font-family:Arial">Hi</td></tr></table></body></html>';
   const fromHtml = await html.renderInEmailClients(email, { emailClients: [...html.PREVIEW_CLIENTS], dark: true, fonts: 'inline' });
   if (fromHtml.previews.length < html.PREVIEW_CLIENTS.length || fromHtml.previews.some((p) => !p.html.startsWith('<!DOCTYPE html>'))) {
-    console.error('CSP_FAIL: renderInEmailClients(html) from /html wrote no previews');
+    console.error('CSP_FAIL: renderInEmailClients(html) wrote no previews');
     process.exit(2);
   }
   const React = (await import('react')).default;
@@ -33,7 +33,7 @@ try {
     console.error('CSP_FAIL: renderInEmailClients() wrote no previews');
     process.exit(2);
   }
-  console.info('CSP_OK: @hyper-elements/email-clients imports, checks an email with the plugin and writes a preview for every client, from the main entry and from /html, under strict CSP — no eval / new Function');
+  console.info('CSP_OK: @hyper-elements/email-clients imports, checks an email with the plugin and writes a preview for every client, of a template and of an HTML email, under strict CSP — no eval / new Function');
 } catch (err) {
   const message = String((err && err.message) || err);
   console.error(CSP_ERROR.test(message) ? `CSP_FAIL: @hyper-elements/email-clients evaluates a string (eval / new Function).\n${message}` : `CSP probe failed to run: ${message}`);

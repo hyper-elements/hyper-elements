@@ -119,7 +119,7 @@ function affected(slug: string, use = ""): EmailClient[] {
 }
 
 /**
- * The clients that don't support a feature at all, for the HTML entry's checks on a whole email: caniemail's latest test
+ * The clients that don't support a feature at all, for the checks on a whole email's HTML: caniemail's latest test
  * is a no on any of their platforms, or (`account`) a partial on the Gmail apps whose notes say it isn't supported with
  * another account than Google's, which is the Gmail apps with another account. A partial for any other reason (where in
  * the email, a bug) doesn't count: unlike affected(), which counts every partial.

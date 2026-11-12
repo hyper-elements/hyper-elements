@@ -1,6 +1,6 @@
 /**
  * The models package's message formats this package reads, and the check of the one installed. Apart from core.ts, so
- * the HTML entry (@hyper-elements/email-clients/html) can check it without importing core.
+ * HTML can be previewed, and the models checked, without loading core.
  */
 
 /** The models package's message formats (its PROTOCOL) this package reads. */

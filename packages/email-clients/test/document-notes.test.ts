@@ -1,10 +1,10 @@
 /**
- * The checks on a whole email's HTML (documentNotes(), and checkInEmailClients() over them): each where its pattern is,
+ * The checks on a whole email's HTML (documentNotes(), and renderInEmailClients(html)'s diagnostics over them): each where its pattern is,
  * at its first line with an excerpt, once per check; a <style> by where it is; Gmail's limits as Gmail applies them;
  * classic Outlook's conditional comments blanked so lines stay the given HTML's.
  */
 import { blankOutlookOnly, documentNotes, withoutOutlookOnly } from "../src/html";
-import { checkInEmailClients } from "../src/html-entry";
+import { renderInEmailClients } from "../src/index";
 import { NO_MEDIA_QUERIES, NO_WEB_FONTS, STYLE_REMOVED } from "../src/limits";
 
 /** A whole email: `head` in the <head>, `body` in the <body>, each line of the arrays its own line. */
@@ -55,12 +55,12 @@ describe("documentNotes(): the checks on a whole email", () => {
 
   it("names only gmail-app-other for a head <style>, among the Gmails and Apple Mail, and nothing for clients that keep it", async () => {
     const head = email({ head: ["<style>.a { color: red; }</style>"], body: ['<p class="a">Hi</p>'] });
-    const { diagnostics } = await checkInEmailClients(head, { clients: ["gmail", "gmail-app", "gmail-app-other", "apple-mail"] });
+    const { diagnostics } = await renderInEmailClients(head, { emailClients: ["gmail", "gmail-app", "gmail-app-other", "apple-mail"], computers: ["windows"] });
     expect(diagnostics.filter((d) => d.code === "email/html-css").map((d) => d.clients)).toEqual([["gmail-app-other"]]);
-    const kept = await checkInEmailClients(head, { clients: ["gmail", "apple-mail"] });
+    const kept = await renderInEmailClients(head, { emailClients: ["gmail", "apple-mail"], computers: ["windows"] });
     expect(kept.diagnostics.filter((d) => d.code === "email/html-css")).toEqual([]);
     const body = email({ body: ["<style>.a { color: red; }</style>", '<p class="a">Hi</p>'] });
-    const inBody = await checkInEmailClients(body, { clients: ["gmail", "apple-mail"] });
+    const inBody = await renderInEmailClients(body, { emailClients: ["gmail", "apple-mail"], computers: ["windows"] });
     expect(inBody.diagnostics.filter((d) => d.code === "email/html-css")).toEqual([expect.objectContaining({ line: 6, clients: ["gmail"] })]);
   });
 

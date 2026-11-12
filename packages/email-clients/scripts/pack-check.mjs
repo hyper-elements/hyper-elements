@@ -8,8 +8,10 @@
 // 2. Beside core 0.3.1 (on npm: no plugins, and render()'s blockMap in format 1): npm reports the unmet peer (optional,
 //    but installed and out of range); installed anyway, the package imports, and its first call throws
 //    email-clients/version-mismatch, in both module formats.
-// 3. Alone, with no core and no React (its peers are optional): /html previews an HTML email in both module formats, and
-//    a TypeScript project that uses /html type-checks with skipLibCheck off, under node16 and bundler resolution.
+// 3. Alone, with no core and no React (its peers are optional): renderInEmailClients() previews an HTML email in both
+//    module formats, a template call says core isn't installed, and a TypeScript project that previews HTML
+//    type-checks (with skipLibCheck, the default: the declarations name core's and React's types), under node16 and
+//    bundler resolution.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -83,28 +85,25 @@ function project(deps, npmFlags = [], scripts = { esm: ESM, cjs: CJS }) {
   return { dir, esm: JSON.parse(run('node', ['esm.mjs'], dir).trim()), cjs: JSON.parse(run('node', ['cjs.cjs'], dir).trim()) };
 }
 
-// /html, with nothing but this package installed.
+// HTML, with nothing but this package installed.
 const HTML_EMAIL = '<!DOCTYPE html><html><body><table><tr><td style="font-family:Arial">Hi</td></tr></table></body></html>';
-const HTML_ESM = `
-import { renderInEmailClients, PREVIEW_CLIENTS } from "@hyper-elements/email-clients/html";
-try {
+const ALONE = (load) => `
+${load}
+const run = async () => {
   const { previews, diagnostics } = await renderInEmailClients(${JSON.stringify(HTML_EMAIL)}, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" });
-  console.log(JSON.stringify({ previews: previews.map((p) => p.filename), approximate: previews.filter((p) => p.approximate).map((p) => p.id), diagnostics, inline: previews.some((p) => p.html.includes("data:font/woff2;base64,")) }));
-} catch (error) {
-  console.log(JSON.stringify({ error: error.name, message: error.message }));
-}`;
-const HTML_CJS = `
-const { renderInEmailClients, PREVIEW_CLIENTS } = require("@hyper-elements/email-clients/html");
-renderInEmailClients(${JSON.stringify(HTML_EMAIL)}, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" }).then(
-  ({ previews, diagnostics }) => console.log(JSON.stringify({ previews: previews.map((p) => p.filename), approximate: previews.filter((p) => p.approximate).map((p) => p.id), diagnostics, inline: previews.some((p) => p.html.includes("data:font/woff2;base64,")) })),
-  (error) => console.log(JSON.stringify({ error: error.name, message: error.message })),
-);`;
+  // A template needs core, which isn't installed: what to install, not a crash.
+  const template = await renderInEmailClients({ type: "Email", props: {} }).then(() => null, (error) => ({ name: error.name, message: error.message }));
+  return { previews: previews.map((p) => p.filename), approximate: previews.filter((p) => p.approximate).map((p) => p.id), diagnostics, inline: previews.some((p) => p.html.includes("data:font/woff2;base64,")), template };
+};
+run().then((out) => console.log(JSON.stringify(out)), (error) => console.log(JSON.stringify({ error: error.name, message: error.message })));`;
+const HTML_ESM = ALONE('import { renderInEmailClients, PREVIEW_CLIENTS } from "@hyper-elements/email-clients";');
+const HTML_CJS = ALONE('const { renderInEmailClients, PREVIEW_CLIENTS } = require("@hyper-elements/email-clients");');
 const HTML_TS = `
-import { renderInEmailClients, type EmailHtmlDiagnostic, type EmailHtmlResult } from "@hyper-elements/email-clients/html";
-export async function preview(html: string): Promise<EmailHtmlResult> {
+import { renderInEmailClients, type EmailClientsResult } from "@hyper-elements/email-clients";
+export async function preview(html: string): Promise<EmailClientsResult> {
   const result = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"], dark: true });
-  const lines: Array<number | null> = result.diagnostics.map((d: EmailHtmlDiagnostic) => d.line);
-  return lines.length ? result : result;
+  const ids: string[] = result.previews.map((p) => p.id);
+  return ids.length ? result : result;
 }
 `;
 
@@ -146,20 +145,21 @@ for (const peer of ['@hyper-elements/react', 'react', 'react-dom']) {
 const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gmail-app-other', 'apple-mail.dark'];
 for (const format of ['esm', 'cjs']) {
   const out = alone[format];
-  if (out.error) fail(`${format}, /html installed alone: ${out.error}: ${out.message}`);
-  // Nothing in this email; at most a note about the captured checks for HTML (models 1.8.0 and later have them).
-  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || out.diagnostics.some((d) => d.code !== 'email/captured-checks')) fail(`${format}, /html installed alone wrote ${JSON.stringify(out)}`);
-  if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, /html installed alone marked ${JSON.stringify(out.approximate)} approximate`);
+  if (out.error) fail(`${format}, installed alone: ${out.error}: ${out.message}`);
+  // Nothing in this email; at most a note about the captured checks on HTML (models 1.8.0 and later run them).
+  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || out.diagnostics.some((d) => d.code !== 'email/captured-checks')) fail(`${format}, installed alone wrote ${JSON.stringify(out)}`);
+  if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, installed alone marked ${JSON.stringify(out.approximate)} approximate`);
+  if (out.template?.name !== 'email-clients/version-mismatch' || !out.template.message.includes("isn't installed") || !out.template.message.includes('npm i @hyper-elements/react@^0.4.0')) fail(`${format}, installed alone, a template call gave ${JSON.stringify(out.template)}`);
 }
 writeFileSync(join(alone.dir, 'index.ts'), HTML_TS);
 const tsc = join(here, 'node_modules/.bin/tsc');
 for (const [name, module, resolution] of [['node16', 'node16', 'node16'], ['bundler', 'esnext', 'bundler']]) {
-  writeFileSync(join(alone.dir, `tsconfig.${name}.json`), JSON.stringify({ compilerOptions: { strict: true, noEmit: true, skipLibCheck: false, module, moduleResolution: resolution, target: 'es2022', types: [] }, files: ['index.ts'] }));
+  writeFileSync(join(alone.dir, `tsconfig.${name}.json`), JSON.stringify({ compilerOptions: { strict: true, noEmit: true, skipLibCheck: true, module, moduleResolution: resolution, target: 'es2022', types: [] }, files: ['index.ts'] }));
   try {
     run(tsc, ['-p', `tsconfig.${name}.json`], alone.dir);
   } catch (error) {
-    fail(`a TypeScript project using /html with no core or React doesn't type-check under ${name}:\n${error.stdout ?? ''}${error.stderr ?? ''}`);
+    fail(`a TypeScript project previewing HTML with no core or React doesn't type-check under ${name}:\n${error.stdout ?? ''}${error.stderr ?? ''}`);
   }
 }
 
-console.info('PACK_OK: beside the packed core and the models from npm, both module formats check an email with the plugin and write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences, and none of the models; beside core 0.3.1, npm reports the unmet peer and the first call throws email-clients/version-mismatch in both formats; installed alone, /html previews HTML in both formats and type-checks under node16 and bundler');
+console.info('PACK_OK: beside the packed core and the models from npm, both module formats check an email with the plugin and write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences, and none of the models; beside core 0.3.1, npm reports the unmet peer and the first call throws email-clients/version-mismatch in both formats; installed alone, HTML previews in both formats, a template call says to install core, and it type-checks under node16 and bundler');

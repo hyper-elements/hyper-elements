@@ -1,6 +1,6 @@
 /**
  * The preview files for an email's HTML: one per variant, each drawing the email with the models and the runtime.
- * Shared by the main entry (render()'s HTML and block map) and the HTML entry (HTML the caller gave, with no blocks), so
+ * Shared by templates (render()'s HTML and block map) and HTML given as a string (with no blocks), so
  * both write the same file for the same HTML.
  */
 import type { EmailClientPreview, PreviewVariant } from "./clients";

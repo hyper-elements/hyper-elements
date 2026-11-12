@@ -8,7 +8,7 @@
  */
 import type { ElementsPlugin, PluginInput, PluginOutput } from "@hyper-elements/react";
 import { treeChecks, outputChecks } from "./checks";
-import { checkPlugins } from "./core";
+import { checkPlugins, loadCore } from "./core";
 import { DEFAULT_EMAIL_CLIENTS, checkClients, forClients, type ClientDiagnostic, type EmailClient } from "./email-clients";
 import { loadModels } from "./load-models";
 import type { Models } from "./models";
@@ -22,7 +22,7 @@ export interface EmailClientsPluginOptions {
 export const PLUGIN_NAME = "email-clients";
 
 export async function emailClients(options: EmailClientsPluginOptions = {}): Promise<ElementsPlugin> {
-  checkPlugins();
+  checkPlugins(await loadCore());
   const given = options.clients;
   checkClients(given, "emailClients({ clients })");
   const { models, unavailable } = await loadModels();

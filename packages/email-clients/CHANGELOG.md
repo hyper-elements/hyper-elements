@@ -4,18 +4,20 @@ Each release records the models package it was tested with.
 
 ## Unreleased (0.4.3)
 
-- **New: `@hyper-elements/email-clients/html`** previews any HTML email, however it was made (MJML, React Email, by
-  hand). `renderInEmailClients(html, { emailClients, dark, fonts, widths, computers })` takes the whole email as a string
-  and writes the same preview files. It needs neither React nor `@hyper-elements/react`, in code or in types.
+- **`renderInEmailClients()` takes any HTML email as a string too**, however it was made (MJML, React Email, by hand):
+  `renderInEmailClients(html, { emailClients, dark, fonts, widths, computers })` takes the whole email and writes the same
+  preview files. That loads neither React nor `@hyper-elements/react`: core is loaded only for a template, in the
+  caller's module format.
+- **Its `diagnostics` for HTML** are what the clients previewed remove or change in it, each with its line in the HTML
+  and an excerpt: the CSS and stylesheet rules from caniemail's tables; a `<style>` by where it is (every `<style>` for
+  the clients that remove them all, one in the `<body>` for Gmail); an `@media` for the clients that apply none; a web
+  font; images in formats some clients don't show; Gmail's 16 KB limit for each head `<style>` on its own, and its clip.
+  With models 1.8.0 or later, the checks only captures found run on HTML too.
 - Previews of HTML not built with Hyper Elements are `approximate` where the models are under 95% on such emails or
   aren't measured on them (`APPROXIMATE_FOR_HTML`), and their header says the email wasn't built with Hyper Elements.
-- **New: `checkInEmailClients(html, { clients })`** from `/html` checks a whole email without drawing it, and
-  `renderInEmailClients(html)` returns the same checks for the clients it previews. Each finding has its line in the HTML
-  and an excerpt. A `<style>` is noted by where it is (every `<style>` for the clients that remove them all, one in the
-  `<body>` for Gmail), an `@media` for the clients that apply none, and Gmail's 16 KB limit for each head `<style>` on its
-  own. With models 1.8.0 or later, the checks only captures found run on HTML too.
-- `@hyper-elements/react`, `react` and `react-dom` are optional peers: npm doesn't install them with this package. The
-  main entry still needs them, as before.
+- `@hyper-elements/react`, `react` and `react-dom` are optional peers: npm doesn't install them with this package. A
+  template needs them, as before; HTML doesn't. In TypeScript without them, the declarations name their types, so keep
+  `skipLibCheck` on (the default).
 - The preview runtime is rebuilt: the same code, with its minified names renamed (its sha256 changes).
 
 ## 0.4.2

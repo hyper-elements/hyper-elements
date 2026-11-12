@@ -73,11 +73,11 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 
 ## Test any HTML email
 
-An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `@hyper-elements/email-clients/html` takes its HTML and needs neither React nor Hyper Elements.
+An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `renderInEmailClients()` takes its HTML as a string too. React and `@hyper-elements/react` aren't needed for that: `npm i @hyper-elements/email-clients` is enough.
 
 ```ts
 import { readFile } from "node:fs/promises";
-import { renderInEmailClients } from "@hyper-elements/email-clients/html";
+import { renderInEmailClients } from "@hyper-elements/email-clients";
 
 const html = await readFile("welcome.html", "utf8");
 const { previews } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"] });
@@ -86,17 +86,13 @@ const { previews } = await renderInEmailClients(html, { emailClients: ["outlook"
 
 It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`. The emulator is measured mostly on emails built with Hyper Elements, and is less close on others in some clients: those previews are marked `approximate`, and the table below gives both numbers.
 
-To check the HTML without drawing it, `checkInEmailClients()` lists what each client removes or changes, each with its line in the HTML:
+Its `diagnostics` list what each client previewed removes or changes in the HTML, each with its line:
 
 ```ts
-import { checkInEmailClients } from "@hyper-elements/email-clients/html";
-
-const { diagnostics } = await checkInEmailClients(html, { clients: ["outlook", "gmail", "gmail-app"] });
+const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail", "gmail-app"] });
 // [{ code: "email/html-css", severity: "info", line: 5, excerpt: "<style>", clients: ["outlook"],
 //    message: "This email may have an @media in a <style>: the client applies no media query, …", fix: "…" }]
 ```
-
-`renderInEmailClients(html)` returns the same checks, for the clients it previews, as its `diagnostics`.
 
 ## Why it matters
 
@@ -108,7 +104,7 @@ const { diagnostics } = await checkInEmailClients(html, { clients: ["outlook", "
 
 ## Supported email clients
 
-Accuracy is how closely the emulator matches each real client: for emails built with Hyper Elements, and for HTML built another way (a first set of emails from other tools, tested through [`/html`](#test-any-html-email)).
+Accuracy is how closely the emulator matches each real client: for emails built with Hyper Elements, and for HTML built another way (a first set of emails from other tools, previewed as HTML, [below](#test-any-html-email)).
 
 | Client | `id` | Hyper Elements emails | Other HTML |
 |--------|------|-----------------------|------------|
@@ -190,7 +186,7 @@ Open the `gmail` preview for Gmail on the web, or name `gmail-app` in `emailClie
 
 ### Can I test an email I didn't build with Hyper Elements?
 
-Yes. Pass its HTML to `renderInEmailClients()` from `@hyper-elements/email-clients/html`, which needs neither React nor Hyper Elements (see [Test any HTML email](#test-any-html-email)). It's emulated less closely than an email built with Hyper Elements in some clients, and those previews are marked `approximate`. To bring a React Email template over to Hyper Elements instead, use `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)).
+Yes. Pass its HTML to `renderInEmailClients()` as a string; React and Hyper Elements aren't needed for that (see [Test any HTML email](#test-any-html-email)). It's emulated less closely than an email built with Hyper Elements in some clients, and those previews are marked `approximate`. To bring a React Email template over to Hyper Elements instead, use `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)).
 
 ### Is it free?
 
