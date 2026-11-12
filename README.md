@@ -155,7 +155,7 @@ Save a preview and open it, take a screenshot with Playwright, or read the list 
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-gmail-app.png" alt="The sign-in code email in the Gmail app on Android, drawn by the emulator" width="107" />
 </p>
 
-[Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-clients)
+[Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-client-emulator)
 
 ## Agent Benchmarks
 
@@ -188,7 +188,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 - **Start from a design:** [Templates](https://hyperelements.dev/templates) · [Component gallery](https://hyperelements.dev/components)
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
-- **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-clients) · [Email client checks](https://hyperelements.dev/docs/diagnostics)
+- **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)
 - **Use it in your app:** [Next.js example](./examples/nextjs-app-router) · [Email providers](./packages/react/docs/email-providers.md)
 - **Bring existing templates:** [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Move from Unlayer Elements](./packages/react/docs/migrating-from-unlayer-elements.md)
 - **Let teammates edit visually:** [Optional Unlayer editor integration](./packages/react/docs/visual-editing.md)
