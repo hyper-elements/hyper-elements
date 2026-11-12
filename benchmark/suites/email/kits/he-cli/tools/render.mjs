@@ -5,7 +5,8 @@
 //
 // `check --rendered` gives render()'s diagnostics, with the email client checks where @hyper-elements/email-clients is
 // installed (as the `he` kit's tool passes its plugin), so the harness reads the same set from both kits. The problems
-// are printed with the engine's formatDiagnostics(), as the CLI's own text output prints them.
+// are printed as the CLI's own text output prints them: one in the template with the engine's formatDiagnostics(), and
+// one of the CLI's own, at no path (`cli/…`), without a place (`info cli/not-a-template: …`, not `at :`).
 import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -15,9 +16,15 @@ const run = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const json = process.argv.includes("--json");
 const { formatDiagnostics } = createRequire(join(run, "package.json"))("@hyper-elements/react");
 
+/** A diagnostic as the CLI prints it (packages/cli/src/format.ts). */
+const format = (d) =>
+  d.path
+    ? formatDiagnostics([d])
+    : `${d.severity} ${d.code}: ${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}${d.fix ? ` Fix: ${d.fix}` : ""}${d.see ? ` See: ${d.see}` : ""}`;
+
 /** Ends the run: the problems printed (and, with --json, as the last line), exit 0 when nothing stops the email. */
 function end(ok, diagnostics, message) {
-  if (diagnostics.length) (ok ? console.log : console.error)(formatDiagnostics(diagnostics));
+  if (diagnostics.length) (ok ? console.log : console.error)(diagnostics.map(format).join("\n"));
   if (message) (ok ? console.log : console.error)(message);
   if (json) console.log(JSON.stringify({ ok, diagnostics }));
   process.exit(ok ? 0 : 1);

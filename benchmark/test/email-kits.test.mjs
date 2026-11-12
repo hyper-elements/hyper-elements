@@ -74,4 +74,7 @@ test("he-cli fails a module whose default export isn't a template, which the CLI
   assert.match(cli.text.stderr, /default export must be a component that renders an <Email>/);
   assert.equal(cli.last.ok, false);
   assert.deepEqual(cli.last.diagnostics.map((d) => d.code), ["cli/not-a-template"]);
+  // Printed as the CLI prints its own: no place, not "at :".
+  assert.match(cli.text.stderr, /^info cli\/not-a-template: /m);
+  assert.doesNotMatch(cli.text.stderr, / at :/);
 });

@@ -10,9 +10,9 @@ import { readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFile
 import { request } from "node:http";
 import { connect } from "node:net";
 import { networkInterfaces, tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cli, devUntil, email, leftovers, link, MODULES, project, startDev, wait, WINDOWS, write } from "./helpers";
+import { cli, devUntil, email, type Dev, leftovers, link, MODULES, project, startDev, wait, WINDOWS, write } from "./helpers";
 
 /**
  * How soon after the last change the page must show it. What that times is process starts and module loading, which
@@ -26,10 +26,30 @@ const WITHIN = TIMED ? (WINDOWS ? 3_000 : 1_000) : 5_000;
 /** A timed test runs again where it failed: a machine's moment of load isn't what it measures. */
 const RETRY = TIMED ? 2 : 0;
 
+/** Every path a test changed (absolute), for what each render was for to be checked against. */
+const changed = new Set<string>();
+
 /** Writes files, and resolves with when (the last change). */
 function change(dir: string, files: Record<string, string>): number {
   write(dir, files);
+  for (const file of Object.keys(files)) changed.add(join(dir, file));
   return Date.now();
+}
+
+/**
+ * Each render after the first was for a change the test made: none for a loader module the children wrote beside the
+ * templates, or anything else the CLI wrote. (A late or repeated event may add a render; that isn't what's checked.)
+ */
+async function rendersWereForTheTest(dev: Dev, cwd: string): Promise<void> {
+  const { history } = await dev.state();
+  for (const { version, changed: paths } of history.filter((render: any) => render.version > 1)) {
+    expect(paths.length, `render ${version} had no change\n${dev.stderr()}`).toBeGreaterThan(0);
+    for (const path of paths) {
+      expect(path, `render ${version}`).not.toMatch(/(^|\/)\.hyper-elements-/);
+      const absolute = resolve(cwd, path);
+      expect([...changed].some((made) => made === absolute || made.startsWith(absolute + sep)), `render ${version} was for ${path}, which the test didn't change\n${dev.stderr()}`).toBe(true);
+    }
+  }
 }
 
 describe("dev re-renders what changed", () => {
@@ -88,16 +108,21 @@ export default function A() { return <Email><Text>{[greeting, word, ui, built].j
     await devUntil(dev, shows("ui two, built two"), "emails/a.tsx");
     expect(Date.now() - at, `a workspace package rebuilt into dist/\n${dev.stderr()}`).toBeLessThan(WITHIN);
 
-    // Nothing the children wrote beside the templates (their loader modules) caused a render of its own.
-    const renders = (await dev.state()).version;
-    await wait(600);
-    expect((await dev.state()).version, dev.stderr()).toBe(renders);
+    // The page says what each render was for (relative to the folder dev runs in).
+    const latest = await dev.state();
+    expect(latest.history.at(-1)).toEqual({ version: latest.version, changed: latest.changed });
+    expect(latest.history.some((render: any) => render.changed.includes("../../packages/built/dist/index.js")), dev.stderr()).toBe(true);
+    expect(dev.stderr()).toMatch(/Rendered 1 template in \d+ ms, after a change to [^\n]*\.\.\/\.\.\/packages\/built\/dist\/index\.js/);
 
     // A build that clears dist/ and writes it again is seen too.
     rmSync(join(dir, "packages/built/dist"), { recursive: true });
     await wait(150);
-    write(dir, { "packages/built/dist/index.js": `export const built = "built three";\n`, "packages/built/dist/index.d.ts": `export declare const built: string;\n` });
+    change(dir, { "packages/built/dist/index.js": `export const built = "built three";\n`, "packages/built/dist/index.d.ts": `export declare const built: string;\n` });
     await devUntil(dev, shows("built three"), "emails/a.tsx");
+
+    // Quiet for a while: nothing the children wrote beside the templates (their loader modules) caused a render.
+    await wait(600);
+    await rendersWereForTheTest(dev, web);
     expect(leftovers(web)).toEqual([]);
   });
 
@@ -126,17 +151,20 @@ export default function T() { return <Email><Text>two says {word}</Text></Email>
   });
 
   it("a template that loops is ended and reported, and the server keeps serving", async () => {
+    // The loop in a package of its own, so its group's child is the one ended (a template in its group, rendered before
+    // the loop, would be shown too, but on a busy machine may not be done in time either).
     const dir = project({
       "emails/a.tsx": email("Still here"),
-      "emails/b.tsx": `import { Email, Text } from "@hyper-elements/react";
+      "slow/package.json": JSON.stringify({ name: "slow", private: true, type: "module" }),
+      "slow/b.tsx": `import { Email, Text } from "@hyper-elements/react";
 export default function Loop() { for (;;) {} return <Email><Text>never</Text></Email>; }
 `,
     });
-    const dev = await startDev(dir, ["emails", "--timeout", "3s"]);
-    const state = await devUntil(dev, (t) => t.status === "error", "emails/b.tsx");
-    const loop = state.templates.find((t: any) => t.file === "emails/b.tsx");
+    const dev = await startDev(dir, ["emails", "slow", "--timeout", "5s"]);
+    const state = await devUntil(dev, (t) => t.status === "error", "slow/b.tsx");
+    const loop = state.templates.find((t: any) => t.file === "slow/b.tsx");
     expect(loop.diagnostics.map((d: any) => d.code)).toEqual(["cli/timeout"]);
-    // The other template, sent before the loop, is shown.
+    // The other template, in another group, is shown.
     const ok = state.templates.find((t: any) => t.file === "emails/a.tsx");
     expect(ok.status).toBe("ok");
     expect(await dev.text(ok.files.txt)).toContain("Still here");
@@ -148,8 +176,8 @@ export default function Loop() { for (;;) {} return <Email><Text>never</Text></E
     write(dir, { "emails/a.tsx": email("Changed while one loops") });
     await devUntil(dev, (_, text) => text.includes("Changed while one loops"), "emails/a.tsx");
     // Fixed, it renders.
-    write(dir, { "emails/b.tsx": email("Loop fixed") });
-    await devUntil(dev, (t, text) => t.status === "ok" && text.includes("Loop fixed"), "emails/b.tsx");
+    write(dir, { "slow/b.tsx": email("Loop fixed") });
+    await devUntil(dev, (t, text) => t.status === "ok" && text.includes("Loop fixed"), "slow/b.tsx");
     expect(dev.child.exitCode).toBe(null);
   });
 
@@ -176,21 +204,28 @@ interface Answer {
   type?: string;
 }
 
-/** A GET with these headers (Host included), the path sent as written; a stream is read for a moment, then closed. */
+/** A GET with these headers (Host included), the path sent as written; a stream is read to its first event, then closed. */
 function get(port: number, path: string, headers: Record<string, string> = {}): Promise<Answer> {
   return new Promise((resolve, reject) => {
     const req = request({ host: "127.0.0.1", port, path, method: "GET", headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
       let body = "";
       res.setEncoding("utf8");
-      res.on("data", (d) => (body += d));
       const done = () => resolve({ status: res.statusCode!, body, type: res.headers["content-type"] });
+      const stream = res.headers["content-type"]?.startsWith("text/event-stream");
+      const close = () => {
+        done();
+        req.destroy();
+      };
+      // A stream: read to its first event, or for a few seconds (a busy machine can be slow to send it).
+      const timer = stream ? setTimeout(close, 5_000) : undefined;
+      res.on("data", (d) => {
+        body += d;
+        if (stream && body.includes("\n\n")) {
+          clearTimeout(timer);
+          close();
+        }
+      });
       res.on("end", done);
-      if (res.headers["content-type"]?.startsWith("text/event-stream")) {
-        setTimeout(() => {
-          done();
-          req.destroy();
-        }, 300);
-      }
     });
     req.on("error", reject);
     req.end();

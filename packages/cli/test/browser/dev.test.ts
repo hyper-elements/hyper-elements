@@ -73,7 +73,22 @@ async function frames(page: Page): Promise<Frame[]> {
   return found;
 }
 
-const runtimes = hasBun() || process.env.CI ? (["node", "bun"] as const) : (["node"] as const);
+/** Whether the page's desktop frame comes to show `text`, within 30 s; a frame replaced while it's read is read again. */
+async function framesShow(page: Page, text: string): Promise<boolean> {
+  const end = Date.now() + 30_000;
+  while (Date.now() < end) {
+    try {
+      const [desktop] = await frames(page);
+      if (await desktop.evaluate((t) => document.body?.innerText.includes(t) ?? false, text)) return true;
+    } catch {
+      // Detached: the page drew a newer render.
+    }
+    await page.waitForTimeout(50);
+  }
+  return false;
+}
+
+const runtimes =hasBun() || process.env.CI ? (["node", "bun"] as const) : (["node"] as const);
 
 describe.each(runtimes)("dev's page, with the CLI on %s", (runtime) => {
   it("shows an Email and a Page at desktop and 375px in frames that can't reach the page", async () => {
@@ -108,9 +123,9 @@ describe.each(runtimes)("dev's page, with the CLI on %s", (runtime) => {
       await page.getByRole("button", { name: /emails\/trying\.tsx/ }).click();
       write(dir, { "emails/trying.tsx": tryingEmail("Second") });
       await devUntil(dev, (_, text) => text.includes("Second"), "emails/trying.tsx");
-      await page.waitForFunction(() => Number(document.documentElement.dataset.version) >= 2);
-      const [desktop] = await frames(page);
-      await desktop.waitForFunction(() => document.body.innerText.includes("Second"));
+      // The frames shown then may be replaced again (another render): looked for until one shows it.
+      expect(await framesShow(page, "Second")).toBe(true);
+      expect(page.url()).toBe(dev.base + "#emails%2Ftrying.tsx");
 
       // An email client preview opens and draws (email-clients' own shell, which runs none of the email's scripts).
       const links = await page.$$eval("[data-previews] a", (list) => list.map((a) => [a.textContent, (a as HTMLAnchorElement).href]));

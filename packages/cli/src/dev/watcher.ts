@@ -184,21 +184,22 @@ export class Watcher {
     return files;
   }
 
-  /** Whether a file that counts in a watched folder was made, changed or removed since it was last looked at. */
-  private differs(dir: string): boolean {
+  /** The files that count in a watched folder made, changed or removed since it was last looked at. */
+  private changes(dir: string): string[] {
     const watched = this.watchers.get(dir);
-    if (!watched) return false;
+    if (!watched) return [];
     let files: Map<string, string>;
     try {
       files = this.files(dir, readdirSync(dir, { withFileTypes: true }));
     } catch {
-      return false;
+      return [];
     }
     const before = watched.files;
     watched.files = files;
-    if (files.size !== before.size) return true;
-    for (const [name, stamp] of files) if (before.get(name) !== stamp) return true;
-    return false;
+    const changed: string[] = [];
+    for (const [name, stamp] of files) if (before.get(name) !== stamp) changed.push(join(dir, name));
+    for (const name of before.keys()) if (!files.has(name)) changed.push(join(dir, name));
+    return changed;
   }
 
   /** Stops watching a folder and the folders in it. */
@@ -212,11 +213,12 @@ export class Watcher {
   }
 
   private event(dir: string, name: string | undefined): void {
-    // The folder looked at again whatever the event names: events can be merged, and Bun may report a change to a source
-    // file under the name of another file changed in that folder just before (a loader module), or only the name a
-    // file renamed over it had (an atomic save).
-    const differs = this.differs(dir);
-    if (name === undefined) return this.changed(dir);
+    // What changed is what the folder holds now against what it held when last looked at, whatever the event names:
+    // events can be merged, Bun may report a change to a source file under the name of another file changed in that
+    // folder just before (a loader module), or only the name a file renamed over it had (an atomic save); and an event
+    // that comes again, or late, for a change already seen changes nothing.
+    for (const path of this.changes(dir)) this.changed(path);
+    if (name === undefined) return;
     const path = join(dir, name);
     const leaf = name.split(/[\\/]/).pop()!;
     let folder: number | undefined;
@@ -238,6 +240,5 @@ export class Watcher {
       this.forget(path);
       return this.changed(path);
     }
-    if (differs || this.counts(path, leaf)) this.changed(path);
   }
 }
