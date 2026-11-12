@@ -4,7 +4,7 @@
  * author gave a part, where it's hidden, and a text tool's link style. fromDesign() reads designs with these; today's
  * components' lowering (src/compat) reads them with the same.
  */
-import type { Json } from "@unlayer-internal/elements-core";
+import type { Json } from "@hyper-elements/core";
 import type { Run } from "./read-runs";
 
 export type Values = Record<string, any>;

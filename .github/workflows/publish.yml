@@ -172,21 +172,21 @@ jobs:
             CLI=$([ "${{ inputs.package }}" = "cli" ] && descends 'cli-v*' && echo true || echo false)
           else
             # Storybook (its config, stories and examples) isn't in the package: the same paths as paths-ignore above.
-            ELEMENTS=$(changed 'v*' packages/react packages/core pnpm-workspace.yaml \
+            ELEMENTS=$(changed 'v*' packages/react packages/internal/core pnpm-workspace.yaml \
               ':(exclude)packages/react/.storybook' ':(exclude)packages/react/src/stories' \
               ':(exclude)packages/react/src/primitives/examples' ':(exclude,glob)packages/react/scripts/storybook-*' \
               ':(exclude,glob)packages/**/*.stories.tsx')
             # Not Elements: migrate requires the Elements range committed in its package.json (the oldest
             # release the converter supports), not the newest, so an Elements release doesn't republish it.
-            # packages/loader is the template loader it shares with the CLI, bundled into both: a change to it alone
+            # packages/internal/template-loader is the template loader it shares with the CLI, bundled into both: a change to it alone
             # releases both.
-            MIGRATE=$(changed 'migrate-v*' packages/migrate packages/loader pnpm-workspace.yaml pnpm-lock.yaml)
+            MIGRATE=$(changed 'migrate-v*' packages/migrate packages/internal/template-loader pnpm-workspace.yaml pnpm-lock.yaml)
             # The email client previews: their own code, runtime and fonts. Like migrate, they require the Elements range
             # committed in their package.json, so an Elements release doesn't republish them.
             EMAIL_CLIENTS=$(changed 'email-clients-v*' packages/email-clients pnpm-workspace.yaml pnpm-lock.yaml)
             # The command line: its own code and the template loader bundled into it. It loads the project's Elements
             # (within the range committed in its package.json), so an Elements release doesn't republish it either.
-            CLI=$(changed 'cli-v*' packages/cli packages/loader pnpm-workspace.yaml pnpm-lock.yaml)
+            CLI=$(changed 'cli-v*' packages/cli packages/internal/template-loader pnpm-workspace.yaml pnpm-lock.yaml)
           fi
           # The first version of a new package is published by hand (see above).
           if [ "$MIGRATE" = "true" ] && ! npm view @hyper-elements/migrate version >/dev/null 2>&1; then
@@ -922,8 +922,8 @@ jobs:
         run: |
           pnpm pack --pack-destination /tmp
           TARBALL=$(ls /tmp/hyper-elements-cli-*.tgz)
-          if tar -xOzf "$TARBALL" package/package.json | grep -q '@unlayer-internal/'; then
-            echo "::error::the packed manifest names a private @unlayer-internal package"
+          if tar -xOzf "$TARBALL" package/package.json | grep -Eq '@hyper-elements/(core|template-loader)(["/]|$)'; then
+            echo "::error::the packed manifest names a private package (@hyper-elements/core or @hyper-elements/template-loader)"
             exit 1
           fi
           npm publish "$TARBALL" --access public --tag "$(node ../../scripts/release.mjs tag)"

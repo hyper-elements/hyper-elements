@@ -7,9 +7,9 @@ One invoice template, written with the components from `@hyper-elements/react`, 
 ```bash
 pnpm install
 pnpm build
-pnpm --filter @unlayer/content-workflows-example render:email
-pnpm --filter @unlayer/content-workflows-example exec playwright install chromium
-pnpm --filter @unlayer/content-workflows-example render:all
+pnpm --filter @hyper-elements/example-content-workflows render:email
+pnpm --filter @hyper-elements/example-content-workflows exec playwright install chromium
+pnpm --filter @hyper-elements/example-content-workflows render:all
 ```
 
 The files are written to `examples/content-workflows/output/`:
@@ -28,7 +28,7 @@ All contain invoice INV-1001 for Ada Lovelace, paid $49.00. The render commands 
 `await render(element)` writes each HTML file and the plain text: the template's root (`Email`, `Page` or `Document`) says which output it is. `toDesign(element)` from `@hyper-elements/react/builder` writes the design JSON. Printing the PDF needs Chromium; [`@hyper-elements/react/pdf`](../../packages/react/docs/render-pdf.md) writes one without a browser, as the [PDF guide](../../packages/react/docs/react-to-pdf.md#without-a-browser) shows.
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example preview
+pnpm --filter @hyper-elements/example-content-workflows preview
 ```
 
 Open <http://127.0.0.1:3001/output/invoice.web.html> for the web receipt, or <http://127.0.0.1:3001/editor.html> to load the design in Unlayer's hosted editor. The editor requires internet access. Its download button exports edited JSON and HTML; it does not change the React source or send email.
@@ -47,8 +47,8 @@ The [provider guide](../../packages/react/docs/email-providers.md) lists install
 - `editor.html`: wait for editor readiness, load design, export edits.
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example typecheck
-pnpm --filter @unlayer/content-workflows-example test
+pnpm --filter @hyper-elements/example-content-workflows typecheck
+pnpm --filter @hyper-elements/example-content-workflows test
 ```
 
 Tests check invoice content in Chromium across all three modes, plain text, editable JSON, escaped customer input, URL validation, and real PDF bytes. They do not send email or depend on the hosted editor. Review inbox compatibility and PDF pagination with your real content before deployment. See the [task guides](../../packages/react/docs/README.md) for constraints and adaptation.

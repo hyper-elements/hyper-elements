@@ -4,7 +4,7 @@
  * `{{name}}`. A Text's and a List's are its rich text (`textJson`), what its editor saves, each run a text node
  * in its style. What neither can hold (a link's hover) is said in `lost`.
  */
-import { linkParts, type Json, type LinkValue, type Node } from "@unlayer-internal/elements-core";
+import { linkParts, type Json, type LinkValue, type Node } from "@hyper-elements/core";
 import { cssPx } from "./values";
 
 const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");

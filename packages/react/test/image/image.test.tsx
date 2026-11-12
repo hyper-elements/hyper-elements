@@ -6,7 +6,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { COMPONENTS, LAYOUT_VERSION } from "@unlayer-internal/elements-core";
+import { COMPONENTS, LAYOUT_VERSION } from "@hyper-elements/core";
 import {
   Button,
   Canvas,
@@ -38,7 +38,7 @@ import {
   Video,
 } from "@hyper-elements/react";
 import type { ReactElement, ReactNode } from "react";
-import { writeCanvas } from "@unlayer-internal/elements-core/image";
+import { writeCanvas } from "@hyper-elements/core/image";
 import { renderImage, templateAssets } from "../../src/image";
 
 /** What prepare() gives, where a test gives another layout version (another copy of Elements, newer or older). */
@@ -231,7 +231,7 @@ describe("renderImage", () => {
   });
 
   it("depends on its engine in one file: the writer builds a canvas as plain data, which Satori's and resvg's adapter draws", () => {
-    const src = join(dirname(fileURLToPath(import.meta.url)), "../../../core/src/image");
+    const src = join(dirname(fileURLToPath(import.meta.url)), "../../../internal/core/src/image");
     const importing = readdirSync(src).filter((file) => /from "(satori|@resvg\/)/.test(readFileSync(join(src, file), "utf8")));
     expect(importing).toEqual(["satori.ts"]);
     // What the writer builds is data: the same after a round trip through JSON.

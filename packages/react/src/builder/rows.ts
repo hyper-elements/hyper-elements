@@ -5,7 +5,7 @@
  * column's space folded into them, or a `Column` where the column has a box. A page break among a column's blocks
  * splits the row there (in a Document).
  */
-import type { Json, Node } from "@unlayer-internal/elements-core";
+import type { Json, Node } from "@hyper-elements/core";
 import { ColumnDefaults, RowDefaults } from "./tool-defaults";
 import { color, givenId, hidden as hiddenOn, sides, some, type Sides, type Values } from "./read-values";
 import { readRadius } from "./reading";

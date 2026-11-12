@@ -151,7 +151,7 @@ async function main() {
     const dest = join(bench, "node_modules/@hyper-elements/react");
     const version = await install(src, dest);
     let source = { version };
-    try { source = { version, commit: git(src, "rev-parse", "HEAD"), dirty: git(src, "status", "--porcelain", "--", ".", "../core").length > 0 }; } catch {}
+    try { source = { version, commit: git(src, "rev-parse", "HEAD"), dirty: git(src, "status", "--porcelain", "--", ".", "../internal/core").length > 0 }; } catch {}
     await writeFile(join(dest, "source.json"), JSON.stringify(source, null, 2) + "\n");
     console.log(`@hyper-elements/react ${version} (${source.commit?.slice(0, 10) ?? "no git"}${source.dirty ? ", dirty" : ""}) → ${dest}`);
     // The command line, from the same checkout, where it's built.
@@ -159,7 +159,7 @@ async function main() {
     if (existsSync(join(cli, "dist/bin.js"))) {
       const cliVersion = await installCli(cli, join(bench, "node_modules"));
       let cliSource = { version: cliVersion };
-      try { cliSource = { version: cliVersion, commit: git(cli, "rev-parse", "HEAD"), dirty: git(cli, "status", "--porcelain", "--", ".", "../loader").length > 0 }; } catch {}
+      try { cliSource = { version: cliVersion, commit: git(cli, "rev-parse", "HEAD"), dirty: git(cli, "status", "--porcelain", "--", ".", "../internal/template-loader").length > 0 }; } catch {}
       await writeFile(join(bench, "node_modules/@hyper-elements/cli/source.json"), JSON.stringify(cliSource, null, 2) + "\n");
       console.log(`@hyper-elements/cli ${cliVersion} → ${join(bench, "node_modules/@hyper-elements/cli")}`);
     } else {

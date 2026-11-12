@@ -13,11 +13,11 @@ export default defineConfig({
   // The shared template loader is private: bundled in, reached by its path (no dependency on it in package.json, so
   // the published manifest names no private package). tsx and TypeScript are dependencies, loaded where they're
   // needed; React, React DOM and Elements are the project's, loaded beside each template (never bundled).
-  noExternal: ["@unlayer-internal/template-loader"],
+  noExternal: ["@hyper-elements/template-loader"],
   external: ["typescript", /^tsx/, "react", "react-dom", /^@hyper-elements\//, "playwright-core", "./main.js", "./child.js", "./watchdog.js", "./preview/browser.js"],
   // dev's page, as text in main.js.
   loader: { ".html": "text" },
   esbuildOptions(options) {
-    options.alias = { "@unlayer-internal/template-loader": fileURLToPath(new URL("../loader/src/index.ts", import.meta.url)) };
+    options.alias = { "@hyper-elements/template-loader": fileURLToPath(new URL("../internal/template-loader/src/index.ts", import.meta.url)) };
   },
 });

@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 import { inflateSync } from "node:zlib";
 import { getDocument, OPS } from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { ReactElement } from "react";
-import { COMPONENTS, LAYOUT_VERSION } from "@unlayer-internal/elements-core";
+import { COMPONENTS, LAYOUT_VERSION } from "@hyper-elements/core";
 import {
   Button,
   Circle,
@@ -44,7 +44,7 @@ import {
   validate,
   Video,
 } from "@hyper-elements/react";
-import { writeDocument } from "@unlayer-internal/elements-core/pdf";
+import { writeDocument } from "@hyper-elements/core/pdf";
 import { renderPdf, templateAssets } from "../../src/pdf";
 import { toWoff, toWoff2 } from "./woff";
 
@@ -575,7 +575,7 @@ describe("renderPdf", () => {
   });
 
   it("depends on its engine in one file: the writer builds pages as plain data, which react-pdf's adapter draws", () => {
-    const src = join(dirname(fileURLToPath(import.meta.url)), "../../../core/src/pdf");
+    const src = join(dirname(fileURLToPath(import.meta.url)), "../../../internal/core/src/pdf");
     const importing = readdirSync(src).filter((file) => /from "@react-pdf\//.test(readFileSync(join(src, file), "utf8")));
     expect(importing).toEqual(["react-pdf.tsx"]);
     // What the writer builds is data: the same after a round trip through JSON (its date aside).

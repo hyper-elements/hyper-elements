@@ -5,7 +5,7 @@ const shared: Options = {
   dts: {
     // Inline types from the private workspace package so consumers get full type completion without extra installs
     // (its main entry and the PDF and image ones).
-    resolve: [/^@unlayer-internal\/elements-core($|\/)/],
+    resolve: [/^@hyper-elements\/core($|\/)/],
   },
   splitting: false,
   sourcemap: true,
@@ -17,7 +17,7 @@ const shared: Options = {
   },
   // Bundle elements-core (the engine: the model, layout and the writers) into the output so consumers don't need to
   // install it separately (it's a private workspace package).
-  noExternal: ['@unlayer-internal/elements-core'],
+  noExternal: ['@hyper-elements/core'],
   treeshake: true,
 };
 

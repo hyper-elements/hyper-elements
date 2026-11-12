@@ -6,7 +6,7 @@
  * the noncharacters the marks are made of) doesn't.
  */
 import React from "react";
-import { prepareTemplate, shownAnywhere, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { prepareTemplate, shownAnywhere, type ResolvedNode } from "@hyper-elements/core";
 import * as primitives from "./index";
 import { BLOCK_MAP_VERSION, Button, Column, Email, ElementsError, Heading, Html, Image, Layer, Link, List, ListItem, MergeTag, Page, render, Row, Section, Span, Text, type BlockMap } from "./index";
 import { collectTemplate } from "./collect";

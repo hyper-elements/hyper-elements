@@ -1,5 +1,5 @@
 /** What every tool's reader shares (blocks.ts, text-tool.ts): where a block is, how its values are read, and how it's placed. */
-import type { Json, Node } from "@unlayer-internal/elements-core";
+import type { Json, Node } from "@hyper-elements/core";
 import { ALIGN, color, fontWeight, font, letterSpacing, lineHeight as legacyLineHeight, px, some, type Sides, type Values } from "./read-values";
 import type { HiddenParts } from "./hide";
 

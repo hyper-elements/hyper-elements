@@ -8,7 +8,7 @@
  */
 import { chromium, type Browser } from "playwright";
 import { renderTemplate } from "../../src/writers";
-import { generate, words, type Root } from "../../../react/src/primitives/testing/templates";
+import { generate, words, type Root } from "../../../../react/src/primitives/testing/templates";
 
 const SEEDS = Number(process.env.VISIBLE_SEEDS ?? 40);
 

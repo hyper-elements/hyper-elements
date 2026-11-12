@@ -6,7 +6,7 @@
 // as data (text shown as text, HTML only inside another sandboxed frame).
 import * as Elements from "@hyper-elements/react";
 import { describeComponents, inspect } from "@hyper-elements/react/inspect";
-import { shownAnywhere } from "@unlayer-internal/elements-core";
+import { shownAnywhere } from "@hyper-elements/core";
 import * as React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import { transform } from "sucrase";

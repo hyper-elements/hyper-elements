@@ -3,7 +3,7 @@
  * each node when a template is read (Decision 9 of the themes-and-pages plan).
  */
 import type { ReactElement } from "react";
-import { checkDocument, Registry, ThemeEnvironment, type Diagnostic, type Json, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { checkDocument, Registry, ThemeEnvironment, type Diagnostic, type Json, type ResolvedNode } from "@hyper-elements/core";
 import { toDesign } from "../builder";
 import { inspect, INSPECT_VERSION } from "../inspect";
 import { collectTemplate } from "./collect";

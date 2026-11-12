@@ -2,7 +2,7 @@
  * A template's tree as JSX source in the new components, and as an element to render: what fromDesign() gives back.
  * Text runs are written on one line (JSX keeps spaces there); blocks one under another.
  */
-import type { Child, Node } from "@unlayer-internal/elements-core";
+import type { Child, Node } from "@hyper-elements/core";
 import React from "react";
 import * as primitives from "../primitives/components";
 

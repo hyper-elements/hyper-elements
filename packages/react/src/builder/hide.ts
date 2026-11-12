@@ -4,7 +4,7 @@
  * node has that's neither written to a field, folded into another value (its place's spacing), nor a hidden property
  * is left out, and said.
  */
-import type { Json, Node } from "@unlayer-internal/elements-core";
+import type { Json, Node } from "@hyper-elements/core";
 import { HIDDEN } from "./manifest";
 import { decode, encode, kindOf, type Values } from "./values";
 

@@ -6,7 +6,7 @@
  * comment, an entity it doesn't know, a `<p>` with the browser's margins, white space between paragraphs, a link's
  * target or an attribute a run doesn't take) is said in `left`, and the block keeps its legacy HTML.
  */
-import type { Json } from "@unlayer-internal/elements-core";
+import type { Json } from "@hyper-elements/core";
 import { holdsKept } from "./read-values";
 
 /** A run that isn't words: a Span, a Link or a LineBreak, as the new engine's node. */

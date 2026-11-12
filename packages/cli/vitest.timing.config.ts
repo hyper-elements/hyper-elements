@@ -5,7 +5,7 @@ import { defineConfig } from "vitest/config";
 // a time, Node then Bun), since what they time is process starts and module loading, which the rest of the suite
 // running beside them slows. CI runs this as a step of its own.
 export default defineConfig({
-  resolve: { alias: { "@unlayer-internal/template-loader": fileURLToPath(new URL("../loader/src/index.ts", import.meta.url)) } },
+  resolve: { alias: { "@hyper-elements/template-loader": fileURLToPath(new URL("../internal/template-loader/src/index.ts", import.meta.url)) } },
   test: {
     globalSetup: "./test/setup.ts",
     testTimeout: 60_000,

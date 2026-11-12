@@ -3,7 +3,7 @@
  * reports (the `--json` lines).
  */
 
-/** A diagnostic as Elements gives it (packages/core/src/diagnostics.ts), or one of the CLI's own (`cli/…`, path ""). */
+/** A diagnostic as Elements gives it (packages/internal/core/src/diagnostics.ts), or one of the CLI's own (`cli/…`, path ""). */
 export interface Diagnostic {
   code: string;
   severity: "error" | "warning" | "info";
