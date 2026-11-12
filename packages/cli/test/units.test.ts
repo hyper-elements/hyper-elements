@@ -14,6 +14,7 @@ import { foldPath } from "../src/destinations";
 import { errorLine } from "../src/errors";
 import { commonFolder, hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
+import { orphansOf } from "../src/kill";
 import { cli, email, lines, project, WINDOWS } from "./helpers";
 
 /** A process id that isn't running: one that just ended. */
@@ -110,6 +111,26 @@ describe("the loader module's text", () => {
     // On Bun, always import().
     expect(loaderModuleText(file, "TOKEN", "cjs", true)).toContain("import(specifier)");
     expect(loaderModuleText("/x/a.jsx", "TOKEN", "esm", false)).toContain("(specifier) => import(specifier)");
+  });
+});
+
+describe("a crashed child's processes on Windows", () => {
+  it("are the ones its id started while it ran, and theirs: not a later process's that has its id", () => {
+    // id, parent, started (ms). The child, 100, ran from 1,000 to 5,000.
+    const table = [
+      "4 0 0",
+      "100 50 1000", // the child (its row, if it's still listed)
+      "201 100 2000", // started by the child
+      "202 201 6000", // started by that one, after the child ended
+      "203 100 900", // 100's before the child (within a second: the clocks' grain)
+      "300 100 8000", // the id 100 given to another process after the child ended: its child, not ours
+      "301 300 9000",
+      "400 7 2500", // unrelated
+      "garbage line",
+      "",
+    ].join("\r\n");
+    expect(orphansOf(table, 100, 1_000, 5_000).sort()).toEqual([201, 202, 203]);
+    expect(orphansOf(table, 999, 1_000, 5_000)).toEqual([]);
   });
 });
 

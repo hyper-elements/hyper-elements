@@ -43,16 +43,19 @@ describe.skipIf(WINDOWS)("interrupts", () => {
   }
 
   it("after the CLI is killed with SIGKILL, the next run removes what it left", async () => {
-    const dir = project({ "emails/a.tsx": BUSY });
+    // Killed once its template blocks the child: a child that isn't blocked removes its own files when the CLI's gone.
+    const dir = project({});
+    const blocking = join(dir, "blocking");
+    const { write } = await import("./helpers");
+    write(dir, { "emails/a.tsx": `import { writeFileSync } from "node:fs";\nwriteFileSync(${JSON.stringify(blocking)}, "");\n${BUSY}` });
     const run = start(dir, ["check", "emails"]);
-    expect(await until(() => leftovers(dir).length > 0, 20_000)).toBe(true);
+    expect(await until(() => existsSync(blocking) && leftovers(dir).length > 0, 20_000)).toBe(true);
     run.child.kill("SIGKILL");
     await run.closed;
     // Its child is ended by its watchdog, which leaves its files.
     await wait(1500);
     // (Its tsconfig, in the temporary folder, may already be gone: any run removes those a dead run left.)
     expect(leftovers(dir).length).toBe(1);
-    const { write } = await import("./helpers");
     write(dir, { "emails/a.tsx": email("Now quick") });
     const ran = await cli(dir, ["check", "emails"]);
     expect(ran.code).toBe(0);

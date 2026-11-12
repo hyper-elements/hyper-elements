@@ -6,7 +6,7 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BIN, cli, cliEnv, email, lines, ON_BUN, project, until, wait, WINDOWS } from "./helpers";
+import { alive, BIN, cli, cliEnv, email, lines, ON_BUN, project, until, wait } from "./helpers";
 
 /** Template code that starts a process (not detached) writing `marker` after `ms`. */
 function startsProcess(marker: string, ms: number): string {
@@ -25,15 +25,6 @@ function afterResult(code: string): string {
   return sent;
 };
 `;
-}
-
-function alive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 describe("what templates write", () => {
@@ -107,18 +98,25 @@ describe("the process tree", () => {
     expect(existsSync(marker)).toBe(false);
   });
 
-  it("a child that crashes while a process it started runs: the run ends and reports it, and (macOS, Linux) the process is ended", async () => {
+  it("a child that crashes while a process it started runs: the run ends and reports it, and the process is ended first", async () => {
     const dir = project({});
-    const marker = join(dir, "after-crash");
+    const pids = join(dir, "pids.json");
     const { write } = await import("./helpers");
-    write(dir, { "emails/a.tsx": `${startsProcess(marker, 1500)}(process as any).reallyExit(3);\nexport default function A() { return null; }\n` });
+    // (On Windows the child's gone before the run ends what it started: they're found in the process table.)
+    write(dir, {
+      "emails/a.tsx": `import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+const started = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+writeFileSync(${JSON.stringify(pids)}, JSON.stringify({ started: started.pid }));
+(process as any).reallyExit(3);
+export default function A() { return null; }
+`,
+    });
     const ran = await cli(dir, ["check", "emails", "--json"]);
     expect(ran.code).toBe(1);
     expect(lines(ran)[0]).toMatchObject({ status: "error", error: "child exited with 3" });
-    if (!WINDOWS) {
-      await wait(2500);
-      expect(existsSync(marker)).toBe(false);
-    }
+    const { started } = JSON.parse(readFileSync(pids, "utf8"));
+    expect(await until(() => !alive(started), 1_000)).toBe(true);
   });
 
   it("the CLI killed with SIGKILL while a template blocks its child: the watchdog ends the child and its processes", async () => {

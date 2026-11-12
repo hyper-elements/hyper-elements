@@ -17,7 +17,7 @@ import { planDestinations, removeTemporaries, writeAtomically, type Planned } fr
 import { errorLine } from "./errors";
 import { checkHtml, readStdin } from "./html";
 import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, type Input } from "./inputs";
-import { killTree } from "./kill";
+import { endOrphans, killTree } from "./kill";
 import { cleanFiles, ownToken, parseToken, stale } from "./loader-module";
 import { inputLine, inputText, summaryText, type Outcome } from "./output";
 import { clientsFolder, drawPreviews, NO_BROWSER_HELP, NO_PLAYWRIGHT_CORE_HELP, planPreviewFolders, servePreviews, writePreviews } from "./preview";
@@ -52,9 +52,15 @@ export interface ChildReport {
   ended?: { reason: "exit" | "signal" | "timeout"; detail: string; error: string };
 }
 
+/** When each child was started: on Windows, what it started is told apart by when (endOrphans). */
+const forkedAt = new WeakMap<ChildProcess, number>();
+
+/** Set by an interrupt: the run is ending, and its children with it. */
+let interrupted = false;
+
 /** A child process, waiting for its start message. */
 function forkChild(cwd: string): ChildProcess {
-  return fork(fileURLToPath(new URL("./child.js", import.meta.url)), [], {
+  const child = fork(fileURLToPath(new URL("./child.js", import.meta.url)), [], {
     stdio: ["ignore", "pipe", "pipe", "ipc"],
     // A process group of its own, so the child and every process it starts can be ended together (macOS, Linux).
     detached: process.platform !== "win32",
@@ -63,6 +69,8 @@ function forkChild(cwd: string): ChildProcess {
     execArgv: bun ? ["--no-install"] : [],
     cwd,
   });
+  forkedAt.set(child, Date.now());
+  return child;
 }
 
 /**
@@ -193,8 +201,11 @@ export function runChild(
       if (finished) return;
       finished = true;
       clearTimeout(timer);
-      // The group outlives its leader while any of its processes is alive.
+      // The group outlives its leader while any of its processes is alive. On Windows a child that ended on its own (a
+      // crash) leaves what it started with no tree to end: found by when they started, and ended before the run goes on.
       if (child.pid) killTree(child.pid);
+      const orphans =
+        child.pid && !report.done && !timedOut && !abort?.aborted && !interrupted ? endOrphans(child.pid, forkedAt.get(child) ?? 0, Date.now()) : undefined;
       if (!report.done) {
         if (timedOut) report.ended = { reason: "timeout", detail: `${args.timeout} ms`, error: "" };
         else if (signal) report.ended = { reason: "signal", detail: signal, error: `child killed by ${signal}` };
@@ -209,7 +220,8 @@ export function runChild(
         child.stdout?.destroy();
         child.stderr?.destroy();
         running.delete(child);
-        resolvePromise(report);
+        if (orphans) void orphans.then(() => resolvePromise(report));
+        else resolvePromise(report);
       };
       child.once("close", done);
       setTimeout(done, 500).unref();
@@ -250,6 +262,7 @@ export function readProps(path: string, cwd: string): Record<string, unknown> {
 /** The interrupt: children ended, the files they and this run wrote deleted, no summary. */
 export function onInterrupt(token: () => string | undefined, folders: () => Iterable<string>, exit: (code: number) => void): () => void {
   const handler = (signal: NodeJS.Signals) => {
+    interrupted = true;
     for (const child of running) if (child.pid) killTree(child.pid);
     const mine = token();
     if (mine) {
