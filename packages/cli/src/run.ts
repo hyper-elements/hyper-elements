@@ -185,9 +185,10 @@ export function runChild(
   return new Promise((resolvePromise) => {
     const child = takeSpare(io.cwd) ?? forkChild(io.cwd);
     running.add(child);
-    const copy = (data: Buffer) => io.stderr(data.toString("utf8"));
-    child.stdout!.on("data", copy);
-    child.stderr!.on("data", copy);
+    // Decoded as streams, so a character split between two chunks comes through whole.
+    const copy = (text: string) => io.stderr(text);
+    child.stdout!.setEncoding("utf8").on("data", copy);
+    child.stderr!.setEncoding("utf8").on("data", copy);
     let timedOut = false;
     const timer = setTimeout(() => {
       if (report.done) return;
