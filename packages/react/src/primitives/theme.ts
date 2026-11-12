@@ -4,7 +4,7 @@
  * refers to its tokens with `token()`. Registering a theme (`interface Register { theme: typeof brand }`) types every
  * token's path, named style and variant; without one they're strings, checked when the template is read.
  */
-import { mergeTheme, type Json } from "@unlayer-internal/elements-core";
+import { mergeTheme, type Json } from "@hyper-elements/core";
 
 /**
  * Register a theme to type its names everywhere:

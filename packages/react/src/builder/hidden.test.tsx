@@ -3,7 +3,7 @@
  * toDesign() writes are the builder's own or the manifest's, every manifest entry is written by some template, a value
  * is in one place only, and the hazards of a design the builder edits keep them right.
  */
-import type { Node } from "@unlayer-internal/elements-core";
+import type { Node } from "@hyper-elements/core";
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { Button, Column, Document, Email, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Video } from "../primitives";

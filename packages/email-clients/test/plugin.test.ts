@@ -3,7 +3,7 @@
  * clients and pages (these are 0.3.1's tests, ported). What changed, on purpose: `email/width` and `email/image-width`
  * name classic Outlook (they're left out where it isn't asked for), the option is the plugin's, and its errors say so.
  */
-import { formatDiagnostics, renderTemplate, validateTemplate, type Diagnostic, type ElementsPlugin } from "@unlayer-internal/elements-core";
+import { formatDiagnostics, renderTemplate, validateTemplate, type Diagnostic, type ElementsPlugin } from "@hyper-elements/core";
 import { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, forClients, type EmailClient } from "../src/email-clients";
 import { emailClients } from "../src/plugin";
 

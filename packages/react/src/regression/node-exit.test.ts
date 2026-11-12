@@ -171,7 +171,7 @@ describe("the built package's declarations", () => {
   it("name no package that isn't installed with it", () => {
     const declarations = fs.readdirSync(dist).filter((file) => /\.d\.c?ts$/.test(file));
     expect(declarations).toEqual(expect.arrayContaining(["primitives.d.ts", "builder.d.ts", "inspect.d.ts", "pdf.d.ts", "pdf.d.cts", "image.d.ts", "image.d.cts"]));
-    for (const file of declarations) expect(fs.readFileSync(path.join(dist, file), "utf8"), file).not.toMatch(/@unlayer-internal\//);
+    for (const file of declarations) expect(fs.readFileSync(path.join(dist, file), "utf8"), file).not.toMatch(/@hyper-elements\/(core|template-loader)(["'\/]|$)/m);
   });
 });
 

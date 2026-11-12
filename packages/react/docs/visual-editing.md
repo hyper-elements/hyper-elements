@@ -36,8 +36,8 @@ Run the complete example from the repository root:
 ```bash
 pnpm install
 pnpm build
-pnpm --filter @unlayer/content-workflows-example render:email
-pnpm --filter @unlayer/content-workflows-example preview
+pnpm --filter @hyper-elements/example-content-workflows render:email
+pnpm --filter @hyper-elements/example-content-workflows preview
 ```
 
 Open <http://127.0.0.1:3001/editor.html>. This is the full [editor.html](../../../examples/content-workflows/editor.html):

@@ -19,7 +19,7 @@ export default defineConfig({
   // Templates the tests render in-process, to compare with the CLI's output.
   esbuild: { jsx: "automatic" },
   // The private template loader, by its path (as tsup.config.ts bundles it).
-  resolve: { alias: { "@unlayer-internal/template-loader": fileURLToPath(new URL("../loader/src/index.ts", import.meta.url)) } },
+  resolve: { alias: { "@hyper-elements/template-loader": fileURLToPath(new URL("../internal/template-loader/src/index.ts", import.meta.url)) } },
   test: {
     globalSetup: "./test/setup.ts",
     testTimeout: 60_000,

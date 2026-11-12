@@ -10,8 +10,8 @@
  * by URL, or data: URIs). An image needs at least one font: its text is drawn with the fonts it's given.
  * templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
-import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font } from "@unlayer-internal/elements-core/image";
-import type { FontFace } from "@unlayer-internal/elements-core";
+import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font } from "@hyper-elements/core/image";
+import type { FontFace } from "@hyper-elements/core";
 import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 

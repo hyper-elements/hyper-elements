@@ -73,7 +73,7 @@ jobs:
       # and the core's sources. The build only type-checks each entry's import
       # graph, so this catches a relaxed or broken input type.
       - name: Type contract
-        run: pnpm --filter @hyper-elements/react typecheck && pnpm --filter @unlayer-internal/elements-core typecheck
+        run: pnpm --filter @hyper-elements/react typecheck && pnpm --filter @hyper-elements/core typecheck
 
       # The CLI, the converters (src/react-email, src/convert), their tests and the benchmark.
       - name: Converter typechecks
@@ -84,7 +84,7 @@ jobs:
 
       # The command line and the template loader it shares with migrate.
       - name: CLI and template loader typechecks
-        run: pnpm --filter @hyper-elements/cli typecheck && pnpm --filter @unlayer-internal/template-loader typecheck
+        run: pnpm --filter @hyper-elements/cli typecheck && pnpm --filter @hyper-elements/template-loader typecheck
 
       # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
       # tag, and resuming a run whose npm publish succeeded.
@@ -182,7 +182,7 @@ jobs:
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
         run: |
-          if grep -lE "(from |import ?\(?|require\()[\"']@unlayer/exporters" packages/*/dist/*.js packages/*/dist/*.cjs; then
+          if grep -lE "(from |import ?\(?|require\()[\"']@unlayer/exporters" packages/*/dist/*.js packages/*/dist/*.cjs packages/internal/*/dist/*.js packages/internal/*/dist/*.cjs; then
             echo "::error::a bundle imports @unlayer/exporters"
             exit 1
           fi
@@ -191,7 +191,7 @@ jobs:
       # run once, with coverage. The CLI's run each case with the CLI on Node 20 and on Bun 1.3, and compare the
       # compatibility baseline's templates rendered on both, byte for byte.
       - name: Run tests
-        run: pnpm -r --filter "./packages/*" --filter "!@hyper-elements/react" --filter "!@hyper-elements/migrate" run test
+        run: pnpm -r --filter "./packages/**" --filter "!@hyper-elements/react" --filter "!@hyper-elements/migrate" run test
 
       # The CLI's dev, alone on the runner (one test file at a time, Node then Bun): a change to an imported file
       # (relative, aliased, in a workspace package, in one rebuilt into dist/ 500 ms after its source) and to a folder of
@@ -243,6 +243,7 @@ jobs:
           name: coverage-reports
           path: |
             packages/*/coverage/
+            packages/internal/*/coverage/
             coverage/
           retention-days: 30
 
@@ -296,7 +297,7 @@ jobs:
         with:
           name: cli-windows-dist
           path: |
-            packages/core/dist
+            packages/internal/core/dist
             packages/react/dist
             packages/email-clients/dist
             packages/cli/dist
@@ -512,13 +513,13 @@ jobs:
 
       - name: Content workflow examples (HTML, JSON, and real PDF; no email delivery)
         run: |
-          pnpm --filter @unlayer/content-workflows-example typecheck
-          pnpm --filter @unlayer/content-workflows-example test
+          pnpm --filter @hyper-elements/example-content-workflows typecheck
+          pnpm --filter @hyper-elements/example-content-workflows test
 
       # The demo app (examples/demo) type-checks and builds against the built package: `pnpm build` builds
       # packages/ only.
       - name: Demo app builds
-        run: pnpm --filter @unlayer/elements-demo build
+        run: pnpm --filter @hyper-elements/example-demo build
 
       # ── Browser import/runtime safety gate ──────────────────────
       # Bundles the shipped package entry as a browser consumer would, then
@@ -538,9 +539,9 @@ jobs:
         run: pnpm --filter @hyper-elements/react test:e2e
 
       # Elements primitives: what Chromium lays out matches the widths the resolver works out,
-      # on desktop and on phones (packages/core/test/browser).
+      # on desktop and on phones (packages/internal/core/test/browser).
       - name: Primitives layout gate (web and email)
-        run: pnpm --filter @unlayer-internal/elements-core test:browser
+        run: pnpm --filter @hyper-elements/core test:browser
 
       # A Document's PDF (written by react-pdf, without a browser) laid out as its print HTML is: Chromium measures
       # the HTML, pdf.js reads the PDF, and each line starts within a point of the other (packages/react/test/pdf/browser).

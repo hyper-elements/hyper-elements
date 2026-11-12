@@ -62,8 +62,8 @@ Run `npx tsx src/render-pdf.ts`. Expected: `output/invoice.pdf`, an A4 invoice f
 ```bash
 pnpm install
 pnpm build
-pnpm --filter @unlayer/content-workflows-example exec playwright install chromium
-pnpm --filter @unlayer/content-workflows-example render:all
+pnpm --filter @hyper-elements/example-content-workflows exec playwright install chromium
+pnpm --filter @hyper-elements/example-content-workflows render:all
 ```
 
 ## Print constraints

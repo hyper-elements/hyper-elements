@@ -9,8 +9,8 @@ The complete [content-workflows example](../../../examples/content-workflows) us
 ```bash
 pnpm install
 pnpm build
-pnpm --filter @unlayer/content-workflows-example exec playwright install chromium
-pnpm --filter @unlayer/content-workflows-example render:all
+pnpm --filter @hyper-elements/example-content-workflows exec playwright install chromium
+pnpm --filter @hyper-elements/example-content-workflows render:all
 ```
 
 To adapt the files in a separate Node.js 20+ project, install the public package and a TypeScript runner:
@@ -95,7 +95,7 @@ await writeFile("output/invoice.pdf", await htmlToPdf(documentHtml));
 console.info("Wrote output/invoice.web.html, invoice.document.html and invoice.pdf");
 ```
 
-Expected: six files in `examples/content-workflows/output/` when run via the workspace script: `invoice.email.html`, `invoice.txt`, `invoice.design.json`, `invoice.web.html`, `invoice.document.html`, and `invoice.pdf`. Each represents INV-1001 for Ada Lovelace, paid $49.00. Use `pnpm --filter @unlayer/content-workflows-example preview` to browse the HTML files at <http://127.0.0.1:3001/output/invoice.web.html>.
+Expected: six files in `examples/content-workflows/output/` when run via the workspace script: `invoice.email.html`, `invoice.txt`, `invoice.design.json`, `invoice.web.html`, `invoice.document.html`, and `invoice.pdf`. Each represents INV-1001 for Ada Lovelace, paid $49.00. Use `pnpm --filter @hyper-elements/example-content-workflows preview` to browse the HTML files at <http://127.0.0.1:3001/output/invoice.web.html>.
 
 ## Constraints
 

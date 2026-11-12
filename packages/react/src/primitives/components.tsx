@@ -48,7 +48,7 @@ import {
   type InputOf,
   type StyleInput,
   type StyleSpecs,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 import { collectingPrimitives, recordPrimitive } from "./collect";
 import type { StyleName, ThemeInput, Token, Tokenized, VariantProp } from "./theme";
 

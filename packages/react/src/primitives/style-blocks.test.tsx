@@ -4,7 +4,7 @@
  * the tree given to core, renders the same HTML and plain text, and gives the same diagnostics apart from where they
  * point.
  */
-import { checkDocument, renderTemplate, type Json } from "@unlayer-internal/elements-core";
+import { checkDocument, renderTemplate, type Json } from "@hyper-elements/core";
 import { describe, expect, it } from "vitest";
 import { collectNodes, type JsonNode } from "./collect";
 import { gallery } from "./examples/gallery";

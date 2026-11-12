@@ -4,7 +4,7 @@
  * against another reader). A design is written from a small template with toDesign(), one value of one item changed
  * as the builder changes it, and read with fromDesign(). Then the edits the reviews of the earlier adapter found lost.
  */
-import type { Node } from "@unlayer-internal/elements-core";
+import type { Node } from "@hyper-elements/core";
 import React from "react";
 import { describe, expect, it } from "vitest";
 import { Button, Column, Divider, Document, Email, Heading, Html, Image, Link, Menu, PageBreak, Text, render, Row, Section, Social, Video } from "../primitives";

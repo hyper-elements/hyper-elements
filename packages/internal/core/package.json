@@ -1,5 +1,5 @@
 {
-  "name": "@unlayer-internal/elements-core",
+  "name": "@hyper-elements/core",
   "version": "0.0.0",
   "private": true,
   "description": "The Elements engine: the document model, component definitions, validation, layout resolution, and the writers (web, email and print HTML, plain text); framework-neutral, apart from the ./pdf and ./image entries, which draw with react-pdf, Satori and resvg",

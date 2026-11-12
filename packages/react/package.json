@@ -162,7 +162,7 @@
     "@types/node": "^24.9.1",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
-    "@unlayer-internal/elements-core": "workspace:*",
+    "@hyper-elements/core": "workspace:*",
     "@vitejs/plugin-react": "^4.2.0",
     "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "9.2.1",
