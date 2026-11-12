@@ -234,6 +234,31 @@ describe("component()", () => {
     ]);
   });
 
+  it("names the editor of a prop where its kind's own isn't the one wanted, its value its kind's either way", async () => {
+    const Order = component({
+      type: "acme.Order",
+      label: "Order",
+      props: {
+        quantity: prop.number({ label: "Quantity", min: 1, default: 1, editor: "counter" }),
+        price: prop.number({ label: "Price", min: 0, default: 19, editor: "currency" }),
+        note: prop.text({ label: "Note", default: "" }),
+      },
+      render: (p) => <Text>{`${p.quantity} × ${p.price}`}</Text>,
+    });
+    const described = describeComponent("acme.Order", { components: [Order.definition] })!;
+    const editors = Object.fromEntries(described.properties.filter((property) => property.path.startsWith("props.")).map((property) => [property.path, [property.editor, property.namedEditor]]));
+    // Its kind's editor is still said: an app with no editor by the prop's name shows that one.
+    expect(editors).toEqual({ "props.quantity": ["number", "counter"], "props.price": ["number", "currency"], "props.note": ["text", undefined] });
+    expect((await render(<Email><Order quantity={2} price={24} /></Email>)).text).toContain("2 × 24");
+    expect(validate(<Email><Order price={-1} /></Email>).diagnostics.map((d) => d.code)).toEqual(["prop/invalid"]);
+  });
+
+  it("refuses an editor's name that isn't a word", () => {
+    const named = (editor: string) => () => component({ type: "acme.Named", label: "Named", props: { n: prop.number({ label: "N", editor }) }, render: () => <Text>n</Text> });
+    expect(named("my_color-picker2")).not.toThrow();
+    for (const name of ["", "two words", "<b>", "1st"]) expect(named(name)).toThrow(`acme.Named: the editor of n is a name ("counter", "currency"), not ${JSON.stringify(name)}`);
+  });
+
   it("types render's props: required and defaulted ones always there", () => {
     type Props = ExpandProps<typeof ProductCard.definition.props>;
     expectTypeOf<Props["accent"]>().toEqualTypeOf<string>();

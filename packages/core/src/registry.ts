@@ -12,6 +12,8 @@ import { placementStyle } from "./styles";
 
 /** A namespace, a dot, a capitalized name: "acme.ProductCard". Built-in types never look like this. */
 export const CUSTOM_TYPE = /^[a-z][a-z0-9-]*\.[A-Z][A-Za-z0-9]*$/;
+/** An editor's name, as a prop gives one: a word (`counter`, `my_color_picker`). */
+const EDITOR_NAME = /^[A-Za-z][\w-]*$/;
 
 /** Props that always have a value: required ones, and ones with a default (see `prop`). */
 type RequiredOrDefaulted<P extends PropSpecs> = {
@@ -59,6 +61,11 @@ export interface CustomComponentSpec<P extends PropSpecs> {
 export function defineCustomComponent<const P extends PropSpecs>(spec: CustomComponentSpec<P>): CustomDefinition<P> {
   if (!CUSTOM_TYPE.test(spec.type)) {
     throw new Error(`[Elements] A custom component's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
+  }
+  for (const [key, prop] of Object.entries(spec.props)) {
+    if (prop.editor !== undefined && !EDITOR_NAME.test(String(prop.editor))) {
+      throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a name ("counter", "currency"), not ${JSON.stringify(prop.editor)}`);
+    }
   }
   const section = spec.placement === "section";
   const paths = Object.keys(spec.props).map((key) => `props.${key}`);

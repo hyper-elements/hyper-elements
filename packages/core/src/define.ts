@@ -38,6 +38,12 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
   default?: OutputOf<K>;
   /** Editors may change it (default true). */
   editable?: boolean;
+  /**
+   * The editor an editing app shows for it, by name, where its kind's own isn't the one wanted (a quantity's
+   * `"counter"`, a price's `"currency"`). The value is its kind's either way; an app with no editor of that name
+   * shows the kind's.
+   */
+  editor?: string;
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
 }
