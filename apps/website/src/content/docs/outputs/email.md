@@ -69,6 +69,10 @@ Web fonts in `fonts` are written as `@font-face` rules where classic Outlook doe
 
 Gmail clips a message after about 100 KB of HTML, and reads 16 KB of a `<style>`. `@hyper-elements/email-clients`' plugin warns about both when it's passed to `render()` (`email/size`, `email/style-size`).
 
+## Seeing it in the clients
+
+The email client emulator, `renderInEmailClients()` from `@hyper-elements/email-clients`, shows the email as each email client shows it, as HTML files you open in a browser, with what each client changed listed. Nothing is sent or uploaded. See [Email client emulator](/docs/email-client-emulator).
+
 ## What email can't do
 
 `validate()` tells you each of these for your template, with the path; the ones about particular clients come from `@hyper-elements/email-clients`' plugin:

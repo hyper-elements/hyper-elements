@@ -26,7 +26,7 @@ export interface PreviewVariant {
   client: PreviewClient;
   /** For webmail (Outlook.com, Gmail on the web), the computer it's read on. */
   computer?: Computer;
-  /** Desktop (820px), or a phone (375px) for the Gmail apps. */
+  /** Desktop (820px), or a phone (380px, the width the Gmail app on Android lays an email out at) for the Gmail apps. */
   variant: "desktop" | "phone";
   dark: boolean;
   /** The width the client shows the email at, in px. */
@@ -79,7 +79,7 @@ export function variantsOf(clients: readonly EmailClient[], dark: boolean, info:
       continue;
     }
     const variant = widths.desktop !== undefined ? "desktop" : "phone";
-    const width = Math.round(widthsAsked[client] ?? widths[variant] ?? (variant === "desktop" ? 820 : 375));
+    const width = Math.round(widthsAsked[client] ?? widths[variant] ?? (variant === "desktop" ? 820 : 380));
     const light = { id: client, client, variant, dark: false, width, filename: `${client}.html`, approximate } as const;
     if (WEBMAIL.includes(client)) {
       // A preview for each computer it's read on: Windows as `<client>`, a Mac as `<client>.mac`.

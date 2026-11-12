@@ -23,6 +23,8 @@ export const GET: APIRoute = async () => {
     "## Optional\n",
     `- [Everything in one file](${site.url}/llms-full.txt): every docs page and the full component reference`,
     `- [For AI agents](${site.url}/ai): how Hyper Elements is built for coding agents`,
+    // An agent with a browser can render a template there: by a link, by script, or by WebMCP tools.
+    `- [Playground](${site.url}/playground): render a template in the browser with nothing to install, as an email, a page, a PDF or an image, with its outline and its diagnostics. A link carries the code (${site.url}/playground#code=<base64url of the UTF-8 code>); with script, window.hyperElementsPlayground.render(code); with WebMCP, the tool render_hyper_elements`,
     `- [Migrate from React Email](${site.url}/migrate): convert React Email templates in one command`,
     `- [Source](${site.github})`,
     "",

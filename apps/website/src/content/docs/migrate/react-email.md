@@ -167,7 +167,7 @@ A template that can't be written in the components at all fails: nothing is writ
 Install the package, since the migrated templates import it:
 
 ```bash
-npm install @hyper-elements/react@^0.3.0
+npm install @hyper-elements/react@^0.4.0
 ```
 
 When a run writes templates where it isn't installed, it ends with the install command for your package manager (npm, pnpm, yarn or bun, by your lockfile).

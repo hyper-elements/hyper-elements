@@ -42,7 +42,7 @@ The root decides the output. Change the root and the same content renders somewh
 - **Keeping a plain-text version in sync.** Every `render()` returns `text` beside `html`.
 - **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds a component's phone styles.
 - **Running headless Chrome for a PDF.** `@hyper-elements/react/pdf` writes a `Document` as a PDF with no browser.
-- **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value.
+- **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value. With `@hyper-elements/email-clients`, it names the clients each problem is about, and its email client emulator, `renderInEmailClients()`, shows the email as each email client shows it, on your machine. See [Email client emulator](/docs/email-client-emulator).
 
 ## The shape of a template
 
@@ -70,13 +70,14 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 | `@hyper-elements/react/builder` | `toDesign()` and `fromDesign()`: a template as the Unlayer builder's design JSON, and a design back as a template |
 | `@hyper-elements/react/pdf` | `renderPdf()`: a `Document` as a PDF, with react-pdf, no browser |
 | `@hyper-elements/react/image` | `renderImage()`: a `Canvas` as PNG or SVG, with Satori and resvg |
+| `@hyper-elements/email-clients` | `emailClients()`: the email client checks, as a plugin for `validate()` and `render()`; `renderInEmailClients()`: the email client emulator, the email as each email client shows it, on your machine |
 | `@hyper-elements/migrate` | `npx @hyper-elements/migrate`: React Email templates converted and checked against the originals, and templates written with Unlayer Elements rewritten, with what may draw differently listed |
 
 The source is on GitHub at [hyper-elements/hyper-elements](https://github.com/hyper-elements/hyper-elements), MIT licensed.
 
 ## What it doesn't do yet
 
-- **Real email clients.** The email output is checked in Chromium and against a model of classic Outlook's layout built from captures of real Outlook. It hasn't been checked in real email clients yet, so test in the ones you send to.
+- **Every email client.** The emulator covers the [clients it lists](/docs/email-client-emulator#supported-email-clients), with more on the way; the checks cover more, from caniemail's tables. Before a big send, send a test to the clients that matter.
 - **Measuring text.** The layout gives every box a width without measuring its words, so a box can get less room than its content needs. See [Layout](/docs/layout).
 - **Fetching files for PDF and images.** `renderPdf()` and `renderImage()` take fonts and images as bytes. Nothing is fetched.
 

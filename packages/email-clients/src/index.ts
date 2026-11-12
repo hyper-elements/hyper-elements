@@ -95,7 +95,7 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // Each font file read once, however many previews inline it.
   const cache = new Map<string, Promise<string>>();
   const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readPackageFont(file)), cache.get(file)!);
-  // A stand-in for a family the email chooses (Inter) only where it names it: the rest of classic Outlook's fonts are half.
+  // A stand-in for a family the email chooses, only where it names it (NAMED_ONLY).
   const skip = unnamed(rendered.html);
   const previews = await Promise.all(
     variants.map(async (variant) => {
