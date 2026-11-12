@@ -58,7 +58,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/ai`, `/migrate` | Landing pages |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
-| `/llms.txt`, `/llms-full.txt` | Every docs page and component, for AI agents |
+| `/llms.txt`, `/llms-full.txt` | Every docs page, component and blog tutorial, for AI agents |
 
 Names and links (package names, GitHub, install commands) are in `src/lib/site.ts`. The docs pages repeat the package names in their text, so a rename also needs a search and replace in `src/content/docs/`.
 
@@ -89,4 +89,4 @@ Write Markdown in `src/content/blog/` with `title`, `description`, `slug`, `date
 
 Review articles and infrastructure through a pull request. Opening a PR does not publish the article; only merging to main can deploy it. Conceptual article artwork is an illustration, not an output preview.
 
-After `build`, run `pnpm --filter @hyper-elements/website check:blog` to check both articles’ routes, metadata, internal links, anchors, images, screenshot placement and sitemap. This checks site integration only, not the reader’s sample project.
+After `build`, run `pnpm --filter @hyper-elements/website check:blog` to check all articles’ routes, metadata, internal links, anchors, images, screenshot placement, sitemap and existing text-discovery endpoints. This checks site integration only, not the reader’s sample project.
