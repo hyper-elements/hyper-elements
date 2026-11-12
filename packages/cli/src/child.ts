@@ -24,6 +24,8 @@ import { errorLine, errorText, messageOf, notFound } from "./errors";
 import { formatDiagnostic } from "./format";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
+import { killTree } from "./kill";
+import { parentGone } from "./parent";
 import { reactCopies } from "./react-copies";
 
 const guarded = guard();
@@ -47,8 +49,34 @@ if (!bun) {
   void import("tsx/esm/api").catch(() => undefined);
 }
 
-/** The parent's gone (its end of the channel closed): nothing to report to. */
-process.on("disconnect", () => guarded.exit(0));
+/** The files this child wrote beside the templates (loader modules, a tsconfig): removed when it's done. */
+const written = new Set<string>();
+
+/**
+ * The parent's gone without ending this child (it was killed, or on Windows ended by another process, which leaves its
+ * children running): there's nothing to report to. The child removes what it wrote and ends with every process it
+ * started, its group (on Windows, its tree), as the parent would have ended them. A child whose template blocks it
+ * is ended the same way by its watchdog.
+ */
+function orphaned(): never {
+  for (const file of written) {
+    try {
+      rmSync(file, { force: true });
+    } catch {
+      // the next run removes it (it carries this run's token)
+    }
+  }
+  killTree(process.pid);
+  return guarded.exit(0);
+}
+
+// Its end of the channel closes; and in case that's never said (a spare waits with nothing else to do), the parent's
+// checked every 500 ms.
+const parent = process.ppid;
+process.on("disconnect", orphaned);
+setInterval(() => {
+  if (parentGone(parent)) orphaned();
+}, 500).unref();
 
 process.once("message", (message: StartMessage) => {
   start(message).catch(async (error) => {
@@ -63,7 +91,6 @@ async function start(message: StartMessage): Promise<void> {
     workerData: { parent: process.ppid, pid: process.pid, deadline: message.deadline },
   });
   worker.unref();
-  const written = new Set<string>();
   const cleanups: Diagnostic[] = [];
   if (!bun && message.tsconfig) {
     const folders = [...new Set(message.inputs.map((input) => dirname(input.file)))];

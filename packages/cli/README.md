@@ -225,7 +225,8 @@ with its own `version`. `outline` is text only.
 The CLI loads Elements, React and email-clients the way each template does: through a small module it writes beside the
 template (named `.hyper-elements-<pid>-<n>.<ext>`, deleted as soon as it's loaded), so a template's path aliases,
 workspace packages and module type all apply. The template's folder must be writable. Templates run in child processes,
-one per package and tsconfig, and every process a template starts without detaching it ends with its child. A React the
+one per package and tsconfig, and every process a template starts without detaching it ends with its child. A child
+whose CLI is killed (or, on Windows, ended by another process) ends by itself, with the processes it started. A React the
 template loads only during its render isn't counted among the copies of React it loads.
 
 It runs on Node.js 20.6 or later (`npx hyper-elements`, TypeScript compiled with tsx) or Bun 1.3 or later

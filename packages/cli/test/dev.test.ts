@@ -6,13 +6,13 @@
  * while the server keeps serving; and the server answers only its own Host and Origin (the event stream too), under
  * its prefix, with files from its own folder. Each with the CLI started on Node and on Bun (CLI_RUNTIME).
  */
-import { readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { request } from "node:http";
 import { connect } from "node:net";
 import { networkInterfaces, tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cli, devUntil, email, type Dev, leftovers, link, MODULES, project, startDev, wait, WINDOWS, write } from "./helpers";
+import { alive, childrenOf, cli, devUntil, email, type Dev, leftovers, link, MODULES, project, startDev, until, wait, WINDOWS, write } from "./helpers";
 
 /**
  * How soon after the last change the page must show it. What that times is process starts and module loading, which
@@ -351,6 +351,36 @@ export default function P() { return <Page><Text>A page</Text></Page>; }
     expect(policy).toMatch(/script-src 'sha256-[^']+'(;|$)/);
     expect(policy).toContain("frame-ancestors 'none'");
     expect(policy).not.toContain("unsafe");
+  });
+});
+
+describe("dev ended with no chance to clean up (SIGKILL; on Windows, ended by another process)", () => {
+  it("its children end by themselves: the spare, and one whose template waits, with the process that template started", async () => {
+    const dir = project({ "emails/a.tsx": email("first") });
+    const pids = join(dir, "pids.json");
+    const dev = await startDev(dir, ["emails"]);
+    // The next render's template starts a process, says who's who, and waits: its child is busy but not blocked.
+    change(dir, {
+      "emails/a.tsx": `import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
+const grandchild = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+writeFileSync(${JSON.stringify(pids)}, JSON.stringify({ child: process.pid, grandchild: grandchild.pid }));
+await new Promise(() => {});
+export default function A() { return null; }
+`,
+    });
+    expect(await until(() => existsSync(pids), 20_000)).toBe(true);
+    await wait(200);
+    const { child, grandchild } = JSON.parse(readFileSync(pids, "utf8"));
+    // dev's children: the busy one and a spare started when it was taken.
+    const children = childrenOf(dev.child.pid!);
+    expect(children).toContain(child);
+    expect(children.length).toBeGreaterThanOrEqual(2);
+    expect(alive(grandchild)).toBe(true);
+    dev.child.kill("SIGKILL");
+    await dev.exited;
+    const left = () => [...children, grandchild].filter(alive);
+    expect(await until(() => left().length === 0, 5_000), `still running: ${left().join(", ")}`).toBe(true);
   });
 });
 

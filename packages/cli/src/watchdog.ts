@@ -5,6 +5,7 @@
  */
 import { spawnSync } from "node:child_process";
 import { workerData } from "node:worker_threads";
+import { parentGone } from "./parent";
 
 const { parent, pid, deadline } = workerData as { parent: number; pid: number; deadline: number };
 const started = Date.now();
@@ -22,18 +23,8 @@ function end(): void {
   process.kill(pid, "SIGKILL");
 }
 
-function parentGone(): boolean {
-  if (process.ppid !== parent) return true;
-  try {
-    process.kill(parent, 0);
-    return false;
-  } catch (error) {
-    return (error as NodeJS.ErrnoException).code !== "EPERM";
-  }
-}
-
 const timer = setInterval(() => {
-  if (parentGone() || Date.now() - started > deadline) {
+  if (parentGone(parent) || Date.now() - started > deadline) {
     clearInterval(timer);
     end();
   }

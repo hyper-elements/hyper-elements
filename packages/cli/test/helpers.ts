@@ -183,6 +183,24 @@ export function noBrowserEnv(): Record<string, string> {
 
 export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** Whether a process is running. */
+export function alive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+/** The processes `pid` started that are running: pgrep on macOS and Linux, the process table on Windows. */
+export function childrenOf(pid: number): number[] {
+  const out = WINDOWS
+    ? spawnSync("powershell", ["-NoProfile", "-Command", `Get-CimInstance Win32_Process -Filter "ParentProcessId=${pid}" | ForEach-Object { $_.ProcessId }`], { encoding: "utf8", windowsHide: true }).stdout
+    : spawnSync("pgrep", ["-P", String(pid)], { encoding: "utf8" }).stdout;
+  return (out ?? "").split(/\s+/).filter(Boolean).map(Number);
+}
+
 /** Waits until `check` holds, up to `ms`. */
 export async function until(check: () => boolean, ms = 10_000): Promise<boolean> {
   const end = Date.now() + ms;
