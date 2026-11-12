@@ -81,7 +81,6 @@ export interface EmailClientsResult<D = Diagnostic> {
  */
 export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult<EmailHtmlDiagnostic>>;
 export function renderInEmailClients(element: React.ReactElement, options?: EmailClientsOptions): Promise<EmailClientsResult>;
-export function renderInEmailClients(input: string | React.ReactElement, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult | EmailClientsResult<EmailHtmlDiagnostic>>;
 export async function renderInEmailClients(input: React.ReactElement | string, options: EmailClientsOptions = {}): Promise<EmailClientsResult | EmailClientsResult<EmailHtmlDiagnostic>> {
   if (typeof input === "string") return previewHtml(input, options as Parameters<typeof previewHtml>[1]);
   // HTML read as bytes (readFile() without an encoding) isn't a template: say how to pass it.
