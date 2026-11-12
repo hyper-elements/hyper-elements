@@ -39,7 +39,8 @@ and dark) are images of the launch email (`examples/showcase/email.tsx`) in each
 are. Replace them when the launch email changes.
 
 The Email client emulator page's images (`public/generated/email-clients/*.png`) are its welcome email and two
-templates, drawn by `@hyper-elements/email-clients` in classic Outlook, Gmail, Apple Mail and the Gmail app and captured in Chromium.
+templates, plus the launch email for the home page's emulator tile, each drawn by `@hyper-elements/email-clients` in classic
+Outlook, Gmail, Apple Mail and the Gmail app and captured in Chromium.
 Rebuild them after a release of the emulator, with the packages built and Playwright's Chromium installed:
 `pnpm --filter @hyper-elements/website generate:email-clients`.
 

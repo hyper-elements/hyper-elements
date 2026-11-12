@@ -20,6 +20,7 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#build-with-ai-agents">AI agents</a> ·
+  <a href="#test-it-in-email-clients">Test in email clients</a> ·
   <a href="https://hyperelements.dev/templates">Templates</a> ·
   <a href="https://hyperelements.dev/docs">Documentation</a> ·
   <a href="https://hyperelements.dev">Website</a>
@@ -31,6 +32,7 @@ Hyper Elements is an open-source React library for generating content. Write a r
 - **Build real web pages.** On a Page, `Box` and typed CSS styles (flex, grid, position, gradients, shadows) lay out any structure, while the same components still write email-safe HTML.
 - **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
+- **Test emails in email clients, locally.** See an email as Outlook, Gmail and other email clients show it, with the email client emulator that comes with Hyper Elements: no test sends, no account, nothing uploaded.
 - **Render in your own app.** Generate output on your server, with no browser, hosted service, or API key required.
 
 <p align="center">
@@ -127,7 +129,34 @@ Email 600px
     Button: background #ef4638 "Track your order" → https://example.com/orders/10482
 ```
 
-An agent can spot missing content, incorrect widths, and layout mistakes before rendering. Validation checks the engine's support rules; it does not open every email client. [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
+An agent can spot missing content, incorrect widths, and layout mistakes before rendering, then see the email in each email client with the emulator below. [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
+
+## Test it in email clients
+
+How will this email look in Outlook, or in Gmail? Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`, that shows an email as each email client does, on your own machine: free, with no test sends, no account and nothing uploaded. For emails built with Hyper Elements, it's 97–99% accurate against the real clients.
+
+```bash
+npm install @hyper-elements/email-clients
+```
+
+```tsx
+import { renderInEmailClients } from "@hyper-elements/email-clients";
+
+const { previews } = await renderInEmailClients(<Email width={600}><OrderUpdate name="Ada" /></Email>);
+// A preview per email client (classic Outlook, Outlook.com, Gmail, Apple Mail and more):
+// a self-contained HTML page that shows the email as that client does when Chromium opens it.
+```
+
+Save a preview and open it, take a screenshot with Playwright, or read the list of what the client changed (rounded corners, a `<style>` rule, a font). An email sign-in code, drawn by the emulator in four email clients:
+
+<p align="center">
+  <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-outlook.png" alt="A sign-in code email in classic Outlook, drawn by the Hyper Elements email client emulator" width="230" />
+  <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-gmail.png" alt="The sign-in code email in Gmail on the web, drawn by the emulator" width="230" />
+  <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-apple-mail.png" alt="The sign-in code email in Apple Mail, drawn by the emulator" width="230" />
+  <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-gmail-app.png" alt="The sign-in code email in the Gmail app on Android, drawn by the emulator" width="107" />
+</p>
+
+[Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-client-emulator)
 
 ## Agent Benchmarks
 
@@ -161,6 +190,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
 - **Build pages:** [Box and CSS layout](https://hyperelements.dev/docs/layout#box-css-layout-on-a-page) · [Page styles](https://hyperelements.dev/docs/styles#on-a-page)
+- **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)
 - **Use it in your app:** [Next.js example](./examples/nextjs-app-router) · [Email providers](./packages/react/docs/email-providers.md)
 - **Bring existing templates:** [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Move from Unlayer Elements](./packages/react/docs/migrating-from-unlayer-elements.md)
 - **Let teammates edit visually:** [Optional Unlayer editor integration](./packages/react/docs/visual-editing.md)

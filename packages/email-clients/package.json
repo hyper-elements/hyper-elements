@@ -1,7 +1,7 @@
 {
   "name": "@hyper-elements/email-clients",
   "version": "0.4.0",
-  "description": "Email client checks for Hyper Elements (classic Outlook, Outlook.com, Gmail, Apple Mail and others), as a plugin for validate() and render(), and a preview file per client of how each draws the email.",
+  "description": "Test emails in email clients without sending them: the email client emulator for Hyper Elements previews an email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, and checks it for what each client removes or changes.",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -18,7 +18,14 @@
     "gmail",
     "apple-mail",
     "hyper-elements",
-    "react"
+    "react",
+    "email-testing",
+    "email-client-testing",
+    "test-email",
+    "email-rendering",
+    "outlook-email",
+    "gmail-email",
+    "email-emulator"
   ],
   "sideEffects": false,
   "exports": {

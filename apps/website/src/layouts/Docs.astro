@@ -40,9 +40,17 @@ const crumbs = [
   ...(slug.startsWith("components/") ? [{ name: "Components", url: new URL("/docs/components", site.url).href }] : []),
   ...(slug ? [{ name: title, url }] : []),
 ];
+// A page's "## Common questions" section (each question a ### heading, its answer the text under it), as an FAQPage.
+const plain = (md: string) => md.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/[`*]/g, "").replace(/\s+/g, " ").trim();
+const questions = (markdown?.split(/^## Common questions$/m)[1]?.split(/^## /m)[0] ?? "")
+  .split(/^### /m)
+  .slice(1)
+  .map((block) => { const [q = "", ...answer] = block.split("\n"); return { q: plain(q), a: plain(answer.join("\n")) }; })
+  .filter(({ q, a }) => q && a);
 const jsonLd = [
   { "@context": "https://schema.org", "@type": "TechArticle", headline: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
   { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: crumbs.map((c, n) => ({ "@type": "ListItem", position: n + 1, name: c.name, item: c.url })) },
+  ...(questions.length ? [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: questions.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] : []),
 ];
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
 const isCurrent = (s: string) => s === slug;

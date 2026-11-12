@@ -7,6 +7,8 @@ const docs = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
+    /** The browser tab's and search results' title, where it differs from the page's heading. */
+    metaTitle: z.string().optional(),
   }),
 });
 

@@ -25,7 +25,10 @@
     "invoice",
     "pdf",
     "landing-page",
-    "nextjs"
+    "nextjs",
+    "email-testing",
+    "email-preview",
+    "email-clients"
   ],
   "sideEffects": false,
   "peerDependencies": {
