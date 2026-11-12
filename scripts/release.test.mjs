@@ -99,6 +99,17 @@ test("migrate numbers the same way", () => {
   assert.deepEqual(attempt(r, { ...run, now: "2026-11-12T09:40:00Z" }), { current: "0.2.1", version: "0.2.1", publish: false });
 });
 
+test("the CLI numbers the same way: its first version published by hand, then from it", () => {
+  // The first version (0.1.0) is published by hand with its tag; the workflow numbers on from it.
+  const r = registry([["0.1.0", "2026-11-20T00:00:00Z", "latest"]]);
+  const run = { committed: "0.1.0", type: "patch", runId: "21", since: "2026-11-21T09:00:00Z", tag: "latest" };
+  assert.equal(attempt(r, { ...run, now: "2026-11-21T09:05:00Z" }).version, "0.1.1");
+  assert.deepEqual(attempt(r, { ...run, now: "2026-11-21T09:30:00Z" }), { current: "0.1.1", version: "0.1.1", publish: false });
+  // A minor that widens its Elements range, committed ahead.
+  const minor = attempt(r, { committed: "0.2.0", type: "patch", runId: "22", since: "2026-11-22T09:00:00Z", tag: "latest", now: "2026-11-22T09:05:00Z" });
+  assert.equal(minor.version, "0.2.0");
+});
+
 test("the hold tag", () => {
   assert.equal(releaseTag({}), "latest");
   assert.equal(releaseTag({ NPM_RELEASE_TAG: "" }), "latest");

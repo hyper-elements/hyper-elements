@@ -3,7 +3,7 @@
 # Gated publish flow, one package at a time:
 #   1. PR merged to main → triggers build & test
 #   2. Each package publishes only when its code changed since its last
-#      release tag (Elements: v*, migrate: migrate-v*, email-clients: email-clients-v*)
+#      release tag (Elements: v*, migrate: migrate-v*, email-clients: email-clients-v*, cli: cli-v*)
 #   3. A reviewer approves each publish in the Actions UI (environment gate)
 #   4. The package is published to npm via trusted publishing (OIDC)
 #
@@ -56,6 +56,7 @@ on:
           - react
           - migrate
           - email-clients
+          - cli
         default: react
       bump:
         description: 'Version bump type'
@@ -80,6 +81,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 24
+
+      # @hyper-elements/cli's tests run every case on Node and again with the CLI started on Bun.
+      - name: Setup Bun 1.3
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -114,6 +121,7 @@ jobs:
       elements: ${{ steps.detect.outputs.elements }}
       migrate: ${{ steps.detect.outputs.migrate }}
       email-clients: ${{ steps.detect.outputs.email-clients }}
+      cli: ${{ steps.detect.outputs.cli }}
 
     steps:
       - name: Checkout code (with tags)
@@ -138,7 +146,7 @@ jobs:
             exit 1
           fi
           last() { git tag -l "$1" --sort=-v:refname | head -1; }
-          for pattern in 'v*' 'migrate-v*' 'email-clients-v*'; do
+          for pattern in 'v*' 'migrate-v*' 'email-clients-v*' 'cli-v*'; do
             tag=$(last "$pattern")
             if [ -n "$tag" ] && ! git merge-base --is-ancestor "$tag" HEAD; then
               echo "::notice::$tag isn't an ancestor of this commit: nothing older than it is published."
@@ -161,6 +169,7 @@ jobs:
             ELEMENTS=$([ "${{ inputs.package }}" = "react" ] && descends 'v*' && echo true || echo false)
             MIGRATE=$([ "${{ inputs.package }}" = "migrate" ] && descends 'migrate-v*' && echo true || echo false)
             EMAIL_CLIENTS=$([ "${{ inputs.package }}" = "email-clients" ] && descends 'email-clients-v*' && echo true || echo false)
+            CLI=$([ "${{ inputs.package }}" = "cli" ] && descends 'cli-v*' && echo true || echo false)
           else
             # Storybook (its config, stories and examples) isn't in the package: the same paths as paths-ignore above.
             ELEMENTS=$(changed 'v*' packages/react packages/core pnpm-workspace.yaml \
@@ -169,10 +178,15 @@ jobs:
               ':(exclude,glob)packages/**/*.stories.tsx')
             # Not Elements: migrate requires the Elements range committed in its package.json (the oldest
             # release the converter supports), not the newest, so an Elements release doesn't republish it.
-            MIGRATE=$(changed 'migrate-v*' packages/migrate pnpm-workspace.yaml pnpm-lock.yaml)
+            # packages/loader is the template loader it shares with the CLI, bundled into both: a change to it alone
+            # releases both.
+            MIGRATE=$(changed 'migrate-v*' packages/migrate packages/loader pnpm-workspace.yaml pnpm-lock.yaml)
             # The email client previews: their own code, runtime and fonts. Like migrate, they require the Elements range
             # committed in their package.json, so an Elements release doesn't republish them.
             EMAIL_CLIENTS=$(changed 'email-clients-v*' packages/email-clients pnpm-workspace.yaml pnpm-lock.yaml)
+            # The command line: its own code and the template loader bundled into it. It loads the project's Elements
+            # (within the range committed in its package.json), so an Elements release doesn't republish it either.
+            CLI=$(changed 'cli-v*' packages/cli packages/loader pnpm-workspace.yaml pnpm-lock.yaml)
           fi
           # The first version of a new package is published by hand (see above).
           if [ "$MIGRATE" = "true" ] && ! npm view @hyper-elements/migrate version >/dev/null 2>&1; then
@@ -183,10 +197,15 @@ jobs:
             echo "::notice::@hyper-elements/email-clients isn't on npm yet: publish its first version by hand, tag it email-clients-v<version>, and add its trusted publisher."
             EMAIL_CLIENTS=false
           fi
+          if [ "$CLI" = "true" ] && ! npm view @hyper-elements/cli version >/dev/null 2>&1; then
+            echo "::notice::@hyper-elements/cli isn't on npm yet: publish its first version by hand, tag it cli-v<version>, and add its trusted publisher."
+            CLI=false
+          fi
           echo "elements=$ELEMENTS" >> $GITHUB_OUTPUT
           echo "migrate=$MIGRATE" >> $GITHUB_OUTPUT
           echo "email-clients=$EMAIL_CLIENTS" >> $GITHUB_OUTPUT
-          echo "Elements changed: $ELEMENTS, migrate changed: $MIGRATE, email-clients changed: $EMAIL_CLIENTS"
+          echo "cli=$CLI" >> $GITHUB_OUTPUT
+          echo "Elements changed: $ELEMENTS, migrate changed: $MIGRATE, email-clients changed: $EMAIL_CLIENTS, cli changed: $CLI"
 
   publish:
     name: Publish @hyper-elements/react
@@ -750,6 +769,189 @@ jobs:
           else
             gh release create "$TAG" \
               --title "@hyper-elements/email-clients ${{ steps.version.outputs.version }}" \
+              --generate-notes \
+              --latest=false \
+              ${PREVIOUS:+--notes-start-tag "$PREVIOUS"}
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-cli:
+    name: Publish @hyper-elements/cli
+    needs: [build-and-test, changes, publish]
+    # After Elements (when it publishes too), so the Elements the CLI's range names is on npm.
+    if: >-
+      !cancelled() &&
+      needs.build-and-test.result == 'success' &&
+      needs.changes.outputs.cli == 'true' &&
+      (needs.publish.result == 'success' || needs.publish.result == 'skipped')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish-cli
+      cancel-in-progress: false
+    environment: npm-publish
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: read
+
+    steps:
+      # The commit this run built and tested, not whatever main is when the approval lands.
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      # Checked again here, where publishes run one at a time: re-running an
+      # older run's failed jobs reuses the `changes` job's result from before a
+      # newer commit was published, and would ship older code as the newest version.
+      - name: Check no newer commit was published
+        shell: bash
+        run: |
+          git fetch --tags --force origin
+          TAG=$(git tag -l 'cli-v*' --sort=-v:refname | head -1)
+          if [ -n "$TAG" ] && ! git merge-base --is-ancestor "$TAG" HEAD; then
+            echo "::error::$TAG was published from a newer commit than this run's: nothing older than it is published."
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - name: Setup Node.js 24 (with npm registry for OIDC)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@12
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Determine version bump
+        id: bump
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "type=${{ inputs.bump }}" >> $GITHUB_OUTPUT
+          else
+            LABELS=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/pulls" --jq '.[0].labels[].name' 2>/dev/null || echo "")
+            if echo "$LABELS" | grep -Fxq "release:major"; then
+              echo "type=major" >> $GITHUB_OUTPUT
+            elif echo "$LABELS" | grep -Fxq "release:minor"; then
+              echo "type=minor" >> $GITHUB_OUTPUT
+            else
+              echo "type=patch" >> $GITHUB_OUTPUT
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # As Elements: from the highest version published at any tag, and a re-attempt reuses what its run published.
+      - name: Determine version
+        id: version
+        run: node scripts/release.mjs version @hyper-elements/cli "${{ steps.bump.outputs.type }}" packages/cli >> "$GITHUB_OUTPUT"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Stamp the version and this run's id
+        run: node scripts/release.mjs stamp packages/cli "${{ steps.version.outputs.version }}"
+
+      # The CLI versions on its own and loads the project's Elements, within the peer range committed in its
+      # package.json (>=0.4.0 <0.5.0: each Elements minor releases a CLI minor that widens it). Not email-clients'
+      # caret-range gate: the range must be committed (not workspace:) and hold the Elements npm's latest names, so a
+      # new install gets an Elements this CLI renders with.
+      - name: Check the Elements range
+        id: elements
+        working-directory: packages/cli
+        run: |
+          RANGE=$(node -p "require('./package.json').peerDependencies['@hyper-elements/react']")
+          case "$RANGE" in workspace:*) echo "::error::the CLI's Elements range must be committed, not $RANGE"; exit 1 ;; esac
+          echo "range=$RANGE" >> $GITHUB_OUTPUT
+          LATEST=$(npm view @hyper-elements/react@latest version)
+          node -e '
+            const [range, version] = process.argv.slice(1);
+            const parse = (v) => v.split("-")[0].split(".").map(Number);
+            const cmp = (a, b) => { for (let i = 0; i < 3; i++) if (a[i] !== b[i]) return a[i] - b[i]; return 0; };
+            const holds = (comparator) => {
+              const m = /^(>=|<=|>|<|=)?(\d+\.\d+\.\d+)$/.exec(comparator);
+              if (!m) throw new Error(`a comparator the gate does not read: ${comparator}`);
+              const c = cmp(parse(version), parse(m[2]));
+              return { ">=": c >= 0, "<=": c <= 0, ">": c > 0, "<": c < 0, "=": c === 0 }[m[1] ?? "="];
+            };
+            const ok = range.split("||").some((set) => set.trim().split(/\s+/).every(holds));
+            process.exit(ok ? 0 : 1);
+          ' "$RANGE" "$LATEST" || { echo "::error::Elements $LATEST (npm's latest) is outside the CLI's range $RANGE: widen the range in packages/cli/package.json (the CLI must support $LATEST)."; exit 1; }
+          echo "Elements $LATEST is inside the CLI's range $RANGE"
+
+      - name: Pre-publish summary
+        run: |
+          echo "## Publish Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| | |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Package** | \`@hyper-elements/cli\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.version.outputs.current }} → ${{ steps.version.outputs.version }} (${{ steps.bump.outputs.type }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Elements range** | ${{ steps.elements.outputs.range }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Trigger** | ${{ github.event_name }} |" >> $GITHUB_STEP_SUMMARY
+
+      # NPM_RELEASE_TAG holds it on next with Elements while a release is held. The template loader it shares with
+      # migrate is bundled in: the packed manifest must name no private package.
+      - name: Publish to npm (trusted publishing)
+        if: steps.version.outputs.publish == 'true'
+        working-directory: packages/cli
+        run: |
+          pnpm pack --pack-destination /tmp
+          TARBALL=$(ls /tmp/hyper-elements-cli-*.tgz)
+          if tar -xOzf "$TARBALL" package/package.json | grep -q '@unlayer-internal/'; then
+            echo "::error::the packed manifest names a private @unlayer-internal package"
+            exit 1
+          fi
+          npm publish "$TARBALL" --access public --tag "$(node ../../scripts/release.mjs tag)"
+        env:
+          NPM_RELEASE_TAG: ${{ vars.NPM_RELEASE_TAG }}
+
+      - name: Tag release
+        run: |
+          TAG="cli-v${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git ls-remote --tags origin | awk '{print $2}' | grep -Fxq "refs/tags/$TAG"; then
+            echo "Tag $TAG already exists — skipping"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      # Not marked latest: the repository's latest release stays Elements.
+      - name: Create GitHub Release
+        run: |
+          TAG="cli-v${{ steps.version.outputs.version }}"
+          PREVIOUS=$(git ls-remote --tags --refs origin | sed 's#.*refs/tags/##' | grep -E '^cli-v[0-9]' | grep -vFx "$TAG" | sort -V | tail -1)
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — skipping"
+          else
+            gh release create "$TAG" \
+              --title "@hyper-elements/cli ${{ steps.version.outputs.version }}" \
               --generate-notes \
               --latest=false \
               ${PREVIOUS:+--notes-start-tag "$PREVIOUS"}

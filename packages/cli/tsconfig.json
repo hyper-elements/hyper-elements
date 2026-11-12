@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+    // The shared template loader (packages/loader) is private and bundled in: reached by its path, so the published
+    // manifest names no private package (tsup.config.ts and vitest.config.ts alias it the same way).
+    "paths": { "@unlayer-internal/template-loader": ["../loader/src/index.ts"] }
+  },
+  "include": ["src/**/*", "test/**/*.ts", "*.config.ts"]
+}
