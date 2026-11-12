@@ -8,13 +8,18 @@ const dist = resolve(fileURLToPath(new URL("../dist/", import.meta.url)));
 const index = readFileSync(join(dist, "blog/index.html"), "utf8");
 const sitemap = readFileSync(join(dist, "sitemap-0.xml"), "utf8");
 const articles = [
+  { slug: "node-open-graph-images-local-fonts", description: "Generate branded Open Graph PNGs", hero: "node-open-graph-images-workflow.webp" },
   { slug: "react-emails-claude-code", description: "Build a receipt email", hero: "claude-code-email-loop.webp" },
   { slug: "node-pdf-invoices-without-chrome", description: "Build a React invoice PDF", hero: "node-pdf-invoices-workflow.webp" },
 ];
+const llms = readFileSync(join(dist, "llms.txt"), "utf8");
+const llmsFull = readFileSync(join(dist, "llms-full.txt"), "utf8");
 const pages = new Map();
 for (const { slug, description, hero } of articles) {
   const html = readFileSync(join(dist, `blog/${slug}/index.html`), "utf8");
   pages.set(slug, html);
+  assert(llms.includes(`/blog/${slug})`), `${slug}: missing llms.txt discovery link`);
+  assert(llmsFull.includes(`Source: https://www.hyperelements.dev/blog/${slug}`), `${slug}: missing full-text representation`);
   assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `${slug}: exactly one heading`);
   assert(index.includes(`href="/blog/${slug}"`), `${slug}: missing index link`);
   assert(html.includes(`<meta name="description" content="${description}`), `${slug}: missing description`);
@@ -68,5 +73,14 @@ const invoice = checkScreenshot(invoiceHtml, {
 assert.match(invoiceHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/node-pdf-invoice-output\.png"/);
 assert.match(invoice, /Actual PDF output from the example/);
 assert.doesNotMatch(invoiceHtml, /Based on the current PDF output documentation|checked 10 November 2026|not a screenshot of rendered output/);
-console.log("Blog integration PASS: both articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, two images per post, screenshot assets/placement and sitemap.");
+const cardHtml = pages.get("node-open-graph-images-local-fonts");
+const card = checkScreenshot(cardHtml, {
+  heading: "how-do-i-turn-post-data-into-a-react-image-template", src: "/img/blog/node-open-graph-card-output.png",
+  alt: "A dark Northline Notes card", width: 1200, height: 630,
+});
+assert.match(cardHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/node-open-graph-card-output\.png"/);
+assert.match(card, /The template rendered as a PNG/);
+assert(cardHtml.includes("renderImage"), "Image rendering instructions must be in static HTML");
+assert(llmsFull.includes("scripts/render-card.tsx"), "Card script must be readable in full text");
+console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, two images per post, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
 console.log("Static checks only: this does not replace browser layout inspection or execute the tutorial examples.");

@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { getCollection } from "astro:content";
 import { abs, docsInOrder, header, referenceInOrder } from "../lib/llms";
 import { templates } from "../lib/examples";
 import { site } from "../lib/site";
@@ -18,10 +19,13 @@ export const GET: APIRoute = async () => {
   // Each template's page has its full source, rendered output and diagnostics.
   lines.push("", "## Templates\n");
   for (const t of templates) lines.push(`- [${t.title}](${site.url}/templates/${t.slug}): <${t.root}>. ${t.description}`);
+  lines.push("", "## Developer tutorials\n");
+  const articles = (await getCollection("blog")).sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+  for (const article of articles) lines.push(`- [${article.data.title}](${site.url}/blog/${article.data.slug}): ${article.data.description}`);
   lines.push(
     "",
     "## Optional\n",
-    `- [Everything in one file](${site.url}/llms-full.txt): every docs page and the full component reference`,
+    `- [Everything in one file](${site.url}/llms-full.txt): every docs page, developer tutorial and the full component reference`,
     `- [For AI agents](${site.url}/ai): how Hyper Elements is built for coding agents`,
     // An agent with a browser can render a template there: by a link, by script, or by WebMCP tools.
     `- [Playground](${site.url}/playground): render a template in the browser with nothing to install, as an email, a page, a PDF or an image, with its outline and its diagnostics. A link carries the code (${site.url}/playground#code=<base64url of the UTF-8 code>); with script, window.hyperElementsPlayground.render(code); with WebMCP, the tool render_hyper_elements`,
