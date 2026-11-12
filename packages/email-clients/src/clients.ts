@@ -37,6 +37,11 @@ export interface PreviewVariant {
   approximate: boolean;
 }
 
+export interface EmailClientPreview extends PreviewVariant {
+  /** The preview file: open it in Chromium. */
+  html: string;
+}
+
 export interface Skipped {
   client: EmailClient;
   dark: boolean;

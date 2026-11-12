@@ -43,6 +43,56 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     }
   });
 
+  it("imports /html in both module formats, without a browser, and previews an HTML email", async () => {
+    const esm = await import(join(dir, "dist/html.js"));
+    const cjs = createRequire(join(dir, "package.json"))(join(dir, "dist/html.cjs"));
+    const html = "<!DOCTYPE html><html><body><p>Hi</p></body></html>";
+    for (const entry of [esm, cjs]) {
+      const { previews, diagnostics } = await entry.renderInEmailClients(html, { emailClients: ["gmail"], computers: ["windows"] });
+      expect(previews.map((p: { filename: string }) => p.filename)).toEqual(["gmail.html"]);
+      expect(diagnostics).toEqual([]);
+      const inline = await entry.renderInEmailClients(html, { emailClients: ["outlook-com"], computers: ["windows"], fonts: "inline" });
+      expect(inline.previews[0].html).toContain("data:font/woff2;base64,");
+    }
+  });
+
+  it("keeps /html free of React and core, in its code and in its declarations (and the chunks they import)", () => {
+    const specifiers = (text: string) => [...text.matchAll(/(?:\bfrom\s*|\bimport\s*\(\s*|\brequire\s*\(\s*|^\s*import\s+)['"]([^'"]+)['"]/gm)].map((m) => m[1]!);
+    const seen = new Set<string>();
+    const visit = (file: string): string[] => {
+      if (seen.has(file)) return [];
+      seen.add(file);
+      const found = specifiers(readFileSync(join(dir, "dist", file), "utf8"));
+      // A declaration's relative import is a chunk of declarations beside it: follow it.
+      const chunks = found.filter((s) => s.startsWith("./")).map((s) => s.slice(2).replace(/\.c?js$/, file.endsWith(".d.cts") ? ".d.cts" : ".d.ts"));
+      return [...found.filter((s) => !s.startsWith("./")), ...chunks.filter((c) => c.includes(".d.")).flatMap(visit)];
+    };
+    for (const file of ["html.js", "html.cjs", "html.d.ts", "html.d.cts"]) {
+      const imported = visit(file);
+      expect(imported.filter((s) => s === "react" || s === "react-dom" || s.startsWith("react/") || s.startsWith("@hyper-elements/react")), file).toEqual([]);
+    }
+    expect(seen.size).toBeGreaterThan(4);
+  });
+
+  it("resolves /html's types under node16 and bundler, for each module format", () => {
+    const project = mkdtempSync(join(tmpdir(), "email-clients-html-types-"));
+    const installed = join(project, "node_modules", "@hyper-elements", "email-clients");
+    mkdirSync(join(project, "node_modules", "@hyper-elements"), { recursive: true });
+    symlinkSync(dir, installed, "dir");
+    const inPackage = (file: string) => (file.startsWith(installed) ? join(dir, file.slice(installed.length)) : file);
+    const settings: Array<[string, ts.CompilerOptions, string]> = [
+      ["node16 (CommonJS)", { moduleResolution: ts.ModuleResolutionKind.Node16, module: ts.ModuleKind.Node16 }, "dist/html.d.cts"],
+      ["bundler", { moduleResolution: ts.ModuleResolutionKind.Bundler, module: ts.ModuleKind.ESNext }, "dist/html.d.ts"],
+    ];
+    const found = Object.fromEntries(
+      settings.map(([name, options]) => {
+        const resolved = ts.resolveModuleName("@hyper-elements/email-clients/html", join(project, "index.ts"), options, ts.sys).resolvedModule?.resolvedFileName;
+        return [name, resolved ? inPackage(resolved) : "(not found)"];
+      })
+    );
+    expect(found).toEqual(Object.fromEntries(settings.map(([name, , file]) => [name, join(dir, file)])));
+  });
+
   it("resolves its types under node10, node16 and bundler, for each module format", () => {
     const project = mkdtempSync(join(tmpdir(), "email-clients-types-"));
     const installed = join(project, "node_modules", "@hyper-elements", "email-clients");

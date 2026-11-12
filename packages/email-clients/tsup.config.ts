@@ -1,8 +1,10 @@
 import { defineConfig } from 'tsup';
 
 // Core (@hyper-elements/react) stays external: the package builds on its public API and bundles no copy of it.
+// Two entries: the main one (`.`, for Hyper Elements templates) and `./html` (any HTML email), which reaches neither core
+// nor React, in code or in types.
 export default defineConfig({
-  entry: { index: 'src/index.ts' },
+  entry: { index: 'src/index.ts', html: 'src/html-entry.ts' },
   format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,

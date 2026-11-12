@@ -15,16 +15,14 @@
 import type React from "react";
 import type { Diagnostic, ElementsPlugin, RenderOptions } from "@hyper-elements/react";
 import { checkCore, versionMismatch } from "./core";
-import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
+import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type EmailClientPreview, type PreviewClient, type Skipped } from "./clients";
 import { checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
 import { emailClients, PLUGIN_NAME } from "./plugin";
 import { loadModelsPackage } from "./models";
-import { RUNTIME } from "./runtime.generated";
-import { FONT_ORIGIN, fontSources, readPackageFont, unnamed, type ReadFont } from "./fonts";
-import { previewFile } from "./shell";
+import { previewsOf } from "./previews";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./core";
-export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
+export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type EmailClientPreview, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
 export { emailClients, PLUGIN_NAME, type EmailClientsPluginOptions } from "./plugin";
 
@@ -49,11 +47,6 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   computers?: readonly Computer[];
 }
 
-export interface EmailClientPreview extends PreviewVariant {
-  /** The preview file: open it in Chromium. */
-  html: string;
-}
-
 export interface EmailClientsResult {
   /** One file per client and variant, in the order asked for, light before dark. */
   previews: EmailClientPreview[];
@@ -73,8 +66,6 @@ export interface EmailClientsResult {
 export async function renderInEmailClients(element: React.ReactElement, options: EmailClientsOptions = {}): Promise<EmailClientsResult> {
   const core = checkCore();
   const models = await loadModelsPackage();
-  // The models' browser script, for the preview's CSP: its sha256 is the package's own.
-  const script = { script: models.SCRIPT, sha256: models.SCRIPT_SHA256 };
   const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", plugins = [], widths, computers, ...renderOptions } = options;
   checkWidths(widths);
   checkComputers(computers);
@@ -91,31 +82,6 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // The findings read each block's component from its entry: a map without them (a core whose BLOCK_MAP_VERSION
   // claims a format it doesn't write) would leave them silently empty.
   if (!blocks.entries.every((entry) => typeof entry.type === "string")) throw versionMismatch(["block types in render()'s blockMap"]);
-  const fontOrigin = fonts === "url" ? FONT_ORIGIN : null;
-  // Each font file read once, however many previews inline it.
-  const cache = new Map<string, Promise<string>>();
-  const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readPackageFont(file)), cache.get(file)!);
-  // A stand-in for a family the email chooses, only where it names it (NAMED_ONLY).
-  const skip = unnamed(rendered.html);
-  const previews = await Promise.all(
-    variants.map(async (variant) => {
-      const { filename: _, ...rest } = variant;
-      const info = EMAIL_CLIENTS[variant.client];
-      const config = {
-        ...rest,
-        name: info.name,
-        blocks,
-        fontOrigin,
-        fontSources: await fontSources(variant.client, fonts, read, skip.files, variant.computer),
-        faces: models.facesToLoad(variant.client, variant.computer).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
-        leftOut: skip.families,
-        standIns: models.standIns(variant.client, variant.computer),
-        elements: info.measured?.elements ?? null,
-        runtime: RUNTIME.sha256,
-        models: { script: script.sha256, protocol: models.PROTOCOL },
-      };
-      return { ...variant, html: previewFile(rendered.html, config, { runtime: RUNTIME, models: script }) };
-    })
-  );
+  const previews = await previewsOf(rendered.html, blocks, variants, models, { fonts, source: "render" });
   return { previews, skipped, diagnostics: rendered.diagnostics };
 }

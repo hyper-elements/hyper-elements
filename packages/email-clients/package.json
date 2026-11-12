@@ -37,6 +37,14 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
+    "./html": {
+      "types": {
+        "import": "./dist/html.d.ts",
+        "require": "./dist/html.d.cts"
+      },
+      "import": "./dist/html.js",
+      "require": "./dist/html.cjs"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
@@ -66,6 +74,17 @@
     "@hyper-elements/react": "^0.4.0",
     "react": ">=18",
     "react-dom": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@hyper-elements/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@hyper-elements/react": "workspace:*",

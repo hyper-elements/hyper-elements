@@ -5,8 +5,11 @@
 //    email with the plugin (`validate(email, { plugins: [await emailClients()] })`: the captured checks run, and core's
 //    note is left out) and write a preview for every client, with the fonts inlined from the installed files. The
 //    tarball holds dist/, the fonts and their licences, and none of the models.
-// 2. Beside core 0.3.1 (on npm: no plugins, and render()'s blockMap in format 1): npm reports the unmet peer; installed
-//    anyway, the package imports, and its first call throws email-clients/version-mismatch, in both module formats.
+// 2. Beside core 0.3.1 (on npm: no plugins, and render()'s blockMap in format 1): npm reports the unmet peer (optional,
+//    but installed and out of range); installed anyway, the package imports, and its first call throws
+//    email-clients/version-mismatch, in both module formats.
+// 3. Alone, with no core and no React (its peers are optional): /html previews an HTML email in both module formats, and
+//    a TypeScript project that uses /html type-checks with skipLibCheck off, under node16 and bundler resolution.
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -71,14 +74,39 @@ const email = ${TEMPLATE};
 );`;
 
 /** A clean project with `deps` installed; what each module format's script printed. */
-function project(deps, npmFlags = []) {
+function project(deps, npmFlags = [], scripts = { esm: ESM, cjs: CJS }) {
   const dir = mkdtempSync(join(tmpdir(), 'email-clients-app-'));
   writeFileSync(join(dir, 'package.json'), JSON.stringify({ name: 'app', private: true }));
   run('npm', ['install', '--no-audit', '--no-fund', '--loglevel=error', ...npmFlags, ...deps], dir);
-  writeFileSync(join(dir, 'esm.mjs'), ESM);
-  writeFileSync(join(dir, 'cjs.cjs'), CJS);
+  writeFileSync(join(dir, 'esm.mjs'), scripts.esm);
+  writeFileSync(join(dir, 'cjs.cjs'), scripts.cjs);
   return { dir, esm: JSON.parse(run('node', ['esm.mjs'], dir).trim()), cjs: JSON.parse(run('node', ['cjs.cjs'], dir).trim()) };
 }
+
+// /html, with nothing but this package installed.
+const HTML_EMAIL = '<!DOCTYPE html><html><body><table><tr><td style="font-family:Arial">Hi</td></tr></table></body></html>';
+const HTML_ESM = `
+import { renderInEmailClients, PREVIEW_CLIENTS } from "@hyper-elements/email-clients/html";
+try {
+  const { previews, diagnostics } = await renderInEmailClients(${JSON.stringify(HTML_EMAIL)}, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" });
+  console.log(JSON.stringify({ previews: previews.map((p) => p.filename), approximate: previews.filter((p) => p.approximate).map((p) => p.id), diagnostics, inline: previews.some((p) => p.html.includes("data:font/woff2;base64,")) }));
+} catch (error) {
+  console.log(JSON.stringify({ error: error.name, message: error.message }));
+}`;
+const HTML_CJS = `
+const { renderInEmailClients, PREVIEW_CLIENTS } = require("@hyper-elements/email-clients/html");
+renderInEmailClients(${JSON.stringify(HTML_EMAIL)}, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" }).then(
+  ({ previews, diagnostics }) => console.log(JSON.stringify({ previews: previews.map((p) => p.filename), approximate: previews.filter((p) => p.approximate).map((p) => p.id), diagnostics, inline: previews.some((p) => p.html.includes("data:font/woff2;base64,")) })),
+  (error) => console.log(JSON.stringify({ error: error.name, message: error.message })),
+);`;
+const HTML_TS = `
+import { renderInEmailClients, type EmailHtmlDiagnostic, type EmailHtmlResult } from "@hyper-elements/email-clients/html";
+export async function preview(html: string): Promise<EmailHtmlResult> {
+  const result = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"], dark: true });
+  const lines: Array<number | null> = result.diagnostics.map((d: EmailHtmlDiagnostic) => d.line);
+  return lines.length ? result : result;
+}
+`;
 
 const REACT = ['react@18.3.1', 'react-dom@18.3.1'];
 const all = ['outlook.html', 'outlook-com.html', 'outlook-com.mac.html', 'gmail.html', 'gmail.mac.html', 'gmail-app.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.dark.html'];
@@ -97,7 +125,7 @@ try {
   project(['@hyper-elements/react@0.3.1', extension, ...REACT]);
   fail('npm installed it beside core 0.3.1 without reporting the unmet peer');
 } catch (error) {
-  if (!/ERESOLVE|peer @hyper-elements\/react/.test(String(error.stderr ?? error.message))) throw error;
+  if (!/ERESOLVE|peer(Optional)? @hyper-elements\/react/.test(String(error.stderr ?? error.message))) throw error;
 }
 const older = project(['@hyper-elements/react@0.3.1', extension, ...REACT], ['--legacy-peer-deps']);
 for (const format of ['esm', 'cjs']) {
@@ -105,4 +133,32 @@ for (const format of ['esm', 'cjs']) {
   if (out.error !== 'email-clients/version-mismatch' || !out.message.includes('PLUGIN_API (plugins)') || !out.message.includes('npm i @hyper-elements/react@^0.4.0 @hyper-elements/email-clients@^0.4')) fail(`${format} beside core 0.3.1: ${JSON.stringify(out)}`);
 }
 
-console.info('PACK_OK: beside the packed core and the models from npm, both module formats check an email with the plugin and write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences, and none of the models; beside core 0.3.1, npm reports the unmet peer, and the first call throws email-clients/version-mismatch in both formats');
+// 3. Alone: no core, no React.
+const alone = project([extension], [], { esm: HTML_ESM, cjs: HTML_CJS });
+for (const peer of ['@hyper-elements/react', 'react', 'react-dom']) {
+  try {
+    readFileSync(join(alone.dir, 'node_modules', peer, 'package.json'));
+    fail(`installed alone, npm installed ${peer} too: the peers should be optional`);
+  } catch (error) {
+    if (error?.code !== 'ENOENT') throw error;
+  }
+}
+const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gmail-app-other', 'apple-mail.dark'];
+for (const format of ['esm', 'cjs']) {
+  const out = alone[format];
+  if (out.error) fail(`${format}, /html installed alone: ${out.error}: ${out.message}`);
+  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || JSON.stringify(out.diagnostics) !== '[]') fail(`${format}, /html installed alone wrote ${JSON.stringify(out)}`);
+  if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, /html installed alone marked ${JSON.stringify(out.approximate)} approximate`);
+}
+writeFileSync(join(alone.dir, 'index.ts'), HTML_TS);
+const tsc = join(here, 'node_modules/.bin/tsc');
+for (const [name, module, resolution] of [['node16', 'node16', 'node16'], ['bundler', 'esnext', 'bundler']]) {
+  writeFileSync(join(alone.dir, `tsconfig.${name}.json`), JSON.stringify({ compilerOptions: { strict: true, noEmit: true, skipLibCheck: false, module, moduleResolution: resolution, target: 'es2022', types: [] }, files: ['index.ts'] }));
+  try {
+    run(tsc, ['-p', `tsconfig.${name}.json`], alone.dir);
+  } catch (error) {
+    fail(`a TypeScript project using /html with no core or React doesn't type-check under ${name}:\n${error.stdout ?? ''}${error.stderr ?? ''}`);
+  }
+}
+
+console.info('PACK_OK: beside the packed core and the models from npm, both module formats check an email with the plugin and write every preview with the fonts inlined; the tarball holds dist/, the fonts and their licences, and none of the models; beside core 0.3.1, npm reports the unmet peer and the first call throws email-clients/version-mismatch in both formats; installed alone, /html previews HTML in both formats and type-checks under node16 and bundler');

@@ -9,8 +9,8 @@ import { peerDependencies, version } from "../package.json";
 /** The plugin contract (core's PLUGIN_API) this package's plugin is written for. */
 export const PLUGIN_APIS: readonly number[] = [1];
 
-/** The models package's message formats (its PROTOCOL) this package reads. */
-export const MODEL_PROTOCOLS: readonly number[] = [1];
+// The models' protocol check lives apart from this module, which imports core: the HTML entry uses it without core.
+export { checkProtocol, MODEL_PROTOCOLS } from "./protocol";
 
 /** The `blocks` formats (core's BLOCK_MAP_VERSION) this package reads: 2, whose entries say their component (1 doesn't). */
 export const BLOCK_MAP_VERSIONS: readonly number[] = [2];
@@ -35,14 +35,6 @@ function pluginApi(core: Record<string, unknown>): string[] {
 export function checkPlugins(core: Record<string, unknown> = installed as unknown as Record<string, unknown>): void {
   const missing = pluginApi(core);
   if (missing.length) throw versionMismatch(missing);
-}
-
-/** The models package installed speaks a protocol this package reads. */
-export function checkProtocol(protocol: unknown): void {
-  if (typeof protocol === "number" && MODEL_PROTOCOLS.includes(protocol)) return;
-  const error = new Error(`@hyper-elements/email-clients reads @hyper-elements/email-client-models' protocol ${MODEL_PROTOCOLS.join(", ")}; the one installed speaks ${JSON.stringify(protocol)}. Reinstall @hyper-elements/email-clients, which brings the models package it reads`);
-  error.name = "email-clients/version-mismatch";
-  throw error;
 }
 
 /**

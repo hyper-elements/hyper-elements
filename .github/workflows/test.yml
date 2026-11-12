@@ -147,7 +147,8 @@ jobs:
           echo "✅ /builder bundle within budget"
 
       # The email client checks and previews (@hyper-elements/email-clients, dist/index.js):
-      # about 47.5KB unminified ESM (0.4.1 added preview widths and computers): the plugin and its checks from caniemail's tables, the
+      # about 48.1KB unminified ESM (0.4.1 added preview widths and computers; the HTML entry's shared preview loop and
+      # header added 0.6KB): the plugin and its checks from caniemail's tables, the
       # preview shell, and the runtime each preview file carries (the frames, fonts, images
       # and findings around the models, minified, about 8KB). The models are their own
       # package (a dependency, not bundled), and so is core (external). Set from that plus
@@ -164,6 +165,23 @@ jobs:
             exit 1
           fi
           echo "✅ Email client previews bundle within budget"
+
+      # The HTML entry (@hyper-elements/email-clients/html, dist/html.js): previews of any HTML email, with no core or
+      # React. About 23.3KB unminified ESM: the preview shell, the runtime each preview carries (about 8KB), the clients
+      # and the option checks, without the plugin and its checks. Set from that plus 2,000 bytes. Raise it on purpose,
+      # with what grew.
+      - name: Check email client HTML entry bundle size
+        run: |
+          BUNDLE="packages/email-clients/dist/html.js"
+          test -s "$BUNDLE" && test -s "packages/email-clients/dist/html.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+          MAX_SIZE=25300
+          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
+          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::Email client HTML entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
+            exit 1
+          fi
+          echo "✅ Email client HTML entry bundle within budget"
 
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters

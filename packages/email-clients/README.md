@@ -75,6 +75,30 @@ what the client changed. To show a preview, write the files and open them in you
 A preview isn't an email: what you send is `render()`'s `html`. Classic Outlook's model is approximate, and the file
 says so.
 
+### Any HTML email
+
+`@hyper-elements/email-clients/html` previews an email built any other way (MJML, React Email, by hand, an email
+builder's export). It needs neither React nor `@hyper-elements/react`, which are optional peers of this package:
+`npm i @hyper-elements/email-clients` is enough.
+
+```ts
+import { readFile, writeFile } from "node:fs/promises";
+import { renderInEmailClients } from "@hyper-elements/email-clients/html";
+
+const html = await readFile("welcome.html", "utf8");
+const { previews, skipped } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"], dark: true });
+for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
+```
+
+- It takes the whole email, from `<html>` to `</html>`, and previews it exactly as given, as data in the file (none of
+  its scripts, handlers or navigation run). A fragment, or an option it doesn't take, is a `TypeError`.
+- Its options are the preview options above: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
+- The models are measured mostly on Hyper Elements emails. HTML built another way is emulated less closely in some
+  clients, so its previews are `approximate` where a client is under 95% on such emails or isn't measured on them:
+  `APPROXIMATE_FOR_HTML` (classic Outlook, the Gmail apps, Apple Mail's dark mode, and webmail read on a Mac).
+- It rejects with the import's error where `@hyper-elements/email-client-models` can't be loaded, and with
+  `email-clients/version-mismatch` where the one installed speaks a protocol this package doesn't read.
+
 ### What a preview says
 
 An agent with a browser opens a file, waits for `<html data-email-client-ready>`, and reads its value: `ok`;

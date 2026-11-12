@@ -155,6 +155,8 @@ Save a preview and open it, take a screenshot with Playwright, or read the list 
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-gmail-app.png" alt="The sign-in code email in the Gmail app on Android, drawn by the emulator" width="107" />
 </p>
 
+Built your email another way (MJML, React Email, by hand)? `@hyper-elements/email-clients/html` previews any HTML email, with no React or Hyper Elements needed: `await renderInEmailClients(html)`. It's emulated less closely than a Hyper Elements email in some clients, and those previews say so.
+
 [Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-client-emulator)
 
 ## Agent Benchmarks
