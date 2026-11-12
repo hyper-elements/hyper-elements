@@ -620,15 +620,18 @@ export function fontFaces(): Kind<FontFaceInput[], FontFace[]> {
 
 export type FontWeightInput = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | "normal" | "bold";
 
-export function fontWeight(): Kind<FontWeightInput, number> {
-  return kind({
+/** A font weight as it's kept: the number ("normal" is 400, "bold" 700). */
+export type FontWeight = Exclude<FontWeightInput, string>;
+
+export function fontWeight(): Kind<FontWeightInput, FontWeight> {
+  return kind<FontWeightInput, FontWeight>({
     name: "fontWeight",
     editor: "fontWeight",
     accepts: '100 to 900 in hundreds, "normal" or "bold"',
     parse(input) {
       if (input === "normal") return ok(400);
       if (input === "bold") return ok(700);
-      if (typeof input === "number" && input >= 100 && input <= 900 && input % 100 === 0) return ok(input);
+      if (typeof input === "number" && input >= 100 && input <= 900 && input % 100 === 0) return ok(input as FontWeight);
       return fail(`expected 100 to 900 in hundreds, "normal" or "bold", not ${show(input)}`);
     },
     jsonSchema: () => ({ anyOf: [{ enum: [100, 200, 300, 400, 500, 600, 700, 800, 900] }, { enum: ["normal", "bold"] }] }),

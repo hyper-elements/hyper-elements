@@ -32,6 +32,9 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
 
 ### Fixed
 
+- **A font weight prop's type.** `render` got a `prop.fontWeight()`'s value typed as any number, which a style's
+  `fontWeight` doesn't take. It's typed as the weights it can be (100 to 900), so `style={{ fontWeight: weight }}`
+  compiles.
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

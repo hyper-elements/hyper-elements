@@ -277,5 +277,9 @@ describe("component()", () => {
     expectTypeOf<Sized["width"]>().not.toEqualTypeOf<undefined>();
     expectTypeOf<undefined>().not.toMatchTypeOf<Sized["width"]>();
     expectTypeOf<Sized["count"]>().toEqualTypeOf<number>();
+    // A font weight's value is one a style's fontWeight takes (100 to 900), not any number.
+    const weighted = { weight: prop.fontWeight({ label: "Weight", default: 700 }) };
+    expectTypeOf<ExpandProps<typeof weighted>["weight"]>().toEqualTypeOf<100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>();
+    expectTypeOf(<Text style={{ fontWeight: 700 as ExpandProps<typeof weighted>["weight"] }}>bold</Text>).not.toBeNever();
   });
 });
