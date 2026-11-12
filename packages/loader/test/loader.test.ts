@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { syncBuiltinESMExports } from "node:module";
+import { dirname, join, parse, relative } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defaultExport, projectConfig, projectTsconfig, templateComponent, walk, workspaceRoot } from "../src/index";
+import { defaultExport, guard, projectConfig, projectTsconfig, templateComponent, walk, workspaceRoot } from "../src/index";
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -166,5 +167,42 @@ describe("guard", () => {
       threw: ["a template called process.exit(3)", "a template called process.exit(4)"],
       late: ["rejected", "late one"],
     });
+  });
+
+  it("in this process too (what it installs is put back after): both exits throw, and late throws are kept by first line", async () => {
+    const exit = process.exit;
+    const listening = (event: "uncaughtException" | "unhandledRejection") => (process.listeners as (name: string) => Array<(error: unknown) => void>)(event);
+    const before = { exception: listening("uncaughtException"), rejection: listening("unhandledRejection") };
+    const guarded = guard();
+    const added = {
+      exception: listening("uncaughtException").filter((l) => !before.exception.includes(l)),
+      rejection: listening("unhandledRejection").filter((l) => !before.rejection.includes(l)),
+    };
+    try {
+      expect(() => process.exit(3)).toThrow("a template called process.exit(3)");
+      const imported = await import("node:process");
+      expect(() => imported.exit()).toThrow("a template called process.exit()");
+      expect(typeof guarded.exit).toBe("function");
+      expect(added.exception).toHaveLength(1);
+      expect(added.rejection).toHaveLength(1);
+      // As Node calls them: what was thrown, its message's first line once.
+      added.exception[0](new Error("late\nat a stack line"));
+      added.rejection[0]("a string");
+      added.exception[0](new Error("late"));
+      expect(guarded.late()).toEqual(["late", "a string"]);
+    } finally {
+      process.exit = exit;
+      syncBuiltinESMExports();
+      for (const l of added.exception) process.off("uncaughtException", l as NodeJS.UncaughtExceptionListener);
+      for (const l of added.rejection) process.off("unhandledRejection", l as NodeJS.UnhandledRejectionListener);
+    }
+  });
+});
+
+describe("at the filesystem's root", () => {
+  it("finds no tsconfig and no workspace", () => {
+    const root = parse(tmpdir()).root;
+    expect(projectConfig(root)).toBeUndefined();
+    expect(workspaceRoot(root)).toBeUndefined();
   });
 });

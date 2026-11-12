@@ -73,23 +73,24 @@ export async function projectTsconfig(path: string, options: ProjectTsconfigOpti
 
 /** The nearest tsconfig.json, or jsconfig.json (JavaScript projects, Next.js), at or above `dir`. */
 export function projectConfig(dir: string): string | undefined {
-  for (let current = dir; ; current = dirname(current)) {
+  // Each folder up to the filesystem's root (whose parent is itself).
+  for (let current = dir, last = ""; current !== last; last = current, current = dirname(current)) {
     for (const name of ["tsconfig.json", "jsconfig.json"]) if (existsSync(join(current, name))) return join(current, name);
-    if (dirname(current) === current) return undefined;
   }
+  return undefined;
 }
 
 /** The monorepo `dir` is in: the nearest folder with pnpm-workspace.yaml, or a package.json with workspaces. */
 export function workspaceRoot(dir: string): string | undefined {
-  for (let current = dir; ; current = dirname(current)) {
+  for (let current = dir, last = ""; current !== last; last = current, current = dirname(current)) {
     if (existsSync(join(current, "pnpm-workspace.yaml"))) return current;
     try {
       if (JSON.parse(readFileSync(join(current, "package.json"), "utf8")).workspaces) return current;
     } catch {
       // no package.json here, or not one that parses
     }
-    if (dirname(current) === current) return undefined;
   }
+  return undefined;
 }
 
 export function realpathOr(path: string): string {
