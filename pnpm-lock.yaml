@@ -191,6 +191,9 @@ importers:
 
   packages/cli:
     dependencies:
+      playwright-core:
+        specifier: 1.60.0
+        version: 1.60.0
       tsx:
         specifier: ^4.20.5
         version: 4.21.0

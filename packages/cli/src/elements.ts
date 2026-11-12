@@ -18,7 +18,9 @@ export interface ElementsMain {
 }
 
 export interface ElementsInspect {
-  inspect(element: unknown): { root: string | null; diagnostics: Diagnostic[] };
+  inspect(element: unknown): { root: string | null; valid: boolean; diagnostics: Diagnostic[] };
+  describeComponents(options?: { root?: string }): { version: number; roots: string[]; components: Array<{ type: string }> };
+  describeComponent(type: string, options?: { root?: string }): { version: number; type: string } | undefined;
 }
 
 export interface ReactModule {
@@ -27,6 +29,14 @@ export interface ReactModule {
 
 export interface EmailClientsModule {
   emailClients(options?: { clients?: readonly string[] }): Promise<unknown>;
+  renderInEmailClients?(
+    element: unknown,
+    options?: { emailClients?: readonly string[]; dark?: boolean; fonts?: "url" | "inline" },
+  ): Promise<{
+    previews: Array<{ id: string; client: string; filename: string; html: string }>;
+    skipped: Array<{ client: string; dark: boolean; reason: string }>;
+    diagnostics: Diagnostic[];
+  }>;
 }
 
 /** A module loaded with import() or require(): its exports, through a CommonJS module's default where that's them. */

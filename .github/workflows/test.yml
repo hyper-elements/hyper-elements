@@ -402,7 +402,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
+      # The CLI's preview --findings runs with the CLI started on Bun too.
+      - name: Setup Bun 1.3
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -415,7 +421,7 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-          
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -423,10 +429,10 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-            
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Build packages
         run: pnpm build
 
@@ -479,6 +485,12 @@ jobs:
       # says it's done, and runs none of the email's scripts, handlers or navigation (packages/email-clients/test/browser).
       - name: Email client previews in Chromium
         run: pnpm --filter @hyper-elements/email-clients test:browser
+
+      # The CLI's preview --findings in each browser it finds: Playwright's Chromium, one named by CHROME_PATH, the
+      # runner's Chrome by its channel; what the drawn previews say, screenshots, nothing fetched with --fonts inline,
+      # a failed preview (exit 1) and an incomplete one (exit 0), and the same findings on Bun (packages/cli/test/browser).
+      - name: CLI previews drawn in browsers
+        run: pnpm --filter @hyper-elements/cli test:browser
 
       # ── Migration fidelity smoke test ───────────────────────────
       # Converts the committed fixture templates both ways (codemod and

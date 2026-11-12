@@ -1,7 +1,7 @@
 {
   "name": "@hyper-elements/cli",
   "version": "0.1.0",
-  "description": "Render and check Hyper Elements templates from the shell: one command for an email's HTML and text, a page's HTML, a document's PDF, a canvas's image, and the email client checks, with stable exit codes and JSON for agents and CI.",
+  "description": "Render, check and preview Hyper Elements templates from the shell: an email's HTML and text, a page's HTML, a document's PDF, a canvas's image, the email client checks, and an email as each email client draws it, with stable exit codes and JSON for agents and CI.",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -34,9 +34,11 @@
     "build": "tsup",
     "test": "vitest",
     "test:bun": "vitest run --project bun",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
+    "playwright-core": "1.60.0",
     "tsx": "^4.20.5",
     "typescript": "^5.6.3"
   },

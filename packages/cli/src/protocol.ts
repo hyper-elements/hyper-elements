@@ -15,7 +15,7 @@ export interface Diagnostic {
   see?: string;
 }
 
-export type Command = "render" | "check" | "outline";
+export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate";
 export type Root = "Email" | "Page" | "Document" | "Canvas";
 
 /** A template sent to a child: its id in the run, its absolute path, and how the child loads it. */
@@ -61,6 +61,20 @@ export interface ChildOptions {
   refreshSince?: number;
   /** render: nothing is fetched; an http(s) source not in the cache fails the template. */
   offline?: boolean;
+  /** preview: renderInEmailClients()'s `dark` and `fonts`. */
+  dark?: boolean;
+  fonts?: "url" | "inline";
+  /** describe: the component (all where none) and the root. */
+  component?: string;
+  root?: string;
+}
+
+/** One preview file from renderInEmailClients(), for the parent to write. */
+export interface PreviewFile {
+  id: string;
+  client: string;
+  filename: string;
+  html: string;
 }
 
 /** One input's result, from the child. */
@@ -79,6 +93,12 @@ export interface ResultMessage {
    */
   outputs?: Record<string, string>;
   binary?: string[];
+  /** `preview`: the files renderInEmailClients() made. */
+  previews?: PreviewFile[];
+  /** `inspect`: inspect()'s result, as it is. */
+  inspection?: unknown;
+  /** `describe`: describeComponents()'s or describeComponent()'s result, as it is. */
+  described?: unknown;
   /** The run can't do what it was asked for this template (Elements missing or out of range, process.exit): exit 2. */
   usage?: boolean;
 }
@@ -115,6 +135,37 @@ export interface InputLine {
   status: "ok" | "error" | "skipped";
   outputs: string[];
   diagnostics: Diagnostic[];
+  error?: string;
+  /** `preview`: each preview file written. */
+  previews?: Preview[];
+  /** `preview --findings`: the browser the previews were drawn in, or null where none was found (with `reason`). */
+  browser?: string | null;
+  reason?: "no-browser";
+}
+
+/** A preview, as `preview` reports it: `ready` and `findings` are what the drawn page said (null where not drawn). */
+export interface Preview {
+  id: string;
+  client: string;
+  path: string;
+  /** `--serve`: where it's served. */
+  url?: string;
+  ready: "ok" | "incomplete" | "error" | null;
+  findings: Record<string, unknown> | null;
+  /** `--screenshots`: the PNG written beside it. */
+  screenshot?: string;
+}
+
+/** `inspect --json`: one line per template. */
+export interface InspectLine {
+  version: 1;
+  command: "inspect";
+  file: string;
+  status: "ok" | "error" | "skipped";
+  /** inspect()'s result as it is, or null where the template didn't load (or was skipped). */
+  inspection: unknown;
+  /** Where there's no inspection: what the CLI found instead. */
+  diagnostics?: Diagnostic[];
   error?: string;
 }
 

@@ -161,6 +161,16 @@ export default function Template() {
 `;
 }
 
+/** A project's modules with email-clients, for `check` and `preview`. */
+export const WITH_CLIENTS = ["react", "react-dom", "@hyper-elements/react", "@hyper-elements/email-clients"];
+
+/** No browser can be found: CHROME_PATH leads nowhere, Playwright's browsers folder is empty, and no channel is tried. */
+export function noBrowserEnv(): Record<string, string> {
+  const empty = mkdtempSync(join(tmpdir(), "hyper-elements-cli-no-browsers-"));
+  made.push(empty);
+  return { CHROME_PATH: join(empty, "no-such-chrome"), PLAYWRIGHT_BROWSERS_PATH: empty, HYPER_ELEMENTS_CLI_BROWSER_CHANNELS: "" };
+}
+
 export const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /** Waits until `check` holds, up to `ms`. */

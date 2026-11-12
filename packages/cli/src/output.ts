@@ -2,7 +2,8 @@
  * What a run says: text by default (diagnostics as formatDiagnostics() writes them), or with `--json` one line per
  * input and a summary line, on stdout, with nothing else there.
  */
-import type { Command, Diagnostic, InputLine, Late, Root, SummaryLine } from "./protocol";
+import { previewLine } from "./preview";
+import type { Command, Diagnostic, InputLine, InspectLine, Late, Preview, Root, SummaryLine } from "./protocol";
 
 /** One input's outcome, as the parent has it once its child is done. */
 export interface Outcome {
@@ -14,6 +15,13 @@ export interface Outcome {
   /** `formatDiagnostics()` of `diagnostics`, from the template's Elements, where it loaded. */
   formatted?: string;
   error?: string;
+  /** `preview`: each preview written. */
+  previews?: Preview[];
+  /** `preview --findings`: the browser drawn with, or null where none was found. */
+  browser?: string | null;
+  reason?: "no-browser";
+  /** `inspect`: inspect()'s result, or null where there's none. */
+  inspection?: unknown;
 }
 
 /** As Elements' formatDiagnostics() writes them (packages/core/src/diagnostics.ts), for diagnostics no Elements formatted. */
@@ -23,7 +31,20 @@ export function formatDiagnostics(diagnostics: readonly Diagnostic[]): string {
     .join("\n");
 }
 
-export function inputLine(command: Command, outcome: Outcome): InputLine {
+export function inputLine(command: Command, outcome: Outcome): InputLine | InspectLine {
+  if (command === "inspect") {
+    // inspect()'s result as it is; where there's none (a load failure, a skip), what the CLI found instead.
+    const inspection = outcome.inspection ?? null;
+    return {
+      version: 1,
+      command,
+      file: outcome.file,
+      status: outcome.status,
+      inspection,
+      ...(inspection === null ? { diagnostics: outcome.diagnostics } : {}),
+      ...(outcome.error !== undefined ? { error: outcome.error } : {}),
+    };
+  }
   return {
     version: 1,
     command,
@@ -34,6 +55,9 @@ export function inputLine(command: Command, outcome: Outcome): InputLine {
     outputs: outcome.outputs,
     diagnostics: outcome.diagnostics,
     ...(outcome.error !== undefined ? { error: outcome.error } : {}),
+    ...(command === "preview" && outcome.previews ? { previews: outcome.previews } : {}),
+    ...(outcome.browser !== undefined ? { browser: outcome.browser } : {}),
+    ...(outcome.reason ? { reason: outcome.reason } : {}),
   };
 }
 
@@ -43,10 +67,21 @@ export function inputText(outcome: Outcome): string {
   if (outcome.root) head += ` (${outcome.root})`;
   if (outcome.status === "skipped") head += " skipped";
   if (outcome.error !== undefined) head += `: ${outcome.error}`;
-  if (outcome.outputs.length) head += ` → ${outcome.outputs.join(", ")}`;
+  if (outcome.outputs.length && !outcome.previews) head += ` → ${outcome.outputs.join(", ")}`;
+  if (outcome.browser) head += `, drawn in ${outcome.browser}`;
   const formatted = outcome.diagnostics.length ? (outcome.formatted ?? formatDiagnostics(outcome.diagnostics)) : "";
-  const body = formatted ? formatted.split("\n").map((line) => `    ${line}\n`).join("") : "";
+  let body = formatted ? formatted.split("\n").map((line) => `    ${line}\n`).join("") : "";
+  if (outcome.inspection) body = inspectionText(outcome.inspection) + body;
+  for (const preview of outcome.previews ?? []) body += `  ${previewLine(preview)}\n`;
   return `${head}\n${body}`;
+}
+
+/** inspect()'s result, as text: each component, at its path, with what it's given. */
+function inspectionText(inspection: unknown): string {
+  const { nodes = [], theme } = inspection as { nodes?: Array<{ path: string; type: string; allowed: boolean; given: string[] }>; theme?: { tokens: unknown[]; styles: string[] } | null };
+  let text = nodes.map((node) => `  ${node.path} ${node.type}${node.allowed ? "" : " (not allowed in this root)"}${node.given.length ? `: ${node.given.join(", ")}` : ""}\n`).join("");
+  if (theme) text += `  theme: ${theme.tokens.length} tokens${theme.styles.length ? `, styles ${theme.styles.join(", ")}` : ""}\n`;
+  return text;
 }
 
 function groupName(late: Late): string {

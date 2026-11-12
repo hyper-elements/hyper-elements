@@ -14,7 +14,7 @@ import { cpSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
 import { inflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { cli, FIXTURES, lines, project, REPO, withFixtures } from "./helpers";
+import { cli, FIXTURES, lines, project, REPO, WITH_CLIENTS, withFixtures } from "./helpers";
 
 const EXAMPLES = join(REPO, "packages/react/src/primitives/examples");
 const COMPAT = join(REPO, "packages/react/src/regression/cross-format-compatibility.test.tsx");
@@ -136,6 +136,32 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     expect(ours.length).toBeGreaterThan(0);
     expect(theirs.length).toBe(ours.length);
     theirs.forEach((stream, index) => expect(stream.equals(ours[index]), `stream ${index}`).toBe(true));
+  });
+
+  it("previews the gallery's emails to the same files, with no browser", async () => {
+    const sources: Record<string, string> = {};
+    for (const file of readdirSync(join(EXAMPLES, "gallery"))) {
+      if (/^[a-z-]+\.tsx$/.test(file)) sources[`lib/gallery/${file}`] = toPackage(readFileSync(join(EXAMPLES, "gallery", file), "utf8"));
+    }
+    const { gallery } = await import(join(EXAMPLES, "gallery/index.ts"));
+    const templates: Record<string, string> = {};
+    for (const name of Object.keys(gallery)) {
+      const file = Object.keys(sources).find((path) => path.startsWith("lib/gallery/") && sources[path].includes(`export const ${name} =`))!.slice("lib/gallery/".length);
+      templates[`emails/${name}.tsx`] = `import { ${name} } from "../lib/gallery/${file.replace(/\.tsx$/, "")}";\nexport default function Template() { return ${name}; }\n`;
+    }
+    const dir = project({ ...sources, ...templates }, { modules: WITH_CLIENTS });
+    const args = ["preview", "emails", "--json", "--dark", "--fonts", "inline"];
+    const node = await cli(dir, args, { runtime: "node" });
+    expect(node.code, node.stdout + node.stderr).toBe(0);
+    const fromNode = files(join(dir, "out"));
+    rmSync(join(dir, "out"), { recursive: true });
+    const bun = await cli(dir, args, { runtime: "bun" });
+    expect(bun.code, bun.stderr).toBe(0);
+    const fromBun = files(join(dir, "out"));
+    expect([...fromNode.keys()].filter((file) => file.endsWith("apple-mail.dark.html")).length).toBeGreaterThan(3);
+    expect(bun.stdout).toBe(node.stdout);
+    expect([...fromBun.keys()].sort()).toEqual([...fromNode.keys()].sort());
+    for (const [file, bytes] of fromNode) expect(fromBun.get(file)!.equals(bytes), file).toBe(true);
   });
 });
 

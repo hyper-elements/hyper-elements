@@ -19,7 +19,8 @@ import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, t
 import { killTree } from "./kill";
 import { cleanFiles, ownToken, parseToken, stale } from "./loader-module";
 import { inputLine, inputText, summaryText, type Outcome } from "./output";
-import type { ChildMessage, Diagnostic, Group, Late, ResultMessage, StartMessage, SummaryLine } from "./protocol";
+import { clientsFolder, drawPreviews, NO_BROWSER_HELP, planPreviewFolders, servePreviews, writePreviews } from "./preview";
+import type { ChildMessage, Diagnostic, Group, Late, PreviewFile, ResultMessage, StartMessage, SummaryLine } from "./protocol";
 
 export interface Io {
   cwd: string;
@@ -39,7 +40,7 @@ interface GroupRun {
   inputs: Input[];
 }
 
-interface ChildReport {
+export interface ChildReport {
   results: Map<number, ResultMessage>;
   reacts: boolean;
   done: boolean;
@@ -53,7 +54,16 @@ let children = 0;
 let runStarted = Date.now();
 
 /** Starts a child for `inputs` and resolves once it has ended and been cleaned up after. */
-function runChild(command: Args["command"], inputs: Input[], alone: boolean, args: Args, props: Record<string, unknown> | undefined, token: string, io: Io): Promise<ChildReport> {
+export function runChild(
+  command: Args["command"],
+  inputs: Input[],
+  alone: boolean,
+  args: Args,
+  props: Record<string, unknown> | undefined,
+  token: string,
+  io: Io,
+  extra: Partial<StartMessage["options"]> = {},
+): Promise<ChildReport> {
   const index = children++;
   let tsconfig: string | null = null;
   if (!bun) {
@@ -80,6 +90,8 @@ function runChild(command: Args["command"], inputs: Input[], alone: boolean, arg
       pretty: args.pretty || undefined,
       clients: args.clients,
       rendered: args.rendered || undefined,
+      ...(command === "preview" ? { dark: args.dark || undefined, fonts: args.fonts } : {}),
+      ...extra,
       ...(command === "render"
         ? {
             html: args.html || undefined,
@@ -98,7 +110,9 @@ function runChild(command: Args["command"], inputs: Input[], alone: boolean, arg
       stdio: ["ignore", "pipe", "pipe", "ipc"],
       // A process group of its own, so the child and every process it starts can be ended together (macOS, Linux).
       detached: process.platform !== "win32",
-      execArgv: [],
+      // Bun installs a package it can't resolve where there's no node_modules (auto-install), from its cache or npm:
+      // a template resolves only what its project has, as on Node.
+      execArgv: bun ? ["--no-install"] : [],
       cwd: io.cwd,
     });
     running.add(child);
@@ -195,6 +209,8 @@ export function onInterrupt(token: () => string | undefined, folders: () => Iter
 export interface RunState {
   token?: string;
   folders: Set<string>;
+  /** `preview --serve` is serving: Ctrl-C ends it, with exit 0. */
+  serving?: boolean;
 }
 
 export async function run(args: Args, io: Io, state: RunState = { folders: new Set() }): Promise<number> {
@@ -217,12 +233,13 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   for (const link of found.links) io.stderr(`- ${displayPath(cwd, link)}: a symbolic link to a folder, not followed (give the folder itself to include what's in it)\n`);
   let planned: Planned | undefined;
   if (args.command === "render" && !args.stdout) planned = planDestinations(inputs, found.base, args.out, cwd, ALL_RENDER_OUTPUTS);
+  const previewFolders = args.command === "preview" ? planPreviewFolders(inputs, found.base, args.out, cwd) : undefined;
 
   const token = ownToken();
   state.token = token;
   for (const input of inputs) state.folders.add(dirname(input.file));
 
-  const outcomes = new Map<number, Outcome & { pending?: Record<string, string>; binary?: string[] }>();
+  const outcomes = new Map<number, Outcome & { pending?: Record<string, string>; binary?: string[]; pendingPreviews?: PreviewFile[] }>();
   const usage = new Set<number>();
   const extra = new Map<number, Diagnostic[]>();
   const note = (id: number, diagnostic: Diagnostic) => extra.set(id, [...(extra.get(id) ?? []), diagnostic]);
@@ -277,7 +294,19 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   const settle = (input: Input, result: ResultMessage | undefined, ended: ChildReport["ended"]) => {
     if (result) {
       if (result.usage) usage.add(input.id);
-      outcomes.set(input.id, { file: input.display, root: result.root, status: result.status, outputs: [], diagnostics: result.diagnostics, formatted: result.formatted, error: result.error, pending: result.outputs, binary: result.binary });
+      outcomes.set(input.id, {
+        file: input.display,
+        root: result.root,
+        status: result.status,
+        outputs: [],
+        diagnostics: result.diagnostics,
+        formatted: result.formatted,
+        error: result.error,
+        pending: result.outputs,
+        binary: result.binary,
+        ...(result.previews ? { pendingPreviews: result.previews } : {}),
+        ...(args.command === "inspect" ? { inspection: result.inspection ?? null } : {}),
+      });
       return;
     }
     if (ended?.reason === "timeout") {
@@ -333,6 +362,12 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     const added = extra.get(input.id);
     if (added) outcome.diagnostics = [...outcome.diagnostics, ...added];
     if (added && outcome.formatted !== undefined) outcome.formatted = undefined;
+    if (args.command === "preview") {
+      const files = outcome.pendingPreviews;
+      delete outcome.pendingPreviews;
+      if (files && outcome.status === "ok") writePreviews(outcome, files, previewFolders!.get(input.id)!, cwd);
+      continue;
+    }
     if (!pending || outcome.status !== "ok") continue;
     if (args.command === "outline") {
       stdoutText = pending.outline.endsWith("\n") ? pending.outline : `${pending.outline}\n`;
@@ -360,11 +395,31 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   }
 
   const all = inputs.map((input) => outcomes.get(input.id)!);
+
+  // preview --findings: each written preview drawn in a browser (no browser found: exit 2, the files still written).
+  let noBrowser = false;
+  if (args.command === "preview" && args.findings && all.some((outcome) => outcome.previews?.length)) {
+    const drawn = await drawPreviews(all, { cwd, screenshots: args.screenshots, stderr: io.stderr });
+    if (!drawn.browser) {
+      noBrowser = true;
+      io.stderr(`hyper-elements: ${drawn.bun ?? NO_BROWSER_HELP}\n${(drawn.tried ?? []).map((tried) => `  - ${tried}\n`).join("")}`);
+    }
+  }
+
   const errors = all.filter((o) => o.status === "error").length;
   const warnings = all.reduce((n, o) => n + o.diagnostics.filter((d) => d.severity === "warning").length, 0);
   const skipped = all.filter((o) => o.status === "skipped").length;
-  const exitCode: 0 | 1 | 2 = usage.size || late.length ? 2 : errors || (args.maxWarnings !== undefined && warnings > args.maxWarnings) ? 1 : 0;
+  const exitCode: 0 | 1 | 2 = usage.size || late.length || noBrowser ? 2 : errors || (args.maxWarnings !== undefined && warnings > args.maxWarnings) ? 1 : 0;
   const summary: SummaryLine = { version: 1, summary: { templates: all.length, errors, warnings, skipped, late }, exitCode };
+
+  // preview --serve: the previews served until Ctrl-C (exit 0), their URLs written, and no summary.
+  if (args.command === "preview" && args.serve && all.some((outcome) => outcome.previews?.length)) {
+    const base = await servePreviews(all, clientsFolder(args.out, cwd), cwd);
+    if (args.json) await io.stdout(all.map((outcome) => `${JSON.stringify(inputLine(args.command, outcome))}\n`).join(""));
+    else await io.stdout(all.map(inputText).join("") + `Serving the previews at ${base} until Ctrl-C\n`);
+    state.serving = true;
+    return new Promise<number>(() => undefined);
+  }
 
   if (args.json) {
     await io.stdout(all.map((outcome) => `${JSON.stringify(inputLine(args.command, outcome))}\n`).join("") + `${JSON.stringify(summary)}\n`);
