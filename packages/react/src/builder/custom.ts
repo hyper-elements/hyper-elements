@@ -1,27 +1,31 @@
 /**
  * A template's own components in the builder. Each is a custom tool of the builder's, named by its type
- * (`acme.ProductCard`: `acme_product_card`), with a property for each prop the builder has an editor for. toDesign()
- * writes one as that tool's block, its props the block's values (`customTools`); fromDesign() reads the block back as
- * the component (`components`); registerTools() gives a builder the tools, each drawn by Elements itself.
+ * (`acme.ProductCard`: `acme_product_card`), with a property for each prop: edited with the builder's editor for its
+ * kind, with another of the builder's that it names, or with one of the team's own. toDesign() writes one as that
+ * tool's block, its props the block's values (`customTools`); fromDesign() reads the block back as the component
+ * (`components`); registerTools() gives a builder the tools, each drawn by Elements itself.
  */
 import { ElementsError, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@unlayer-internal/elements-core";
 import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
-import { font, givenId, hidden as hiddenOn, px, sides, type Sides, type Values } from "./read-values";
+import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, webLink, type Sides, type Values } from "./read-values";
 import { make, obj, placed, type Context } from "./reading";
-import { builderFont, builderLink, cssSides } from "./values";
+import { builderFont, builderLink, cssSides, decode, encode } from "./values";
 
 /** A template's own component, as `component()` makes one. */
 export interface WithDefinition {
   definition: CustomDefinition<any>;
 }
 
-/** The builder's name for a component's tool: its type in the builder's words (`acme.ProductCard`: `acme_product_card`). */
-export const toolName = (type: string): string =>
-  type
+/** The builder's name for a component's tool, from the component or its type: the type in the builder's words (`acme.ProductCard`: `acme_product_card`). */
+export function toolName(component: string | WithDefinition): string {
+  const type = typeof component === "string" ? component : component?.definition?.type;
+  if (typeof type !== "string") throw new Error("[Elements] toolName takes a template's own component (made with component()) or its type");
+  return type
     .replace(/[.-]/g, "_")
     .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
     .toLowerCase();
+}
 
 /** Each component's definition by its tool's name. Two with one name is an error: a block would be either's. */
 export function toolsOf(components: readonly WithDefinition[] = []): Map<string, CustomDefinition<any>> {
@@ -40,45 +44,83 @@ export function toolsOf(components: readonly WithDefinition[] = []): Map<string,
 /** Whether a component is placed where a Section goes: a band across the window, which no block in a column is, so it's no tool. */
 const inSection = (definition: CustomDefinition<any>): boolean => definition.categories.includes("section");
 
-/** One of the builder's property editors: its name there, and a prop's value as it stores one and as it's read back. */
+/** A block's values that are the builder's own: its spacing, its place, and what its user may do with it. */
+const BLOCK_VALUES = ["containerPadding", "anchor", "displayCondition", "hideDesktop", "hideMobile", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked"];
+/** A prop that a block can't keep under its name, which is one of the builder's own there (or starts as its own do, `_…`): none where it keeps them all. */
+export const unkept = (definition: CustomDefinition<any>): string | undefined => Object.keys(definition.props).find((key) => key.startsWith("_") || BLOCK_VALUES.includes(key));
+
+type Spec = CustomDefinition<any>["props"][string];
+type Schema = { type?: string; minimum?: number; maximum?: number; enum?: Json[]; anyOf?: Schema[] };
+
+/** One of the builder's property editors for a prop: its name there, what it takes besides the value, and the value as it keeps one and as that's read back. */
 interface PropertyEditor {
   widget: string;
+  data?: Values;
   store?(value: Json): unknown;
   read?(value: unknown, say: (message: string) => void): unknown;
 }
 
-const image = (value: Json): Values => {
-  const { src, width, height } = (typeof value === "string" ? { src: value } : value) as { src: string; width?: number; height?: number };
-  return { url: src, ...(width ? { width } : {}), ...(height ? { height } : {}) };
-};
-const asset = (value: unknown): unknown => {
-  const { url, width, height } = obj(value);
-  if (typeof url !== "string" || !url) return undefined;
-  return typeof width === "number" && typeof height === "number" ? { src: url, width, height } : url;
-};
+/** A number as a field of the builder's keeps one: the number, or its digits. */
+const numeric = (value: unknown): unknown => (typeof value === "string" && value.trim() !== "" && !Number.isNaN(Number(value)) ? Number(value) : value);
+const options = (values: readonly Json[]): Values => ({ options: values.map((value) => ({ label: String(value), value: String(value) })) });
+/** The builder's counter, which keeps whole numbers: from `min` (where there's none, below zero too, where its own floor is). */
+const counter = (min?: number, max?: number): PropertyEditor => ({ widget: "counter", data: { minValue: min ?? -1e9, ...(max === undefined ? {} : { maxValue: max }) }, read: numeric });
+/** The builder's text field, for a number that isn't whole and a length with a unit: it keeps text (and gives a tool nothing for a number, so one is written as text). */
+const typed: PropertyEditor = { widget: "text", store: String, read: numeric };
+const WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
-/** The builder's property editor for each of a kind's editors. A kind with none here keeps its value, with no editor. */
-const EDITORS: Record<string, PropertyEditor> = {
-  text: { widget: "text" },
-  color: { widget: "color_picker" },
-  toggle: { widget: "toggle" },
-  // The builder's counter stores a number or its digits.
-  number: { widget: "counter", read: (value) => (typeof value === "string" && value.trim() !== "" && !Number.isNaN(Number(value)) ? Number(value) : value) },
-  choice: { widget: "dropdown", store: String },
-  link: { widget: "link", store: (value) => builderLink(value as LinkValue), read: (value, say) => link(value, say) },
-  image: { widget: "image", store: image, read: asset },
-  fontFamily: { widget: "font_family", store: (value) => builderFont(String(value)), read: font },
-};
-
-type Spec = CustomDefinition<any>["props"][string];
-const editorOf = (spec: Spec): PropertyEditor | undefined => (Object.hasOwn(EDITORS, spec.kind.editor) ? EDITORS[spec.kind.editor] : undefined);
-/** A choice's values, from its schema. */
-const choices = (spec: Spec): Json[] => ((spec.kind.jsonSchema() as { enum?: Json[] }).enum ?? []) as Json[];
+/** The builder's editor for a prop's kind. None for a kind it has no way to keep: its value stays in the block, with no field. */
+function kindEditor(spec: Spec): PropertyEditor | undefined {
+  const schema = spec.kind.jsonSchema() as Schema;
+  switch (spec.kind.editor) {
+    case "text":
+      return { widget: "text" };
+    case "color":
+      return { widget: "color_picker" };
+    case "toggle":
+      return { widget: "toggle" };
+    case "number":
+      return schema.type === "integer" ? counter(schema.minimum, schema.maximum) : typed;
+    case "length":
+      // Px alone (a number) is the counter's; with another unit ("50%"), text.
+      return ["%", "pt", "mm", "in"].some((unit) => spec.kind.parse(`99999${unit}`).ok) ? typed : counter(schema.anyOf?.[0]?.minimum);
+    case "fontWeight":
+      return { widget: "dropdown", data: options(WEIGHTS), store: (value) => String(fontWeight(value) ?? value), read: (value) => fontWeight(value) ?? value };
+    case "choice": {
+      // The builder's dropdown keeps text: a number among the choices is that number.
+      const values = schema.enum ?? [];
+      return { widget: "dropdown", data: options(values), store: String, read: (value) => values.find((choice) => String(choice) === String(value)) ?? value };
+    }
+    case "link":
+      return { widget: "link", store: (value) => builderLink(value as LinkValue), read: (value, say) => link(value, say) };
+    case "image":
+      return { widget: "image", store: (value) => encode("asset", value), read: (value) => (obj(value).url ? decode("asset", value) : undefined) };
+    case "fontFamily":
+      return { widget: "font_family", store: (value) => builderFont(String(value)), read: font };
+    default:
+      return undefined;
+  }
+}
 
 /**
- * A component's props as its tool's values: each as the builder's editor for it stores one. A prop that isn't given is
- * written as its default where the builder has an editor for it, as the builder writes a tool's defaults, so its field
- * shows what's drawn (toolProps() leaves a default out again).
+ * The builder's own editors a prop can name besides its kind's, each for the kind (by its editor) whose value it keeps
+ * as that kind's does. Another of its editors keeps what the prop isn't (markup, a border, a number's whole part).
+ */
+const BUILT_IN: Record<string, string> = { datetime: "text", alignment: "choice" };
+
+/**
+ * The builder's editor for a prop, and so how its value is kept in a block: its kind's, or the one of the builder's
+ * own it names where that keeps its kind's value (an editor of a team's own keeps the value as its kind's does).
+ */
+function editorOf(spec: Spec): PropertyEditor | undefined {
+  const own = kindEditor(spec);
+  return own && spec.editor !== undefined && Object.hasOwn(BUILT_IN, spec.editor) && BUILT_IN[spec.editor] === spec.kind.editor ? { ...own, widget: spec.editor } : own;
+}
+
+/**
+ * A component's props as its tool's values: each as the builder's editor for it keeps one. A prop that isn't given is
+ * written as its default, as the builder writes a tool's defaults, so its field shows what's drawn (toolProps() leaves
+ * a default out again).
  */
 export function toolValues(definition: CustomDefinition<any>, props: Record<string, Json> = {}): Values {
   const values: Values = {};
@@ -94,10 +136,12 @@ export function toolValues(definition: CustomDefinition<any>, props: Record<stri
 export function toolProps(definition: CustomDefinition<any>, values: Values, say: (message: string) => void = () => {}): Record<string, Json> {
   const props: Record<string, Json> = {};
   for (const [key, spec] of Object.entries(definition.props) as Array<[string, Spec]>) {
-    if (!Object.hasOwn(values, key) || values[key] === undefined || values[key] === null) continue;
-    let given = editorOf(spec)?.read ? editorOf(spec)!.read!(values[key], say) : values[key];
-    // The builder's dropdown stores text: a number among the choices is that number.
-    if (spec.kind.editor === "choice") given = choices(spec).find((choice) => String(choice) === String(given)) ?? given;
+    const kept = values[key];
+    if (!Object.hasOwn(values, key) || kept === undefined || kept === null) continue;
+    const editor = editorOf(spec);
+    let given = editor?.read ? editor.read(kept, say) : kept;
+    // A link its user emptied, where the prop has one by default, is a link to nothing: not its default again.
+    if (given === undefined && spec.kind.editor === "link" && spec.default !== undefined && webLink(kept) === null) given = { href: "" };
     if (given === undefined) continue;
     const parsed = spec.kind.parse(given);
     // Its default is what the component takes anyway: not written, as a template wouldn't. One it needs is given
@@ -105,7 +149,7 @@ export function toolProps(definition: CustomDefinition<any>, values: Values, say
     if (parsed.ok && !spec.required && JSON.stringify(parsed.value) === JSON.stringify(spec.default)) continue;
     if (parsed.ok) props[key] = parsed.value;
     // A field its user emptied is the prop not given.
-    else if (given !== "") say(`its ${key} ${JSON.stringify(values[key])} (${parsed.message}) isn't one a ${definition.type} takes: left out`);
+    else if (given !== "") say(`its ${key} ${JSON.stringify(kept)} (${parsed.message}) isn't one a ${definition.type} takes: left out`);
   }
   return props;
 }
@@ -130,6 +174,12 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
     context.say(`${tool} is a ${definition.type}'s, which goes where a Section does, not in a column: left out`);
     return [];
   }
+  // (registerTools() refuses one: written by hand.)
+  const taken = unkept(definition);
+  if (taken) {
+    context.say(`${tool} is a ${definition.type}'s, whose prop ${taken} is the builder's own in a block: left out`);
+    return [];
+  }
   const props = toolProps(definition, values, context.say);
   // A block dragged in and not filled yet (or filled with what its prop doesn't take), which the builder leaves out of
   // what it exports too: with it, the template wouldn't render.
@@ -148,6 +198,23 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
 export interface Builder {
   registerTool(tool: Record<string, unknown>): void;
   createViewer(viewer: { render(values: Values, body?: Values, place?: { columnIndex?: number; rowCells?: number[] }): string }): unknown;
+  /** For the editors given as they're written (`editors`). */
+  registerPropertyEditor?(editor: { name: string; Widget: unknown }): void;
+  createWidget?(widget: { render(value: unknown, update: (value: unknown) => void): string; mount(node: HTMLElement, value: unknown, update: (value: unknown) => void): void }): unknown;
+}
+
+/** What an editor of a team's own is given besides the value: its prop's label, and the prop's `editorOptions`. */
+export type EditorOptions = { label: string } & { [name: string]: Json };
+
+/**
+ * A property editor of a team's own, as the builder takes one. It's given its prop's value as the prop has it (a
+ * price as a number), and gives back the same.
+ */
+export interface EditorWidget {
+  /** Its markup. The builder draws nothing around an editor that isn't its own: its label is here too. */
+  render(value: Json | undefined, update: (value: Json | undefined) => void, options: EditorOptions): string;
+  /** Once its markup is in the page: where it listens, and calls `update` with the new value. */
+  mount?(node: HTMLElement, value: Json | undefined, update: (value: Json | undefined) => void, options: EditorOptions): void;
 }
 
 export interface RegisterToolsOptions {
@@ -156,11 +223,12 @@ export interface RegisterToolsOptions {
   /** Each tool's icon in the builder's panel, by its component's type: a Font Awesome class, an image's URL or an SVG. */
   icons?: Record<string, string>;
   /**
-   * The property editors registered in the builder besides its own (`unlayer.registerPropertyEditor`), by name: a prop
-   * that names one of them (`editor: "currency"`) is edited with it. One that names any other is edited with its
-   * kind's.
+   * The property editors of a team's own, by the name a prop gives (`editor: "currency"`): each as it's written
+   * (`{ render, mount }`), which registerTools() registers in the builder; or `true` for one registered there already
+   * (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A prop that names any other
+   * editor is edited with its kind's.
    */
-  editors?: readonly string[];
+  editors?: { readonly [name: string]: EditorWidget | true };
   /** The builder's own settings for a component's tool, by the component's type. */
   tools?: Record<string, ToolSettings>;
 }
@@ -173,12 +241,16 @@ export interface ToolSettings {
    * Their values are kept in the block; they aren't the component's.
    */
   properties?: Record<string, Record<string, unknown>>;
-  /** Any other setting the builder's `registerTool()` takes (`transformer`, `position`, `usageLimit`…), passed as it is. */
+  /**
+   * Any other setting the builder's `registerTool()` takes (`transformer`, `position`, `usageLimit`…), passed as it
+   * is. What the component gives its tool is none of them, and is refused: its name, label, fields and drawing, its
+   * icon (`icons`), and what a block starts with (each prop's `default`).
+   */
   [setting: string]: unknown;
 }
 
-/** The builder's own property editors a prop can name. */
-const BUILT_IN = new Set(["text", "rich_text", "html", "color_picker", "alignment", "font_family", "border", "counter", "image", "toggle", "link", "dropdown", "datetime"]);
+/** What a component gives its tool, which is no setting of the builder's for it. */
+const GIVEN = ["name", "label", "icon", "supportedDisplayModes", "options", "values", "renderer"];
 
 const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
@@ -209,9 +281,10 @@ function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinitio
 
 /**
  * Registers each component as a custom tool in a builder (in its custom JavaScript, where `unlayer.registerTool` is):
- * the tool's name is its type's (`toolName()`), its properties its props, each with the builder's editor for its kind
- * (or the one its `editor` names), and it's drawn by Elements, in the canvas and in what the builder exports. A
- * component placed where a Section goes is no tool (toDesign() writes it as an HTML block). Returns the tools' names.
+ * the tool's name is its type's (`toolName()`), its properties its props, each with the builder's editor for its kind,
+ * another of the builder's that it names, or one of the team's own (`editors`), and it's drawn by Elements, in the
+ * canvas and in what the builder exports. A component placed where a Section goes is no tool (toDesign() writes it as
+ * an HTML block). Returns the tools' names.
  */
 export function registerTools(builder: Builder, components: readonly WithDefinition[], options: RegisterToolsOptions = {}): string[] {
   const tools = toolsOf(components);
@@ -219,30 +292,47 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
   const all = [...tools.values()];
   for (const [name, definition] of tools) if (inSection(definition)) tools.delete(name);
   const canvas = options.displayMode === "web" ? "Page" : "Email";
+  const editors = options.editors ?? {};
   for (const type of Object.keys(options.tools ?? {})) {
     if (!all.some((definition) => definition.type === type)) throw new Error(`[Elements] registerTools: tools has settings for ${type}, which is none of the components given`);
   }
   for (const [name, definition] of tools) {
+    const taken = unkept(definition);
+    if (taken) throw new Error(`[Elements] registerTools: ${definition.type} has a prop named ${taken}, which is the builder's own in a block: as a tool, it takes another name`);
     const { properties: own = {}, ...settings } = options.tools?.[definition.type] ?? {};
     for (const key of Object.keys(own)) {
       if (Object.hasOwn(definition.props, key)) throw new Error(`[Elements] registerTools: ${definition.type} has a prop named ${key}: a property of the tool's own takes another name`);
     }
+    const given = GIVEN.find((key) => Object.hasOwn(settings, key));
+    if (given) throw new Error(`[Elements] registerTools: tools sets ${given} for ${definition.type}, which its component gives the tool: its label and props are the component's, a block starts with each prop's default, and its icon is in icons`);
     const properties: Record<string, unknown> = { ...own };
     for (const [key, spec] of Object.entries(definition.props) as Array<[string, Spec]>) {
       const editor = editorOf(spec);
-      // The editor it names, where the builder has one of that name; its kind's otherwise.
-      const widget = spec.editor && (BUILT_IN.has(spec.editor) || options.editors?.includes(spec.editor)) ? spec.editor : editor?.widget;
+      // An editor of the team's own, where the prop names one of those given; the builder's otherwise.
+      const theirs = spec.editor !== undefined && Object.hasOwn(editors, spec.editor) ? editors[spec.editor] : undefined;
+      let widget = theirs ? spec.editor : editor?.widget;
       if (!widget || spec.editable === false) continue;
-      const values = spec.kind.editor === "choice" ? choices(spec) : [];
-      // What a block dragged in from the panel starts with: the prop's default, as the editor stores it. With none, a
+      const theirOptions: EditorOptions = { label: spec.label, ...spec.editorOptions };
+      if (theirs && theirs !== true) {
+        // Given as it's written: registered for this prop, which it's given as the prop's own value (a price as a
+        // number, where the builder keeps one that isn't whole as text), and gives back the same.
+        if (!builder.registerPropertyEditor || !builder.createWidget) throw new Error(`[Elements] registerTools: editors gives ${spec.editor} as it's written, which takes a builder with registerPropertyEditor() and createWidget()`);
+        const value = (kept: unknown) => (kept === undefined || kept === null ? undefined : ((editor?.read ? editor.read(kept, () => {}) : kept) as Json | undefined));
+        const update = (keep: (value: unknown) => void) => (next: Json | undefined) => keep(next === undefined || next === null ? next : (editor?.store?.(next) ?? next));
+        widget = `${spec.editor}__${name}__${key}`;
+        builder.registerPropertyEditor({
+          name: widget,
+          Widget: builder.createWidget({
+            render: (kept, keep) => theirs.render(value(kept), update(keep), theirOptions),
+            mount: (node, kept, keep) => theirs.mount?.(node, value(kept), update(keep), theirOptions),
+          }),
+        });
+      }
+      const data: Values = theirs ? theirOptions : { ...editor?.data, ...spec.editorOptions };
+      // What a block dragged in from the panel starts with: the prop's default, as the editor keeps it. With none, a
       // text is empty and a toggle is off; any other has no value, which each of the builder's editors shows as unset.
       const initial = spec.default !== undefined ? (editor?.store?.(spec.default as Json) ?? spec.default) : spec.kind.editor === "text" ? "" : spec.kind.editor === "toggle" ? false : undefined;
-      properties[key] = {
-        label: spec.label,
-        ...(initial !== undefined ? { defaultValue: initial } : {}),
-        widget,
-        ...(values.length ? { data: { options: values.map((value) => ({ label: String(value), value: String(value) })) } } : {}),
-      };
+      properties[key] = { label: spec.label, ...(initial !== undefined ? { defaultValue: initial } : {}), widget, ...(Object.keys(data).length ? { data } : {}) };
     }
     // What the builder exports: the component as that output's markup; nothing where its values can't be drawn.
     const written = (root: "Email" | "Page") => (values: Values, ...rest: unknown[]) => {

@@ -137,7 +137,7 @@ export const Callout = component({
   type: "acme.Callout",
   label: "Callout",
   props: {
-    number: prop.number({ label: "Number", min: 1, default: 1, editor: "counter" }),
+    number: prop.number({ label: "Number", min: 1, integer: true, default: 1 }),
     title: prop.text({ label: "Title", required: true }),
     color: prop.color({ label: "Disc", default: "#FF5B1F" }),
   },
@@ -145,17 +145,17 @@ export const Callout = component({
 });
 ```
 
-Three calls connect it:
+Three calls connect it, all from `@hyper-elements/react/builder`:
 
 1. **Register the tools**, in the builder's custom JavaScript (its `customJS`), where `unlayer.registerTool` is:
 
    ```ts
    import { registerTools } from "@hyper-elements/react/builder";
 
-   registerTools(unlayer, [Callout]);
+   const names = registerTools(unlayer, [Callout]); // ["acme_callout"]
    ```
 
-   Each component becomes one tool. Its name is the component's type in the builder's words (`acme.Callout` is `acme_callout`; `toolName()` gives it), its label is the component's, and it has a property for each prop.
+   Each component becomes one tool. Its name is the component's type in the builder's words (`acme.Callout` is `acme_callout`): `registerTools()` returns the names, and `toolName(Callout)` gives one. Its label is the component's, and it has a field for each prop. A block dragged in from the panel starts with each prop's `default`; a prop with none starts unset.
 
 2. **Write the design with them**: `toDesign(element, { customTools: true })` writes each of your components as its tool's block, its props the block's values, where it would otherwise be an HTML block.
 
@@ -169,23 +169,46 @@ A prop's kind says what its value is. The builder edits it with its own property
 |------|----------------------|
 | `prop.text()` | `text` |
 | `prop.color()` | `color_picker` |
-| `prop.number()` | `counter` |
+| `prop.number()` with `integer: true` | `counter`, between the prop's `min` and `max` |
+| `prop.number()` | `text`: a number that isn't whole is kept as text (`"7.99"`) |
+| `prop.length()` | `counter` for px, from the prop's `min`; `text` where it takes another unit (`"50%"`) |
 | `prop.boolean()` | `toggle` |
 | `prop.choice()` | `dropdown`, with its values |
+| `prop.fontWeight()` | `dropdown`, 100 to 900 |
 | `prop.link()` | `link` |
 | `prop.image()` | `image` |
 | `prop.fontFamily()` | `font_family` |
 
-A `prop.length()` or a `prop.fontWeight()` has no editor in the builder yet. Its value is kept in the block and drawn; it has no field.
+A prop can name another editor with `editor`, and give it what it takes besides the value with `editorOptions`:
 
-A prop can name another editor with `editor`: one of the builder's own, or one you registered with `unlayer.registerPropertyEditor`. Say which ones you registered:
-
-```ts
-// price: prop.number({ label: "Price", editor: "currency" })
-registerTools(unlayer, [PriceBand], { editors: ["currency"] });
+```tsx
+quantity: prop.number({ label: "Quantity", min: 0, max: 100, integer: true, default: 10, editorOptions: { step: 5 } }),
+due: prop.text({ label: "Due", editor: "datetime" }),
+price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { symbol: "€" } }),
 ```
 
-The value stays its kind's either way: a price is still a number, checked as one. A name the builder has no editor for falls back to the kind's editor.
+- **`editorOptions`** go to the prop's editor as the builder takes them, whichever it is (a counter's `step`).
+- **One of the builder's own** is used where it keeps the prop's kind of value: `datetime` for a text, `alignment` for a choice of `left`, `center` and `right`.
+- **One of your own** is given to `registerTools()` in `editors`, by the name props use:
+
+  ```ts
+  registerTools(unlayer, [PriceBand], {
+    editors: {
+      currency: {
+        // Its markup. The builder draws nothing around an editor of your own: its label is here too.
+        render: (value, update, options) => `<label>${options.label}</label> ${options.symbol} <input type="number" value="${value ?? ""}" />`,
+        // Once that's in the page: call update() with the new value.
+        mount: (node, value, update) => {
+          node.querySelector("input").onchange = (event) => update(Number(event.target.value));
+        },
+      },
+    },
+  });
+  ```
+
+  It's given the prop's value as the prop has it (a price as a number) and gives back the same. `options` is the prop's label and its `editorOptions`. One you registered yourself with `unlayer.registerPropertyEditor` is `true` there (`editors: { currency: true }`): it's given the value as the builder keeps it.
+
+The value stays its kind's either way: a price is still a number, checked as one. A name that's neither of those falls back to the kind's editor.
 
 ### A field that fills several props
 
@@ -204,7 +227,7 @@ registerTools(unlayer, [ProductCard], {
 });
 ```
 
-`properties` are the builder's, each as it takes one. Any other setting (`transformer`, `usageLimit`, `position`) is passed to the builder's `registerTool()` as it is. In a `transformer` the values are as the builder stores them: an image is `{ url, width, height }`, a link `{ name: "web", values: { href, target } }`. The value of a field that isn't a prop stays in the block, and isn't the component's.
+`properties` are the builder's, each as it takes one. Any other setting (`transformer`, `usageLimit`, `position`) is passed to the builder's `registerTool()` as it is. What the component gives its tool is no setting, and is refused: its name, label, fields and drawing, its icon (that's `icons`), and what a block starts with (each prop's `default`). In a `transformer` the values are as the builder keeps them: an image is `{ url, width, height }`, a link `{ name: "web", values: { href, target } }`, a number that isn't whole text (`"7.99"`). Write one as text there: the builder's text field gives a tool nothing for a number, and its default is drawn. The value of a field that isn't a prop stays in the block, and isn't the component's.
 
 ### What to know
 
@@ -212,6 +235,9 @@ registerTools(unlayer, [ProductCard], {
 - **A project's plan sets how many custom tools it has.** The builder leaves a tool past that number out of its panel and doesn't export its blocks, so register no more components than the plan has tools.
 - **A component is drawn on its own in the builder**, at its column's width, with no template around it. Give it its own font and colors instead of taking the root's. A theme's token in a prop is written as the value it has there.
 - **A component placed where a Section goes** (`placement: "section"`) stays an HTML block: a tool is a block in a column. `registerTools()` registers no tool for it.
+- **A prop can't have the name of one of the builder's own values for a block**: `containerPadding`, `anchor`, `displayCondition`, `hideDesktop`, `hideMobile`, `selectable`, `draggable`, `duplicatable`, `deletable`, `hideable`, `locked`, or one that starts with `_`. `registerTools()` refuses the component, and `toDesign()` keeps it an HTML block.
+- **In a row of several columns, a block is drawn at its column's width**, and keeps that width on phones, where the builder stacks the columns. Its phone styles start where the email's do.
+- **With the builder's `safeHtml` on**, a text field's value reaches a tool as HTML: a `<` typed in it is drawn as `&lt;` in the canvas and in what the builder exports (`fromDesign()` reads the text as it was typed). The builder also takes the comments for classic Outlook out of what a custom tool exports, so a `Row` inside a component is stacked there.
 - **The builder's image editor has a width control, which a component doesn't read.** It takes the image's URL and size from it, and sizes the image itself in its `render`.
 - `registerTools()` takes `displayMode: "web"` for a builder of pages, so the canvas draws a Page's markup, and `icons` for each tool's icon in the panel.
 

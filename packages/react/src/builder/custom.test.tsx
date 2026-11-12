@@ -38,6 +38,19 @@ const ProductCard = component({
 });
 const Footer = component({ type: "acme.LegalFooter", label: "Legal footer", props: {}, render: () => <Text style={{ fontSize: 12 }}>Acme Inc., 1 Market St.</Text> });
 const Hero = component({ type: "acme.Hero", label: "Hero", placement: "section", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Section><Heading>{title}</Heading></Section> });
+// One prop of each kind whose field isn't the kind's own in the builder.
+const Kinds = component({
+  type: "acme.Kinds",
+  label: "Kinds",
+  props: {
+    ratio: prop.number({ label: "Ratio", min: 0, max: 1, default: 0.5 }),
+    offset: prop.number({ label: "Offset", integer: true, default: 0 }),
+    width: prop.length({ label: "Width", units: ["px", "%"], default: "50%" }),
+    gap: prop.length({ label: "Gap", min: 4, default: 8 }),
+    weight: prop.fontWeight({ label: "Weight", default: 400 }),
+  },
+  render: (p) => <Text style={{ fontWeight: p.weight }}>{`${p.ratio} ${p.offset} ${p.width} ${p.gap}`}</Text>,
+});
 // A prop its component needs, with what a block dragged in starts with.
 const Banner = component({ type: "acme.Banner", label: "Banner", props: { title: prop.text({ label: "Title", required: true, default: "Welcome" }) }, render: (p) => <Text>{p.title}</Text> });
 
@@ -67,6 +80,11 @@ describe("toolName", () => {
     expect(toolName("my-shop.Hero2")).toBe("my_shop_hero2");
     expect(toolName("acme.CTA")).toBe("acme_cta");
   });
+
+  it("takes the component itself, and refuses what's neither it nor its type", () => {
+    expect(toolName(ProductCard)).toBe("acme_product_card");
+    for (const other of [undefined, {}, 5]) expect(() => toolName(other as never)).toThrow("toolName takes a template's own component (made with component()) or its type");
+  });
 });
 
 describe("toDesign with customTools", () => {
@@ -82,7 +100,8 @@ describe("toDesign with customTools", () => {
     expect(product.slug).toBe("acme_product_card");
     expect(product.values).toMatchObject({
       name: "Morning Mug",
-      price: 24,
+      // A number that isn't whole is kept as the builder's text field keeps one.
+      price: "24",
       quantity: 2,
       href: { name: "web", values: { href: "https://example.com/mug", target: "_blank" } },
       buttonColor: "#0f766e",
@@ -90,7 +109,6 @@ describe("toDesign with customTools", () => {
       badge: "new",
       featured: true,
       font: { label: "Georgia", value: "Georgia, serif" },
-      // A kind the builder has no editor for keeps its value.
       gap: 12,
       containerPadding: "0px",
       _meta: { htmlID: "hero-product", htmlClassNames: "u_content_custom_acme_product_card" },
@@ -99,11 +117,11 @@ describe("toDesign with customTools", () => {
     expect(design.counters).toMatchObject({ u_content_custom_acme_legal_footer: 1 });
   });
 
-  it("writes a prop that isn't given as its default, where the builder has an editor for it, so its field shows what's drawn", () => {
+  it("writes a prop that isn't given as its default, so its field shows what's drawn", () => {
     const [product] = blocks(toDesign(<Email><ProductCard name="Mug" /></Email>, { customTools: true }).design);
-    expect(product.values).toMatchObject({ name: "Mug", price: 7.99, quantity: 1, href: { name: "web", values: { href: "https://example.com", target: "_self" } }, buttonColor: "#007bff", badge: "none", featured: false });
-    // No default to show (photo, font), or no editor to show it in (gap).
-    expect(Object.keys(product.values).filter((key) => ["photo", "font", "gap"].includes(key))).toEqual([]);
+    expect(product.values).toMatchObject({ name: "Mug", price: "7.99", quantity: 1, href: { name: "web", values: { href: "https://example.com", target: "_self" } }, buttonColor: "#007bff", badge: "none", featured: false, gap: 8 });
+    // No default to show.
+    expect(Object.keys(product.values).filter((key) => ["photo", "font"].includes(key))).toEqual([]);
   });
 
   it("reads a default back as the prop not given, as a template wouldn't write it", () => {
@@ -250,6 +268,38 @@ describe("fromDesign with components", () => {
     expect((await render(back.element)).html).toContain(">Hello</h");
   });
 
+  it("keeps an image's width where its height isn't known", async () => {
+    const Photo = component({ type: "acme.Photo", label: "Photo", props: { photo: prop.image({ label: "Photo", required: true }) }, render: (p) => <Image src={p.photo} alt="" /> });
+    const narrow = <Email><Photo photo={{ src: "https://example.com/p.png", width: 120 }} /></Email>;
+    const { design } = toDesign(narrow, { customTools: true });
+    expect(blocks(design)[0].values.photo).toEqual({ url: "https://example.com/p.png", width: 120 });
+    const back = fromDesign(design, { components: [Photo] });
+    expect(back.report).toEqual([]);
+    expect((await render(back.element)).html).toBe((await render(narrow)).html);
+  });
+
+  it("reads a link its user emptied, where the prop has one by default, as a link to nothing: not its default again", async () => {
+    const { design } = toDesign(<Email><ProductCard name="Mug" /></Email>, { customTools: true });
+    blocks(design)[0].values.href = { name: "web", values: { href: "", target: "_blank" } };
+    const back = fromDesign(design, { components: [ProductCard] });
+    expect(back.report).toEqual([]);
+    expect((await render(back.element)).html).not.toContain("https://example.com");
+    // A template's own link to nothing stays one.
+    const none = <Email><ProductCard name="Mug" href={{ href: "" }} /></Email>;
+    expect((await render(fromDesign(toDesign(none, { customTools: true }).design, { components: [ProductCard] }).element)).html).toBe((await render(none)).html);
+    expect((await render(none)).html).not.toContain("https://example.com");
+  });
+
+  it("reads what each kind's field keeps: a number that isn't whole and a length with a unit as text, a font weight as a dropdown's", async () => {
+    const { design } = toDesign(<Email><Kinds /></Email>, { customTools: true });
+    expect(blocks(design)[0].values).toMatchObject({ ratio: "0.5", offset: 0, width: "50%", gap: 8, weight: "400" });
+    Object.assign(blocks(design)[0].values, { ratio: "0.25", offset: "-3", width: "120", gap: "16", weight: "700" });
+    const back = fromDesign(design, { components: [Kinds] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain("<acme.Kinds ratio={0.25} offset={-3} width={120} gap={16} weight={700} />");
+    expect((await render(back.element)).text).toContain("0.25 -3 120 16");
+  });
+
   it("refuses two components that are one tool", () => {
     const One = component({ type: "x.Y1Zed", label: "One", props: {}, render: () => <Text>1</Text> });
     const Two = component({ type: "x-y1.Zed", label: "Two", props: {}, render: () => <Text>2</Text> });
@@ -260,8 +310,9 @@ describe("fromDesign with components", () => {
 /** A builder that keeps what's registered in it, and calls a viewer's render as it is. */
 function fakeBuilder() {
   const tools: Values[] = [];
-  const builder: Builder = { registerTool: (tool) => void tools.push(tool), createViewer: (viewer) => viewer };
-  return { builder, tools };
+  const editors: Values[] = [];
+  const builder: Builder = { registerTool: (tool) => void tools.push(tool), createViewer: (viewer) => viewer, registerPropertyEditor: (editor) => void editors.push(editor), createWidget: (widget) => widget };
+  return { builder, tools, editors };
 }
 
 describe("registerTools", () => {
@@ -275,9 +326,10 @@ describe("registerTools", () => {
     expect(product.options.acme_product_card.title).toBe("Product");
     expect(properties).toEqual({
       name: { label: "Product title", defaultValue: "Product title", widget: "text" },
-      // An editor the builder doesn't have ("currency"): its kind's.
-      price: { label: "Price", defaultValue: 7.99, widget: "counter" },
-      quantity: { label: "Quantity", defaultValue: 1, widget: "counter" },
+      // An editor nobody gave ("currency"): its kind's, which for a number that isn't whole is the text field, keeping text.
+      price: { label: "Price", defaultValue: "7.99", widget: "text" },
+      // A whole number is the counter's, between the prop's own limits.
+      quantity: { label: "Quantity", defaultValue: 1, widget: "counter", data: { minValue: 1, maxValue: 99 } },
       href: { label: "Button link", defaultValue: { name: "web", values: { href: "https://example.com", target: "_self" } }, widget: "link" },
       buttonColor: { label: "Button color", defaultValue: "#007bff", widget: "color_picker" },
       // No default: no value to start with, which the builder's editor shows as unset.
@@ -285,27 +337,85 @@ describe("registerTools", () => {
       badge: { label: "Badge", defaultValue: "none", widget: "dropdown", data: { options: [{ label: "none", value: "none" }, { label: "new", value: "new" }, { label: "sale", value: "sale" }] } },
       featured: { label: "Featured", defaultValue: false, widget: "toggle" },
       font: { label: "Font", widget: "font_family" },
-      // No `gap`: the builder has no editor for a length, so it has no property (its value is kept).
+      // A length in px is the counter's too.
+      gap: { label: "Gap", defaultValue: 8, widget: "counter", data: { minValue: 0 } },
     });
   });
 
-  it("edits a prop with the editor it names, where the builder has one: its own, or one registered in it", () => {
+  it("has a field for every kind, each with what its editor takes from the prop", () => {
+    const { builder, tools } = fakeBuilder();
+    registerTools(builder, [Kinds]);
+    expect(tools[0].options.acme_kinds.options).toEqual({
+      ratio: { label: "Ratio", defaultValue: "0.5", widget: "text" },
+      // No floor of its own: the counter's is zero, so it's given one far below.
+      offset: { label: "Offset", defaultValue: 0, widget: "counter", data: { minValue: -1e9 } },
+      width: { label: "Width", defaultValue: "50%", widget: "text" },
+      gap: { label: "Gap", defaultValue: 8, widget: "counter", data: { minValue: 4 } },
+      weight: { label: "Weight", defaultValue: "400", widget: "dropdown", data: { options: [100, 200, 300, 400, 500, 600, 700, 800, 900].map((weight) => ({ label: String(weight), value: String(weight) })) } },
+    });
+  });
+
+  it("edits a prop with the editor it names: one of the builder's own that keeps its kind's value, or one of the team's", () => {
     const Order = component({
       type: "acme.Order",
       label: "Order",
       props: {
-        price: prop.number({ label: "Price", editor: "currency" }),
+        price: prop.number({ label: "Price", default: 5, editor: "currency", editorOptions: { symbol: "€" } }),
+        steps: prop.number({ label: "Steps", min: 0, max: 100, integer: true, default: 10, editorOptions: { step: 5 } }),
+        // The builder's counter shows whole numbers alone: a number that isn't whole keeps its kind's.
+        rating: prop.number({ label: "Rating", min: 0, max: 5, default: 4.5, editor: "counter" }),
+        side: prop.choice(["left", "center", "right"], { label: "Side", default: "left", editor: "alignment" }),
+        due: prop.text({ label: "Due", editor: "datetime" }),
+        // Editors that keep what the prop isn't (markup, an image), and one nobody has: its kind's.
         note: prop.text({ label: "Note", editor: "rich_text" }),
+        title: prop.text({ label: "Title", editor: "image" }),
         when: prop.text({ label: "When", editor: "date_range" }),
       },
       render: (p) => <Text>{p.note ?? ""}</Text>,
     });
-    const { builder, tools } = fakeBuilder();
-    registerTools(builder, [Order], { editors: ["currency"] });
+    const { builder, tools, editors } = fakeBuilder();
+    registerTools(builder, [Order], { editors: { currency: true } });
     const properties = tools[0].options.acme_order.options;
-    expect(properties.price.widget).toBe("currency");
-    expect(properties.note.widget).toBe("rich_text");
-    expect(properties.when.widget).toBe("text");
+    // One registered in the builder already: by its name, with the prop's label and options, the value as the builder keeps it.
+    expect(properties.price).toEqual({ label: "Price", defaultValue: "5", widget: "currency", data: { label: "Price", symbol: "€" } });
+    expect(editors).toEqual([]);
+    // The builder's own: its limits from the prop, and the prop's options beside them.
+    expect(properties.steps).toEqual({ label: "Steps", defaultValue: 10, widget: "counter", data: { minValue: 0, maxValue: 100, step: 5 } });
+    expect(properties.rating).toEqual({ label: "Rating", defaultValue: "4.5", widget: "text" });
+    expect(properties.side).toMatchObject({ widget: "alignment", defaultValue: "left" });
+    expect(properties.due.widget).toBe("datetime");
+    expect([properties.note.widget, properties.title.widget, properties.when.widget]).toEqual(["text", "text", "text"]);
+  });
+
+  it("registers an editor of the team's own given as it's written, for each prop that names it, with the prop's value as the prop has it", () => {
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: prop.number({ label: "Price", min: 0, default: 7.5, editor: "currency", editorOptions: { symbol: "€" } }) }, render: (p) => <Text>{p.price.toFixed(2)}</Text> });
+    const { builder, tools, editors } = fakeBuilder();
+    const given: unknown[] = [];
+    registerTools(builder, [Price], {
+      editors: {
+        currency: {
+          render: (value, _update, options) => `<label>${options.label}</label><input value="${given.push([value, options]) && value}">`,
+          mount: (_node, _value, update) => update(9.25),
+        },
+      },
+    });
+    expect(tools[0].options.acme_price.options.price).toEqual({ label: "Price", defaultValue: "7.5", widget: "currency__acme_price__price", data: { label: "Price", symbol: "€" } });
+    expect(editors.map((editor) => editor.name)).toEqual(["currency__acme_price__price"]);
+    // The builder keeps a number that isn't whole as text: the editor is given the number, and what it gives back is kept as text again.
+    const kept: unknown[] = [];
+    expect(editors[0].Widget.render("7.5", (value: unknown) => kept.push(value))).toBe('<label>Price</label><input value="7.5">');
+    expect(given).toEqual([[7.5, { label: "Price", symbol: "€" }]]);
+    editors[0].Widget.mount(null, "7.5", (value: unknown) => kept.push(value));
+    expect(kept).toEqual(["9.25"]);
+    // And the block is drawn from what's kept.
+    expect(tools[0].renderer.Viewer.render({ price: "9.25" })).toContain(">9.25</p>");
+  });
+
+  it("refuses an editor given as it's written in a builder that can't register one", () => {
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: prop.number({ label: "Price", default: 1, editor: "currency" }) }, render: (p) => <Text>{p.price}</Text> });
+    const bare: Builder = { registerTool: () => {}, createViewer: (viewer) => viewer };
+    expect(() => registerTools(bare, [Price], { editors: { currency: { render: () => "" } } })).toThrow("editors gives currency as it's written, which takes a builder with registerPropertyEditor() and createWidget()");
+    expect(() => registerTools(bare, [Price], { editors: { currency: true } })).not.toThrow();
   });
 
   it("draws the component from the tool's values, as an Email's markup in the canvas and for email, a Page's for web", () => {
@@ -410,17 +520,35 @@ describe("registerTools", () => {
     const { builder, tools } = fakeBuilder();
     const transformer = (values: Values) => values;
     registerTools(builder, [ProductCard, Footer], {
-      tools: { "acme.ProductCard": { properties: { product: { label: "From the store", widget: "store_picker" } }, transformer, usageLimit: 3, name: "renamed", renderer: null } },
+      tools: { "acme.ProductCard": { properties: { product: { label: "From the store", widget: "store_picker" } }, transformer, usageLimit: 3 } },
     });
     const [product, footer] = tools;
     expect(Object.keys(product.options.acme_product_card.options).slice(0, 2)).toEqual(["product", "name"]);
     expect(product.options.acme_product_card.options.product).toEqual({ label: "From the store", widget: "store_picker" });
     expect(product.transformer).toBe(transformer);
     expect(product.usageLimit).toBe(3);
-    // What the component gives its tool isn't a setting to change.
-    expect(product.name).toBe("acme_product_card");
-    expect(product.renderer.Viewer.render({ name: "Mug" })).toContain("Mug");
     expect(footer.transformer).toBeUndefined();
+  });
+
+  it("refuses a setting that's what the component gives its tool, saying where it's set", () => {
+    const { builder } = fakeBuilder();
+    for (const setting of ["name", "label", "icon", "supportedDisplayModes", "options", "values", "renderer"]) {
+      expect(() => registerTools(builder, [ProductCard], { tools: { "acme.ProductCard": { [setting]: {} } } })).toThrow(`tools sets ${setting} for acme.ProductCard, which its component gives the tool`);
+    }
+  });
+
+  it("refuses a component with a prop named as one of the builder's own for a block, which toDesign() keeps an HTML block", () => {
+    const Padded = component({ type: "acme.Padded", label: "Padded", props: { containerPadding: prop.length({ label: "Padding", default: 24 }) }, render: (p) => <Column style={{ padding: p.containerPadding }}><Text>Padded</Text></Column> });
+    const Locked = component({ type: "acme.Locked", label: "Locked", props: { locked: prop.boolean({ label: "Locked", default: false }) }, render: (p) => <Text>{p.locked ? "locked" : "open"}</Text> });
+    const { builder } = fakeBuilder();
+    expect(() => registerTools(builder, [Padded])).toThrow("acme.Padded has a prop named containerPadding, which is the builder's own in a block");
+    // (The builder gives every block a `locked` of its own.)
+    expect(() => registerTools(builder, [Locked])).toThrow("acme.Locked has a prop named locked");
+    const { design } = toDesign(<Email><Padded containerPadding={32} /></Email>, { customTools: true });
+    expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
+    // A block of one, written by hand, is left out.
+    design.body.rows[0].columns[0].contents.push({ type: "custom", slug: "acme_padded", values: { containerPadding: "0px" } });
+    expect(fromDesign(design, { components: [Padded] }).report.join("\n")).toContain("whose prop containerPadding is the builder's own in a block: left out");
   });
 
   it("keeps the value of a tool's own property in the block, and out of the component", async () => {

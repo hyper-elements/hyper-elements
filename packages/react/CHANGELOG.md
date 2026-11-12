@@ -18,17 +18,22 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
 
 - **Your own components as tools of Unlayer's builder.** A `component()` can be a custom tool there, edited by its
   props and drawn by Elements, with no tool written by hand. `registerTools(unlayer, components)`
-  (`@hyper-elements/react/builder`) registers each as a tool in the builder's custom JavaScript: its name from its type
-  (`acme.ProductCard` is `acme_product_card`, as `toolName()` gives it), a property for each prop with the builder's
-  editor for its kind, and its drawing in the canvas and in what the builder exports. `toDesign(element, { customTools:
+  (`@hyper-elements/react/builder`) registers each as a tool in the builder's custom JavaScript and returns their
+  names. A tool's name is from its type (`acme.ProductCard` is `acme_product_card`, as `toolName()` gives it for a
+  component or its type). It has a field for each prop, with the builder's editor for its kind: a whole number in its
+  counter between the prop's `min` and `max`, one that isn't whole as text, a length in px in the counter, a font
+  weight in a dropdown. It's drawn in the canvas and in what the builder exports. `toDesign(element, { customTools:
   true })` writes each of a template's own components as its tool's block, where it was an HTML block of its markup;
   `fromDesign(design, { components })` reads those blocks back as the components. Without the options, both do what
   they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
   component's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…).
-- **A prop names its editor.** `prop.number({ label: "Quantity", editor: "counter" })`: the control a visual editor
-  shows for a prop, where its kind's own isn't the one wanted. The value is its kind's either way.
-  `describeComponents()` gives it as `namedEditor`, beside `editor` (its kind's), which an editor with no control by
-  that name shows.
+- **A prop names its editor, and gives it options.** `prop.number({ label: "Price", editor: "currency",
+  editorOptions: { symbol: "€" } })`: the control a visual editor shows for a prop, where its kind's own isn't the one
+  wanted, and what that control takes besides the value. The value is its kind's either way. `describeComponents()`
+  gives them as `namedEditor` and `editorOptions`, beside `editor` (its kind's), which an editor with no control by
+  that name shows. In Unlayer's builder the name is one of the builder's own editors that keeps the prop's kind of
+  value, or one of your own, given to `registerTools()` in `editors` as it's written (`{ render, mount }`): it's
+  given the prop's value as the prop has it, with its label and its options.
 
 ### Fixed
 
