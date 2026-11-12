@@ -55,7 +55,7 @@ const STYLE =
   ".note{padding:12px 16px;border-bottom:1px solid #d0d7de;background:#fff}.note h1{margin:0 0 4px;font-size:15px}.note h2{margin:8px 0 2px;font-size:13px}.note p{margin:0}.note ul{margin:0;padding-left:20px}" +
   "#frames{display:flex;gap:16px;padding:16px;align-items:flex-start}#frames iframe{flex:none;border:0;background:#fff;box-shadow:0 0 0 1px #d0d7de}";
 
-/** Where a preview's email came from: render() (the main entry), or HTML the caller gave (the HTML entry). */
+/** Where a preview's email came from: render() (a template), or HTML the caller gave as a string. */
 export interface PreviewSource {
   source: "render" | "html";
 }

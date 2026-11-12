@@ -8,7 +8,8 @@
  */
 import type { ElementsPlugin, PluginInput, PluginOutput } from "@hyper-elements/react";
 import { treeChecks, outputChecks } from "./checks";
-import { checkPlugins, checkProtocol } from "./core";
+import { checkPlugins, loadCore } from "./core";
+import { checkProtocol } from "./protocol";
 import { DEFAULT_EMAIL_CLIENTS, checkClients, forClients, type ClientDiagnostic, type EmailClient } from "./email-clients";
 import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";
 
@@ -57,7 +58,7 @@ async function loadModels(): Promise<{ models: Models; unavailable: null } | { m
  * diagnostic on an Email says so.
  */
 export async function emailClients(options: EmailClientsPluginOptions = {}): Promise<ElementsPlugin> {
-  checkPlugins();
+  checkPlugins(await loadCore());
   const given = options.clients;
   checkClients(given, "emailClients({ clients })");
   const { models, unavailable } = await loadModels();

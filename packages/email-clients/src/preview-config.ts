@@ -1,6 +1,6 @@
 /**
  * What a preview's runtime reads beside the email (its `email-client-config`). Written out here, with the block map's
- * shape, so the shell and the HTML entry (@hyper-elements/email-clients/html) need no types from core; the runtime's
+ * shape, so the shell, and HTML previewed without core, need no types from core; the runtime's
  * Config is this type, and core's BlockMap fits `PreviewBlockMap`.
  */
 import type { Computer, PreviewClient } from "./clients";
