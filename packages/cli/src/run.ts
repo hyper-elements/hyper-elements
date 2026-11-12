@@ -52,6 +52,60 @@ export interface ChildReport {
   ended?: { reason: "exit" | "signal" | "timeout"; detail: string; error: string };
 }
 
+/** A child process, waiting for its start message. */
+function forkChild(cwd: string): ChildProcess {
+  return fork(fileURLToPath(new URL("./child.js", import.meta.url)), [], {
+    stdio: ["ignore", "pipe", "pipe", "ipc"],
+    // A process group of its own, so the child and every process it starts can be ended together (macOS, Linux).
+    detached: process.platform !== "win32",
+    // Bun installs a package it can't resolve where there's no node_modules (auto-install), from its cache or npm:
+    // a template resolves only what its project has, as on Node.
+    execArgv: bun ? ["--no-install"] : [],
+    cwd,
+  });
+}
+
+/**
+ * `dev`: children started ahead of the next change, idle (no template code has run in them) until a group is given to
+ * one, so a render doesn't wait for processes to start. Each is used once, as any child is; taking one starts the next.
+ */
+const spares: ChildProcess[] = [];
+let spareCwd: string | undefined;
+let spareCount = 0;
+
+/** Keeps `count` spare children for `cwd` from now on. */
+export function keepSpareChildren(cwd: string, count: number): void {
+  if (spareCwd !== cwd) for (const child of spares.splice(0)) if (child.pid) killTree(child.pid);
+  spareCwd = cwd;
+  spareCount = count;
+  for (const child of spares.splice(count)) if (child.pid) killTree(child.pid);
+  while (spares.length < count) {
+    const child = forkChild(cwd);
+    // Its output flows from the start (it writes nothing until it's given a group; runChild copies it from then on):
+    // a pipe left paused never ends on Bun, so its close would never come.
+    child.stdout!.resume();
+    child.stderr!.resume();
+    spares.push(child);
+    // An interrupt ends it with the others; it ends by itself if this process does (its IPC channel closes).
+    running.add(child);
+    child.once("exit", () => {
+      running.delete(child);
+      const at = spares.indexOf(child);
+      if (at >= 0) spares.splice(at, 1);
+    });
+  }
+}
+
+function takeSpare(cwd: string): ChildProcess | undefined {
+  if (spareCwd !== cwd) return undefined;
+  for (let child = spares.shift(); child; child = spares.shift()) {
+    keepSpareChildren(cwd, spareCount);
+    if (child.exitCode === null && child.signalCode === null && child.connected) return child;
+    if (child.pid) killTree(child.pid);
+  }
+  return undefined;
+}
+
 let children = 0;
 /** When the run started: `--refresh` fetches what was cached before it. */
 let runStarted = Date.now();
@@ -66,6 +120,8 @@ export function runChild(
   token: string,
   io: Io,
   extra: Partial<StartMessage["options"]> = {},
+  /** `dev`: ends the child (and its group) when a newer change makes its results moot. */
+  abort?: AbortSignal,
 ): Promise<ChildReport> {
   const index = children++;
   let tsconfig: string | null = null;
@@ -109,15 +165,7 @@ export function runChild(
   };
   const report: ChildReport = { results: new Map(), reacts: false, done: false, late: [] };
   return new Promise((resolvePromise) => {
-    const child = fork(fileURLToPath(new URL("./child.js", import.meta.url)), [], {
-      stdio: ["ignore", "pipe", "pipe", "ipc"],
-      // A process group of its own, so the child and every process it starts can be ended together (macOS, Linux).
-      detached: process.platform !== "win32",
-      // Bun installs a package it can't resolve where there's no node_modules (auto-install), from its cache or npm:
-      // a template resolves only what its project has, as on Node.
-      execArgv: bun ? ["--no-install"] : [],
-      cwd: io.cwd,
-    });
+    const child = takeSpare(io.cwd) ?? forkChild(io.cwd);
     running.add(child);
     const copy = (data: Buffer) => io.stderr(data.toString("utf8"));
     child.stdout!.on("data", copy);
@@ -168,11 +216,21 @@ export function runChild(
     };
     child.on("exit", (code, signal) => finish(code, signal));
     child.on("error", (error) => finish(null, null, error));
+    // A spare that ended while it waited (its exit already reported).
+    if (child.exitCode !== null || child.signalCode !== null) finish(child.exitCode, child.signalCode);
+    if (abort) {
+      const stop = () => child.pid && killTree(child.pid);
+      if (abort.aborted) stop();
+      else {
+        abort.addEventListener("abort", stop, { once: true });
+        child.once("exit", () => abort.removeEventListener("abort", stop));
+      }
+    }
     child.send(message);
   });
 }
 
-function readProps(path: string, cwd: string): Record<string, unknown> {
+export function readProps(path: string, cwd: string): Record<string, unknown> {
   let text: string;
   try {
     text = readFileSync(resolve(cwd, path), "utf8");

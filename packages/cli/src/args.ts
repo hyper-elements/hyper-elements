@@ -12,6 +12,7 @@ Usage:
   hyper-elements preview <files or folders...> [options]
   hyper-elements inspect <files or folders...> [options]
   hyper-elements describe [Component] [--root Email] [--json]
+  hyper-elements dev <files or folders...> [options]
   hyper-elements migrate [migrate's arguments...]
 
 A template is a module whose default export is a component that renders an
@@ -43,6 +44,11 @@ describe lists the components a template can use (or one), with their props
          and styles; --root narrows it to what a root takes.
 migrate  runs @hyper-elements/migrate (the project's, else npx's) with the
          arguments given.
+dev      serves a page on 127.0.0.1 showing each template (an Email or a Page
+         at desktop and phone widths, a Document's PDF, a Canvas's image, the
+         diagnostics, and the email client previews where the project has
+         @hyper-elements/email-clients), rendered again when the project's
+         source or a workspace package it depends on changes, until Ctrl-C.
 
 Options:
   --out <dir>           Where render and preview write (default: out)
@@ -54,19 +60,21 @@ Options:
   --html                render: also write a Document's print HTML
   --format <png|svg>    render: a Canvas's image format (default: png)
   --scale <n>           render: a Canvas's pixels per px (default: 1)
-  --public <dir>        render: where /paths are read from (default: the
+  --public <dir>        render, dev: where /paths are read from (default: the
                         first public/ beside a package.json, from the
                         template's folder up to the workspace root)
   --refresh             render: fetch http(s) fonts and images again
-  --offline             render: fetch nothing; a URL not in the cache fails
-  --clients <a,b>       check, preview: the email clients to check for, or to
-                        preview
+  --offline             render, dev: fetch nothing; a URL not in the cache
+                        fails
+  --clients <a,b>       check, preview, dev: the email clients to check for,
+                        or to preview
   --max-warnings <n>    check: fail (exit 1) with more than n warnings
   --rendered            check: also render, for the checks only the written
                         HTML has (Gmail's size limit)
-  --dark                preview: also the dark previews, where measured
-  --fonts <url|inline>  preview: where a preview's stand-in fonts come from
-                        (default: url, from jsDelivr; inline: in each file)
+  --dark                preview, dev: also the dark previews, where measured
+  --fonts <url|inline>  preview, dev: where a preview's stand-in fonts come
+                        from (default: url, from jsDelivr; inline: in each
+                        file)
   --findings            preview: open each preview in Chromium and report what
                         it found (CHROME_PATH, Playwright's Chromium, Chrome,
                         then Edge: the first that starts)
@@ -125,7 +133,7 @@ export interface Args {
 
 export class UsageError extends Error {}
 
-const COMMANDS: Command[] = ["render", "check", "outline", "preview", "inspect", "describe", "migrate"];
+const COMMANDS: Command[] = ["render", "check", "outline", "preview", "inspect", "describe", "migrate", "dev"];
 /** The options each command takes, and whether each takes a value. */
 const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   out: { value: true, commands: ["render", "preview"] },
@@ -152,7 +160,11 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   timeout: { value: true, commands: ["render", "check", "outline", "preview", "inspect", "describe"] },
 };
 
-const COMMAND_LIST = "render, check, outline, preview, inspect, describe or migrate";
+/** What `dev` takes: what it renders with (its own server, so not --serve; nothing written, so not --out). */
+const DEV_OPTIONS = ["props", "clients", "dark", "fonts", "public", "offline", "timeout"];
+for (const name of DEV_OPTIONS) OPTIONS[name].commands.push("dev");
+
+const COMMAND_LIST = "render, check, outline, preview, inspect, describe, dev or migrate";
 
 /** `--timeout`: seconds, or a number with `ms` or `s`. */
 function duration(text: string): number {

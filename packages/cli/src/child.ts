@@ -17,6 +17,7 @@ import { inspectTemplate } from "./commands/inspect";
 import { previewTemplate } from "./commands/preview";
 import { outlineTemplate } from "./commands/outline";
 import { renderTemplate } from "./commands/render";
+import { devTemplate } from "./dev/worker";
 import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, UsageFailure, type CommandResult, type TemplateContext } from "./commands/shared";
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
 import { errorLine, messageOf, notFound } from "./errors";
@@ -37,6 +38,13 @@ function send(message: ChildMessage): Promise<void> {
 }
 
 const turn = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+// On Node, what every group loads before its templates (tsx's register, and TypeScript for the group's tsconfig) starts
+// loading now, while the child waits for its start message (`dev` starts one ahead of the next change).
+if (!bun) {
+  void import("typescript").catch(() => undefined);
+  void import("tsx/esm/api").catch(() => undefined);
+}
 
 /** The parent's gone (its end of the channel closed): nothing to report to. */
 process.on("disconnect", () => guarded.exit(0));
@@ -180,7 +188,7 @@ class Session {
       const inspect = exportsOf<ElementsInspect>(await loader.load("@hyper-elements/react/inspect"), "inspect");
       const react = exportsOf<ReactModule>(await loader.load("react"), "createElement");
       let emailClients: EmailClientsModule | undefined;
-      if (this.message.command === "check" || this.message.command === "preview") {
+      if (this.message.command === "check" || this.message.command === "preview" || this.message.command === "dev") {
         try {
           emailClients = exportsOf<EmailClientsModule>(await loader.load("@hyper-elements/email-clients"), "emailClients");
         } catch (error) {
@@ -244,7 +252,7 @@ class Session {
         emailClients: loaded.emailClients,
         inspection,
       };
-      const run = { render: renderTemplate, check: checkTemplate, outline: outlineTemplate, preview: previewTemplate, inspect: inspectTemplate }[this.message.command as "render"];
+      const run = { render: renderTemplate, check: checkTemplate, outline: outlineTemplate, preview: previewTemplate, inspect: inspectTemplate, dev: devTemplate }[this.message.command as "render"];
       const command: CommandResult = await run(context);
       return this.result(input, { ...command, root, diagnostics: [...command.diagnostics, ...notes] }, loaded);
     } catch (error) {

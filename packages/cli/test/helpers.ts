@@ -297,3 +297,77 @@ export default function Invoice() {
 export function pngSize(bytes: Buffer): { width: number; height: number } {
   return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }
+
+/** `dev`, running: its URL, what it has said, and how to read what it serves. */
+export interface Dev {
+  /** `http://127.0.0.1:<port>/<prefix>/`. */
+  base: string;
+  port: number;
+  prefix: string;
+  child: ChildProcess;
+  stdout(): string;
+  stderr(): string;
+  /** The state the page reads. */
+  state(): Promise<any>;
+  /** A file it serves, by its URL relative to the page, as text. */
+  text(url: string): Promise<string>;
+  /** Resolves with its exit code once it has exited. */
+  exited: Promise<number | null>;
+}
+
+const devs: ChildProcess[] = [];
+afterEach(() => {
+  for (const child of devs.splice(0)) child.kill("SIGKILL");
+});
+
+/** Starts `hyper-elements dev` in `cwd` and waits for its URL and its first render. */
+export async function startDev(cwd: string, args: string[], options: { runtime?: "node" | "bun"; env?: Record<string, string> } = {}): Promise<Dev> {
+  const runtime = options.runtime ?? RUNTIME;
+  const child = spawn(runtime === "bun" ? "bun" : process.execPath, [BIN, "dev", ...args], { cwd, env: cliEnv(options.env), stdio: ["ignore", "pipe", "pipe"] });
+  devs.push(child);
+  let out = "";
+  let err = "";
+  child.stdout.on("data", (d) => (out += d));
+  child.stderr.on("data", (d) => (err += d));
+  const exited = new Promise<number | null>((resolve) => child.on("close", (code) => resolve(code)));
+  await until(() => / until Ctrl-C\n/.test(out) || child.exitCode !== null, 30_000);
+  const match = /(http:\/\/127\.0\.0\.1:(\d+)\/([0-9a-f]{32})\/)/.exec(out);
+  if (!match) throw new Error(`dev printed no URL:\n${out}\n${err}`);
+  const base = match[1];
+  const dev: Dev = {
+    base,
+    port: Number(match[2]),
+    prefix: match[3],
+    child,
+    stdout: () => out,
+    stderr: () => err,
+    state: async () => (await fetch(`${base}state.json`)).json(),
+    text: async (url) => (await fetch(base + url)).text(),
+    exited,
+  };
+  if (!(await until(() => /Rendered \d+ templates?|✗ /.test(err), 30_000))) throw new Error(`dev didn't render:\n${out}\n${err}`);
+  return dev;
+}
+
+/**
+ * Waits until what `dev` serves for `file` (its plain text, or its error) satisfies `check`, reading its state as
+ * often as it can; resolves with the state then, or throws with the last one.
+ */
+export async function devUntil(dev: Dev, check: (template: any, text: string) => boolean, file: string, ms = 15_000): Promise<any> {
+  const end = Date.now() + ms;
+  let last: any;
+  while (Date.now() < end) {
+    try {
+      last = await dev.state();
+      const template = last.templates?.find((t: any) => t.file === file);
+      if (template) {
+        const text = template.files?.txt ? await dev.text(template.files.txt) : "";
+        if (check(template, text)) return last;
+      }
+    } catch {
+      // A render in between: the next read.
+    }
+    await wait(20);
+  }
+  throw new Error(`dev never showed what was expected for ${file}: ${JSON.stringify(last)}\n${dev.stderr()}`);
+}

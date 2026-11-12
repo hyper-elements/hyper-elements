@@ -15,6 +15,8 @@ export default defineConfig({
   // needed; React, React DOM and Elements are the project's, loaded beside each template (never bundled).
   noExternal: ["@unlayer-internal/template-loader"],
   external: ["typescript", /^tsx/, "react", "react-dom", /^@hyper-elements\//, "playwright-core", "./main.js", "./child.js", "./watchdog.js", "./preview/browser.js"],
+  // dev's page, as text in main.js.
+  loader: { ".html": "text" },
   esbuildOptions(options) {
     options.alias = { "@unlayer-internal/template-loader": fileURLToPath(new URL("../loader/src/index.ts", import.meta.url)) };
   },

@@ -5,6 +5,7 @@
 import { createRequire } from "node:module";
 import { parseArgs, UsageError, USAGE } from "./args";
 import { runDescribe } from "./commands/describe";
+import { runDev } from "./commands/dev";
 import { runMigrate } from "./commands/migrate";
 import { onInterrupt, run, type Io, type RunState } from "./run";
 
@@ -47,6 +48,7 @@ export async function main(argv: string[]): Promise<number> {
       return code === 0 ? 0 : 2;
     }
     if (args.command === "describe") return await runDescribe(args, io, state);
+    if (args.command === "dev") return await runDev(args, io, state);
     return await run(args, io, state);
   } catch (error) {
     if (error instanceof UsageError) {
