@@ -174,6 +174,10 @@ source change and the rebuild that follows it are each shown. It doesn't follow 
   symbolic link to a folder outside `node_modules`), and theirs: every file, `dist` and `build` included, so a package
   whose runtime is its build is shown again when it's rebuilt.
 
+A file counts as changed when its modification time or size is new, or it's made or removed, so an event that comes
+twice, or late, for a change already rendered doesn't render again. Each render's line on stderr says what changed for
+it (`Rendered 3 templates in 212 ms, after a change to src/word.ts`).
+
 The page shows an Email's and a Page's HTML in `<iframe sandbox>` without `allow-same-origin`, and serves it with a
 `Content-Security-Policy: sandbox` of its own: an `Html` block's scripts run there, in an origin that isn't the page's,
 and can't read the page, what it shows or its event stream. The server listens on `127.0.0.1` only, as `--serve` does:

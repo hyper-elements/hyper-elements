@@ -54,7 +54,17 @@ export interface DevState {
   late: Late[];
   /** How long the last render took. */
   ms: number;
+  /** What changed for this render: the paths the watcher saw change (relative, with `/`); none for the first. */
+  changed: string[];
+  /** The last renders, oldest first: each one's version and what changed for it. */
+  history: Array<{ version: number; changed: string[] }>;
 }
+
+/** A render's state, before what changed for it is added. */
+type Rendered = Omit<DevState, "changed" | "history">;
+
+/** How many renders `history` keeps. */
+const HISTORY = 50;
 
 /** The URL path of a file in `root`, relative to the page. */
 const urlOf = (root: string, file: string) => relative(root, file).split(sep).map(encodeURIComponent).join("/");
@@ -84,7 +94,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   const mine = (owner: ReturnType<typeof parseToken>) => !!owner && owner.host === own.host && owner.pid === own.pid && owner.random === own.random;
 
   const server = await serveDev(folder);
-  let current: DevState = { version: 0, rendering: true, error: null, templates: [], late: [], ms: 0 };
+  let current: DevState = { version: 0, rendering: true, error: null, templates: [], late: [], ms: 0, changed: [], history: [] };
   server.publish(current);
   state.serving = true;
   await io.stdout(`Serving the templates at ${server.base} until Ctrl-C\n`);
@@ -97,7 +107,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   };
 
   /** One render of every template: undefined where a newer change ended it. */
-  const render = async (n: number, abort: AbortSignal): Promise<DevState | undefined> => {
+  const render = async (n: number, abort: AbortSignal): Promise<Rendered | undefined> => {
     const started = Date.now();
     let inputs: Input[];
     try {
@@ -237,15 +247,22 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
         current = { ...current, rendering: true };
         server.publish(current);
       }
-      let next: DevState | undefined;
+      // What changed for this render; a render a newer change ends gives what it was for to the next.
+      const cause = [...changes];
+      changes.clear();
+      let next: Rendered | undefined;
       try {
         next = await render(renders + 1, controller.signal);
       } catch (error) {
         next = { version: renders + 1, rendering: false, error: `The render stopped: ${errorLine(error)}`, templates: [], late: [], ms: 0 };
       }
-      if (!next || controller.signal.aborted) continue;
+      if (!next || controller.signal.aborted) {
+        for (const path of cause) changes.add(path);
+        continue;
+      }
       renders++;
-      current = { ...next, version: renders, rendering: wanted };
+      const changed = cause.map((path) => displayPath(cwd, path));
+      current = { ...next, version: renders, rendering: wanted, changed, history: [...current.history, { version: renders, changed }].slice(-HISTORY) };
       server.publish(current);
       report(current);
       // Older renders' files: the page has this one's.
@@ -269,12 +286,15 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
     const errors = shown.templates.filter((t) => t.status === "error").length;
     io.stderr(
       said.map((t) => inputText({ file: t.file, root: t.root, status: t.status, outputs: [], diagnostics: t.diagnostics, ...(t.error !== undefined ? { error: t.error } : {}) })).join("") +
-        `Rendered ${shown.templates.length} template${shown.templates.length === 1 ? "" : "s"} in ${shown.ms} ms${errors ? `: ${errors} with errors` : ""}\n`,
+        `Rendered ${shown.templates.length} template${shown.templates.length === 1 ? "" : "s"} in ${shown.ms} ms${errors ? `: ${errors} with errors` : ""}${after(shown.changed)}\n`,
     );
   };
 
   let quiet: NodeJS.Timeout | undefined;
-  const watcher = new Watcher(() => {
+  /** The paths changed since the last render started. */
+  const changes = new Set<string>();
+  const watcher = new Watcher((path) => {
+    changes.add(path);
     clearTimeout(quiet);
     quiet = setTimeout(request, QUIET_MS);
   });
@@ -282,6 +302,13 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   keepSpareChildren(cwd, 1);
   request();
   return new Promise<number>(() => undefined);
+}
+
+/** What changed for a render, as the terminal says it: `, after a change to src/word.ts` (three named at most). */
+function after(changed: string[]): string {
+  if (!changed.length) return "";
+  const named = changed.slice(0, 3).join(", ");
+  return `, after a change to ${named}${changed.length > 3 ? ` and ${changed.length - 3} more` : ""}`;
 }
 
 /** The path a write failed on, as the error names it. */
