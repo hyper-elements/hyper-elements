@@ -147,8 +147,44 @@ describe("arguments", () => {
     expect(parseArgs(["check", "a.tsx", "--clients", "gmail, outlook", "--max-warnings", "3", "--rendered"])).toMatchObject({ clients: ["gmail", "outlook"], maxWarnings: 3, rendered: true, timeout: 60_000 });
   });
 
+  it("parses preview's, describe's and inspect's, and leaves migrate's arguments as they are", () => {
+    expect(parseArgs(["preview", "emails", "--clients", "gmail,outlook", "--dark", "--fonts", "inline", "--serve", "--json"])).toMatchObject({
+      command: "preview",
+      positional: ["emails"],
+      clients: ["gmail", "outlook"],
+      dark: true,
+      fonts: "inline",
+      serve: true,
+      findings: false,
+    });
+    // --screenshots draws the previews, as --findings does.
+    expect(parseArgs(["preview", "a.tsx", "--screenshots"])).toMatchObject({ findings: true, screenshots: true });
+    expect(parseArgs(["preview", "--install-browser"])).toMatchObject({ command: "preview", installBrowser: true, positional: [] });
+    expect(parseArgs(["describe"])).toMatchObject({ command: "describe", positional: [] });
+    expect(parseArgs(["describe", "Button", "--root", "Email", "--json"])).toMatchObject({ positional: ["Button"], root: "Email", json: true });
+    expect(parseArgs(["inspect", "a.tsx", "--json", "--props", "p.json"])).toMatchObject({ command: "inspect", json: true, props: "p.json" });
+    expect(parseArgs(["migrate", "emails", "--out", "x", "--json", "--bogus"])).toMatchObject({ command: "migrate", positional: ["emails", "--out", "x", "--json", "--bogus"] });
+  });
+
   it("refuses what a command doesn't take", () => {
-    for (const argv of [["render", "a", "--clients", "x"], ["check", "a", "--out", "x"], ["outline", "a", "b"], ["render", "a", "--json", "--stdout"], ["render", "a", "--timeout", "0"], ["check"]]) {
+    for (const argv of [
+      ["render", "a", "--clients", "x"],
+      ["check", "a", "--out", "x"],
+      ["outline", "a", "b"],
+      ["render", "a", "--json", "--stdout"],
+      ["render", "a", "--timeout", "0"],
+      ["check"],
+      ["check", "a", "--findings"],
+      ["render", "a", "--serve"],
+      ["preview"],
+      ["preview", "a", "--fonts", "cdn"],
+      ["preview", "a", "--install-browser"],
+      ["preview", "--install-browser", "--json"],
+      ["describe", "Button", "Text"],
+      ["describe", "--out", "x"],
+      ["inspect"],
+      ["inspect", "a", "--clients", "gmail"],
+    ]) {
       expect(() => parseArgs(argv), argv.join(" ")).toThrow(UsageError);
     }
   });

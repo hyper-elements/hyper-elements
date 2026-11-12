@@ -4,7 +4,9 @@
  */
 import { createRequire } from "node:module";
 import { parseArgs, UsageError, USAGE } from "./args";
-import { onInterrupt, run, type RunState } from "./run";
+import { runDescribe } from "./commands/describe";
+import { runMigrate } from "./commands/migrate";
+import { onInterrupt, run, type Io, type RunState } from "./run";
 
 function version(): string {
   return (createRequire(import.meta.url)("../package.json") as { version: string }).version;
@@ -21,15 +23,31 @@ export async function main(argv: string[]): Promise<number> {
     await write(process.stdout, `${version()}\n`);
     return 0;
   }
+  if (argv[0] === "migrate") {
+    // Migrate's own: its arguments, its interrupts (Ctrl-C reaches it too) and its exit code.
+    const ignore = () => undefined;
+    process.on("SIGINT", ignore);
+    process.on("SIGTERM", ignore);
+    return runMigrate(argv.slice(1), process.cwd(), (text) => void process.stderr.write(text));
+  }
   const state: RunState = { folders: new Set() };
   const stop = onInterrupt(
     () => state.token,
     () => state.folders,
-    (code) => process.exit(code),
+    // A served preview ends with Ctrl-C: that's how it's stopped, not an interrupted run.
+    (code) => process.exit(state.serving ? 0 : code),
   );
   try {
     const args = parseArgs(argv);
-    return await run(args, { cwd: process.cwd(), stdout: (data) => write(process.stdout, data), stderr: (text) => void process.stderr.write(text) }, state);
+    const io: Io = { cwd: process.cwd(), stdout: (data) => write(process.stdout, data), stderr: (text) => void process.stderr.write(text) };
+    if (args.installBrowser) {
+      const { installBrowser } = await import("./preview/browser.js");
+      const code = await installBrowser();
+      if (code !== 0) process.stderr.write(`hyper-elements: installing Playwright's Chromium failed (exit ${code})\n`);
+      return code === 0 ? 0 : 2;
+    }
+    if (args.command === "describe") return await runDescribe(args, io, state);
+    return await run(args, io, state);
   } catch (error) {
     if (error instanceof UsageError) {
       process.stderr.write(`hyper-elements: ${error.message}\n`);

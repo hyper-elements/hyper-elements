@@ -182,6 +182,21 @@ export function loaderModuleText(template: string, token: string, format: "esm" 
   ].join("\n");
 }
 
+/**
+ * The text of a loader module that loads no template, for `describe`: Elements as a TypeScript module in that folder
+ * would load it. It's a `.ts` file: tsx compiles it as its package's type says (`require` in a CommonJS package).
+ */
+export function elementsLoaderText(token: string, format: "esm" | "cjs", bun: boolean): string {
+  const cjs = format === "cjs" && !bun;
+  return [
+    `// ${token}`,
+    `export const template = {};`,
+    cjs ? `export const load = (specifier: string) => require(specifier);` : `export const load = (specifier: string) => import(specifier);`,
+    cjs ? `export const resolve = (specifier: string) => require.resolve(specifier);` : `export const resolve = (specifier: string) => import.meta.resolve(specifier);`,
+    "",
+  ].join("\n");
+}
+
 /** A loader module's name for a template, beside it. */
 export function loaderModulePath(folder: string, template: string, pid: number, n: number): string {
   return join(folder, `.hyper-elements-${pid}-${n}${extname(template)}`);

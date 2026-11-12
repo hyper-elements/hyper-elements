@@ -1,7 +1,7 @@
 /**
  * What each command does with a template's element, in the child process.
  */
-import type { ElementsMain } from "../elements";
+import type { ElementsMain, EmailClientsModule } from "../elements";
 import type { ChildOptions, Diagnostic, ResultMessage, Root } from "../protocol";
 
 export interface TemplateContext {
@@ -18,9 +18,16 @@ export interface TemplateContext {
   resolve(specifier: string): string;
   /** email-clients' plugin, where the template's project has email-clients (made once per process). */
   plugin(): Promise<{ plugin?: unknown; diagnostics: Diagnostic[] }>;
+  /** The project's email-clients, where it has it (loaded for `check` and `preview`). */
+  emailClients?: EmailClientsModule;
+  /** inspect()'s result, which the child reads the root from. */
+  inspection: { root: string | null; valid: boolean; diagnostics: Diagnostic[] };
 }
 
-export type CommandResult = Pick<ResultMessage, "status" | "diagnostics" | "outputs" | "binary" | "error" | "usage">;
+export type CommandResult = Pick<ResultMessage, "status" | "diagnostics" | "outputs" | "binary" | "error" | "previews" | "inspection" | "usage">;
+
+/** What the run was asked can't be done for this template (exit 2). */
+export class UsageFailure extends Error {}
 
 /** Whether diagnostics hold an error. */
 export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {

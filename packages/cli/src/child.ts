@@ -13,12 +13,14 @@ import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import { defaultExport, guard, projectTsconfig, templateComponent } from "@unlayer-internal/template-loader";
 import { checkTemplate } from "./commands/check";
+import { inspectTemplate } from "./commands/inspect";
+import { previewTemplate } from "./commands/preview";
 import { outlineTemplate } from "./commands/outline";
 import { renderTemplate } from "./commands/render";
-import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "./commands/shared";
+import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, UsageFailure, type CommandResult, type TemplateContext } from "./commands/shared";
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
 import { errorLine, messageOf, notFound } from "./errors";
-import { loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
+import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { reactCopies } from "./react-copies";
 
@@ -130,7 +132,8 @@ class Session {
     const folder = dirname(input.file);
     // The loader module: never over a file (the next name where one's there).
     let path: string | undefined;
-    const text = loaderModuleText(input.file, this.message.token, input.format, bun);
+    // `describe` loads no template: its loader module loads Elements as a module in the current folder would.
+    const text = this.message.command === "describe" ? elementsLoaderText(this.message.token, input.format, bun) : loaderModuleText(input.file, this.message.token, input.format, bun);
     // Named for the process whose token it carries (the parent: while it runs, its files are its own).
     const owner = parseToken(`// ${this.message.token}`)!.pid;
     for (let attempt = 0; attempt < 1000 && !path; attempt++) {
@@ -172,11 +175,12 @@ class Session {
     try {
       const failure = this.checkElements(input, loader.resolve);
       if (failure) return failure;
+      if (this.message.command === "describe") return await this.describe(input, loader.load);
       const elements = exportsOf<ElementsMain>(await loader.load("@hyper-elements/react"), "render");
       const inspect = exportsOf<ElementsInspect>(await loader.load("@hyper-elements/react/inspect"), "inspect");
       const react = exportsOf<ReactModule>(await loader.load("react"), "createElement");
       let emailClients: EmailClientsModule | undefined;
-      if (this.message.command === "check") {
+      if (this.message.command === "check" || this.message.command === "preview") {
         try {
           emailClients = exportsOf<EmailClientsModule>(await loader.load("@hyper-elements/email-clients"), "emailClients");
         } catch (error) {
@@ -237,9 +241,11 @@ class Session {
         load: async (specifier) => await loader.load(specifier),
         resolve: (specifier) => loader.resolve(specifier),
         plugin: () => this.plugin(loaded),
+        emailClients: loaded.emailClients,
+        inspection,
       };
-      const command: CommandResult =
-        this.message.command === "render" ? await renderTemplate(context) : this.message.command === "check" ? await checkTemplate(context) : await outlineTemplate(context);
+      const run = { render: renderTemplate, check: checkTemplate, outline: outlineTemplate, preview: previewTemplate, inspect: inspectTemplate }[this.message.command as "render"];
+      const command: CommandResult = await run(context);
       return this.result(input, { ...command, root, diagnostics: [...command.diagnostics, ...notes] }, loaded);
     } catch (error) {
       const diagnostics = elementsErrorDiagnostics(error);
@@ -296,11 +302,28 @@ class Session {
     });
   }
 
+  /** `describe`: describeComponents() or describeComponent(), from Elements as the current folder loads it. */
+  private async describe(input: ChildInput, load: (specifier: string) => unknown): Promise<ResultMessage> {
+    const inspect = exportsOf<ElementsInspect>(await load("@hyper-elements/react/inspect"), "describeComponents");
+    const { component, root } = this.message.options;
+    const usage = (message: string) => this.result(input, { status: "error", usage: true, diagnostics: [cliDiagnostic("describe", "error", message)] });
+    const all = inspect.describeComponents();
+    if (root !== undefined && !all.roots.includes(root)) return usage(`--root takes ${all.roots.join(", ")}, not ${JSON.stringify(root)}`);
+    const options = root ? { root } : {};
+    if (component === undefined) return this.result(input, { status: "ok", described: inspect.describeComponents(options) });
+    const described = inspect.describeComponent(component, options);
+    if (described) return this.result(input, { status: "ok", described });
+    const types = all.components.map((c) => c.type);
+    return usage(types.includes(component) ? `${root} doesn't take ${component}` : `There's no component ${JSON.stringify(component)}: the components are ${types.join(", ")}`);
+  }
+
   private elementsMissing(input: ChildInput): ResultMessage {
     return this.result(input, {
       status: "error",
       usage: true,
-      diagnostics: [cliDiagnostic("elements-missing", "error", `@hyper-elements/react isn't installed where this template is: the CLI renders with the project's (${ELEMENTS_RANGE})`, "npm i @hyper-elements/react react react-dom")],
+      diagnostics: [cliDiagnostic("elements-missing", "error", this.message.command === "describe"
+        ? `@hyper-elements/react isn't installed where this command runs: describe reads the project's (${ELEMENTS_RANGE}), run it in the project's folder`
+        : `@hyper-elements/react isn't installed where this template is: the CLI renders with the project's (${ELEMENTS_RANGE})`, "npm i @hyper-elements/react react react-dom")],
     });
   }
 
@@ -310,8 +333,6 @@ class Session {
   }
 }
 
-/** What the run was asked can't be done for this template (exit 2). */
-class UsageFailure extends Error {}
 
 function exitCalled(error: unknown): boolean {
   return /^a template called process\.exit\(/.test(messageOf(error));

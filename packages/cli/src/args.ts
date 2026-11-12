@@ -9,6 +9,10 @@ Usage:
   hyper-elements render <files or folders...> [options]
   hyper-elements check <files or folders...> [options]
   hyper-elements outline <file> [options]
+  hyper-elements preview <files or folders...> [options]
+  hyper-elements inspect <files or folders...> [options]
+  hyper-elements describe [Component] [--root Email] [--json]
+  hyper-elements migrate [migrate's arguments...]
 
 A template is a module whose default export is a component that renders an
 <Email>, a <Page>, a <Document> or a <Canvas>. Its props are, first to last:
@@ -26,9 +30,19 @@ render   writes each template's output under --out, its path relative to the
 check    validates each template (with @hyper-elements/email-clients' email
          client checks where the project has it) and writes nothing.
 outline  prints a template laid out: each block with its width.
+preview  writes each Email as the email clients draw it, one file per client
+         and variant (with @hyper-elements/email-clients), under
+         out/clients/<name>/. --findings opens each in Chromium and reports
+         what it found.
+inspect  lists what a template holds: each component, what it's given,
+         whether its root takes it, and the problems found on it.
+describe lists the components a template can use (or one), with their props
+         and styles; --root narrows it to what a root takes.
+migrate  runs @hyper-elements/migrate (the project's, else npx's) with the
+         arguments given.
 
 Options:
-  --out <dir>           Where render writes (default: out)
+  --out <dir>           Where render and preview write (default: out)
   --props <file.json>   Props for every template given, over PreviewProps
   --json                One JSON line per template, then a summary line
   --stdout              render: write the one template's HTML, PDF or image
@@ -42,10 +56,23 @@ Options:
                         template's folder up to the workspace root)
   --refresh             render: fetch http(s) fonts and images again
   --offline             render: fetch nothing; a URL not in the cache fails
-  --clients <a,b>       check: the email clients to check for
+  --clients <a,b>       check, preview: the email clients to check for, or to
+                        preview
   --max-warnings <n>    check: fail (exit 1) with more than n warnings
   --rendered            check: also render, for the checks only the written
                         HTML has (Gmail's size limit)
+  --dark                preview: also the dark previews, where measured
+  --fonts <url|inline>  preview: where a preview's stand-in fonts come from
+                        (default: url, from jsDelivr; inline: in each file)
+  --findings            preview: open each preview in Chromium and report what
+                        it found (CHROME_PATH, Playwright's Chromium, Chrome,
+                        then Edge: the first that starts)
+  --screenshots         preview: also a PNG of each drawn preview, beside it
+                        (draws them, as --findings does)
+  --serve               preview: serve the previews on 127.0.0.1 until Ctrl-C
+  --install-browser     preview: download Playwright's Chromium, and exit
+  --root <root>         describe: only what this root takes (Email, Page,
+                        Document or Canvas)
   --timeout <seconds>   How long a group of templates may take (default: 60)
   -h, --help            Show this help
   -v, --version         Show the version
@@ -58,6 +85,7 @@ Runs on Node.js 20.6 or later (npx hyper-elements), or Bun 1.3 or later
 
 export interface Args {
   command: Command;
+  /** The files and folders given; `describe`'s component; every argument after `migrate`, unchanged. */
   positional: string[];
   out: string;
   props?: string;
@@ -77,18 +105,29 @@ export interface Args {
   clients?: string[];
   maxWarnings?: number;
   rendered: boolean;
+  /** preview: the dark previews too. */
+  dark: boolean;
+  /** preview: where the stand-in fonts come from. */
+  fonts?: "url" | "inline";
+  /** preview: draw each preview in a browser (also set by `--screenshots`). */
+  findings: boolean;
+  screenshots: boolean;
+  serve: boolean;
+  installBrowser: boolean;
+  /** describe: only what this root takes. */
+  root?: string;
   /** Milliseconds. */
   timeout: number;
 }
 
 export class UsageError extends Error {}
 
-const COMMANDS: Command[] = ["render", "check", "outline"];
+const COMMANDS: Command[] = ["render", "check", "outline", "preview", "inspect", "describe", "migrate"];
 /** The options each command takes, and whether each takes a value. */
 const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
-  out: { value: true, commands: ["render"] },
-  props: { value: true, commands: ["render", "check", "outline"] },
-  json: { value: false, commands: ["render", "check", "outline"] },
+  out: { value: true, commands: ["render", "preview"] },
+  props: { value: true, commands: ["render", "check", "outline", "preview", "inspect"] },
+  json: { value: false, commands: ["render", "check", "outline", "preview", "inspect", "describe"] },
   stdout: { value: false, commands: ["render"] },
   pretty: { value: false, commands: ["render"] },
   html: { value: false, commands: ["render"] },
@@ -97,11 +136,20 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   public: { value: true, commands: ["render"] },
   refresh: { value: false, commands: ["render"] },
   offline: { value: false, commands: ["render"] },
-  clients: { value: true, commands: ["check"] },
+  clients: { value: true, commands: ["check", "preview"] },
   "max-warnings": { value: true, commands: ["check"] },
   rendered: { value: false, commands: ["check"] },
-  timeout: { value: true, commands: ["render", "check", "outline"] },
+  dark: { value: false, commands: ["preview"] },
+  fonts: { value: true, commands: ["preview"] },
+  findings: { value: false, commands: ["preview"] },
+  screenshots: { value: false, commands: ["preview"] },
+  serve: { value: false, commands: ["preview"] },
+  "install-browser": { value: false, commands: ["preview"] },
+  root: { value: true, commands: ["describe"] },
+  timeout: { value: true, commands: ["render", "check", "outline", "preview", "inspect", "describe"] },
 };
+
+const COMMAND_LIST = "render, check, outline, preview, inspect, describe or migrate";
 
 /** `--timeout`: seconds, or a number with `ms` or `s`. */
 function duration(text: string): number {
@@ -113,7 +161,11 @@ function duration(text: string): number {
 export function parseArgs(argv: string[]): Args {
   const [command, ...rest] = argv;
   if (!COMMANDS.includes(command as Command)) {
-    throw new UsageError(command === undefined ? "Give a command: render, check or outline." : `Unknown command ${JSON.stringify(command)}: use render, check or outline.`);
+    throw new UsageError(command === undefined ? `Give a command: ${COMMAND_LIST}.` : `Unknown command ${JSON.stringify(command)}: use ${COMMAND_LIST}.`);
+  }
+  if (command === "migrate") {
+    // Every argument is migrate's, unchanged (its own --help and options included).
+    return { command, positional: rest, out: "out", json: false, stdout: false, pretty: false, html: false, format: "png", refresh: false, offline: false, rendered: false, timeout: 60_000, dark: false, findings: false, screenshots: false, serve: false, installBrowser: false };
   }
   const values: Record<string, string | true> = {};
   const positional: string[] = [];
@@ -158,7 +210,17 @@ export function parseArgs(argv: string[]): Args {
     offline: values.offline === true,
     rendered: values.rendered === true,
     timeout: values.timeout === undefined ? 60_000 : duration(values.timeout as string),
+    dark: values.dark === true,
+    findings: values.findings === true || values.screenshots === true,
+    screenshots: values.screenshots === true,
+    serve: values.serve === true,
+    installBrowser: values["install-browser"] === true,
   };
+  if (values.fonts !== undefined) {
+    if (values.fonts !== "url" && values.fonts !== "inline") throw new UsageError(`--fonts takes url or inline, not ${JSON.stringify(values.fonts)}`);
+    args.fonts = values.fonts;
+  }
+  if (values.root !== undefined) args.root = values.root as string;
   if (values.clients !== undefined) {
     const clients = (values.clients as string).split(",").map((c) => c.trim()).filter(Boolean);
     if (!clients.length) throw new UsageError("--clients takes a list of email clients: --clients gmail,outlook");
@@ -179,6 +241,16 @@ export function parseArgs(argv: string[]): Args {
     const text = values["max-warnings"] as string;
     if (!/^\d+$/.test(text)) throw new UsageError(`--max-warnings takes a whole number, not ${JSON.stringify(text)}`);
     args.maxWarnings = Number(text);
+  }
+  if (args.installBrowser) {
+    if (positional.length || Object.keys(values).some((name) => name !== "install-browser")) {
+      throw new UsageError("--install-browser downloads Playwright's Chromium and exits: give it alone (hyper-elements preview --install-browser).");
+    }
+    return args;
+  }
+  if (args.command === "describe") {
+    if (positional.length > 1) throw new UsageError("describe takes one component, or none for all of them.");
+    return args;
   }
   if (!positional.length) throw new UsageError(`Give ${command} the templates: files or folders.`);
   if (args.command === "outline" && args.json) throw new UsageError("outline is text only: it has no --json.");
