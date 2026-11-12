@@ -449,6 +449,29 @@ Runtime facts (`results/2026-11-08-image-runtime.json`, Apple M5 Max, Node 25.9.
 The Playwright reference launches its browser for every render, as its render script is written; an app that keeps
 the browser open renders faster.
 
+## Email: the script against the CLI, 2026-11-12 (`results/2026-11-12T15-11-26-email-sonnet.jsonl`)
+
+Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`); Hyper Elements 0.4.0 and `@hyper-elements/cli` 0.1.0,
+both at `f52ad3ba` (clean tree). The `he` kit renders with its esbuild script, `he-cli` with the CLI (`check
+--rendered`, then `render`); everything else the same, and no `@hyper-elements/email-clients` beside either, so both
+get the same checks. 40 runs, 20 per kit (4 per brief), interleaved, all passing, all valid. $22.36 in all.
+
+| | Script (`he`) | CLI (`he-cli`) |
+|---|---|---|
+| Median time to a passing email | 54 s | **48 s** |
+| Median output tokens | 3,564 | **3,077** |
+| Passed the check the first time it ran | 18 of 20 | **19 of 20** |
+| First render without an error | 20 of 20 | 20 of 20 |
+| Median turns | 13 | 12 |
+| Median cost | $0.53 | $0.52 |
+
+**No difference that the runs can tell apart.** The script was faster in 39 of 80 pairings within a brief (one-sided
+Mann–Whitney p = 0.52 for time, 0.6 for output tokens). By brief (script / CLI): reset 39 s / 35 s, receipt 54 s /
+44 s, newsletter 68 s / 60 s, event 64 s / 75 s, launch 45 s / 91 s. The CLI's two slow launch runs (115 s and 117 s)
+each rendered once, without an error, and passed their first check: the agent wrote more before rendering (7,855 and
+8,687 output tokens), as one of the script's event runs did (93 s, 7,124). That met the bar for the agent guide
+to name the CLI: agents do at least as well with it as with the script.
+
 ## Email: 2026-11-08 (`results/2026-11-08-sonnet.jsonl`)
 
 Claude Code 2.1.238 with Claude Sonnet 5 (`claude-sonnet-5`), Hyper Elements 0.3.0 (this
