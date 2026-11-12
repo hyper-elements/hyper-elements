@@ -30,7 +30,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
+      # @hyper-elements/cli's tests run every case on Node and again with the CLI started on Bun, and its consumer
+      # app runs it with bunx --bun.
+      - name: Setup Bun 1.3
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -43,7 +50,7 @@ jobs:
         shell: bash
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-          
+
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
@@ -51,10 +58,10 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-            
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        
+
       - name: Build packages
         run: pnpm build
 
@@ -73,6 +80,10 @@ jobs:
 
       - name: Email client previews typecheck
         run: pnpm --filter @hyper-elements/email-clients typecheck
+
+      # The command line and the template loader it shares with migrate.
+      - name: CLI and template loader typechecks
+        run: pnpm --filter @hyper-elements/cli typecheck && pnpm --filter @unlayer-internal/template-loader typecheck
 
       # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
       # tag, and resuming a run whose npm publish succeeded.
@@ -176,9 +187,21 @@ jobs:
           fi
 
       # Every package's unit tests but migrate's (the codemod's and the converters', their own job) and react's, which
-      # run once, with coverage.
+      # run once, with coverage. The CLI's run each case with the CLI on Node 20 and on Bun 1.3, and compare the
+      # compatibility baseline's templates rendered on both, byte for byte.
       - name: Run tests
         run: pnpm -r --filter "./packages/*" --filter "!@hyper-elements/react" --filter "!@hyper-elements/migrate" run test
+
+      # The packed CLI and the packed Elements installed in an app of a pnpm workspace: render and check --json run
+      # with npx (Node) and bunx --bun (Bun), each template saying which runtime rendered it; the packed manifest names
+      # no private package (tests/cli-integration/verify.mjs).
+      - name: CLI consumer app (npx and bunx --bun)
+        run: |
+          (cd packages/react && pnpm pack --pack-destination /tmp/cli-integration)
+          (cd packages/cli && pnpm pack --pack-destination /tmp/cli-integration)
+          CLI_TARBALL=$(ls /tmp/cli-integration/hyper-elements-cli-*.tgz) \
+          REACT_TARBALL=$(ls /tmp/cli-integration/hyper-elements-react-*.tgz) \
+            node tests/cli-integration/verify.mjs
 
       - name: Run test coverage
         run: pnpm test:coverage
@@ -213,6 +236,53 @@ jobs:
             packages/*/coverage/
             coverage/
           retention-days: 30
+
+  # @hyper-elements/cli's tests on Windows, with Node 20: paths with backslashes and drive letters, ending a child's
+  # process tree with taskkill, locked files, and destinations compared case-folded. (Bun runs them on Linux.)
+  cli-windows:
+    name: CLI tests on Windows
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - name: Authenticate npm registry
+        shell: bash
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.TEST_NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The CLI and what its tests render with: Elements (and core), email-clients.
+      - name: Build the CLI and Elements
+        run: pnpm --filter "@hyper-elements/cli..." build
+
+      - name: CLI tests (Node)
+        run: pnpm --filter @hyper-elements/cli exec vitest run --project node
 
   # @hyper-elements/migrate's tests, the converters' included: the slowest suite (the codemod converts and checks whole
   # templates).
