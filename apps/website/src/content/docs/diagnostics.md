@@ -54,7 +54,7 @@ Its diagnostics name the clients they're about in `clients`, with a `fix`. Witho
 `email/more-checks`, saying where the client checks are; `plugins: []` leaves it out.
 
 The same package is the email client emulator: it shows the email as each email client shows it, on your machine, with
-what each client changed. See [Email client emulator](/docs/email-clients).
+what each client changed. See [Email client emulator](/docs/email-client-emulator).
 
 Before 0.4, the client checks were part of this package, with an `emailClients` option and `EMAIL_CLIENTS` (now
 exported by `@hyper-elements/email-clients`). Passing `emailClients` now gives an `email/clients-moved` note with the

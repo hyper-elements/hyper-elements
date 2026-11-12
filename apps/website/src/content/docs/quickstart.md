@@ -149,7 +149,7 @@ await mkdir("previews", { recursive: true });
 for (const preview of previews) await writeFile(`previews/${preview.filename}`, preview.html);
 ```
 
-Open the files in Chrome. Each one lists what that client changed. See [Email client emulator](/docs/email-clients).
+Open the files in Chrome. Each one lists what that client changed. See [Email client emulator](/docs/email-client-emulator).
 
 ## Check it without rendering
 

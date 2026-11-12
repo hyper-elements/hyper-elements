@@ -42,7 +42,7 @@ The root decides the output. Change the root and the same content renders somewh
 - **Keeping a plain-text version in sync.** Every `render()` returns `text` beside `html`.
 - **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds a component's phone styles.
 - **Running headless Chrome for a PDF.** `@hyper-elements/react/pdf` writes a `Document` as a PDF with no browser.
-- **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value. With `@hyper-elements/email-clients`, it names the clients each problem is about, and its email client emulator, `renderInEmailClients()`, shows the email as each email client shows it, on your machine. See [Email client emulator](/docs/email-clients).
+- **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value. With `@hyper-elements/email-clients`, it names the clients each problem is about, and its email client emulator, `renderInEmailClients()`, shows the email as each email client shows it, on your machine. See [Email client emulator](/docs/email-client-emulator).
 
 ## The shape of a template
 
@@ -77,7 +77,7 @@ The source is on GitHub at [hyper-elements/hyper-elements](https://github.com/hy
 
 ## What it doesn't do yet
 
-- **Every email client.** The emulator covers the [clients it lists](/docs/email-clients#supported-email-clients), with more on the way; the checks cover more, from caniemail's tables. Before a big send, send a test to the clients that matter.
+- **Every email client.** The emulator covers the [clients it lists](/docs/email-client-emulator#supported-email-clients), with more on the way; the checks cover more, from caniemail's tables. Before a big send, send a test to the clients that matter.
 - **Measuring text.** The layout gives every box a width without measuring its words, so a box can get less room than its content needs. See [Layout](/docs/layout).
 - **Fetching files for PDF and images.** `renderPdf()` and `renderImage()` take fonts and images as bytes. Nothing is fetched.
 
