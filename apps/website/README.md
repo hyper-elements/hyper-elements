@@ -38,6 +38,11 @@ The home page's client views (`public/generated/clients/*.png`: classic Outlook,
 and dark) are images of the launch email (`examples/showcase/email.tsx`) in each client, committed as they
 are. Replace them when the launch email changes.
 
+The Email client emulator page's images (`public/generated/email-clients/*.png`) are its welcome email and two
+templates, drawn by `@hyper-elements/email-clients` in classic Outlook, Gmail, Apple Mail and the Gmail app and captured in Chromium.
+Rebuild them after a release of the emulator, with the packages built and Playwright's Chromium installed:
+`pnpm --filter @hyper-elements/website generate:email-clients`.
+
 Images the examples use live in `public/img/` and are referenced as `https://hyperelements.dev/img/…`, so a copied example works anywhere. Previews load them from the site itself.
 
 ## Pages

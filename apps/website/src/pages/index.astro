@@ -155,6 +155,16 @@ render(&lt;Launch /&gt;)  <span class="ok">✓</span>
 <span class="d">No clock, no randomness.
 Safe to cache and prerender.</span></pre>
         </article>
+        <article class="tile t-full reveal">
+          <h3>An email client emulator, on your machine</h3>
+          <pre class="mini">await renderInEmailClients(&lt;<span class="tg">Launch</span> /&gt;, {"{"} dark: true {"}"})
+<span class="d">  →  outlook.html  outlook-com.html  gmail.html
+     apple-mail.html  apple-mail.dark.html  …</span>
+
+<span class="d">Open them in Chrome: each draws the email as that
+client does, and lists what the client changed.</span></pre>
+          <p class="tile-note">No test sends, no account, nothing uploaded. <a href="/docs/email-client-emulator">Email client emulator</a></p>
+        </article>
         <article class="tile reveal">
           <h3>Security</h3>
           <pre class="mini">&lt;<span class="tg">Text</span>&gt;Hi {"{name}"}&lt;/<span class="tg">Text</span>&gt;
@@ -274,6 +284,7 @@ Safe to cache and prerender.</span></pre>
   .tile:hover { border-color: var(--line-3); }
   .tile h3 { margin: 0; font-size: 20px; letter-spacing: -0.025em; font-weight: 650; line-height: 1.2; }
   .t-wide { grid-column: span 2; }
+  .t-full { grid-column: 1 / -1; }
   .tile-note { margin: auto 0 0; font-size: 13.5px; color: var(--text-2); }
   .comp { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px; }
   .comp .mini + .mini { border-left: 1px solid var(--line); padding-left: 28px; }

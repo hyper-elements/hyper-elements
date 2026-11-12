@@ -12,6 +12,7 @@
     "build": "astro build",
     "preview": "astro preview --port 4321",
     "generate": "node scripts/generate.mjs",
+    "generate:email-clients": "node scripts/email-client-previews.mjs",
     "check:blog": "node scripts/check-blog.mjs",
     "check:playground": "node scripts/check-playground.mjs"
   },
