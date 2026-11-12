@@ -5,7 +5,8 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parseArgs, UsageError } from "../src/args";
 import { cacheFolder, decodeDataUri, osCache } from "../src/assets";
@@ -13,7 +14,7 @@ import { foldPath } from "../src/destinations";
 import { errorLine } from "../src/errors";
 import { commonFolder, hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
-import { cli, email, lines, project } from "./helpers";
+import { cli, email, lines, project, WINDOWS } from "./helpers";
 
 /** A process id that isn't running: one that just ended. */
 function deadPid(): number {
@@ -94,10 +95,14 @@ describe("ownership of leftover files", () => {
 
 describe("the loader module's text", () => {
   it("names the template as a JSON string: a file URL for an ES module, the path for CommonJS on Node", () => {
-    const file = '/x/we"ird\\na\nme #1%.tsx';
+    // (On Windows a backslash separates folders, so it can't be in a file's name, and a path starts with a drive.)
+    const file = WINDOWS ? 'C:\\x\\we"ird na\nme #1%.tsx' : '/x/we"ird\\na\nme #1%.tsx';
     const esm = loaderModuleText(file, "TOKEN", "esm", false);
     expect(esm.split("\n")[0]).toBe("// TOKEN");
-    expect(esm).toContain(`import * as template from "file:///x/we%22ird%5Cna%0Ame%20%231%25.tsx";`);
+    expect(esm).toContain(
+      WINDOWS ? `import * as template from "file:///C:/x/we%22ird%20na%0Ame%20%231%25.tsx";` : `import * as template from "file:///x/we%22ird%5Cna%0Ame%20%231%25.tsx";`
+    );
+    expect(esm).toContain(`import * as template from ${JSON.stringify(pathToFileURL(file).href)};`);
     expect(esm).toContain("export const load = (specifier: string) => import(specifier);");
     const cjs = loaderModuleText(file, "TOKEN", "cjs", false);
     expect(cjs).toContain(`import * as template from ${JSON.stringify(file)};`);
@@ -127,9 +132,11 @@ describe("destinations and inputs", () => {
   });
 
   it("finds the folder holding every input", () => {
-    expect(commonFolder(["/r/packages/emails", "/r/apps/web/emails"])).toBe("/r");
-    expect(commonFolder(["/r/emails"])).toBe("/r/emails");
-    expect(commonFolder(["/r/emails", "/r/emails2"])).toBe("/r");
+    // Absolute paths as this platform writes them (on Windows, with a drive and backslashes).
+    const r = (path: string) => resolve("/r", path);
+    expect(commonFolder([r("packages/emails"), r("apps/web/emails")])).toBe(resolve("/r"));
+    expect(commonFolder([r("emails")])).toBe(r("emails"));
+    expect(commonFolder([r("emails"), r("emails2")])).toBe(resolve("/r"));
   });
 
   it("finds default exports with TypeScript's parser", async () => {

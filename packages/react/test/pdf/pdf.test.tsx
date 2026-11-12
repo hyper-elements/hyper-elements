@@ -738,9 +738,14 @@ describe("templateAssets", () => {
       images: Object.fromEntries(images.filter((src) => !src.startsWith("data:")).map((src) => [src, files[src]])),
     });
     expect(diagnostics.filter((d) => ["pdf/font", "pdf/image", "pdf/font-weight"].includes(d.code))).toEqual([]);
-    // Four Images (the logo twice) and both thumbnails.
-    const { fnArray } = await (await (await getDocument({ data: pdf.slice(), verbosity: 0 }).promise).getPage(1)).getOperatorList();
-    expect(fnArray.filter((fn) => fn === OPS.paintImageXObject)).toHaveLength(6);
+    // The images written, read from the file's bytes (their dictionaries aren't compressed), apart from pdf.js: once
+    // on CI pdf.js drew none of them, and this says whether the file held them. (Images with the same bytes share one.)
+    const written = (Buffer.from(pdf).toString("latin1").match(/\/Subtype\s*\/Image\b/g) ?? []).length;
+    expect(written, "image XObjects in the PDF").toBeGreaterThan(0);
+    // Four Images (the logo twice) and both thumbnails. pdf.js's warnings are printed (verbosity 1): an image it can't
+    // read is skipped with only a warning.
+    const { fnArray } = await (await (await getDocument({ data: pdf.slice(), verbosity: 1 }).promise).getPage(1)).getOperatorList();
+    expect(fnArray.filter((fn) => fn === OPS.paintImageXObject), `pdf.js drew these of the ${written} images written`).toHaveLength(6);
   });
 
   it("rejects a template as renderPdf() does", () => {

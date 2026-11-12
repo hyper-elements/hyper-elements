@@ -11,7 +11,7 @@ import { connect } from "node:net";
 import { networkInterfaces, tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { BIN, cli, cliEnv, email, project, RUNTIME, until, WINDOWS, WITH_CLIENTS } from "./helpers";
+import { BIN, cli, cliEnv, email, endTree, project, RUNTIME, until, WINDOWS, WITH_CLIENTS } from "./helpers";
 
 interface Answer {
   status: number;
@@ -129,7 +129,7 @@ describe("preview --serve", () => {
       // Still no summary after Ctrl-C.
       expect(out.trim().split("\n")).toHaveLength(1);
     } finally {
-      served.kill("SIGKILL");
+      await endTree(served);
     }
   });
 
@@ -148,7 +148,7 @@ describe("preview --serve", () => {
         expect(await exited).toBe(0);
       }
     } finally {
-      served.kill("SIGKILL");
+      await endTree(served);
     }
   });
 });

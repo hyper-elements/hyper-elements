@@ -3,7 +3,7 @@
  * default, or "bun"), against projects written to the temporary folder whose node_modules link to this repository's
  * Elements, React and email-clients.
  */
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import type { AddressInfo } from "node:net";
@@ -32,7 +32,8 @@ export const MODULES: Record<string, string> = {
 const made: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
-  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true });
+  // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
+  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 10 : 0, retryDelay: 100 });
 });
 
 /** Links `node_modules/<name>` in `folder` to `target` (a folder). */
@@ -316,9 +317,22 @@ export interface Dev {
 }
 
 const devs: ChildProcess[] = [];
-afterEach(() => {
-  for (const child of devs.splice(0)) child.kill("SIGKILL");
+// (Before the folders are removed: Vitest runs afterEach hooks last registered first.)
+afterEach(async () => {
+  await Promise.all(devs.splice(0).map((child) => endTree(child)));
 });
+
+/**
+ * Ends `child` and every process it started, and resolves once it has exited. On Windows, ending a process leaves its
+ * children running (holding the project folder open), so its tree is ended with taskkill.
+ */
+export async function endTree(child: ChildProcess): Promise<void> {
+  if (child.exitCode !== null || child.signalCode !== null) return;
+  const closed = new Promise<void>((resolve) => child.once("close", () => resolve()));
+  if (WINDOWS && child.pid) spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
+  else child.kill("SIGKILL");
+  await Promise.race([closed, new Promise((resolve) => setTimeout(resolve, 10_000))]);
+}
 
 /** Starts `hyper-elements dev` in `cwd` and waits for its URL and its first render. */
 export async function startDev(cwd: string, args: string[], options: { runtime?: "node" | "bun"; env?: Record<string, string> } = {}): Promise<Dev> {
