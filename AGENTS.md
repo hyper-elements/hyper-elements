@@ -12,7 +12,7 @@ HTML, print HTML, PDFs and images. A template is written once in JSX; its root d
 
 ```bash
 pnpm install          # Install all dependencies
-pnpm build            # Build the packages in packages/ (core, then react, then migrate and email-clients)
+pnpm build            # Build the packages in packages/ (core, then react, then migrate, email-clients and cli)
 pnpm test             # Run every package's unit tests (Vitest)
 pnpm test:coverage    # The same, with coverage
 ```
@@ -36,6 +36,8 @@ Local development uses the Node version in `.nvmrc`; CI runs Node 20.
 | `packages/react` | `@hyper-elements/react` | Yes | The components and `render()` (main entry); the builder adapter (`/builder`); what each root takes and what a template holds, as data (`/inspect`: `describeComponents({ root })`, `inspect()`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
 | `packages/migrate` | `@hyper-elements/migrate` | Yes | The `npx @hyper-elements/migrate` CLI: converts React Email templates (`src/react-email/`, API at `@hyper-elements/migrate/react-email`) and Unlayer Elements templates (`--from unlayer-elements`: the command in `src/legacy/`, the codemod in `src/convert/elements/`, API at `@hyper-elements/migrate/elements`), checks each against its original and writes a report; `compare` checks a template migrated by hand. What the converters share is in `src/convert/` (the Elements tree, the report, the TSX printer, the content check). Fidelity benchmark in `bench/`, results in `FIDELITY.md`. |
 | `packages/email-clients` | `@hyper-elements/email-clients` | Yes | The email client checks, as a plugin (`emailClients()`, `src/plugin.ts`; the checks from caniemail's tables in `src/checks.ts`, `src/html.ts` and `src/limits.ts`, held to the tables by `test/caniemail.test.ts`), and `renderInEmailClients()`: an Email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, one self-contained HTML preview file per email client. `renderInEmailClients()` also takes any HTML email as a string (`src/html-input.ts`), which loads neither core nor React: core is loaded only for a template (`loadCore()` in `src/core.ts`, `require()` in the CommonJS build and `import()` in the ES module one, so a caller's `ElementsError` is its own core's), and the peers are optional (`test/node-import.test.ts` and `scripts/pack-check.mjs` hold it to that). Previews of HTML are approximate where the models are weak on HTML Elements didn't write (`APPROXIMATE_FOR_HTML`). Their `diagnostics` are `documentNotes()` (`src/html.ts`, each finding with its line), and the models' captured checks on HTML (`check({ html })`, models 1.8.0) where the installed models have them, over the HTML with its comments and scripts blanked (`blankUnread()`); the plugin and `renderInEmailClients(html)` load the models for their checks with `src/load-models.ts`. Templates and HTML write previews with `src/previews.ts`. Builds on core's public API only (the plugin API and `render()`'s `blockMap`), loaded as a namespace with a version check (`src/core.ts`); core is a peer, left external. The models of the clients, and the checks only captures found, are `@hyper-elements/email-client-models` (a dependency, closed, loaded with a dynamic `import()`): its WebAssembly runs the captured checks in Node and, as a script of its own, the previews. None of the models, their calibration or captured rules go in this repository. |
+| `packages/cli` | `@hyper-elements/cli` | Yes | The `hyper-elements` command: `render`, `check`, `outline`, `preview`, `inspect` and `describe` of templates (and `migrate`, which runs `@hyper-elements/migrate`), with exit codes 0/1/2 and `--json` lines. `preview`'s browser is `src/preview/browser.ts`, the only module that imports `playwright-core` (its own entry, loaded only for `--findings`, `--screenshots` and `--install-browser`), and `--serve`'s server `src/preview/serve.ts`. `src/bin.ts` checks the runtime (Node 20.6+, Bun 1.3+); `src/run.ts` (the parent) finds the inputs, groups them by package and tsconfig, runs each group in a child process (`src/child.ts`, `child_process.fork()`) and alone writes files and stdout. A child loads each template through a loader module written beside it (`src/loader-module.ts`), so Elements, React and email-clients come from where the template's own imports do; it counts React copies (`src/react-copies.ts`), and a watchdog thread (`src/watchdog.ts`) ends it if the parent dies. Destinations are checked before anything runs (`src/destinations.ts`). It bundles nothing of Elements or React: they're the project's. Its tests (`test/`) run the built CLI as a child process on Node and again on Bun. |
+| `packages/loader` | `@unlayer-internal/template-loader` | No (bundled into migrate and cli) | What loading a template needs with no resolution policy of its own: `projectTsconfig()`, `walk()`, `defaultExport()`, `templateComponent()`, `guard()`. The CLI reaches it by path (`tsconfig.json` paths, tsup and Vitest aliases), so its published manifest names no private package. |
 | `packages/core` | `@unlayer-internal/elements-core` | No (bundled into react) | The template tree (internal), component definitions, value kinds, validation, custom components, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
 | `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. Its `/playground` runs the engine in the visitor's browser, bundled from `packages/*/src` (`scripts/playground-runtime.mjs`): a Node-only import added to the main, PDF, image or email-clients entries needs a stand-in in `apps/website/playground/sandbox/shims/`. The code runs in a sandbox; `apps/website/playground/README.md` says how. |
 | `benchmark/` | `@hyper-elements/agent-benchmark` | No | The agent benchmark: how long a coding agent takes to write a correct email or image with Hyper Elements and with other tools. Its own npm package, outside the pnpm workspace; see `benchmark/README.md`. |
@@ -163,7 +165,13 @@ Unit tests are Vitest files next to the code (`name.test.ts(x)`), plus `packages
 - **Consumer apps** (`tests/`, install the packed package): `nextjs-integration` (Next.js 15, Turbopack; a route
   handler, a Server Component and an edge route, checked by `verify.mjs`), `next14-integration` (Next.js 14,
   React 18), `next16-integration` (Next.js 16 with Cache Components, prerendered at build), `jest-integration`
-  (Jest 30's jsdom environment, React 19).
+  (Jest 30's jsdom environment, React 19), `cli-integration` (the packed CLI and packed react in an app of a pnpm
+  workspace, run with `npx` and `bunx --bun`; `CLI_TARBALL=… REACT_TARBALL=… node tests/cli-integration/verify.mjs`).
+- **The CLI** (`packages/cli/test/`): every case runs the built CLI as a child process on Node and again on Bun
+  (`--project node`, `--project bun`; Bun is required where `CI` is set), against projects in the temporary folder
+  whose `node_modules` link to this repository's packages; `parity.test.ts` renders the compatibility baseline's
+  templates on both runtimes and compares the bytes. `pnpm --filter @hyper-elements/cli test:browser`
+  (`test/browser/`, needs Playwright's Chromium) runs `preview --findings` in each browser the CLI finds.
 
 Browser gates (need `pnpm build` and `playwright install chromium`):
 
@@ -224,19 +232,23 @@ as "looks different". Every template is written either way; `--strict` refuses t
 
 ## CI gates
 
-`.github/workflows/test.yml` runs four jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
+`.github/workflows/test.yml` runs five jobs on pull requests to `main` (changes only under `apps/` or `benchmark/`
 skip it):
 
-- **Tests**: `pnpm build`; typechecks of react, core, migrate and email-clients; the release script's tests
+- **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli and the
+  template loader; the release script's tests
   (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 403,000 bytes, `dist/builder.js`
   566,500 bytes, email-clients' `dist/index.js` 62,400 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
-  email-clients packed and installed beside the packed core and the models package from npm (`test:pack`).
+  email-clients packed and installed beside the packed core and the models package from npm (`test:pack`); the CLI's
+  tests on Node and Bun, and its consumer app (`tests/cli-integration`).
+- **CLI on Windows**: the CLI's tests on `windows-latest` with Node 20.
 - **Codemod**: `@hyper-elements/migrate`'s tests.
 - **Storybook**: smoke test and visual drift.
 - **Browser**: the content-workflows example's typecheck and tests; the demo app builds; browser runtime; browser
-  E2E; the layout gate; PDF and image against Chromium; the email client previews in Chromium; migration fidelity;
-  migration differential; the Next.js 15, 14 and 16 and Jest 30 consumer apps.
+  E2E; the layout gate; PDF and image against Chromium; the email client previews in Chromium; the CLI's previews
+  drawn in browsers (on Node and Bun); migration fidelity; migration differential; the Next.js 15, 14 and 16 and
+  Jest 30 consumer apps.
 
 ## Review bar for the migration tool
 

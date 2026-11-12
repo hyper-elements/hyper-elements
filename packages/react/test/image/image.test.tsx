@@ -39,7 +39,7 @@ import {
 } from "@hyper-elements/react";
 import type { ReactElement, ReactNode } from "react";
 import { writeCanvas } from "@unlayer-internal/elements-core/image";
-import { renderImage } from "../../src/image";
+import { renderImage, templateAssets } from "../../src/image";
 
 /** What prepare() gives, where a test gives another layout version (another copy of Elements, newer or older). */
 const other = vi.hoisted(() => ({ prepared: undefined as { layout?: number } | undefined }));
@@ -354,5 +354,86 @@ describe("renderImage", () => {
         { fonts }
       )
     ).rejects.toMatchObject({ diagnostics: [expect.objectContaining({ code: "image/root" })] });
+  });
+});
+
+describe("templateAssets", () => {
+  const liberation = (name: string) => readFileSync(join(dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")), "standard_fonts", name));
+  const PNG_URI = `data:image/png;base64,${Buffer.from(PNG).toString("base64")}`;
+  const ITALIC_URI = `data:font/ttf;base64,${liberation("LiberationSans-Italic.ttf").toString("base64")}`;
+  // Each source the template names, as a tool would load it: a font's file, or an image's (a data: URI, decoded).
+  const files: Record<string, Uint8Array> = {
+    "https://fonts.acme.test/brand.ttf": FONT,
+    "fonts/brand-bold.ttf": liberation("LiberationSans-Bold.ttf"),
+    "https://cdn.acme.test/photo.png": PNG,
+    "/hero.png": PNG,
+  };
+  const load = (src: string) => (src.startsWith("data:") ? Uint8Array.from(Buffer.from(src.slice(src.indexOf(",") + 1), "base64")) : files[src]);
+  const template = (
+    <Canvas
+      width={400}
+      height={300}
+      fonts={[
+        { family: "Brand", src: "https://fonts.acme.test/brand.ttf", weight: 400 },
+        { family: "Brand", src: "fonts/brand-bold.ttf", weight: 700 },
+        { family: "Variable", src: ITALIC_URI, weight: [100, 900] },
+      ]}
+      style={{ fontFamily: "Brand", gap: 8 }}
+    >
+      <Text>Regular</Text>
+      <Text style={{ fontWeight: 700 }}>Bold</Text>
+      <Text style={{ fontFamily: "Variable", fontWeight: 100 }}>Variable</Text>
+      <Row>
+        <Column>
+          <Image src={{ src: "https://cdn.acme.test/photo.png", width: 20, height: 20 }} alt="Photo" />
+        </Column>
+        <Column>
+          <Image src={{ src: "/hero.png", width: 20, height: 20 }} alt="Hero" />
+          <Image src={{ src: "https://cdn.acme.test/photo.png", width: 20, height: 20 }} alt="Photo again" />
+          <Image src={{ src: PNG_URI, width: 20, height: 20 }} alt="Inline" />
+        </Column>
+      </Row>
+      <Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Our launch" />
+    </Canvas>
+  );
+
+  it("lists the sources renderImage() looks for: the Canvas's fonts and each Image once (a Video is drawn as its title, with no thumbnail)", () => {
+    expect(templateAssets(template)).toEqual({
+      fonts: [
+        { family: "Brand", src: "https://fonts.acme.test/brand.ttf", weight: 400 },
+        { family: "Brand", src: "fonts/brand-bold.ttf", weight: 700 },
+        { family: "Variable", src: ITALIC_URI, weight: [100, 900] },
+      ],
+      images: ["https://cdn.acme.test/photo.png", "/hero.png", PNG_URI],
+    });
+    expect(
+      templateAssets(
+        <Canvas width={200} height={100}>
+          <Text>Hi</Text>
+        </Canvas>
+      )
+    ).toEqual({ fonts: [], images: [] });
+  });
+
+  it("is all renderImage() needs: given exactly what it lists, it says nothing of a font or an image", async () => {
+    const { fonts: faces, images } = templateAssets(template);
+    const { image, diagnostics } = await renderImage(template, {
+      // A range's lower bound, as a font given for it.
+      fonts: faces.map((face) => ({ family: face.family, src: load(face.src), weight: Array.isArray(face.weight) ? face.weight[0] : face.weight, style: face.style })),
+      images: Object.fromEntries(images.filter((src) => !src.startsWith("data:")).map((src) => [src, load(src)])),
+    });
+    expect(diagnostics.filter((d) => ["image/font", "image/image", "image/font-weight"].includes(d.code))).toEqual([]);
+    expect(size(image)).toEqual([400, 300]);
+  });
+
+  it("rejects a template as renderImage() does", () => {
+    const email = (
+      <Email>
+        <Column>
+          <Text>Hi</Text>
+        </Column>
+      </Email>
+    );
+    expect(() => templateAssets(email)).toThrow(expect.objectContaining({ diagnostics: [expect.objectContaining({ code: "image/root" })] }));
   });
 });

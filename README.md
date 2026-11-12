@@ -129,7 +129,11 @@ Email 600px
     Button: background #ef4638 "Track your order" → https://example.com/orders/10482
 ```
 
-An agent can spot missing content, incorrect widths, and layout mistakes before rendering, then see the email in each email client with the emulator below. [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
+An agent can spot missing content, incorrect widths, and layout mistakes before rendering, then see the email in each email client with the emulator below.
+
+The same loop runs from the shell, with no script, using [`@hyper-elements/cli`](./packages/cli) (`npm install -D @hyper-elements/cli`): `npx hyper-elements check emails/ --json` validates each template, `outline` prints its layout, `render` writes its HTML and plain text, and `preview --findings` draws it in each email client with the emulator. Exit codes are stable (`1` when a template has errors) for agents and CI.
+
+[Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
 
 ## Test it in email clients
 
@@ -157,6 +161,8 @@ Save a preview and open it, take a screenshot with Playwright, or read the list 
 </p>
 
 Built your email another way (MJML, React Email, by hand)? `renderInEmailClients()` takes its HTML too, with no React or Hyper Elements needed: `await renderInEmailClients(html)`.
+
+From the shell: `npx @hyper-elements/cli preview email.html --findings` writes a preview per client and reports what each changed, and `npx @hyper-elements/cli check email.html` runs the email client checks.
 
 [Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-client-emulator)
 
@@ -193,6 +199,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
 - **Build pages:** [Box and CSS layout](https://hyperelements.dev/docs/layout#box-css-layout-on-a-page) · [Page styles](https://hyperelements.dev/docs/styles#on-a-page)
 - **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)
+- **Work from the shell:** [Command line](https://hyperelements.dev/docs/cli) · [`@hyper-elements/cli`](./packages/cli)
 - **Use it in your app:** [Next.js example](./examples/nextjs-app-router) · [Email providers](./packages/react/docs/email-providers.md)
 - **Bring existing templates:** [Migrate from React Email](./packages/react/docs/migrate-from-react-email.md) · [Move from Unlayer Elements](./packages/react/docs/migrating-from-unlayer-elements.md)
 - **Let teammates edit visually:** [Optional Unlayer editor integration](./packages/react/docs/visual-editing.md)

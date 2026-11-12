@@ -4,9 +4,10 @@
  */
 
 import { statSync } from "node:fs";
-import { register, syncBuiltinESMExports } from "node:module";
+import { register } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { guard } from "@unlayer-internal/template-loader";
 import { parseArgs } from "./args";
 
 /**
@@ -36,19 +37,10 @@ const { main } = await import("./cli.js");
 // Checking a template runs its code. One that calls process.exit would end the
 // run with its code (a failed check reported as passing): it throws instead, and
 // that template fails. The run exits when its output is written, so a timer a
-// template starts can't keep it open.
-const exit = process.exit;
-process.exit = ((code?: number | string | null) => {
-  throw new Error(`a template called process.exit(${code ?? ""})`);
-}) as typeof process.exit;
-// `import { exit } from "node:process"` too.
-syncBuiltinESMExports();
-// What a template's code throws later (from a timer, or a promise it doesn't
-// wait for) is outside any check: the run still finishes and reports, then fails.
-const thrown = new Set<string>();
-const late = (error: unknown) => void thrown.add((error instanceof Error ? error.message : String(error)).split("\n")[0]);
-process.on("uncaughtException", late);
-process.on("unhandledRejection", late);
+// template starts can't keep it open. What a template's code throws later (from
+// a timer, or a promise it doesn't wait for) is outside any check: the run still
+// finishes and reports, then fails.
+const { exit, late } = guard();
 let code: number;
 try {
   code = await main(argv, {
@@ -63,6 +55,7 @@ try {
   process.stderr.write(`✗ the run stopped: ${error instanceof Error ? error.message : String(error)}\n`);
   code = 2;
 }
+const thrown = late();
 for (const text of thrown) process.stderr.write(`✗ a template's code threw outside a render: ${text}\n`);
-if (thrown.size) code = 2;
+if (thrown.length) code = 2;
 process.stdout.write("", () => process.stderr.write("", () => exit(code)));

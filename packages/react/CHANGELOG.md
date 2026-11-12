@@ -40,6 +40,16 @@ A `Page` takes CSS's own layout, with typed styles. Templates that use none of i
 - The builder (`toDesign()`) draws a Box as an HTML block of its own markup, and says which page styles its tools have
   no place for.
 
+### What a PDF or an image looks for
+
+`@hyper-elements/react/pdf` and `@hyper-elements/react/image` export `templateAssets(element)`: the fonts and images
+`renderPdf()` and `renderImage()` look for in a template, so a tool can load them and give them in `fonts` and
+`images`. It returns `{ fonts, images }`: the root's own `fonts` faces as the template gives them (family, `src`,
+weight or weight range, style), and each image's URL once, in the order it's drawn: an Image's `src`, and in a
+Document a Video's thumbnail (its own, or a YouTube video's). It reads the template with the walks the renderers make,
+so the two can't differ, and rejects a template as they do (with errors, or another root). `renderPdf()` and
+`renderImage()` are unchanged.
+
 ### Fixed
 
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
