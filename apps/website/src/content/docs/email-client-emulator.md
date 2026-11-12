@@ -185,7 +185,7 @@ Open the `gmail` preview for Gmail on the web, or name `gmail-app` in `emailClie
 
 ### Can I test an email I didn't build with Hyper Elements?
 
-Yes. Pass its HTML to `renderInEmailClients()` as a string; React and Hyper Elements aren't needed for that (see [Test any HTML email](#test-any-html-email)). It's emulated less closely than an email built with Hyper Elements in some clients, and those previews are marked `approximate`. To bring a React Email template over to Hyper Elements instead, use `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)).
+Yes. Pass its HTML to `renderInEmailClients()` as a string; React and Hyper Elements aren't needed for that (see [Test any HTML email](#test-any-html-email)). To bring a React Email template over to Hyper Elements instead, use `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)).
 
 ### Is it free?
 
