@@ -10,7 +10,7 @@ function version(): string {
   return (createRequire(import.meta.url)("../package.json") as { version: string }).version;
 }
 
-const write = (stream: NodeJS.WriteStream, text: string) => new Promise<void>((resolve) => (text ? stream.write(text, () => resolve()) : resolve()));
+const write = (stream: NodeJS.WriteStream, data: string | Uint8Array) => new Promise<void>((resolve) => (data.length ? stream.write(data, () => resolve()) : resolve()));
 
 export async function main(argv: string[]): Promise<number> {
   if (argv.length === 0 || argv[0] === "--help" || argv[0] === "-h" || argv[0] === "help") {
@@ -29,7 +29,7 @@ export async function main(argv: string[]): Promise<number> {
   );
   try {
     const args = parseArgs(argv);
-    return await run(args, { cwd: process.cwd(), stdout: (text) => write(process.stdout, text), stderr: (text) => void process.stderr.write(text) }, state);
+    return await run(args, { cwd: process.cwd(), stdout: (data) => write(process.stdout, data), stderr: (text) => void process.stderr.write(text) }, state);
   } catch (error) {
     if (error instanceof UsageError) {
       process.stderr.write(`hyper-elements: ${error.message}\n`);

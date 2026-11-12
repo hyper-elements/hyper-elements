@@ -17,7 +17,7 @@ import { outlineTemplate } from "./commands/outline";
 import { renderTemplate } from "./commands/render";
 import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "./commands/shared";
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
-import { errorLine, messageOf } from "./errors";
+import { errorLine, messageOf, notFound } from "./errors";
 import { loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { reactCopies } from "./react-copies";
@@ -227,7 +227,17 @@ class Session {
       if (!root && !hasErrors(inspection.diagnostics)) {
         return this.result(input, { status: "skipped", diagnostics: [cliDiagnostic("not-a-template", "info", "It renders no root Elements knows (Email, Page, Document or Canvas): not a template")] }, loaded);
       }
-      const context: TemplateContext = { element, root, elements: loaded.elements, options: this.message.options, plugin: () => this.plugin(loaded) };
+      const context: TemplateContext = {
+        element,
+        root,
+        elements: loaded.elements,
+        options: this.message.options,
+        file: input.file,
+        cwd: this.message.cwd,
+        load: async (specifier) => await loader.load(specifier),
+        resolve: (specifier) => loader.resolve(specifier),
+        plugin: () => this.plugin(loaded),
+      };
       const command: CommandResult =
         this.message.command === "render" ? await renderTemplate(context) : this.message.command === "check" ? await checkTemplate(context) : await outlineTemplate(context);
       return this.result(input, { ...command, root, diagnostics: [...command.diagnostics, ...notes] }, loaded);
@@ -302,14 +312,6 @@ class Session {
 
 /** What the run was asked can't be done for this template (exit 2). */
 class UsageFailure extends Error {}
-
-/** Whether `error` says `name` (or one of its entries) isn't installed. */
-function notFound(error: unknown, name: string): boolean {
-  const code = (error as NodeJS.ErrnoException | null)?.code;
-  const text = messageOf(error);
-  const quoted = new RegExp(`['"]${name.replace(/[/\\^$*+?.()|[\]{}]/g, "\\$&")}(/[^'"]*)?['"]`);
-  return (code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND" || /Cannot find (module|package)/.test(text)) && quoted.test(text);
-}
 
 function exitCalled(error: unknown): boolean {
   return /^a template called process\.exit\(/.test(messageOf(error));

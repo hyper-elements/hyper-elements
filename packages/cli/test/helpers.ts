@@ -4,7 +4,9 @@
  * Elements, React and email-clients.
  */
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -92,7 +94,7 @@ export interface RunOptions {
  */
 export function cliEnv(extra: Record<string, string> = {}): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env, ...extra };
-  delete env.NODE_PATH;
+  if (!("NODE_PATH" in extra)) delete env.NODE_PATH;
   return env;
 }
 
@@ -169,4 +171,110 @@ export async function until(check: () => boolean, ms = 10_000): Promise<boolean>
     await wait(25);
   }
   return check();
+}
+
+/** The CLI's fixtures: Inter (SIL OFL, its licence beside it), PNG images, and Documents and Canvases that use them. */
+export const FIXTURES = join(CLI_ROOT, "test", "fixtures");
+
+/** A fixture file's bytes. */
+export const fixture = (path: string) => readFileSync(join(FIXTURES, path));
+
+/** Copies the fixtures' fonts and images into `dir` (as `fonts/` and `images/`, or under `into`). */
+export function withFixtures(dir: string, into = ""): string {
+  for (const sub of ["fonts", "images"]) cpSync(join(FIXTURES, sub), join(dir, into, sub), { recursive: true });
+  return dir;
+}
+
+/**
+ * A copy of this repository's built Elements as a project's own `node_modules/@hyper-elements/react` (a folder, not a
+ * link), so it resolves its peers (React, the PDF and image engines) from the project: only those the project links.
+ * With `templateAssets: false`, its `/pdf` and `/image` are those of an Elements from before templateAssets().
+ */
+export function copyElements(dir: string, options: { templateAssets?: boolean } = {}): void {
+  const from = join(REPO, "packages", "react");
+  const to = join(dir, "node_modules", "@hyper-elements", "react");
+  mkdirSync(join(to, "dist"), { recursive: true });
+  cpSync(join(from, "package.json"), join(to, "package.json"));
+  for (const name of readdirSync(join(from, "dist"))) {
+    if (!name.endsWith(".js")) continue;
+    let text = readFileSync(join(from, "dist", name), "utf8");
+    if (options.templateAssets === false && (name === "pdf.js" || name === "image.js")) {
+      text = text
+        .replace(/export \{([^}]*)\};\s*$/, (_, names: string) => `export {${names.split(",").filter((n) => n.trim() !== "templateAssets").join(",")} };\n`)
+        .replaceAll("templateAssets", "listedAssets");
+    }
+    writeFileSync(join(to, "dist", name), text);
+  }
+}
+
+/** The PDF and image engines this repository's Elements has, for a project to link (`modules`). */
+export const ENGINES: Record<string, string> = {
+  "@react-pdf/renderer": join(REPO, "packages", "react", "node_modules", "@react-pdf", "renderer"),
+  satori: join(REPO, "packages", "react", "node_modules", "satori"),
+  "@resvg/resvg-js": join(REPO, "packages", "react", "node_modules", "@resvg", "resvg-js"),
+};
+
+export interface Server {
+  /** Its origin, `http://127.0.0.1:<port>`. */
+  url: string;
+  /** Requests by path. */
+  hits: Map<string, number>;
+  close(): Promise<void>;
+}
+
+/** A local HTTP server: each path's handler (`*` for any other), or 404. */
+export async function serve(routes: Record<string, (req: IncomingMessage, res: ServerResponse) => void>): Promise<Server> {
+  const hits = new Map<string, number>();
+  const server = createServer((req, res) => {
+    const path = (req.url ?? "/").split("?")[0];
+    hits.set(path, (hits.get(path) ?? 0) + 1);
+    const route = routes[path] ?? routes["*"];
+    if (route) return route(req, res);
+    res.writeHead(404, { "content-type": "text/plain" });
+    res.end("not found");
+  });
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address() as AddressInfo;
+  return {
+    url: `http://127.0.0.1:${port}`,
+    hits,
+    close: () =>
+      new Promise<void>((resolve) => {
+        server.closeAllConnections();
+        server.close(() => resolve());
+      }),
+  };
+}
+
+/** A handler answering with a file's bytes. */
+export const answer =
+  (bytes: Buffer | string, type = "application/octet-stream") =>
+  (_req: IncomingMessage, res: ServerResponse) => {
+    res.writeHead(200, { "content-type": type, "content-length": Buffer.byteLength(bytes) });
+    res.end(bytes);
+  };
+
+/** A Canvas template (300 by 150, its text in Inter) with these fonts (a TSX expression) and children. */
+export function canvas(fonts: string, children = "<Text>Card</Text>", imports = ""): string {
+  return `import { Canvas, Image, Text } from "@hyper-elements/react";
+${imports}
+export default function Card() {
+  return <Canvas width={300} height={150} fonts={${fonts}} style={{ fontFamily: "Inter", padding: 16, gap: 8 }}>${children}</Canvas>;
+}
+`;
+}
+
+/** A Document template (its text in Inter) with these fonts and children. */
+export function documentTemplate(fonts: string, children = "<Text>Invoice</Text>", imports = ""): string {
+  return `import { Document, Image, Text } from "@hyper-elements/react";
+${imports}
+export default function Invoice() {
+  return <Document fonts={${fonts}} style={{ fontFamily: "Inter, sans-serif" }}>${children}</Document>;
+}
+`;
+}
+
+/** The width and height a PNG says it is. */
+export function pngSize(bytes: Buffer): { width: number; height: number } {
+  return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
 }

@@ -9,11 +9,18 @@ export interface TemplateContext {
   root: Root | null;
   elements: ElementsMain;
   options: ChildOptions;
+  /** The template's file (absolute) and the run's folder. */
+  file: string;
+  cwd: string;
+  /** Loads a module as the template resolves it (through its loader module): Elements' other entries. */
+  load(specifier: string): Promise<unknown>;
+  /** Resolves a specifier as the template does: a file URL or a path. */
+  resolve(specifier: string): string;
   /** email-clients' plugin, where the template's project has email-clients (made once per process). */
   plugin(): Promise<{ plugin?: unknown; diagnostics: Diagnostic[] }>;
 }
 
-export type CommandResult = Pick<ResultMessage, "status" | "diagnostics" | "outputs" | "error">;
+export type CommandResult = Pick<ResultMessage, "status" | "diagnostics" | "outputs" | "binary" | "error" | "usage">;
 
 /** Whether diagnostics hold an error. */
 export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {

@@ -50,6 +50,17 @@ export interface ChildOptions {
   pretty?: boolean;
   clients?: string[];
   rendered?: boolean;
+  /** render: a Document's print HTML too. */
+  html?: boolean;
+  /** render: a Canvas's image format and scale. */
+  format?: "png" | "svg";
+  scale?: number;
+  /** render: the folder root-relative fonts and images are read from (absolute), where `--public` gives one. */
+  public?: string;
+  /** render: http(s) sources cached before this time (ms since the epoch) are fetched again (`--refresh`). */
+  refreshSince?: number;
+  /** render: nothing is fetched; an http(s) source not in the cache fails the template. */
+  offline?: boolean;
 }
 
 /** One input's result, from the child. */
@@ -62,8 +73,12 @@ export interface ResultMessage {
   /** `formatDiagnostics()` of `diagnostics`, from the template's own Elements where it loaded. */
   formatted?: string;
   error?: string;
-  /** What `render` writes, by extension (`html`, `txt`); what `outline` prints (`outline`). */
+  /**
+   * What `render` writes, by extension (`html`, `txt`, `pdf`, `png`, `svg`); what `outline` prints (`outline`). A
+   * file's bytes (a PDF, an image) are base64, and their extensions listed in `binary`: IPC carries text.
+   */
   outputs?: Record<string, string>;
+  binary?: string[];
   /** The run can't do what it was asked for this template (Elements missing or out of range, process.exit): exit 2. */
   usage?: boolean;
 }

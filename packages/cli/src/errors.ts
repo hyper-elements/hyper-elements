@@ -27,3 +27,11 @@ export function errorLine(error: unknown): string {
   }
   return `Cannot find module '${specifier}'`;
 }
+
+/** Whether `error` says `name` (or one of its entries) isn't installed. */
+export function notFound(error: unknown, name: string): boolean {
+  const code = (error as NodeJS.ErrnoException | null)?.code;
+  const text = messageOf(error);
+  const quoted = new RegExp(`['"]${name.replace(/[/\\^$*+?.()|[\]{}]/g, "\\$&")}(/[^'"]*)?['"]`);
+  return (code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND" || /Cannot find (module|package)/.test(text)) && quoted.test(text);
+}

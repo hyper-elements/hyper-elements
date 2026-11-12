@@ -102,13 +102,13 @@ export function planDestinations(inputs: Input[], base: string, out: string, cwd
 export const temporaries = new Set<string>();
 let written = 0;
 
-/** Writes `text` to `path` through a temporary file beside it, renamed over it. */
-export function writeAtomically(path: string, text: string): void {
+/** Writes `data` (text, or a file's bytes) to `path` through a temporary file beside it, renamed over it. */
+export function writeAtomically(path: string, data: string | Uint8Array): void {
   mkdirSync(dirname(path), { recursive: true });
   const temporary = join(dirname(path), `.${basename(path)}.hyper-elements-${process.pid}-${written++}.tmp`);
   temporaries.add(temporary);
   try {
-    writeFileSync(temporary, text, { flag: "wx" });
+    writeFileSync(temporary, data, { flag: "wx" });
     renameSync(temporary, path);
   } finally {
     try {
