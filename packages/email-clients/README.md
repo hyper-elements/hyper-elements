@@ -1,7 +1,9 @@
 # @hyper-elements/email-clients
 
-The email client checks for [Hyper Elements](https://hyperelements.dev), and previews of a Hyper Elements email as
-classic Outlook, Outlook.com, Gmail and Apple Mail draw it.
+The email client emulator that comes with [Hyper Elements](https://hyperelements.dev): test an email in email clients
+like Outlook and Gmail without sending it. `renderInEmailClients()` previews a Hyper Elements email as classic Outlook,
+Outlook.com, Gmail, the Gmail app and Apple Mail draw it, on your own machine, and `emailClients()` checks it for what
+each client removes or changes.
 
 ```bash
 npm i @hyper-elements/email-clients
