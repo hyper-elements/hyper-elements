@@ -9,8 +9,8 @@ From the repository root, with Node.js 20+ and pnpm 9:
 ```bash
 pnpm install
 pnpm build    # builds the packages, including the migrate command this example runs
-pnpm --filter @unlayer/react-email-in-editor-example migrate
-pnpm --filter @unlayer/react-email-in-editor-example preview
+pnpm --filter @hyper-elements/example-react-email-in-editor migrate
+pnpm --filter @hyper-elements/example-react-email-in-editor preview
 ```
 
 `pnpm build` comes before `migrate`: a fresh clone has no built `@hyper-elements/migrate` until then.

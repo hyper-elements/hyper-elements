@@ -7,7 +7,7 @@
  * - REFERENCE.md: every prop and style, with the values it takes, its default and what it does.
  * - skills/hyper-elements/SKILL.md, at the repository's root: the guide as an agent skill.
  */
-import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@unlayer-internal/elements-core";
+import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@hyper-elements/core";
 
 /** How a template writes a component whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };

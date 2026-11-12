@@ -5,7 +5,7 @@
  * around it with that padding and `alignItems`. Values are read as Elements 0.2's components read them (read-values.ts: what
  * they, and so the builder, draw), and a tool that isn't one of Elements' is left out, and said.
  */
-import { Button as ButtonDefinition, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type Node } from "@unlayer-internal/elements-core";
+import { Button as ButtonDefinition, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type Node } from "@hyper-elements/core";
 import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
 import { parseRuns } from "./read-runs";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, letterSpacing, px, serviceTag, sides, some, webLink, type Values } from "./read-values";

@@ -1,5 +1,5 @@
 {
-  "name": "@unlayer-internal/template-loader",
+  "name": "@hyper-elements/template-loader",
   "version": "0.0.0",
   "private": true,
   "description": "What loading a template needs and has no resolution policy of its own: the tsconfig a template compiles with, finding templates in a folder, reading a module's template and its PreviewProps, and guarding a run from a template's process.exit and late throws. Bundled into @hyper-elements/migrate and @hyper-elements/cli (tsup's noExternal), never installed on its own.",

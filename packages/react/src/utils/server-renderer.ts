@@ -58,7 +58,7 @@ function dispatcherOf(build: Build): unknown {
 
 declare const module: { require(id: string): unknown } | undefined;
 /** Whether this is the CommonJS build (set when it's built; undefined in the sources). */
-declare const __UNLAYER_CJS__: boolean | undefined;
+declare const __HYPER_ELEMENTS_CJS__: boolean | undefined;
 
 /**
  * Another module of react-dom's than react-dom/server, loaded the first time one's needed, with a synchronous
@@ -75,7 +75,7 @@ function secondBuild(outer: unknown): Build | undefined {
     const requirers = [
       // (`module`'s, read so that a bundler doesn't take it for a require of a path worked out when it runs.)
       () => {
-        const own = (typeof __UNLAYER_CJS__ === "boolean" ? __UNLAYER_CJS__ : true) && typeof module === "object" ? Reflect.get(module ?? {}, "require") : undefined;
+        const own = (typeof __HYPER_ELEMENTS_CJS__ === "boolean" ? __HYPER_ELEMENTS_CJS__ : true) && typeof module === "object" ? Reflect.get(module ?? {}, "require") : undefined;
         return typeof own === "function" ? (id: string) => own.call(module, id) : undefined;
       },
       // From this module's URL (as a stack names it: webpack 4 can't parse the syntax for it), the app's script, then

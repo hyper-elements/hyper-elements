@@ -14,8 +14,8 @@ From the repository root, with Node.js 20+ and pnpm 9:
 ```bash
 pnpm install
 pnpm build    # builds the packages this example imports
-pnpm --filter @unlayer/custom-components-in-editor-example build
-pnpm --filter @unlayer/custom-components-in-editor-example preview
+pnpm --filter @hyper-elements/example-custom-components-in-editor build
+pnpm --filter @hyper-elements/example-custom-components-in-editor preview
 ```
 
 Open <http://127.0.0.1:3003/editor.html?projectId=YOUR_PROJECT_ID>. Custom tools are part of an Unlayer project's plan, so the editor draws them only for a project that has them. The links at the top switch between the two sets.

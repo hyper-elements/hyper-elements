@@ -13,7 +13,7 @@
  */
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync, watch, type Dirent, type FSWatcher } from "node:fs";
 import { dirname, join, sep } from "node:path";
-import { IGNORED, realpathOr } from "@unlayer-internal/template-loader";
+import { IGNORED, realpathOr } from "@hyper-elements/template-loader";
 import { MODULE } from "../inputs";
 import { packageFolder } from "../inputs";
 import { LOADER_NAME } from "../loader-module";

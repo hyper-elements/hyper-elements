@@ -9,7 +9,7 @@
  * Server Components have no context.
  */
 import React from "react";
-import { checkDocument, CUSTOM_TYPE, Registry, type CheckResult, type CustomDefinition, type Diagnostic } from "@unlayer-internal/elements-core";
+import { checkDocument, CUSTOM_TYPE, Registry, type CheckResult, type CustomDefinition, type Diagnostic } from "@hyper-elements/core";
 import { isAsyncComponent, nonce, within } from "../utils/collect";
 import { renderToString } from "../utils/server-renderer";
 import { withRenderScope } from "../utils/render-scope";

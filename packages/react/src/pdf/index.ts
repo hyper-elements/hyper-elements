@@ -10,8 +10,8 @@
  * given in `fonts`. A template that needs one it isn't given is an error (an image) or drawn in a standard PDF font (a
  * font), and says so. templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
-import { assetParts, LAYOUT_VERSION, pdfFamily, reactPdf, thumbnailOf, writeDocument, type Asset, type Font } from "@unlayer-internal/elements-core/pdf";
-import type { FontFace } from "@unlayer-internal/elements-core";
+import { assetParts, LAYOUT_VERSION, pdfFamily, reactPdf, thumbnailOf, writeDocument, type Asset, type Font } from "@hyper-elements/core/pdf";
+import type { FontFace } from "@hyper-elements/core";
 import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 

@@ -3,7 +3,7 @@
  * defaults, design.ts), what the tool has no field for as hidden properties, its place's spacing in its
  * `containerPadding` and its place's alignment in its `textAlign`.
  */
-import { linkParts, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type LinkValue, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { linkParts, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type LinkValue, type Node, type ResolvedNode } from "@hyper-elements/core";
 import { block, type Block } from "./design";
 import { hiddenOf, merge } from "./hide";
 import { listJson, paragraphJson, runsHtml } from "./runs";

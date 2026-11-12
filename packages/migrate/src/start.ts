@@ -7,7 +7,7 @@ import { statSync } from "node:fs";
 import { register } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { guard } from "@unlayer-internal/template-loader";
+import { guard } from "@hyper-elements/template-loader";
 import { parseArgs } from "./args";
 
 /**

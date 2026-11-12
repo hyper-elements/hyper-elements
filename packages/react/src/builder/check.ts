@@ -6,7 +6,7 @@
  * place; a button's, a menu item's or a social icon's is "#". An image or video without a source it can show is left
  * out.
  */
-import { definitionOf, type Child, type CustomDefinition, type Json, type Node } from "@unlayer-internal/elements-core";
+import { definitionOf, type Child, type CustomDefinition, type Json, type Node } from "@hyper-elements/core";
 
 type Kind = { parse(value: unknown): { ok: true; value: Json } | { ok: false; message: string } };
 

@@ -3,7 +3,7 @@
  * builder's display mode), with its rows (rows.ts) in it, a Document's header and footer around them. Malformed JSON
  * never throws: what can't be read is left out and said.
  */
-import type { Child, CustomDefinition, Json, Node } from "@unlayer-internal/elements-core";
+import type { Child, CustomDefinition, Json, Node } from "@hyper-elements/core";
 import { BodyDefaults } from "./tool-defaults";
 import { color, fontWeight, font, px, serviceTag, type Sides, type Values } from "./read-values";
 import type { Context } from "./blocks";

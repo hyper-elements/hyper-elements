@@ -28,7 +28,7 @@ if (!process.env.CLI_TARBALL || !process.env.REACT_TARBALL) {
 
 // The packed manifest names no private package: the template loader is bundled in.
 const manifest = execFileSync("tar", ["-xOzf", cliTarball, "package/package.json"], { encoding: "utf8" });
-assert.doesNotMatch(manifest, /@unlayer-internal\//, "the packed CLI's package.json names a private @unlayer-internal package");
+assert.doesNotMatch(manifest, /@hyper-elements\/(core|template-loader)["\/]/, "the packed CLI's package.json names a private package (@hyper-elements/core or template-loader)");
 assert.equal(JSON.parse(manifest).bin["hyper-elements"], "./dist/bin.js");
 
 const root = realpathSync(mkdtempSync(join(tmpdir(), "cli-integration-")));

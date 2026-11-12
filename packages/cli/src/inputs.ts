@@ -9,7 +9,7 @@
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
-import { walk } from "@unlayer-internal/template-loader";
+import { walk } from "@hyper-elements/template-loader";
 import { UsageError } from "./args";
 
 export interface Input {

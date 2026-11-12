@@ -5,7 +5,7 @@
  * blocks), and a second trip changes nothing. Over the adapter's templates, main's examples, the codemod's and
  * templates put together at random (ROUNDTRIP_SEEDS=1000 for a longer run).
  */
-import type { Node } from "@unlayer-internal/elements-core";
+import type { Node } from "@hyper-elements/core";
 import { JSDOM } from "jsdom";
 import React from "react";
 import { describe, expect, it } from "vitest";

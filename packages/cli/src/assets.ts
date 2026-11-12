@@ -20,12 +20,12 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { workspaceRoot } from "@unlayer-internal/template-loader";
+import { workspaceRoot } from "@hyper-elements/template-loader";
 import { cliDiagnostic } from "./commands/shared";
 import { errorLine } from "./errors";
 import type { Diagnostic } from "./protocol";
 
-/** A font face as `templateAssets()` gives it (packages/core/src/kinds.ts's FontFace). */
+/** A font face as `templateAssets()` gives it (packages/internal/core/src/kinds.ts's FontFace). */
 export interface FontFace {
   family: string;
   src: string;

@@ -8,7 +8,7 @@
  * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said;
  * a template's own component is its custom tool's block instead where the design is written with them (custom.ts).
  */
-import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
 import { collectTemplate } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";

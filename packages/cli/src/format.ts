@@ -1,5 +1,5 @@
 /**
- * Diagnostics as text, as Elements' formatDiagnostics() writes them (packages/core/src/diagnostics.ts), for those no
+ * Diagnostics as text, as Elements' formatDiagnostics() writes them (packages/internal/core/src/diagnostics.ts), for those no
  * Elements formatted; one at no path in the template (the CLI's own, `cli/…`) says no place: `info cli/not-a-template:
  * …`, not `at :`.
  */

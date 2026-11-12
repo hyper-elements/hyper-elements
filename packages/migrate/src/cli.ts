@@ -16,7 +16,7 @@ import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } 
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { normalizeWord, StyledDocument } from "./convert";
 import { parseArgs, type Args } from "./args";
-import { defaultExport, projectConfig, projectTsconfig, templateComponent, walk } from "@unlayer-internal/template-loader";
+import { defaultExport, projectConfig, projectTsconfig, templateComponent, walk } from "@hyper-elements/template-loader";
 import { resolutionOrder, type Origin } from "./resolution";
 
 export interface Io {

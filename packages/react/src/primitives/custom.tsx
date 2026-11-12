@@ -26,7 +26,7 @@ import {
   type PropSpec,
   type PropSpecs,
   type PropsInput,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 import { collectingPrimitives, collectNodes, recordPrimitive, registerUsed } from "./collect";
 import type { Token } from "./theme";
 

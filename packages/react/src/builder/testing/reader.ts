@@ -5,7 +5,7 @@
  * style, its link and target, the background behind it and its own box's paint and borders. Not the tree: a Section
  * of two Rows and two Sections draw the same, and read the same here.
  */
-import type { Insets, Json, ResolvedNode } from "@unlayer-internal/elements-core";
+import type { Insets, Json, ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
 import { prepare } from "../../primitives/render";
 import { linesOf } from "../columns";

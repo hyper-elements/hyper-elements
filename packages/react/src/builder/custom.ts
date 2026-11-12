@@ -5,7 +5,7 @@
  * tool's block, its props the block's values (`customTools`); fromDesign() reads the block back as the component
  * (`components`); registerTools() gives a builder the tools, each drawn by Elements itself.
  */
-import { ElementsError, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@unlayer-internal/elements-core";
+import { ElementsError, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@hyper-elements/core";
 import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
 import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, webLink, type Sides, type Values } from "./read-values";

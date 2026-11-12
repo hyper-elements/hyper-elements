@@ -11,12 +11,12 @@
   "homepage": "https://github.com/hyper-elements/hyper-elements",
   "packageManager": "pnpm@9.7.0",
   "scripts": {
-    "build": "pnpm -r --filter \"./packages/*\" run build",
-    "build-storybook": "pnpm -r --filter \"./packages/*\" run build-storybook",
+    "build": "pnpm -r --filter \"./packages/**\" run build",
+    "build-storybook": "pnpm -r --filter \"./packages/**\" run build-storybook",
     "postbuild-storybook": "./build-storybook-hub.sh",
     "storybook:hub": "pnpm run build-storybook && npx http-server storybook-static -p 6006 -o",
-    "test": "pnpm -r --filter \"./packages/*\" run test",
-    "test:coverage": "pnpm -r --filter \"./packages/*\" run test:coverage"
+    "test": "pnpm -r --filter \"./packages/**\" run test",
+    "test:coverage": "pnpm -r --filter \"./packages/**\" run test:coverage"
   },
   "devDependencies": {
     "@types/jsdom": "^27.0.0",
