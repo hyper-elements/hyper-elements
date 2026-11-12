@@ -45,7 +45,7 @@ import {
   Video,
 } from "@hyper-elements/react";
 import { writeDocument } from "@unlayer-internal/elements-core/pdf";
-import { renderPdf } from "../../src/pdf";
+import { renderPdf, templateAssets } from "../../src/pdf";
 import { toWoff, toWoff2 } from "./woff";
 
 /** What prepare() gives, where a test gives another layout version (another copy of Elements, newer or older). */
@@ -672,5 +672,88 @@ describe("renderPdf", () => {
         </Email>
       )
     ).rejects.toMatchObject({ diagnostics: [expect.objectContaining({ code: "pdf/root" })] });
+  });
+});
+
+describe("templateAssets", () => {
+  // Each source the template names, as a tool would load it: a font's file, or an image's.
+  const files: Record<string, Uint8Array> = {
+    "https://fonts.acme.test/brand.ttf": liberation("LiberationSans-Regular.ttf"),
+    "https://fonts.acme.test/brand-bold.ttf": liberation("LiberationSans-Bold.ttf"),
+    "https://fonts.acme.test/variable.ttf": liberation("LiberationSans-Italic.ttf"),
+    "https://cdn.acme.test/logo.png": PNG,
+    "/hero.png": PNG,
+    "https://cdn.acme.test/launch.png": PNG,
+    "https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg": PNG,
+  };
+  const template = (
+    <Document
+      fonts={[
+        { family: "Brand", src: "https://fonts.acme.test/brand.ttf", weight: 400 },
+        { family: "Brand", src: "https://fonts.acme.test/brand-bold.ttf", weight: 700 },
+        { family: "Variable", src: "https://fonts.acme.test/variable.ttf", weight: [100, 900] },
+      ]}
+      style={{ fontFamily: "Brand, sans-serif" }}
+    >
+      <Text>Regular</Text>
+      <Text style={{ fontWeight: 700 }}>Bold</Text>
+      <Text style={{ fontFamily: "Variable", fontWeight: 100 }}>Variable</Text>
+      <Image src={{ src: "https://cdn.acme.test/logo.png", width: 40, height: 40 }} alt="Logo" />
+      <Row>
+        <Column>
+          <Image src={{ src: "/hero.png", width: 40, height: 40 }} alt="Hero" />
+          <Image src={{ src: "https://cdn.acme.test/logo.png", width: 40, height: 40 }} alt="Logo again" />
+        </Column>
+      </Row>
+      <Image src={{ src: PNG_URI, width: 40, height: 40 }} alt="Inline" />
+      <Video src="https://vimeo.com/76979871" title="Our launch" thumbnail={{ src: "https://cdn.acme.test/launch.png", width: 64, height: 36 }} />
+      <Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Our launch on YouTube" />
+      <Video src="https://vimeo.com/1" title="No thumbnail" />
+    </Document>
+  );
+
+  it("lists the sources renderPdf() looks for: the Document's fonts, each image once (a Video's thumbnail among them)", () => {
+    expect(templateAssets(template)).toEqual({
+      fonts: [
+        { family: "Brand", src: "https://fonts.acme.test/brand.ttf", weight: 400 },
+        { family: "Brand", src: "https://fonts.acme.test/brand-bold.ttf", weight: 700 },
+        { family: "Variable", src: "https://fonts.acme.test/variable.ttf", weight: [100, 900] },
+      ],
+      images: ["https://cdn.acme.test/logo.png", "/hero.png", PNG_URI, "https://cdn.acme.test/launch.png", "https://img.youtube.com/vi/dQw4w9WgXcQ/0.jpg"],
+    });
+    expect(
+      templateAssets(
+        <Document>
+          <Text>Hi</Text>
+        </Document>
+      )
+    ).toEqual({ fonts: [], images: [] });
+  });
+
+  it("is all renderPdf() needs: given exactly what it lists, it says nothing of a font or an image, and draws each image", async () => {
+    const { fonts, images } = templateAssets(template);
+    const { pdf, diagnostics } = await renderPdf(template, {
+      // A range's lower bound, as a font given for it.
+      fonts: fonts.map((face) => ({ family: face.family, src: files[face.src], weight: Array.isArray(face.weight) ? face.weight[0] : face.weight, style: face.style })),
+      images: Object.fromEntries(images.filter((src) => !src.startsWith("data:")).map((src) => [src, files[src]])),
+    });
+    expect(diagnostics.filter((d) => ["pdf/font", "pdf/image", "pdf/font-weight"].includes(d.code))).toEqual([]);
+    // The images written, read from the file's bytes (their dictionaries aren't compressed), apart from pdf.js: once
+    // on CI pdf.js drew none of them, and this says whether the file held them. (Images with the same bytes share one.)
+    const written = (Buffer.from(pdf).toString("latin1").match(/\/Subtype\s*\/Image\b/g) ?? []).length;
+    expect(written, "image XObjects in the PDF").toBeGreaterThan(0);
+    // Four Images (the logo twice) and both thumbnails. pdf.js's warnings are printed (verbosity 1): an image it can't
+    // read is skipped with only a warning.
+    const { fnArray } = await (await (await getDocument({ data: pdf.slice(), verbosity: 1 }).promise).getPage(1)).getOperatorList();
+    expect(fnArray.filter((fn) => fn === OPS.paintImageXObject), `pdf.js drew these of the ${written} images written`).toHaveLength(6);
+  });
+
+  it("rejects a template as renderPdf() does", () => {
+    const email = (
+      <Email>
+        <Text>Hi</Text>
+      </Email>
+    );
+    expect(() => templateAssets(email)).toThrow(expect.objectContaining({ diagnostics: [expect.objectContaining({ code: "pdf/root" })] }));
   });
 });

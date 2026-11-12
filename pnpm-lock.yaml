@@ -217,6 +217,52 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  packages/cli:
+    dependencies:
+      '@hyper-elements/email-clients':
+        specifier: ^0.4.3
+        version: 0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tsx:
+        specifier: ^4.20.5
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+    devDependencies:
+      '@hyper-elements/react':
+        specifier: workspace:*
+        version: link:../react
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.26
+      '@vitest/coverage-v8':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/node@24.9.1)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@24.1.3)(less@4.4.2)(lightningcss@1.33.0)(sass@1.93.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1))
+      playwright-core:
+        specifier: 1.60.0
+        version: 1.60.0
+      react:
+        specifier: 18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: 18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-dom19:
+        specifier: npm:react-dom@19.1.0
+        version: react-dom@19.1.0(react@18.3.1)
+      react19:
+        specifier: npm:react@19.1.0
+        version: react@19.1.0
+      tsup:
+        specifier: ^8.0.1
+        version: 8.5.0(@swc/core@1.15.40(@swc/helpers@0.5.23))(jiti@2.6.1)(postcss@8.5.32)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.9.1)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.9.1)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@24.1.3)(less@4.4.2)(lightningcss@1.33.0)(sass@1.93.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1)
+
   packages/core:
     devDependencies:
       '@react-pdf/renderer':
@@ -305,6 +351,24 @@ importers:
         specifier: 2.0.1
         version: 2.0.1
 
+  packages/loader:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      '@vitest/coverage-v8':
+        specifier: ^3.2.4
+        version: 3.2.4(vitest@3.2.4(@types/node@24.9.1)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@24.1.3)(less@4.4.2)(lightningcss@1.33.0)(sass@1.93.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1))
+      tsx:
+        specifier: ^4.20.5
+        version: 4.21.0
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/node@24.9.1)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@24.1.3)(less@4.4.2)(lightningcss@1.33.0)(sass@1.93.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1)
+
   packages/migrate:
     dependencies:
       '@hyper-elements/react':
@@ -341,6 +405,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.7(@types/react@18.3.26)
+      '@unlayer-internal/template-loader':
+        specifier: workspace:*
+        version: link:../loader
       entities:
         specifier: 7.0.1
         version: 7.0.1
@@ -1311,6 +1378,20 @@ packages:
   '@hyper-elements/email-client-models@1.8.1':
     resolution: {integrity: sha512-NFi/gmMlW68lwDJOT8RjjuZ1YF5iADf9n9qbLT2SnpaSVrJF9TAPbZC2eydrhR61bDx2FTDxA4kMtTshpNcOyQ==}
     engines: {node: '>=20'}
+
+  '@hyper-elements/email-clients@0.4.3':
+    resolution: {integrity: sha512-kFLMdZJwBr0HkBr9JGyJnaMdMekRh9IOCFrTSeQ4SDHBU19DvrxMhM55ACAGWpF2QE9/J7fCoW0J5R8Xwi9nvg==}
+    peerDependencies:
+      '@hyper-elements/react': ^0.4.0
+      react: '>=18'
+      react-dom: '>=18'
+    peerDependenciesMeta:
+      '@hyper-elements/react':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -7024,6 +7105,14 @@ snapshots:
       '@hapi/hoek': 11.0.7
 
   '@hyper-elements/email-client-models@1.8.1': {}
+
+  '@hyper-elements/email-clients@0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@hyper-elements/email-client-models': 1.8.1
+    optionalDependencies:
+      '@hyper-elements/react': link:packages/react
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@img/colour@1.1.0':
     optional: true

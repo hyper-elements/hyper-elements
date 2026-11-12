@@ -9,14 +9,14 @@
 
 import { isUtf8 } from "node:buffer";
 import { existsSync, readFileSync, realpathSync, rmSync, rmdirSync } from "node:fs";
-import { lstat, mkdir, open, readFile, readdir, realpath, rename, rm, stat } from "node:fs/promises";
+import { lstat, mkdir, open, readFile, realpath, rename, rm, stat } from "node:fs/promises";
 import { createHash, randomUUID } from "node:crypto";
 import Module, { createRequire } from "node:module";
-import { tmpdir } from "node:os";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { normalizeWord, StyledDocument } from "./convert";
 import { parseArgs, type Args } from "./args";
+import { defaultExport, projectConfig, projectTsconfig, templateComponent, walk } from "@unlayer-internal/template-loader";
 import { resolutionOrder, type Origin } from "./resolution";
 
 export interface Io {
@@ -1592,9 +1592,7 @@ function message(error: unknown): string {
 // Files
 // ============================================
 
-const SOURCE = /\.(tsx|jsx|ts|js|mts|mjs)$/;
 const REACT_EMAIL_IMPORT = /(?:\bfrom\s+|\brequire\s*\(\s*|\bimport\s*\(\s*)["'](@react-email\/[^"']+|react-email)["']/;
-const IGNORED = new Set(["node_modules", ".git", ".next", "dist", "build", "out", ".turbo", "coverage"]);
 
 async function collect(paths: string[], cwd: string): Promise<{ files: Input[]; missing: string[]; unreadable: FileResult[] }> {
   const files: Input[] = [];
@@ -1684,46 +1682,6 @@ async function importsElements(path: string, source: string, packageName = "@hyp
   };
   visit(file);
   return used;
-}
-
-/** The source files in a folder and the ones in it; a symbolic link to a folder isn't followed, but goes in `links`. */
-async function walk(dir: string, links: string[] = [], all = false): Promise<string[]> {
-  const out: string[] = [];
-  for (const entry of await readdir(dir, { withFileTypes: true })) {
-    if (entry.name.startsWith(".") || IGNORED.has(entry.name)) continue;
-    const path = join(dir, entry.name);
-    if (entry.isSymbolicLink() && (await stat(path).catch(() => undefined))?.isDirectory()) links.push(path);
-    else if (entry.isDirectory()) out.push(...(await walk(path, links, all)));
-    // `all`: every module, tests and CommonJS (.cjs, .cts) too.
-    else if ((all ? /\.[cm]?[jt]sx?$/ : SOURCE).test(entry.name) && (all || !/\.(test|spec|stories)\.[^.]+$/.test(entry.name)) && !/\.d\.[cm]?ts$/.test(entry.name)) out.push(path);
-  }
-  return out;
-}
-
-/** A module's default export (a CommonJS module arrives with its exports as the default). */
-function defaultExport(mod: Record<string, any>): unknown {
-  let value = mod.default;
-  if (value && typeof value === "object" && !("$$typeof" in value) && "default" in value) value = value.default;
-  return value;
-}
-
-function templateComponent(value: any): { component: any; exported: any; props: Record<string, unknown>; previewed: boolean } | undefined {
-  const exported = value;
-  let props: Record<string, unknown> | undefined;
-  let wrapped = false;
-  const seen = new Set<unknown>();
-  while (value && !seen.has(value)) {
-    seen.add(value);
-    props ??= value.PreviewProps;
-    if (typeof value === "function") return { component: value, exported, props: props ?? {}, previewed: props !== undefined };
-    if (value.$$typeof === Symbol.for("react.memo")) { value = value.type; wrapped = true; }
-    else if (value.$$typeof === Symbol.for("react.forward_ref")) { value = value.render; wrapped = true; }
-    else if ("$$typeof" in Object(value)) throw new Error("unsupported React template wrapper");
-    else if (wrapped) throw new Error("the React template wrapper has no renderable component");
-    else return undefined;
-  }
-  if (wrapped) throw new Error("the React template wrapper has no renderable component");
-  return undefined;
 }
 
 /**
@@ -1853,27 +1811,6 @@ function otherCopies(io: Pick<Io, "cwd" | "project">, files: string[]): string |
   return undefined;
 }
 
-function realpathOr(path: string): string {
-  try {
-    return realpathSync(path);
-  } catch {
-    return path;
-  }
-}
-
-/** The monorepo `dir` is in: the nearest folder with pnpm-workspace.yaml, or a package.json with workspaces. */
-function workspaceRoot(dir: string): string | undefined {
-  for (let current = dir; ; current = dirname(current)) {
-    if (existsSync(join(current, "pnpm-workspace.yaml"))) return current;
-    try {
-      if (JSON.parse(readFileSync(join(current, "package.json"), "utf8")).workspaces) return current;
-    } catch {
-      // no package.json here, or not one that parses
-    }
-    if (dirname(current) === current) return undefined;
-  }
-}
-
 /** Whether JavaScript source only parses as JSX. */
 async function jsxInJs(source: string): Promise<boolean> {
   const ts = (await import("typescript")).default;
@@ -1895,60 +1832,16 @@ async function importFile(
   const url = pathToFileURL(path).href;
   if (/\.(mjs|cjs|js)$/.test(path)) return import(`${url}?t=${Date.now()}`);
   const { tsImport } = await import("tsx/esm/api");
-  const tsconfig = join(
-    tmpdir(),
-    `hyper-elements-migrate-tsconfig-${randomUUID()}.json`,
-  );
-  const base = projectConfig(dirname(configFrom)) ?? projectConfig(dirname(path));
-  const ts = (await import("typescript")).default;
-  const compiler = base
-    ? ts.parseJsonConfigFileContent(
-        ts.readConfigFile(base, ts.sys.readFile).config ?? {},
-        ts.sys,
-        dirname(base),
-      ).options
-    : {};
-  const paths = { ...compiler.paths };
-  const pathBase =
-    compiler.baseUrl ??
-    (compiler as { pathsBasePath?: string }).pathsBasePath ??
-    (base ? dirname(base) : cwd);
-  for (const [alias, entries] of Object.entries(paths))
-    paths[alias] = entries.map((entry) => resolve(pathBase, entry));
   // CJS imports bypass ESM hooks. Only supply Elements from the CLI when
   // neither the template's folder nor the project has it (hooks.ts's order),
   // and retain the project's resolved aliases.
-  if (!resolveFrom(dirname(path), "@hyper-elements/react") && !resolveFrom(project, "@hyper-elements/react")) {
-    paths["@hyper-elements/react"] = [
-      createRequire(import.meta.url).resolve("@hyper-elements/react"),
-    ];
-  }
-  // tsx applies the JSX settings only to the files `include` lists, by their real
-  // paths: a workspace package's TSX (outside the app) needs them too.
-  const workspace = workspaceRoot(dirname(path));
-  const roots = [cwd, dirname(path), ...(base ? [dirname(base)] : []), ...(workspace ? [workspace] : [])];
-  const include = [...new Set(roots.flatMap((root) => [root, realpathOr(root)]))];
-  const removeConfig = () => rmSync(tsconfig, { force: true });
+  const fallback =
+    !resolveFrom(dirname(path), "@hyper-elements/react") && !resolveFrom(project, "@hyper-elements/react")
+      ? { "@hyper-elements/react": [createRequire(import.meta.url).resolve("@hyper-elements/react")] }
+      : undefined;
+  const { file: tsconfig, remove: removeConfig } = await projectTsconfig(path, { configFrom, cwd, paths: fallback });
   const releaseConfig = removedOnExit(removeConfig);
   try {
-    const handle = await open(tsconfig, "wx");
-    try {
-      await handle.writeFile(
-        JSON.stringify({
-          ...(base ? { extends: base } : {}),
-          compilerOptions: {
-            allowJs: true,
-            jsx: "react-jsx",
-            jsxImportSource: "react",
-            ...(Object.keys(paths).length ? { paths } : {}),
-          },
-          // Imports outside the template folder need the same JSX runtime too.
-          include: include.map((root) => join(root, "**/*").split(sep).join("/")),
-        }),
-      );
-    } finally {
-      await handle.close();
-    }
     const packageFile = findUp("package.json", dirname(path));
     const commonjs =
       path.endsWith(".cts") ||
@@ -2564,14 +2457,6 @@ function satisfiesCaret(version: Version, minimum: Version): boolean {
 
 function ownPackage(): { version: string; peerDependencies?: Record<string, string> } {
   return createRequire(import.meta.url)("../package.json");
-}
-
-/** The nearest tsconfig.json, or jsconfig.json (JavaScript projects, Next.js), at or above `dir`. */
-function projectConfig(dir: string): string | undefined {
-  for (let current = dir; ; current = dirname(current)) {
-    for (const name of ["tsconfig.json", "jsconfig.json"]) if (existsSync(join(current, name))) return join(current, name);
-    if (dirname(current) === current) return undefined;
-  }
 }
 
 /**

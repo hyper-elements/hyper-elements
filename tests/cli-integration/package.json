@@ -1,0 +1,8 @@
+{
+  "name": "cli-integration",
+  "private": true,
+  "description": "The packed @hyper-elements/cli and @hyper-elements/react installed in a pnpm workspace: render and check an app's templates with npx (Node) and bunx --bun (Bun).",
+  "scripts": {
+    "verify": "node verify.mjs"
+  }
+}

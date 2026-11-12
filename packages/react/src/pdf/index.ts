@@ -8,9 +8,10 @@
  *
  * Nothing is fetched: an image is a data: URI, or its bytes are given in `images` by its URL; a web font's file is
  * given in `fonts`. A template that needs one it isn't given is an error (an image) or drawn in a standard PDF font (a
- * font), and says so.
+ * font), and says so. templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
-import { assetParts, LAYOUT_VERSION, pdfFamily, reactPdf, thumbnailOf, writeDocument, type Asset, type Font, type FontFace } from "@unlayer-internal/elements-core/pdf";
+import { assetParts, LAYOUT_VERSION, pdfFamily, reactPdf, thumbnailOf, writeDocument, type Asset, type Font } from "@unlayer-internal/elements-core/pdf";
+import type { FontFace } from "@unlayer-internal/elements-core";
 import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 
@@ -44,12 +45,7 @@ const FIXED_DATE = new Date(Date.UTC(2026, 0, 1));
 
 /** A Document written as a PDF. Rejects with an `ElementsError` listing the problems if it has errors. */
 export async function renderPdf(element: ReactElement, options: PdfOptions = {}): Promise<PdfResult> {
-  const { root, diagnostics, layout } = prepare(element);
-  readable(layout, "pdf");
-  if (!root) throw new ElementsError(diagnostics);
-  if (root.type !== "Document") {
-    throw new ElementsError([...diagnostics, { code: "pdf/root", severity: "error", message: `PDF output is a Document's: this template is a ${root.type}`, path: "root" }]);
-  }
+  const { root, diagnostics } = documentOf(element);
   const found: Diagnostic[] = [];
   const fonts = fontFiles(root, options.fonts ?? [], found);
   const images = imageSources(root, options.images ?? {}, found);
@@ -57,6 +53,35 @@ export async function renderPdf(element: ReactElement, options: PdfOptions = {})
   found.push(...missingFaces(root, fonts, options.fonts ?? []), ...beyondStandard(root, new Set(fonts.map((font) => font.family))));
   const pages = writeDocument(root, { families: new Set(fonts.map((font) => font.family)), fonts, image: (src) => images.get(src), date: options.date ?? FIXED_DATE });
   return { pdf: await reactPdf(pages), diagnostics: [...diagnostics, ...found] };
+}
+
+export interface TemplateAssets {
+  /** The Document's own font faces (its `fonts` prop), as it gives them: a file for each goes in renderPdf's `fonts`, by its family, weight and style. */
+  fonts: FontFace[];
+  /** Each image's URL as the template gives it (an Image's `src`, a Video's thumbnail), once, in the order they're drawn: its file goes in renderPdf's `images`, by that URL. */
+  images: string[];
+}
+
+/**
+ * The font and image sources renderPdf() looks for in a Document, from the walks it makes itself: what a tool loads and
+ * gives it in `fonts` and `images`. An image's data: URI is drawn as it is; a font's is a file to give like any other
+ * (renderPdf() reads only the font files it's given). Rejects a template as renderPdf() does: with errors, or with a
+ * root other than a Document.
+ */
+export function templateAssets(element: ReactElement): TemplateAssets {
+  const { root } = documentOf(element);
+  return { fonts: [...facesOf(root)], images: [...new Set(imagesOf(root).map(({ src }) => src))] };
+}
+
+/** The Document a template is, with prepare()'s diagnostics; a template with errors, or another root, throws. */
+function documentOf(element: ReactElement): { root: ResolvedNode; diagnostics: Diagnostic[] } {
+  const { root, diagnostics, layout } = prepare(element);
+  readable(layout, "pdf");
+  if (!root) throw new ElementsError(diagnostics);
+  if (root.type !== "Document") {
+    throw new ElementsError([...diagnostics, { code: "pdf/root", severity: "error", message: `PDF output is a Document's: this template is a ${root.type}`, path: "root" }]);
+  }
+  return { root, diagnostics };
 }
 
 /**
@@ -85,6 +110,9 @@ function base64(bytes: Uint8Array | ArrayBuffer): string {
 /** A WOFF2 file, by its first bytes: a PDF draws TTF, OTF and WOFF files, not these. */
 const woff2 = (bytes: Uint8Array) => String.fromCharCode(...bytes.subarray(0, 4)) === "wOF2";
 
+/** The Document's own font faces (its `fonts` prop): the files renderPdf's fonts option gives. */
+const facesOf = (root: ResolvedNode): FontFace[] => (root.props.fonts as FontFace[] | undefined) ?? [];
+
 /** The font files given, by the family the template names (lowercased); a file a PDF can't draw, or a web font not given, noted. */
 function fontFiles(root: ResolvedNode, given: PdfFont[], found: Diagnostic[]): Font[] {
   const files = given.map((font) => ({ font, data: font.src instanceof ArrayBuffer ? new Uint8Array(font.src) : font.src }));
@@ -99,7 +127,7 @@ function fontFiles(root: ResolvedNode, given: PdfFont[], found: Diagnostic[]): F
   }
   // A family given only as WOFF2 is said above, not as one not given.
   const named = new Set(given.map((font) => font.family.toLowerCase()));
-  for (const face of (root.props.fonts as FontFace[] | undefined) ?? []) {
+  for (const face of facesOf(root)) {
     if (named.has(face.family.toLowerCase())) continue;
     found.push({
       code: "pdf/font",
@@ -208,31 +236,41 @@ function imageSources(root: ResolvedNode, given: Record<string, Uint8Array | Arr
     }
     return out.get(src);
   };
+  for (const { node, src, thumbnail } of imagesOf(root)) {
+    const source = resolve(src);
+    if (thumbnail) continue;
+    const where = { path: `${node.path}.props.src`, ...(node.id ? { nodeId: node.id } : {}) };
+    if (source === "svg") {
+      found.push({
+        code: "pdf/image",
+        severity: "warning",
+        message: "A PDF draws PNG and JPEG images, not SVG: give this one as a PNG or JPEG (its file in renderPdf's images option, by its URL, or a data: URI). Its alt text is shown in its box meanwhile",
+        ...where,
+      });
+    } else if (!source) {
+      found.push({
+        code: "pdf/image",
+        severity: "error",
+        message: given[src] ? "This image's file isn't a PNG or JPEG, the formats a PDF draws" : "PDF output loads no images: give this one's file in renderPdf's images option (by its URL), or its src as a data: URI",
+        ...where,
+      });
+    }
+  }
+  return out;
+}
+
+/**
+ * Each image the pages draw, in order, with the node it's on: an Image's src, and a Video's thumbnail (drawn where its
+ * file is given, else the Video's a link with its title). Content hidden on desktop isn't drawn.
+ */
+function imagesOf(root: ResolvedNode): Array<{ node: ResolvedNode; src: string; thumbnail: boolean }> {
+  const out: Array<{ node: ResolvedNode; src: string; thumbnail: boolean }> = [];
   const visit = (node: ResolvedNode) => {
     if (node.hidden?.desktop) return;
-    if (node.type === "Image") {
-      const { src } = assetParts(node.props.src as Asset);
-      const source = resolve(src);
-      const where = { path: `${node.path}.props.src`, ...(node.id ? { nodeId: node.id } : {}) };
-      if (source === "svg") {
-        found.push({
-          code: "pdf/image",
-          severity: "warning",
-          message: "A PDF draws PNG and JPEG images, not SVG: give this one as a PNG or JPEG (its file in renderPdf's images option, by its URL, or a data: URI). Its alt text is shown in its box meanwhile",
-          ...where,
-        });
-      } else if (!source) {
-        found.push({
-          code: "pdf/image",
-          severity: "error",
-          message: given[src] ? "This image's file isn't a PNG or JPEG, the formats a PDF draws" : "PDF output loads no images: give this one's file in renderPdf's images option (by its URL), or its src as a data: URI",
-          ...where,
-        });
-      }
-    }
+    if (node.type === "Image") out.push({ node, src: assetParts(node.props.src as Asset).src, thumbnail: false });
     if (node.type === "Video") {
       const thumbnail = thumbnailOf(node);
-      if (thumbnail) resolve(thumbnail);
+      if (thumbnail) out.push({ node, src: thumbnail, thumbnail: true });
     }
     for (const child of node.children) if (typeof child !== "string") visit(child);
   };

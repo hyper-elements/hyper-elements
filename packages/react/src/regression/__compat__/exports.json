@@ -59,9 +59,11 @@
   "toolName"
  ],
  "./pdf": [
-  "renderPdf"
+  "renderPdf",
+  "templateAssets"
  ],
  "./image": [
-  "renderImage"
+  "renderImage",
+  "templateAssets"
  ]
 }

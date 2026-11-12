@@ -94,6 +94,8 @@ For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writ
 
 Or install the same guide as an agent skill: `npx skills add hyper-elements/hyper-elements`.
 
+An agent that runs commands can check what it writes with `npx hyper-elements check <file> --json` ([`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli)): one JSON line per template, with its diagnostics.
+
 ## Structure
 
 ```
@@ -205,6 +207,8 @@ const { html, text, head, body, bodyStyle, diagnostics } = await render(<Receipt
 The options are `pretty` (the HTML indented, for reading it), `mergeTag` (how a merge tag is written, by default `{{name}}`) and `classPrefix` (what every class name starts with, for HTML embedded where other CSS is).
 
 `validate()` runs the same checks without rendering, and `outline()` prints the laid-out template, to check the layout without reading the HTML.
+
+From the shell, [`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli) does the same with no script: `npx hyper-elements check emails/` validates each template (a module whose default export renders the root), `npx hyper-elements render emails/` writes each one's HTML and plain text (a Document's PDF, a Canvas's PNG), and `npx hyper-elements preview emails/welcome.tsx` shows an Email in each email client (with `@hyper-elements/email-clients`). With `--json` they print one line per template, and they exit `1` when a template has errors.
 
 ## One template, every output
 
