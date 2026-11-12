@@ -2,7 +2,20 @@
 
 Each release records the models package it was tested with.
 
-## Unreleased (0.4.2)
+## Unreleased (0.4.3)
+
+- **`renderInEmailClients()` takes any HTML email as a string too**, however it was made (MJML, React Email, by hand):
+  `renderInEmailClients(html, { emailClients, dark, fonts, widths, computers })` takes the whole email and writes the same
+  preview files. That loads neither React nor `@hyper-elements/react`: core is loaded only for a template, in the
+  caller's module format.
+- Previews of HTML not built with Hyper Elements are `approximate` where the models are under 95% on such emails or
+  aren't measured on them (`APPROXIMATE_FOR_HTML`), and their header says the email wasn't built with Hyper Elements.
+- `@hyper-elements/react`, `react` and `react-dom` are optional peers: npm doesn't install them with this package. A
+  template needs them, as before; HTML doesn't. In TypeScript without them, the declarations name their types, so keep
+  `skipLibCheck` on (the default).
+- The preview runtime is rebuilt: the same code, with its minified names renamed (its sha256 changes).
+
+## 0.4.2
 
 - **The Gmail app's previews draw with Android's fonts**, as the app on Android does: a font stack resolves against
   Android's fonts (Arial, Helvetica and sans-serif are Roboto; Georgia, Times and serif are Noto Serif; Courier and

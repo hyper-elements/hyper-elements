@@ -71,6 +71,21 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/keel-sign-in-code-gmail-app.png" title="Open the Keel sign-in code email in the Gmail app on Android at full size"><img src="/generated/email-clients/keel-sign-in-code-gmail-app.png" width="380" height="817" loading="lazy" alt="The Keel sign-in code email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
 
+## Test any HTML email
+
+An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `renderInEmailClients()` takes its HTML as a string too. React and `@hyper-elements/react` aren't needed for that: `npm i @hyper-elements/email-clients` is enough.
+
+```ts
+import { readFile } from "node:fs/promises";
+import { renderInEmailClients } from "@hyper-elements/email-clients";
+
+const html = await readFile("welcome.html", "utf8");
+const { previews } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"] });
+// The same previews, one per client: open one in Chromium, screenshot it, or read what the client changed.
+```
+
+It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
+
 ## Why it matters
 
 - **No send-and-wait loop.** A preview takes as long as a render, so you can check every change, not only the last one before a campaign.
@@ -81,17 +96,18 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 
 ## Supported email clients
 
-Accuracy is how closely the emulator matches each real client for emails built with Hyper Elements.
+Accuracy is how closely the emulator matches each real client: for emails built with Hyper Elements, and for HTML built another way (a first set of emails from other tools, previewed as HTML, [below](#test-any-html-email)).
 
-| Client | `id` | Accuracy |
-|--------|------|----------|
-| Classic Outlook for Windows | `outlook` | 97% |
-| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
-| Gmail on the web | `gmail`, `gmail.mac` | 99% |
-| Gmail app on Android | `gmail-app`, `gmail-app-other` | 97% |
-| Apple Mail, light and dark | `apple-mail`, `apple-mail.dark` | 97% |
+| Client | `id` | Hyper Elements emails | Other HTML |
+|--------|------|-----------------------|------------|
+| Classic Outlook for Windows | `outlook` | 97% | 47% |
+| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% | 96% |
+| Gmail on the web | `gmail`, `gmail.mac` | 99% | 100% |
+| Gmail app on Android | `gmail-app`, `gmail-app-other` | 97% | 57% |
+| Apple Mail | `apple-mail` | 97% | 97% |
+| Apple Mail, dark | `apple-mail.dark` | 97% | 73% |
 
-More email clients are on the way. Emails written another way (hand-written HTML, other libraries) are emulated too, but less closely in some clients. A client that changes a lot, like classic Outlook, marks its preview as `approximate`.
+More email clients are on the way, and closer previews of other HTML. On other HTML, webmail read on a Mac (`outlook-com.mac`, `gmail.mac`) and `gmail-app-other` aren't measured yet. A preview is marked `approximate` where its client changes a lot (classic Outlook), and, for other HTML, where it's under 95% or not measured.
 
 Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set below. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
 
@@ -162,7 +178,7 @@ Open the `gmail` preview for Gmail on the web, or name `gmail-app` in `emailClie
 
 ### Can I test an email I didn't build with Hyper Elements?
 
-The emulator previews a Hyper Elements `Email`. Bring a React Email template over with `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)), or put existing HTML in an `Html` block, which is emulated less closely than components.
+Yes. Pass its HTML to `renderInEmailClients()` as a string; React and Hyper Elements aren't needed for that (see [Test any HTML email](#test-any-html-email)). It's emulated less closely than an email built with Hyper Elements in some clients, and those previews are marked `approximate`. To bring a React Email template over to Hyper Elements instead, use `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)).
 
 ### Is it free?
 

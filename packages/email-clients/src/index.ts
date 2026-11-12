@@ -7,24 +7,26 @@
  *   validate(<Welcome />, { plugins: [await emailClients()] });
  *
  * The previews: one self-contained HTML file per email client, which draws the email as that client does when opened
- * in Chromium and lists what the client changed:
+ * in Chromium and lists what the client changed, of a template or of any HTML email:
  *
  *   const { previews } = await renderInEmailClients(<Welcome />, { emailClients: ["outlook", "gmail"] });
+ *   const { previews } = await renderInEmailClients(await readFile("welcome.html", "utf8"));
  *   for (const p of previews) await writeFile(`out/${p.filename}`, p.html);
+ *
+ * HTML needs neither React nor @hyper-elements/react (optional peers): only a template loads core.
  */
 import type React from "react";
 import type { Diagnostic, ElementsPlugin, RenderOptions } from "@hyper-elements/react";
-import { checkCore, versionMismatch } from "./core";
-import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
+import { checkCore, loadCore, versionMismatch } from "./core";
+import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type EmailClientPreview, type PreviewClient, type Skipped } from "./clients";
 import { checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
 import { emailClients, PLUGIN_NAME } from "./plugin";
 import { loadModelsPackage } from "./models";
-import { RUNTIME } from "./runtime.generated";
-import { FONT_ORIGIN, fontSources, readPackageFont, unnamed, type ReadFont } from "./fonts";
-import { previewFile } from "./shell";
+import { previewHtml } from "./html-input";
+import { previewsOf } from "./previews";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./core";
-export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
+export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type EmailClientPreview, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
 export { emailClients, PLUGIN_NAME, type EmailClientsPluginOptions } from "./plugin";
 
@@ -49,11 +51,6 @@ export interface EmailClientsOptions extends Omit<RenderOptions, "pretty" | "blo
   computers?: readonly Computer[];
 }
 
-export interface EmailClientPreview extends PreviewVariant {
-  /** The preview file: open it in Chromium. */
-  html: string;
-}
-
 export interface EmailClientsResult {
   /** One file per client and variant, in the order asked for, light before dark. */
   previews: EmailClientPreview[];
@@ -64,17 +61,28 @@ export interface EmailClientsResult {
 }
 
 /**
- * An <Email> as each email client draws it: one HTML preview file per client (and dark variant). Rejects with an
- * ElementsError where the template has errors, as render() does, or isn't an Email (`email-clients/not-an-email`); and
- * with an Error named `email-clients/version-mismatch` where the installed @hyper-elements/react can't map the email.
- * render() gets the caller's plugins and the email client checks for the clients previewed, unless the caller passed
- * them already.
+ * An email as each email client draws it: one HTML preview file per client (and dark variant).
+ *
+ * Given an <Email>, it renders it: it rejects with an ElementsError where the template has errors, as render() does, or
+ * isn't an Email (`email-clients/not-an-email`), and with an Error named `email-clients/version-mismatch` where
+ * @hyper-elements/react isn't installed or can't map the email. render() gets the caller's plugins and the email client
+ * checks for the clients previewed, unless the caller passed them already.
+ *
+ * Given an HTML email as a string (the whole email, from <html> to </html>), it previews it as given, as data in the
+ * file, with the preview options only (emailClients, dark, fonts, widths, computers): a fragment, or render()'s options,
+ * is a TypeError. It loads no core and no React. HTML not built with Hyper Elements is emulated less closely in some
+ * clients: those previews are approximate. It rejects with the import's error where @hyper-elements/email-client-models
+ * can't be loaded, and with `email-clients/version-mismatch` where the one installed speaks another protocol.
  */
-export async function renderInEmailClients(element: React.ReactElement, options: EmailClientsOptions = {}): Promise<EmailClientsResult> {
-  const core = checkCore();
+export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult>;
+export function renderInEmailClients(element: React.ReactElement, options?: EmailClientsOptions): Promise<EmailClientsResult>;
+export async function renderInEmailClients(input: React.ReactElement | string, options: EmailClientsOptions = {}): Promise<EmailClientsResult> {
+  if (typeof input === "string") return previewHtml(input, options as Parameters<typeof previewHtml>[1]);
+  // HTML read as bytes (readFile() without an encoding) isn't a template: say how to pass it.
+  if (input instanceof Uint8Array || input instanceof ArrayBuffer) throw new TypeError("[Elements] renderInEmailClients() takes an email's HTML as a string, not bytes: read it as text (readFile(path, \"utf8\")), or decode it (new TextDecoder().decode(bytes))");
+  const element = input;
+  const core = checkCore(await loadCore());
   const models = await loadModelsPackage();
-  // The models' browser script, for the preview's CSP: its sha256 is the package's own.
-  const script = { script: models.SCRIPT, sha256: models.SCRIPT_SHA256 };
   const { emailClients: clients = DEFAULT_PREVIEW_CLIENTS, dark = false, fonts = "url", plugins = [], widths, computers, ...renderOptions } = options;
   checkWidths(widths);
   checkComputers(computers);
@@ -91,31 +99,6 @@ export async function renderInEmailClients(element: React.ReactElement, options:
   // The findings read each block's component from its entry: a map without them (a core whose BLOCK_MAP_VERSION
   // claims a format it doesn't write) would leave them silently empty.
   if (!blocks.entries.every((entry) => typeof entry.type === "string")) throw versionMismatch(["block types in render()'s blockMap"]);
-  const fontOrigin = fonts === "url" ? FONT_ORIGIN : null;
-  // Each font file read once, however many previews inline it.
-  const cache = new Map<string, Promise<string>>();
-  const read: ReadFont = (file) => cache.get(file) ?? (cache.set(file, readPackageFont(file)), cache.get(file)!);
-  // A stand-in for a family the email chooses, only where it names it (NAMED_ONLY).
-  const skip = unnamed(rendered.html);
-  const previews = await Promise.all(
-    variants.map(async (variant) => {
-      const { filename: _, ...rest } = variant;
-      const info = EMAIL_CLIENTS[variant.client];
-      const config = {
-        ...rest,
-        name: info.name,
-        blocks,
-        fontOrigin,
-        fontSources: await fontSources(variant.client, fonts, read, skip.files, variant.computer),
-        faces: models.facesToLoad(variant.client, variant.computer).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
-        leftOut: skip.families,
-        standIns: models.standIns(variant.client, variant.computer),
-        elements: info.measured?.elements ?? null,
-        runtime: RUNTIME.sha256,
-        models: { script: script.sha256, protocol: models.PROTOCOL },
-      };
-      return { ...variant, html: previewFile(rendered.html, config, { runtime: RUNTIME, models: script }) };
-    })
-  );
+  const previews = await previewsOf(rendered.html, blocks, variants, models, { fonts, source: "render" });
   return { previews, skipped, diagnostics: rendered.diagnostics };
 }
