@@ -176,6 +176,34 @@ describe("fromDesign with components", () => {
     expect((await render(back.element)).text).toContain("3 × 12");
   });
 
+  it("reads the values the builder itself stored for an image, a font and two dropdowns", async () => {
+    const Card = component({
+      type: "probe.Card",
+      label: "Probe",
+      props: {
+        title: prop.text({ label: "Title", default: "Probe" }),
+        photo: prop.image({ label: "Photo" }),
+        font: prop.fontFamily({ label: "Font" }),
+        size: prop.choice(["small", "medium", "large"], { label: "Size", default: "medium" }),
+        packs: prop.choice([6, 12, 24], { label: "Pack", default: 6 }),
+      },
+      render: (p) => <Text style={p.font ? { fontFamily: p.font } : {}}>{`${p.title}: pack of ${p.packs}, size ${p.size}`}</Text>,
+    });
+    const { design } = toDesign(<Email><Card /></Email>, { customTools: true });
+    // As saved by the builder after its image editor was given a URL (it measures the file), a font was picked in its
+    // font editor, and a value in each dropdown.
+    Object.assign(blocks(design)[0].values, {
+      photo: { url: "https://hyperelements.dev/img/orbit-app.png", width: 1200, height: 700 },
+      font: { label: "Georgia", value: "georgia,palatino", url: "", defaultFont: true, weights: null },
+      size: "large",
+      packs: "24",
+    });
+    const back = fromDesign(design, { components: [Card] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain('<probe.Card photo={{ src: "https://hyperelements.dev/img/orbit-app.png", width: 1200, height: 700 }} font="georgia,palatino" size="large" packs={24} />');
+    expect((await render(back.element)).text).toContain("Probe: pack of 24, size large");
+  });
+
   it("leaves out a value its prop doesn't take, and says so, keeping the block", () => {
     const { design } = toDesign(email, { customTools: true });
     Object.assign(blocks(design)[1].values, { buttonColor: "greenish", quantity: 500, href: { name: "web", values: { href: "javascript:alert(1)" } }, extra: "<script>" });
@@ -218,10 +246,11 @@ describe("registerTools", () => {
       quantity: { label: "Quantity", defaultValue: 1, widget: "counter" },
       href: { label: "Button link", defaultValue: { name: "web", values: { href: "https://example.com", target: "_self" } }, widget: "link" },
       buttonColor: { label: "Button color", defaultValue: "#007bff", widget: "color_picker" },
-      photo: { label: "Photo", defaultValue: "", widget: "image" },
+      // No default: no value to start with, which the builder's editor shows as unset.
+      photo: { label: "Photo", widget: "image" },
       badge: { label: "Badge", defaultValue: "none", widget: "dropdown", data: { options: [{ label: "none", value: "none" }, { label: "new", value: "new" }, { label: "sale", value: "sale" }] } },
       featured: { label: "Featured", defaultValue: false, widget: "toggle" },
-      font: { label: "Font", defaultValue: "", widget: "font_family" },
+      font: { label: "Font", widget: "font_family" },
       // No `gap`: the builder has no editor for a length, so it has no property (its value is kept).
     });
   });

@@ -186,9 +186,12 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
       const widget = spec.editor && (BUILT_IN.has(spec.editor) || options.editors?.includes(spec.editor)) ? spec.editor : editor?.widget;
       if (!widget || spec.editable === false) continue;
       const values = spec.kind.editor === "choice" ? choices(spec) : [];
+      // What a block dragged in from the panel starts with: the prop's default, as the editor stores it. With none, a
+      // text is empty and a toggle is off; any other has no value, which each of the builder's editors shows as unset.
+      const initial = spec.default !== undefined ? (editor?.store?.(spec.default as Json) ?? spec.default) : spec.kind.editor === "text" ? "" : spec.kind.editor === "toggle" ? false : undefined;
       properties[key] = {
         label: spec.label,
-        defaultValue: spec.default === undefined ? (spec.kind.editor === "toggle" ? false : "") : (editor?.store?.(spec.default as Json) ?? spec.default),
+        ...(initial !== undefined ? { defaultValue: initial } : {}),
         widget,
         ...(values.length ? { data: { options: values.map((value) => ({ label: String(value), value: String(value) })) } } : {}),
       };
