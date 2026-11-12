@@ -21,13 +21,15 @@ interface Answer {
 /** A GET with the headers given (Host included), and the path sent as written. */
 function get(port: number, path: string, headers: Record<string, string> = {}, host = "127.0.0.1"): Promise<Answer> {
   return new Promise((resolve, reject) => {
-    const req = request({ host, port, path, method: "GET", headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
+    // A connection of its own (agent: false): a kept-alive one the server closes as it's reused fails with "socket hang
+    // up", which a browser retries and this doesn't.
+    const req = request({ host, port, path, method: "GET", agent: false, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
       let body = "";
       res.setEncoding("utf8");
       res.on("data", (d) => (body += d));
       res.on("end", () => resolve({ status: res.statusCode!, body }));
     });
-    req.on("error", reject);
+    req.on("error", (error) => reject(new Error(`GET ${path}: ${error.message}`)));
     req.end();
   });
 }

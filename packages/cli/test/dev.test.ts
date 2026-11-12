@@ -212,7 +212,9 @@ interface Answer {
 /** A GET with these headers (Host included), the path sent as written; a stream is read to its first event, then closed. */
 function get(port: number, path: string, headers: Record<string, string> = {}): Promise<Answer> {
   return new Promise((resolve, reject) => {
-    const req = request({ host: "127.0.0.1", port, path, method: "GET", headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
+    // A connection of its own (agent: false): a kept-alive one the server closes as it's reused fails with "socket hang
+    // up", which a browser retries and this doesn't.
+    const req = request({ host: "127.0.0.1", port, path, method: "GET", agent: false, headers: { Host: `127.0.0.1:${port}`, ...headers } }, (res) => {
       let body = "";
       res.setEncoding("utf8");
       const done = () => resolve({ status: res.statusCode!, body, type: res.headers["content-type"] });
@@ -232,7 +234,7 @@ function get(port: number, path: string, headers: Record<string, string> = {}): 
       });
       res.on("end", done);
     });
-    req.on("error", reject);
+    req.on("error", (error) => reject(new Error(`GET ${path}: ${error.message}`)));
     req.end();
   });
 }
