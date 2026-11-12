@@ -2,7 +2,7 @@
 
 Each release records the models package it was tested with.
 
-## Unreleased (0.4.3)
+## 0.4.3
 
 - **`renderInEmailClients()` takes any HTML email as a string too**, however it was made (MJML, React Email, by hand):
   `renderInEmailClients(html, { emailClients, dark, fonts, widths, computers })` takes the whole email and writes the same
