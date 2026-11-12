@@ -91,7 +91,8 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
 ```
 
 - It takes the whole email, from `<html>` to `</html>`, and previews it exactly as given, as data in the file (none of
-  its scripts, handlers or navigation run). A fragment, or one of `render()`'s options, is a `TypeError`.
+  its scripts, handlers or navigation run). A fragment, HTML as bytes (read it as text), or one of `render()`'s options,
+  is a `TypeError`.
 - Its options are the preview options above: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 - The models are measured mostly on Hyper Elements emails. HTML built another way is emulated less closely in some
   clients, so its previews are `approximate` where a client is under 95% on such emails or isn't measured on them:

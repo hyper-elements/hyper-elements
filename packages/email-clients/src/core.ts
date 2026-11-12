@@ -30,24 +30,44 @@ declare const __CJS__: boolean | undefined;
 let loading: Promise<Record<string, unknown>> | undefined;
 
 /**
+ * Whether `error`, thrown loading core, says core itself isn't installed: not found, naming @hyper-elements/react as
+ * what's missing. A module core needs that's missing (react-dom, say) names that module, and is rethrown as it is.
+ */
+export function isCoreMissing(error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown; message?: unknown };
+  if (code !== "ERR_MODULE_NOT_FOUND" && code !== "MODULE_NOT_FOUND") return false;
+  // Node: "Cannot find module '@hyper-elements/react'" (require), "Cannot find package '@hyper-elements/react' imported
+  // from …" (import). A module missing inside core names itself, with core's path unquoted after "imported from".
+  return typeof message === "string" && /\bCannot find (?:module|package) ['"]@hyper-elements\/react['"]/.test(message);
+}
+
+/** Core, in this build's module format; core not installed is `email-clients/version-mismatch`, with what to install. */
+async function importCore(): Promise<Record<string, unknown>> {
+  try {
+    if (typeof __CJS__ !== "undefined" && __CJS__) return require("@hyper-elements/react") as Record<string, unknown>;
+    return (await import("@hyper-elements/react")) as unknown as Record<string, unknown>;
+  } catch (error) {
+    if (!isCoreMissing(error)) throw error;
+    const missing = new Error(`@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE} to preview a template, and it isn't installed. Install it: ${INSTALL} (HTML needs none: pass the email's HTML as a string)`);
+    missing.name = "email-clients/version-mismatch";
+    throw missing;
+  }
+}
+
+/**
  * Core (@hyper-elements/react), loaded on first use in the module format of this build: require() in the CommonJS
  * build, import() in the ES module one, so a caller's core and this package's are the same copy (one ElementsError).
- * A core that isn't installed is an Error named `email-clients/version-mismatch`, with the command to install it.
+ * Loaded once; a load that fails isn't kept, in either build, so the next call tries again.
  */
 export function loadCore(): Promise<Record<string, unknown>> {
-  return (loading ??= (async () => {
-    try {
-      if (typeof __CJS__ !== "undefined" && __CJS__) return require("@hyper-elements/react") as Record<string, unknown>;
-      return (await import("@hyper-elements/react")) as unknown as Record<string, unknown>;
-    } catch (error) {
-      loading = undefined;
-      const code = (error as { code?: unknown } | null)?.code;
-      if (code !== "ERR_MODULE_NOT_FOUND" && code !== "MODULE_NOT_FOUND") throw error;
-      const missing = new Error(`@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE} to preview a template, and it isn't installed. Install it: ${INSTALL} (HTML needs none: pass the email's HTML as a string)`);
-      missing.name = "email-clients/version-mismatch";
-      throw missing;
-    }
-  })());
+  if (!loading) {
+    const attempt = importCore();
+    loading = attempt;
+    attempt.catch(() => {
+      if (loading === attempt) loading = undefined;
+    });
+  }
+  return loading;
 }
 
 /** What's missing for the plugin: a core whose PLUGIN_API is one it's written for. */

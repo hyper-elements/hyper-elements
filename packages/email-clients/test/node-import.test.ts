@@ -76,6 +76,30 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     }
   });
 
+  it("doesn't keep a failed load of core in the CommonJS build: the next template call loads it", async () => {
+    const load = createRequire(join(dir, "package.json"));
+    const file = load.resolve(join(dir, "dist/index.cjs"));
+    delete load.cache[file];
+    const fresh = load(file);
+    const React = await import("react");
+    const core = load("@hyper-elements/react");
+    const page = React.createElement(core.Page, null, React.createElement(core.Text, null, "Hi"));
+    // require() of core throws synchronously, as it does when core isn't installed.
+    const Module = load("node:module") as { _load: (request: string, ...rest: unknown[]) => unknown };
+    const original = Module._load;
+    Module._load = function (this: unknown, request: string, ...rest: unknown[]) {
+      if (request === "@hyper-elements/react") throw Object.assign(new Error("Cannot find module '@hyper-elements/react'"), { code: "MODULE_NOT_FOUND" });
+      return original.call(this, request, ...rest);
+    };
+    try {
+      await expect(fresh.renderInEmailClients(page)).rejects.toMatchObject({ name: "email-clients/version-mismatch" });
+    } finally {
+      Module._load = original;
+    }
+    // Installed now: the Page is refused by core's own ElementsError, so core loaded.
+    expect(await fresh.renderInEmailClients(page).catch((e: unknown) => e)).toBeInstanceOf(core.ElementsError);
+  });
+
   it("resolves its types under node10, node16 and bundler, for each module format", () => {
     const project = mkdtempSync(join(tmpdir(), "email-clients-types-"));
     const installed = join(project, "node_modules", "@hyper-elements", "email-clients");
