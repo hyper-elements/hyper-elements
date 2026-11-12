@@ -231,8 +231,8 @@ importers:
   packages/email-clients:
     dependencies:
       '@hyper-elements/email-client-models':
-        specifier: ^1.7.0
-        version: 1.7.0
+        specifier: ^1.8.0
+        version: 1.8.0
     devDependencies:
       '@hyper-elements/react':
         specifier: workspace:*
@@ -1280,8 +1280,8 @@ packages:
   '@hapi/topo@6.0.2':
     resolution: {integrity: sha512-KR3rD5inZbGMrHmgPxsJ9dbi6zEK+C3ZwUwTa+eMwWLz7oijWUTWD2pMSNNYJAU6Qq+65NkxXjqHr/7LM2Xkqg==}
 
-  '@hyper-elements/email-client-models@1.7.0':
-    resolution: {integrity: sha512-ps+LM7z5UYIqIk3toqbBZPxE7C/5o3cTz8XcbrXljqyHpouyNrzmV3DjK6x3H3AXsOe148rPM+wHz/llwd51IQ==}
+  '@hyper-elements/email-client-models@1.8.0':
+    resolution: {integrity: sha512-YnyZLXIVJF777MjqtzvWw9gP9sG9tVVI5RUB7RCq6hRSh/pl+cycKF3ISsPFLRNqftjrJkmdiAwnZKtwt/RtPg==}
     engines: {node: '>=20'}
 
   '@img/colour@1.1.0':
@@ -6995,7 +6995,7 @@ snapshots:
     dependencies:
       '@hapi/hoek': 11.0.7
 
-  '@hyper-elements/email-client-models@1.7.0': {}
+  '@hyper-elements/email-client-models@1.8.0': {}
 
   '@img/colour@1.1.0':
     optional: true

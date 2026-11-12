@@ -15,7 +15,7 @@
  * 7. Says it's done: `data-email-client-ready` is "ok", "incomplete" (something was missing, or 10 seconds passed), or
  *    "error" (with the error in the findings).
  */
-import type { BlockMap } from "@hyper-elements/react";
+import type { PreviewConfig } from "../preview-config";
 import { scriptJson } from "../shell";
 import { clipped, type Finding } from "./findings";
 import { frame, grow, loadFaces, missingAuthorFonts, settleImages, until, webFontFamilies, withCss, withoutFaces } from "./frames";
@@ -25,30 +25,8 @@ import { loadModels, type Client } from "./models";
 /** How tall a client's window is, while a frame loads and is measured: a desktop's, or a phone's. */
 const WINDOW = { desktop: 900, phone: 812 } as const;
 
-export interface Config {
-  id: string;
-  client: Client;
-  name: string;
-  variant: "desktop" | "phone";
-  /** For webmail, the computer it's read on (its fonts). */
-  computer?: "windows" | "mac";
-  dark: boolean;
-  width: number;
-  approximate: boolean;
-  blocks: BlockMap;
-  fontOrigin: string | null;
-  /** Where each of the client's open font files loads from: its URL, or a data: URL. */
-  fontSources: Record<string, string>;
-  /** Each stand-in face to load before measuring, and their families (the models'). */
-  faces: string[];
-  /** Families whose stand-ins aren't loaded, as the email doesn't name them (NAMED_ONLY): their @font-face rules are left out. */
-  leftOut: string[];
-  standIns: string[];
-  /** The Elements version the client's model was measured on, the runtime's sha256, and the models' script's and protocol. */
-  elements: string | null;
-  runtime: string;
-  models: { script: string; protocol: number };
-}
+/** What the runtime reads beside the email: the shell writes it (src/preview-config.ts). */
+export type Config = PreviewConfig;
 
 type Missing = { kind: "font" | "substituted"; family: string } | { kind: "author-font"; family: string; src: string } | { kind: "image"; src: string };
 

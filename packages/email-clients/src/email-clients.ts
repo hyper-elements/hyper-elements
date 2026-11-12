@@ -97,6 +97,14 @@ export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
  */
 export const DEFAULT_EMAIL_CLIENTS: readonly EmailClient[] = ["outlook", "outlook-com", "outlook-mac", "outlook-app", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol", "samsung-email"];
 
+/**
+ * The previews (by id) that are approximate for HTML not built with Hyper Elements: those under 95% on such emails in
+ * the latest benchmark (classic Outlook, the Gmail app, Apple Mail's dark mode), and those not measured on them (the
+ * Gmail app with another account, and Gmail and Outlook.com read on a Mac). A release that moves one over the line
+ * changes this list and the docs' numbers together.
+ */
+export const APPROXIMATE_FOR_HTML: readonly string[] = ["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac"];
+
 /** caniemail's page about a feature (its slug, as in the page's address). */
 export const caniemail = (feature: string): string => `https://www.caniemail.com/features/${feature}/`;
 

@@ -6,7 +6,7 @@
 import type { PluginInput, PluginNode, PluginOutput } from "@hyper-elements/react";
 import { caniemail, type ClientDiagnostic } from "./email-clients";
 import { htmlNotes } from "./html";
-import { GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, HOVER_LIMIT, IMAGE_FORMATS, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, type Limit } from "./limits";
+import { GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, HOVER_LIMIT, imageFormatOf, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, type Limit } from "./limits";
 
 type Json = PluginNode["props"][string];
 
@@ -77,17 +77,10 @@ const fontStack = (stack: string) =>
     .map((family) => family.trim().replace(/^(["'])(.*)\1$/, "$2"))
     .filter(Boolean);
 
-/**
- * Where an image's format is said, first to last: its data: type, then the format an image CDN is asked for (which it
- * serves whatever the file's extension), then its extension. The first found is the format, even one every client shows.
- */
-const FORMAT_IN = [/^data:image\/([a-z]+)/i, /[?&](?:fm|format|f)=(webp|avif|svg|png|jpe?g|gif)\b/i, /\/f_(webp|avif|svg|png|jpe?g|gif)[,/]/i, /\.([a-z]+)(?:[?#]|$)/i];
-
 function imageFormat(node: PluginNode, key: "src" | "thumbnail", d: Found): void {
   const asset = node.props[key];
   const src = typeof asset === "string" ? asset : asset && typeof asset === "object" && !Array.isArray(asset) && typeof asset.src === "string" ? asset.src : "";
-  const format = FORMAT_IN.map((pattern) => pattern.exec(src)?.[1]).find(Boolean)?.toLowerCase();
-  const known = format && Object.prototype.hasOwnProperty.call(IMAGE_FORMATS, format) ? IMAGE_FORMATS[format] : undefined;
+  const known = imageFormatOf(src);
   if (!known) return;
   const what = key === "src" ? "This Image is" : "This Video's thumbnail is";
   d.add("email/image-format", "warning", `${what} ${known.name} file, which these email clients don't show`, `${node.path}.props.${key}`, node.id, {

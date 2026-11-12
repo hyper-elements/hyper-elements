@@ -6,10 +6,10 @@
 import React from "react";
 import { Button, Email, Html, Page, render, Text, type ElementsPlugin } from "@hyper-elements/react";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
-import { checkCore, checkProtocol, CORE_RANGE, MODEL_PROTOCOLS } from "../src/core";
+import { checkCore, checkProtocol, CORE_RANGE, loadCore, MODEL_PROTOCOLS } from "../src/core";
 import { forgetModelsPackage, loadModelsPackage } from "../src/models";
 import { contentSecurityPolicy, inlineSafe, scriptJson } from "../src/shell";
-import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients } from "../src/index";
+import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients, type EmailClientsOptions, type EmailClientsResult } from "../src/index";
 import { RUNTIME } from "../src/runtime.generated";
 
 const welcome = (
@@ -164,6 +164,13 @@ describe("renderInEmailClients()", () => {
   });
 });
 
+describe("renderInEmailClients()'s type, as code typed from it reads it", () => {
+  it("keeps the template signature last: Parameters<> and ReturnType<> read the last overload", () => {
+    expectTypeOf<Parameters<typeof renderInEmailClients>>().toEqualTypeOf<[element: React.ReactElement, options?: EmailClientsOptions]>();
+    expectTypeOf<ReturnType<typeof renderInEmailClients>>().toEqualTypeOf<Promise<EmailClientsResult>>();
+  });
+});
+
 describe("the version check", () => {
   const core = { render() {}, prepare() {}, ElementsError: class {}, PLUGIN_API: 1, BLOCK_MAP_VERSION: 2 };
   const mismatch = (lib: Record<string, unknown>) => {
@@ -181,9 +188,10 @@ describe("the version check", () => {
     expect(mismatch({})!.message).toContain(`npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^${pkg.version.split(".").slice(0, 2).join(".")}`);
   });
 
-  it("passes a core with render()'s blockMap in a format it reads, as the installed one is", () => {
+  it("passes a core with render()'s blockMap in a format it reads, as the installed one is", async () => {
     expect(mismatch(core)).toBeNull();
-    expect(() => checkCore()).not.toThrow();
+    const installed = await loadCore();
+    expect(() => checkCore(installed)).not.toThrow();
   });
 
   it("refuses a models package that speaks another protocol, as a mismatched install", () => {

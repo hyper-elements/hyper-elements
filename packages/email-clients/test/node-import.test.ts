@@ -34,13 +34,70 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     expect(typeof document).toBe("undefined");
   });
 
-  it("leaves core external: it imports @hyper-elements/react by name and bundles none of it", () => {
+  it("leaves core external, loaded when a template needs it: by name, in each build's own format, and none of it bundled", () => {
+    const esm = readFileSync(join(dir, "dist/index.js"), "utf8");
+    const cjs = readFileSync(join(dir, "dist/index.cjs"), "utf8");
+    // Nothing loads core when the module loads: only loadCore() does, when a template is rendered.
+    expect(esm).not.toMatch(/^import [^;]*['"]@hyper-elements\/react['"]/m);
+    expect(esm).toContain("await import('@hyper-elements/react')");
+    expect(esm).not.toMatch(/require\(['"]@hyper-elements\/react['"]\)/);
+    expect(cjs).not.toMatch(/^var \w+ = require\(['"]@hyper-elements\/react['"]\)/m);
+    expect(cjs).toMatch(/if \(true\) return __require\("@hyper-elements\/react"\)/);
     for (const file of ["dist/index.js", "dist/index.cjs"]) {
       const text = readFileSync(join(dir, file), "utf8");
-      expect(text, file).toMatch(/from '@hyper-elements\/react'|require\('@hyper-elements\/react'\)/);
       expect(text, file).not.toContain("elements-core");
       expect(text, file).not.toContain("function renderTemplate");
     }
+  });
+
+  it("previews an HTML email in both module formats", async () => {
+    const esm = await import(join(dir, "dist/index.js"));
+    const cjs = createRequire(join(dir, "package.json"))(join(dir, "dist/index.cjs"));
+    const html = "<!DOCTYPE html><html><body><p>Hi</p></body></html>";
+    for (const entry of [esm, cjs]) {
+      const { previews, diagnostics } = await entry.renderInEmailClients(html, { emailClients: ["gmail"], computers: ["windows"] });
+      expect(previews.map((p: { filename: string }) => p.filename)).toEqual(["gmail.html"]);
+      expect(diagnostics.filter((d: { code: string }) => d.code !== "email/captured-checks")).toEqual([]);
+      const inline = await entry.renderInEmailClients(html, { emailClients: ["outlook-com"], computers: ["windows"], fonts: "inline" });
+      expect(inline.previews[0].html).toContain("data:font/woff2;base64,");
+    }
+  });
+
+  it("gives a caller its own core's ElementsError, in each module format", async () => {
+    const esm = await import(join(dir, "dist/index.js"));
+    const cjs = createRequire(join(dir, "package.json"))(join(dir, "dist/index.cjs"));
+    const React = await import("react");
+    const esmCore = await import("@hyper-elements/react");
+    const cjsCore = createRequire(join(dir, "package.json"))("@hyper-elements/react");
+    for (const [entry, core] of [[esm, esmCore], [cjs, cjsCore]] as const) {
+      const page = React.createElement(core.Page, null, React.createElement(core.Text, null, "Hi"));
+      const error = await entry.renderInEmailClients(page).catch((e: unknown) => e);
+      expect(error).toBeInstanceOf(core.ElementsError);
+    }
+  });
+
+  it("doesn't keep a failed load of core in the CommonJS build: the next template call loads it", async () => {
+    const load = createRequire(join(dir, "package.json"));
+    const file = load.resolve(join(dir, "dist/index.cjs"));
+    delete load.cache[file];
+    const fresh = load(file);
+    const React = await import("react");
+    const core = load("@hyper-elements/react");
+    const page = React.createElement(core.Page, null, React.createElement(core.Text, null, "Hi"));
+    // require() of core throws synchronously, as it does when core isn't installed.
+    const Module = load("node:module") as { _load: (request: string, ...rest: unknown[]) => unknown };
+    const original = Module._load;
+    Module._load = function (this: unknown, request: string, ...rest: unknown[]) {
+      if (request === "@hyper-elements/react") throw Object.assign(new Error("Cannot find module '@hyper-elements/react'"), { code: "MODULE_NOT_FOUND" });
+      return original.call(this, request, ...rest);
+    };
+    try {
+      await expect(fresh.renderInEmailClients(page)).rejects.toMatchObject({ name: "email-clients/version-mismatch" });
+    } finally {
+      Module._load = original;
+    }
+    // Installed now: the Page is refused by core's own ElementsError, so core loaded.
+    expect(await fresh.renderInEmailClients(page).catch((e: unknown) => e)).toBeInstanceOf(core.ElementsError);
   });
 
   it("resolves its types under node10, node16 and bundler, for each module format", () => {

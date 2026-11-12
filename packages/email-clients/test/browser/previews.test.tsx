@@ -365,3 +365,66 @@ describe.runIf(process.platform === "linux")("on Linux, without the Mac's fonts"
     await gmail.page.close();
   });
 });
+
+describe("HTML given as a string", () => {
+  const fixture = (name: string) => readFileSync(join(__dirname, "../fixtures/html", name), "utf8");
+
+  it("previews a hand-written email and one with a head stylesheet in every client, words and all", async () => {
+    const renderHtml = renderInEmailClients;
+    for (const [name, words] of [["receipt.html", "Thanks for your order"], ["newsletter.html", "The weekly letter"]] as const) {
+      const { previews } = await renderHtml(fixture(name), { emailClients: [...PREVIEW_CLIENTS], dark: true });
+      expect(previews.length).toBe(PREVIEW_CLIENTS.length + 3);
+      for (const preview of previews) {
+        const { page, ready, errors, findings } = await open(`html-${name}-${preview.id}.html`, preview.html);
+        try {
+          expect([preview.id, ready === "ok" || (!MAC && ready === "incomplete" && onlyFonts(findings.missing).length === 0)]).toEqual([preview.id, true]);
+          expect([preview.id, errors]).toEqual([preview.id, []]);
+          const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
+          expect([preview.id, await frame.locator("body").innerText()]).toEqual([preview.id, expect.stringContaining(words)]);
+          // No blocks in HTML the caller gave: whatever a preview finds is about the email as a whole.
+          for (const d of findings.diagnostics) expect([preview.id, d.code, d.path]).toEqual([preview.id, d.code, "root"]);
+        } finally {
+          await page.close();
+        }
+      }
+    }
+  });
+
+  it("runs none of a hostile email's scripts, handlers or navigation, a <base href> included, and fetches only its images", async () => {
+    const renderHtml = renderInEmailClients;
+    const hostile = [
+      "<!DOCTYPE html><html><head>",
+      '<base href="https://evil.example/">',
+      '<meta http-equiv="refresh" content="0;url=https://evil.example/">',
+      '<link rel="stylesheet" href="https://evil.example/s.css">',
+      "<script>parent.document.title='pwned-head'</script>",
+      "</head><body><p>Before</p>",
+      "<script>parent.document.title='pwned-script'</script>",
+      '<img src="https://example.test/x.png" onerror="parent.document.title=\'pwned-handler\'">',
+      '<a href="javascript:parent.document.title=\'pwned-link\'" id="evil">x</a>',
+      '<a href="relative/page" id="relative">relative</a>',
+      '<form action="https://evil.example/"><input name="q"></form>',
+      '<iframe src="https://evil.example/frame"></iframe>',
+      "<!--[if !mso]><!--><script>parent.document.title='pwned-comment'</script><!--<![endif]-->",
+      "</script><script>document.title='pwned-shell'</script>",
+      "</body></html>",
+    ].join("");
+    for (const client of PREVIEW_CLIENTS) {
+      const { previews } = await renderHtml(hostile, { emailClients: [client], computers: ["windows"] });
+      const { page, ready, requests } = await open(`html-hostile-${client}.html`, previews[0]!.html);
+      try {
+        await page.waitForTimeout(300);
+        const frame = page.frames().find((f) => f.parentFrame() === page.mainFrame())!;
+        await frame.locator("#evil").click({ timeout: 2000 }).catch(() => undefined);
+        await frame.locator("#relative").click({ timeout: 2000 }).catch(() => undefined);
+        await page.waitForTimeout(200);
+        expect([client, ready === "ok" || (!MAC && ready === "incomplete")]).toEqual([client, true]);
+        expect([client, await page.title()]).toEqual([client, expect.not.stringContaining("pwned")]);
+        expect([client, page.url()]).toEqual([client, expect.stringMatching(/^file:/)]);
+        expect([client, requests.filter((url) => !url.startsWith("https://example.test/") && !url.startsWith("https://cdn.jsdelivr.net/npm/@hyper-elements/email-clients@"))]).toEqual([client, []]);
+      } finally {
+        await page.close();
+      }
+    }
+  });
+});
