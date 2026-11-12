@@ -1,6 +1,6 @@
 ---
 title: "AI agents"
-description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates: write, validate, outline, render, and check it in the email client emulator."
+description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates, in code or from the shell: write, validate, outline, render, and check it in the email client emulator."
 ---
 
 If an agent writes your templates, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email faster with Hyper Elements than with MJML (1.3×), hand-written HTML (1.8×) or React Email (2.6×).
@@ -146,6 +146,25 @@ for (const preview of previews) await writeFile(`previews/${preview.filename}`, 
 
 Open each file, wait for `<html data-email-client-ready>`, and read `#email-client-findings`. See [Email client emulator](/docs/email-client-emulator).
 
+## The loop from the shell
+
+An agent that can run commands can do the same loop without writing a script, with [`@hyper-elements/cli`](/docs/cli) (`npm install -D @hyper-elements/cli`). Each template is a module whose default export renders the root, with its `PreviewProps` as props:
+
+```bash
+npx hyper-elements check emails/welcome.tsx --json     # 2. validate, with the email client checks
+npx hyper-elements outline emails/welcome.tsx          # 3. the layout as text
+npx hyper-elements render emails/welcome.tsx           # 4. out/welcome.html and out/welcome.txt
+npx hyper-elements describe Button --root Email        # what a component takes, before writing it
+```
+
+With `--json`, stdout holds one line per template, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every template is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error, no templates found).
+
+To test an email in the email clients from the shell, the agent uses what it has:
+
+1. **Where the CLI finds a Chromium:** `npx hyper-elements preview emails/welcome.tsx --findings --json`. Each preview comes back with its `ready` and its `findings`: what that client removed or changed, what was missing, and text it draws on more lines. `npx hyper-elements preview --install-browser` downloads a Chromium.
+2. **Where it finds none** (exit `2`, `"browser": null, "reason": "no-browser"`), the preview files are still written. An agent with a browser of its own opens each one, or the URLs `preview --serve` prints, waits for `<html data-email-client-ready>`, and reads the JSON in `#email-client-findings`.
+3. **With no browser at all,** `check`'s diagnostics are what it has: each email client problem with the clients it's about and what to change.
+
 ## Common mistakes
 
 Each of these made an agent's first try fail:
@@ -161,6 +180,7 @@ Each of these made an agent's first try fail:
 ## Rules worth giving your agent
 
 - Read `GUIDE.md` before writing a template.
+- Check each template you write with `npx hyper-elements check <file> --json` (or `validate()`), and fix every error before you render it.
 - A template has one root: `Email`, `Page`, `Document` or `Canvas`. The root decides the output.
 - Raw tags such as `<b>`, `<br>` or `<div>` are errors. Use `Span`, `LineBreak` and the layout components.
 - Build reusable trees with a plain synchronous function that returns the root. Fetch data first: a component that is async or suspends is an error.

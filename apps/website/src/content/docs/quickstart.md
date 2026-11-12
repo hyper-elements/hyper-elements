@@ -181,6 +181,24 @@ Email 600px: background #f4f4f5
 
 The heading is 536px: the 600px column less 32px of padding on each side.
 
+## From the shell
+
+`@hyper-elements/cli` runs the same checks, renders and previews from the shell, with no script of your own. It takes a module's default export as the template, with its `PreviewProps` as props, so add two lines to `emails/welcome.tsx`:
+
+```tsx
+Welcome.PreviewProps = { name: "Ada" };
+export default Welcome;
+```
+
+```bash
+npm install -D @hyper-elements/cli
+npx hyper-elements check emails/                # validate(), and the email client checks where email-clients is installed
+npx hyper-elements render emails/               # out/welcome.html and out/welcome.txt
+npx hyper-elements preview emails/welcome.tsx   # the email in each email client: out/clients/welcome/outlook.html, …
+```
+
+A template with errors exits with code `1`, which fails a CI job. See [Command line](/docs/cli).
+
 ## With an AI agent
 
 The package ships a guide to writing templates, `GUIDE.md`. In Claude Code, add this line to your project's `CLAUDE.md` and every session starts out knowing the components:
@@ -189,7 +207,7 @@ The package ships a guide to writing templates, `GUIDE.md`. In Claude Code, add 
 @node_modules/@hyper-elements/react/GUIDE.md
 ```
 
-For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md." Then have the agent run `validate()` on what it writes. See [Diagnostics](/docs/diagnostics).
+For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md." Then have the agent check what it writes, with `validate()` or `npx hyper-elements check emails/ --json`. See [Diagnostics](/docs/diagnostics) and [Command line](/docs/cli).
 
 ## Next
 
