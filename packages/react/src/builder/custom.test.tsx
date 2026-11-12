@@ -37,6 +37,7 @@ const ProductCard = component({
   ),
 });
 const Footer = component({ type: "acme.LegalFooter", label: "Legal footer", props: {}, render: () => <Text style={{ fontSize: 12 }}>Acme Inc., 1 Market St.</Text> });
+const Hero = component({ type: "acme.Hero", label: "Hero", placement: "section", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Section><Heading>{title}</Heading></Section> });
 // A prop its component needs, with what a block dragged in starts with.
 const Banner = component({ type: "acme.Banner", label: "Banner", props: { title: prop.text({ label: "Title", required: true, default: "Welcome" }) }, render: (p) => <Text>{p.title}</Text> });
 
@@ -119,7 +120,6 @@ describe("toDesign with customTools", () => {
   });
 
   it("keeps a component placed where a Section goes as an HTML block, and says so", () => {
-    const Hero = component({ type: "acme.Hero", label: "Hero", placement: "section", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Section><Heading>{title}</Heading></Section> });
     const { design, report } = toDesign(<Email><Hero title="Launch" /></Email>, { customTools: true });
     expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
     expect(report.join("\n")).toContain("HTML block");
@@ -241,6 +241,15 @@ describe("fromDesign with components", () => {
     expect((await render(back.element)).html).toContain(">Hello</h");
   });
 
+  it("leaves out a block of a component placed where a Section goes, and says so", async () => {
+    const { design } = toDesign(<Email><Heading>Hello</Heading></Email>);
+    design.body.rows[0].columns[0].contents.push({ type: "custom", slug: "acme_hero", values: { title: "Launch" } });
+    const back = fromDesign(design, { components: [Hero] });
+    expect(back.report).toEqual(['rows[0].columns[0].contents[1]: the custom tool "acme_hero" is a acme.Hero\'s, which goes where a Section does, not in a column: left out']);
+    expect(back.code).not.toContain("acme.Hero");
+    expect((await render(back.element)).html).toContain(">Hello</h");
+  });
+
   it("refuses two components that are one tool", () => {
     const One = component({ type: "x.Y1Zed", label: "One", props: {}, render: () => <Text>1</Text> });
     const Two = component({ type: "x-y1.Zed", label: "Two", props: {}, render: () => <Text>2</Text> });
@@ -340,6 +349,12 @@ describe("registerTools", () => {
     expect(start).toEqual({ title: "Welcome" });
     expect(tools[0].renderer.Viewer.render(start)).toContain(">Welcome</p>");
     expect(tools[0].renderer.exporters.email(start)).toContain(">Welcome</p>");
+  });
+
+  it("registers no tool for a component placed where a Section goes, which is no block in a column", () => {
+    const { builder, tools } = fakeBuilder();
+    expect(registerTools(builder, [Hero, Footer])).toEqual(["acme_legal_footer"]);
+    expect(tools.map((tool) => tool.name)).toEqual(["acme_legal_footer"]);
   });
 
   it("leaves a value its prop doesn't take out of the drawing, which then shows the default", () => {

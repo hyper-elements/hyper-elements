@@ -37,6 +37,9 @@ export function toolsOf(components: readonly WithDefinition[] = []): Map<string,
   return tools;
 }
 
+/** Whether a component is placed where a Section goes: a band across the window, which no block in a column is, so it's no tool. */
+const inSection = (definition: CustomDefinition<any>): boolean => definition.categories.includes("section");
+
 /** One of the builder's property editors: its name there, and a prop's value as it stores one and as it's read back. */
 interface PropertyEditor {
   widget: string;
@@ -122,6 +125,11 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
     return [];
   }
   const tool = `the custom tool ${JSON.stringify(slug)}`;
+  // Registered before registerTools() left these out, or written by hand: a block in a column, where it can't go.
+  if (inSection(definition)) {
+    context.say(`${tool} is a ${definition.type}'s, which goes where a Section does, not in a column: left out`);
+    return [];
+  }
   const props = toolProps(definition, values, context.say);
   // A block dragged in and not filled yet (or filled with what its prop doesn't take), which the builder leaves out of
   // what it exports too: with it, the template wouldn't render.
@@ -195,12 +203,14 @@ function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinitio
 /**
  * Registers each component as a custom tool in a builder (in its custom JavaScript, where `unlayer.registerTool` is):
  * the tool's name is its type's (`toolName()`), its properties its props, each with the builder's editor for its kind
- * (or the one its `editor` names), and it's drawn by Elements, in the canvas and in what the builder exports. Returns
- * the tools' names.
+ * (or the one its `editor` names), and it's drawn by Elements, in the canvas and in what the builder exports. A
+ * component placed where a Section goes is no tool (toDesign() writes it as an HTML block). Returns the tools' names.
  */
 export function registerTools(builder: Builder, components: readonly WithDefinition[], options: RegisterToolsOptions = {}): string[] {
   const tools = toolsOf(components);
+  // Every component given, for the ones a tool's own renders.
   const all = [...tools.values()];
+  for (const [name, definition] of tools) if (inSection(definition)) tools.delete(name);
   const canvas = options.displayMode === "web" ? "Page" : "Email";
   for (const type of Object.keys(options.tools ?? {})) {
     if (!all.some((definition) => definition.type === type)) throw new Error(`[Elements] registerTools: tools has settings for ${type}, which is none of the components given`);
