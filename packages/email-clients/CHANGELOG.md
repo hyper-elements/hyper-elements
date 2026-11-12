@@ -19,7 +19,8 @@ Each release records the models package it was tested with.
   template needs them, as before; HTML doesn't. In TypeScript without them, the declarations name their types, so keep
   `skipLibCheck` on (the default).
 - The preview runtime is rebuilt: the same code, with its minified names renamed (its sha256 changes).
-- Requires `@hyper-elements/email-client-models` 1.8.0, whose `check()` takes a whole email's HTML as well as a template.
+- Requires `@hyper-elements/email-client-models` 1.8.1, whose `check()` takes a whole email's HTML as well as a template,
+  and reads long markup in time in proportion to its length.
 
 ## 0.4.2
 
