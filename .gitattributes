@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Generated files checked byte for byte against what their scripts write (LF), on every platform.
+packages/email-clients/src/runtime.generated.ts text eol=lf

@@ -166,8 +166,11 @@ describe("preview --install-browser", () => {
     const browsers = mkdtempSync(join(tmpdir(), "hyper-elements-cli-install-"));
     try {
       const dir = project({});
+      // On Linux, a distribution Playwright has no build for (Ubuntu 26.04 for 1.60) fails before asking: name one it
+      // has, since what's tested is the CLI's install, not Playwright's platform list.
+      const platform = process.platform === "linux" ? { PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: `ubuntu24.04-${process.arch === "arm64" ? "arm64" : "x64"}` } : {};
       const ran = await cli(dir, ["preview", "--install-browser"], {
-        env: { PLAYWRIGHT_BROWSERS_PATH: browsers, PLAYWRIGHT_DOWNLOAD_HOST: `http://127.0.0.1:${port}`, PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: "5000" },
+        env: { ...platform, PLAYWRIGHT_BROWSERS_PATH: browsers, PLAYWRIGHT_DOWNLOAD_HOST: `http://127.0.0.1:${port}`, PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: "5000" },
         timeout: 120_000,
       });
       // It asked for Chromium, got nothing, and said so: exit 2.
