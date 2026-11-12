@@ -144,7 +144,7 @@ await mkdir("previews", { recursive: true });
 for (const preview of previews) await writeFile(`previews/${preview.filename}`, preview.html);
 ```
 
-Open each file, wait for `<html data-email-client-ready>`, and read `#email-client-findings`. See [Email client emulator](/docs/email-clients).
+Open each file, wait for `<html data-email-client-ready>`, and read `#email-client-findings`. See [Email client emulator](/docs/email-client-emulator).
 
 ## Common mistakes
 
