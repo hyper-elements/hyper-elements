@@ -193,6 +193,7 @@ The value stays its kind's either way: a price is still a number, checked as one
 - **A project's plan sets how many custom tools it has.** The builder leaves a tool past that number out of its panel and doesn't export its blocks, so register no more components than the plan has tools.
 - **A component is drawn on its own in the builder**, at its column's width, with no template around it. Give it its own font and colors instead of taking the root's. A theme's token in a prop is written as the value it has there.
 - **A component placed where a Section goes** (`placement: "section"`) stays an HTML block: a tool is a block in a column.
+- **The builder's image editor has a width control, which a component doesn't read.** It takes the image's URL and size from it, and sizes the image itself in its `render`.
 - `registerTools()` takes `displayMode: "web"` for a builder of pages, so the canvas draws a Page's markup, and `icons` for each tool's icon in the panel.
 
 The [custom components example](https://github.com/hyper-elements/hyper-elements/tree/main/examples/custom-components-in-editor) is a whole email made this way, with a property editor of its own.
