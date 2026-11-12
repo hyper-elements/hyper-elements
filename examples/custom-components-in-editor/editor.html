@@ -7,7 +7,8 @@
   <style>
     body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: #1a1917; }
     header { display: flex; align-items: center; gap: 16px; padding: 10px 16px; border-bottom: 1px solid #d3cec4; background: #f3f1ec; }
-    header strong { letter-spacing: 3px; }
+    header a { padding: 5px 10px; border: 1px solid #d3cec4; border-radius: 2px; color: #5f5b53; text-decoration: none; }
+    header a.on { border-color: #1a1917; color: #1a1917; font-weight: 600; }
     #status { flex: 1; color: #5f5b53; }
     button { font: inherit; padding: 7px 12px; border: 1px solid #1a1917; border-radius: 2px; background: #1a1917; color: #f3f1ec; cursor: pointer; }
     button:disabled { opacity: 0.4; cursor: default; }
@@ -16,7 +17,8 @@
 </head>
 <body>
   <header>
-    <strong>OYEN</strong>
+    <a data-set="shop" href="?set=shop">A shop's tools</a>
+    <a data-set="oyen" href="?set=oyen">Oyen's dispatch</a>
     <span id="status">Loading…</span>
     <button id="save" disabled>Download edited design and HTML</button>
   </header>
@@ -26,13 +28,20 @@
     const status = document.getElementById("status");
     const save = document.getElementById("save");
     try {
-      // `pnpm build` writes both: the tools (the editor's custom JavaScript) and the dispatch as a design.
-      const [tools, design] = await Promise.all(["./output/tools.js", "./output/design.json"].map((path) => fetch(path).then((response) => {
+      // Two sets of components, each within the five custom tools most plans have: ?set=shop (the default) or ?set=oyen.
+      const params = new URLSearchParams(location.search);
+      const set = params.get("set") === "oyen" ? "oyen" : "shop";
+      for (const link of document.querySelectorAll("header a")) {
+        link.classList.toggle("on", link.dataset.set === set);
+        if (params.get("projectId")) link.href += `&projectId=${encodeURIComponent(params.get("projectId"))}`;
+      }
+      // `pnpm build` writes both: the tools (the editor's custom JavaScript) and the email as a design.
+      const [tools, design] = await Promise.all([`./output/${set}/tools.js`, `./output/${set}/design.json`].map((path) => fetch(path).then((response) => {
         if (!response.ok) throw new Error(`Run the build script first: ${path} is missing.`);
         return response.text();
       })));
       // Custom tools are part of a project's plan: open this page with ?projectId= and your project's id.
-      const projectId = Number(new URLSearchParams(location.search).get("projectId")) || undefined;
+      const projectId = Number(params.get("projectId")) || undefined;
       const editor = unlayer.createEditor({
         id: "editor",
         displayMode: "email",
@@ -59,8 +68,8 @@
         URL.revokeObjectURL(link.href);
       };
       save.addEventListener("click", () => editor.exportHtml(({ design, html }) => {
-        download("dispatch.design.json", JSON.stringify(design, null, 2), "application/json");
-        download("dispatch.html", html, "text/html");
+        download(`${set}.design.json`, JSON.stringify(design, null, 2), "application/json");
+        download(`${set}.html`, html, "text/html");
       }));
       // For the page's own checks.
       window.editor = editor;
