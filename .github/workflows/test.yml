@@ -147,9 +147,9 @@ jobs:
           echo "✅ /builder bundle within budget"
 
       # The email client checks and previews (@hyper-elements/email-clients, dist/index.js):
-      # about 58.9KB unminified ESM (0.4.1 added preview widths and computers; previews of HTML given as a string, and
-      # core loaded only for a template, added 3KB; the checks on HTML, 7.8KB: the document checks, Gmail's limits and
-      # the models' loading): the plugin and its checks from caniemail's tables, the
+      # about 60.3KB unminified ESM (0.4.1 added preview widths and computers; previews of HTML given as a string, and
+      # core loaded only for a template, added 3.6KB; the checks on HTML, 8.6KB: the document checks with comments and
+      # scripts blanked, Gmail's limits and the models' loading): the plugin and its checks from caniemail's tables, the
       # preview shell, and the runtime each preview file carries (the frames, fonts, images
       # and findings around the models, minified, about 8KB). The models are their own
       # package (a dependency, not bundled), and so is core (external). Set from that plus
@@ -159,7 +159,7 @@ jobs:
           BUNDLE="packages/email-clients/dist/index.js"
           test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=61000
+          MAX_SIZE=62400
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
