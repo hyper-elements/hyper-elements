@@ -116,14 +116,16 @@ jobs:
       # render that collects a template (about 5KB). Raise it on purpose, with what grew:
       # 322KB for plain text's one-pass scan of service tags in large headings and
       # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
-      # written for classic Outlook apart (its own col and first-row cell, without width: auto).
+      # written for classic Outlook apart (its own col and first-row cell, without width: auto);
+      # 317,500 bytes for what a prop gives its editor (editorOptions: said by
+      # describeComponents(), checked where a component is defined).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=317000
+          MAX_SIZE=317500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

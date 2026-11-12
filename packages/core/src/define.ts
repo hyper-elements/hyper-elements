@@ -44,6 +44,11 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
    * shows the kind's.
    */
   editor?: string;
+  /**
+   * What its editor takes besides the value (a counter's `step`, a currency's `symbol`), given to it as it is. It
+   * changes how the value is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
+   */
+  editorOptions?: { readonly [name: string]: Json };
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
 }

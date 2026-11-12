@@ -66,6 +66,10 @@ export function defineCustomComponent<const P extends PropSpecs>(spec: CustomCom
     if (prop.editor !== undefined && !EDITOR_NAME.test(String(prop.editor))) {
       throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a name ("counter", "currency"), not ${JSON.stringify(prop.editor)}`);
     }
+    const options: unknown = prop.editorOptions;
+    if (options !== undefined && (typeof options !== "object" || options === null || Array.isArray(options))) {
+      throw new Error(`[Elements] ${spec.type}: the editorOptions of ${key} are an object ({ step: 5 }), not ${JSON.stringify(options)}`);
+    }
   }
   const section = spec.placement === "section";
   const paths = Object.keys(spec.props).map((key) => `props.${key}`);

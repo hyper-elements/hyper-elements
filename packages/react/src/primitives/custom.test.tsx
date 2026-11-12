@@ -240,7 +240,7 @@ describe("component()", () => {
       label: "Order",
       props: {
         quantity: prop.number({ label: "Quantity", min: 1, default: 1, editor: "counter" }),
-        price: prop.number({ label: "Price", min: 0, default: 19, editor: "currency" }),
+        price: prop.number({ label: "Price", min: 0, default: 19, editor: "currency", editorOptions: { symbol: "€" } }),
         note: prop.text({ label: "Note", default: "" }),
       },
       render: (p) => <Text>{`${p.quantity} × ${p.price}`}</Text>,
@@ -249,6 +249,8 @@ describe("component()", () => {
     const editors = Object.fromEntries(described.properties.filter((property) => property.path.startsWith("props.")).map((property) => [property.path, [property.editor, property.namedEditor]]));
     // Its kind's editor is still said: an app with no editor by the prop's name shows that one.
     expect(editors).toEqual({ "props.quantity": ["number", "counter"], "props.price": ["number", "currency"], "props.note": ["text", undefined] });
+    // What a prop gives its editor besides the value is said as it is.
+    expect(described.properties.filter((property) => property.editorOptions).map((property) => [property.path, property.editorOptions])).toEqual([["props.price", { symbol: "€" }]]);
     expect((await render(<Email><Order quantity={2} price={24} /></Email>)).text).toContain("2 × 24");
     expect(validate(<Email><Order price={-1} /></Email>).diagnostics.map((d) => d.code)).toEqual(["prop/invalid"]);
   });
@@ -257,6 +259,12 @@ describe("component()", () => {
     const named = (editor: string) => () => component({ type: "acme.Named", label: "Named", props: { n: prop.number({ label: "N", editor }) }, render: () => <Text>n</Text> });
     expect(named("my_color-picker2")).not.toThrow();
     for (const name of ["", "two words", "<b>", "1st"]) expect(named(name)).toThrow(`acme.Named: the editor of n is a name ("counter", "currency"), not ${JSON.stringify(name)}`);
+  });
+
+  it("refuses editorOptions that aren't an object", () => {
+    const given = (editorOptions: never) => () => component({ type: "acme.Named", label: "Named", props: { n: prop.number({ label: "N", editor: "counter", editorOptions }) }, render: () => <Text>n</Text> });
+    expect(given({ step: 5 } as never)).not.toThrow();
+    for (const options of [5, "step", [5], null]) expect(given(options as never)).toThrow(`acme.Named: the editorOptions of n are an object ({ step: 5 }), not ${JSON.stringify(options)}`);
   });
 
   it("types render's props: required and defaulted ones always there", () => {

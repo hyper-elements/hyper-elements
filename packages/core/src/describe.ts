@@ -20,6 +20,8 @@ export interface PropertyDescription {
   editor: EditorKind;
   /** The editor its prop names (`editor: "counter"`), for an app that has one of that name; another shows `editor`. */
   namedEditor?: string;
+  /** What its prop gives its editor besides the value (`editorOptions`: a counter's step, a currency's symbol). */
+  editorOptions?: { readonly [name: string]: Json };
   editable: boolean;
   required: boolean;
   default?: Json;
@@ -150,6 +152,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,
       ...(spec.editor ? { namedEditor: spec.editor } : {}),
+      ...(spec.editorOptions ? { editorOptions: spec.editorOptions } : {}),
       editable: spec.editable !== false,
       required: !!spec.required,
       ...(spec.default !== undefined ? { default: spec.default } : {}),
