@@ -42,7 +42,7 @@ describe("what the CLI loads is what the template loads", () => {
     const ran = await cli(dir, ["render", "emails"], { env: { HYPER_ELEMENTS_CLI_PROBE: "1" } });
     expect(ran.code, ran.stderr + ran.stdout).toBe(0);
     expect(probes(ran.stderr)).toEqual([{ file: join(dir, "emails/a.tsx"), sameRender: true, sameReact: true }]);
-    expect(readFileSync(join(dir, "out/a.txt"), "utf8")).toContain("Same objects");
+    expect(readFileSync(join(dir, "out/emails/a.txt"), "utf8")).toContain("Same objects");
   });
 
   it("renders a template with a component(), a theme, a hook and a context as render() does in-process", async () => {
@@ -82,8 +82,8 @@ Template.PreviewProps = { title: "Hello" };
     const { render } = await import(pathToFileURL(join(MODULES["@hyper-elements/react"], "dist/primitives.js")).href);
     const React = await import("react");
     const expected = await render(React.createElement(Template, Template.PreviewProps));
-    expect(readFileSync(join(dir, "out/a.html"), "utf8")).toBe(expected.html);
-    expect(readFileSync(join(dir, "out/a.txt"), "utf8")).toBe(expected.text);
+    expect(readFileSync(join(dir, "out/emails/a.html"), "utf8")).toBe(expected.html);
+    expect(readFileSync(join(dir, "out/emails/a.txt"), "utf8")).toBe(expected.text);
     expect(expected.text).toContain("Acme sent 3");
   });
 });
@@ -114,7 +114,7 @@ describe("the loader module", () => {
     });
     expect(ran.code).toBe(0);
     expect(ran.kept).toBe("keep me\n");
-    expect(readFileSync(join(dir, "out/a.txt"), "utf8")).toContain("Written beside");
+    expect(readFileSync(join(dir, "out/emails/a.txt"), "utf8")).toContain("Written beside");
   });
 
   it.skipIf(WINDOWS || process.getuid?.() === 0)("fails a template whose folder the CLI can't write to with cli/read-only", async () => {

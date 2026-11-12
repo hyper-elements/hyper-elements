@@ -40,6 +40,8 @@ export interface ServeOptions {
   routes?: Record<string, Route>;
   /** Headers added to a file's response, by its real path. */
   headers?(file: string): Record<string, string>;
+  /** The port to listen on (`dev --port`); a free one where it isn't given. */
+  port?: number;
 }
 
 /** Whether a connection's peer is this machine's 127.0.0.1. */
@@ -106,7 +108,7 @@ export async function serve(folder: string, host = "127.0.0.1", options: ServeOp
   const server = createServer(handle);
   await new Promise<void>((resolvePromise, reject) => {
     server.once("error", reject);
-    server.listen(0, host, () => resolvePromise());
+    server.listen(options.port ?? 0, host, () => resolvePromise());
   });
   port = (server.address() as { port: number }).port;
   const base = `http://127.0.0.1:${port}/${prefix}/`;

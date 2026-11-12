@@ -1,4 +1,4 @@
-// Checks emails/email.tsx with the Hyper Elements CLI, then renders it to out/email.html, and prints its problems.
+// Checks emails/email.tsx with the Hyper Elements CLI, then renders it to out/email.html (--base emails), and prints its problems.
 //   npx hyper-elements check emails/email.tsx --rendered --json
 //   npx hyper-elements render emails/email.tsx --json
 // --json: also prints the problems as JSON, on the last line, as the `he` kit's render tool does.
@@ -46,7 +46,7 @@ const problems = check.line.diagnostics ?? [];
 if (check.line.status !== "ok" || check.exitCode !== 0) {
   end(false, problems, check.line.error ?? (check.line.status === "skipped" ? "emails/email.tsx wasn't rendered: its default export must be a component that renders an <Email>." : check.stderr.trim()));
 }
-const render = cli("render");
+const render = cli("render", "--base", "emails");
 if (render.line.status !== "ok" || render.exitCode !== 0) end(false, problems.length ? problems : (render.line.diagnostics ?? []), render.line.error ?? render.stderr.trim());
 const html = render.line.outputs?.find((o) => o.endsWith(".html"));
 if (html !== "out/email.html") end(false, problems, `hyper-elements render wrote ${render.line.outputs?.join(", ") || "nothing"}, not out/email.html.`);

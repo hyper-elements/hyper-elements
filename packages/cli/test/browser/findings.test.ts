@@ -88,7 +88,7 @@ describe("preview --findings", () => {
     const text = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--clients", "gmail"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     expect(text.code, text.stderr).toBe(0);
     expect(text.stdout).toMatch(/✓ emails\/order\.tsx \(Email\), drawn in chromium [\d.]+, playwright\n/);
-    expect(text.stdout).toMatch(/ {2}gmail: out\/clients\/order\/gmail\.html \((ok|incomplete)/);
+    expect(text.stdout).toMatch(/ {2}gmail: out\/clients\/emails\/order\/gmail\.html \((ok|incomplete)/);
   });
 
   it("with only a system browser named by CHROME_PATH", async () => {
@@ -128,7 +128,7 @@ describe("preview --findings", () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--screenshots", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     const line = expectDrawn(ran, /, playwright$/);
-    expect(line.previews.map((p: any) => p.screenshot)).toEqual(["out/clients/order/gmail.png", "out/clients/order/gmail.mac.png", "out/clients/order/apple-mail.png"]);
+    expect(line.previews.map((p: any) => p.screenshot)).toEqual(["out/clients/emails/order/gmail.png", "out/clients/emails/order/gmail.mac.png", "out/clients/emails/order/apple-mail.png"]);
     for (const preview of line.previews) {
       const png = readFileSync(join(dir, preview.screenshot));
       expect(png.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
@@ -182,7 +182,7 @@ export async function renderInEmailClients(element, options) {
     const ran = await cli(dir, ["preview", "mail/order.html", "--findings", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     const line = expectDrawn(ran, /, playwright$/);
     expect(line).toMatchObject({ file: "mail/order.html", input: "html", root: null, status: "ok" });
-    expect(line.previews.map((p: any) => p.path)).toEqual(["out/clients/order/gmail.html", "out/clients/order/gmail.mac.html", "out/clients/order/apple-mail.html"]);
+    expect(line.previews.map((p: any) => p.path)).toEqual(["out/clients/mail/order/gmail.html", "out/clients/mail/order/gmail.mac.html", "out/clients/mail/order/apple-mail.html"]);
     const stdin = await cli(dir, ["preview", "-", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000, input: html });
     expect(expectDrawn(stdin, /, playwright$/).previews.map((p: any) => p.path)).toEqual(["out/clients/stdin/gmail.html", "out/clients/stdin/gmail.mac.html"]);
   });

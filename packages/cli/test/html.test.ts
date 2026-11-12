@@ -158,18 +158,18 @@ describe("check on HTML", () => {
 });
 
 describe("preview on HTML", () => {
-  it("writes the previews of an HTML file with nothing installed, under out/clients/<name>/", async () => {
+  it("writes the previews of an HTML file with nothing installed, under out/clients/<its path>/<name>/", async () => {
     const dir = bare({ "mail/welcome.html": HTML });
     const ran = await cli(dir, ["preview", "mail/welcome.html", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(readdirSync(join(dir, "out/clients/welcome")).sort()).toEqual(DEFAULT_PREVIEWS);
+    expect(readdirSync(join(dir, "out/clients/mail/welcome")).sort()).toEqual(DEFAULT_PREVIEWS);
     const [line] = lines(ran);
     expect(line).toMatchObject({ command: "preview", file: "mail/welcome.html", input: "html", root: null, status: "ok" });
-    expect(line.previews.map((p: any) => p.path).sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/welcome/${f}`));
-    expect(line.outputs.sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/welcome/${f}`));
+    expect(line.previews.map((p: any) => p.path).sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
+    expect(line.outputs.sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
     // The email as given, as data inside each file.
-    expect(readFileSync(join(dir, "out/clients/welcome/gmail.html"), "utf8")).toContain("data-email-client-ready");
-    expect(readFileSync(join(dir, "out/clients/welcome/gmail.html"), "utf8")).toContain("Welcome aboard");
+    expect(readFileSync(join(dir, "out/clients/mail/welcome/gmail.html"), "utf8")).toContain("data-email-client-ready");
+    expect(readFileSync(join(dir, "out/clients/mail/welcome/gmail.html"), "utf8")).toContain("Welcome aboard");
   });
 
   it("previews stdin under out/clients/stdin/", async () => {
@@ -190,7 +190,7 @@ describe("preview on HTML", () => {
     expect(line.diagnostics.some((d: any) => d.code === "email/html-css" && d.clients.includes("yahoo"))).toBe(true);
   });
 
-  it("two HTML files with one name from different folders get a folder each under the inputs' base", async () => {
+  it("two HTML files with one name from different folders get a folder each, at their paths", async () => {
     const dir = bare({ "a/email.html": HTML, "b/email.html": HTML.replace("Welcome aboard", "Second") });
     const ran = await cli(dir, ["preview", "a/email.html", "b/email.html", "--clients", "gmail", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
@@ -199,9 +199,9 @@ describe("preview on HTML", () => {
   });
 
   it("a preview that would be an input exits 2, with nothing written", async () => {
-    // o/clients/gmail/gmail.html's previews go to o/clients/gmail/: gmail.html would be written over it.
+    // From --base o/clients/gmail, gmail.html's previews go to o/clients/gmail/: gmail.html would be written over it.
     const dir = bare({ "o/clients/gmail/gmail.html": HTML });
-    const ran = await cli(dir, ["preview", "o/clients/gmail/gmail.html", "--out", "o", "--clients", "gmail"]);
+    const ran = await cli(dir, ["preview", "o/clients/gmail/gmail.html", "--out", "o", "--base", "o/clients/gmail", "--clients", "gmail"]);
     expect(ran.code).toBe(2);
     expect(ran.stderr).toContain("o/clients/gmail/gmail.html");
     expect(readFileSync(join(dir, "o/clients/gmail/gmail.html"), "utf8")).toBe(HTML);
@@ -307,7 +307,7 @@ describe("when the models package can't be used (the same for check and preview)
     projectEmailClients(dir, "0.4.3", ROWS[row]);
     const ran = await cli(dir, [command, "mail/welcome.html", "--json", "--clients", "gmail"]);
     const [line, summary] = lines(ran);
-    const previews = exists(join(dir, "out/clients/welcome")) ? readdirSync(join(dir, "out/clients/welcome")).sort() : [];
+    const previews = exists(join(dir, "out/clients/mail/welcome")) ? readdirSync(join(dir, "out/clients/mail/welcome")).sort() : [];
     return { ran, line, summary, previews };
   };
   const captured = (line: any) => line.diagnostics.filter((d: any) => d.code === "email/captured-checks");

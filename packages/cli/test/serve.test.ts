@@ -73,8 +73,8 @@ describe("preview --serve", () => {
       expect(line.previews.map((p: any) => p.id)).toEqual(["gmail", "gmail.mac"]);
       const url = new URL(line.previews[0].url);
       expect(url.hostname).toBe("127.0.0.1");
-      expect(url.pathname).toMatch(/^\/[0-9a-f]{32}\/a\/gmail\.html$/);
-      expect(line.previews[0].path).toBe("out/clients/a/gmail.html");
+      expect(url.pathname).toMatch(/^\/[0-9a-f]{32}\/emails\/a\/gmail\.html$/);
+      expect(line.previews[0].path).toBe("out/clients/emails/a/gmail.html");
       const port = Number(url.port);
       const prefix = url.pathname.split("/")[1];
 
@@ -86,20 +86,20 @@ describe("preview --serve", () => {
         expect(await response.text()).toContain("data-email-client-ready");
       }
       // localhost and [::1] by name are its own; another name isn't.
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Host: `localhost:${port}` })).status).toBe(200);
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Host: `[::1]:${port}` })).status).toBe(200);
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Host: "evil.example" })).status).toBe(403);
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Host: `evil.example:${port}` })).status).toBe(403);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Host: `localhost:${port}` })).status).toBe(200);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Host: `[::1]:${port}` })).status).toBe(200);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Host: "evil.example" })).status).toBe(403);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Host: `evil.example:${port}` })).status).toBe(403);
       // Its own Origin, or none; not another.
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Origin: `http://127.0.0.1:${port}` })).status).toBe(200);
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Origin: "http://evil.example" })).status).toBe(403);
-      expect((await get(port, `/${prefix}/a/gmail.html`, { Origin: "null" })).status).toBe(403);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Origin: `http://127.0.0.1:${port}` })).status).toBe(200);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Origin: "http://evil.example" })).status).toBe(403);
+      expect((await get(port, `/${prefix}/emails/a/gmail.html`, { Origin: "null" })).status).toBe(403);
       // Without the prefix, or with another: 404.
-      expect((await get(port, "/a/gmail.html")).status).toBe(404);
-      expect((await get(port, `/${"0".repeat(32)}/a/gmail.html`)).status).toBe(404);
+      expect((await get(port, "/emails/a/gmail.html")).status).toBe(404);
+      expect((await get(port, `/${"0".repeat(32)}/emails/a/gmail.html`)).status).toBe(404);
       expect((await get(port, "/")).status).toBe(404);
       // Nothing outside out/clients/.
-      if (!WINDOWS) symlinkSync(join(dir, "secret.txt"), join(dir, "out/clients/a/link.html"));
+      if (!WINDOWS) symlinkSync(join(dir, "secret.txt"), join(dir, "out/clients/emails/a/link.html"));
       for (const path of [
         `/${prefix}/../../secret.txt`,
         `/${prefix}/a/../../../secret.txt`,
@@ -143,7 +143,7 @@ describe("preview --serve", () => {
     const exited = new Promise<number | null>((resolve) => served.on("close", (code) => resolve(code)));
     try {
       expect(await until(() => out.includes("until Ctrl-C"), 30_000)).toBe(true);
-      expect(out).toMatch(/outlook: http:\/\/127\.0\.0\.1:\d+\/[0-9a-f]{32}\/a\/outlook\.html\n/);
+      expect(out).toMatch(/outlook: http:\/\/127\.0\.0\.1:\d+\/[0-9a-f]{32}\/emails\/a\/outlook\.html\n/);
       expect(out).not.toMatch(/templates?: \d+ errors?/);
       if (!WINDOWS) {
         served.kill("SIGTERM");

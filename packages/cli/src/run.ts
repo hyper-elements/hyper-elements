@@ -13,7 +13,7 @@ import { projectConfig } from "@unlayer-internal/template-loader";
 import { UsageError, type Args } from "./args";
 import { ALL_RENDER_OUTPUTS, RENDER_OUTPUTS } from "./commands/render";
 import { cliDiagnostic } from "./commands/shared";
-import { planDestinations, removeTemporaries, writeAtomically, type Planned } from "./destinations";
+import { outputBase, planDestinations, removeTemporaries, writeAtomically, type Planned } from "./destinations";
 import { errorLine } from "./errors";
 import { checkHtml, readStdin } from "./html";
 import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, type Input } from "./inputs";
@@ -319,8 +319,10 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   if (args.stdout && inputs.length !== 1) throw new UsageError(`--stdout writes one template's output: this run has ${inputs.length} templates.`);
   for (const link of found.links) io.stderr(`- ${displayPath(cwd, link)}: a symbolic link to a folder, not followed (give the folder itself to include what's in it)\n`);
   let planned: Planned | undefined;
-  if (args.command === "render" && !args.stdout) planned = planDestinations(inputs, found.base, args.out, cwd, ALL_RENDER_OUTPUTS);
-  const previewFolders = args.command === "preview" ? planPreviewFolders(inputs, found.base, args.out, cwd) : undefined;
+  // Outputs keep their path relative to the current folder (or --base), whatever else is given with them.
+  const base = (args.command === "render" && !args.stdout) || args.command === "preview" ? outputBase(inputs, cwd, args.base) : cwd;
+  if (args.command === "render" && !args.stdout) planned = planDestinations(inputs, base, args.out, cwd, ALL_RENDER_OUTPUTS);
+  const previewFolders = args.command === "preview" ? planPreviewFolders(inputs, base, args.out, cwd) : undefined;
 
   const token = ownToken();
   state.token = token;

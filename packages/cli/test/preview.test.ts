@@ -16,18 +16,18 @@ describe("preview", () => {
     const dir = project({ "emails/welcome.tsx": email("Welcome"), "emails/nested/receipt.tsx": email("Receipt") }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(readdirSync(join(dir, "out/clients/welcome")).sort()).toEqual(DEFAULT_FILES);
-    expect(readdirSync(join(dir, "out/clients/nested/receipt")).sort()).toEqual(DEFAULT_FILES);
+    expect(readdirSync(join(dir, "out/clients/emails/welcome")).sort()).toEqual(DEFAULT_FILES);
+    expect(readdirSync(join(dir, "out/clients/emails/nested/receipt")).sort()).toEqual(DEFAULT_FILES);
     const [receipt, welcome, summary] = lines(ran);
     expect(welcome).toMatchObject({ version: 1, command: "preview", file: "emails/welcome.tsx", input: "template", root: "Email", status: "ok" });
-    expect(welcome.previews.map((p: any) => p.path).sort()).toEqual(DEFAULT_FILES.map((f) => `out/clients/welcome/${f}`));
-    expect(welcome.outputs.sort()).toEqual(DEFAULT_FILES.map((f) => `out/clients/welcome/${f}`));
+    expect(welcome.previews.map((p: any) => p.path).sort()).toEqual(DEFAULT_FILES.map((f) => `out/clients/emails/welcome/${f}`));
+    expect(welcome.outputs.sort()).toEqual(DEFAULT_FILES.map((f) => `out/clients/emails/welcome/${f}`));
     for (const preview of welcome.previews) {
       expect(Object.keys(preview).sort()).toEqual(["client", "findings", "id", "path", "ready"]);
       expect(preview).toMatchObject({ ready: null, findings: null });
       expect(readFileSync(join(dir, preview.path), "utf8")).toContain("data-email-client-ready");
     }
-    expect(welcome.previews.find((p: any) => p.id === "gmail.mac")).toMatchObject({ client: "gmail", path: "out/clients/welcome/gmail.mac.html" });
+    expect(welcome.previews.find((p: any) => p.id === "gmail.mac")).toMatchObject({ client: "gmail", path: "out/clients/emails/welcome/gmail.mac.html" });
     // No browser was asked for: no `browser` on the line.
     expect("browser" in welcome).toBe(false);
     expect(receipt.file).toBe("emails/nested/receipt.tsx");
@@ -38,9 +38,9 @@ describe("preview", () => {
     const dir = project({ "emails/a.tsx": email() }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails/a.tsx", "--dark", "--fonts", "inline", "--clients", "apple-mail,outlook"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(readdirSync(join(dir, "out/clients/a")).sort()).toEqual(["apple-mail.dark.html", "apple-mail.html", "outlook.html"]);
-    expect(readFileSync(join(dir, "out/clients/a/outlook.html"), "utf8")).not.toContain("cdn.jsdelivr.net");
-    expect(ran.stdout).toContain("apple-mail.dark: out/clients/a/apple-mail.dark.html");
+    expect(readdirSync(join(dir, "out/clients/emails/a")).sort()).toEqual(["apple-mail.dark.html", "apple-mail.html", "outlook.html"]);
+    expect(readFileSync(join(dir, "out/clients/emails/a/outlook.html"), "utf8")).not.toContain("cdn.jsdelivr.net");
+    expect(ran.stdout).toContain("apple-mail.dark: out/clients/emails/a/apple-mail.dark.html");
   });
 
   it("--clients gmail,yahoo --dark: the previews without a model are cli/preview-skipped notes", async () => {
@@ -90,23 +90,23 @@ describe("preview", () => {
     const dir = project({ "emails/Welcome.tsx": email(), "emails/welcome.jsx": email() }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails"]);
     expect(ran.code).toBe(2);
-    expect(ran.stderr).toMatch(/would both write their previews in out\/clients\/welcome/i);
+    expect(ran.stderr).toMatch(/would both write their previews in out\/clients\/emails\/welcome/i);
     expect(exists(join(dir, "out"))).toBe(false);
   });
 
   it("previews render's own output where it is: its previews go under <out>/clients/, which can't hold it", async () => {
     const dir = project({ "emails/a.tsx": email("Rendered") }, { modules: WITH_CLIENTS });
     expect((await cli(dir, ["render", "emails"])).code).toBe(0);
-    const ran = await cli(dir, ["preview", "out/a.html", "--clients", "gmail", "--json"]);
+    const ran = await cli(dir, ["preview", "out/emails/a.html", "--clients", "gmail", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(lines(ran)[0].outputs).toEqual(["out/clients/a/gmail.html", "out/clients/a/gmail.mac.html"]);
-    expect(readFileSync(join(dir, "out/a.html"), "utf8")).toContain("Rendered");
+    expect(lines(ran)[0].outputs).toEqual(["out/clients/out/emails/a/gmail.html", "out/clients/out/emails/a/gmail.mac.html"]);
+    expect(readFileSync(join(dir, "out/emails/a.html"), "utf8")).toContain("Rendered");
   });
 
   it.skipIf(WINDOWS)("refuses a preview folder that leads, through a symbolic link, to the input's folder", async () => {
     const dir = project({ "mail/gmail.html": "<html><body><p>The email</p></body></html>" }, { modules: WITH_CLIENTS });
-    mkdirSync(join(dir, "out/clients"), { recursive: true });
-    symlinkSync(join(dir, "mail"), join(dir, "out/clients/gmail"), "dir");
+    mkdirSync(join(dir, "out/clients/mail"), { recursive: true });
+    symlinkSync(join(dir, "mail"), join(dir, "out/clients/mail/gmail"), "dir");
     const ran = await cli(dir, ["preview", "mail/gmail.html", "--clients", "gmail"]);
     expect(ran.code).toBe(2);
     expect(ran.stderr).toContain("which holds mail/gmail.html");

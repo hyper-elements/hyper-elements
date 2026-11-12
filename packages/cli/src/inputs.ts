@@ -28,8 +28,6 @@ export interface Input {
 
 export interface Found {
   inputs: Input[];
-  /** The nearest folder holding every input: outputs keep their paths relative to it. */
-  base: string;
   /** Folders' symbolic links to folders, not followed. */
   links: string[];
 }
@@ -51,14 +49,6 @@ function real(path: string): string {
   }
 }
 
-/** The deepest folder holding all of `folders`. */
-export function commonFolder(folders: string[]): string {
-  let common = folders[0];
-  for (const folder of folders.slice(1)) {
-    while (common !== dirname(common) && !(folder === common || folder.startsWith(common.endsWith(sep) ? common : common + sep))) common = dirname(common);
-  }
-  return common;
-}
 
 /** Whether a module has a default export (`export default`, `export { x as default }`, or CommonJS's `module.exports`). */
 export async function hasDefaultExport(path: string, source: string): Promise<boolean> {
@@ -87,7 +77,6 @@ export interface FindOptions {
 export async function findInputs(positional: string[], cwd: string, folderSkip = (name: string) => name.startsWith("_"), options: FindOptions = {}): Promise<Found> {
   const inputs: Input[] = [];
   const seen = new Set<string>();
-  const holders: string[] = [];
   const links: string[] = [];
   const add = (file: string, kind?: "html") => {
     const realPath = real(file);
@@ -109,7 +98,6 @@ export async function findInputs(positional: string[], cwd: string, folderSkip =
     const path = resolve(cwd, given);
     if (!existsSync(path)) throw new UsageError(`${given} doesn't exist.`);
     if (statSync(path).isDirectory()) {
-      holders.push(path);
       const files = (await walk(path, links, false, { skip: folderSkip, sources: MODULE })).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
       let templates = 0;
       for (const file of files) {
@@ -131,17 +119,14 @@ export async function findInputs(positional: string[], cwd: string, folderSkip =
     } else {
       if (HTML.test(path)) {
         if (!options.html) throw new UsageError(`${given} is HTML: it's already HTML. render, outline, inspect and dev take templates (.tsx, .jsx, .ts, .js); check and preview take an HTML email too.`);
-        holders.push(dirname(path));
         add(path, "html");
         continue;
       }
       if (!MODULE.test(path)) throw new UsageError(`${given} isn't a template: give a .tsx, .jsx, .ts or .js file (or .mts, .mjs, .cts, .cjs)${options.html ? ", or an HTML email (.html, .htm)" : ""}.`);
-      holders.push(dirname(path));
       add(path);
     }
   }
-  // stdin alone: the current folder.
-  return { inputs, base: holders.length ? commonFolder(holders) : cwd, links };
+  return { inputs, links };
 }
 
 /** The TypeScript file tsx would load in place of a JavaScript template, where there's one. */

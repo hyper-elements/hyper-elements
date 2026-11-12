@@ -97,13 +97,13 @@ module.exports = function Template() { return createElement(Email, null, createE
     const dir = project({ "my emails/a #1 100%.tsx": module("odd but fine") });
     const ran = await cli(dir, ["render", "my emails", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ file: "my emails/a #1 100%.tsx", status: "ok", outputs: ["out/a #1 100%.html", "out/a #1 100%.txt"] });
+    expect(lines(ran)[0]).toMatchObject({ file: "my emails/a #1 100%.tsx", status: "ok", outputs: ["out/my emails/a #1 100%.html", "out/my emails/a #1 100%.txt"] });
   });
 
   it.runIf(WINDOWS)("a Windows path, with backslashes and a drive letter", async () => {
     const dir = project({ "my emails\\a.tsx": module("on Windows") });
     const ran = await cli(dir, ["render", join(dir, "my emails", "a.tsx"), "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ file: "my emails/a.tsx", status: "ok", outputs: ["out/a.html", "out/a.txt"] });
+    expect(lines(ran)[0]).toMatchObject({ file: "my emails/a.tsx", status: "ok", outputs: ["out/my emails/a.html", "out/my emails/a.txt"] });
   });
 });

@@ -30,8 +30,8 @@ describe("where a source is read from", () => {
     const dir = withFixtures(project({ "cards/card.tsx": canvas(`[${REGULAR}]`, `<Text>Card</Text><Image src={{ src: "../images/flag.png", width: 32, height: 32 }} alt="Flag" style={{ width: 32 }} />`) }));
     const ran = await cli(dir, ["render", "cards", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/card.png"], diagnostics: [] });
-    expect(readFileSync(join(dir, "out/card.png")).subarray(1, 4).toString()).toBe("PNG");
+    expect(lines(ran)[0]).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/cards/card.png"], diagnostics: [] });
+    expect(readFileSync(join(dir, "out/cards/card.png")).subarray(1, 4).toString()).toBe("PNG");
   });
 
   it("a root-relative path, from --public", async () => {
@@ -39,7 +39,7 @@ describe("where a source is read from", () => {
     withFixtures(dir, "static");
     const ran = await cli(dir, ["render", "cards", "--json", "--public", "static"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ status: "ok", outputs: ["out/card.png"], diagnostics: [] });
+    expect(lines(ran)[0]).toMatchObject({ status: "ok", outputs: ["out/cards/card.png"], diagnostics: [] });
   });
 
   it("a root-relative path, from the public/ folder beside the nearest package.json, by default", async () => {
@@ -83,8 +83,8 @@ describe("data: URIs", () => {
     const dir = project({ "docs/invoice.tsx": documentTemplate(`[{ family: "Inter", src: ${JSON.stringify(uri)} }]`, "<Text>Invoice 1042, with thanks</Text>") });
     const ran = await cli(dir, ["render", "docs", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/invoice.pdf"], diagnostics: [] });
-    const pdf = readFileSync(join(dir, "out/invoice.pdf")).toString("latin1");
+    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.pdf"], diagnostics: [] });
+    const pdf = readFileSync(join(dir, "out/docs/invoice.pdf")).toString("latin1");
     expect(pdf).toMatch(/\/BaseFont \/[A-Z]{6}\+Inter/);
     expect(pdf).not.toContain("Helvetica");
   });
@@ -103,7 +103,7 @@ describe("data: URIs", () => {
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
     for (const line of lines(ran).slice(0, 2)) expect(line).toMatchObject({ status: "ok", diagnostics: [] });
     // The same image as with both faces' files: each weight drawn in its own.
-    expect(readFileSync(join(dir, "out/mixed.png")).equals(readFileSync(join(dir, "out/files.png")))).toBe(true);
+    expect(readFileSync(join(dir, "out/cards/mixed.png")).equals(readFileSync(join(dir, "out/cards/files.png")))).toBe(true);
   });
 });
 
@@ -122,12 +122,12 @@ describe("http(s) sources and the cache", () => {
     expect(existsSync(entry(cache, `${site.url}/flag.png`))).toBe(true);
     // Only whole entries: no temporary files left.
     expect(readdirSync(cache).filter((name) => name.endsWith(".tmp"))).toEqual([]);
-    const image = readFileSync(join(dir, "out/card.png"));
+    const image = readFileSync(join(dir, "out/cards/card.png"));
 
     const second = await cli(dir, ["render", "cards", "--json"]);
     expect(second.code).toBe(0);
     expect(site.hits.get("/Inter-Regular.ttf")).toBe(1);
-    expect(readFileSync(join(dir, "out/card.png")).equals(image)).toBe(true);
+    expect(readFileSync(join(dir, "out/cards/card.png")).equals(image)).toBe(true);
 
     const refreshed = await cli(dir, ["render", "cards", "--json", "--refresh"]);
     expect(refreshed.code).toBe(0);
@@ -193,7 +193,7 @@ module.exports = function Card() {
     const ran = await cli(dir, ["render", "cards", "--json"]);
     expect(ran.code).toBe(1);
     const [font, image] = lines(ran);
-    expect(font).toMatchObject({ status: "ok", outputs: ["out/font.png"] });
+    expect(font).toMatchObject({ status: "ok", outputs: ["out/cards/font.png"] });
     expect(codes(font)).toEqual(["cli/asset", "image/font"]);
     expect(font.diagnostics[0].message).toContain(`${site.url}/mono.ttf`);
     expect(font.diagnostics[0].message).toContain("404");
@@ -289,7 +289,7 @@ describe("fonts", () => {
     const ran = await cli(dir, ["render", "docs", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
     const line = lines(ran)[0];
-    expect(line).toMatchObject({ status: "ok", outputs: ["out/invoice.pdf"] });
+    expect(line).toMatchObject({ status: "ok", outputs: ["out/docs/invoice.pdf"] });
     expect(line.diagnostics).toEqual([expect.objectContaining({ code: "pdf/font", severity: "warning", message: expect.stringContaining("WOFF2") })]);
   });
 });

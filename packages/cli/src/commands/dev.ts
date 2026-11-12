@@ -93,7 +93,16 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   const own = parseToken(`// ${token}`)!;
   const mine = (owner: ReturnType<typeof parseToken>) => !!owner && owner.host === own.host && owner.pid === own.pid && owner.random === own.random;
 
-  const server = await serveDev(folder);
+  let server: Awaited<ReturnType<typeof serveDev>>;
+  try {
+    server = await serveDev(folder, args.port);
+  } catch (error) {
+    const code = (error as NodeJS.ErrnoException).code;
+    if (args.port !== undefined && (code === "EADDRINUSE" || code === "EACCES")) {
+      throw new UsageError(`--port ${args.port} ${code === "EADDRINUSE" ? "is in use" : "can't be opened by this user"}: give another, or leave --port out for a free one.`);
+    }
+    throw error;
+  }
   let current: DevState = { version: 0, rendering: true, error: null, templates: [], late: [], ms: 0, changed: [], history: [] };
   server.publish(current);
   state.serving = true;

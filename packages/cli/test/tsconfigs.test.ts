@@ -53,6 +53,6 @@ describe("two tsconfigs in one run", () => {
     );
     const ran = await cli(dir, ["render", "emails"]);
     expect(ran.code, ran.stderr + ran.stdout).toBe(0);
-    expect(readFileSync(join(dir, "out/a.txt"), "utf8")).toContain("It says an alias, in CommonJS");
+    expect(readFileSync(join(dir, "out/emails/a.txt"), "utf8")).toContain("It says an alias, in CommonJS");
   });
 });

@@ -49,8 +49,8 @@ try {
     if (ran.error) throw ran.error;
     return { code: ran.status, stdout: ran.stdout, stderr: ran.stderr };
   };
-  const text = (out, name) => readFileSync(join(web, out, `${name}.txt`), "utf8");
-  const html = (out, name) => readFileSync(join(web, out, `${name}.html`), "utf8");
+  const text = (out, name) => readFileSync(join(web, out, "emails", `${name}.txt`), "utf8");
+  const html = (out, name) => readFileSync(join(web, out, "emails", `${name}.html`), "utf8");
 
   const runners = [
     { name: "npx", command: "npx", prefix: ["--no-install", "hyper-elements"], runtime: "node", out: "out-npx" },

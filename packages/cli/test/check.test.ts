@@ -99,7 +99,7 @@ describe("render, with email-clients", () => {
     const ran = await cli(dir, ["render", "emails", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
     const [line] = lines(ran);
-    expect(line.outputs).toEqual(["out/a.html", "out/a.txt"]);
+    expect(line.outputs).toEqual(["out/emails/a.html", "out/emails/a.txt"]);
     expect(line.diagnostics.map((d: any) => d.code)).not.toContain("email/more-checks");
     const checked = lines(await cli(dir, ["check", "emails", "--json"]))[0].diagnostics;
     expect(line.diagnostics.filter((d: any) => d.clients)).toEqual(checked.filter((d: any) => d.clients));

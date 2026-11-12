@@ -148,7 +148,7 @@ export function Counter() { const [n] = useState(2); return <Text>Count {n}</Tex
     const ran = await cli(dir, ["render", "emails", "--json"]);
     expect(ran.code).toBe(1);
     const got = lines(ran);
-    expect(got[0]).toMatchObject({ file: "emails/a.tsx", status: "ok", outputs: ["out/a.html", "out/a.txt"] });
+    expect(got[0]).toMatchObject({ file: "emails/a.tsx", status: "ok", outputs: ["out/emails/a.html", "out/emails/a.txt"] });
     twoReacts(got[1]);
     expect(got[2]).toMatchObject({ file: "emails/c.tsx", status: "ok" });
   });

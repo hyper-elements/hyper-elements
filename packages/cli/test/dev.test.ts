@@ -7,8 +7,8 @@
  * its prefix, with files from its own folder. Each with the CLI started on Node and on Bun (CLI_RUNTIME).
  */
 import { existsSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { request } from "node:http";
-import { connect } from "node:net";
+import { createServer, request } from "node:http";
+import { connect, type AddressInfo } from "node:net";
 import { networkInterfaces, tmpdir } from "node:os";
 import { join, resolve, sep } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -420,6 +420,30 @@ describe("dev's arguments", () => {
     expect(ran.code).toBe(2);
     expect(ran.stdout).toBe("");
     expect(ran.stderr).toContain("nothing.tsx doesn't exist");
+  });
+
+  it("--port serves on that port (its guards the same); one in use or out of range exits 2", async () => {
+    // A free port: one the system gave, then let go.
+    const free = await new Promise<number>((resolvePort) => {
+      const probe = createServer().listen(0, "127.0.0.1", () => {
+        const { port } = probe.address() as AddressInfo;
+        probe.close(() => resolvePort(port));
+      });
+    });
+    const dir = project({ "emails/a.tsx": email("On a port") });
+    const dev = await startDev(dir, ["emails", "--port", String(free)]);
+    expect(dev.port).toBe(free);
+    expect(dev.base).toMatch(new RegExp(`^http://127\\.0\\.0\\.1:${free}/[0-9a-f]{32}/$`));
+    expect((await fetch(dev.base)).status).toBe(200);
+    // The same port again, while the first serves on it.
+    const taken = await cli(dir, ["dev", "emails", "--port", String(free)]);
+    expect(taken.code).toBe(2);
+    expect(taken.stderr).toContain(`--port ${free} is in use`);
+    for (const port of ["0", "65536", "http"]) {
+      const ran = await cli(dir, ["dev", "emails", "--port", port]);
+      expect(ran.code, port).toBe(2);
+      expect(ran.stderr).toContain("--port takes a port from 1 to 65535");
+    }
   });
 
   it("takes no --out or --json", async () => {

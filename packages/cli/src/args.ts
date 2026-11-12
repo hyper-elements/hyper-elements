@@ -21,8 +21,8 @@ A template is a module whose default export is a component that renders an
 leaving out node_modules, build output, and folders whose name starts with
 "." or "_".
 
-render   writes each template's output under --out, its path relative to the
-         folder holding every input: an Email's HTML and plain text
+render   writes each template's output under --out, at its path relative to
+         the current folder (or --base): an Email's HTML and plain text
          (name.html, name.txt), a Page's HTML (name.html), a Document's PDF
          (name.pdf), a Canvas's image (name.png). A Document's and a Canvas's
          fonts and images are loaded from what the template names: data: URIs,
@@ -35,7 +35,8 @@ check    validates each template (with @hyper-elements/email-clients' email
 outline  prints a template laid out: each block with its width.
 preview  writes each Email as the email clients draw it, one file per client
          and variant (with @hyper-elements/email-clients), under
-         out/clients/<name>/. --findings opens each in Chromium and reports
+         out/clients/<its path>/<name>/, its path relative to the current
+         folder (or --base). --findings opens each in Chromium and reports
          what it found. An HTML email (a .html or .htm file, or - for stdin,
          under out/clients/stdin/) is previewed as it is.
 inspect  lists what a template holds: each component, what it's given,
@@ -52,6 +53,8 @@ dev      serves a page on 127.0.0.1 showing each template (an Email or a Page
 
 Options:
   --out <dir>           Where render and preview write (default: out)
+  --base <dir>          render, preview: outputs keep their path relative to
+                        this folder (default: the current folder)
   --props <file.json>   Props for every template given, over PreviewProps
   --json                One JSON line per template, then a summary line
   --stdout              render: write the one template's HTML, PDF or image
@@ -84,6 +87,8 @@ Options:
   --install-browser     preview: download Playwright's Chromium, and exit
                         (--findings, --screenshots and this need
                         playwright-core installed beside the CLI)
+  --port <n>            dev: the port to serve on, on 127.0.0.1 (default: a
+                        free one)
   --root <root>         describe: only what this root takes (Email, Page,
                         Document or Canvas)
   --timeout <seconds>   How long a process rendering templates may run: past
@@ -103,6 +108,8 @@ export interface Args {
   /** The files and folders given; `describe`'s component; every argument after `migrate`, unchanged. */
   positional: string[];
   out: string;
+  /** render, preview: the folder outputs keep their path relative to (the current folder where it isn't given). */
+  base?: string;
   props?: string;
   json: boolean;
   stdout: boolean;
@@ -131,6 +138,8 @@ export interface Args {
   installBrowser: boolean;
   /** describe: only what this root takes. */
   root?: string;
+  /** dev: the port to serve on. */
+  port?: number;
   /** Milliseconds. */
   timeout: number;
 }
@@ -141,6 +150,7 @@ const COMMANDS: Command[] = ["render", "check", "outline", "preview", "inspect",
 /** The options each command takes, and whether each takes a value. */
 const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   out: { value: true, commands: ["render", "preview"] },
+  base: { value: true, commands: ["render", "preview"] },
   props: { value: true, commands: ["render", "check", "outline", "preview", "inspect"] },
   json: { value: false, commands: ["render", "check", "outline", "preview", "inspect", "describe"] },
   stdout: { value: false, commands: ["render"] },
@@ -161,6 +171,7 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   serve: { value: false, commands: ["preview"] },
   "install-browser": { value: false, commands: ["preview"] },
   root: { value: true, commands: ["describe"] },
+  port: { value: true, commands: ["dev"] },
   timeout: { value: true, commands: ["render", "check", "outline", "preview", "inspect", "describe"] },
 };
 
@@ -218,6 +229,7 @@ export function parseArgs(argv: string[]): Args {
     command: command as Command,
     positional,
     out: (values.out as string | undefined) ?? "out",
+    ...(values.base !== undefined ? { base: values.base as string } : {}),
     props: values.props as string | undefined,
     json: values.json === true,
     stdout: values.stdout === true,
@@ -240,6 +252,12 @@ export function parseArgs(argv: string[]): Args {
     args.fonts = values.fonts;
   }
   if (values.root !== undefined) args.root = values.root as string;
+  if (values.port !== undefined) {
+    const text = values.port as string;
+    const port = Number(text);
+    if (!/^\d+$/.test(text) || port < 1 || port > 65535) throw new UsageError(`--port takes a port from 1 to 65535, not ${JSON.stringify(text)}`);
+    args.port = port;
+  }
   if (values.clients !== undefined) {
     const clients = (values.clients as string).split(",").map((c) => c.trim()).filter(Boolean);
     if (!clients.length) throw new UsageError("--clients takes a list of email clients: --clients gmail,outlook");

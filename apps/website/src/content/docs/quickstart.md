@@ -193,8 +193,8 @@ export default Welcome;
 ```bash
 npm install -D @hyper-elements/cli
 npx hyper-elements check emails/                # validate(), and the email client checks where email-clients is installed
-npx hyper-elements render emails/               # out/welcome.html and out/welcome.txt
-npx hyper-elements preview emails/welcome.tsx   # the email in each email client: out/clients/welcome/outlook.html, …
+npx hyper-elements render emails/               # out/emails/welcome.html and out/emails/welcome.txt
+npx hyper-elements preview emails/welcome.tsx   # the email in each email client: out/clients/emails/welcome/outlook.html, …
 ```
 
 A template with errors exits with code `1`, which fails a CI job. See [Command line](/docs/cli).

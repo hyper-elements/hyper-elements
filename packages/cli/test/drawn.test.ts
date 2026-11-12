@@ -21,16 +21,16 @@ describe("a Document", () => {
     const dir = withFixtures(project({ "docs/invoice.tsx": documentTemplate(FONTS, `<Text>Invoice</Text><Text style={{ fontWeight: 700 }}>Total</Text>`) }));
     const ran = await cli(dir, ["render", "docs", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/invoice.pdf"], diagnostics: [] });
-    expect(readFileSync(join(dir, "out/invoice.pdf")).subarray(0, 5).toString()).toBe("%PDF-");
-    expect(existsSync(join(dir, "out/invoice.html"))).toBe(false);
+    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.pdf"], diagnostics: [] });
+    expect(readFileSync(join(dir, "out/docs/invoice.pdf")).subarray(0, 5).toString()).toBe("%PDF-");
+    expect(existsSync(join(dir, "out/docs/invoice.html"))).toBe(false);
 
     const html = await cli(dir, ["render", "docs", "--json", "--html", "--out", "out2"]);
     expect(html.code, html.stdout + html.stderr).toBe(0);
-    expect(lines(html)[0]).toMatchObject({ outputs: ["out2/invoice.pdf", "out2/invoice.html"], diagnostics: [] });
-    expect(readFileSync(join(dir, "out2/invoice.html"), "utf8")).toContain("Invoice");
+    expect(lines(html)[0]).toMatchObject({ outputs: ["out2/docs/invoice.pdf", "out2/docs/invoice.html"], diagnostics: [] });
+    expect(readFileSync(join(dir, "out2/docs/invoice.html"), "utf8")).toContain("Invoice");
     // The same PDF each time.
-    expect(readFileSync(join(dir, "out2/invoice.pdf")).equals(readFileSync(join(dir, "out/invoice.pdf")))).toBe(true);
+    expect(readFileSync(join(dir, "out2/docs/invoice.pdf")).equals(readFileSync(join(dir, "out/docs/invoice.pdf")))).toBe(true);
   });
 
   it.runIf(ON_BUN)("isn't written on Bun: exit 2, saying to use Node", async () => {
@@ -48,17 +48,17 @@ describe("a Canvas", () => {
     const dir = withFixtures(project({ "cards/card.tsx": canvas(FONTS) }));
     const png = await cli(dir, ["render", "cards", "--json"]);
     expect(png.code, png.stdout + png.stderr).toBe(0);
-    expect(lines(png)[0]).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/card.png"], diagnostics: [] });
-    expect(pngSize(readFileSync(join(dir, "out/card.png")))).toEqual({ width: 300, height: 150 });
+    expect(lines(png)[0]).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/cards/card.png"], diagnostics: [] });
+    expect(pngSize(readFileSync(join(dir, "out/cards/card.png")))).toEqual({ width: 300, height: 150 });
 
     const scaled = await cli(dir, ["render", "cards", "--json", "--scale", "2", "--out", "scaled"]);
     expect(scaled.code).toBe(0);
-    expect(pngSize(readFileSync(join(dir, "scaled/card.png")))).toEqual({ width: 600, height: 300 });
+    expect(pngSize(readFileSync(join(dir, "scaled/cards/card.png")))).toEqual({ width: 600, height: 300 });
 
     const svg = await cli(dir, ["render", "cards", "--json", "--format", "svg", "--out", "svg"]);
     expect(svg.code).toBe(0);
-    expect(lines(svg)[0]).toMatchObject({ outputs: ["svg/card.svg"] });
-    expect(readFileSync(join(dir, "svg/card.svg"), "utf8")).toMatch(/^<svg/);
+    expect(lines(svg)[0]).toMatchObject({ outputs: ["svg/cards/card.svg"] });
+    expect(readFileSync(join(dir, "svg/cards/card.svg"), "utf8")).toMatch(/^<svg/);
   });
 
   it("--stdout writes its image", async () => {
@@ -116,7 +116,7 @@ describe("the engines are the project's", () => {
     copyElements(dir);
     const ran = await cli(dir, ["render", "cards", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ status: "ok", outputs: ["out/card.png"], diagnostics: [] });
+    expect(lines(ran)[0]).toMatchObject({ status: "ok", outputs: ["out/cards/card.png"], diagnostics: [] });
   });
 });
 
@@ -133,8 +133,8 @@ describe("an Elements without templateAssets()", () => {
       const ran = await cli(dir, ["render", "docs", "--json"]);
       expect(ran.code, ran.stdout + ran.stderr).toBe(0);
       const [card, invoice] = lines(ran);
-      expect(card).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/card.html"] });
-      expect(invoice).toMatchObject({ root: "Document", status: "ok", outputs: ["out/invoice.html"] });
+      expect(card).toMatchObject({ root: "Canvas", status: "ok", outputs: ["out/docs/card.html"] });
+      expect(invoice).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.html"] });
       for (const line of [card, invoice]) {
         expect(line.diagnostics).toEqual([expect.objectContaining({ code: "cli/html-only", severity: "info", message: expect.stringContaining("@hyper-elements/react 0.4.3 or later") })]);
       }
@@ -184,8 +184,8 @@ describe("the gallery's and stress set's templates with WOFF2 fonts only", () =>
     const ran = await cli(dir, ["render", "templates/pell-ashby-invoice.tsx", "templates/stress-document-pages.tsx", "--json"]);
     expect(ran.code, ran.stdout + ran.stderr).toBe(0);
     const [invoice, pages] = lines(ran);
-    expect(invoice).toMatchObject({ root: "Document", status: "ok", outputs: ["out/pell-ashby-invoice.pdf"] });
-    expect(pages).toMatchObject({ root: "Document", status: "ok", outputs: ["out/stress-document-pages.pdf"] });
+    expect(invoice).toMatchObject({ root: "Document", status: "ok", outputs: ["out/templates/pell-ashby-invoice.pdf"] });
+    expect(pages).toMatchObject({ root: "Document", status: "ok", outputs: ["out/templates/stress-document-pages.pdf"] });
     for (const line of [invoice, pages]) {
       expect(new Set(codes(line))).toEqual(new Set(["pdf/font"]));
       expect(line.diagnostics.some((d: { message: string }) => d.message.includes("WOFF2"))).toBe(true);

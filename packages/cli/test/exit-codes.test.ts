@@ -20,8 +20,8 @@ describe("exit 0", () => {
     const dir = project({ "emails/a.tsx": email("A"), "emails/b.tsx": email("B") });
     const ran = await cli(dir, ["render", "emails"]);
     expect(ran.code).toBe(0);
-    expect(exists(join(dir, "out/a.html"))).toBe(true);
-    expect(exists(join(dir, "out/b.txt"))).toBe(true);
+    expect(exists(join(dir, "out/emails/a.html"))).toBe(true);
+    expect(exists(join(dir, "out/emails/b.txt"))).toBe(true);
   });
 
   it("with a template beside inputs that aren't: those are skipped", async () => {
@@ -58,7 +58,7 @@ describe("exit 1", () => {
     const dir = project({ "emails/a.tsx": `import { Email, Text } from "@hyper-elements/react";\n// @ts-expect-error\nexport default () => <Email><Text color="red">x</Text></Email>;\n` });
     const ran = await cli(dir, ["render", "emails"]);
     expect(ran.code).toBe(1);
-    expect(exists(join(dir, "out/a.html"))).toBe(false);
+    expect(exists(join(dir, "out/emails/a.html"))).toBe(false);
   });
 
   it("when a template throws while loading, or while rendering", async () => {

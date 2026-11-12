@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { cli, email, lines, link, MODULES, ON_BUN, project } from "./helpers";
 
-const textOf = (dir: string, name: string) => readFileSync(join(dir, "out", `${name}.txt`), "utf8");
+const textOf = (dir: string, name: string) => readFileSync(join(dir, "out", "emails", `${name}.txt`), "utf8");
 
 describe("loading", () => {
   it("a template with a tsconfig path alias", async () => {
@@ -50,7 +50,7 @@ export default function A() { return <Email><Signature name="Ada" /></Email>; }
     link(join(dir, "apps/web"), "@acme/ui", join(dir, "packages/ui"));
     const ran = await cli(join(dir, "apps/web"), ["render", "emails"]);
     expect(ran.code, ran.stderr + ran.stdout).toBe(0);
-    expect(readFileSync(join(dir, "apps/web/out/a.txt"), "utf8")).toContain("From Ada, in a workspace package");
+    expect(readFileSync(join(dir, "apps/web/out/emails/a.txt"), "utf8")).toContain("From Ada, in a workspace package");
   });
 
   it("a template in a CommonJS project, and one in an ES module project", async () => {

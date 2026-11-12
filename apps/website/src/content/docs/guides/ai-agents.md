@@ -153,7 +153,7 @@ An agent that can run commands can do the same loop without writing a script, wi
 ```bash
 npx hyper-elements check emails/welcome.tsx --json     # 2. validate, with the email client checks
 npx hyper-elements outline emails/welcome.tsx          # 3. the layout as text
-npx hyper-elements render emails/welcome.tsx           # 4. out/welcome.html and out/welcome.txt
+npx hyper-elements render emails/welcome.tsx           # 4. out/emails/welcome.html and out/emails/welcome.txt
 npx hyper-elements describe Button --root Email        # what a component takes, before writing it
 ```
 

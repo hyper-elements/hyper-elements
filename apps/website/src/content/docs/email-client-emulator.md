@@ -99,7 +99,7 @@ const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlo
 [`@hyper-elements/cli`](/docs/cli) writes the previews with no script, for a template or for any HTML email:
 
 ```bash
-npx hyper-elements preview emails/welcome.tsx           # out/clients/welcome/outlook.html, gmail.html, …
+npx hyper-elements preview emails/welcome.tsx           # out/clients/emails/welcome/outlook.html, gmail.html, …
 npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings   # an HTML email, with nothing installed
 ```
 

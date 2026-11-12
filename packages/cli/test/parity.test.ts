@@ -113,7 +113,7 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
       expect(bun.code, bun.stdout + bun.stderr).toBe(0);
       expect(lines(node)[0]).toMatchObject({ root: "Canvas", status: "ok", diagnostics: [] });
       expect(bun.stdout.replaceAll(`bun-${format}/`, "")).toBe(node.stdout.replaceAll(`node-${format}/`, ""));
-      expect(readFileSync(join(dir, `bun-${format}/card.${format}`)).equals(readFileSync(join(dir, `node-${format}/card.${format}`)))).toBe(true);
+      expect(readFileSync(join(dir, `bun-${format}/templates/card.${format}`)).equals(readFileSync(join(dir, `node-${format}/templates/card.${format}`)))).toBe(true);
     }
   });
 
@@ -121,7 +121,7 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     const dir = fixtures();
     const node = await cli(dir, ["render", "templates/invoice.tsx", "--json", "--out", "node"], { runtime: "node" });
     expect(node.code, node.stdout + node.stderr).toBe(0);
-    expect(lines(node)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["node/invoice.pdf"], diagnostics: [] });
+    expect(lines(node)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["node/templates/invoice.pdf"], diagnostics: [] });
 
     const bun = await cli(dir, ["render", "templates/invoice.tsx", "--json", "--out", "bun"], { runtime: "bun" });
     expect(bun.code).toBe(2);
@@ -131,8 +131,8 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     // may differ (Bun's zlib), which is why render refuses it there; nothing here depends on the compressed bytes.
     const forced = await cli(dir, ["render", "templates/invoice.tsx", "--json", "--out", "forced"], { runtime: "bun", env: { HYPER_ELEMENTS_CLI_BUN_PDF: "1" } });
     expect(forced.code, forced.stdout + forced.stderr).toBe(0);
-    const ours = pdfStreams(readFileSync(join(dir, "node/invoice.pdf")));
-    const theirs = pdfStreams(readFileSync(join(dir, "forced/invoice.pdf")));
+    const ours = pdfStreams(readFileSync(join(dir, "node/templates/invoice.pdf")));
+    const theirs = pdfStreams(readFileSync(join(dir, "forced/templates/invoice.pdf")));
     expect(ours.length).toBeGreaterThan(0);
     expect(theirs.length).toBe(ours.length);
     theirs.forEach((stream, index) => expect(stream.equals(ours[index]), `stream ${index}`).toBe(true));

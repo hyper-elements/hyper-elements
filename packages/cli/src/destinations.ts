@@ -1,14 +1,15 @@
 /**
  * Where `render` writes, worked out before anything runs. Each output goes under `--out` at its input's path relative
- * to the inputs' base, named for the file. The CLI writes only the files it renders and never empties a folder; it
+ * to the base (the current folder, or `--base`), named for the file: what one input writes doesn't depend on the
+ * others given with it. The CLI writes only the files it renders and never empties a folder; it
  * refuses an `--out` that is the filesystem root, the home folder, a project root or a folder holding an input, a
  * destination whose real folder holds an input (a symbolic link under `--out` leading back to the inputs), and two
  * outputs with one destination, compared by real path, Unicode-normalized and case-folded whatever the disk does.
  * Each file is written to a temporary file beside it and renamed over it, so an interrupted run leaves whole files.
  */
-import { existsSync, mkdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, realpathSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { basename, dirname, extname, join, relative, resolve } from "node:path";
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { UsageError } from "./args";
 import { displayPath, packageFolder, type Input } from "./inputs";
 
@@ -52,6 +53,32 @@ function inside(child: string, folder: string): boolean {
 export interface Planned {
   /** By input id: each output's destination, by extension. */
   byInput: Map<number, Record<string, string>>;
+}
+
+/**
+ * The folder outputs keep their path relative to: `--base`, else the current folder. An input outside it would have
+ * a path leading out of `--out`: refused.
+ */
+export function outputBase(inputs: Input[], cwd: string, given?: string): string {
+  const base = resolve(cwd, given ?? ".");
+  if (given !== undefined) {
+    let folder = false;
+    try {
+      folder = statSync(base).isDirectory();
+    } catch {
+      folder = false;
+    }
+    if (!folder) throw new UsageError(`--base ${given} isn't a folder.`);
+  }
+  for (const input of inputs) {
+    if (input.stdin) continue;
+    const path = relative(base, input.file);
+    if (path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path)) {
+      const where = given === undefined ? "the current folder" : `--base ${given}`;
+      throw new UsageError(`${input.display} is outside ${where}, which outputs keep their path relative to: run from a folder that holds it, or give --base.`);
+    }
+  }
+  return base;
 }
 
 /**

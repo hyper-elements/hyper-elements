@@ -5,11 +5,11 @@ with no script of your own: an Email's HTML and plain text, a Page's HTML, a Doc
 client checks, and an Email as each email client draws it, with stable exit codes and JSON for agents and CI.
 
 ```bash
-npx hyper-elements render emails/          # out/welcome.html, out/welcome.txt, … the folder's tree mirrored
+npx hyper-elements render emails/          # out/emails/welcome.html, out/emails/welcome.txt, … paths kept
 npx hyper-elements render docs/ cards/     # out/docs/invoice.pdf, out/cards/social.png
 npx hyper-elements check emails/ --json    # validate() and the email client checks; exit 1 on errors
 npx hyper-elements outline emails/welcome.tsx
-npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/welcome/outlook.html, … drawn in Chromium
+npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/emails/welcome/outlook.html, … drawn in Chromium
 npx hyper-elements describe Button --root Email --json
 npx @hyper-elements/cli check email.html   # any HTML email: the email client checks, with nothing installed
 npx hyper-elements dev emails/ docs/       # a page on 127.0.0.1 showing each template, rendered again on each change
@@ -36,10 +36,10 @@ Welcome.PreviewProps = { name: "Ada" };
 
 | Command | What it does |
 |---|---|
-| `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the folder holding every input: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. Where the project has `@hyper-elements/email-clients`, an Email's and a Page's HTML is rendered with its email client checks, as `check` runs them (`--clients` picks the clients). |
+| `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the current folder (or `--base <dir>`), whatever else is given with it: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. Where the project has `@hyper-elements/email-clients`, an Email's and a Page's HTML is rendered with its email client checks, as `check` runs them (`--clients` picks the clients). |
 | `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
-| `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<name>/`, named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
+| `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<its path>/<name>/` (its path from the current folder, or `--base`), named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
 | `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
 | `describe [Component]` | Lists every component a template can use (or one), with its props and styles, from `describeComponents()` (or `describeComponent()`); `--root Email` narrows it to what that root takes. No template is loaded: it reads the `@hyper-elements/react` the current folder resolves. |
 | `dev <files or folders…>` | Serves a page on `127.0.0.1` that shows each template, and renders them again when the project changes, until Ctrl-C. See [dev](#dev). |
@@ -102,7 +102,7 @@ installed, the same, with `"reason": "no-playwright-core"` and stderr saying how
 run: `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings`.
 
 ```json
-{"version":1,"command":"preview","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":["out/clients/welcome/gmail.html","out/clients/welcome/gmail.mac.html"],"diagnostics":[],"previews":[{"id":"gmail","client":"gmail","path":"out/clients/welcome/gmail.html","ready":"ok","findings":{…}},{"id":"gmail.mac","client":"gmail","path":"out/clients/welcome/gmail.mac.html","ready":"ok","findings":{…}}],"browser":"chromium 148.0.7778.96, playwright"}
+{"version":1,"command":"preview","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":["out/clients/emails/welcome/gmail.html","out/clients/emails/welcome/gmail.mac.html"],"diagnostics":[],"previews":[{"id":"gmail","client":"gmail","path":"out/clients/welcome/gmail.html","ready":"ok","findings":{…}},{"id":"gmail.mac","client":"gmail","path":"out/clients/welcome/gmail.mac.html","ready":"ok","findings":{…}}],"browser":"chromium 148.0.7778.96, playwright"}
 ```
 
 `--serve` serves `<out>/clients/` on `127.0.0.1`, on a free port, for a browser that can't open `file://` paths. It
@@ -164,7 +164,9 @@ checks where the project has `@hyper-elements/email-clients`), and, for an Email
 previews in each email client (`preview`'s files). It takes `render`'s `--props`, `--public`, `--offline` and
 `--timeout`, and `preview`'s `--clients`, `--dark` and `--fonts`; it writes nothing in the project (what it renders is
 kept in a temporary folder of its own, removed when it exits), and what's wrong is said on the page and on stderr. Under
-Bun, a Document shows `cli/bun` instead of its PDF, as `render` does there.
+Bun, a Document shows `cli/bun` instead of its PDF, as `render` does there. It serves on a free port; `--port <n>` picks
+one (1 to 65535; exit 2 where it's in use), to forward from a container or a remote machine. The URL's path still starts
+with a random token.
 
 Each change renders every template again in new child processes, one per package and tsconfig as `render` runs them,
 on the runtime the CLI was started with: every import is fresh, and a template that loops or leaks ends with its child
@@ -172,7 +174,8 @@ on the runtime the CLI was started with: every import is fresh, and a template t
 source change and the rebuild that follows it are each shown. It doesn't follow imports; it watches:
 
 - the project's source: the folder of the nearest `package.json`, its `.tsx`, `.jsx`, `.ts`, `.js`, `.mts` and `.mjs`
-  files, leaving out `node_modules`, build output (`dist`, `build`, `out`, …) and folders starting with `.`;
+  files (and `.cts` and `.cjs`), leaving out `node_modules`, build output (`dist`, `build`, `out`, …) and folders
+  starting with `.`;
 - each workspace package the project depends on (a `workspace:` or `link:` version, or a dependency installed as a
   symbolic link to a folder outside `node_modules`), and theirs: every file, `dist` and `build` included, so a package
   whose runtime is its build is shown again when it's rebuilt.

@@ -7,7 +7,7 @@ description: "Render, check and preview templates from the shell with @hyper-ele
 
 ```bash
 npx hyper-elements check emails/           # validate each template, with the email client checks
-npx hyper-elements render emails/          # out/welcome.html, out/welcome.txt, …
+npx hyper-elements render emails/          # out/emails/welcome.html, out/emails/welcome.txt, …
 npx hyper-elements outline emails/welcome.tsx
 npx hyper-elements preview emails/welcome.tsx --findings   # each email client's view, drawn in Chromium
 npx hyper-elements dev emails/             # a local page showing each template, rendered again on each change
@@ -70,7 +70,7 @@ Give the commands files or folders. A folder is searched for templates, leaving 
 npx hyper-elements render emails/
 ```
 
-`render emails/` writes `out/welcome.html` and `out/welcome.txt`, and prints each template's diagnostics: with the email client checks where the project has `@hyper-elements/email-clients`, as `check` runs them (`--clients` picks the clients). Each output goes at the template's path relative to the folder holding every input, so `render emails/ docs/` writes `out/emails/…` and `out/docs/…`. `--pretty` indents the HTML, and `--stdout` writes one template's HTML, PDF or image to stdout. A template with errors writes nothing.
+`render emails/` writes `out/emails/welcome.html` and `out/emails/welcome.txt` (each output keeps its path from the current folder, whatever else is given; `--base emails` writes `out/welcome.html`), and prints each template's diagnostics: with the email client checks where the project has `@hyper-elements/email-clients`, as `check` runs them (`--clients` picks the clients). Each output goes at the template's path relative to the folder holding every input, so `render emails/ docs/` writes `out/emails/…` and `out/docs/…`. `--pretty` indents the HTML, and `--stdout` writes one template's HTML, PDF or image to stdout. A template with errors writes nothing.
 
 ### PDFs and images
 
@@ -109,16 +109,16 @@ npx hyper-elements preview emails/welcome.tsx
 
 ```text
 ✓ emails/welcome.tsx (Email)
-  outlook: out/clients/welcome/outlook.html
-  outlook-com: out/clients/welcome/outlook-com.html
-  outlook-com.mac: out/clients/welcome/outlook-com.mac.html
-  gmail: out/clients/welcome/gmail.html
-  gmail.mac: out/clients/welcome/gmail.mac.html
-  apple-mail: out/clients/welcome/apple-mail.html
+  outlook: out/clients/emails/welcome/outlook.html
+  outlook-com: out/clients/emails/welcome/outlook-com.html
+  outlook-com.mac: out/clients/emails/welcome/outlook-com.mac.html
+  gmail: out/clients/emails/welcome/gmail.html
+  gmail.mac: out/clients/emails/welcome/gmail.mac.html
+  apple-mail: out/clients/emails/welcome/apple-mail.html
 1 template: 0 errors, 0 warnings, 0 skipped
 ```
 
-`preview` writes each Email as the email clients show it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, under `out/clients/<name>/`. `--clients`, `--dark` and `--fonts inline` are [its options](/docs/email-client-emulator#options). A template whose root isn't an Email is skipped.
+`preview` writes each Email as the email clients show it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, under `out/clients/<its path>/<name>/` (`out/clients/emails/welcome/` for `emails/welcome.tsx`). `--clients`, `--dark` and `--fonts inline` are [its options](/docs/email-client-emulator#options). A template whose root isn't an Email is skipped.
 
 A preview file draws the email when a browser opens it, and lists what the client changed. To have the CLI read those findings for you, add `--findings` (with `playwright-core` installed beside the CLI): it opens each file in Chromium and reports what it found. It uses the first of these that starts: the browser `CHROME_PATH` names, Playwright's own Chromium (`npx hyper-elements preview --install-browser` downloads it), then an installed Chrome or Edge. `--screenshots` also writes a PNG of each preview beside it.
 
@@ -143,7 +143,7 @@ Each diagnostic has the `line` in the file and an excerpt of it. A folder's HTML
 npx hyper-elements dev emails/ docs/
 ```
 
-`dev` prints a URL on `127.0.0.1` and serves a page that lists the templates and shows the one you pick: an Email or a Page at desktop width and at 375px, a Document's PDF, a Canvas's image, its diagnostics, and, for an Email with `@hyper-elements/email-clients`, links to its previews in each email client. It renders every template again when the project's source, or a workspace package it depends on, changes. It writes nothing in the project, and runs until Ctrl-C.
+`dev` prints a URL on `127.0.0.1` and serves a page that lists the templates and shows the one you pick: an Email or a Page at desktop width and at 375px, a Document's PDF, a Canvas's image, its diagnostics, and, for an Email with `@hyper-elements/email-clients`, links to its previews in each email client. It renders every template again when the project's source, or a workspace package it depends on, changes. It writes nothing in the project, and runs until Ctrl-C. It serves on a free port; `--port <n>` picks one, to forward from a container or a remote machine (the path still starts with a random token).
 
 ## JSON and exit codes
 

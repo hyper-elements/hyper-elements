@@ -87,7 +87,7 @@ export default function B() {
     expect(() => lines(ran)).not.toThrow();
     expect(ran.stdout).not.toContain("from the template");
     expect(ran.stderr).toContain("from the template");
-    expect(lines(ran)[0]).toMatchObject({ command: "render", root: "Email", status: "ok", outputs: ["out/a.html", "out/a.txt"] });
+    expect(lines(ran)[0]).toMatchObject({ command: "render", root: "Email", status: "ok", outputs: ["out/emails/a.html", "out/emails/a.txt"] });
   });
 
   it("counts a late throw in the summary, whose exitCode is the process's, with a slow stdout", async () => {

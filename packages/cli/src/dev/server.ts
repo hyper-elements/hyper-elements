@@ -58,7 +58,7 @@ export function preview(folder: string, file: string): boolean {
   return parts.length === 4 && parts[2] === "clients" && /^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1]);
 }
 
-export async function serveDev(folder: string): Promise<DevServer> {
+export async function serveDev(folder: string, port?: number): Promise<DevServer> {
   let state = "{}";
   let sent = 0;
   const streams = new Set<ServerResponse>();
@@ -84,6 +84,7 @@ export async function serveDev(folder: string): Promise<DevServer> {
     },
   };
   const served: Served = await serve(folder, "127.0.0.1", {
+    ...(port !== undefined ? { port } : {}),
     routes,
     headers: (file): Record<string, string> => (/\.(html?|svg)$/i.test(file) && !preview(folder, file) ? { "Content-Security-Policy": FILE_SANDBOX } : {}),
   });

@@ -5,14 +5,14 @@
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { parseArgs, UsageError } from "../src/args";
 import { cacheFolder, decodeDataUri, osCache } from "../src/assets";
 import { foldPath } from "../src/destinations";
 import { errorLine } from "../src/errors";
-import { commonFolder, hasDefaultExport } from "../src/inputs";
+import { hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
 import { orphansOf } from "../src/kill";
 import { cli, email, lines, project, WINDOWS } from "./helpers";
@@ -150,14 +150,6 @@ describe("destinations and inputs", () => {
     expect(foldPath("/Out/Welcome.HTML")).toBe(foldPath("/out/welcome.html"));
     expect(foldPath("/out/café.html")).toBe(foldPath("/out/café.html"));
     expect(foldPath("/out/a. /b.html")).toBe(foldPath("/out/a/b.html"));
-  });
-
-  it("finds the folder holding every input", () => {
-    // Absolute paths as this platform writes them (on Windows, with a drive and backslashes).
-    const r = (path: string) => resolve("/r", path);
-    expect(commonFolder([r("packages/emails"), r("apps/web/emails")])).toBe(resolve("/r"));
-    expect(commonFolder([r("emails")])).toBe(r("emails"));
-    expect(commonFolder([r("emails"), r("emails2")])).toBe(resolve("/r"));
   });
 
   it("finds default exports with TypeScript's parser", async () => {
