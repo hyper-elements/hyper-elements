@@ -47,6 +47,8 @@ try {
 }
 ```
 
+From the shell (`@hyper-elements/cli`): `npx hyper-elements check emails/welcome.tsx` runs these checks on the module's default export and exits 1 on errors (`--json` for JSON); `render` writes the HTML and text to `out/`.
+
 ## Common mistakes
 
 Each of these made an agent's first try fail:
