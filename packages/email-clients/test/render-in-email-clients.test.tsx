@@ -9,7 +9,7 @@ import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
 import { checkCore, checkProtocol, CORE_RANGE, loadCore, MODEL_PROTOCOLS } from "../src/core";
 import { forgetModelsPackage, loadModelsPackage } from "../src/models";
 import { contentSecurityPolicy, inlineSafe, scriptJson } from "../src/shell";
-import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients } from "../src/index";
+import { DEFAULT_PREVIEW_CLIENTS, EMAIL_CLIENTS, emailClients, PREVIEW_CLIENTS, renderInEmailClients, type EmailClientsOptions, type EmailClientsResult } from "../src/index";
 import { RUNTIME } from "../src/runtime.generated";
 
 const welcome = (
@@ -161,6 +161,13 @@ describe("renderInEmailClients()", () => {
       "default-src 'none'; script-src 'sha256-def=' 'sha256-abc=' 'wasm-unsafe-eval'; style-src 'unsafe-inline'; font-src https://cdn.jsdelivr.net data: https:; img-src * data:"
     );
     expect(contentSecurityPolicy(null, null)).toBe("default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; font-src data: https:; img-src * data:");
+  });
+});
+
+describe("renderInEmailClients()'s type, as code typed from it reads it", () => {
+  it("keeps the template signature last: Parameters<> and ReturnType<> read the last overload", () => {
+    expectTypeOf<Parameters<typeof renderInEmailClients>>().toEqualTypeOf<[element: React.ReactElement, options?: EmailClientsOptions]>();
+    expectTypeOf<ReturnType<typeof renderInEmailClients>>().toEqualTypeOf<Promise<EmailClientsResult>>();
   });
 });
 
