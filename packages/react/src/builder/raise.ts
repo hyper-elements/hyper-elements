@@ -5,12 +5,14 @@
  * full-width row, a Row a row of its children as columns (their shares and gap as the columns' widths and padding), a
  * box directly in the root or a Section a row of its own, content directly in the root a one-column row, a text block
  * its HTML. What a tool has no field for is a hidden property of it (hide.ts); what no tool shows (a Layer, an Svg, a
- * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said.
+ * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said;
+ * a template's own component is its custom tool's block instead where the design is written with them (custom.ts).
  */
 import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@unlayer-internal/elements-core";
 import type React from "react";
 import { collectTemplate } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
+import { customBlock } from "./custom";
 import { block, columnWith, rowWith, type Block, type Body, type BodyFields, type Row } from "./design";
 import { hiddenOf, leftOut, merge } from "./hide";
 import { lockedHtml } from "./locked";
@@ -34,7 +36,7 @@ const PAINT = ["backgroundColor", "border", "borderRadius"];
 /** What a browser gives text where nothing says otherwise. */
 const BROWSER_TEXT: Record<string, unknown> = { fontSize: 16, fontStyle: "normal", letterSpacing: 0, textAlign: "left", textTransform: "none" };
 
-export function raise(element: React.ReactElement): Raised {
+export function raise(element: React.ReactElement, options: { customTools?: boolean } = {}): Raised {
   const report: string[] = [];
   const { document, diagnostics, components } = collectTemplate(element);
   if (!document || diagnostics.some((d) => d.severity === "error")) return { body: null, report: diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
@@ -102,6 +104,11 @@ export function raise(element: React.ReactElement): Raised {
       report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
       const own = at(path);
       return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
+    },
+    custom: (node, around, hiding) => {
+      // A component placed where a Section goes renders a band across the window, which no block in a column is.
+      const definition = options.customTools ? components.find((c) => c.type === node.type && !c.categories.includes("section")) : undefined;
+      return definition && put(customBlock(node, definition, around, hiding));
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,

@@ -6,7 +6,7 @@
  * place; a button's, a menu item's or a social icon's is "#". An image or video without a source it can show is left
  * out.
  */
-import { definitionOf, type Child, type Json, type Node } from "@unlayer-internal/elements-core";
+import { definitionOf, type Child, type CustomDefinition, type Json, type Node } from "@unlayer-internal/elements-core";
 
 type Kind = { parse(value: unknown): { ok: true; value: Json } | { ok: false; message: string } };
 
@@ -26,8 +26,8 @@ function itemLinks(value: Json, key: string, path: string, report: string[]): Js
 }
 
 /** The node with only values its component takes, its children checked; null where it can't be kept, its children where only it can't. */
-function checkNode(node: Node, path: string, report: string[], inText = false): Node | Child[] | null {
-  const definition = definitionOf(node.type);
+function checkNode(node: Node, path: string, report: string[], inText = false, custom?: ReadonlyMap<string, CustomDefinition<any>>): Node | Child[] | null {
+  const definition = definitionOf(node.type) ?? custom?.get(node.type);
   if (!definition) {
     report.push(`${path}: ${JSON.stringify(node.type)} isn't a component: left out`);
     return null;
@@ -64,7 +64,7 @@ function checkNode(node: Node, path: string, report: string[], inText = false): 
         }
         // In text, its words as a Span; elsewhere (around an image), what it holds, in its place.
         report.push(`${path}: its ${key} ${JSON.stringify(value)} isn't one Elements writes: ${inText ? "its words" : "what it holds"} without it`);
-        const children = checkChildren(node.children ?? [], path, report, true);
+        const children = checkChildren(node.children ?? [], path, report, true, custom);
         return inText ? { type: "Span", children } : children;
       }
       report.push(`${path}: its ${part === "props" ? "" : `${part} `}${key} ${JSON.stringify(value)}${parsed && !parsed.ok ? ` (${parsed.message})` : ""} isn't one a ${node.type} takes: left out`);
@@ -72,21 +72,21 @@ function checkNode(node: Node, path: string, report: string[], inText = false): 
     if (Object.keys(kept).length) out[part] = kept;
     else delete out[part];
   }
-  if (node.children) out.children = checkChildren(node.children, path, report, holdsText(node.type));
+  if (node.children) out.children = checkChildren(node.children, path, report, holdsText(node.type), custom);
   return out;
 }
 
-function checkChildren(children: Child[], path: string, report: string[], inText: boolean): Child[] {
+function checkChildren(children: Child[], path: string, report: string[], inText: boolean, custom?: ReadonlyMap<string, CustomDefinition<any>>): Child[] {
   return children.flatMap((child, i): Child[] => {
     if (typeof child === "string") return [child];
-    const checked = checkNode(child, `${path}.children[${i}]`, report, inText);
+    const checked = checkNode(child, `${path}.children[${i}]`, report, inText, custom);
     return Array.isArray(checked) ? checked : checked ? [checked] : [];
   });
 }
 
-export function checkTemplate(root: Node, report: string[]): Node {
+export function checkTemplate(root: Node, report: string[], custom?: ReadonlyMap<string, CustomDefinition<any>>): Node {
   // A Document has no phones: its phone values and hiding (a design made for email, a Grid's empty cells) aren't its.
-  const checked = checkNode(root.type === "Document" ? withoutPhones(root) : root, "root", report);
+  const checked = checkNode(root.type === "Document" ? withoutPhones(root) : root, "root", report, false, custom);
   return checked && !Array.isArray(checked) ? checked : { type: root.type };
 }
 

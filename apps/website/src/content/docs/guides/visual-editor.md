@@ -48,7 +48,7 @@ Read the report before you promise an editor user that a block is editable.
 The builder holds what its tools can. Two things happen to the rest:
 
 - **Hidden properties.** A style or prop a tool has no field for is a hidden property of that tool. It's kept in the design under its own name and drawn by Elements, but the builder shows no control for it yet.
-- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a `Table`, a box nested in a column, your own `component()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. The report names each one.
+- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a `Table`, a box nested in a column, your own `component()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. The report names each one. Your own components can be tools of the builder instead: see [Your own components as tools](#your-own-components-as-tools).
 
 Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet, so a `PageNumber` goes in as its token, which the editor's PDF prints as it is. The report says so.
 
@@ -125,6 +125,77 @@ A design's markup comes back as it is. If your designs can hold content you don'
 ```tsx
 const { element } = fromDesign(saved, { displayMode: "email", toSafeHtml });
 ```
+
+## Your own components as tools
+
+A component you made with [`component()`](/docs/custom-components) can be a tool of the builder: a block an editor user drags in and edits by its props, drawn by Elements. You write it once. There's no separate tool to write, and no HTML to write by hand for the canvas, for web and for email.
+
+```tsx
+import { Text, component, prop } from "@hyper-elements/react";
+
+export const Callout = component({
+  type: "acme.Callout",
+  label: "Callout",
+  props: {
+    number: prop.number({ label: "Number", min: 1, default: 1, editor: "counter" }),
+    title: prop.text({ label: "Title", required: true }),
+    color: prop.color({ label: "Disc", default: "#FF5B1F" }),
+  },
+  render: ({ number, title, color }) => <Text style={{ color }}>{`${number}. ${title}`}</Text>,
+});
+```
+
+Three calls connect it:
+
+1. **Register the tools**, in the builder's custom JavaScript (its `customJS`), where `unlayer.registerTool` is:
+
+   ```ts
+   import { registerTools } from "@hyper-elements/react/builder";
+
+   registerTools(unlayer, [Callout]);
+   ```
+
+   Each component becomes one tool. Its name is the component's type in the builder's words (`acme.Callout` is `acme_callout`; `toolName()` gives it), its label is the component's, and it has a property for each prop.
+
+2. **Write the design with them**: `toDesign(element, { customTools: true })` writes each of your components as its tool's block, its props the block's values, where it would otherwise be an HTML block.
+
+3. **Read it back with them**: `fromDesign(design, { components: [Callout] })` reads each of those blocks back as `<acme.Callout … />`, its values checked by its props' kinds. A value a prop doesn't take is left out and reported.
+
+### Which editor a prop gets
+
+A prop's kind says what its value is. The builder edits it with its own property editor for that kind:
+
+| Prop | The builder's editor |
+|------|----------------------|
+| `prop.text()` | `text` |
+| `prop.color()` | `color_picker` |
+| `prop.number()` | `counter` |
+| `prop.boolean()` | `toggle` |
+| `prop.choice()` | `dropdown`, with its values |
+| `prop.link()` | `link` |
+| `prop.image()` | `image` |
+| `prop.fontFamily()` | `font_family` |
+
+A `prop.length()` or a `prop.fontWeight()` has no editor in the builder yet. Its value is kept in the block and drawn; it has no field.
+
+A prop can name another editor with `editor`: one of the builder's own, or one you registered with `unlayer.registerPropertyEditor`. Say which ones you registered:
+
+```ts
+// price: prop.number({ label: "Price", editor: "currency" })
+registerTools(unlayer, [PriceBand], { editors: ["currency"] });
+```
+
+The value stays its kind's either way: a price is still a number, checked as one. A name the builder has no editor for falls back to the kind's editor.
+
+### What to know
+
+- **The component's code has to be loaded in the builder.** A design with a custom tool's block opened where the tool isn't registered shows the builder's "Missing" block there, and exports it.
+- **A project's plan sets how many custom tools it has.** The builder leaves a tool past that number out of its panel and doesn't export its blocks, so register no more components than the plan has tools.
+- **A component is drawn on its own in the builder**, at its column's width, with no template around it. Give it its own font and colors instead of taking the root's. A theme's token in a prop is written as the value it has there.
+- **A component placed where a Section goes** (`placement: "section"`) stays an HTML block: a tool is a block in a column.
+- `registerTools()` takes `displayMode: "web"` for a builder of pages, so the canvas draws a Page's markup, and `icons` for each tool's icon in the panel.
+
+The [custom components example](https://github.com/hyper-elements/hyper-elements/tree/main/examples/custom-components-in-editor) is a whole email made this way, with a property editor of its own.
 
 ## Limits
 

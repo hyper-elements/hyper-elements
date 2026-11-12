@@ -105,7 +105,7 @@ error prop/invalid at root.children[0].props.size: size: expected one of "compac
 | `prop.fontFamily()` | A font stack |
 | `prop.fontWeight()` | A font weight |
 
-Each takes `label`, and optionally a `description`, `required: true` or a `default`. Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, `<ProductCard accent={token("colors.primary")} />`, and `render` gets its value where the instance is.
+Each takes `label`, and optionally a `description`, `required: true` or a `default`. `editor` names the control a visual editor shows for it, where its kind's own isn't the one wanted (`prop.number({ label: "Quantity", editor: "counter" })`): the value is its kind's either way, and an editor that has no control by that name shows the kind's. In Unlayer's builder a component is a tool, with a field for each prop: see [Visual editing](/docs/guides/visual-editor#your-own-components-as-tools). Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, `<ProductCard accent={token("colors.primary")} />`, and `render` gets its value where the instance is.
 
 ### On each instance
 

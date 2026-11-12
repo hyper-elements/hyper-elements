@@ -4,6 +4,21 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### Added
+
+- **Your own components as tools of Unlayer's builder.** A `component()` can be a custom tool there, edited by its
+  props and drawn by Elements, with no tool written by hand. `registerTools(unlayer, components)`
+  (`@hyper-elements/react/builder`) registers each as a tool in the builder's custom JavaScript: its name from its type
+  (`acme.ProductCard` is `acme_product_card`, as `toolName()` gives it), a property for each prop with the builder's
+  editor for its kind, and its drawing in the canvas and in what the builder exports. `toDesign(element, { customTools:
+  true })` writes each of a template's own components as its tool's block, where it was an HTML block of its markup;
+  `fromDesign(design, { components })` reads those blocks back as the components. Without the options, both do what
+  they did.
+- **A prop names its editor.** `prop.number({ label: "Quantity", editor: "counter" })`: the control a visual editor
+  shows for a prop, where its kind's own isn't the one wanted. The value is its kind's either way.
+  `describeComponents()` gives it as `namedEditor`, beside `editor` (its kind's), which an editor with no control by
+  that name shows.
+
 ### Fixed
 
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no

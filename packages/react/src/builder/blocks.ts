@@ -25,7 +25,7 @@ export type { Context, Slot };
  * where it says a new window, the URL alone otherwise. None where it has no URL; where it holds what a link here
  * can't (a class, attributes of its own, a click handler, another target), that's said and it's left out.
  */
-function link(value: unknown, say: (message: string) => void, what = "its link"): Json | undefined {
+export function link(value: unknown, say: (message: string) => void, what = "its link"): Json | undefined {
   const read = webLink(value);
   if (read === undefined) say(`${what} ${JSON.stringify(value) ?? String(typeof value)} holds what a link in Elements can't (a class, attributes or a target of its own, a click handler): left out`);
   if (!read) return undefined;

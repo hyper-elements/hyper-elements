@@ -54,7 +54,9 @@
  ],
  "./builder": [
   "fromDesign",
-  "toDesign"
+  "registerTools",
+  "toDesign",
+  "toolName"
  ],
  "./pdf": [
   "renderPdf"

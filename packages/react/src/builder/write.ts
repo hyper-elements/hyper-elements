@@ -16,8 +16,8 @@ export interface DesignResult {
   report: string[];
 }
 
-export function writeDesign(element: React.ReactElement): DesignResult {
-  const { body, report } = raise(element);
+export function writeDesign(element: React.ReactElement, options: { customTools?: boolean } = {}): DesignResult {
+  const { body, report } = raise(element, options);
   if (!body) throw new Error(`[Elements] This template can't go to the builder:\n${report.join("\n")}`);
   return { design: withFontStylesheets(writeParts(body)), report };
 }
