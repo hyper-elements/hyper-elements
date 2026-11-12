@@ -45,6 +45,17 @@ function change(dir: string, files: Record<string, string>): number {
  * Each render after the first was for a change the test made: none for a loader module the children wrote beside the
  * templates, or anything else the CLI wrote. (A late or repeated event may add a render; that isn't what's checked.)
  */
+/** Once dev isn't rendering (a render's loader modules are there while it runs): its state then. */
+async function idle(dev: Dev, ms = 15_000): Promise<any> {
+  const end = Date.now() + ms;
+  for (;;) {
+    const state = await dev.state();
+    if (!state.rendering) return state;
+    if (Date.now() > end) throw new Error(`dev was still rendering after ${ms} ms\n${dev.stderr()}`);
+    await wait(50);
+  }
+}
+
 async function rendersWereForTheTest(dev: Dev, cwd: string): Promise<void> {
   const { history } = await dev.state();
   for (const { version, changed: paths } of history.filter((render: any) => render.version > 1)) {
@@ -125,10 +136,12 @@ export default function A() { return <Email><Text>{[greeting, word, ui, built].j
     change(dir, { "packages/built/dist/index.js": `export const built = "built three";\n`, "packages/built/dist/index.d.ts": `export declare const built: string;\n` });
     await devUntil(dev, shows("built three"), "emails/a.tsx");
 
-    // Quiet for a while: nothing the children wrote beside the templates (their loader modules) caused a render.
+    // Quiet for a while: nothing the children wrote beside the templates (their loader modules) caused a render. Once
+    // it's idle, every render was for a change the test made, and no render left a loader module.
     await wait(600);
+    const { history } = await idle(dev);
     await rendersWereForTheTest(dev, web);
-    expect(leftovers(web)).toEqual([]);
+    expect(leftovers(web), `${JSON.stringify(history)}\n${dev.stderr()}`).toEqual([]);
   });
 
   it("two folders with different tsconfigs, each compiling with its own", { retry: RETRY }, async () => {
