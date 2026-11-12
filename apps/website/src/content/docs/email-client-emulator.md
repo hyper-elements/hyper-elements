@@ -84,7 +84,7 @@ const { previews } = await renderInEmailClients(html, { emailClients: ["outlook"
 // The same previews, one per client: open one in Chromium, screenshot it, or read what the client changed.
 ```
 
-It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`. The emulator is measured mostly on emails built with Hyper Elements, and is less close on others in some clients: those previews are marked `approximate`, and the table below gives both numbers.
+It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 
 ## Why it matters
 
