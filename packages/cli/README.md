@@ -12,6 +12,7 @@ npx hyper-elements outline emails/welcome.tsx
 npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/welcome/outlook.html, … drawn in Chromium
 npx hyper-elements describe Button --root Email --json
 npx @hyper-elements/cli check email.html   # any HTML email: the email client checks, with nothing installed
+npx hyper-elements dev emails/ docs/       # a page on 127.0.0.1 showing each template, rendered again on each change
 ```
 
 A template is a module whose default export is a component that renders an `<Email>`, a `<Page>`, a `<Document>` or a
@@ -41,6 +42,7 @@ Welcome.PreviewProps = { name: "Ada" };
 | `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<name>/`, named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
 | `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
 | `describe [Component]` | Lists every component a template can use (or one), with its props and styles, from `describeComponents()` (or `describeComponent()`); `--root Email` narrows it to what that root takes. No template is loaded: it reads the `@hyper-elements/react` the current folder resolves. |
+| `dev <files or folders…>` | Serves a page on `127.0.0.1` that shows each template, and renders them again when the project changes, until Ctrl-C. See [dev](#dev). |
 | `migrate …` | Runs [`@hyper-elements/migrate`](https://www.npmjs.com/package/@hyper-elements/migrate) with the arguments given, unchanged: the project's, else `npx @hyper-elements/migrate`. Its output and exit codes are migrate's. |
 
 A folder is searched for templates, leaving out `node_modules`, build output, and folders whose name starts with `.` or
@@ -150,6 +152,33 @@ Where the email client models can't be used, both commands do as email-clients d
 | it speaks a protocol email-clients doesn't read | `email-clients/version-mismatch`: the input's an error, exit 1 |
 | it's from before 1.8.0 (checks templates only) | an `info` `email/captured-checks`; the checks from caniemail's tables run |
 | its check throws on this email | an `email/captured-checks` warning; the checks from caniemail's tables run |
+
+## dev
+
+`dev` prints its URL and serves, until Ctrl-C (exit 0), a page that lists the templates and shows the one picked: an
+Email or a Page at desktop width and at 375px, a Document's PDF, a Canvas's image, its diagnostics (with the email client
+checks where the project has `@hyper-elements/email-clients`), and, for an Email with email-clients, links to its
+previews in each email client (`preview`'s files). It takes `render`'s `--props`, `--public`, `--offline` and
+`--timeout`, and `preview`'s `--clients`, `--dark` and `--fonts`; it writes nothing in the project (what it renders is
+kept in a temporary folder of its own, removed when it exits), and what's wrong is said on the page and on stderr. Under
+Bun, a Document shows `cli/bun` instead of its PDF, as `render` does there.
+
+Each change renders every template again in new child processes, one per package and tsconfig as `render` runs them,
+on the runtime the CLI was started with: every import is fresh, and a template that loops or leaks ends with its child
+(`--timeout`, `cli/timeout` on the page) while the server keeps serving. It renders after 100 ms with no change, so a
+source change and the rebuild that follows it are each shown. It doesn't follow imports; it watches:
+
+- the project's source: the folder of the nearest `package.json`, its `.tsx`, `.jsx`, `.ts`, `.js`, `.mts` and `.mjs`
+  files, leaving out `node_modules`, build output (`dist`, `build`, `out`, …) and folders starting with `.`;
+- each workspace package the project depends on (a `workspace:` or `link:` version, or a dependency installed as a
+  symbolic link to a folder outside `node_modules`), and theirs: every file, `dist` and `build` included, so a package
+  whose runtime is its build is shown again when it's rebuilt.
+
+The page shows an Email's and a Page's HTML in `<iframe sandbox>` without `allow-same-origin`, and serves it with a
+`Content-Security-Policy: sandbox` of its own: an `Html` block's scripts run there, in an origin that isn't the page's,
+and can't read the page, what it shows or its event stream. The server listens on `127.0.0.1` only, as `--serve` does:
+it answers only its own host (`127.0.0.1`, `localhost` or `[::1]` with its port), with no `Origin` or its own (the event
+stream too), under the random path its URL carries, and only its own files.
 
 ## Output and exit codes
 

@@ -130,7 +130,7 @@ export async function findInputs(positional: string[], cwd: string, folderSkip =
       }
     } else {
       if (HTML.test(path)) {
-        if (!options.html) throw new UsageError(`${given} is HTML: it's already HTML. render, outline and inspect take templates (.tsx, .jsx, .ts, .js); check and preview take an HTML email too.`);
+        if (!options.html) throw new UsageError(`${given} is HTML: it's already HTML. render, outline, inspect and dev take templates (.tsx, .jsx, .ts, .js); check and preview take an HTML email too.`);
         holders.push(dirname(path));
         add(path, "html");
         continue;

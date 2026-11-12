@@ -1,13 +1,14 @@
 /**
- * `preview --serve`: the preview files served on 127.0.0.1, for a browser that can't open file:// paths. It listens on
- * 127.0.0.1 only, on a free port, and answers only:
+ * The CLI's local servers: `preview --serve` (the preview files) and `dev` (its page, its event stream and what it
+ * renders). Both listen on 127.0.0.1 only, on a free port, and answer only:
  *
+ * - a connection from 127.0.0.1 (403 otherwise);
  * - a request whose `Host` is `127.0.0.1:<port>`, `localhost:<port>` or `[::1]:<port>` (403 otherwise: a page that
  *   points its own name at 127.0.0.1 can't read it);
- * - with no `Origin`, or its own (403 otherwise);
+ * - with no `Origin`, or its own (403 otherwise; a sandboxed frame's `null` too);
  * - under a random path prefix, `/<32 hex>/`, which the URLs it prints carry (404 otherwise);
- * - for a file in its folder, by real path, after decoding the path once: `..`, `%2e%2e`, backslashes and symbolic
- *   links out of the folder are refused (403).
+ * - for one of its own routes (`dev`'s page and event stream), or a file in its folder, by real path, after decoding
+ *   the path once: `..`, `%2e%2e`, backslashes and symbolic links out of the folder are refused (403).
  */
 import { createReadStream, realpathSync, statSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
@@ -17,6 +18,9 @@ import { extname, isAbsolute, relative, resolve, sep } from "node:path";
 const TYPES: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
   ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".pdf": "application/pdf",
+  ".txt": "text/plain; charset=utf-8",
 };
 
 export interface Served {
@@ -28,7 +32,22 @@ export interface Served {
   close(): Promise<void>;
 }
 
-export async function serve(folder: string, host = "127.0.0.1"): Promise<Served> {
+/** A route of a server's own, by its path under the prefix (`""` for the prefix itself): it answers the request. */
+export type Route = (request: IncomingMessage, response: ServerResponse) => void;
+
+export interface ServeOptions {
+  /** Its own routes, answered before files (after every guard). */
+  routes?: Record<string, Route>;
+  /** Headers added to a file's response, by its real path. */
+  headers?(file: string): Record<string, string>;
+}
+
+/** Whether a connection's peer is this machine's 127.0.0.1. */
+function loopback(address: string | undefined): boolean {
+  return address === undefined || address === "127.0.0.1" || address === "::ffff:127.0.0.1";
+}
+
+export async function serve(folder: string, host = "127.0.0.1", options: ServeOptions = {}): Promise<Served> {
   const root = realpathSync(folder);
   const prefix = randomBytes(16).toString("hex");
   let port = 0;
@@ -37,6 +56,7 @@ export async function serve(folder: string, host = "127.0.0.1"): Promise<Served>
     response.end(`${text}\n`);
   };
   const handle = (request: IncomingMessage, response: ServerResponse) => {
+    if (!loopback(request.socket.remoteAddress)) return end(response, 403, "Forbidden");
     const hosts = [`127.0.0.1:${port}`, `localhost:${port}`, `[::1]:${port}`];
     const asked = (request.headers.host ?? "").toLowerCase();
     if (!hosts.includes(asked)) return end(response, 403, "Forbidden");
@@ -46,6 +66,8 @@ export async function serve(folder: string, host = "127.0.0.1"): Promise<Served>
     const raw = (request.url ?? "").split(/[?#]/)[0];
     const start = `/${prefix}/`;
     if (!raw.startsWith(start)) return end(response, 404, "Not Found");
+    const route = options.routes && Object.hasOwn(options.routes, raw.slice(start.length)) ? options.routes[raw.slice(start.length)] : undefined;
+    if (route) return route(request, response);
     let path: string;
     try {
       path = decodeURIComponent(raw.slice(start.length));
@@ -76,6 +98,7 @@ export async function serve(folder: string, host = "127.0.0.1"): Promise<Served>
       "Content-Length": size,
       "Cache-Control": "no-store",
       "X-Content-Type-Options": "nosniff",
+      ...options.headers?.(real),
     });
     if (request.method === "HEAD") return response.end();
     createReadStream(real).on("error", () => response.destroy()).pipe(response);

@@ -192,6 +192,12 @@ jobs:
       - name: Run tests
         run: pnpm -r --filter "./packages/*" --filter "!@hyper-elements/react" --filter "!@hyper-elements/migrate" run test
 
+      # The CLI's dev, alone on the runner (one test file at a time, Node then Bun): a change to an imported file
+      # (relative, aliased, in a workspace package, in one rebuilt into dist/ 500 ms after its source) and to a folder of
+      # two with their own tsconfigs is shown within a second of it (packages/cli/vitest.timing.config.ts).
+      - name: CLI dev re-renders within a second
+        run: pnpm --filter @hyper-elements/cli test:timing
+
       # The packed CLI and the packed Elements installed in an app of a pnpm workspace: render and check --json run
       # with npx (Node) and bunx --bun (Bun), each template saying which runtime rendered it; the packed manifest names
       # no private package. Then npx with the packed CLI checks and previews an HTML email in a folder with no
@@ -491,7 +497,8 @@ jobs:
 
       # The CLI's preview --findings in each browser it finds: Playwright's Chromium, one named by CHROME_PATH, the
       # runner's Chrome by its channel; what the drawn previews say, screenshots, nothing fetched with --fonts inline,
-      # a failed preview (exit 1) and an incomplete one (exit 0), and the same findings on Bun (packages/cli/test/browser).
+      # a failed preview (exit 1) and an incomplete one (exit 0), and the same findings on Bun; and dev's page, on Node and
+      # Bun, whose sandboxed frames a template's script can't reach the page from (packages/cli/test/browser).
       - name: CLI previews drawn in browsers
         run: pnpm --filter @hyper-elements/cli test:browser
 

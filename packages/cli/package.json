@@ -35,6 +35,7 @@
     "test": "vitest",
     "test:bun": "vitest run --project bun",
     "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:timing": "vitest run --config vitest.timing.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

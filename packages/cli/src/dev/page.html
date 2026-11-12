@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hyper Elements dev</title>
+<style>
+:root { color-scheme: light dark; --bg: #f6f7f9; --panel: #ffffff; --text: #1f2328; --muted: #656d76; --line: #d0d7de; --ok: #1a7f37; --error: #cf222e; --warning: #9a6700; --accent: #0969da; }
+@media (prefers-color-scheme: dark) { :root { --bg: #0d1117; --panel: #161b22; --text: #e6edf3; --muted: #8d96a0; --line: #30363d; --ok: #3fb950; --error: #f85149; --warning: #d29922; --accent: #4493f8; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 1; }
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+#status { font-size: 12px; color: var(--muted); }
+#status[data-state="rendering"] { color: var(--warning); }
+#status[data-state="offline"] { color: var(--error); }
+.layout { display: flex; min-height: calc(100vh - 45px); }
+nav { width: 280px; flex: none; border-right: 1px solid var(--line); background: var(--panel); padding: 8px 0; overflow: auto; }
+nav button { display: flex; width: 100%; gap: 8px; align-items: baseline; padding: 6px 16px; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+nav button:hover { background: var(--bg); }
+nav button[aria-current="true"] { background: var(--bg); box-shadow: inset 3px 0 var(--accent); }
+nav .file { flex: 1; overflow-wrap: anywhere; }
+nav .root { color: var(--muted); font-size: 12px; }
+.mark-ok { color: var(--ok); }
+.mark-error { color: var(--error); }
+.mark-skipped { color: var(--muted); }
+main { flex: 1; min-width: 0; padding: 16px; }
+main h2 { font-size: 16px; margin: 0 0 4px; overflow-wrap: anywhere; }
+.meta { color: var(--muted); margin: 0 0 12px; }
+.banner { border: 1px solid var(--error); color: var(--error); background: var(--panel); border-radius: 6px; padding: 8px 12px; margin: 0 0 12px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.diagnostics { list-style: none; margin: 0 0 16px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.diagnostics li { padding: 6px 12px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.diagnostics li:first-child { border-top: 0; }
+.diagnostics .severity { font-weight: 600; margin-right: 6px; }
+.severity-error { color: var(--error); }
+.severity-warning { color: var(--warning); }
+.severity-info { color: var(--muted); }
+.diagnostics code { font-size: 12px; }
+.frames { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+figure { margin: 0; }
+figure.desktop { flex: 1 1 600px; min-width: 0; }
+figure.phone { flex: none; width: 377px; }
+figcaption { color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+iframe { display: block; width: 100%; height: 75vh; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+figure.document { flex: 1 1 100%; }
+img.canvas { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.links { margin: 16px 0 0; }
+.links h3 { font-size: 13px; margin: 0 0 4px; }
+.links ul { margin: 0; padding-left: 18px; }
+a { color: var(--accent); }
+.empty { color: var(--muted); }
+@media (max-width: 720px) { .layout { display: block; } nav { width: auto; border-right: 0; border-bottom: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header><h1>Hyper Elements dev</h1><span id="status" data-state="connecting">Connecting…</span></header>
+<div class="layout">
+  <nav id="templates" aria-label="Templates"></nav>
+  <main id="view"><p class="empty">Rendering…</p></main>
+</div>
+<script>
+"use strict";
+(() => {
+  // Everything here is written with textContent and attributes: no template text is ever read as markup.
+  const list = document.getElementById("templates");
+  const view = document.getElementById("view");
+  const status = document.getElementById("status");
+  let state = null;
+  let selected = decodeURIComponent(location.hash.slice(1));
+  let shown = "";
+
+  const el = (tag, props = {}, ...children) => {
+    const node = document.createElement(tag);
+    for (const [key, value] of Object.entries(props)) {
+      if (key === "text") node.textContent = value;
+      else node.setAttribute(key, value);
+    }
+    for (const child of children) if (child) node.append(child);
+    return node;
+  };
+  const MARK = { ok: "✓", error: "✗", skipped: "–" };
+
+  function setStatus(kind, text) {
+    status.dataset.state = kind;
+    status.textContent = text;
+  }
+
+  /** A template's output, shown as its root is: an Email or a Page in two sandboxed frames, a PDF, an image. */
+  function outputs(template) {
+    const files = template.files || {};
+    const box = el("div", { class: "frames" });
+    if (files.html && (template.root === "Email" || template.root === "Page")) {
+      for (const [kind, label] of [["desktop", "Desktop"], ["phone", "Phone, 375px"]]) {
+        const frame = el("iframe", { sandbox: "allow-scripts allow-popups", src: files.html, title: `${template.file}, ${label}`, "data-frame": kind });
+        box.append(el("figure", { class: kind }, el("figcaption", { text: label }), frame));
+      }
+    } else if (files.pdf) {
+      box.append(el("figure", { class: "document" }, el("figcaption", { text: "PDF" }), el("iframe", { src: files.pdf, title: `${template.file}, PDF`, "data-frame": "pdf" })));
+    } else if (files.png || files.svg) {
+      box.append(el("figure", {}, el("figcaption", { text: "Image" }), el("img", { class: "canvas", src: files.png || files.svg, alt: template.file })));
+    }
+    return box.childElementCount ? box : null;
+  }
+
+  function links(template) {
+    const items = [];
+    if (template.files && template.files.txt) items.push(["Plain text", template.files.txt]);
+    if (template.files && template.files.pdf) items.push(["PDF on its own", template.files.pdf]);
+    const previews = template.previews || [];
+    if (!items.length && !previews.length) return null;
+    const box = el("div", { class: "links" });
+    if (items.length) box.append(el("ul", {}, ...items.map(([label, href]) => el("li", {}, el("a", { href, target: "_blank", rel: "noopener noreferrer", text: label })))));
+    if (previews.length) {
+      box.append(el("h3", { text: "In the email clients" }));
+      box.append(el("ul", { "data-previews": "" }, ...previews.map((p) => el("li", {}, el("a", { href: p.url, target: "_blank", rel: "noopener noreferrer", text: p.id })))));
+    }
+    return box;
+  }
+
+  function diagnostics(template) {
+    if (!template.diagnostics.length) return null;
+    return el(
+      "ul",
+      { class: "diagnostics" },
+      ...template.diagnostics.map((d) =>
+        el(
+          "li",
+          {},
+          el("span", { class: `severity severity-${d.severity}`, text: d.severity }),
+          el("code", { text: d.code }),
+          document.createTextNode(` ${d.path ? `at ${d.path}: ` : ""}${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}`),
+          d.fix ? el("div", { class: "meta", text: `Fix: ${d.fix}` }) : null,
+        ),
+      ),
+    );
+  }
+
+  function draw() {
+    if (!state) return;
+    const templates = state.templates || [];
+    if (!templates.some((t) => t.file === selected) && templates.length) selected = templates[0].file;
+    list.replaceChildren(
+      ...templates.map((t) => {
+        const button = el("button", { type: "button", "aria-current": String(t.file === selected) },
+          el("span", { class: `mark-${t.status}`, text: MARK[t.status] || "?" }),
+          el("span", { class: "file", text: t.file }),
+          t.root ? el("span", { class: "root", text: t.root }) : null);
+        button.addEventListener("click", () => {
+          selected = t.file;
+          history.replaceState(null, "", `#${encodeURIComponent(t.file)}`);
+          draw();
+        });
+        return button;
+      }),
+    );
+    const template = templates.find((t) => t.file === selected);
+    // The same files as shown already (the state changed elsewhere): the frames are left as they are.
+    const key = JSON.stringify([state.error, template || null]);
+    if (key === shown) return;
+    shown = key;
+    const parts = [];
+    if (state.error) parts.push(el("p", { class: "banner", text: state.error }));
+    for (const late of state.late || []) {
+      parts.push(el("p", { class: "banner", text: late.kind === "throw" ? `Template code threw outside a render: ${late.message}` : `A child process ended badly after its results (${late.reason}: ${late.detail})` }));
+    }
+    if (template) {
+      parts.push(el("h2", { text: template.file }));
+      parts.push(el("p", { class: "meta", text: [template.root || "no root", template.status].join(" · ") }));
+      if (template.error) parts.push(el("p", { class: "banner", "data-error": "", text: template.error }));
+      parts.push(diagnostics(template), outputs(template), links(template));
+    } else if (!state.error) {
+      parts.push(el("p", { class: "empty", text: "No templates." }));
+    }
+    view.replaceChildren(...parts.filter(Boolean));
+  }
+
+  async function refresh() {
+    try {
+      const response = await fetch("state.json", { cache: "no-store" });
+      if (!response.ok) throw new Error(String(response.status));
+      state = await response.json();
+    } catch {
+      return setStatus("offline", "Can't reach the dev server");
+    }
+    if (state.rendering) setStatus("rendering", "Rendering…");
+    else if (state.version) setStatus("ready", `Rendered ${state.templates.length} template${state.templates.length === 1 ? "" : "s"} in ${state.ms} ms`);
+    document.documentElement.dataset.version = String(state.version || 0);
+    draw();
+  }
+
+  const events = new EventSource("events");
+  events.onmessage = refresh;
+  events.onerror = () => setStatus("offline", "Reconnecting to the dev server…");
+})();
+</script>
+</body>
+</html>

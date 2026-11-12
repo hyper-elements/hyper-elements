@@ -19,7 +19,7 @@ export interface Diagnostic {
   excerpt?: string;
 }
 
-export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate";
+export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate" | "dev";
 export type Root = "Email" | "Page" | "Document" | "Canvas";
 
 /** A template sent to a child: its id in the run, its absolute path, and how the child loads it. */
