@@ -1,9 +1,10 @@
 ---
 title: "Email client emulator"
+metaTitle: "Email client emulator: test emails in Outlook, Gmail and more"
 description: "Hyper Elements comes with an email client emulator: see your email as each email client shows it, on your own machine. Free, no test sends and nothing uploaded."
 ---
 
-Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` returns a preview per client: a self-contained HTML page that shows the email as that client does when Chromium opens it.
+Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`: test an email in email clients like Outlook and Gmail without sending it. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` returns a preview per client: a self-contained HTML page that shows the email as that client does when Chromium opens it.
 
 ```bash
 npm i @hyper-elements/email-clients
@@ -154,3 +155,25 @@ The checks cover more clients than the emulator (Yahoo, AOL, Outlook for Mac and
 - **Open previews in a Chromium browser** (Chrome, Edge, Arc, or Playwright's Chromium). The previews are drawn by the browser opening them.
 - **Dark mode where a client has it in the table above.** Other clients' dark modes are on the way.
 - **For an email that matters, send a test too.** The emulator is the fast loop; a real inbox is the final check.
+
+## Common questions
+
+### How do I test an email in Outlook without sending it?
+
+Render it with `renderInEmailClients()` from `@hyper-elements/email-clients` and open its `outlook` preview in Chromium: it shows the email as classic Outlook for Windows draws it, and lists what Outlook changed. There's no test send, no Outlook to install and no account. For Outlook.com and the new Outlook, open the `outlook-com` preview.
+
+### How do I preview an email in Gmail?
+
+Open the `gmail` preview for Gmail on the web, or name `gmail-app` in `emailClients` for the Gmail app at a phone's width. Each preview lists, at its top, what Gmail removed or changed in the email.
+
+### Can I test an email I didn't build with Hyper Elements?
+
+The emulator previews a Hyper Elements `Email`. Bring a React Email template over with `npx @hyper-elements/migrate` (see [From React Email](/docs/migrate/react-email)), or put existing HTML in an `Html` block, which is emulated less closely than components.
+
+### Is it free?
+
+Yes. `@hyper-elements/email-clients` is free and runs on your machine: no API key, no account, no cost per preview, and the email isn't sent or uploaded anywhere.
+
+### Can my coding agent use it?
+
+Yes. An agent can call `renderInEmailClients()` after rendering, open a preview in a browser, read what each client changed, and fix the template. See [AI agents](/docs/guides/ai-agents).

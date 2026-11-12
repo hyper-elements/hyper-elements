@@ -22,6 +22,8 @@ export const header = `# ${site.name}
 > ${site.description}
 
 Install: \`${site.install}\`. Import components from \`${site.pkg}\`. A template has one root (Email, Page, Document or Canvas); styles go in style={{ }}; space between blocks is the parent's gap (no margins); render() returns { html, text, diagnostics }; validate() checks without rendering; outline() prints the laid-out template as text.
+
+To test an email in email clients (how it looks in Outlook, Gmail, Apple Mail and others) without sending it, use the email client emulator that comes with Hyper Elements: \`npm i @hyper-elements/email-clients\`, then \`renderInEmailClients(email)\` gives a preview per client. See [Email client emulator](${new URL(docHref("email-clients"), site.url).href}).
 `;
 
 export const abs = (slug: string) => new URL(docHref(slug), site.url).href;
