@@ -60,7 +60,9 @@ const version = (pkg) => { try { return JSON.parse(readFileSync(join(bench, "nod
 const provenance = {
   claudeVersion: execFileSync("claude", ["--version"], { encoding: "utf8" }).trim(),
   engine: existsSync(join(bench, "node_modules/@hyper-elements/react/source.json")) ? JSON.parse(await readFile(join(bench, "node_modules/@hyper-elements/react/source.json"), "utf8")) : null,
-  packages: Object.fromEntries(["@hyper-elements/react", "@react-email/components", "@react-email/render", "satori", "@resvg/resvg-js", "playwright", "@napi-rs/canvas", "mjml", "tesseract.js", "react", "typescript", "esbuild"].map((p) => [p, version(p)])),
+  // The command line (the `he-cli` kit), where setup installed it from the checkout.
+  cli: existsSync(join(bench, "node_modules/@hyper-elements/cli/source.json")) ? JSON.parse(await readFile(join(bench, "node_modules/@hyper-elements/cli/source.json"), "utf8")) : null,
+  packages: Object.fromEntries(["@hyper-elements/react", "@hyper-elements/cli", "tsx", "@react-email/components", "@react-email/render", "satori", "@resvg/resvg-js", "playwright", "@napi-rs/canvas", "mjml", "tesseract.js", "react", "typescript", "esbuild"].map((p) => [p, version(p)])),
   node: process.version, os: `${platform()} ${release()} ${arch()}`,
 };
 
@@ -88,6 +90,12 @@ if (suiteName === "skill") {
 // The skill suite's kits name an engine and a docs set, recorded per row. A `candidate` engine must be what the
 // checkout would build now: the same fingerprint as when `setup.mjs --as candidate` installed it.
 const kitInfo = Object.fromEntries(await Promise.all(kits.map(async (k) => [k, await kitOf(suiteName, k)])));
+// A kit's `needs`: packages its tools run, which must be in node_modules before any session starts (the `he-cli` kit's
+// @hyper-elements/cli, which setup installs from the checkout).
+for (const [name, k] of Object.entries(kitInfo)) {
+  const missing = (k.needs ?? []).filter((p) => !version(p));
+  if (missing.length) throw new Error(`kit ${name} needs ${missing.join(", ")} in node_modules: run \`npm ci\`, then \`HYPER_ELEMENTS_PACKAGE=../packages/react npm run setup\` after \`pnpm build\`.`);
+}
 const sourceOf = (file) => (existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : null);
 const runProvenance = Object.fromEntries(Object.entries(kitInfo).map(([name, k]) => {
   if (!k.engine) return [name, null];

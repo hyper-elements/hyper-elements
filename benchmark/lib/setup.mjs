@@ -8,12 +8,15 @@
 //   node lib/setup.mjs --docs-from v0.3.0 --as release
 //     GUIDE.md, REFERENCE.md and SKILL.md as they were at a git ref, into docs-sets/<name>/ (a kit's `docsFrom`)
 //
+// The first form also installs the checkout's command line, packages/cli, where it's built (the email suite's `he-cli`
+// kit runs it): node_modules/@hyper-elements/cli and node_modules/.bin/hyper-elements.
+//
 // Its dist/ is copied (renamed), its agent guide copied with the package's new name, and the checkout's commit recorded
 // (source.json), so every result says which engine code made it.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { copyFile, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { chmod, copyFile, cp, mkdir, readFile, readdir, rm, symlink, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { deniedPaths } from "./claude.mjs";
@@ -75,7 +78,8 @@ async function install(src, dest, { skill } = {}) {
   }
   const { version } = JSON.parse(await readFile(join(src, "package.json"), "utf8"));
   const entry = (name) => ({ types: `./dist/${name}.d.ts`, import: `./dist/${name}.js`, require: `./dist/${name}.cjs` });
-  const entries = ["image", "pdf", "builder"].filter((e) => existsSync(join(src, "dist", `${e}.js`)));
+  // `inspect` too: the command line reads a template's root with it.
+  const entries = ["image", "pdf", "builder", "inspect"].filter((e) => existsSync(join(src, "dist", `${e}.js`)));
   await writeFile(join(dest, "package.json"), JSON.stringify({
     name: "@hyper-elements/react", version,
     exports: { ".": entry("primitives"), ...Object.fromEntries(entries.map((e) => [`./${e}`, entry(e)])), "./package.json": "./package.json" },
@@ -83,6 +87,26 @@ async function install(src, dest, { skill } = {}) {
   }, null, 2));
   for (const f of ["GUIDE.md", "REFERENCE.md"]) await writeFile(join(dest, f), docText(await readFile(join(src, f), "utf8")));
   if (skill) await writeFile(join(dest, "SKILL.md"), docText(await readFile(skill, "utf8")));
+  return version;
+}
+
+/**
+ * Copies a built packages/cli into node_modules, its bin linked from node_modules/.bin (a link inside node_modules,
+ * which a run's copy keeps). Its dependencies are the benchmark's own: tsx and TypeScript (playwright-core and
+ * @hyper-elements/email-clients serve what the kit doesn't run: drawn previews and HTML emails).
+ */
+export async function installCli(src, nodeModules) {
+  const dest = join(nodeModules, "@hyper-elements/cli");
+  await rm(dest, { recursive: true, force: true });
+  await cp(join(src, "dist"), join(dest, "dist"), { recursive: true });
+  const { name, version, type, bin, engines } = JSON.parse(await readFile(join(src, "package.json"), "utf8"));
+  await writeFile(join(dest, "package.json"), JSON.stringify({ name, version, type, bin, engines }, null, 2));
+  await mkdir(join(nodeModules, ".bin"), { recursive: true });
+  for (const [command, file] of Object.entries(bin)) {
+    await chmod(join(dest, file), 0o755);
+    await rm(join(nodeModules, ".bin", command), { force: true });
+    await symlink(join("..", "@hyper-elements/cli", file), join(nodeModules, ".bin", command));
+  }
   return version;
 }
 
@@ -130,6 +154,17 @@ async function main() {
     try { source = { version, commit: git(src, "rev-parse", "HEAD"), dirty: git(src, "status", "--porcelain", "--", ".", "../core").length > 0 }; } catch {}
     await writeFile(join(dest, "source.json"), JSON.stringify(source, null, 2) + "\n");
     console.log(`@hyper-elements/react ${version} (${source.commit?.slice(0, 10) ?? "no git"}${source.dirty ? ", dirty" : ""}) → ${dest}`);
+    // The command line, from the same checkout, where it's built.
+    const cli = join(src, "..", "cli");
+    if (existsSync(join(cli, "dist/bin.js"))) {
+      const cliVersion = await installCli(cli, join(bench, "node_modules"));
+      let cliSource = { version: cliVersion };
+      try { cliSource = { version: cliVersion, commit: git(cli, "rev-parse", "HEAD"), dirty: git(cli, "status", "--porcelain", "--", ".", "../loader").length > 0 }; } catch {}
+      await writeFile(join(bench, "node_modules/@hyper-elements/cli/source.json"), JSON.stringify(cliSource, null, 2) + "\n");
+      console.log(`@hyper-elements/cli ${cliVersion} → ${join(bench, "node_modules/@hyper-elements/cli")}`);
+    } else {
+      console.log(`No built @hyper-elements/cli at ${cli} (run pnpm build): the he-cli kit can't run without it.`);
+    }
     return;
   }
 
