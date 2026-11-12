@@ -155,15 +155,23 @@ render(&lt;Launch /&gt;)  <span class="ok">✓</span>
 <span class="d">No clock, no randomness.
 Safe to cache and prerender.</span></pre>
         </article>
-        <article class="tile t-full reveal">
-          <h3>An email client emulator, on your machine</h3>
-          <pre class="mini">await renderInEmailClients(&lt;<span class="tg">Launch</span> /&gt;, {"{"} dark: true {"}"})
+        <article class="tile t-full t-emu reveal">
+          <div class="emu-copy">
+            <h3>An email client emulator, on your machine</h3>
+            <pre class="mini">await renderInEmailClients(&lt;<span class="tg">Launch</span> /&gt;, {"{"} dark: true {"}"})
 <span class="d">  →  outlook.html  outlook-com.html  gmail.html
      apple-mail.html  apple-mail.dark.html  …</span>
 
 <span class="d">Open them in Chrome: each draws the email as that
 client does, and lists what the client changed.</span></pre>
-          <p class="tile-note">No test sends, no account, nothing uploaded. <a href="/docs/email-client-emulator">Email client emulator</a></p>
+            <p class="tile-note">No test sends, no account, nothing uploaded. <a href="/docs/email-client-emulator">Email client emulator</a></p>
+          </div>
+          {/* The launch email as the emulator draws it (public/generated/email-clients/, scripts/email-client-previews.mjs). */}
+          <a class="emu-stage" href="/docs/email-client-emulator" aria-label="The launch email in Apple Mail, classic Outlook and the Gmail app, drawn by the email client emulator">
+            <figure class="emu-win emu-back"><img src="/generated/email-clients/launch-apple-mail.png" width="820" height="985" alt="" loading="lazy" decoding="async" /><figcaption>Apple Mail</figcaption></figure>
+            <figure class="emu-win emu-front"><img src="/generated/email-clients/launch-outlook.png" width="820" height="989" alt="" loading="lazy" decoding="async" /><figcaption>Classic Outlook</figcaption></figure>
+            <figure class="emu-phone"><img src="/generated/email-clients/launch-gmail-app.png" width="380" height="997" alt="" loading="lazy" decoding="async" /><figcaption>Gmail app</figcaption></figure>
+          </a>
         </article>
         <article class="tile reveal">
           <h3>Security</h3>
@@ -286,6 +294,22 @@ client does, and lists what the client changed.</span></pre>
   .t-wide { grid-column: span 2; }
   .t-full { grid-column: 1 / -1; }
   .tile-note { margin: auto 0 0; font-size: 13.5px; color: var(--text-2); }
+  /* The emulator tile: its copy on the left, the launch email in three clients on the right (two windows, a phone). */
+  .t-emu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: stretch; }
+  .emu-copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .emu-stage { position: relative; display: block; min-height: 300px; margin: -28px -28px -28px 0; overflow: hidden; color: inherit; text-decoration: none; }
+  .emu-stage figure { position: absolute; margin: 0; overflow: hidden; background: #fff; border: 1px solid var(--line-2); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6); }
+  .emu-stage img { display: block; width: 100%; height: auto; }
+  .emu-stage figcaption { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; background: rgba(10, 10, 10, 0.78); color: #ededed; font: 500 11px/1.4 var(--sans); letter-spacing: 0.01em; }
+  .emu-win { width: 62%; border-radius: 8px; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+  .emu-win img { width: 100%; }
+  .emu-back { right: 4%; top: 22px; height: 250px; opacity: 0.55; transform: scale(0.94); transform-origin: top right; }
+  .emu-front { left: 4%; top: 52px; height: 280px; }
+  .emu-phone { right: 7%; top: 70px; width: 25%; height: 270px; border-radius: 16px; border-width: 4px; border-color: #2a2a2a; -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
+  .emu-stage:hover .emu-front, .emu-stage:focus-visible .emu-front { transform: translateY(-4px); }
+  .emu-front, .emu-phone { transition: transform 0.25s; }
+  .emu-stage:hover .emu-phone, .emu-stage:focus-visible .emu-phone { transform: translateY(-6px); }
+  .emu-stage:focus-visible { outline: 2px solid var(--text); outline-offset: -2px; border-radius: 14px; }
   .comp { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 28px; }
   .comp .mini + .mini { border-left: 1px solid var(--line); padding-left: 28px; }
   .mini { margin: 0; font: 400 12.5px/1.65 var(--mono); color: var(--text); white-space: pre-wrap; overflow: hidden; }
@@ -321,12 +345,15 @@ client does, and lists what the client changed.</span></pre>
 
   @media (prefers-reduced-motion: reduce) {
     .marquee-track, .caret { animation: none; }
+    .emu-front, .emu-phone { transition: none; }
   }
   @media (max-width: 1000px) {
     .section { padding: 120px 0; }
     .sec-head { margin-bottom: 48px; }
     .facts { margin-top: 80px; }
     .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .t-emu { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+    .emu-stage { margin: 0 -28px -28px; min-height: 280px; }
     .facts-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .fact:nth-child(3) { border-left: 0; padding-left: 0; }
     .fact:nth-child(n+3) { border-top: 1px solid var(--line); }

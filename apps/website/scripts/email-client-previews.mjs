@@ -1,4 +1,5 @@
-// Draws a few of the site's emails in the email client emulator, for the Email client emulator page: each one's
+// Draws a few of the site's emails in the email client emulator, for the Email client emulator page and the home page's
+// emulator tile: each one's
 // preview in each client, opened in Chromium, as a PNG of the email alone.
 //
 //   pnpm --filter @hyper-elements/website generate:email-clients
@@ -19,11 +20,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const cacheDir = join(root, ".cache");
 const outDir = join(root, "public/generated/email-clients");
 
-/** The emails shown, and the previews of each: the page's own example, then two templates. */
+/** The emails shown, and the previews of each: the page's own example, then two templates, then the home page's launch email (its emulator tile). */
 const EMAILS = [
   { slug: "welcome", file: "examples/email-clients/welcome.tsx" },
   { slug: "tarn-shipped", file: "examples/templates/tarn-shipped.tsx" },
   { slug: "keel-sign-in-code", file: "examples/templates/keel-sign-in-code.tsx" },
+  { slug: "launch", file: "examples/showcase/email.tsx" },
 ];
 const PREVIEWS = ["outlook", "gmail", "apple-mail", "gmail-app"];
 
