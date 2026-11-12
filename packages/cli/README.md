@@ -86,7 +86,8 @@ client with no model to draw with, a dark mode not measured) is an `info` diagno
 Without `--findings` it writes the files and needs no browser: open one in Chromium, wait for
 `<html data-email-client-ready>` and read `#email-client-findings` (the
 [email-clients README](https://github.com/hyper-elements/hyper-elements/tree/main/packages/email-clients#what-a-preview-says)
-says what's in it). With `--findings` the CLI does that itself, in the first of these that starts:
+says what's in it). With `--findings` the CLI does that itself, with `playwright-core` (an optional peer: install it
+beside the CLI, `npm install -D playwright-core`), in the first of these that starts:
 
 1. the browser `CHROME_PATH` names;
 2. Playwright's own Chromium, where one is downloaded (`hyper-elements preview --install-browser` downloads it);
@@ -96,7 +97,9 @@ Each preview gets `ready` (`ok`, `incomplete` where a font or image was missing,
 `findings` the page wrote, and the input names the browser (`"browser": "chromium 148.0.7778.96, playwright"`). A
 preview whose page says `error` fails its template (`cli/preview-failed`, exit 1); one that's `incomplete` doesn't.
 Where no browser is found, the files are still written and the email client checks reported, each preview's `findings`
-is `null`, the input has `"browser": null, "reason": "no-browser"`, and the run exits 2.
+is `null`, the input has `"browser": null, "reason": "no-browser"`, and the run exits 2. Where `playwright-core` isn't
+installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it; with npx, add it to the
+run: `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings`.
 
 ```json
 {"version":1,"command":"preview","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":["out/clients/welcome/gmail.html","out/clients/welcome/gmail.mac.html"],"diagnostics":[],"previews":[{"id":"gmail","client":"gmail","path":"out/clients/welcome/gmail.html","ready":"ok","findings":{…}},{"id":"gmail.mac","client":"gmail","path":"out/clients/welcome/gmail.mac.html","ready":"ok","findings":{…}}],"browser":"chromium 148.0.7778.96, playwright"}

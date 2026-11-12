@@ -20,7 +20,7 @@ export interface Outcome {
   previews?: Preview[];
   /** `preview --findings`: the browser drawn with, or null where none was found. */
   browser?: string | null;
-  reason?: "no-browser";
+  reason?: "no-browser" | "no-playwright-core";
   /** `inspect`: inspect()'s result, or null where there's none. */
   inspection?: unknown;
   /** "html": an HTML email, checked or previewed as it is (a template where it's not set). */

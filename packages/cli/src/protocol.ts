@@ -147,7 +147,7 @@ export interface InputLine {
   previews?: Preview[];
   /** `preview --findings`: the browser the previews were drawn in, or null where none was found (with `reason`). */
   browser?: string | null;
-  reason?: "no-browser";
+  reason?: "no-browser" | "no-playwright-core";
 }
 
 /** A preview, as `preview` reports it: `ready` and `findings` are what the drawn page said (null where not drawn). */

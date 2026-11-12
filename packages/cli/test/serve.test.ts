@@ -168,7 +168,7 @@ describe("preview --install-browser", () => {
       const dir = project({});
       // On Linux, a distribution Playwright has no build for (Ubuntu 26.04 for 1.60) fails before asking: name one it
       // has, since what's tested is the CLI's install, not Playwright's platform list.
-      const platform = process.platform === "linux" ? { PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: `ubuntu24.04-${process.arch === "arm64" ? "arm64" : "x64"}` } : {};
+      const platform: Record<string, string> = process.platform === "linux" ? { PLAYWRIGHT_HOST_PLATFORM_OVERRIDE: `ubuntu24.04-${process.arch === "arm64" ? "arm64" : "x64"}` } : {};
       const ran = await cli(dir, ["preview", "--install-browser"], {
         env: { ...platform, PLAYWRIGHT_BROWSERS_PATH: browsers, PLAYWRIGHT_DOWNLOAD_HOST: `http://127.0.0.1:${port}`, PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: "5000" },
         timeout: 120_000,

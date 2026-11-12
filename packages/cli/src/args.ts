@@ -82,6 +82,8 @@ Options:
                         (draws them, as --findings does)
   --serve               preview: serve the previews on 127.0.0.1 until Ctrl-C
   --install-browser     preview: download Playwright's Chromium, and exit
+                        (--findings, --screenshots and this need
+                        playwright-core installed beside the CLI)
   --root <root>         describe: only what this root takes (Email, Page,
                         Document or Canvas)
   --timeout <seconds>   How long a group of templates may take (default: 60)

@@ -6,6 +6,8 @@
  *
  * Then any HTML email with nothing installed: `npx --package <the packed CLI> hyper-elements check` in a folder with no
  * node_modules, which installs the CLI and its email-clients (from npm) into npx's own cache, and no React or Elements.
+ * playwright-core is an optional peer, so it isn't installed either: `preview --findings` and `--install-browser` say
+ * how to install it, and exit 2.
  *
  *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz node verify.mjs
  */
@@ -122,6 +124,19 @@ try {
   assert.equal(previewed.code, 0, `npx preview welcome.html: ${previewed.stdout}${previewed.stderr}`);
   assert.deepEqual(readdirSync(join(folder, "out/clients/welcome")).sort(), ["gmail.html", "gmail.mac.html"]);
 
+  // No playwright-core: the files are written, the line says why nothing was drawn, and stderr says how to install it.
+  const findings = npx(["preview", "welcome.html", "--clients", "gmail", "--findings", "--json"]);
+  assert.equal(findings.code, 2, `npx preview --findings: ${findings.stdout}${findings.stderr}`);
+  const drawn = JSON.parse(findings.stdout.split("\n")[0]);
+  assert.equal(drawn.browser, null);
+  assert.equal(drawn.reason, "no-playwright-core");
+  assert.deepEqual(drawn.previews.map((preview) => preview.findings), [null, null]);
+  assert.match(findings.stderr, /playwright-core, which isn't installed/);
+  assert.match(findings.stderr, /npm install -D playwright-core/);
+  const install = npx(["preview", "--install-browser"]);
+  assert.equal(install.code, 2, `npx preview --install-browser: ${install.stdout}${install.stderr}`);
+  assert.match(install.stderr, /playwright-core, which isn't installed/);
+
   // What npx installed: the CLI, email-clients and its models, and no React, React DOM or Elements.
   const installs = readdirSync(join(cache, "_npx")).map((hash) => join(cache, "_npx", hash, "node_modules"));
   assert.ok(installs.some((modules) => existsSync(join(modules, "@hyper-elements/cli/package.json"))), "npx didn't install the CLI where it was looked for");
@@ -139,9 +154,9 @@ try {
     visit(join(folder, "node_modules"));
   };
   for (const modules of installs) visit(modules);
-  for (const name of ["react", "react-dom", "@hyper-elements/react"]) assert.ok(!found.includes(name), `npx installed ${name} for an HTML email: ${found.join(", ")}`);
+  for (const name of ["react", "react-dom", "@hyper-elements/react", "playwright-core"]) assert.ok(!found.includes(name), `npx installed ${name} for an HTML email: ${found.join(", ")}`);
   for (const name of ["@hyper-elements/email-clients", "@hyper-elements/email-client-models"]) assert.ok(found.includes(name), `npx didn't install ${name}`);
-  console.log(`✓ npx checks and previews an HTML email with nothing installed, and installs no React (${found.length} packages)`);
+  console.log(`✓ npx checks and previews an HTML email with nothing installed, and installs no React or playwright-core (${found.length} packages)`);
 } finally {
   rmSync(bare, { recursive: true, force: true });
 }

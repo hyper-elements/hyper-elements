@@ -1,7 +1,8 @@
 /**
  * `preview --findings`: the preview files drawn in a Chromium the CLI finds, with playwright-core (which downloads no
  * browser when installed). The only module that imports it: it's loaded only for `--findings`, `--screenshots` and
- * `--install-browser`, so `render`, `check` and a `preview` without them never load it.
+ * `--install-browser`, so `render`, `check` and a `preview` without them never load it. It's an optional peer: where
+ * it isn't installed, those say so (`missing`) and the rest of the CLI works as before.
  *
  * The browsers tried, in order: CHROME_PATH where it's set; Playwright's own Chromium, where one is downloaded
  * (`npx playwright install chromium`, or `--install-browser`); an installed Chrome, then Edge. Only Chromium-based
@@ -34,7 +35,26 @@ export interface DrawingBrowser {
   close(): Promise<void>;
 }
 
-export type Opened = { browser: DrawingBrowser; name: string } | { browser: null; tried: string[]; bun?: string };
+export type Opened =
+  | { browser: DrawingBrowser; name: string }
+  | { browser: null; tried: string[]; bun?: string; /** playwright-core isn't installed. */ missing?: boolean };
+
+/** Whether `error` says playwright-core itself can't be found (not a module it imports). */
+function isMissing(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  const code = (error as { code?: unknown } | null)?.code;
+  return (code === "ERR_MODULE_NOT_FOUND" || code === "MODULE_NOT_FOUND" || /^Cannot find (package|module)/.test(message)) && /['"]playwright-core(\/package\.json)?['"]/.test(message);
+}
+
+/** playwright-core, as the CLI resolves it; null where it isn't installed. */
+async function playwright(): Promise<typeof import("playwright-core") | null> {
+  try {
+    return await import("playwright-core");
+  } catch (error) {
+    if (isMissing(error)) return null;
+    throw error;
+  }
+}
 
 /** A failure that says only that the browser isn't there (not that it couldn't be started). */
 const NOT_THERE = /Executable doesn't exist|is not found at|is not installed|ENOENT|no such file|not found|cannot find/i;
@@ -47,7 +67,9 @@ function channels(): string[] {
 
 /** The first browser that starts, of those tried in order; or null, with what was tried. */
 export async function openBrowser(): Promise<Opened> {
-  const { chromium } = await import("playwright-core");
+  const core = await playwright();
+  if (!core) return { browser: null, tried: [], missing: true };
+  const { chromium } = core;
   const attempts: Array<{ label: (version: string) => string; options: LaunchOptions; what: string }> = [];
   const chromePath = process.env.CHROME_PATH;
   if (chromePath) attempts.push({ what: `CHROME_PATH (${chromePath})`, label: (v) => `chromium ${v}, CHROME_PATH`, options: { executablePath: chromePath } });
@@ -114,11 +136,18 @@ function drawing(browser: Browser): DrawingBrowser {
 }
 
 /**
- * `--install-browser`: playwright-core's own install of Chromium (`playwright-core install chromium`), from the CLI's
- * copy, so the Chromium it downloads is the one it launches. What it prints goes to stderr. Resolves with its exit code.
+ * `--install-browser`: playwright-core's own install of Chromium (`playwright-core install chromium`), from the copy
+ * the CLI resolves, so the Chromium it downloads is the one it launches. What it prints goes to stderr. Resolves with
+ * its exit code, or "missing" where playwright-core isn't installed.
  */
-export function installBrowser(): Promise<number> {
-  const cli = join(dirname(createRequire(import.meta.url).resolve("playwright-core/package.json")), "cli.js");
+export function installBrowser(): Promise<number | "missing"> {
+  let cli: string;
+  try {
+    cli = join(dirname(createRequire(import.meta.url).resolve("playwright-core/package.json")), "cli.js");
+  } catch (error) {
+    if (isMissing(error)) return Promise.resolve("missing");
+    throw error;
+  }
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [cli, "install", "chromium"], { stdio: ["ignore", 2, 2] });
     child.on("error", () => resolve(1));

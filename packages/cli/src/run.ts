@@ -20,7 +20,7 @@ import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, t
 import { killTree } from "./kill";
 import { cleanFiles, ownToken, parseToken, stale } from "./loader-module";
 import { inputLine, inputText, summaryText, type Outcome } from "./output";
-import { clientsFolder, drawPreviews, NO_BROWSER_HELP, planPreviewFolders, servePreviews, writePreviews } from "./preview";
+import { clientsFolder, drawPreviews, NO_BROWSER_HELP, NO_PLAYWRIGHT_CORE_HELP, planPreviewFolders, servePreviews, writePreviews } from "./preview";
 import type { ChildMessage, Diagnostic, Group, Late, PreviewFile, ResultMessage, StartMessage, SummaryLine } from "./protocol";
 
 export interface Io {
@@ -485,7 +485,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     const drawn = await drawPreviews(all, { cwd, screenshots: args.screenshots, stderr: io.stderr });
     if (!drawn.browser) {
       noBrowser = true;
-      io.stderr(`hyper-elements: ${drawn.bun ?? NO_BROWSER_HELP}\n${(drawn.tried ?? []).map((tried) => `  - ${tried}\n`).join("")}`);
+      io.stderr(`hyper-elements: ${drawn.missing ? NO_PLAYWRIGHT_CORE_HELP : (drawn.bun ?? NO_BROWSER_HELP)}\n${(drawn.tried ?? []).map((tried) => `  - ${tried}\n`).join("")}`);
     }
   }
 

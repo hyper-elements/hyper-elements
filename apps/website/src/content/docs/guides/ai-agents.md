@@ -161,8 +161,8 @@ With `--json`, stdout holds one line per template, with its `status` and `diagno
 
 To test an email in the email clients from the shell, the agent uses what it has:
 
-1. **Where the CLI finds a Chromium:** `npx hyper-elements preview emails/welcome.tsx --findings --json`. Each preview comes back with its `ready` and its `findings`: what that client removed or changed, what was missing, and text it draws on more lines. `npx hyper-elements preview --install-browser` downloads a Chromium.
-2. **Where it finds none** (exit `2`, `"browser": null, "reason": "no-browser"`), the preview files are still written. An agent with a browser of its own opens each one, or the URLs `preview --serve` prints, waits for `<html data-email-client-ready>`, and reads the JSON in `#email-client-findings`.
+1. **Where the CLI finds a Chromium:** `npx hyper-elements preview emails/welcome.tsx --findings --json`. Each preview comes back with its `ready` and its `findings`: what that client removed or changed, what was missing, and text it draws on more lines. It needs `playwright-core` beside the CLI (`npm install -D playwright-core`), and `npx hyper-elements preview --install-browser` downloads a Chromium.
+2. **Where it finds none** (exit `2`, `"browser": null, "reason": "no-browser"`, or `"no-playwright-core"`), the preview files are still written. An agent with a browser of its own opens each one, or the URLs `preview --serve` prints, waits for `<html data-email-client-ready>`, and reads the JSON in `#email-client-findings`.
 3. **With no browser at all,** `check`'s diagnostics are what it has: each email client problem with the clients it's about and what to change.
 
 ## Common mistakes

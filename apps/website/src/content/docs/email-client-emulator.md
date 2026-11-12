@@ -100,13 +100,13 @@ const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlo
 
 ```bash
 npx hyper-elements preview emails/welcome.tsx           # out/clients/welcome/outlook.html, gmail.html, …
-npx @hyper-elements/cli preview email.html --findings   # an HTML email, with nothing installed
+npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings   # an HTML email, with nothing installed
 ```
 
 For an agent or a CI job that wants what each client changed as data, there are three ways, by what it has:
 
-1. **A Chromium the CLI finds.** `npx hyper-elements preview emails/welcome.tsx --findings --json` opens each preview in Chromium: the browser `CHROME_PATH` names, else Playwright's Chromium (`npx hyper-elements preview --install-browser` downloads it), else an installed Chrome or Edge. Its JSON line gives each preview's `ready` (`ok`; `incomplete` where a font or an image didn't load; `error`) and its `findings`: what the client removed, what was missing, the fonts and the findings listed under [What a preview tells you](#what-a-preview-tells-you).
-2. **A browser of its own.** Where the CLI finds none, the run exits `2` with `"browser": null, "reason": "no-browser"`, and the files are written all the same. Open each file, or the URLs `preview --serve` prints for a browser that can't open `file://` paths, wait for `<html data-email-client-ready>`, and read the JSON in `#email-client-findings`.
+1. **A Chromium the CLI finds.** `npx hyper-elements preview emails/welcome.tsx --findings --json` opens each preview in Chromium, with `playwright-core` (install it beside the CLI): the browser `CHROME_PATH` names, else Playwright's Chromium (`npx hyper-elements preview --install-browser` downloads it), else an installed Chrome or Edge. Its JSON line gives each preview's `ready` (`ok`; `incomplete` where a font or an image didn't load; `error`) and its `findings`: what the client removed, what was missing, the fonts and the findings listed under [What a preview tells you](#what-a-preview-tells-you).
+2. **A browser of its own.** Where the CLI finds none, the run exits `2` with `"browser": null, "reason": "no-browser"` (`"no-playwright-core"` where that isn't installed), and the files are written all the same. Open each file, or the URLs `preview --serve` prints for a browser that can't open `file://` paths, wait for `<html data-email-client-ready>`, and read the JSON in `#email-client-findings`.
 3. **No browser at all.** `npx hyper-elements check emails/welcome.tsx --json` gives the email client checks: each problem with the clients it's about and what to change. That's what's known without drawing the email.
 
 ## Why it matters

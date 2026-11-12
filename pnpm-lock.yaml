@@ -194,9 +194,6 @@ importers:
       '@hyper-elements/email-clients':
         specifier: ^0.4.3
         version: 0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      playwright-core:
-        specifier: 1.60.0
-        version: 1.60.0
       tsx:
         specifier: ^4.20.5
         version: 4.21.0
@@ -216,6 +213,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.2.4
         version: 3.2.4(vitest@3.2.4(@types/node@24.9.1)(happy-dom@20.8.3)(jiti@2.6.1)(jsdom@24.1.3)(less@4.4.2)(lightningcss@1.33.0)(sass@1.93.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.9.1))
+      playwright-core:
+        specifier: 1.60.0
+        version: 1.60.0
       react:
         specifier: 18.3.1
         version: 18.3.1

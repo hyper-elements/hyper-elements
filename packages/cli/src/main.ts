@@ -44,6 +44,10 @@ export async function main(argv: string[]): Promise<number> {
     if (args.installBrowser) {
       const { installBrowser } = await import("./preview/browser.js");
       const code = await installBrowser();
+      if (code === "missing") {
+        process.stderr.write("hyper-elements: --install-browser downloads Chromium with playwright-core, which isn't installed: install it beside the CLI (`npm install -D playwright-core`; with npx, `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview --install-browser`) and run again.\n");
+        return 2;
+      }
       if (code !== 0) process.stderr.write(`hyper-elements: installing Playwright's Chromium failed (exit ${code})\n`);
       return code === 0 ? 0 : 2;
     }

@@ -23,6 +23,8 @@ Install it beside `@hyper-elements/react` 0.4, in the project that holds your te
 
 To check an HTML email with nothing installed, run the package by its name: `npx @hyper-elements/cli check email.html` (see [Any HTML email](#any-html-email)).
 
+`preview --findings` and `--screenshots` draw the previews in Chromium with `playwright-core`, an optional peer. Install it beside the CLI to use them (`npm install -D playwright-core`); nothing else needs it.
+
 ## A template
 
 A template is a module whose default export is a component that renders an `<Email>`, a `<Page>`, a `<Document>` or a `<Canvas>`. Its props come from `--props file.json`, else the component's `PreviewProps`, else `{}`.
@@ -118,7 +120,7 @@ npx hyper-elements preview emails/welcome.tsx
 
 `preview` writes each Email as the email clients show it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, under `out/clients/<name>/`. `--clients`, `--dark` and `--fonts inline` are [its options](/docs/email-client-emulator#options). A template whose root isn't an Email is skipped.
 
-A preview file draws the email when a browser opens it, and lists what the client changed. To have the CLI read those findings for you, add `--findings`: it opens each file in Chromium and reports what it found. It uses the first of these that starts: the browser `CHROME_PATH` names, Playwright's own Chromium (`npx hyper-elements preview --install-browser` downloads it), then an installed Chrome or Edge. `--screenshots` also writes a PNG of each preview beside it.
+A preview file draws the email when a browser opens it, and lists what the client changed. To have the CLI read those findings for you, add `--findings` (with `playwright-core` installed beside the CLI): it opens each file in Chromium and reports what it found. It uses the first of these that starts: the browser `CHROME_PATH` names, Playwright's own Chromium (`npx hyper-elements preview --install-browser` downloads it), then an installed Chrome or Edge. `--screenshots` also writes a PNG of each preview beside it.
 
 `--serve` serves the previews on `127.0.0.1` and prints each one's URL, for a browser that can't open `file://` paths. It runs until Ctrl-C.
 
@@ -174,7 +176,7 @@ An agent that can run commands needs no script to check its work. A loop from th
 2. `npx hyper-elements outline emails/welcome.tsx`: compare the layout with what was asked.
 3. `npx hyper-elements preview emails/welcome.tsx --findings --json`: each preview's `findings` say what that email client removed or changed, what was missing, and text it draws on more lines.
 
-Where no Chromium is found, `preview --findings` still writes the files, gives each preview `"findings": null` and the line `"browser": null, "reason": "no-browser"`, and exits `2`. An agent with a browser of its own opens each file (or the URLs `--serve` prints), waits for `<html data-email-client-ready>`, and reads the JSON in `#email-client-findings`. With no browser at all, `check`'s diagnostics are what it has. See [AI agents](/docs/guides/ai-agents) and [Email client emulator](/docs/email-client-emulator#test-an-email-from-the-shell).
+Where no Chromium is found, `preview --findings` still writes the files, gives each preview `"findings": null` and the line `"browser": null, "reason": "no-browser"`, and exits `2`. Where `playwright-core` isn't installed, the reason is `"no-playwright-core"`, and stderr says how to install it. An agent with a browser of its own opens each file (or the URLs `--serve` prints), waits for `<html data-email-client-ready>`, and reads the JSON in `#email-client-findings`. With no browser at all, `check`'s diagnostics are what it has. See [AI agents](/docs/guides/ai-agents) and [Email client emulator](/docs/email-client-emulator#test-an-email-from-the-shell).
 
 ## How it runs templates
 

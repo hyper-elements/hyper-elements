@@ -66,6 +66,12 @@ export const NO_BROWSER_HELP =
   "run `hyper-elements preview --install-browser` (or `npx playwright install chromium`), or set CHROME_PATH to a Chromium-based browser, and run again; " +
   "or open each file in a browser, wait for <html data-email-client-ready>, and read #email-client-findings.";
 
+/** How to get playwright-core, where it isn't installed. */
+export const NO_PLAYWRIGHT_CORE_HELP =
+  "--findings and --screenshots draw the previews in Chromium with playwright-core, which isn't installed. The preview files are written: " +
+  "install it beside the CLI (`npm install -D playwright-core`; with npx, `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview …`) and run again; " +
+  "or open each file in a browser, wait for <html data-email-client-ready>, and read #email-client-findings.";
+
 export interface Drawn {
   /** The browser drawn with, or null where none was found. */
   browser: string | null;
@@ -73,6 +79,8 @@ export interface Drawn {
   bun?: string;
   /** Where none was found: each browser tried, and why it didn't start. */
   tried?: string[];
+  /** playwright-core isn't installed: nothing was tried. */
+  missing?: boolean;
 }
 
 /**
@@ -84,8 +92,9 @@ export async function drawPreviews(outcomes: Outcome[], options: { cwd: string; 
   const { openBrowser } = await import("./preview/browser.js");
   const opened = await openBrowser();
   if (!opened.browser) {
-    for (const outcome of outcomes) if (outcome.previews) Object.assign(outcome, { browser: null, reason: "no-browser" as const });
-    return { browser: null, tried: opened.tried, ...(opened.bun ? { bun: opened.bun } : {}) };
+    const reason = opened.missing ? ("no-playwright-core" as const) : ("no-browser" as const);
+    for (const outcome of outcomes) if (outcome.previews) Object.assign(outcome, { browser: null, reason });
+    return { browser: null, tried: opened.tried, ...(opened.bun ? { bun: opened.bun } : {}), ...(opened.missing ? { missing: true } : {}) };
   }
   const { browser, name } = opened;
   try {
