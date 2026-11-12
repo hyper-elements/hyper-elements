@@ -15,8 +15,9 @@ concurrency:
   group: test-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-# Four jobs run side by side, each installing and building the packages, so a run takes as long as its
-# slowest job (the codemod's tests, about four minutes) rather than all of them in a row.
+# The jobs run side by side, each installing and building the packages, so a run takes as long as its
+# slowest job (the codemod's tests, about four minutes) rather than all of them in a row. The CLI's Windows tests take
+# what they run built from a job before them.
 jobs:
   test:
     name: Run Tests & Coverage
@@ -245,21 +246,22 @@ jobs:
             coverage/
           retention-days: 30
 
-  # @hyper-elements/cli's tests on Windows, with Node 20: paths with backslashes and drive letters, ending a child's
-  # process tree with taskkill, locked files, and destinations compared case-folded. (Bun runs them on Linux.) The
-  # packages are built with Node 22: tsup's builds crash natively under Node 20 on the Windows runner.
-  cli-windows:
-    name: CLI tests on Windows
-    runs-on: windows-latest
+  # What the Windows job's tests run, built on Linux: the CLI and what its tests render with, Elements (and core) and
+  # this repository's email-clients (the CLI's own comes from npm, so it isn't among the CLI's workspace dependencies).
+  # The built files are JavaScript, the same on every platform; building on the Windows runner crashed natively in
+  # tsup (0xC0000409, 0xC0000374) in three of four runs, under Node 20 and Node 22.
+  cli-windows-build:
+    name: Build for the Windows CLI tests
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 22 (to build)
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -286,15 +288,69 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The CLI and what its tests render with: Elements (and core), and this repository's email-clients (the CLI's own
-      # comes from npm, so it isn't among the CLI's workspace dependencies).
       - name: Build the CLI and Elements
         run: pnpm --filter "@hyper-elements/cli..." --filter @hyper-elements/email-clients build
 
-      - name: Setup Node.js 20 (to test)
+      - name: Upload the built packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-windows-dist
+          path: |
+            packages/core/dist
+            packages/react/dist
+            packages/email-clients/dist
+            packages/cli/dist
+          if-no-files-found: error
+          retention-days: 1
+
+  # @hyper-elements/cli's tests on Windows, with Node 20: paths with backslashes and drive letters, ending a child's
+  # process tree with taskkill, locked files, and destinations compared case-folded. (Bun runs them on Linux.) The
+  # packages come built from the job above.
+  cli-windows:
+    name: CLI tests on Windows
+    needs: cli-windows-build
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - name: Authenticate npm registry
+        shell: bash
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.TEST_NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The artifact's paths are relative to packages/, the folders' common parent.
+      - name: Download the built packages
+        uses: actions/download-artifact@v4
+        with:
+          name: cli-windows-dist
+          path: packages
 
       - name: CLI tests (Node)
         run: pnpm --filter @hyper-elements/cli exec vitest run --project node
