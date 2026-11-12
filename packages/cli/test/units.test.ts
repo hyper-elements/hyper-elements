@@ -4,9 +4,11 @@
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, rmSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseArgs, UsageError } from "../src/args";
+import { cacheFolder, decodeDataUri, osCache } from "../src/assets";
 import { foldPath } from "../src/destinations";
 import { errorLine } from "../src/errors";
 import { commonFolder, hasDefaultExport } from "../src/inputs";
@@ -149,6 +151,40 @@ describe("arguments", () => {
     for (const argv of [["render", "a", "--clients", "x"], ["check", "a", "--out", "x"], ["outline", "a", "b"], ["render", "a", "--json", "--stdout"], ["render", "a", "--timeout", "0"], ["check"]]) {
       expect(() => parseArgs(argv), argv.join(" ")).toThrow(UsageError);
     }
+  });
+});
+
+describe("render's PDF and image options", () => {
+  it("parses them", () => {
+    expect(parseArgs(["render", "cards", "--format", "svg", "--scale", "2", "--html", "--public", "static", "--refresh"])).toMatchObject({ format: "svg", scale: 2, html: true, public: "static", refresh: true, offline: false });
+    expect(parseArgs(["render", "cards", "--offline"])).toMatchObject({ format: "png", html: false, offline: true });
+  });
+
+  it("refuses what they don't take", () => {
+    for (const argv of [["render", "a", "--format", "jpg"], ["render", "a", "--scale", "0"], ["render", "a", "--scale", "two"], ["render", "a", "--refresh", "--offline"], ["check", "a", "--html"], ["check", "a", "--offline"]]) {
+      expect(() => parseArgs(argv), argv.join(" ")).toThrow(UsageError);
+    }
+  });
+});
+
+describe("the asset cache's folder", () => {
+  it("is in the nearest node_modules above the template", () => {
+    const dir = project({ "a/b/card.tsx": "" });
+    expect(cacheFolder(join(dir, "a/b/card.tsx"))).toBe(join(dir, "node_modules/.cache/hyper-elements"));
+  });
+
+  it("is the OS's cache folder where there's none", () => {
+    const env = { XDG_CACHE_HOME: "/x", LOCALAPPDATA: "C:\\Local" };
+    expect(osCache(env, "linux")).toBe("/x");
+    expect(osCache({}, "linux")).toBe(join(homedir(), ".cache"));
+    expect(osCache(env, "darwin")).toBe(join(homedir(), "Library", "Caches"));
+    expect(osCache(env, "win32")).toBe("C:\\Local");
+  });
+
+  it("decodes data: URIs, base64 or percent-encoded", () => {
+    expect(Buffer.from(decodeDataUri("data:font/ttf;base64,AAEC")!)).toEqual(Buffer.from([0, 1, 2]));
+    expect(Buffer.from(decodeDataUri("data:image/svg+xml,%3Csvg%3E")!).toString()).toBe("<svg>");
+    expect(decodeDataUri("https://example.com/a.ttf")).toBeUndefined();
   });
 });
 

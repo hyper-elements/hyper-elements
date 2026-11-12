@@ -5,7 +5,7 @@
  * done, when it runs past `--timeout`, when it exits or crashes, and when the run is interrupted.
  */
 import { fork, type ChildProcess } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,7 @@ import type { ChildMessage, Diagnostic, Group, Late, ResultMessage, StartMessage
 export interface Io {
   cwd: string;
   /** Resolves once written (and flushed, for a pipe). */
-  stdout(text: string): Promise<void>;
+  stdout(data: string | Uint8Array): Promise<void>;
   stderr(text: string): void;
 }
 
@@ -49,6 +49,8 @@ interface ChildReport {
 }
 
 let children = 0;
+/** When the run started: `--refresh` fetches what was cached before it. */
+let runStarted = Date.now();
 
 /** Starts a child for `inputs` and resolves once it has ended and been cleaned up after. */
 function runChild(command: Args["command"], inputs: Input[], alone: boolean, args: Args, props: Record<string, unknown> | undefined, token: string, io: Io): Promise<ChildReport> {
@@ -73,7 +75,22 @@ function runChild(command: Args["command"], inputs: Input[], alone: boolean, arg
     sequence: index * 100_000,
     tsconfig,
     deadline: args.timeout + 5_000,
-    options: { props, pretty: args.pretty || undefined, clients: args.clients, rendered: args.rendered || undefined },
+    options: {
+      props,
+      pretty: args.pretty || undefined,
+      clients: args.clients,
+      rendered: args.rendered || undefined,
+      ...(command === "render"
+        ? {
+            html: args.html || undefined,
+            format: args.format,
+            scale: args.scale,
+            public: args.public === undefined ? undefined : resolve(io.cwd, args.public),
+            refreshSince: args.refresh ? runStarted : undefined,
+            offline: args.offline || undefined,
+          }
+        : {}),
+    },
   };
   const report: ChildReport = { results: new Map(), reacts: false, done: false, late: [] };
   return new Promise((resolvePromise) => {
@@ -182,11 +199,21 @@ export interface RunState {
 
 export async function run(args: Args, io: Io, state: RunState = { folders: new Set() }): Promise<number> {
   const { cwd } = io;
+  runStarted = Date.now();
+  if (args.public !== undefined) {
+    let folder = false;
+    try {
+      folder = statSync(resolve(cwd, args.public)).isDirectory();
+    } catch {
+      folder = false;
+    }
+    if (!folder) throw new UsageError(`--public ${args.public} isn't a folder.`);
+  }
   const props = args.props === undefined ? undefined : readProps(args.props, cwd);
   const found = await findInputs(args.positional, cwd);
   const { inputs } = found;
   if (args.command === "outline" && inputs.length !== 1) throw new UsageError(`outline takes one template; ${args.positional[0]} holds ${inputs.length}.`);
-  if (args.stdout && inputs.length !== 1) throw new UsageError(`--stdout writes one template's HTML: this run has ${inputs.length} templates.`);
+  if (args.stdout && inputs.length !== 1) throw new UsageError(`--stdout writes one template's output: this run has ${inputs.length} templates.`);
   for (const link of found.links) io.stderr(`- ${displayPath(cwd, link)}: a symbolic link to a folder, not followed (give the folder itself to include what's in it)\n`);
   let planned: Planned | undefined;
   if (args.command === "render" && !args.stdout) planned = planDestinations(inputs, found.base, args.out, cwd, ALL_RENDER_OUTPUTS);
@@ -195,7 +222,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   state.token = token;
   for (const input of inputs) state.folders.add(dirname(input.file));
 
-  const outcomes = new Map<number, Outcome & { pending?: Record<string, string> }>();
+  const outcomes = new Map<number, Outcome & { pending?: Record<string, string>; binary?: string[] }>();
   const usage = new Set<number>();
   const extra = new Map<number, Diagnostic[]>();
   const note = (id: number, diagnostic: Diagnostic) => extra.set(id, [...(extra.get(id) ?? []), diagnostic]);
@@ -250,7 +277,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   const settle = (input: Input, result: ResultMessage | undefined, ended: ChildReport["ended"]) => {
     if (result) {
       if (result.usage) usage.add(input.id);
-      outcomes.set(input.id, { file: input.display, root: result.root, status: result.status, outputs: [], diagnostics: result.diagnostics, formatted: result.formatted, error: result.error, pending: result.outputs });
+      outcomes.set(input.id, { file: input.display, root: result.root, status: result.status, outputs: [], diagnostics: result.diagnostics, formatted: result.formatted, error: result.error, pending: result.outputs, binary: result.binary });
       return;
     }
     if (ended?.reason === "timeout") {
@@ -294,11 +321,15 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   cleanFiles(state.folders, (owner) => !!owner && owner.host === own.host && owner.pid === own.pid && owner.random === own.random);
 
   // The outputs, written by this process alone.
-  let stdoutText: string | undefined;
+  let stdoutText: string | Uint8Array | undefined;
   for (const input of inputs) {
     const outcome = outcomes.get(input.id)!;
     const pending = outcome.pending;
+    const binary = new Set(outcome.binary ?? []);
     delete outcome.pending;
+    delete outcome.binary;
+    /** An output as it's written: a file's bytes (sent as base64), or text. */
+    const data = (extension: string) => (binary.has(extension) ? new Uint8Array(Buffer.from(pending![extension], "base64")) : pending![extension]);
     const added = extra.get(input.id);
     if (added) outcome.diagnostics = [...outcome.diagnostics, ...added];
     if (added && outcome.formatted !== undefined) outcome.formatted = undefined;
@@ -309,14 +340,16 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     }
     if (args.command !== "render") continue;
     if (args.stdout) {
-      stdoutText = pending.html;
+      // The root's main output: an Email's or a Page's HTML, a Document's PDF, a Canvas's image (or the HTML written instead).
+      const main = (RENDER_OUTPUTS[outcome.root ?? ""] ?? ["html"]).find((extension) => pending[extension] !== undefined) ?? "html";
+      stdoutText = data(main);
       continue;
     }
     const paths = planned!.byInput.get(input.id)!;
     for (const extension of RENDER_OUTPUTS[outcome.root ?? ""] ?? []) {
       if (pending[extension] === undefined) continue;
       try {
-        writeAtomically(paths[extension], pending[extension]);
+        writeAtomically(paths[extension], data(extension));
         outcome.outputs.push(displayPath(cwd, paths[extension]));
       } catch (error) {
         outcome.status = "error";

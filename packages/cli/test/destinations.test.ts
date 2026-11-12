@@ -77,19 +77,6 @@ describe("destinations", () => {
     ]);
   });
 
-  it("a Document and a Canvas write their HTML, with a note that their PDF and image come later", async () => {
-    const dir = project({
-      "docs/invoice.tsx": `import { Document, Text } from "@hyper-elements/react";\nexport default function I() { return <Document><Text>Invoice</Text></Document>; }\n`,
-      "docs/card.tsx": `import { Canvas, Text } from "@hyper-elements/react";\nexport default function C() { return <Canvas width={400} height={200}><Text>Card</Text></Canvas>; }\n`,
-    });
-    const ran = await cli(dir, ["render", "docs", "--json"]);
-    expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    const got = lines(ran);
-    expect(got[0]).toMatchObject({ file: "docs/card.tsx", root: "Canvas", outputs: ["out/card.html"] });
-    expect(got[1]).toMatchObject({ file: "docs/invoice.tsx", root: "Document", outputs: ["out/invoice.html"] });
-    for (const line of got.slice(0, 2)) expect(line.diagnostics.map((d: any) => d.code)).toContain("cli/html-only");
-  });
-
   it("an interrupted run leaves whole files or none: outputs are renamed into place", async () => {
     const dir = project({ "emails/a.tsx": email("A".repeat(2000)), "emails/b.tsx": email("B"), "emails/c.tsx": email("C") });
     mkdirSync(join(dir, "out"));

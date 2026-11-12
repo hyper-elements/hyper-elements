@@ -18,8 +18,11 @@ leaving out node_modules, build output, and folders whose name starts with
 
 render   writes each template's output under --out, its path relative to the
          folder holding every input: an Email's HTML and plain text
-         (name.html, name.txt), a Page's HTML (name.html). A Document and a
-         Canvas write their HTML (their PDF and image come in a later release).
+         (name.html, name.txt), a Page's HTML (name.html), a Document's PDF
+         (name.pdf), a Canvas's image (name.png). A Document's and a Canvas's
+         fonts and images are loaded from what the template names: data: URIs,
+         files relative to the template, /paths from --public, and http(s)
+         URLs, fetched once and cached.
 check    validates each template (with @hyper-elements/email-clients' email
          client checks where the project has it) and writes nothing.
 outline  prints a template laid out: each block with its width.
@@ -28,8 +31,17 @@ Options:
   --out <dir>           Where render writes (default: out)
   --props <file.json>   Props for every template given, over PreviewProps
   --json                One JSON line per template, then a summary line
-  --stdout              render: write the one template's HTML to stdout
+  --stdout              render: write the one template's HTML, PDF or image
+                        to stdout
   --pretty              render: indent the HTML
+  --html                render: also write a Document's print HTML
+  --format <png|svg>    render: a Canvas's image format (default: png)
+  --scale <n>           render: a Canvas's pixels per px (default: 1)
+  --public <dir>        render: where /paths are read from (default: the
+                        first public/ beside a package.json, from the
+                        template's folder up to the workspace root)
+  --refresh             render: fetch http(s) fonts and images again
+  --offline             render: fetch nothing; a URL not in the cache fails
   --clients <a,b>       check: the email clients to check for
   --max-warnings <n>    check: fail (exit 1) with more than n warnings
   --rendered            check: also render, for the checks only the written
@@ -41,7 +53,7 @@ Options:
 Exit codes: 0 when every template rendered or checked without errors, 1 when
 a template has errors or failed, 2 when the run couldn't do what it was asked.
 Runs on Node.js 20.6 or later (npx hyper-elements), or Bun 1.3 or later
-(bunx --bun hyper-elements).
+(bunx --bun hyper-elements; a Document's PDF is written on Node only).
 `;
 
 export interface Args {
@@ -52,6 +64,16 @@ export interface Args {
   json: boolean;
   stdout: boolean;
   pretty: boolean;
+  /** render: a Document's print HTML too. */
+  html: boolean;
+  /** render: a Canvas's image format. */
+  format: "png" | "svg";
+  /** render: a Canvas's pixels per px. */
+  scale?: number;
+  /** render: where root-relative fonts and images are read from. */
+  public?: string;
+  refresh: boolean;
+  offline: boolean;
   clients?: string[];
   maxWarnings?: number;
   rendered: boolean;
@@ -69,6 +91,12 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   json: { value: false, commands: ["render", "check", "outline"] },
   stdout: { value: false, commands: ["render"] },
   pretty: { value: false, commands: ["render"] },
+  html: { value: false, commands: ["render"] },
+  format: { value: true, commands: ["render"] },
+  scale: { value: true, commands: ["render"] },
+  public: { value: true, commands: ["render"] },
+  refresh: { value: false, commands: ["render"] },
+  offline: { value: false, commands: ["render"] },
   clients: { value: true, commands: ["check"] },
   "max-warnings": { value: true, commands: ["check"] },
   rendered: { value: false, commands: ["check"] },
@@ -123,6 +151,11 @@ export function parseArgs(argv: string[]): Args {
     json: values.json === true,
     stdout: values.stdout === true,
     pretty: values.pretty === true,
+    html: values.html === true,
+    format: "png",
+    public: values.public as string | undefined,
+    refresh: values.refresh === true,
+    offline: values.offline === true,
     rendered: values.rendered === true,
     timeout: values.timeout === undefined ? 60_000 : duration(values.timeout as string),
   };
@@ -131,6 +164,17 @@ export function parseArgs(argv: string[]): Args {
     if (!clients.length) throw new UsageError("--clients takes a list of email clients: --clients gmail,outlook");
     args.clients = clients;
   }
+  if (values.format !== undefined) {
+    if (values.format !== "png" && values.format !== "svg") throw new UsageError(`--format takes png or svg, not ${JSON.stringify(values.format)}`);
+    args.format = values.format;
+  }
+  if (values.scale !== undefined) {
+    const text = values.scale as string;
+    const scale = Number(text);
+    if (!/^\d+(\.\d+)?$/.test(text.trim()) || !(scale > 0)) throw new UsageError(`--scale takes a number above 0, not ${JSON.stringify(text)}`);
+    args.scale = scale;
+  }
+  if (args.refresh && args.offline) throw new UsageError("--refresh fetches again and --offline fetches nothing: give one.");
   if (values["max-warnings"] !== undefined) {
     const text = values["max-warnings"] as string;
     if (!/^\d+$/.test(text)) throw new UsageError(`--max-warnings takes a whole number, not ${JSON.stringify(text)}`);
