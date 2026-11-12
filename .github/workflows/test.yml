@@ -246,7 +246,8 @@ jobs:
           retention-days: 30
 
   # @hyper-elements/cli's tests on Windows, with Node 20: paths with backslashes and drive letters, ending a child's
-  # process tree with taskkill, locked files, and destinations compared case-folded. (Bun runs them on Linux.)
+  # process tree with taskkill, locked files, and destinations compared case-folded. (Bun runs them on Linux.) The
+  # packages are built with Node 22: tsup's builds crash natively under Node 20 on the Windows runner.
   cli-windows:
     name: CLI tests on Windows
     runs-on: windows-latest
@@ -255,10 +256,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22 (to build)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -289,6 +290,11 @@ jobs:
       # comes from npm, so it isn't among the CLI's workspace dependencies).
       - name: Build the CLI and Elements
         run: pnpm --filter "@hyper-elements/cli..." --filter @hyper-elements/email-clients build
+
+      - name: Setup Node.js 20 (to test)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: CLI tests (Node)
         run: pnpm --filter @hyper-elements/cli exec vitest run --project node
