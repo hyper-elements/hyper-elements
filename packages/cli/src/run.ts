@@ -34,6 +34,16 @@ export interface Io {
 
 const bun = typeof (process.versions as Record<string, string | undefined>).bun === "string";
 
+/**
+ * The templates a child ended past --timeout didn't start: those after the one it was on (the first with no result:
+ * a child renders its templates in order, and sends each result as it's done). They're run again in a new child, so
+ * one template that never finishes fails alone, whatever the order of the arguments. Empty for any other ending.
+ */
+export function unfinished(report: ChildReport, inputs: Input[]): Input[] {
+  if (report.done || report.reacts || report.ended?.reason !== "timeout") return [];
+  return inputs.filter((input) => !report.results.has(input.id)).slice(1);
+}
+
 /** The children running, for an interrupt to end. */
 const running = new Set<ChildProcess>();
 
@@ -395,7 +405,7 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
         root: null,
         status: "error",
         outputs: [],
-        diagnostics: [cliDiagnostic("timeout", "error", `Its group of templates didn't finish within ${args.timeout} ms: the process running it was ended`, "make the template finish sooner, or give a longer --timeout")],
+        diagnostics: [cliDiagnostic("timeout", "error", `It didn't finish within ${args.timeout} ms: the process running it was ended (the templates after it ran in a new one)`, "make the template finish sooner, or give a longer --timeout")],
       });
     } else {
       outcomes.set(input.id, { file: input.display, root: null, status: "error", outputs: [], diagnostics: [], error: ended?.error || "child ended before this template's result" });
@@ -410,19 +420,26 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   };
 
   for (const group of groups.values()) {
-    const report = await runChild(args.command, group.inputs, false, args, props, token, io);
-    if (report.reacts) {
-      // More than one React in the group's process: each template again, alone, so only one that itself loads two fails.
-      lateFrom(group.group, report, group.inputs);
-      for (const input of group.inputs) {
-        const alone = await runChild(args.command, [input], true, args, props, token, io);
-        settle(input, alone.results.get(input.id), alone.ended);
-        lateFrom(group.group, alone, [input]);
+    let members = group.inputs;
+    while (members.length) {
+      const report = await runChild(args.command, members, false, args, props, token, io);
+      if (report.reacts) {
+        // More than one React in the group's process: each template again, alone, so only one that itself loads two fails.
+        lateFrom(group.group, report, members);
+        for (const input of members) {
+          const alone = await runChild(args.command, [input], true, args, props, token, io);
+          settle(input, alone.results.get(input.id), alone.ended);
+          lateFrom(group.group, alone, [input]);
+        }
+        break;
       }
-      continue;
+      // Past --timeout, the template the child was on fails, and the ones after it run in a new child (`unfinished`).
+      const rest = unfinished(report, members);
+      const ran = members.filter((input) => !rest.includes(input));
+      for (const input of ran) settle(input, report.results.get(input.id), report.ended);
+      lateFrom(group.group, report, ran);
+      members = rest;
     }
-    for (const input of group.inputs) settle(input, report.results.get(input.id), report.ended);
-    lateFrom(group.group, report, group.inputs);
   }
 
   // HTML emails: email-clients' renderInEmailClients(html), in this process: no template code runs for them.

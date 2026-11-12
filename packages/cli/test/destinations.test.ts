@@ -29,6 +29,29 @@ describe("--out is refused", () => {
   }
 });
 
+describe("--out's refusal", () => {
+  it("doesn't offer out/ when out/ is what it refused", async () => {
+    const dir = project({ "out/a.tsx": email() });
+    const ran = await cli(dir, ["render", "out/a.tsx"]);
+    expect(ran.code).toBe(2);
+    expect(ran.stderr).toContain("--out out is a folder holding an input (out/a.tsx)");
+    expect(ran.stderr).not.toContain("such as out/");
+    const other = await cli(dir, ["render", "out/a.tsx", "--out", "out/.."]);
+    expect(other.stderr).toContain("such as out/");
+  });
+
+  it.skipIf(WINDOWS)("a folder under --out that leads, through a symbolic link, to the inputs' folder: exit 2, nothing written", async () => {
+    const dir = project({ "emails/a.tsx": email(), "more/b.tsx": email() });
+    mkdirSync(join(dir, "out"), { recursive: true });
+    symlinkSync(join(dir, "emails"), join(dir, "out/emails"), "dir");
+    const ran = await cli(dir, ["render", "emails", "more"]);
+    expect(ran.code).toBe(2);
+    expect(ran.stderr).toContain("would go in emails/a.tsx's folder");
+    expect(readdirSync(join(dir, "emails"))).toEqual(["a.tsx"]);
+    expect(existsSync(join(dir, "out/more"))).toBe(false);
+  });
+});
+
 describe("destinations", () => {
   it("two inputs with one destination: exit 2, nothing written", async () => {
     const dir = project({ "emails/a.tsx": email("tsx"), "emails/a.jsx": email("jsx") });

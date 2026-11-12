@@ -86,7 +86,9 @@ Options:
                         playwright-core installed beside the CLI)
   --root <root>         describe: only what this root takes (Email, Page,
                         Document or Canvas)
-  --timeout <seconds>   How long a group of templates may take (default: 60)
+  --timeout <seconds>   How long a process rendering templates may run: past
+                        it, the template it's on fails and the rest go on in
+                        a new one (default: 60)
   -h, --help            Show this help
   -v, --version         Show the version
 

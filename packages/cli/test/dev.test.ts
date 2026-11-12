@@ -356,6 +356,20 @@ export default function P() { return <Page><Text>A page</Text></Page>; }
   });
 });
 
+describe("dev and a CommonJS template", () => {
+  it("renders a .cts template again when it changes, as any other", async () => {
+    const cts = (label: string) => `import { createElement } from "react";
+import { Email, Text } from "@hyper-elements/react";
+export default function T() { return createElement(Email, null, createElement(Text, null, ${JSON.stringify(label)})); }
+`;
+    const dir = project({ "emails/b.cts": cts("cts one") });
+    const dev = await startDev(dir, ["emails/b.cts"]);
+    await devUntil(dev, (_, text) => text.includes("cts one"), "emails/b.cts");
+    change(dir, { "emails/b.cts": cts("cts two") });
+    await devUntil(dev, (_, text) => text.includes("cts two"), "emails/b.cts");
+  });
+});
+
 describe("dev ended with no chance to clean up (SIGKILL; on Windows, ended by another process)", () => {
   it("its children end by themselves: the spare, and one whose template waits, with the process that template started", async () => {
     const dir = project({ "emails/a.tsx": email("first") });

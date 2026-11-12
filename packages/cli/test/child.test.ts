@@ -86,6 +86,22 @@ describe("a child that doesn't finish", () => {
   });
 });
 
+describe("a template that never finishes", () => {
+  it("fails alone, whatever the order: the templates after it in its group run in a new child", async () => {
+    const dir = project({
+      "broken/loop.tsx": `for (;;) {}\nexport default function Loop() { return null; }\n`,
+      "emails/a.tsx": email("A"),
+      "emails/b.tsx": email("B"),
+    });
+    for (const order of [["broken/loop.tsx", "emails"], ["emails", "broken/loop.tsx"]]) {
+      const ran = await cli(dir, ["check", ...order, "--timeout", "2", "--json"], { timeout: 60_000 });
+      expect(ran.code, order.join(" ")).toBe(1);
+      const results = Object.fromEntries(lines(ran).slice(0, -1).map((l) => [l.file, `${l.status}${l.diagnostics.some((d: any) => d.code === "cli/timeout") ? " cli/timeout" : ""}`]));
+      expect(results, order.join(" ")).toEqual({ "broken/loop.tsx": "error cli/timeout", "emails/a.tsx": "ok", "emails/b.tsx": "ok" });
+    }
+  });
+});
+
 describe("the process tree", () => {
   it("a process a template starts doesn't write after the child is done", async () => {
     const dir = project({});

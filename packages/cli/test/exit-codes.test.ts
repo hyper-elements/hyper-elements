@@ -32,6 +32,20 @@ describe("exit 0", () => {
     expect(ran.stderr).not.toContain("no templates");
   });
 
+  it("for --help or -h after a command, wherever among its options: the help, on stdout", async () => {
+    const dir = project({});
+    for (const args of [["render", "--help"], ["check", "emails", "-h"], ["preview", "--json", "--help"], ["dev", "--help"], ["help"]]) {
+      const ran = await cli(dir, args);
+      expect(ran.code, args.join(" ")).toBe(0);
+      expect(ran.stdout).toContain("Usage:\n  hyper-elements render");
+      expect(ran.stderr).toBe("");
+    }
+    // After `--` it's a file's name.
+    const named = await cli(dir, ["check", "--", "--help"]);
+    expect(named.code).toBe(2);
+    expect(named.stdout).toBe("");
+  });
+
   it("with warnings, up to --max-warnings", async () => {
     const dir = project({ "emails/wide.tsx": WIDE });
     expect((await cli(dir, ["check", "emails"])).code).toBe(0);

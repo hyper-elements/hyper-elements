@@ -12,6 +12,8 @@ export const IGNORED = new Set(["node_modules", ".git", ".next", "dist", "build"
 export interface WalkOptions {
   /** Also leaves out the folders whose name this returns true for. */
   skip?: (name: string) => boolean;
+  /** The files that count, by name (`SOURCE` where it isn't given). */
+  sources?: RegExp;
 }
 
 /**
@@ -27,7 +29,7 @@ export async function walk(dir: string, links: string[] = [], all = false, optio
     if (entry.isSymbolicLink() && (await stat(path).catch(() => undefined))?.isDirectory()) links.push(path);
     else if (entry.isDirectory()) {
       if (!options.skip?.(entry.name)) out.push(...(await walk(path, links, all, options)));
-    } else if ((all ? /\.[cm]?[jt]sx?$/ : SOURCE).test(entry.name) && (all || !/\.(test|spec|stories)\.[^.]+$/.test(entry.name)) && !/\.d\.[cm]?ts$/.test(entry.name)) out.push(path);
+    } else if ((all ? /\.[cm]?[jt]sx?$/ : (options.sources ?? SOURCE)).test(entry.name) && (all || !/\.(test|spec|stories)\.[^.]+$/.test(entry.name)) && !/\.d\.[cm]?ts$/.test(entry.name)) out.push(path);
   }
   return out;
 }

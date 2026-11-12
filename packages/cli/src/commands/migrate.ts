@@ -10,6 +10,9 @@ import { dirname, join } from "node:path";
 
 const bun = typeof (process.versions as Record<string, string | undefined>).bun === "string";
 
+/** The signals passed on to migrate (SIGHUP: the terminal closed). */
+const SIGNALS: NodeJS.Signals[] = process.platform === "win32" ? ["SIGINT", "SIGTERM"] : ["SIGINT", "SIGTERM", "SIGHUP"];
+
 /** The project's migrate bin: `node_modules/@hyper-elements/migrate` in the current folder or one above it. */
 export function projectMigrate(cwd: string): string | undefined {
   for (let dir = cwd; ; dir = dirname(dir)) {
@@ -34,6 +37,15 @@ export function runMigrate(argv: string[], cwd: string, stderr: (text: string) =
   const [command, args] = bin ? [bun ? "node" : process.execPath, [bin, ...argv]] : [windows ? "npx.cmd" : "npx", ["@hyper-elements/migrate", ...argv]];
   return new Promise((resolve) => {
     const child = spawn(command, args, { cwd, stdio: "inherit", shell: windows && !bin });
+    // A stop signal sent to this process (a CI timeout, an agent's harness) is passed on: migrate cleans up and ends,
+    // and this process ends with its exit code. (Ctrl-C in a terminal reaches both: migrate stops on the first.)
+    const forward = (signal: NodeJS.Signals) => {
+      if (child.exitCode === null && child.signalCode === null) child.kill(signal);
+    };
+    for (const signal of SIGNALS) process.on(signal, forward);
+    child.once("close", () => {
+      for (const signal of SIGNALS) process.off(signal, forward);
+    });
     child.on("error", (error) => {
       stderr(`hyper-elements: couldn't run ${bin ? `${command} ${bin}` : "npx @hyper-elements/migrate"}: ${error.message}\n`);
       resolve(2);

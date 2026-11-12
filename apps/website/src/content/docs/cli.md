@@ -180,6 +180,6 @@ Where no Chromium is found, `preview --findings` still writes the files, gives e
 
 ## How it runs templates
 
-Templates run in child processes, one per package and tsconfig, and each is loaded through a small module the CLI writes beside it for a moment, so a template resolves Elements and React as your own code does. The template's folder must be writable. `--timeout` (60 seconds by default) ends a group of templates that loops or hangs.
+Templates run in child processes, one per package and tsconfig, and each is loaded through a small module the CLI writes beside it for a moment, so a template resolves Elements and React as your own code does. The template's folder must be writable. `--timeout` (60 seconds by default) ends a template that loops or hangs: it fails, and the templates after it in its group run in a new process.
 
 On Bun, the CLI gives the same output as on Node.js, byte for byte, except a Document's PDF, which it refuses there (Bun's zlib compresses the PDF's streams differently): render Documents with Node.js. `check`, `outline` and `preview` work on Bun for every root.

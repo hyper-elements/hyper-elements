@@ -7,7 +7,7 @@
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { UsageError } from "./args";
 import { cliDiagnostic } from "./commands/shared";
-import { canonicalPath, foldPath, planDestinations, writeAtomically } from "./destinations";
+import { canonicalPath, foldPath, inputHeldBy, planDestinations, writeAtomically } from "./destinations";
 import { errorLine } from "./errors";
 import { displayPath, type Input } from "./inputs";
 import type { Outcome } from "./output";
@@ -24,9 +24,10 @@ export function clientsFolder(out: string, cwd: string): string {
  * `render`'s destinations are, exit 2 with nothing written.
  */
 export function planPreviewFolders(inputs: Input[], base: string, out: string, cwd: string): Map<number, string> {
-  // `render`'s refusals of --out (the filesystem root, the home folder, a project's root, a folder holding an input):
-  // stdin is no file. A preview can be an input only where --out holds it, which this refuses.
-  planDestinations(inputs.filter((input) => !input.stdin), base, out, cwd, []);
+  // `render`'s refusals of --out (the filesystem root, the home folder, a project's root; stdin is no file), but not
+  // that it holds an input: previews go only under <out>/clients/<name>/, so `render`'s output can be previewed from
+  // out/. Each preview folder is checked itself: by its real path, it mustn't hold an input.
+  planDestinations(inputs.filter((input) => !input.stdin), base, out, cwd, [], { holding: false });
   const folders = new Map<number, string>();
   const taken = new Map<string, Input>();
   for (const input of inputs) {
@@ -37,6 +38,8 @@ export function planPreviewFolders(inputs: Input[], base: string, out: string, c
     const key = foldPath(canonicalPath(folder));
     const other = taken.get(key);
     if (other) throw new UsageError(`${other.display} and ${input.display} would both write their previews in ${displayPath(cwd, folder)}: rename one, or preview them in separate runs. Nothing was written.`);
+    const held = inputHeldBy(folder, inputs);
+    if (held) throw new UsageError(`${input.display}'s previews would go in ${displayPath(cwd, folder)}, which holds ${held.display} (by its real path): give another --out. Nothing was written.`);
     taken.set(key, input);
     folders.set(input.id, folder);
   }

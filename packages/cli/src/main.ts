@@ -20,15 +20,19 @@ export async function main(argv: string[]): Promise<number> {
     await write(process.stdout, USAGE);
     return argv.length === 0 ? 2 : 0;
   }
+  // `render --help` and the like: the help, wherever it's asked for among a command's options (not after `--`, and not
+  // migrate's, whose arguments are its own).
+  const options = argv.includes("--") ? argv.slice(0, argv.indexOf("--")) : argv;
+  if (argv[0] !== "migrate" && (options.includes("--help") || options.includes("-h"))) {
+    await write(process.stdout, USAGE);
+    return 0;
+  }
   if (argv[0] === "--version" || argv[0] === "-v") {
     await write(process.stdout, `${version()}\n`);
     return 0;
   }
   if (argv[0] === "migrate") {
-    // Migrate's own: its arguments, its interrupts (Ctrl-C reaches it too) and its exit code.
-    const ignore = () => undefined;
-    process.on("SIGINT", ignore);
-    process.on("SIGTERM", ignore);
+    // Migrate's own: its arguments, its interrupts (passed on to it) and its exit code.
     return runMigrate(argv.slice(1), process.cwd(), (text) => void process.stderr.write(text));
   }
   const state: RunState = { folders: new Set() };

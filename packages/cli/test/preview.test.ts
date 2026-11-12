@@ -4,10 +4,10 @@
  * email-clients; and `--findings` where no browser can be found (exit 2, the files still written). playwright-core
  * is imported by preview/browser.ts alone.
  */
-import { readdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, symlinkSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { describe, expect, it } from "vitest";
-import { CLI_ROOT, cli, email, exists, lines, noBrowserEnv, project, WITH_CLIENTS } from "./helpers";
+import { CLI_ROOT, cli, email, exists, lines, noBrowserEnv, project, WINDOWS, WITH_CLIENTS } from "./helpers";
 
 const DEFAULT_FILES = ["apple-mail.html", "gmail.html", "gmail.mac.html", "outlook-com.html", "outlook-com.mac.html", "outlook.html"];
 
@@ -94,11 +94,24 @@ describe("preview", () => {
     expect(exists(join(dir, "out"))).toBe(false);
   });
 
-  it("refuses an --out that holds an input, as render does", async () => {
-    const dir = project({ "emails/a.tsx": email() }, { modules: WITH_CLIENTS });
-    const ran = await cli(dir, ["preview", "emails", "--out", "emails"]);
+  it("previews render's own output where it is: its previews go under <out>/clients/, which can't hold it", async () => {
+    const dir = project({ "emails/a.tsx": email("Rendered") }, { modules: WITH_CLIENTS });
+    expect((await cli(dir, ["render", "emails"])).code).toBe(0);
+    const ran = await cli(dir, ["preview", "out/a.html", "--clients", "gmail", "--json"]);
+    expect(ran.code, ran.stderr).toBe(0);
+    expect(lines(ran)[0].outputs).toEqual(["out/clients/a/gmail.html", "out/clients/a/gmail.mac.html"]);
+    expect(readFileSync(join(dir, "out/a.html"), "utf8")).toContain("Rendered");
+  });
+
+  it.skipIf(WINDOWS)("refuses a preview folder that leads, through a symbolic link, to the input's folder", async () => {
+    const dir = project({ "mail/gmail.html": "<html><body><p>The email</p></body></html>" }, { modules: WITH_CLIENTS });
+    mkdirSync(join(dir, "out/clients"), { recursive: true });
+    symlinkSync(join(dir, "mail"), join(dir, "out/clients/gmail"), "dir");
+    const ran = await cli(dir, ["preview", "mail/gmail.html", "--clients", "gmail"]);
     expect(ran.code).toBe(2);
-    expect(ran.stderr).toContain("a folder holding an input");
+    expect(ran.stderr).toContain("which holds mail/gmail.html");
+    expect(readFileSync(join(dir, "mail/gmail.html"), "utf8")).toBe("<html><body><p>The email</p></body></html>");
+    expect(readdirSync(join(dir, "mail"))).toEqual(["gmail.html"]);
   });
 
   it("--findings with no browser to be found: the files written, the checks reported, findings null, exit 2", async () => {

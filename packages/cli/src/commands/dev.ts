@@ -23,7 +23,7 @@ import { displayPath, findInputs, packageFolder, typeScriptTwin, type Input } fr
 import { cleanFiles, ownToken, parseToken, stale } from "../loader-module";
 import { inputText, type Outcome } from "../output";
 import type { Diagnostic, Group, Late, ResultMessage, Root } from "../protocol";
-import { keepSpareChildren, readProps, runChild, type ChildReport, type Io, type RunState } from "../run";
+import { keepSpareChildren, readProps, runChild, unfinished, type ChildReport, type Io, type RunState } from "../run";
 import { cliDiagnostic } from "./shared";
 
 /** How long the project must be quiet before a render: a source change and the rebuild after it are each picked up. */
@@ -156,7 +156,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
           root: null,
           status: "error",
           outputs: [],
-          diagnostics: [cliDiagnostic("timeout", "error", `Its group of templates didn't finish within ${args.timeout} ms: the process running it was ended`, "make the template finish sooner, or give a longer --timeout")],
+          diagnostics: [cliDiagnostic("timeout", "error", `It didn't finish within ${args.timeout} ms: the process running it was ended (the templates after it ran in a new one)`, "make the template finish sooner, or give a longer --timeout")],
         });
       } else {
         outcomes.set(input.id, { file: input.display, root: null, status: "error", outputs: [], diagnostics: [], error: ended?.error || "child ended before this template's result" });
@@ -168,22 +168,29 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
         late.push({ kind: "child", group, reason: report.ended.reason, detail: report.ended.detail });
       }
     };
-    const runGroup = async ({ group, inputs: members }: { group: Group; inputs: Input[] }) => {
-      if (abort.aborted) return;
-      const report = await runChild("dev", members, false, args, props, token, io, extra, abort);
-      if (report.reacts) {
-        // More than one React in the group's process: each template again, alone, as `render` does.
-        lateFrom(group, report, members);
-        for (const input of members) {
-          if (abort.aborted) return;
-          const alone = await runChild("dev", [input], true, args, props, token, io, extra, abort);
-          settle(input, alone.results.get(input.id), alone.ended);
-          lateFrom(group, alone, [input]);
+    const runGroup = async ({ group, inputs }: { group: Group; inputs: Input[] }) => {
+      let members = inputs;
+      while (members.length) {
+        if (abort.aborted) return;
+        const report = await runChild("dev", members, false, args, props, token, io, extra, abort);
+        if (report.reacts) {
+          // More than one React in the group's process: each template again, alone, as `render` does.
+          lateFrom(group, report, members);
+          for (const input of members) {
+            if (abort.aborted) return;
+            const alone = await runChild("dev", [input], true, args, props, token, io, extra, abort);
+            settle(input, alone.results.get(input.id), alone.ended);
+            lateFrom(group, alone, [input]);
+          }
+          return;
         }
-        return;
+        // Past --timeout, the template the child was on fails, and the ones after it run in a new child, as `render`'s.
+        const rest = unfinished(report, members);
+        const ran = members.filter((input) => !rest.includes(input));
+        for (const input of ran) settle(input, report.results.get(input.id), report.ended);
+        lateFrom(group, report, ran);
+        members = rest;
       }
-      for (const input of members) settle(input, report.results.get(input.id), report.ended);
-      lateFrom(group, report, members);
     };
     // The groups at once (a few at a time), each in its own child, so a change is shown as soon as the slowest is done.
     const queue = [...groups.values()];

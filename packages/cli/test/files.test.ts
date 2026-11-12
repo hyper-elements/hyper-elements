@@ -75,6 +75,24 @@ module.exports = function Template() { return createElement(Email, null, createE
     ]);
   });
 
+  it("a folder finds .cjs and .cts templates as it does by name: a broken one fails the run", async () => {
+    const dir = project({
+      "emails/a.cjs": `const { createElement } = require("react");
+const { Email, Heading } = require("@hyper-elements/react");
+module.exports = function Template() { return createElement(Email, null, createElement(Heading, null, "a cjs template")); };
+`,
+      "emails/b.cts": module("a cts template"),
+      "emails/c.cts": "export default function Broken( {\n",
+    });
+    const ran = await cli(dir, ["check", "emails", "--json"]);
+    expect(ran.code, ran.stdout + ran.stderr).toBe(1);
+    expect(lines(ran).slice(0, -1).map((l) => [l.file, l.status])).toEqual([
+      ["emails/a.cjs", "ok"],
+      ["emails/b.cts", "ok"],
+      ["emails/c.cts", "error"],
+    ]);
+  });
+
   it("names with a space, # and %", async () => {
     const dir = project({ "my emails/a #1 100%.tsx": module("odd but fine") });
     const ran = await cli(dir, ["render", "my emails", "--json"]);

@@ -34,8 +34,8 @@ export interface Found {
   links: string[];
 }
 
-/** A file a template may be, given by name. */
-const MODULE = /\.(tsx|ts|jsx|js|mts|mjs|cts|cjs)$/;
+/** A file a template may be: given by name, found in a folder, and watched by `dev`. */
+export const MODULE = /\.(tsx|ts|jsx|js|mts|mjs|cts|cjs)$/;
 /** An HTML email, given by name. */
 export const HTML = /\.html?$/i;
 
@@ -110,7 +110,7 @@ export async function findInputs(positional: string[], cwd: string, folderSkip =
     if (!existsSync(path)) throw new UsageError(`${given} doesn't exist.`);
     if (statSync(path).isDirectory()) {
       holders.push(path);
-      const files = (await walk(path, links, false, { skip: folderSkip })).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+      const files = (await walk(path, links, false, { skip: folderSkip, sources: MODULE })).sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
       let templates = 0;
       for (const file of files) {
         let source: string;

@@ -2,7 +2,7 @@
  * `dev`'s watcher. It doesn't follow imports; it watches:
  *
  * - the project's source: the folder of the nearest package.json above each template (the template's own folder
- *   where there's none), for files by the loader's `SOURCE` extensions, leaving out the folders `walk()` leaves out
+ *   where there's none), for files by the extensions a template can have (`MODULE`), leaving out the folders `walk()` leaves out
  *   (`node_modules`, `dist`, `build`, `out`, …, and those starting with `.`) and the CLI's loader modules;
  * - every workspace package the project depends on (a dependency whose version is `workspace:` or `link:`, or that
  *   resolves through a symbolic link to a folder outside `node_modules`), and theirs, whole: `dist` and `build`
@@ -13,7 +13,8 @@
  */
 import { existsSync, lstatSync, readdirSync, readFileSync, statSync, watch, type Dirent, type FSWatcher } from "node:fs";
 import { dirname, join, sep } from "node:path";
-import { IGNORED, realpathOr, SOURCE } from "@unlayer-internal/template-loader";
+import { IGNORED, realpathOr } from "@unlayer-internal/template-loader";
+import { MODULE } from "../inputs";
 import { packageFolder } from "../inputs";
 import { LOADER_NAME } from "../loader-module";
 
@@ -136,7 +137,7 @@ export class Watcher {
   private counts(path: string, name: string): boolean {
     if (LOADER_NAME.test(name)) return false;
     if (this.whole(path)) return true;
-    return !name.startsWith(".") && SOURCE.test(name);
+    return !name.startsWith(".") && MODULE.test(name);
   }
 
   /** Whether a path is under a folder left out (from the nearest watched folder up). */
