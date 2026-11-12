@@ -2,6 +2,9 @@
  * The templates a run is given: a file is one template; a folder is searched with the loader's walk(), leaving out
  * folders starting with `_` too (React Email's convention for shared parts), and a file in it is a template if it
  * has a default export (found with TypeScript's parser; it's loaded to find out the rest).
+ *
+ * `check` and `preview` also take an HTML email: an `.html` or `.htm` file given by name, or `-` for stdin. A
+ * folder's HTML files aren't picked up (a folder holds templates, and often the HTML rendered from them).
  */
 import { existsSync, readFileSync, realpathSync, statSync } from "node:fs";
 import { readFile } from "node:fs/promises";
@@ -17,6 +20,10 @@ export interface Input {
   real: string;
   /** As output names it: relative to the current folder, with `/`. */
   display: string;
+  /** "html": an HTML email (a file given by name, or stdin), checked and previewed as it is. */
+  kind?: "template" | "html";
+  /** `-`: the HTML read from stdin, named `stdin` (its `file` is `stdin` in the current folder, which isn't read). */
+  stdin?: boolean;
 }
 
 export interface Found {
@@ -29,6 +36,8 @@ export interface Found {
 
 /** A file a template may be, given by name. */
 const MODULE = /\.(tsx|ts|jsx|js|mts|mjs|cts|cjs)$/;
+/** An HTML email, given by name. */
+export const HTML = /\.html?$/i;
 
 export function displayPath(cwd: string, file: string): string {
   return relative(cwd, file).split(sep).join("/") || ".";
@@ -70,19 +79,33 @@ export async function hasDefaultExport(path: string, source: string): Promise<bo
   return false;
 }
 
-export async function findInputs(positional: string[], cwd: string, folderSkip = (name: string) => name.startsWith("_")): Promise<Found> {
+export interface FindOptions {
+  /** HTML emails are taken (`check`, `preview`); otherwise one is a usage error. */
+  html?: boolean;
+}
+
+export async function findInputs(positional: string[], cwd: string, folderSkip = (name: string) => name.startsWith("_"), options: FindOptions = {}): Promise<Found> {
   const inputs: Input[] = [];
   const seen = new Set<string>();
   const holders: string[] = [];
   const links: string[] = [];
-  const add = (file: string) => {
+  const add = (file: string, kind?: "html") => {
     const realPath = real(file);
     // The same file given twice, or through a link, is one input.
     if (seen.has(realPath)) return;
     seen.add(realPath);
-    inputs.push({ id: inputs.length, file, real: realPath, display: displayPath(cwd, file) });
+    inputs.push({ id: inputs.length, file, real: realPath, display: displayPath(cwd, file), ...(kind ? { kind } : {}) });
   };
+  let stdin = false;
   for (const given of positional) {
+    if (given === "-") {
+      if (!options.html) throw new UsageError("- reads an HTML email from stdin, which only check and preview take: this command takes templates (.tsx, .jsx, .ts, .js).");
+      if (stdin) throw new UsageError("- (stdin) is given twice.");
+      stdin = true;
+      const file = join(cwd, "stdin");
+      inputs.push({ id: inputs.length, file, real: file, display: "stdin", kind: "html", stdin: true });
+      continue;
+    }
     const path = resolve(cwd, given);
     if (!existsSync(path)) throw new UsageError(`${given} doesn't exist.`);
     if (statSync(path).isDirectory()) {
@@ -100,15 +123,25 @@ export async function findInputs(positional: string[], cwd: string, folderSkip =
         templates++;
         add(file);
       }
-      if (!templates) throw new UsageError(`${given} holds no template: a template is a module whose default export is a component.`);
+      if (!templates) {
+        throw new UsageError(
+          `${given} holds no template: a template is a module whose default export is a component.${options.html ? " A folder's HTML files aren't checked: give them by name (emails/*.html)." : ""}`,
+        );
+      }
     } else {
-      if (/\.html?$/i.test(path)) throw new UsageError(`${given} is HTML: the CLI takes templates (.tsx, .jsx, .ts, .js), and HTML input comes in a later release.`);
-      if (!MODULE.test(path)) throw new UsageError(`${given} isn't a template: give a .tsx, .jsx, .ts or .js file (or .mts, .mjs, .cts, .cjs).`);
+      if (HTML.test(path)) {
+        if (!options.html) throw new UsageError(`${given} is HTML: it's already HTML. render, outline and inspect take templates (.tsx, .jsx, .ts, .js); check and preview take an HTML email too.`);
+        holders.push(dirname(path));
+        add(path, "html");
+        continue;
+      }
+      if (!MODULE.test(path)) throw new UsageError(`${given} isn't a template: give a .tsx, .jsx, .ts or .js file (or .mts, .mjs, .cts, .cjs)${options.html ? ", or an HTML email (.html, .htm)" : ""}.`);
       holders.push(dirname(path));
       add(path);
     }
   }
-  return { inputs, base: commonFolder(holders), links };
+  // stdin alone: the current folder.
+  return { inputs, base: holders.length ? commonFolder(holders) : cwd, links };
 }
 
 /** The TypeScript file tsx would load in place of a JavaScript template, where there's one. */

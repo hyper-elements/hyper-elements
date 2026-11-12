@@ -4,18 +4,25 @@
  * the app's templates with npx (Node) and with bunx --bun (Bun). A template says which runtime rendered it
  * (process.versions.bun is set only under Bun); plain bunx follows the bin's Node shebang, so it runs Node.
  *
- *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz node verify.mjs
+ * Then any HTML email with nothing installed: `npx --package <the packed CLI> hyper-elements check` in a folder with no
+ * node_modules, which installs the CLI and email-clients into npx's own cache, and no React or Elements.
+ *
+ *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz \
+ *   EMAIL_CLIENTS_TARBALL=/tmp/hyper-elements-email-clients-0.4.3.tgz node verify.mjs
+ *
+ * EMAIL_CLIENTS_TARBALL is optional: without it, the CLI's email-clients comes from npm.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const cliTarball = resolve(process.env.CLI_TARBALL ?? "");
 const reactTarball = resolve(process.env.REACT_TARBALL ?? "");
+const emailClientsTarball = process.env.EMAIL_CLIENTS_TARBALL ? resolve(process.env.EMAIL_CLIENTS_TARBALL) : null;
 if (!process.env.CLI_TARBALL || !process.env.REACT_TARBALL) {
   console.error("Set CLI_TARBALL and REACT_TARBALL to the packed packages (pnpm pack).");
   process.exit(2);
@@ -34,6 +41,12 @@ try {
   pkg.dependencies["@hyper-elements/react"] = `file:${reactTarball}`;
   pkg.devDependencies = { "@hyper-elements/cli": `file:${cliTarball}` };
   writeFileSync(join(web, "package.json"), JSON.stringify(pkg, null, 2));
+  if (emailClientsTarball) {
+    // The CLI's email-clients (a dependency, ^0.4.3) from this repository rather than npm.
+    const workspace = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+    workspace.pnpm = { overrides: { "@hyper-elements/email-clients": `file:${emailClientsTarball}` } };
+    writeFileSync(join(root, "package.json"), JSON.stringify(workspace, null, 2));
+  }
   execFileSync("pnpm", ["install", "--no-frozen-lockfile"], { cwd: root, stdio: "inherit" });
 
   /** Runs a command in the app, returning its exit code and output. */
@@ -76,4 +89,70 @@ try {
   console.log("✓ the packed CLI renders and checks an app's templates on Node and on Bun");
 } finally {
   rmSync(root, { recursive: true, force: true });
+}
+
+// Any HTML email, with nothing installed: a folder with no node_modules (none above it either), npx with the packed CLI
+// and its own npm cache, so what it installed can be listed.
+const bare = realpathSync(mkdtempSync(join(tmpdir(), "cli-integration-html-")));
+try {
+  const folder = join(bare, "mail");
+  mkdirSync(folder);
+  const email = `<!DOCTYPE html>\n<html>\n<head><style>.card { position: absolute; }</style></head>\n<body>\n<div class="card">Welcome</div>\n</body>\n</html>\n`;
+  writeFileSync(join(folder, "welcome.html"), email);
+  const cache = join(bare, "npm-cache");
+  const env = { ...process.env, npm_config_cache: cache, npm_config_update_notifier: "false" };
+  delete env.NODE_PATH;
+  const packages = [...(emailClientsTarball ? [`--package=${emailClientsTarball}`] : []), `--package=${cliTarball}`];
+  const npx = (args, input) => {
+    const ran = spawnSync("npx", ["--yes", ...packages, "hyper-elements", ...args], { cwd: folder, encoding: "utf8", env, input });
+    if (ran.error) throw ran.error;
+    return { code: ran.status, stdout: ran.stdout, stderr: ran.stderr };
+  };
+
+  const checked = npx(["check", "welcome.html", "--json"]);
+  assert.equal(checked.code, 0, `npx check welcome.html: ${checked.stdout}${checked.stderr}`);
+  const [line, summary] = checked.stdout.trim().split("\n").map((text) => JSON.parse(text));
+  assert.equal(line.file, "welcome.html");
+  assert.equal(line.input, "html");
+  assert.equal(line.root, null);
+  assert.equal(line.status, "ok");
+  assert.deepEqual(line.outputs, []);
+  const position = line.diagnostics.find((d) => d.message.includes("position: absolute"));
+  assert.ok(position, `no position: absolute diagnostic in ${checked.stdout}`);
+  assert.equal(position.path, "html");
+  assert.equal(position.line, 3);
+  assert.ok(line.diagnostics.some((d) => d.code === "cli/email-clients-copy"), "the CLI's own email-clients wasn't said to be used");
+  assert.equal(summary.exitCode, 0);
+  assert.deepEqual(readdirSync(folder), ["welcome.html"], "check wrote something");
+
+  const stdin = npx(["check", "-", "--json"], email);
+  assert.equal(stdin.code, 0, `npx check -: ${stdin.stdout}${stdin.stderr}`);
+  assert.equal(JSON.parse(stdin.stdout.split("\n")[0]).file, "stdin");
+
+  const previewed = npx(["preview", "welcome.html", "--clients", "gmail"]);
+  assert.equal(previewed.code, 0, `npx preview welcome.html: ${previewed.stdout}${previewed.stderr}`);
+  assert.deepEqual(readdirSync(join(folder, "out/clients/welcome")).sort(), ["gmail.html", "gmail.mac.html"]);
+
+  // What npx installed: the CLI, email-clients and its models, and no React, React DOM or Elements.
+  const installs = readdirSync(join(cache, "_npx")).map((hash) => join(cache, "_npx", hash, "node_modules"));
+  assert.ok(installs.some((modules) => existsSync(join(modules, "@hyper-elements/cli/package.json"))), "npx didn't install the CLI where it was looked for");
+  const found = [];
+  const visit = (modules) => {
+    if (!existsSync(modules)) return;
+    for (const name of readdirSync(modules)) {
+      if (name.startsWith("@")) {
+        for (const scoped of readdirSync(join(modules, name))) visit2(join(modules, name, scoped), `${name}/${scoped}`);
+      } else visit2(join(modules, name), name);
+    }
+  };
+  const visit2 = (folder, name) => {
+    found.push(name);
+    visit(join(folder, "node_modules"));
+  };
+  for (const modules of installs) visit(modules);
+  for (const name of ["react", "react-dom", "@hyper-elements/react"]) assert.ok(!found.includes(name), `npx installed ${name} for an HTML email: ${found.join(", ")}`);
+  for (const name of ["@hyper-elements/email-clients", "@hyper-elements/email-client-models"]) assert.ok(found.includes(name), `npx didn't install ${name}`);
+  console.log(`✓ npx checks and previews an HTML email with nothing installed, and installs no React (${found.length} packages)`);
+} finally {
+  rmSync(bare, { recursive: true, force: true });
 }

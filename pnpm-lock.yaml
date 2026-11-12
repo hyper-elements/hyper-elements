@@ -191,6 +191,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@hyper-elements/email-clients':
+        specifier: workspace:^0.4.3
+        version: link:../email-clients
       playwright-core:
         specifier: 1.60.0
         version: 1.60.0
@@ -201,9 +204,6 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
     devDependencies:
-      '@hyper-elements/email-clients':
-        specifier: workspace:*
-        version: link:../email-clients
       '@hyper-elements/react':
         specifier: workspace:*
         version: link:../react

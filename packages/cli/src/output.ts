@@ -22,12 +22,28 @@ export interface Outcome {
   reason?: "no-browser";
   /** `inspect`: inspect()'s result, or null where there's none. */
   inspection?: unknown;
+  /** "html": an HTML email, checked or previewed as it is (a template where it's not set). */
+  input?: "template" | "html";
 }
 
 /** As Elements' formatDiagnostics() writes them (packages/core/src/diagnostics.ts), for diagnostics no Elements formatted. */
 export function formatDiagnostics(diagnostics: readonly Diagnostic[]): string {
   return diagnostics
     .map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}${d.fix ? ` Fix: ${d.fix}` : ""}${d.see ? ` See: ${d.see}` : ""}`)
+    .join("\n");
+}
+
+/**
+ * An HTML email's diagnostics, each at its file and line (`emails/welcome.html:12`), with the line's excerpt below it
+ * where there is one.
+ */
+export function formatHtmlDiagnostics(file: string, diagnostics: readonly Diagnostic[]): string {
+  return diagnostics
+    .map((d) => {
+      const at = typeof d.line === "number" ? `${file}:${d.line}` : file;
+      const head = `${d.severity} ${d.code} at ${at}: ${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}${d.fix ? ` Fix: ${d.fix}` : ""}${d.see ? ` See: ${d.see}` : ""}`;
+      return d.excerpt ? `${head}\n  ${d.excerpt}` : head;
+    })
     .join("\n");
 }
 
@@ -49,7 +65,7 @@ export function inputLine(command: Command, outcome: Outcome): InputLine | Inspe
     version: 1,
     command,
     file: outcome.file,
-    input: "template",
+    input: outcome.input ?? "template",
     root: outcome.root,
     status: outcome.status,
     outputs: outcome.outputs,
@@ -64,12 +80,18 @@ export function inputLine(command: Command, outcome: Outcome): InputLine | Inspe
 export function inputText(outcome: Outcome): string {
   const mark = outcome.status === "ok" ? "✓" : outcome.status === "error" ? "✗" : "-";
   let head = `${mark} ${outcome.file}`;
+  const html = outcome.input === "html";
   if (outcome.root) head += ` (${outcome.root})`;
+  if (html) head += " (HTML)";
   if (outcome.status === "skipped") head += " skipped";
   if (outcome.error !== undefined) head += `: ${outcome.error}`;
   if (outcome.outputs.length && !outcome.previews) head += ` → ${outcome.outputs.join(", ")}`;
   if (outcome.browser) head += `, drawn in ${outcome.browser}`;
-  const formatted = outcome.diagnostics.length ? (outcome.formatted ?? formatDiagnostics(outcome.diagnostics)) : "";
+  const formatted = !outcome.diagnostics.length
+    ? ""
+    : html
+      ? formatHtmlDiagnostics(outcome.file, outcome.diagnostics)
+      : (outcome.formatted ?? formatDiagnostics(outcome.diagnostics));
   let body = formatted ? formatted.split("\n").map((line) => `    ${line}\n`).join("") : "";
   if (outcome.inspection) body = inspectionText(outcome.inspection) + body;
   for (const preview of outcome.previews ?? []) body += `  ${previewLine(preview)}\n`;
@@ -89,10 +111,11 @@ function groupName(late: Late): string {
   return parts.join(", ");
 }
 
-export function summaryText(summary: SummaryLine): string {
+/** The summary, as text: `noun` names what was run (templates; HTML emails, or both: inputs). */
+export function summaryText(summary: SummaryLine, noun: "template" | "email" | "input" = "template"): string {
   const { templates, errors, warnings, skipped, late } = summary.summary;
   const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
-  let text = `${plural(templates, "template")}: ${plural(errors, "error")}, ${plural(warnings, "warning")}, ${skipped} skipped\n`;
+  let text = `${plural(templates, noun)}: ${plural(errors, "error")}, ${plural(warnings, "warning")}, ${skipped} skipped\n`;
   for (const item of late) {
     text +=
       item.kind === "throw"
