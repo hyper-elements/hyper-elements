@@ -1,0 +1,74 @@
+{
+  "name": "@hyper-elements/cli",
+  "version": "0.1.0",
+  "description": "Render, check and preview Hyper Elements templates from the shell: an email's HTML and text, a page's HTML, a document's PDF, a canvas's image, the email client checks, and an email as each email client draws it, with stable exit codes and JSON for agents and CI.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hyper-elements/hyper-elements.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli",
+  "keywords": [
+    "email",
+    "cli",
+    "hyper-elements",
+    "react",
+    "html-email",
+    "email-templates",
+    "render",
+    "email-testing"
+  ],
+  "bin": {
+    "hyper-elements": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.6"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest",
+    "test:bun": "vitest run --project bun",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:timing": "vitest run --config vitest.timing.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hyper-elements/email-clients": "^0.4.3",
+    "tsx": "^4.20.5",
+    "typescript": "^5.6.3"
+  },
+  "peerDependencies": {
+    "@hyper-elements/react": ">=0.4.0 <0.5.0",
+    "playwright-core": ">=1.40.0 <2"
+  },
+  "peerDependenciesMeta": {
+    "@hyper-elements/react": {
+      "optional": true
+    },
+    "playwright-core": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@hyper-elements/react": "workspace:*",
+    "@types/node": "^24.9.1",
+    "@types/react": "^18.3.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "playwright-core": "1.60.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-dom19": "npm:react-dom@19.1.0",
+    "react19": "npm:react@19.1.0",
+    "tsup": "^8.0.1",
+    "vitest": "^3.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
