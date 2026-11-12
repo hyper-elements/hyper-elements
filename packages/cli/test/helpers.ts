@@ -33,7 +33,17 @@ const made: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
   // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
-  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
+  // Where it still holds it, the folder is left in the temp folder: a test that needs its processes gone checks them
+  // itself, so a slow release of the folder isn't the test's failure.
+  for (const dir of made.splice(0)) {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (!WINDOWS || (code !== "EBUSY" && code !== "EPERM")) throw error;
+      console.warn(`left ${dir}: ${code}`);
+    }
+  }
 });
 
 /** Links `node_modules/<name>` in `folder` to `target` (a folder). */
