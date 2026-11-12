@@ -157,7 +157,7 @@ npx hyper-elements render emails/welcome.tsx           # 4. out/welcome.html and
 npx hyper-elements describe Button --root Email        # what a component takes, before writing it
 ```
 
-With `--json`, stdout holds one line per template, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every template is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error, no templates found).
+With `--json`, stdout holds one line per template, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every template is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error; no templates, such as a file whose default export isn't a component). A template that doesn't load has an `error` instead: for a syntax error, its file, line, column and reason.
 
 To test an email in the email clients from the shell, the agent uses what it has:
 

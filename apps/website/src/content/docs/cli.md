@@ -68,7 +68,7 @@ Give the commands files or folders. A folder is searched for templates, leaving 
 npx hyper-elements render emails/
 ```
 
-`render emails/` writes `out/welcome.html` and `out/welcome.txt`, and prints each template's diagnostics. Each output goes at the template's path relative to the folder holding every input, so `render emails/ docs/` writes `out/emails/…` and `out/docs/…`. `--pretty` indents the HTML, and `--stdout` writes one template's HTML, PDF or image to stdout. A template with errors writes nothing.
+`render emails/` writes `out/welcome.html` and `out/welcome.txt`, and prints each template's diagnostics: with the email client checks where the project has `@hyper-elements/email-clients`, as `check` runs them (`--clients` picks the clients). Each output goes at the template's path relative to the folder holding every input, so `render emails/ docs/` writes `out/emails/…` and `out/docs/…`. `--pretty` indents the HTML, and `--stdout` writes one template's HTML, PDF or image to stdout. A template with errors writes nothing.
 
 ### PDFs and images
 
@@ -152,13 +152,13 @@ With `--json`, stdout holds one JSON line per template, then a summary line, and
 {"version":1,"summary":{"templates":1,"errors":1,"warnings":0,"skipped":0,"late":[]},"exitCode":1}
 ```
 
-Each diagnostic is the one [`validate()`](/docs/diagnostics) gives: `code`, `severity`, `message`, `path`, and the `clients` and `fix` where there are some. `preview --json` adds each preview's `path`, `ready` and `findings`, and the `browser` it drew in.
+Each diagnostic is the one [`validate()`](/docs/diagnostics) gives: `code`, `severity`, `message`, `path`, and the `clients` and `fix` where there are some. A template that doesn't load has no diagnostics but an `error`, which says why in one line; for a syntax error, in the template or a module it imports, that's the file, line, column and reason: `emails/welcome.tsx:3:34: Unexpected closing "Emal" tag does not match opening "Email" tag`. `preview --json` adds each preview's `path`, `ready` and `findings`, and the `browser` it drew in.
 
 | Exit code | Means |
 |-----------|-------|
 | `0` | Every template rendered, checked or previewed without errors |
 | `1` | A template has errors, failed to load or threw, or ran past `--timeout`; a PDF or image engine isn't installed; a preview failed in the browser; or the run passed `--max-warnings` |
-| `2` | The run couldn't do what it was asked: a usage error, no templates, Elements missing, a Document's PDF on Bun, `preview` without `@hyper-elements/email-clients`, or `--findings` with no browser found |
+| `2` | The run couldn't do what it was asked: a usage error, no templates (none found, or no input that turned out to be one, such as a file whose default export isn't a component: each is still listed, as skipped), Elements missing, a Document's PDF on Bun, `preview` without `@hyper-elements/email-clients`, or `--findings` with no browser found |
 
 In CI, fail the build on any problem in your templates:
 
