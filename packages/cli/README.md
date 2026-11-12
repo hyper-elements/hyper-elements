@@ -100,8 +100,8 @@ byte for byte, and where Bun can't, the CLI says so rather than write something 
 
 - **A Canvas's PNG and SVG** are the same on Bun (Satori and resvg's native addon load, and draw the same pixels).
 - **A Document's PDF** isn't: Bun's zlib compresses the PDF's streams differently, so the file differs from Node's
-  although what it holds is the same. On Bun, `render` refuses a Document (`cli/bun`, exit 2): run it with Node.
-  `check` and `outline` work on Bun for every root.
+  although what it holds is the same. On Bun, on every platform, `render` refuses a Document (`cli/bun`, exit 2): run
+  it with Node. `check` and `outline` work on Bun for every root.
 
 The project needs `@hyper-elements/react` 0.4.
 

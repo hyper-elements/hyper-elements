@@ -78,7 +78,7 @@ async function renderDrawn(context: TemplateContext, root: "Document" | "Canvas"
     const what = root === "Document" ? "the Document's print HTML: the CLI writes its PDF (.pdf)" : "the Canvas's HTML: the CLI writes its image (.png, .svg)";
     return renderHtml(context, cliDiagnostic("html-only", "info", `This is ${what} with @hyper-elements/react ${ASSETS_RELEASE} or later, which adds templateAssets()`, `update @hyper-elements/react to ${ASSETS_RELEASE} or later`));
   }
-  // (HYPER_ELEMENTS_CLI_BUN_PDF: for the CLI's own tests, which check the file still differs on Bun.)
+  // (HYPER_ELEMENTS_CLI_BUN_PDF: for the CLI's own tests, which check what the PDF holds is the same on Bun.)
   if (bun && NOT_ON_BUN.has(root) && !process.env.HYPER_ELEMENTS_CLI_BUN_PDF) {
     return {
       status: "error",

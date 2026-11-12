@@ -5,12 +5,14 @@
  * and Canvases name web fonts: drawn.test.ts renders them, from a local server.)
  *
  * The CLI's fixtures (test/fixtures: Documents and Canvases with Inter's TTF files and PNG images) say where Bun
- * gives Node's bytes for a PDF or an image: a Canvas's PNG and SVG are the same, so Bun writes them; a Document's PDF
- * isn't (Bun's zlib compresses its streams differently), so `render` exits 2 for a Document on Bun.
+ * gives Node's bytes for a PDF or an image: a Canvas's PNG and SVG are the same, so Bun writes them. A Document's PDF
+ * holds the same streams, but their compression may differ (Bun's zlib), so `render` exits 2 for a Document on Bun,
+ * on every platform.
  */
 import { execFileSync } from "node:child_process";
 import { cpSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join, relative } from "node:path";
+import { inflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { cli, FIXTURES, lines, project, REPO, withFixtures } from "./helpers";
 
@@ -115,7 +117,7 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     }
   });
 
-  it("refuses a Document's PDF on Bun (exit 2), whose bytes differ from Node's", async () => {
+  it("refuses a Document's PDF on Bun (exit 2); written anyway, its streams hold what Node's do", async () => {
     const dir = fixtures();
     const node = await cli(dir, ["render", "templates/invoice.tsx", "--json", "--out", "node"], { runtime: "node" });
     expect(node.code, node.stdout + node.stderr).toBe(0);
@@ -125,13 +127,34 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     expect(bun.code).toBe(2);
     expect(lines(bun)[0]).toMatchObject({ root: "Document", status: "error", outputs: [], diagnostics: [{ code: "cli/bun", severity: "error" }] });
 
-    // Why: written on Bun anyway, the PDF isn't Node's. If this fails, Bun now writes Node's bytes: lift the refusal
-    // (NOT_ON_BUN in src/commands/render.ts) and the README's note.
+    // Written on Bun anyway, the PDF holds what Node's does: the same streams once inflated. Only their compression
+    // may differ (Bun's zlib), which is why render refuses it there; nothing here depends on the compressed bytes.
     const forced = await cli(dir, ["render", "templates/invoice.tsx", "--json", "--out", "forced"], { runtime: "bun", env: { HYPER_ELEMENTS_CLI_BUN_PDF: "1" } });
     expect(forced.code, forced.stdout + forced.stderr).toBe(0);
-    const ours = readFileSync(join(dir, "node/invoice.pdf"));
-    const theirs = readFileSync(join(dir, "forced/invoice.pdf"));
-    expect(theirs.subarray(0, 5).toString()).toBe("%PDF-");
-    expect(theirs.equals(ours)).toBe(false);
+    const ours = pdfStreams(readFileSync(join(dir, "node/invoice.pdf")));
+    const theirs = pdfStreams(readFileSync(join(dir, "forced/invoice.pdf")));
+    expect(ours.length).toBeGreaterThan(0);
+    expect(theirs.length).toBe(ours.length);
+    theirs.forEach((stream, index) => expect(stream.equals(ours[index]), `stream ${index}`).toBe(true));
   });
 });
+
+/** A PDF's streams, in order, each inflated where it's compressed (FlateDecode) and as it is otherwise. */
+function pdfStreams(pdf: Buffer): Buffer[] {
+  const out: Buffer[] = [];
+  const text = pdf.toString("latin1");
+  const start = /stream\r?\n/g;
+  for (let match = start.exec(text); match; match = start.exec(text)) {
+    // A stream's dictionary ends just before "stream" ("endstream" isn't one).
+    if (text.slice(match.index - 3, match.index) === "end") continue;
+    const from = match.index + match[0].length;
+    const to = text.indexOf("endstream", from);
+    if (to < 0) break;
+    const raw = pdf.subarray(from, to).subarray(0, text.slice(from, to).replace(/\r?\n$/, "").length);
+    // Its object's dictionary: from "n 0 obj" to the stream.
+    const dictionary = text.slice(text.lastIndexOf(" obj", match.index), match.index);
+    out.push(/\/FlateDecode/.test(dictionary) ? inflateSync(raw) : Buffer.from(raw));
+    start.lastIndex = to + "endstream".length;
+  }
+  return out;
+}
