@@ -14,6 +14,16 @@ import { notFound } from "../errors";
 import type { Diagnostic } from "../protocol";
 import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "./shared";
 
+/**
+ * render()'s options: `--pretty`, and email-clients' plugin where the template's project has
+ * @hyper-elements/email-clients (for the clients `--clients` names), as `check` passes it. `notes`: what the CLI says
+ * about it (`--clients` with no email-clients installed).
+ */
+async function renderOptions(context: TemplateContext): Promise<{ options: { pretty?: boolean; plugins?: unknown[] }; notes: Diagnostic[] }> {
+  const { plugin, diagnostics: notes } = await context.plugin();
+  return { options: { ...(context.options.pretty ? { pretty: true } : {}), ...(plugin ? { plugins: [plugin] } : {}) }, notes };
+}
+
 /** The files `render` writes for each root, by extension: a root's first is its main output (`--stdout`'s). */
 export const RENDER_OUTPUTS: Record<string, string[]> = {
   Email: ["html", "txt"],
@@ -61,9 +71,10 @@ export async function renderTemplate(context: TemplateContext): Promise<CommandR
 
 /** An Email's or a Page's HTML (and an Email's text); a Document's or a Canvas's HTML, with `note` saying why. */
 async function renderHtml(context: TemplateContext, note?: Diagnostic): Promise<CommandResult> {
-  const { element, root, elements, options } = context;
-  const result = await elements.render(element, options.pretty ? { pretty: true } : {});
-  const diagnostics = [...result.diagnostics, ...(note ? [note] : [])];
+  const { element, root, elements } = context;
+  const { options, notes } = await renderOptions(context);
+  const result = await elements.render(element, options);
+  const diagnostics = [...result.diagnostics, ...notes, ...(note ? [note] : [])];
   const outputs: Record<string, string> = { html: result.html };
   if (root === "Email") outputs.txt = result.text;
   return { status: hasErrors(diagnostics) ? "error" : "ok", diagnostics, outputs };
@@ -128,11 +139,12 @@ async function renderDrawn(context: TemplateContext, root: "Document" | "Canvas"
   outputs[extension] = Buffer.from(file).toString("base64");
   const diagnostics = [...loaded.diagnostics, ...found];
   if (root === "Document" && options.html) {
-    const result = await elements.render(element, options.pretty ? { pretty: true } : {});
+    const html = await renderOptions(context);
+    const result = await elements.render(element, html.options);
     outputs.html = result.html;
     // What prepare() says is in both: said once.
     const said = new Set(diagnostics.map((d) => JSON.stringify(d)));
-    for (const d of result.diagnostics) if (!said.has(JSON.stringify(d))) diagnostics.push(d);
+    for (const d of [...result.diagnostics, ...html.notes]) if (!said.has(JSON.stringify(d))) diagnostics.push(d);
   }
   return { status: hasErrors(diagnostics) ? "error" : "ok", diagnostics, outputs, binary: [extension] };
 }

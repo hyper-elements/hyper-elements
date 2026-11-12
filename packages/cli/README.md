@@ -36,7 +36,7 @@ Welcome.PreviewProps = { name: "Ada" };
 
 | Command | What it does |
 |---|---|
-| `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the folder holding every input: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. |
+| `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the folder holding every input: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. Where the project has `@hyper-elements/email-clients`, an Email's and a Page's HTML is rendered with its email client checks, as `check` runs them (`--clients` picks the clients). |
 | `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
 | `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<name>/`, named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
@@ -183,7 +183,12 @@ stream too), under the random path its URL carries, and only its own files.
 ## Output and exit codes
 
 Text by default, with each template's diagnostics as `formatDiagnostics()` writes them. With `--json`, stdout holds one
-JSON line per template, then a summary line, and nothing else: what templates print goes to stderr.
+JSON line per template, then a summary line, and nothing else: what templates print goes to stderr. A diagnostic at no
+path in the template (the CLI's own, `cli/…`) is printed without one: `info cli/not-a-template: …`.
+
+A template that doesn't load says why in its `error`, in one line: a syntax error, in the template or a module it
+imports, as its file, line, column and reason (`emails/welcome.tsx:3:34: Unexpected closing "Emal" tag does not match
+opening "Email" tag`; on Bun, in Bun's words), with "(and N more errors)" where there are more.
 
 ```json
 {"version":1,"command":"check","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":[],"diagnostics":[]}
@@ -201,10 +206,12 @@ with its own `version`. `outline` is text only.
   or image engine that isn't installed, or names a URL that isn't cached with `--offline`; an HTML email isn't a whole
   email, or the email client models can't be used for it (see [Any HTML email](#any-html-email)); a preview failed in
   the browser; or the run passed `--max-warnings`.
-- **2**: the run couldn't do what it was asked: a usage error, an unsupported runtime, no templates, Elements missing or
-  outside the supported range, outputs that would collide, a template that called `process.exit`, template code that
-  threw outside a render, or a Document's PDF on Bun; `preview` without email-clients, or `--findings` with no browser
-  found; `describe` for a component or root there isn't.
+- **2**: the run couldn't do what it was asked: a usage error, an unsupported runtime, no templates (none found in the
+  folders given, or no input, folder or file, that turned out to be one: each is still listed, as skipped), Elements
+  missing or outside the supported range, outputs that would collide, a template that called `process.exit`, template
+  code that threw outside a render, or a Document's PDF on Bun; `preview` without email-clients, or `--findings` with
+  no browser found; `describe` for a component or root there isn't. A run with at least one template skips the inputs
+  that aren't templates and exits as its templates do.
 
 ## How it runs templates
 

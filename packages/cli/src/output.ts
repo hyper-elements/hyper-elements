@@ -2,6 +2,7 @@
  * What a run says: text by default (diagnostics as formatDiagnostics() writes them), or with `--json` one line per
  * input and a summary line, on stdout, with nothing else there.
  */
+import { formatDiagnostics } from "./format";
 import { previewLine } from "./preview";
 import type { Command, Diagnostic, InputLine, InspectLine, Late, Preview, Root, SummaryLine } from "./protocol";
 
@@ -26,12 +27,8 @@ export interface Outcome {
   input?: "template" | "html";
 }
 
-/** As Elements' formatDiagnostics() writes them (packages/core/src/diagnostics.ts), for diagnostics no Elements formatted. */
-export function formatDiagnostics(diagnostics: readonly Diagnostic[]): string {
-  return diagnostics
-    .map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}${d.fix ? ` Fix: ${d.fix}` : ""}${d.see ? ` See: ${d.see}` : ""}`)
-    .join("\n");
-}
+
+export { formatDiagnostics };
 
 /**
  * An HTML email's diagnostics, each at its file and line (`emails/welcome.html:12`), with the line's excerpt below it

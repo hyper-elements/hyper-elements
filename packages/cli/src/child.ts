@@ -20,7 +20,8 @@ import { renderTemplate } from "./commands/render";
 import { devTemplate } from "./dev/worker";
 import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, UsageFailure, type CommandResult, type TemplateContext } from "./commands/shared";
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
-import { errorLine, messageOf, notFound } from "./errors";
+import { errorLine, errorText, messageOf, notFound } from "./errors";
+import { formatDiagnostic } from "./format";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { reactCopies } from "./react-copies";
@@ -129,7 +130,8 @@ class Session {
     const diagnostics = fields.diagnostics ?? [];
     let formatted: string | undefined;
     try {
-      formatted = loaded ? loaded.elements.formatDiagnostics(diagnostics) : undefined;
+      // Each by the template's Elements, but one at no path (the CLI's own) by the CLI, which says no place for it.
+      formatted = loaded ? diagnostics.map((d) => (d.path ? loaded.elements.formatDiagnostics([d]) : formatDiagnostic(d))).join("\n") : undefined;
     } catch {
       formatted = undefined;
     }
@@ -188,7 +190,7 @@ class Session {
       const inspect = exportsOf<ElementsInspect>(await loader.load("@hyper-elements/react/inspect"), "inspect");
       const react = exportsOf<ReactModule>(await loader.load("react"), "createElement");
       let emailClients: EmailClientsModule | undefined;
-      if (this.message.command === "check" || this.message.command === "preview" || this.message.command === "dev") {
+      if (this.message.command === "render" || this.message.command === "check" || this.message.command === "preview" || this.message.command === "dev") {
         try {
           emailClients = exportsOf<EmailClientsModule>(await loader.load("@hyper-elements/email-clients"), "emailClients");
         } catch (error) {
@@ -220,16 +222,16 @@ class Session {
     }
     const value = defaultExport(loader.template);
     if (value && typeof value === "object" && ELEMENT.has((value as { $$typeof?: symbol }).$$typeof!)) {
-      return this.result(input, { status: "skipped", diagnostics: [cliDiagnostic("element-export", "info", "Export the component, not an element")] }, loaded);
+      return this.result(input, { status: "skipped", notTemplate: true, diagnostics: [cliDiagnostic("element-export", "info", "Export the component, not an element")] }, loaded);
     }
     let template;
     try {
       template = templateComponent(value);
     } catch (error) {
-      return this.result(input, { status: "error", error: errorLine(error) }, loaded);
+      return this.result(input, { status: "error", error: errorText(error, this.message.cwd) }, loaded);
     }
     if (!template) {
-      return this.result(input, { status: "skipped", diagnostics: [cliDiagnostic("not-a-template", "info", "Its default export isn't a component: not a template")] }, loaded);
+      return this.result(input, { status: "skipped", notTemplate: true, diagnostics: [cliDiagnostic("not-a-template", "info", "Its default export isn't a component: not a template")] }, loaded);
     }
     const props = this.message.options.props ?? template.props;
     try {
@@ -237,7 +239,7 @@ class Session {
       const inspection = loaded.inspect.inspect(element);
       const root = inspection.root && ROOTS.has(inspection.root) ? (inspection.root as Root) : null;
       if (!root && !hasErrors(inspection.diagnostics)) {
-        return this.result(input, { status: "skipped", diagnostics: [cliDiagnostic("not-a-template", "info", "It renders no root Elements knows (Email, Page, Document or Canvas): not a template")] }, loaded);
+        return this.result(input, { status: "skipped", notTemplate: true, diagnostics: [cliDiagnostic("not-a-template", "info", "It renders no root Elements knows (Email, Page, Document or Canvas): not a template")] }, loaded);
       }
       const context: TemplateContext = {
         element,
@@ -258,7 +260,7 @@ class Session {
     } catch (error) {
       const diagnostics = elementsErrorDiagnostics(error);
       if (diagnostics) return this.result(input, { status: "error", diagnostics }, loaded);
-      return this.result(input, { status: "error", error: errorLine(error), usage: exitCalled(error) || error instanceof UsageFailure || undefined, diagnostics: notes }, loaded);
+      return this.result(input, { status: "error", error: errorText(error, this.message.cwd), usage: exitCalled(error) || error instanceof UsageFailure || undefined, diagnostics: notes }, loaded);
     }
   }
 
@@ -337,7 +339,7 @@ class Session {
 
   private loadFailure(input: ChildInput, error: unknown): ResultMessage {
     if (notFound(error, "@hyper-elements/react")) return this.elementsMissing(input);
-    return this.result(input, { status: "error", error: errorLine(error), ...(exitCalled(error) ? { usage: true } : {}) });
+    return this.result(input, { status: "error", error: errorText(error, this.message.cwd), ...(exitCalled(error) ? { usage: true } : {}) });
   }
 }
 

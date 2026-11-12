@@ -148,4 +148,11 @@ export default function A() { return <Email><Section color="red" /></Email>; }
     expect(ran.stdout).toMatch(/^✓ emails\/b\.tsx \(Email\)$/m);
     expect(ran.stdout).toMatch(/^2 templates: 1 error, \d+ warnings?, 0 skipped$/m);
   });
+
+  it("says no place for a diagnostic at no path in the template, rather than `at :`", async () => {
+    const dir = project({ "emails/a.tsx": email(), "emails/value.ts": `export default { not: "a component" };\n` });
+    const ran = await cli(dir, ["check", "emails"]);
+    expect(ran.stdout).toMatch(/^ {4}info cli\/not-a-template: Its default export isn't a component/m);
+    expect(ran.stdout).not.toContain(" at :");
+  });
 });

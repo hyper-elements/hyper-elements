@@ -92,3 +92,30 @@ describe("outline", () => {
     expect((await cli(dir, ["outline", "emails"])).code).toBe(2);
   });
 });
+
+describe("render, with email-clients", () => {
+  it("runs email-clients' checks where the project has it, as check does, and --clients picks the clients", async () => {
+    const dir = project({ "emails/a.tsx": BACKGROUND }, { modules: WITH_CLIENTS });
+    const ran = await cli(dir, ["render", "emails", "--json"]);
+    expect(ran.code, ran.stderr).toBe(0);
+    const [line] = lines(ran);
+    expect(line.outputs).toEqual(["out/a.html", "out/a.txt"]);
+    expect(line.diagnostics.map((d: any) => d.code)).not.toContain("email/more-checks");
+    const checked = lines(await cli(dir, ["check", "emails", "--json"]))[0].diagnostics;
+    expect(line.diagnostics.filter((d: any) => d.clients)).toEqual(checked.filter((d: any) => d.clients));
+    const gmail = lines(await cli(dir, ["render", "emails", "--json", "--clients", "gmail"]))[0].diagnostics.flatMap((d: any) => d.clients ?? []);
+    expect(new Set(gmail)).toEqual(new Set(gmail.length ? ["gmail"] : []));
+    const text = await cli(dir, ["render", "emails"]);
+    expect(text.stdout).not.toContain("email/more-checks");
+    expect(text.stdout).toMatch(/\[outlook[\],]/);
+  });
+
+  it("says where the email client checks come from where the project hasn't email-clients", async () => {
+    const dir = project({ "emails/a.tsx": BACKGROUND });
+    const ran = await cli(dir, ["render", "emails", "--json"]);
+    expect(ran.code).toBe(0);
+    expect(lines(ran)[0].diagnostics.map((d: any) => d.code)).toContain("email/more-checks");
+    const withClients = await cli(dir, ["render", "emails", "--json", "--clients", "gmail"]);
+    expect(lines(withClients)[0].diagnostics.map((d: any) => d.code)).toContain("cli/email-clients");
+  });
+});

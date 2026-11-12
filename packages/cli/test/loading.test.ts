@@ -5,7 +5,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { cli, email, lines, link, MODULES, project } from "./helpers";
+import { cli, email, lines, link, MODULES, ON_BUN, project } from "./helpers";
 
 const textOf = (dir: string, name: string) => readFileSync(join(dir, "out", `${name}.txt`), "utf8");
 
@@ -113,5 +113,39 @@ export default function Plain({ name = "nobody" }: { name?: string }) { return <
       ["emails/value.ts", "skipped", ["cli/not-a-template"]],
     ]);
     expect(got[3].summary.skipped).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe("a syntax error", () => {
+  /** A mismatched closing tag on line 3, at column 34 (counted from 1). */
+  const MISMATCHED = `import { Email, Text } from "@hyper-elements/react";\nexport default function Bad() {\n  return <Email><Text>Hi</Text></Emal>;\n}\n`;
+  // tsx (esbuild) and Bun's transpiler say it in their own words.
+  const REASON = ON_BUN ? /Expected closing JSX tag to match opening tag "<Email>"/ : /Unexpected closing "Emal" tag does not match opening "Email" tag/;
+
+  it("is the file, its line and column, and the reason, in the JSON error and the text", async () => {
+    const dir = project({ "emails/bad.tsx": MISMATCHED });
+    const json = await cli(dir, ["check", "emails/bad.tsx", "--json"]);
+    expect(json.code).toBe(1);
+    const [line] = lines(json);
+    expect(line.status).toBe("error");
+    expect(line.error).toMatch(/^emails\/bad\.tsx:3:34: /);
+    expect(line.error).toMatch(REASON);
+    expect(line.error).not.toMatch(/Transform failed|\n/);
+    const text = await cli(dir, ["render", "emails"]);
+    expect(text.code).toBe(1);
+    expect(text.stdout).toMatch(/^✗ emails\/bad\.tsx: emails\/bad\.tsx:3:34: /m);
+    expect(text.stdout).toMatch(REASON);
+  });
+
+  it("in a module the template imports names that module, in a CommonJS project too", async () => {
+    const files = {
+      "emails/welcome.tsx": `import { Email } from "@hyper-elements/react";\nimport { Footer } from "./_parts/footer";\nexport default function Welcome() {\n  return <Email><Footer /></Email>;\n}\n`,
+      "emails/_parts/footer.tsx": `import { Text } from "@hyper-elements/react";\nexport function Footer() {\n  return <Text>Bye</Txt>;\n}\n`,
+    };
+    for (const packageJson of [undefined, { name: "fixture", private: true }]) {
+      const dir = project(files, { packageJson });
+      const [line] = lines(await cli(dir, ["check", "emails", "--json"]));
+      expect(line.error, JSON.stringify(packageJson)).toMatch(/^emails\/_parts\/footer\.tsx:3:\d+: \S/);
+    }
   });
 });

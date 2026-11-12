@@ -168,7 +168,8 @@ describe("arguments", () => {
 
   it("refuses what a command doesn't take", () => {
     for (const argv of [
-      ["render", "a", "--clients", "x"],
+      ["render", "a", "--rendered"],
+      ["outline", "a", "--clients", "x"],
       ["check", "a", "--out", "x"],
       ["outline", "a", "b"],
       ["render", "a", "--json", "--stdout"],
@@ -194,6 +195,7 @@ describe("render's PDF and image options", () => {
   it("parses them", () => {
     expect(parseArgs(["render", "cards", "--format", "svg", "--scale", "2", "--html", "--public", "static", "--refresh"])).toMatchObject({ format: "svg", scale: 2, html: true, public: "static", refresh: true, offline: false });
     expect(parseArgs(["render", "cards", "--offline"])).toMatchObject({ format: "png", html: false, offline: true });
+    expect(parseArgs(["render", "emails", "--clients", "gmail,outlook"])).toMatchObject({ clients: ["gmail", "outlook"] });
   });
 
   it("refuses what they don't take", () => {
