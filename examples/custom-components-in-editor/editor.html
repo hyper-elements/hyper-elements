@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your own components in the Unlayer editor</title>
+  <style>
+    body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: #1a1917; }
+    header { display: flex; align-items: center; gap: 16px; padding: 10px 16px; border-bottom: 1px solid #d3cec4; background: #f3f1ec; }
+    header strong { letter-spacing: 3px; }
+    #status { flex: 1; color: #5f5b53; }
+    button { font: inherit; padding: 7px 12px; border: 1px solid #1a1917; border-radius: 2px; background: #1a1917; color: #f3f1ec; cursor: pointer; }
+    button:disabled { opacity: 0.4; cursor: default; }
+    #editor { height: calc(100vh - 51px); }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>OYEN</strong>
+    <span id="status">Loading…</span>
+    <button id="save" disabled>Download edited design and HTML</button>
+  </header>
+  <div id="editor"></div>
+  <script src="https://editor.unlayer.com/embed.js"></script>
+  <script type="module">
+    const status = document.getElementById("status");
+    const save = document.getElementById("save");
+    try {
+      // `pnpm build` writes both: the tools (the editor's custom JavaScript) and the dispatch as a design.
+      const [tools, design] = await Promise.all(["./output/tools.js", "./output/design.json"].map((path) => fetch(path).then((response) => {
+        if (!response.ok) throw new Error(`Run the build script first: ${path} is missing.`);
+        return response.text();
+      })));
+      // Custom tools are part of a project's plan: open this page with ?projectId= and your project's id.
+      const projectId = Number(new URLSearchParams(location.search).get("projectId")) || undefined;
+      const editor = unlayer.createEditor({
+        id: "editor",
+        displayMode: "email",
+        ...(projectId ? { projectId } : {}),
+        // The components as tools: this script calls registerTools() where the editor runs it.
+        customJS: [tools],
+        // The editor loads and exports the web fonts it was created with.
+        fonts: {
+          showDefaultFonts: true,
+          customFonts: [
+            { label: "Geist", value: "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif", url: "https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" },
+            { label: "Geist Mono", value: "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace", url: "https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&display=swap" },
+          ],
+        },
+      });
+      editor.addEventListener("editor:ready", () => editor.loadDesign(JSON.parse(design)));
+      editor.addEventListener("design:loaded", () => {
+        save.disabled = false;
+        status.textContent = projectId ? "Click a block: its fields are its component's props." : "No projectId: the editor draws custom tools only for a project whose plan has them. Add ?projectId= to the address.";
+      });
+      const download = (name, contents, type) => {
+        const link = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([contents], { type })), download: name });
+        link.click();
+        URL.revokeObjectURL(link.href);
+      };
+      save.addEventListener("click", () => editor.exportHtml(({ design, html }) => {
+        download("dispatch.design.json", JSON.stringify(design, null, 2), "application/json");
+        download("dispatch.html", html, "text/html");
+      }));
+      // For the page's own checks.
+      window.editor = editor;
+    } catch (error) {
+      status.textContent = error.message;
+    }
+  </script>
+</body>
+</html>
