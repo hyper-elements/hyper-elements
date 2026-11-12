@@ -195,15 +195,14 @@ jobs:
       # The packed CLI and the packed Elements installed in an app of a pnpm workspace: render and check --json run
       # with npx (Node) and bunx --bun (Bun), each template saying which runtime rendered it; the packed manifest names
       # no private package. Then npx with the packed CLI checks and previews an HTML email in a folder with no
-      # node_modules, and installs no React (tests/cli-integration/verify.mjs). The CLI's email-clients is the packed one.
+      # node_modules, and installs no React (tests/cli-integration/verify.mjs). The CLI's email-clients is its
+      # dependency, from npm.
       - name: CLI consumer app (npx and bunx --bun)
         run: |
           (cd packages/react && pnpm pack --pack-destination /tmp/cli-integration)
-          (cd packages/email-clients && pnpm pack --pack-destination /tmp/cli-integration)
           (cd packages/cli && pnpm pack --pack-destination /tmp/cli-integration)
           CLI_TARBALL=$(ls /tmp/cli-integration/hyper-elements-cli-*.tgz) \
           REACT_TARBALL=$(ls /tmp/cli-integration/hyper-elements-react-*.tgz) \
-          EMAIL_CLIENTS_TARBALL=$(ls /tmp/cli-integration/hyper-elements-email-clients-*.tgz) \
             node tests/cli-integration/verify.mjs
 
       - name: Run test coverage
@@ -280,9 +279,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # The CLI and what its tests render with: Elements (and core), email-clients.
+      # The CLI and what its tests render with: Elements (and core), and this repository's email-clients (the CLI's own
+      # comes from npm, so it isn't among the CLI's workspace dependencies).
       - name: Build the CLI and Elements
-        run: pnpm --filter "@hyper-elements/cli..." build
+        run: pnpm --filter "@hyper-elements/cli..." --filter @hyper-elements/email-clients build
 
       - name: CLI tests (Node)
         run: pnpm --filter @hyper-elements/cli exec vitest run --project node

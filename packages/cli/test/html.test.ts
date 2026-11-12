@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { DEFAULT_EMAIL_CLIENTS } from "@hyper-elements/email-clients";
 import { describe, expect, it } from "vitest";
-import { cli, email, exists, FIXTURES, lines, ON_BUN, project, REPO, write } from "./helpers";
+import { CLI_ROOT, cli, email, exists, FIXTURES, lines, ON_BUN, project, REPO, write } from "./helpers";
 
 /** An email with what most email clients don't show: positioned, a flex box, a <style>. */
 const HTML = `<!DOCTYPE html>
@@ -31,6 +31,8 @@ const clientsOf = (line: any) => new Set<string>(line.diagnostics.flatMap((d: an
 
 const EMAIL_CLIENTS = join(REPO, "packages", "email-clients");
 const MODELS = realpathSync(join(EMAIL_CLIENTS, "node_modules", "@hyper-elements", "email-client-models"));
+/** The CLI's own email-clients: its dependency (^0.4.3, from npm), through its node_modules. */
+const OWN_COPY = realpathSync(join(CLI_ROOT, "node_modules", "@hyper-elements", "email-clients"));
 
 /**
  * This repository's email-clients copied into a project (a folder, not a link, so it resolves the models package
@@ -99,8 +101,8 @@ describe("check on HTML", () => {
     expect(position).toMatchObject({ code: "email/html-css", path: "html", line: 3, excerpt: "<head><style>.card { display: flex; position: absolute; }</style></head>" });
     expect(line.diagnostics.find((d: any) => d.code === "cli/email-clients-copy")).toMatchObject({ severity: "info", message: expect.stringContaining("isn't installed where this file is") });
     expect(summary).toEqual({ version: 1, summary: { templates: 1, errors: 0, warnings: 0, skipped: 0, late: [] }, exitCode: 0 });
-    // The CLI's own copy (this repository's, through the CLI's node_modules).
-    expect(copiesUsed(ran.stderr)["mail/welcome.html"]).toBe(realpathSync(EMAIL_CLIENTS));
+    // The CLI's own copy: its dependency, from npm.
+    expect(copiesUsed(ran.stderr)["mail/welcome.html"]).toBe(OWN_COPY);
     expect(readdirSync(dir).sort()).toEqual(before);
     expect(readdirSync(join(dir, "mail"))).toEqual(["welcome.html"]);
   });
@@ -223,7 +225,7 @@ describe("which email-clients an HTML file uses", () => {
       oldEmailClients(dir, "0.4.2");
       const ran = await cli(dir, [command, "mail/welcome.html", "--json", "--clients", "gmail"], { env: PROBE });
       expect(ran.code, ran.stderr).toBe(0);
-      expect(copiesUsed(ran.stderr)["mail/welcome.html"]).toBe(realpathSync(EMAIL_CLIENTS));
+      expect(copiesUsed(ran.stderr)["mail/welcome.html"]).toBe(OWN_COPY);
       const [line] = lines(ran);
       expect(line.status).toBe("ok");
       expect(line.diagnostics.find((d: any) => d.code === "cli/email-clients-copy")).toMatchObject({

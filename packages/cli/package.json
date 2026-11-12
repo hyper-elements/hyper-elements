@@ -38,7 +38,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
-    "@hyper-elements/email-clients": "workspace:^0.4.3",
+    "@hyper-elements/email-clients": "^0.4.3",
     "playwright-core": "1.60.0",
     "tsx": "^4.20.5",
     "typescript": "^5.6.3"

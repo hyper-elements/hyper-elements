@@ -5,24 +5,20 @@
  * (process.versions.bun is set only under Bun); plain bunx follows the bin's Node shebang, so it runs Node.
  *
  * Then any HTML email with nothing installed: `npx --package <the packed CLI> hyper-elements check` in a folder with no
- * node_modules, which installs the CLI and email-clients into npx's own cache, and no React or Elements.
+ * node_modules, which installs the CLI and its email-clients (from npm) into npx's own cache, and no React or Elements.
  *
- *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz \
- *   EMAIL_CLIENTS_TARBALL=/tmp/hyper-elements-email-clients-0.4.3.tgz node verify.mjs
- *
- * EMAIL_CLIENTS_TARBALL is optional: without it, the CLI's email-clients comes from npm.
+ *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz node verify.mjs
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 const cliTarball = resolve(process.env.CLI_TARBALL ?? "");
 const reactTarball = resolve(process.env.REACT_TARBALL ?? "");
-const emailClientsTarball = process.env.EMAIL_CLIENTS_TARBALL ? resolve(process.env.EMAIL_CLIENTS_TARBALL) : null;
 if (!process.env.CLI_TARBALL || !process.env.REACT_TARBALL) {
   console.error("Set CLI_TARBALL and REACT_TARBALL to the packed packages (pnpm pack).");
   process.exit(2);
@@ -41,12 +37,6 @@ try {
   pkg.dependencies["@hyper-elements/react"] = `file:${reactTarball}`;
   pkg.devDependencies = { "@hyper-elements/cli": `file:${cliTarball}` };
   writeFileSync(join(web, "package.json"), JSON.stringify(pkg, null, 2));
-  if (emailClientsTarball) {
-    // The CLI's email-clients (a dependency, ^0.4.3) from this repository rather than npm.
-    const workspace = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-    workspace.pnpm = { overrides: { "@hyper-elements/email-clients": `file:${emailClientsTarball}` } };
-    writeFileSync(join(root, "package.json"), JSON.stringify(workspace, null, 2));
-  }
   execFileSync("pnpm", ["install", "--no-frozen-lockfile"], { cwd: root, stdio: "inherit" });
 
   /** Runs a command in the app, returning its exit code and output. */
@@ -102,9 +92,8 @@ try {
   const cache = join(bare, "npm-cache");
   const env = { ...process.env, npm_config_cache: cache, npm_config_update_notifier: "false" };
   delete env.NODE_PATH;
-  const packages = [...(emailClientsTarball ? [`--package=${emailClientsTarball}`] : []), `--package=${cliTarball}`];
   const npx = (args, input) => {
-    const ran = spawnSync("npx", ["--yes", ...packages, "hyper-elements", ...args], { cwd: folder, encoding: "utf8", env, input });
+    const ran = spawnSync("npx", ["--yes", `--package=${cliTarball}`, "hyper-elements", ...args], { cwd: folder, encoding: "utf8", env, input });
     if (ran.error) throw ran.error;
     return { code: ran.status, stdout: ran.stdout, stderr: ran.stderr };
   };
