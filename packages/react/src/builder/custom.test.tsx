@@ -342,6 +342,25 @@ describe("registerTools", () => {
     expect(half).toContain('width="300"');
   });
 
+  it("starts a block's phone styles where the email's do, whatever its column's width", async () => {
+    const { builder, tools } = fakeBuilder();
+    const Note = component({ type: "acme.Note", label: "Note", props: {}, render: () => <Column><Text style={{ fontSize: 20, mobile: { fontSize: 14 } }}>Note</Text><Text hidden={{ desktop: true }}>On a phone</Text></Column> });
+    registerTools(builder, [Note]);
+    const { Viewer, exporters } = tools[0].renderer;
+    const queries = (html: string) => [...new Set(html.match(/@media \([^)]*\)/g))];
+    // The template's own, for its phone styles and for what it hides: an email is on a phone below its width and a margin.
+    const template = queries((await render(<Email width={600}><Note /></Email>)).html);
+    expect(template).toEqual(["@media (max-width: 620px)"]);
+    const half = Viewer.render({}, { contentWidth: "600px" }, { columnIndex: 1, rowCells: [1, 1] });
+    expect(queries(Viewer.render({}, { contentWidth: "600px" }, { columnIndex: 0, rowCells: [1] }))).toEqual(template);
+    expect(queries(half)).toEqual(template);
+    expect(queries(exporters.email({}, 0, 0, [1, 2], { contentWidth: "600px" }))).toEqual(template);
+    // Its width is still its column's.
+    expect(half).toContain("max-width:280px");
+    // Another email's are its own.
+    expect(queries(Viewer.render({}, { contentWidth: "700px" }, { columnIndex: 0, rowCells: [1, 1] }))).toEqual(["@media (max-width: 720px)"]);
+  });
+
   it("draws a block dragged in with a prop its component needs at its default", () => {
     const { builder, tools } = fakeBuilder();
     registerTools(builder, [Banner]);

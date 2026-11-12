@@ -183,21 +183,28 @@ const BUILT_IN = new Set(["text", "rich_text", "html", "color_picker", "alignmen
 const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
 /** A block's width where the builder draws it: its column's share of the content width, less its own spacing. */
-function widthOf(values: Values, body: Values | undefined, cells: number[] | undefined, index: number | undefined): number {
-  const content = px(obj(body).contentWidth) ?? 600;
+function widthOf(values: Values, content: number, cells: number[] | undefined, index: number | undefined): number {
   const total = (cells ?? []).reduce((sum, cell) => sum + cell, 0);
   const share = total && cells && index !== undefined && cells[index] ? cells[index] / total : 1;
   const padding = sides(values.containerPadding ?? "10px");
   return Math.max(200, Math.round(content * share) - (padding ? padding.left + padding.right : 0));
 }
 
-/** A component drawn on its own from its tool's values, as an Email's markup or a Page's, with its stylesheet. */
-function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinition<any>[], root: "Email" | "Page", values: Values, width: number): string {
+/**
+ * A component drawn on its own from its tool's values, as an Email's markup or a Page's, with its stylesheet: at its
+ * block's width, which is its column's share (`cells`, `index`) of the builder's content width (`body`).
+ */
+function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinition<any>[], root: "Email" | "Page", values: Values, body: Values | undefined, cells: number[] | undefined, index: number | undefined): string {
+  const content = px(obj(body).contentWidth) ?? 600;
+  const width = widthOf(values, content, cells, index);
   const node: Node = make(definition.type, { props: toolProps(definition, values) });
-  const { head, body } = renderTemplate({ root: { type: root, props: { width }, children: [node] } }, { components: tools });
-  const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
+  const written = renderTemplate({ root: { type: root, props: { width }, children: [node] } }, { components: tools });
+  const style = /<style>[\s\S]*?<\/style>/.exec(written.head)?.[0] ?? "";
+  // An Email is on a phone below its own width, which here is its block's: its styles for phones start where the
+  // whole email's do, which is also where the builder stacks its columns.
+  const queries = root === "Email" ? style.replace(/(@media \(m(?:ax|in)-width: )(\d+)(?=px\))/g, (_, query: string, at: string) => `${query}${Number(at) - width + content}`) : style;
   // A page's <main> is centered by its margins, which shrink it to its words in a flex box: it fills its block.
-  return style + body.replace(/^<main style="/, '<main style="width:100%;');
+  return queries + written.body.replace(/^<main style="/, '<main style="width:100%;');
 }
 
 /**
@@ -243,7 +250,7 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
       const cells = (Array.isArray(rest[2]) ? rest[2] : meta.rowCells) as number[] | undefined;
       const index = (typeof rest[1] === "number" ? rest[1] : meta.columnIndex) as number | undefined;
       try {
-        return draw(definition, all, root, values, widthOf(values, obj(rest[3] ?? meta.bodyValues), cells, index));
+        return draw(definition, all, root, values, obj(rest[3] ?? meta.bodyValues), cells, index);
       } catch {
         return "";
       }
@@ -261,7 +268,7 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
         Viewer: builder.createViewer({
           render(values, body, place) {
             try {
-              return draw(definition, all, canvas, values, widthOf(values, body, place?.rowCells, place?.columnIndex));
+              return draw(definition, all, canvas, values, body, place?.rowCells, place?.columnIndex);
             } catch (error) {
               const problems = error instanceof ElementsError ? error.diagnostics.map((d) => d.message) : [String((error as Error)?.message ?? error)];
               return `<div style="padding:12px;border:1px dashed #b91c1c;color:#b91c1c;font:13px/1.4 sans-serif">${escape(`${definition.label}: ${problems[0]}`)}</div>`;
