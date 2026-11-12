@@ -4,10 +4,17 @@
  * own group, a daemon) is out of reach of both.
  */
 import { execFile, spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
+
+/**
+ * Where the processes started to end others run (taskkill, PowerShell): not the project's folder, which they'd hold
+ * open while they run (Windows won't remove a folder a process is in).
+ */
+export const NEUTRAL = tmpdir();
 
 export function killTree(pid: number): void {
   if (process.platform === "win32") {
-    spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
+    spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true, cwd: NEUTRAL });
     return;
   }
   try {
@@ -28,7 +35,7 @@ export function endOrphans(pid: number, startedAt: number, endedAt: number): Pro
     "Get-CimInstance Win32_Process | ForEach-Object { if ($_.CreationDate) { " +
     '"$($_.ProcessId) $($_.ParentProcessId) $(([DateTimeOffset]$_.CreationDate).ToUnixTimeMilliseconds())" } }';
   return new Promise((resolve) => {
-    execFile("powershell", ["-NoProfile", "-NonInteractive", "-Command", script], { windowsHide: true, timeout: 20_000, maxBuffer: 16 * 1024 * 1024 }, (error, stdout) => {
+    execFile("powershell", ["-NoProfile", "-NonInteractive", "-Command", script], { windowsHide: true, timeout: 20_000, maxBuffer: 16 * 1024 * 1024, cwd: NEUTRAL }, (error, stdout) => {
       if (!error) {
         for (const orphan of orphansOf(stdout, pid, startedAt, endedAt)) {
           try {

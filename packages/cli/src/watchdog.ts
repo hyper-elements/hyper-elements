@@ -4,6 +4,7 @@
  * and if so ends the child and every process in its group (on Windows, its tree).
  */
 import { spawnSync } from "node:child_process";
+import { tmpdir } from "node:os";
 import { workerData } from "node:worker_threads";
 import { parentGone } from "./parent";
 
@@ -12,7 +13,8 @@ const started = Date.now();
 
 function end(): void {
   if (process.platform === "win32") {
-    spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
+    // (From the temporary folder: not the project's, which it would hold open while it runs.)
+    spawnSync("taskkill", ["/pid", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true, cwd: tmpdir() });
   } else {
     try {
       process.kill(-pid, "SIGKILL");

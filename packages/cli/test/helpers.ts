@@ -33,7 +33,7 @@ const made: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
   // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
-  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 10 : 0, retryDelay: 100 });
+  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
 });
 
 /** Links `node_modules/<name>` in `folder` to `target` (a folder). */
