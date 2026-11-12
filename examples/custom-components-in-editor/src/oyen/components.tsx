@@ -43,7 +43,7 @@ export const Announcement = component({
     button: prop.text({ label: "Button", default: "Pre-order" }),
     href: prop.link({ label: "Button link", default: SITE }),
     // A number either way: the editor a team registers under this name shows it as money.
-    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency" }),
+    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency", editorOptions: { step: 1 } }),
     currency,
     ships: prop.text({ label: "Ships", default: "Ships 2 December" }),
   },
@@ -139,7 +139,7 @@ export const PriceBand = component({
   label: "Price band",
   props: {
     eyebrow: prop.text({ label: "Eyebrow", default: "First run" }),
-    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency" }),
+    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency", editorOptions: { step: 1 } }),
     currency,
     note: prop.text({ label: "Note", default: "" }),
     button: prop.text({ label: "Button", default: "Pre-order" }),

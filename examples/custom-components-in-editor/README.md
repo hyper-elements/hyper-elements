@@ -66,17 +66,19 @@ A prop says what its value is; the editor picks its control from that. A testimo
 rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5, editor: "counter" }),
 ```
 
-A price asks for an editor of the example's own, which `src/currency.ts` registers with `unlayer.registerPropertyEditor` and `registerTools()` is told about:
+A price asks for an editor of the example's own. `src/currency.ts` writes it as the editor takes one (its markup, and what it does once that's in the page), and `registerTools()` registers it:
 
 ```tsx
-price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency" }),
+price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { step: 1 } }),
 ```
 
 ```ts
-registerTools(unlayer, components, { editors: ["currency"] });
+import { currency } from "../currency";
+
+registerTools(unlayer, components, { editors: { currency } });
 ```
 
-The price is still a number, checked as one. Without that registration, it would be edited with a number's own control.
+The editor is given the price as the number it is, with the prop's label and what its `editorOptions` say, and gives a number back. The price is still checked as a number. Without the editor, it would be edited with a number's own field.
 
 ## A field that fills several props
 

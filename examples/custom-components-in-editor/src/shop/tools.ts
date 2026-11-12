@@ -10,8 +10,14 @@
  * - `transformer`: the editor's hook that runs when a field changes, and returns the block's values.
  */
 import { registerTools } from "@hyper-elements/react/builder";
-import { registerCurrencyEditor, type Editors } from "../currency";
+import { currency } from "../currency";
 import { components } from "./components";
+
+/** The part of the editor's `unlayer` object the picker below is registered with. */
+interface Editors {
+  registerPropertyEditor(editor: { name: string; layout?: string; Widget: unknown }): void;
+  createWidget(widget: { render(value: unknown, updateValue: (value: unknown) => void, data?: unknown): string; mount(node: HTMLElement, value: unknown, updateValue: (value: unknown) => void, data?: unknown): void }): unknown;
+}
 
 declare const unlayer: Parameters<typeof registerTools>[0] & Editors;
 
@@ -53,10 +59,8 @@ unlayer.registerPropertyEditor({
   }),
 });
 
-registerCurrencyEditor(unlayer);
-
 registerTools(unlayer, components, {
-  editors: ["currency"],
+  editors: { currency },
   icons: {
     "shop.ProductCard": "fa-bag-shopping",
     "shop.Testimonial": "fa-quote-left",
@@ -68,7 +72,7 @@ registerTools(unlayer, components, {
     "shop.ProductCard": {
       properties: { product: { label: "From the store", widget: "store_picker" } },
       // The editor's hook, with the block's values as the editor stores them: an image is `{ url, width, height }`,
-      // a link `{ name, values }`.
+      // a link `{ name, values }`, a number that isn't whole text.
       transformer: (values: Record<string, unknown>, source: { name: string; value: unknown }) => {
         const product = source.name === "product" ? store.find((item) => item.id === (source.value as { id?: string } | undefined)?.id) : undefined;
         if (!product) return values;
@@ -76,7 +80,7 @@ registerTools(unlayer, components, {
           ...values,
           name: product.name,
           description: product.description,
-          price: product.price,
+          price: String(product.price),
           currency: "EUR",
           photo: product.photo,
           href: { name: "web", values: { href: `${SITE}/${product.id}`, target: "_blank" } },

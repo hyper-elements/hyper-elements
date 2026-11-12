@@ -36,7 +36,7 @@ export const ProductCard = component({
     name: prop.text({ label: "Name", default: "Product name" }),
     description: prop.text({ label: "Description", default: "" }),
     // A number either way: the editor a team registers under this name shows it as money.
-    price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency" }),
+    price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { step: 1 } }),
     currency: prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" }),
     badge: prop.choice(["none", "new", "sale", "low stock"], { label: "Badge", default: "none" }),
     button: prop.text({ label: "Button", default: "Add to cart" }),
