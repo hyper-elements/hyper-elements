@@ -50,7 +50,7 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     for (const entry of [esm, cjs]) {
       const { previews, diagnostics } = await entry.renderInEmailClients(html, { emailClients: ["gmail"], computers: ["windows"] });
       expect(previews.map((p: { filename: string }) => p.filename)).toEqual(["gmail.html"]);
-      expect(diagnostics).toEqual([]);
+      expect(diagnostics.filter((d: { code: string }) => d.code !== "email/captured-checks")).toEqual([]);
       const inline = await entry.renderInEmailClients(html, { emailClients: ["outlook-com"], computers: ["windows"], fonts: "inline" });
       expect(inline.previews[0].html).toContain("data:font/woff2;base64,");
     }

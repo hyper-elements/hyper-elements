@@ -6,7 +6,7 @@
  * Each scan reads the markup in one pass: an Html block's markup is the author's, and can be long.
  */
 import { caniemail, type ClientDiagnostic, type EmailClient } from "./email-clients";
-import { NO_WEB_FONTS } from "./limits";
+import { GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, imageFormatOf, NO_MEDIA_QUERIES, NO_WEB_FONTS, STYLE_REMOVED } from "./limits";
 
 /** The clients that remove a <style> in the email's body, with all it holds (caniemail's html-style). */
 export const BODY_STYLE_REMOVED: readonly EmailClient[] = ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"];
@@ -185,6 +185,18 @@ export const HTML_STYLE: readonly HtmlCheck[] = [
  * the end from each `<!--[if` when nothing closes them).
  */
 export function withoutOutlookOnly(markup: string): string {
+  return outlookOnly(markup, false);
+}
+
+/**
+ * `markup` with what only classic Outlook reads blanked: each of its characters but newlines replaced by a space, so
+ * what's left is where it was, on the same line.
+ */
+export function blankOutlookOnly(markup: string): string {
+  return outlookOnly(markup, true);
+}
+
+function outlookOnly(markup: string, blank: boolean): string {
   const lower = markup.toLowerCase();
   const condition = /\s+(?:(?:gte?|lte?)\s+)?mso/y;
   let out = "";
@@ -203,6 +215,7 @@ export function withoutOutlookOnly(markup: string): string {
     if (end < close + 2) end = lower.indexOf("<![endif]-->", close + 2);
     if (end === -1) break;
     out += markup.slice(kept, at);
+    if (blank) out += markup.slice(at, end + 12).replace(/[^\n]/g, " ");
     kept = at = end + 12;
   }
   return out + markup.slice(kept);
@@ -246,3 +259,149 @@ export function htmlNotes(html: string, path: string, nodeId: string | undefined
   }
   return out;
 }
+
+/** Something found in a whole email's HTML (the HTML entry): its line and an excerpt, and the clients it's about. */
+export interface EmailHtmlDiagnostic {
+  code: string;
+  severity: "info" | "warning";
+  message: string;
+  /** The clients it's about. A diagnostic about the checks themselves (they couldn't all run) has none. */
+  clients?: EmailClient[];
+  fix?: string;
+  see?: string;
+  path: "html";
+  /** The line in the given HTML (from 1), or null for one about the email as a whole or the checks. */
+  line: number | null;
+  /** Up to 80 characters of that line. */
+  excerpt?: string;
+}
+
+/** Each <style> element in `markup`: where its tag starts, its text, and whether it's in the <head> (before <body>). */
+function styleElements(markup: string): Array<{ start: number; text: string; inHead: boolean }> {
+  const lower = markup.toLowerCase();
+  const body = lower.search(/<body[\s>/]/);
+  const out: Array<{ start: number; text: string; inHead: boolean }> = [];
+  for (let at = lower.indexOf("<style"); at !== -1; at = lower.indexOf("<style", at)) {
+    if (/\w/.test(lower[at + 6] ?? "")) {
+      at += 6;
+      continue;
+    }
+    const gt = lower.indexOf(">", at + 6);
+    if (gt === -1) break;
+    const end = lower.indexOf("</style>", gt + 1);
+    if (end === -1) break;
+    out.push({ start: at, text: markup.slice(gt + 1, end), inHead: body === -1 || at < body });
+    at = end + 8;
+  }
+  return out;
+}
+
+/** The checks of the shared lists a whole email doesn't run: the notes below say more for a document. */
+const NOT_ON_A_DOCUMENT = new Set<HtmlCheck>([
+  // A <style> in the body: on a document, where a <style> is decides who removes it (the notes on <style> below).
+  HTML_CSS.find((check) => check.feature === "html-style")!,
+  // @font-face: the web fonts note below covers it, and stylesheet <link>s.
+  HTML_STYLE.find((check) => check.feature === "css-at-font-face")!,
+]);
+
+const utf8Bytes = (text: string) => new TextEncoder().encode(text).length;
+
+/**
+ * What a whole email's HTML has that email clients remove or change, each at its first line (the HTML entry's checks,
+ * from caniemail's tables and Gmail's limits). Classic Outlook's conditional comments are blanked first, keeping lines.
+ */
+export function documentNotes(html: string): EmailHtmlDiagnostic[] {
+  const markup = blankOutlookOnly(html);
+  const lines = html.split("\n");
+  // Where each line starts, for the line an offset is on.
+  const starts = [0];
+  for (let i = 0; i < html.length; i++) if (html[i] === "\n") starts.push(i + 1);
+  const lineOf = (offset: number) => {
+    let lo = 0;
+    let hi = starts.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (starts[mid]! <= offset) lo = mid;
+      else hi = mid - 1;
+    }
+    return lo + 1;
+  };
+  const excerpt = (line: number) => lines[line - 1]!.trim().slice(0, 80);
+  // The first line by which `test` holds of the markup so far: a "contains" check only starts holding as lines are added.
+  const firstLine = (test: (text: string) => boolean): number => {
+    let lo = 1;
+    let hi = lines.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (test(markup.slice(0, starts[mid] ?? markup.length))) hi = mid;
+      else lo = mid + 1;
+    }
+    return lo;
+  };
+  const out: EmailHtmlDiagnostic[] = [];
+  const at = (line: number | null) => (line === null ? { path: "html" as const, line } : { path: "html" as const, line, excerpt: excerpt(line) });
+  const note = (removes: string, clients: readonly EmailClient[], fix: string, feature: string | undefined, line: number) =>
+    out.push({ code: "email/html-css", severity: "info", message: `This email may have ${removes}`, clients: [...clients], fix, ...(feature ? { see: caniemail(feature) } : {}), ...at(line) });
+
+  for (const check of HTML_CSS) {
+    if (NOT_ON_A_DOCUMENT.has(check) || !check.test(markup, [])) continue;
+    note(check.removes, check.clients, check.fix, check.feature, firstLine((text) => check.test(text, [])));
+  }
+  const styles = styleElements(markup);
+  for (const check of HTML_STYLE) {
+    if (NOT_ON_A_DOCUMENT.has(check)) continue;
+    const style = styles.find(({ text }) => check.test(text, selectorsOf(text)));
+    if (style) note(check.removes, check.clients, check.fix, check.feature, lineOf(style.start));
+  }
+  const first = styles[0];
+  if (first) {
+    note("a <style>: the client removes every <style>, and the email shows with its inline styles only", STYLE_REMOVED, "write what matters inline, on the elements it's for", "html-style", lineOf(first.start));
+  }
+  const inBody = styles.find((style) => !style.inHead);
+  if (inBody) {
+    note("a <style> in its <body>: the client removes it, and what it styles shows without it", BODY_STYLE_REMOVED, "move it into the <head>, or write the styles inline", "html-style", lineOf(inBody.start));
+  }
+  const media = styles.find((style) => style.inHead && /@media\b/i.test(style.text));
+  if (media) {
+    note("an @media in a <style>: the client applies no media query, and phones get the desktop layout", NO_MEDIA_QUERIES, "make the desktop layout read on a phone too: a fluid width, columns that wrap", "css-at-media", lineOf(media.start));
+  }
+  // A web font: an @font-face in a <style>, or a stylesheet <link> (as web fonts are loaded), whichever comes first.
+  const fontFace = styles.find((style) => hasAtRule(style.text, "font-face"))?.start;
+  const link = markup.search(/<link\b[^>]*\brel\s*=\s*["']?stylesheet/i);
+  const webFont = [fontFace ?? -1, link].filter((offset) => offset >= 0).sort((a, b) => a - b)[0];
+  if (webFont !== undefined) {
+    note("a web font (an @font-face, or a stylesheet <link>): the client loads none, and the next font in each stack shows", NO_WEB_FONTS, 'end each font stack with a font the client has: "Brand, Arial, sans-serif"', "css-at-font-face", lineOf(webFont));
+  }
+  // Gmail's limits, as Gmail applies them: each <style> in the head on its own, in UTF-16 code units (a JavaScript
+  // string's length); the whole email in UTF-8 bytes.
+  const tooBig = styles.find((style) => style.inHead && style.text.length > GMAIL_STYLE_BYTES);
+  if (tooBig) {
+    out.push({
+      code: "email/style-size",
+      severity: "warning",
+      message: `A <style> in this email is ${Math.round(tooBig.text.length / 1024)} KB; Gmail removes a <style> over ${GMAIL_STYLE_BYTES / 1024} KB, with all it holds`,
+      clients: GMAILS.filter((client) => !STYLE_REMOVED.includes(client)),
+      fix: "split it into <style>s of 16 KB or less, or write less CSS",
+      ...at(lineOf(tooBig.start)),
+    });
+  }
+  const bytes = utf8Bytes(html);
+  if (bytes > GMAIL_CLIP_BYTES) {
+    out.push({
+      code: "email/size",
+      severity: "warning",
+      message: `The email is ${Math.round(bytes / 1024)} KB; Gmail clips a message after ${GMAIL_CLIP_BYTES / 1024} KB ("[Message clipped]")`,
+      clients: [...GMAILS],
+      fix: "shorten the email, or move long sections to a page: what follows the clip is behind a link",
+      ...at(null),
+    });
+  }
+  // Each image in a format some clients don't show.
+  for (const image of markup.matchAll(/<img\b[^>]*?\ssrc\s*=\s*(["'])([\s\S]*?)\1/gi)) {
+    const known = imageFormatOf(image[2]!);
+    if (!known) continue;
+    out.push({ code: "email/image-format", severity: "warning", message: `This image is ${known.name} file, which these email clients don't show`, clients: [...known.clients], fix: "use a PNG, JPEG or GIF file", see: caniemail(known.feature), ...at(lineOf(image.index!)) });
+  }
+  return out.sort((a, b) => (a.line ?? Infinity) - (b.line ?? Infinity));
+}
+

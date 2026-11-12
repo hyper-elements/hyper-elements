@@ -9,6 +9,11 @@ Each release records the models package it was tested with.
   and writes the same preview files. It needs neither React nor `@hyper-elements/react`, in code or in types.
 - Previews of HTML not built with Hyper Elements are `approximate` where the models are under 95% on such emails or
   aren't measured on them (`APPROXIMATE_FOR_HTML`), and their header says the email wasn't built with Hyper Elements.
+- **New: `checkInEmailClients(html, { clients })`** from `/html` checks a whole email without drawing it, and
+  `renderInEmailClients(html)` returns the same checks for the clients it previews. Each finding has its line in the HTML
+  and an excerpt. A `<style>` is noted by where it is (every `<style>` for the clients that remove them all, one in the
+  `<body>` for Gmail), an `@media` for the clients that apply none, and Gmail's 16 KB limit for each head `<style>` on its
+  own. With models 1.8.0 or later, the checks only captures found run on HTML too.
 - `@hyper-elements/react`, `react` and `react-dom` are optional peers: npm doesn't install them with this package. The
   main entry still needs them, as before.
 - The preview runtime is rebuilt: the same code, with its minified names renamed (its sha256 changes).

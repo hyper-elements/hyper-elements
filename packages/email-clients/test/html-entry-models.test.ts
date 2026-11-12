@@ -2,6 +2,8 @@
  * @hyper-elements/email-clients/html without a usable models package: previews need its script and font data, so the
  * call rejects (and tries the import again next time); a protocol it doesn't read is a mismatched install.
  */
+export {};
+
 afterEach(() => {
   vi.doUnmock("@hyper-elements/email-client-models");
   vi.resetModules();

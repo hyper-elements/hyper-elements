@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { EMAIL_CLIENTS, type EmailClient } from "../src/email-clients";
 import { HTML_CSS } from "../src/html";
-import { HOVER_LIMIT, IMAGE_FORMATS, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, type Limit } from "../src/limits";
+import { HOVER_LIMIT, IMAGE_FORMATS, NO_MEDIA_QUERIES, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, STYLE_REMOVED, type Limit } from "../src/limits";
 
 interface Feature {
   title: string;
@@ -114,6 +114,24 @@ function affected(slug: string, use = ""): EmailClient[] {
       if (notes.every((note) => /not supported with non google/i.test(note))) return client === "gmail-app-other";
       if (notes.every((note) => /only (supported|works) with non google/i.test(note))) return client !== "gmail-app-other";
       return true;
+    })
+  );
+}
+
+/**
+ * The clients that don't support a feature at all, for the HTML entry's checks on a whole email: caniemail's latest test
+ * is a no on any of their platforms, or (`account`) a partial on the Gmail apps whose notes say it isn't supported with
+ * another account than Google's, which is the Gmail apps with another account. A partial for any other reason (where in
+ * the email, a bug) doesn't count: unlike affected(), which counts every partial.
+ */
+function unsupported(slug: string, { account = false } = {}): EmailClient[] {
+  const feature = data.features[slug];
+  if (!feature) throw new Error(`test/fixtures/caniemail.json has no "${slug}": run node scripts/caniemail.mjs`);
+  return (Object.keys(PLATFORMS) as EmailClient[]).filter((client) =>
+    latest(feature, client).some(({ family, level, refs }) => {
+      if (level === "n") return true;
+      if (!account || level !== "a" || family !== "gmail" || client !== "gmail-app-other") return false;
+      return refs.some((ref) => /not supported with non google/i.test(feature.notes[ref] ?? ""));
     })
   );
 }
@@ -253,6 +271,17 @@ describe("email clients from caniemail's tables", () => {
     expect(sorted(NO_PHONE_STYLES)).toEqual(expected("css-at-media", "html-style@head"));
     for (const [format, { clients, feature }] of Object.entries(IMAGE_FORMATS)) expect([format, sorted(clients)]).toEqual([format, expected(feature)]);
     for (const { removes, clients, feature, use } of HTML_CSS) if (feature) expect([removes, sorted(clients)]).toEqual([removes, expected(use ? `${feature}@${use}` : feature)]);
+  });
+
+  it("names, for a whole email, the clients that don't support a <style> or a media query at all, and only those", () => {
+    // Every <style> removed: a no, or the Gmail apps with another account. Gmail and its apps with a Google account only
+    // remove one in the <body>, which BODY_STYLE_REMOVED says.
+    expect(sorted(STYLE_REMOVED)).toEqual(sorted(unsupported("html-style", { account: true })));
+    expect(STYLE_REMOVED).not.toContain("gmail");
+    expect(STYLE_REMOVED).not.toContain("gmail-app");
+    // No media query at all: the noes only, without affected()'s partials (a form, such as height, some don't read).
+    expect(sorted(NO_MEDIA_QUERIES)).toEqual(sorted(unsupported("css-at-media")));
+    expect(sorted(NO_MEDIA_QUERIES).length).toBeLessThan(affected("css-at-media").length);
   });
 
   it("leaves a client out only where caniemail lists it, with a reason", () => {

@@ -28,8 +28,8 @@ describe("renderInEmailClients(html) from /html", () => {
       { id: "apple-mail", approximate: false },
     ]);
     expect(skipped).toEqual([]);
-    // The checks on HTML come later: none yet.
-    expect(diagnostics).toEqual([]);
+    // Nothing in this email for the clients previewed; at most a note that the captured checks for HTML need models 1.8.
+    expect(diagnostics.filter((d) => d.code !== "email/captured-checks")).toEqual([]);
     // Each file's config agrees with its preview.
     for (const preview of previews) expect(embedded(preview.html, "email-client-config")).toMatchObject({ id: preview.id, approximate: preview.approximate });
   });

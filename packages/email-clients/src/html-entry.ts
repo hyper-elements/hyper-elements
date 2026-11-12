@@ -12,13 +12,16 @@
  * say they're approximate.
  */
 import { checkComputers, checkWidths, DEFAULT_PREVIEW_CLIENTS, variantsOf, type Computer, type EmailClientPreview, type PreviewClient, type Skipped } from "./clients";
-import { APPROXIMATE_FOR_HTML, checkClients, EMAIL_CLIENTS, type EmailClient } from "./email-clients";
+import { APPROXIMATE_FOR_HTML, checkClients, DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, forClients, type EmailClient } from "./email-clients";
+import { documentNotes, type EmailHtmlDiagnostic } from "./html";
+import { asError, loadModels } from "./load-models";
 import { forgetModelsPackage, loadModelsPackage, type Models } from "./models";
 import { NO_BLOCKS, previewsOf } from "./previews";
 import { checkProtocol } from "./protocol";
 
 export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type EmailClientPreview, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
 export { APPROXIMATE_FOR_HTML, DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
+export type { EmailHtmlDiagnostic } from "./html";
 
 export interface EmailHtmlOptions {
   /** The email clients to preview (default: the four captured: classic Outlook, Outlook.com, Gmail and Apple Mail). */
@@ -36,20 +39,9 @@ export interface EmailHtmlOptions {
   computers?: readonly Computer[];
 }
 
-/** Something found in the HTML: where it is (its line and an excerpt), and the clients it's about. */
-export interface EmailHtmlDiagnostic {
-  code: string;
-  severity: "info" | "warning";
-  message: string;
-  /** The clients it's about. A diagnostic about the checks themselves (they couldn't all run) has none. */
-  clients?: string[];
-  fix?: string;
-  see?: string;
-  path: "html";
-  /** The line in the given HTML (from 1), or null for a diagnostic about the email as a whole or the checks. */
-  line: number | null;
-  /** Up to 80 characters of that line. */
-  excerpt?: string;
+export interface EmailHtmlCheckOptions {
+  /** The email clients to check for (default: DEFAULT_EMAIL_CLIENTS, the 11 most email is read in). */
+  clients?: readonly EmailClient[];
 }
 
 export interface EmailHtmlResult {
@@ -60,6 +52,9 @@ export interface EmailHtmlResult {
   /** What was found in the HTML for the clients previewed. (What a preview finds is in the file, once it's opened.) */
   diagnostics: EmailHtmlDiagnostic[];
 }
+
+/** The options checkInEmailClients(html) takes. */
+const CHECK_OPTIONS: readonly string[] = ["clients"];
 
 /** The options renderInEmailClients(html) takes. */
 const HTML_OPTIONS: readonly string[] = ["emailClients", "dark", "fonts", "widths", "computers"];
@@ -112,5 +107,47 @@ export async function renderInEmailClients(html: string, options: EmailHtmlOptio
   // HTML not built with Hyper Elements: approximate where the models are weak on it, or haven't been measured on it.
   const marked = variants.map((variant) => (APPROXIMATE_FOR_HTML.includes(variant.id) ? { ...variant, approximate: true } : variant));
   const previews = await previewsOf(html, NO_BLOCKS, marked, loaded, { fonts, source: "html" });
-  return { previews, skipped, diagnostics: [] };
+  // The checks for the clients previewed, as the main entry's render() gets them.
+  return { previews, skipped, diagnostics: await checksOf(html, clients) };
+}
+
+/** A diagnostic about the checks themselves: no clients, no line. */
+const aboutTheChecks = (severity: "info" | "warning", message: string, fix: string): EmailHtmlDiagnostic => ({ code: "email/captured-checks", severity, message, fix, path: "html", line: null });
+
+/** The line's excerpt in `html`, as documentNotes() gives it. */
+const excerptAt = (html: string, line: number | null) => (line === null ? {} : { excerpt: (html.split("\n")[line - 1] ?? "").trim().slice(0, 80) });
+
+/** The open checks on `html`, and the models' captured ones where they can run, for `clients`, by line. */
+async function checksOf(html: string, clients: readonly EmailClient[]): Promise<EmailHtmlDiagnostic[]> {
+  const found = documentNotes(html);
+  const { models, unavailable } = await loadModels();
+  if (unavailable) {
+    found.push(aboutTheChecks("warning", `The captured email client checks didn't load (${unavailable.message}): only the checks from caniemail's tables ran`, "install @hyper-elements/email-client-models where it can load (it comes with this package): Node 20 or later, or a browser with WebAssembly"));
+  } else if (typeof models.checkHtml !== "function") {
+    found.push(aboutTheChecks("info", "The installed @hyper-elements/email-client-models has no captured checks for HTML (1.8.0 and later have them): only the checks from caniemail's tables ran", "update it: npm update @hyper-elements/email-client-models"));
+  } else {
+    try {
+      for (const entry of models.checkHtml({ html })) {
+        found.push({ code: entry.code, severity: entry.severity, message: entry.message, clients: entry.clients as EmailClient[], fix: entry.fix, path: "html", line: entry.line, ...excerptAt(html, entry.line) });
+      }
+    } catch (error) {
+      found.push(aboutTheChecks("warning", `The captured email client checks failed on this email (${asError(error).message}): only the checks from caniemail's tables ran`, "report it, with the email, to Hyper Elements"));
+    }
+  }
+  return forClients(found, clients).sort((a, b) => (a.line ?? Infinity) - (b.line ?? Infinity));
+}
+
+/**
+ * What a whole HTML email has that email clients remove or change, without drawing it: each with its line and an
+ * excerpt, and the clients it's about (default: DEFAULT_EMAIL_CLIENTS). The checks only captures found run where the
+ * models package can (1.8.0 and later); otherwise a diagnostic about the checks says so. Rejects with a TypeError for
+ * something that isn't a whole email or an option it doesn't take, and with `email-clients/version-mismatch` where the
+ * models package installed speaks another protocol.
+ */
+export async function checkInEmailClients(html: string, options: EmailHtmlCheckOptions = {}): Promise<{ diagnostics: EmailHtmlDiagnostic[] }> {
+  checkWholeEmail(html, "checkInEmailClients(html)");
+  checkOptions(options, "checkInEmailClients(html, options)", CHECK_OPTIONS);
+  const { clients = DEFAULT_EMAIL_CLIENTS } = options;
+  checkClients(clients, "checkInEmailClients({ clients })");
+  return { diagnostics: await checksOf(html, clients) };
 }

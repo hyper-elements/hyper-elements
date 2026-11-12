@@ -147,7 +147,8 @@ const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gm
 for (const format of ['esm', 'cjs']) {
   const out = alone[format];
   if (out.error) fail(`${format}, /html installed alone: ${out.error}: ${out.message}`);
-  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || JSON.stringify(out.diagnostics) !== '[]') fail(`${format}, /html installed alone wrote ${JSON.stringify(out)}`);
+  // Nothing in this email; at most a note about the captured checks for HTML (models 1.8.0 and later have them).
+  if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || out.diagnostics.some((d) => d.code !== 'email/captured-checks')) fail(`${format}, /html installed alone wrote ${JSON.stringify(out)}`);
   if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, /html installed alone marked ${JSON.stringify(out.approximate)} approximate`);
 }
 writeFileSync(join(alone.dir, 'index.ts'), HTML_TS);
