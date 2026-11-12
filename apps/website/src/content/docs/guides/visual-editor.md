@@ -159,7 +159,7 @@ Three calls connect it:
 
 2. **Write the design with them**: `toDesign(element, { customTools: true })` writes each of your components as its tool's block, its props the block's values, where it would otherwise be an HTML block.
 
-3. **Read it back with them**: `fromDesign(design, { components: [Callout] })` reads each of those blocks back as `<acme.Callout … />`, its values checked by its props' kinds. A value a prop doesn't take is left out and reported.
+3. **Read it back with them**: `fromDesign(design, { components: [Callout] })` reads each of those blocks back as `<acme.Callout … />`, its values checked by its props' kinds. A value a prop doesn't take is left out and reported. So is a block with no value for a prop its component needs (one dragged in and not filled yet), as the builder leaves it out of what it exports.
 
 ### Which editor a prop gets
 

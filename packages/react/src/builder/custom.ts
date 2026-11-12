@@ -121,7 +121,16 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
     context.say(`${typeof slug === "string" ? `the custom tool ${JSON.stringify(slug)}` : "a custom tool"} of the builder's is none of the components given (fromDesign()'s components): left out`);
     return [];
   }
-  const node = make(definition.type, { id: givenId(values), props: toolProps(definition, values, context.say) });
+  const tool = `the custom tool ${JSON.stringify(slug)}`;
+  const props = toolProps(definition, values, context.say);
+  // A block dragged in and not filled yet (or filled with what its prop doesn't take), which the builder leaves out of
+  // what it exports too: with it, the template wouldn't render.
+  const missing = Object.keys(definition.props).filter((key) => definition.props[key].required && !Object.hasOwn(props, key));
+  if (missing.length) {
+    context.say(`${tool} has no ${missing.join(" or ")}, which a ${definition.type} needs: left out`);
+    return [];
+  }
+  const node = make(definition.type, { id: givenId(values), props });
   return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), hiddenOn(values))];
 }
 

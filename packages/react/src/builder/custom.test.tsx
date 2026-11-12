@@ -226,6 +226,21 @@ describe("fromDesign with components", () => {
     expect(code).toContain('name="Morning Mug"');
   });
 
+  it("leaves out a block with no value for a prop its component needs, and says so: the rest still renders", async () => {
+    const Photo = component({ type: "acme.Photo", label: "Photo", props: { photo: prop.image({ label: "Photo", required: true }) }, render: (p) => <Image src={p.photo} alt="" /> });
+    const Count = component({ type: "acme.Count", label: "Count", props: { n: prop.number({ label: "Count", required: true, min: 1 }) }, render: (p) => <Text>{p.n}</Text> });
+    const { design } = toDesign(<Email><Heading>Hello</Heading></Email>);
+    // As dragged in from the panel and not filled yet, with its counter emptied, and with a number its prop doesn't take.
+    design.body.rows[0].columns[0].contents.push({ type: "custom", slug: "acme_photo", values: {} }, { type: "custom", slug: "acme_count", values: { n: "" } }, { type: "custom", slug: "acme_count", values: { n: 0 } });
+    const back = fromDesign(design, { components: [Photo, Count] });
+    expect(back.report).toHaveLength(4);
+    expect(back.report).toContain('rows[0].columns[0].contents[1]: the custom tool "acme_photo" has no photo, which a acme.Photo needs: left out');
+    expect(back.report).toContain('rows[0].columns[0].contents[2]: the custom tool "acme_count" has no n, which a acme.Count needs: left out');
+    expect(back.report.filter((line) => line.startsWith("rows[0].columns[0].contents[3]: ")).join("\n")).toMatch(/its n 0 .*left out\n.*has no n, which a acme\.Count needs: left out/);
+    expect(back.code).not.toContain("acme.");
+    expect((await render(back.element)).html).toContain(">Hello</h");
+  });
+
   it("refuses two components that are one tool", () => {
     const One = component({ type: "x.Y1Zed", label: "One", props: {}, render: () => <Text>1</Text> });
     const Two = component({ type: "x-y1.Zed", label: "Two", props: {}, render: () => <Text>2</Text> });
