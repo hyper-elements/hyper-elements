@@ -97,8 +97,9 @@ export function toolProps(definition: CustomDefinition<any>, values: Values, say
     if (spec.kind.editor === "choice") given = choices(spec).find((choice) => String(choice) === String(given)) ?? given;
     if (given === undefined) continue;
     const parsed = spec.kind.parse(given);
-    // Its default is what the component takes anyway: not written, as a template wouldn't.
-    if (parsed.ok && JSON.stringify(parsed.value) === JSON.stringify(spec.default)) continue;
+    // Its default is what the component takes anyway: not written, as a template wouldn't. One it needs is given
+    // either way (a template has to give it), its default too.
+    if (parsed.ok && !spec.required && JSON.stringify(parsed.value) === JSON.stringify(spec.default)) continue;
     if (parsed.ok) props[key] = parsed.value;
     // A field its user emptied is the prop not given.
     else if (given !== "") say(`its ${key} ${JSON.stringify(values[key])} (${parsed.message}) isn't one a ${definition.type} takes: left out`);

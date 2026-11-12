@@ -37,6 +37,8 @@ const ProductCard = component({
   ),
 });
 const Footer = component({ type: "acme.LegalFooter", label: "Legal footer", props: {}, render: () => <Text style={{ fontSize: 12 }}>Acme Inc., 1 Market St.</Text> });
+// A prop its component needs, with what a block dragged in starts with.
+const Banner = component({ type: "acme.Banner", label: "Banner", props: { title: prop.text({ label: "Title", required: true, default: "Welcome" }) }, render: (p) => <Text>{p.title}</Text> });
 
 const email = (
   <Email width={600}>
@@ -106,6 +108,14 @@ describe("toDesign with customTools", () => {
   it("reads a default back as the prop not given, as a template wouldn't write it", () => {
     const { design } = toDesign(<Email><ProductCard name="Mug" buttonColor="#007bff" /></Email>, { customTools: true });
     expect(fromDesign(design, { components: [ProductCard] }).code).toContain('<acme.ProductCard name="Mug" />');
+  });
+
+  it("keeps a prop its component needs where it's given its default: a template has to give it", async () => {
+    const banner = <Email><Banner title="Welcome" /></Email>;
+    const back = fromDesign(toDesign(banner, { customTools: true }).design, { components: [Banner] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain('<acme.Banner title="Welcome" />');
+    expect((await render(back.element)).html).toBe((await render(banner)).html);
   });
 
   it("keeps a component placed where a Section goes as an HTML block, and says so", () => {
@@ -306,6 +316,15 @@ describe("registerTools", () => {
     const half = tools[0].renderer.Viewer.render(values, { contentWidth: "600px" }, { columnIndex: 1, rowCells: [1, 1] });
     expect(full).toContain('width="600"');
     expect(half).toContain('width="300"');
+  });
+
+  it("draws a block dragged in with a prop its component needs at its default", () => {
+    const { builder, tools } = fakeBuilder();
+    registerTools(builder, [Banner]);
+    const start = { title: tools[0].options.acme_banner.options.title.defaultValue };
+    expect(start).toEqual({ title: "Welcome" });
+    expect(tools[0].renderer.Viewer.render(start)).toContain(">Welcome</p>");
+    expect(tools[0].renderer.exporters.email(start)).toContain(">Welcome</p>");
   });
 
   it("leaves a value its prop doesn't take out of the drawing, which then shows the default", () => {
