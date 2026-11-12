@@ -13,7 +13,8 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
   editor for its kind, and its drawing in the canvas and in what the builder exports. `toDesign(element, { customTools:
   true })` writes each of a template's own components as its tool's block, where it was an HTML block of its markup;
   `fromDesign(design, { components })` reads those blocks back as the components. Without the options, both do what
-  they did.
+  they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
+  component's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…).
 - **A prop names its editor.** `prop.number({ label: "Quantity", editor: "counter" })`: the control a visual editor
   shows for a prop, where its kind's own isn't the one wanted. The value is its kind's either way.
   `describeComponents()` gives it as `namedEditor`, beside `editor` (its kind's), which an editor with no control by

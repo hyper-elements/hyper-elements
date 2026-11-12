@@ -8,12 +8,12 @@ import type React from "react";
 import { printTemplate, toElement } from "./print";
 import { readDesign, type DisplayMode } from "./read";
 import { checkTemplate } from "./check";
-import { registerTools, toolName, toolsOf, type Builder, type RegisterToolsOptions, type WithDefinition } from "./custom";
+import { registerTools, toolName, toolsOf, type Builder, type RegisterToolsOptions, type ToolSettings, type WithDefinition } from "./custom";
 import { uniqueIds } from "./ids";
 import { writeDesign, type Design, type DesignResult } from "./write";
 
 export { registerTools, toolName };
-export type { Builder, Design, DesignResult, DisplayMode, RegisterToolsOptions };
+export type { Builder, Design, DesignResult, DisplayMode, RegisterToolsOptions, ToolSettings };
 
 export interface ToDesignOptions {
   /**

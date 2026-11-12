@@ -187,6 +187,25 @@ registerTools(unlayer, [PriceBand], { editors: ["currency"] });
 
 The value stays its kind's either way: a price is still a number, checked as one. A name the builder has no editor for falls back to the kind's editor.
 
+### A field that fills several props
+
+Some of what a tool does is the builder's and not the component's: a product picked from your store fills the photo, the name, the price and the link at once. Pass those as the tool's settings, by the component's type:
+
+```ts
+registerTools(unlayer, [ProductCard], {
+  tools: {
+    "acme.ProductCard": {
+      // A field of the tool that isn't a prop of the component, shown above its own.
+      properties: { product: { label: "From the store", widget: "store_picker" } },
+      // The builder's hook when a field changes: return the block's values.
+      transformer: (values, source) => (source.name === "product" ? { ...values, ...fromStore(source.value) } : values),
+    },
+  },
+});
+```
+
+`properties` are the builder's, each as it takes one. Any other setting (`transformer`, `usageLimit`, `position`) is passed to the builder's `registerTool()` as it is. In a `transformer` the values are as the builder stores them: an image is `{ url, width, height }`, a link `{ name: "web", values: { href, target } }`. The value of a field that isn't a prop stays in the block, and isn't the component's.
+
 ### What to know
 
 - **The component's code has to be loaded in the builder.** A design with a custom tool's block opened where the tool isn't registered shows the builder's "Missing" block there, and exports it.
@@ -196,7 +215,7 @@ The value stays its kind's either way: a price is still a number, checked as one
 - **The builder's image editor has a width control, which a component doesn't read.** It takes the image's URL and size from it, and sizes the image itself in its `render`.
 - `registerTools()` takes `displayMode: "web"` for a builder of pages, so the canvas draws a Page's markup, and `icons` for each tool's icon in the panel.
 
-The [custom components example](https://github.com/hyper-elements/hyper-elements/tree/main/examples/custom-components-in-editor) is a whole email made this way, with a property editor of its own.
+The [custom components example](https://github.com/hyper-elements/hyper-elements/tree/main/examples/custom-components-in-editor) has two sets made this way: five tools a shop reuses (a product filled from a store, a testimonial, a coupon, an order tracker, a ticket with its barcode), and a whole email's own parts.
 
 ## Limits
 

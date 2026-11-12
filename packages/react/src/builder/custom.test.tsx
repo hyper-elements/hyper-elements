@@ -338,6 +338,37 @@ describe("registerTools", () => {
     expect(html).toContain("&lt;img");
   });
 
+  it("takes the builder's own settings for a tool: properties that aren't props, above its own, and what registerTool() takes", () => {
+    const { builder, tools } = fakeBuilder();
+    const transformer = (values: Values) => values;
+    registerTools(builder, [ProductCard, Footer], {
+      tools: { "acme.ProductCard": { properties: { product: { label: "From the store", widget: "store_picker" } }, transformer, usageLimit: 3, name: "renamed", renderer: null } },
+    });
+    const [product, footer] = tools;
+    expect(Object.keys(product.options.acme_product_card.options).slice(0, 2)).toEqual(["product", "name"]);
+    expect(product.options.acme_product_card.options.product).toEqual({ label: "From the store", widget: "store_picker" });
+    expect(product.transformer).toBe(transformer);
+    expect(product.usageLimit).toBe(3);
+    // What the component gives its tool isn't a setting to change.
+    expect(product.name).toBe("acme_product_card");
+    expect(product.renderer.Viewer.render({ name: "Mug" })).toContain("Mug");
+    expect(footer.transformer).toBeUndefined();
+  });
+
+  it("keeps the value of a tool's own property in the block, and out of the component", async () => {
+    const { design } = toDesign(<Email><ProductCard name="Mug" /></Email>, { customTools: true });
+    blocks(design)[0].values.product = { selected: { id: 2 } };
+    const back = fromDesign(design, { components: [ProductCard] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain('<acme.ProductCard name="Mug" />');
+  });
+
+  it("refuses a tool's own property named as a prop, and settings for a component that isn't given", () => {
+    const { builder } = fakeBuilder();
+    expect(() => registerTools(builder, [ProductCard], { tools: { "acme.ProductCard": { properties: { price: { label: "Price", widget: "text" } } } } })).toThrow("acme.ProductCard has a prop named price");
+    expect(() => registerTools(builder, [ProductCard], { tools: { "acme.Product": {} } })).toThrow("settings for acme.Product, which is none of the components given");
+  });
+
   it("refuses what isn't a template's own component", () => {
     const { builder } = fakeBuilder();
     expect(() => registerTools(builder, [Text as never])).toThrow("made with component()");

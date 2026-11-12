@@ -143,6 +143,20 @@ export interface RegisterToolsOptions {
    * kind's.
    */
   editors?: readonly string[];
+  /** The builder's own settings for a component's tool, by the component's type. */
+  tools?: Record<string, ToolSettings>;
+}
+
+/** What a tool has in the builder beside what its component gives it. */
+export interface ToolSettings {
+  /**
+   * Properties of the tool that aren't the component's props, shown above its own, each as the builder takes one
+   * (`{ label, widget, defaultValue }`): a picker that fills several props at once, with the tool's `transformer`.
+   * Their values are kept in the block; they aren't the component's.
+   */
+  properties?: Record<string, Record<string, unknown>>;
+  /** Any other setting the builder's `registerTool()` takes (`transformer`, `position`, `usageLimit`…), passed as it is. */
+  [setting: string]: unknown;
 }
 
 /** The builder's own property editors a prop can name. */
@@ -178,8 +192,15 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
   const tools = toolsOf(components);
   const all = [...tools.values()];
   const canvas = options.displayMode === "web" ? "Page" : "Email";
+  for (const type of Object.keys(options.tools ?? {})) {
+    if (!all.some((definition) => definition.type === type)) throw new Error(`[Elements] registerTools: tools has settings for ${type}, which is none of the components given`);
+  }
   for (const [name, definition] of tools) {
-    const properties: Record<string, unknown> = {};
+    const { properties: own = {}, ...settings } = options.tools?.[definition.type] ?? {};
+    for (const key of Object.keys(own)) {
+      if (Object.hasOwn(definition.props, key)) throw new Error(`[Elements] registerTools: ${definition.type} has a prop named ${key}: a property of the tool's own takes another name`);
+    }
+    const properties: Record<string, unknown> = { ...own };
     for (const [key, spec] of Object.entries(definition.props) as Array<[string, Spec]>) {
       const editor = editorOf(spec);
       // The editor it names, where the builder has one of that name; its kind's otherwise.
@@ -208,6 +229,7 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
       }
     };
     builder.registerTool({
+      ...settings,
       name,
       label: definition.label,
       icon: options.icons?.[definition.type] ?? "fa-cube",
