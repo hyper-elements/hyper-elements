@@ -150,12 +150,6 @@ const { diagnostics } = validate(welcome, { plugins: [await emailClients()] });
 
 The checks cover more clients than the emulator (Yahoo, AOL, Outlook for Mac and others, from caniemail's tables).
 
-## Limits
-
-- **Open previews in a Chromium browser** (Chrome, Edge, Arc, or Playwright's Chromium). The previews are drawn by the browser opening them.
-- **Dark mode where a client has it in the table above.** Other clients' dark modes are on the way.
-- **For an email that matters, send a test too.** The emulator is the fast loop; a real inbox is the final check.
-
 ## Common questions
 
 ### How do I test an email in Outlook without sending it?
