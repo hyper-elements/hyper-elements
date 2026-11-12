@@ -1,4 +1,4 @@
-# @unlayer-internal/elements-core
+# @hyper-elements/core
 
 Elements' engine, framework-neutral: the template tree, the components' definitions
 (`src/components.ts`), validation, custom components and layout (`src/resolve.ts`), and Elements'
@@ -124,6 +124,6 @@ change without the writer changing. Their tests are in `packages/react/test/pdf`
 ## Tests
 
 ```bash
-pnpm --filter @unlayer-internal/elements-core test           # the model, layout and the writers: markup, phone styles, hostile input
-pnpm --filter @unlayer-internal/elements-core test:browser   # widths in Chromium, with and without <style>
+pnpm --filter @hyper-elements/core test           # the model, layout and the writers: markup, phone styles, hostile input
+pnpm --filter @hyper-elements/core test:browser   # widths in Chromium, with and without <style>
 ```

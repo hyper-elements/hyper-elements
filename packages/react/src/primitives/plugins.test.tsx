@@ -5,7 +5,7 @@
  * add either, so its support test can't be fooled by one at `root`.
  */
 import React from "react";
-import { prepareTemplate, renderTemplate, validateTemplate } from "@unlayer-internal/elements-core";
+import { prepareTemplate, renderTemplate, validateTemplate } from "@hyper-elements/core";
 import { collectTemplate } from "./collect";
 import { Canvas, Document, Email, Page, PLUGIN_API, prepare, render, Text, validate, type ElementsPlugin } from "./index";
 

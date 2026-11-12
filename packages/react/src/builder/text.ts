@@ -5,7 +5,7 @@
  * its own style gives it some, which are its padding. A `<ul>` or `<ol>` is a List, its padding its indent and its items' margin its gap.
  * What isn't read exactly is said in `left`, and the block is kept as its markup.
  */
-import type { Child, Json, Node } from "@unlayer-internal/elements-core";
+import type { Child, Json, Node } from "@hyper-elements/core";
 import { parseRuns, type Run } from "./read-runs";
 import { color, fontWeight, px } from "./read-values";
 import { textJsonHtml } from "./text-json";

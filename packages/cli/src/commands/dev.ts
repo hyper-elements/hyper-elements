@@ -14,7 +14,7 @@
 import { mkdirSync, mkdtempSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
-import { projectConfig } from "@unlayer-internal/template-loader";
+import { projectConfig } from "@hyper-elements/template-loader";
 import { UsageError, type Args } from "../args";
 import { serveDev } from "../dev/server";
 import { watchRoots, Watcher } from "../dev/watcher";

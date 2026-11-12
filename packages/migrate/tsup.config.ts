@@ -11,7 +11,7 @@ const cli = defineConfig({
   // The converters (src/react-email, src/convert) and their parsers are bundled; React, React Email, Elements,
   // TypeScript, Prettier and tsx stay external (resolved from the project first, see hooks.ts). The template loader
   // shared with @hyper-elements/cli is private: bundled in.
-  noExternal: ["entities", "parse5", "@unlayer-internal/template-loader"],
+  noExternal: ["entities", "parse5", "@hyper-elements/template-loader"],
   // bin.ts checks the Node.js version before loading start.js, which registers the hooks before loading cli.js: keep
   // those runtime imports.
   external: ["react", "react-dom", /^@react-email\//, /^@hyper-elements\/react(\/|$)/, "typescript", "prettier", /^tsx/, "./cli.js", "./start.js"],

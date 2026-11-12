@@ -1,5 +1,7 @@
 packages:
   - 'packages/*'
+  # Private, bundled into the published packages above: never published themselves.
+  - 'packages/internal/*'
   - 'apps/*'
   - 'examples/*'
   - '!examples/nextjs-app-router'

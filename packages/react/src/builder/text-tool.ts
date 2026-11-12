@@ -4,7 +4,7 @@
  * it). A `<p>`, or a list, is a block of its own, its margins and indent its padding; text with what no run holds is an
  * Html block of its markup.
  */
-import { Heading as HeadingDefinition, type Json, type Node } from "@unlayer-internal/elements-core";
+import { Heading as HeadingDefinition, type Json, type Node } from "@hyper-elements/core";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, linkStyleOf, serviceTag, sides, some, styled, type Sides, type Values } from "./read-values";
 import { readHidden } from "./hide";
 import { outOfMarkup } from "./paint";

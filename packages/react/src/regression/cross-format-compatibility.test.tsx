@@ -15,8 +15,8 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ReactElement } from "react";
-import { writeDocument } from "@unlayer-internal/elements-core/pdf";
-import { writeCanvas } from "@unlayer-internal/elements-core/image";
+import { writeDocument } from "@hyper-elements/core/pdf";
+import { writeCanvas } from "@hyper-elements/core/image";
 import { fromDesign, toDesign } from "../builder";
 import { gallery } from "../primitives/examples/gallery";
 import { stress } from "../primitives/examples/stress";

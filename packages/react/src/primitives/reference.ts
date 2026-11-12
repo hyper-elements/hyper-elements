@@ -24,7 +24,7 @@ import {
   ROOT_NAMES,
   type ComponentDescription,
   type PropertyDescription,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 
 /** How a template writes a component whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };

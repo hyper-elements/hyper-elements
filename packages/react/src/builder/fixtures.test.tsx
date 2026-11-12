@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 import { spotify as codemodSpotify } from "../primitives/testing/codemod-examples";
 import * as jsxRuntime from "react/jsx-runtime";
 import ts from "typescript";
-import type { Node } from "@unlayer-internal/elements-core";
+import type { Node } from "@hyper-elements/core";
 import * as primitives from "../primitives";
 import { render, validate } from "../primitives";
 import { collectTemplate } from "../primitives/collect";

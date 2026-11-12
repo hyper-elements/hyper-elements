@@ -11,7 +11,7 @@ import { createRequire } from "node:module";
 import { dirname, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
-import { defaultExport, guard, projectTsconfig, templateComponent } from "@unlayer-internal/template-loader";
+import { defaultExport, guard, projectTsconfig, templateComponent } from "@hyper-elements/template-loader";
 import { checkTemplate } from "./commands/check";
 import { inspectTemplate } from "./commands/inspect";
 import { previewTemplate } from "./commands/preview";

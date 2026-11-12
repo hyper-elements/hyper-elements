@@ -26,7 +26,7 @@ import {
   type PropertyDescription,
   type RootName,
   type StyleGroup,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 import { collectTemplate, type JsonNode } from "../primitives/collect";
 
 export type { ComponentDescription, ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };

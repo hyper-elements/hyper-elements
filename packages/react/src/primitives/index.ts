@@ -92,5 +92,5 @@ export { component, prop, type ComponentSpec, type CustomComponent, type CustomP
 export { defineTheme, extendTheme, token } from "./theme";
 export type { Alias, ComponentTheme, Register, StyleName, Theme, ThemeInput, ThemeStyle, Token, TokenPath, TokenPaths, TokenRefs, Tokenized, VariantName, VariantProp } from "./theme";
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type ValidateOptions, type ValidationResult } from "./render";
-export { BLOCK_MAP_VERSION, ElementsError, formatDiagnostics, PLUGIN_API } from "@unlayer-internal/elements-core";
-export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, Severity } from "@unlayer-internal/elements-core";
+export { BLOCK_MAP_VERSION, ElementsError, formatDiagnostics, PLUGIN_API } from "@hyper-elements/core";
+export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, Severity } from "@hyper-elements/core";

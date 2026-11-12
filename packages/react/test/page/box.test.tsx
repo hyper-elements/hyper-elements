@@ -3,7 +3,7 @@
  * layout components, sizes from the base sample, what the writers keep as today, and what goes to the builder.
  */
 import type { ReactElement } from "react";
-import { describeComponents } from "@unlayer-internal/elements-core";
+import { describeComponents } from "@hyper-elements/core";
 import { toDesign } from "../../src/builder";
 import { Box, Button, Canvas, Column, Email, Grid, List, ListItem, Heading, Image, Layer, outline, Page, prepare, render, Row, Section, Span, Table, TableCell, TableRow, Text, validate, type ResolvedNode } from "../../src/primitives";
 

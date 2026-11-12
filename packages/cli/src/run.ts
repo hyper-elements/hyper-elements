@@ -9,7 +9,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { projectConfig } from "@unlayer-internal/template-loader";
+import { projectConfig } from "@hyper-elements/template-loader";
 import { UsageError, type Args } from "./args";
 import { ALL_RENDER_OUTPUTS, RENDER_OUTPUTS } from "./commands/render";
 import { cliDiagnostic } from "./commands/shared";

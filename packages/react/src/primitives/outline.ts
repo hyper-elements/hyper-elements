@@ -16,7 +16,7 @@
  *     Image 120px [Acme] https://example.com/logo.png
  *     Button: fits its content "Sign in" → https://example.com/login
  */
-import { linkParts, pageLayout as layoutOf, shownAnywhere, type LinkValue, type ResolvedNode } from "@unlayer-internal/elements-core";
+import { linkParts, pageLayout as layoutOf, shownAnywhere, type LinkValue, type ResolvedNode } from "@hyper-elements/core";
 
 const LONGEST = 80;
 const clip = (text: string) => (text.length > LONGEST ? `${text.slice(0, LONGEST - 1)}…` : text);

@@ -20,7 +20,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = resolve(root, "../..");
 const sandbox = join(root, "playground/sandbox");
 const reactDir = join(repo, "packages/react");
-const coreDir = join(repo, "packages/core");
+const coreDir = join(repo, "packages/internal/core");
 const clientsDir = join(repo, "packages/email-clients");
 
 export const RUNTIME_BUNDLES = ["runner", "core", "pdf", "image", "clients"];
@@ -31,9 +31,9 @@ const SOURCES = {
   "@hyper-elements/react/inspect": join(reactDir, "src/inspect/index.ts"),
   "@hyper-elements/react/pdf": join(reactDir, "src/pdf/index.ts"),
   "@hyper-elements/react/image": join(reactDir, "src/image/index.ts"),
-  "@unlayer-internal/elements-core": join(coreDir, "src/index.ts"),
-  "@unlayer-internal/elements-core/pdf": join(coreDir, "src/pdf/index.ts"),
-  "@unlayer-internal/elements-core/image": join(coreDir, "src/image/index.ts"),
+  "@hyper-elements/core": join(coreDir, "src/index.ts"),
+  "@hyper-elements/core/pdf": join(coreDir, "src/pdf/index.ts"),
+  "@hyper-elements/core/image": join(coreDir, "src/image/index.ts"),
   "@hyper-elements/email-clients": join(clientsDir, "src/index.ts"),
 };
 
@@ -66,7 +66,7 @@ const plugin = (name) => ({
     if (name !== "core" && name !== "runner") {
       b.onResolve({ filter: /^(react|react\/jsx-runtime|@hyper-elements\/react)$/ }, ({ path }) => ({ path: join(sandbox, "shims", SHARED[path]) }));
     }
-    b.onResolve({ filter: /^(@hyper-elements\/(react|email-clients)|@unlayer-internal\/elements-core)(\/.*)?$/ }, ({ path }) => (SOURCES[path] ? { path: SOURCES[path] } : undefined));
+    b.onResolve({ filter: /^(@hyper-elements\/(react|email-clients)|@hyper-elements\/core)(\/.*)?$/ }, ({ path }) => (SOURCES[path] ? { path: SOURCES[path] } : undefined));
     // A shim imports the module it stands in for as "real:<name>".
     b.onResolve({ filter: /^real:/ }, (args) => b.resolve(args.path.slice(5), { resolveDir: realDir(args.path.slice(5)), kind: args.kind, pluginData: { real: true } }));
     b.onResolve({ filter: /^(node:crypto|@react-pdf\/renderer|@resvg\/resvg-js|harfbuzzjs)$/ }, (args) => (args.pluginData?.real ? undefined : { path: join(sandbox, "shims", SHIMS[args.path]) }));
@@ -104,7 +104,7 @@ export function buildRuntime(name, { fresh = false, minify = true } = {}) {
         // The engines and React read these; nothing else of Node's `process` is in a browser.
         // (A classic script has no import.meta.url: react-pdf's PDF library makes a URL from it when it loads, for a
         // file it reads only for PDF/A.)
-        define: { "process.env.NODE_ENV": '"production"', __UNLAYER_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"' },
+        define: { "process.env.NODE_ENV": '"production"', __HYPER_ELEMENTS_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"' },
         plugins: [plugin(name)],
       }).then((result) => result.outputFiles[0].text),
     );

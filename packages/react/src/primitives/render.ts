@@ -13,7 +13,7 @@ import {
   type RenderOptions,
   type RenderResult,
   type ResolvedNode,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 import { collectTemplate } from "./collect";
 import { outlineOf } from "./outline";
 

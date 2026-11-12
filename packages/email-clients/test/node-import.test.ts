@@ -45,7 +45,7 @@ describe.runIf(built || !!process.env.CI)("the built package", () => {
     expect(cjs).toMatch(/if \(true\) return __require\("@hyper-elements\/react"\)/);
     for (const file of ["dist/index.js", "dist/index.cjs"]) {
       const text = readFileSync(join(dir, file), "utf8");
-      expect(text, file).not.toContain("elements-core");
+      expect(text, file).not.toMatch(/@hyper-elements\/core["'\/]/);
       expect(text, file).not.toContain("function renderTemplate");
     }
   });

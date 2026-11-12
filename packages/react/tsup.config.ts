@@ -5,7 +5,7 @@ const shared: Options = {
   dts: {
     // Inline types from the private workspace package so consumers get full type completion without extra installs
     // (its main entry and the PDF and image ones).
-    resolve: [/^@unlayer-internal\/elements-core($|\/)/],
+    resolve: [/^@hyper-elements\/core($|\/)/],
   },
   splitting: false,
   sourcemap: true,
@@ -13,11 +13,11 @@ const shared: Options = {
   // The CommonJS build can load another module of react-dom's with the `require` it's loaded with; the module build
   // uses Node's (see src/utils/server-renderer.ts), so it has no stand-in for `require`.
   esbuildOptions(options, { format }) {
-    options.define = { ...options.define, __UNLAYER_CJS__: String(format === 'cjs') };
+    options.define = { ...options.define, __HYPER_ELEMENTS_CJS__: String(format === 'cjs') };
   },
-  // Bundle elements-core (the engine: the model, layout and the writers) into the output so consumers don't need to
+  // Bundle @hyper-elements/core (the engine: the model, layout and the writers) into the output so consumers don't need to
   // install it separately (it's a private workspace package).
-  noExternal: ['@unlayer-internal/elements-core'],
+  noExternal: ['@hyper-elements/core'],
   treeshake: true,
 };
 

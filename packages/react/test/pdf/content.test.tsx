@@ -9,7 +9,7 @@ import * as primitives from "@hyper-elements/react";
 import { prepare } from "@hyper-elements/react";
 import { createElement, type ReactElement } from "react";
 import { generate, misplaced, toElement, words } from "../../src/primitives/testing/templates";
-import { writeDocument } from "@unlayer-internal/elements-core/pdf";
+import { writeDocument } from "@hyper-elements/core/pdf";
 
 const SEEDS = Number(process.env.CONTENT_SEEDS ?? 120);
 

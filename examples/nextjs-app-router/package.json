@@ -1,5 +1,5 @@
 {
-  "name": "@unlayer/example-nextjs-app-router",
+  "name": "@hyper-elements/example-nextjs-app-router",
   "version": "0.0.0",
   "private": true,
   "description": "Next.js App Router example rendering an Elements email with render()",

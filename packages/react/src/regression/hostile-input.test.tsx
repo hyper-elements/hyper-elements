@@ -16,7 +16,7 @@ import {
   pageSizeStyle,
   pageSpacingStyle,
   pageTextStyle,
-} from "@unlayer-internal/elements-core";
+} from "@hyper-elements/core";
 import { Box, Button, Column, Document, ElementsError, Email, Heading, Html, Image, Layer, Link, List, ListItem, MergeTag, Menu, Page, Text, Row, Section, Social, Span, Table, TableCell, TableRow, Video, render } from "../primitives/index";
 
 /** A Box's page styles, by group (Decision 5 of the themes and pages plan). */

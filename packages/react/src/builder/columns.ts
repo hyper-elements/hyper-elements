@@ -3,7 +3,7 @@
  * padding, the columns' widths and padding; its border theirs, as the builder stretches them to its height), and a box
  * directly in the root or a Section as a row of its own column.
  */
-import type { Json, Node, ResolvedNode } from "@unlayer-internal/elements-core";
+import type { Json, Node, ResolvedNode } from "@hyper-elements/core";
 import { block, columnWith, rowWith, type Block, type Row, type RowFields } from "./design";
 import { hiddenOf, merge } from "./hide";
 import { blockTool, type Place } from "./tools";

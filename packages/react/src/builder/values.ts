@@ -5,7 +5,7 @@
  * (from the component's definition), so it's what the builder's own editor for it would write; read back, it's parsed
  * by the same kind, and one that doesn't parse is left out and said.
  */
-import { definitionOf, linkParts, type Border, type Insets, type Json, type LinkValue } from "@unlayer-internal/elements-core";
+import { definitionOf, linkParts, type Border, type Insets, type Json, type LinkValue } from "@hyper-elements/core";
 import { border as legacyBorder, px, sides, type Values } from "./read-values";
 
 export type { Values };

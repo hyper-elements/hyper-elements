@@ -9,7 +9,7 @@ The snippets below are complete files in [src/providers](../../../examples/conte
 ```bash
 pnpm install
 pnpm build
-pnpm --filter @unlayer/content-workflows-example render:email
+pnpm --filter @hyper-elements/example-content-workflows render:email
 ```
 
 Inspect the output before running a send command. Every `send:*` command sends one real email. Export a verified sender address and a recipient you control:
@@ -40,7 +40,7 @@ console.info("Resend accepted:", data?.id);
 ```
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example send:resend
+pnpm --filter @hyper-elements/example-content-workflows send:resend
 ```
 
 Expected: `Resend accepted: <id>`.
@@ -78,7 +78,7 @@ try {
 ```
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example send:ses
+pnpm --filter @hyper-elements/example-content-workflows send:ses
 ```
 
 Expected: `SES accepted: <MessageId>`.
@@ -107,7 +107,7 @@ console.info("Postmark accepted:", result.MessageID);
 ```
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example send:postmark
+pnpm --filter @hyper-elements/example-content-workflows send:postmark
 ```
 
 Expected: `Postmark accepted: <MessageID>`.
@@ -128,7 +128,7 @@ console.info("SendGrid accepted:", response.statusCode, response.headers["x-mess
 ```
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example send:sendgrid
+pnpm --filter @hyper-elements/example-content-workflows send:sendgrid
 ```
 
 Expected: `SendGrid accepted: 202 <x-message-id>`.
@@ -164,7 +164,7 @@ try {
 ```
 
 ```bash
-pnpm --filter @unlayer/content-workflows-example send:nodemailer
+pnpm --filter @hyper-elements/example-content-workflows send:nodemailer
 ```
 
 Expected: `SMTP accepted: <messageId>`.

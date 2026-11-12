@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import React, { createContext, useContext } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Button, Column, component, ElementsError, Email, Heading, Image, Page, prop, render, Row, Section, Text, validate } from "./index";
-import { describeComponent, type ExpandProps } from "@unlayer-internal/elements-core";
+import { describeComponent, type ExpandProps } from "@hyper-elements/core";
 import { collectTemplate } from "./collect";
 
 const treeOf = (element: React.ReactElement) => collectTemplate(element).document!;
