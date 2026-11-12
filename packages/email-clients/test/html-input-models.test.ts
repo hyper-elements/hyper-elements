@@ -4,6 +4,7 @@
  */
 afterEach(() => {
   vi.doUnmock("@hyper-elements/email-client-models");
+  vi.doUnmock("@hyper-elements/react");
   vi.resetModules();
 });
 
@@ -18,7 +19,6 @@ describe("renderInEmailClients(html) and what it loads", () => {
     const { renderInEmailClients } = await import("../src/index");
     const { previews } = await renderInEmailClients(email, { emailClients: ["apple-mail"] });
     expect(previews.map((p) => p.id)).toEqual(["apple-mail"]);
-    vi.doUnmock("@hyper-elements/react");
   });
 });
 

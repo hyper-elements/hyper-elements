@@ -4,6 +4,7 @@
  * it refuses. No React or core here: this file imports neither.
  */
 import { readFileSync } from "node:fs";
+import type React from "react";
 import { join } from "node:path";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
 import { APPROXIMATE_FOR_HTML } from "../src/email-clients";
@@ -86,6 +87,15 @@ describe("renderInEmailClients(html)", () => {
     expect(() => checkWholeEmail("<htmlx><bodyx>")).toThrow(TypeError);
     await expect(renderInEmailClients("<p>Hi</p>")).rejects.toThrow(TypeError);
     expect(() => checkWholeEmail(42)).toThrow(/as a string, not number/);
+  });
+
+  it("refuses HTML given as bytes, saying to read it as text, and takes a string or a template through one signature", async () => {
+    const bytes = new TextEncoder().encode(receipt);
+    await expect(renderInEmailClients(bytes as never)).rejects.toThrow(/as a string, not bytes.*utf8/);
+    await expect(renderInEmailClients(Buffer.from(receipt) as never)).rejects.toThrow(TypeError);
+    // A caller holding either kind passes it on as it is.
+    const either = (input: string | React.ReactElement) => renderInEmailClients(input, { emailClients: ["gmail"], computers: ["windows"] });
+    expect((await either(receipt)).previews.map((p) => p.id)).toEqual(["gmail"]);
   });
 
   it("refuses an option it doesn't take, such as render()'s, and a client it doesn't know", async () => {
