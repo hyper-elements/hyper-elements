@@ -22,6 +22,11 @@ import { cli, devUntil, email, type Dev, leftovers, link, MODULES, project, star
  */
 const TIMED = process.env.HYPER_ELEMENTS_CLI_TIMED === "1";
 const WITHIN = TIMED ? (WINDOWS ? 3_000 : 1_000) : 5_000;
+/**
+ * Two groups rendering at once (a child each) on CI's shared Linux runners took 1.2 to 1.6 s where a developer's
+ * machine takes 0.65 s: there the bound is the one Windows has. Elsewhere it's the second.
+ */
+const WITHIN_GROUPS = TIMED && process.env.CI ? 3_000 : WITHIN;
 
 /** A timed test runs again where it failed: a machine's moment of load isn't what it measures. */
 const RETRY = TIMED ? 2 : 0;
@@ -146,7 +151,7 @@ export default function T() { return <Email><Text>two says {word}</Text></Email>
     await devUntil(dev, (_, text) => text.includes("two says B's alias"), "b/emails/two.tsx");
     const at = change(dir, { "b/other/word.ts": `export const word = "B's alias, changed";\n` });
     await devUntil(dev, (_, text) => text.includes("two says B's alias, changed"), "b/emails/two.tsx");
-    expect(Date.now() - at, dev.stderr()).toBeLessThan(WITHIN);
+    expect(Date.now() - at, dev.stderr()).toBeLessThan(WITHIN_GROUPS);
     await devUntil(dev, (_, text) => text.includes("one says A's alias"), "a/emails/one.tsx");
   });
 
