@@ -1,0 +1,20 @@
+[
+  {
+    "code": "page/lint-lang",
+    "severity": "warning",
+    "path": "root.props.lang",
+    "message": "The Page has no lang, so screen readers guess its language"
+  },
+  {
+    "code": "page/lint-title",
+    "severity": "info",
+    "path": "root.props.title",
+    "message": "The Page has no title for the browser's tab and for screen readers"
+  },
+  {
+    "code": "page/lint-video-title",
+    "severity": "info",
+    "path": "root.children[1].children[9].props.title",
+    "message": "The video's title is the default, \"Video\""
+  }
+]

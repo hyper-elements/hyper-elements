@@ -13,7 +13,7 @@ import { CLI_ROOT, cli, email, exists, FIXTURES, lines, ON_BUN, project, REPO, w
 
 /** An email with what most email clients don't show: positioned, a flex box, a <style>. */
 const HTML = `<!DOCTYPE html>
-<html>
+<html lang="en">
 <head><style>.card { display: flex; position: absolute; }</style></head>
 <body>
 <div class="card">Welcome aboard</div>
@@ -305,7 +305,8 @@ describe("when the models package can't be used (the same for check and preview)
   const run = async (command: string, row: string) => {
     const dir = bare({ "mail/welcome.html": HTML });
     projectEmailClients(dir, "0.4.3", ROWS[row]);
-    const ran = await cli(dir, [command, "mail/welcome.html", "--json", "--clients", "gmail"]);
+    // About the models package alone: lint's HTML checks (check's) left out.
+    const ran = await cli(dir, [command, "mail/welcome.html", "--json", "--clients", "gmail", ...(command === "check" ? ["--no-lint"] : [])]);
     const [line, summary] = lines(ran);
     const previews = exists(join(dir, "out/clients/mail/welcome")) ? readdirSync(join(dir, "out/clients/mail/welcome")).sort() : [];
     return { ran, line, summary, previews };

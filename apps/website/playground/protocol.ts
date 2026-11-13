@@ -18,7 +18,7 @@ export interface FontFile extends FontNeed {
 interface Common {
   /** The template's code: a module, or JSX alone. */
   code: string;
-  /** An Email's client checks (on unless false). */
+  /** An Email's client checks (on unless false). Lint's checks run either way. */
   checks?: boolean;
 }
 

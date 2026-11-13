@@ -10,7 +10,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach } from "vitest";
+import { afterAll, afterEach } from "vitest";
 
 export const CLI_ROOT = fileURLToPath(new URL("..", import.meta.url));
 export const BIN = join(CLI_ROOT, "dist", "bin.js");
@@ -30,18 +30,29 @@ export const MODULES: Record<string, string> = {
 };
 
 const made: string[] = [];
+/** Windows folders still held when their test ended: removed once the file's tests are done. */
+const held: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
-  // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
-  // Where it still holds it, the folder is left in the temp folder: a test that needs its processes gone checks them
-  // itself, so a slow release of the folder isn't the test's failure.
+  // Windows doesn't remove a folder a process still has open (EBUSY) for a while after that process ends, longer after
+  // it's killed (the SIGKILL tests, on CI's runners). Tried again for 2 s, then once more after the file's tests: the
+  // tests that end processes check that they ended themselves, and the temporary folder is only tidying.
   for (const dir of made.splice(0)) {
     try {
       rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
     } catch (error) {
       const code = (error as NodeJS.ErrnoException).code;
       if (!WINDOWS || (code !== "EBUSY" && code !== "EPERM")) throw error;
-      console.warn(`left ${dir}: ${code}`);
+      held.push(dir);
+    }
+  }
+});
+afterAll(() => {
+  for (const dir of held.splice(0)) {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
+    } catch (error) {
+      console.warn(`left ${dir}, still held: ${(error as Error).message}`);
     }
   }
 });
@@ -125,12 +136,12 @@ export function cli(cwd: string, args: string[], options: RunOptions = {}): Prom
     if (options.input !== undefined) child.stdin.end(options.input);
     let stdout = "";
     let stderr = "";
-    child.stdout.setEncoding("utf8").on("data", (d: string) => (stdout += d));
+    child.stdout.on("data", (d) => (stdout += d));
     if (options.slowStdout) {
       child.stdout.pause();
       setTimeout(() => child.stdout.resume(), options.slowStdout);
     }
-    child.stderr.setEncoding("utf8").on("data", (d: string) => (stderr += d));
+    child.stderr.on("data", (d) => (stderr += d));
     const timer = setTimeout(() => child.kill("SIGKILL"), options.timeout ?? 50_000);
     child.on("error", reject);
     child.on("close", (code, signal) => {
@@ -369,8 +380,8 @@ export async function startDev(cwd: string, args: string[], options: { runtime?:
   devs.push(child);
   let out = "";
   let err = "";
-  child.stdout.setEncoding("utf8").on("data", (d: string) => (out += d));
-  child.stderr.setEncoding("utf8").on("data", (d: string) => (err += d));
+  child.stdout.on("data", (d) => (out += d));
+  child.stderr.on("data", (d) => (err += d));
   const exited = new Promise<number | null>((resolve) => child.on("close", (code) => resolve(code)));
   await until(() => / until Ctrl-C\n/.test(out) || child.exitCode !== null, 30_000);
   const match = /(http:\/\/127\.0\.0\.1:(\d+)\/([0-9a-f]{32})\/)/.exec(out);

@@ -86,6 +86,9 @@ jobs:
       - name: CLI and template loader typechecks
         run: pnpm --filter @hyper-elements/cli typecheck && pnpm --filter @hyper-elements/template-loader typecheck
 
+      - name: Lint typecheck
+        run: pnpm --filter @hyper-elements/lint typecheck
+
       # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
       # tag, and resuming a run whose npm publish succeeded.
       - name: Release script
@@ -184,6 +187,26 @@ jobs:
           fi
           echo "✅ Email client previews bundle within budget"
 
+      # Lint (@hyper-elements/lint): the plugin, dist/index.js, about 39.3KB unminified ESM (the rules, their summaries,
+      # fixes and messages; the tree read at both widths; contrast and the CSS color names; and the HTML tokenizer and
+      # rules for Html blocks, about 13KB), and lintHtml, dist/html.js, about 20.7KB (the tokenizer, the HTML rules and
+      # the registry). Neither imports anything at run time. Each set from its size plus 2,000 bytes. Raise one on
+      # purpose, with what grew.
+      - name: Check lint bundle sizes
+        run: |
+          for entry in index:41500 html:22700; do
+            BUNDLE="packages/lint/dist/${entry%%:*}.js"
+            MAX_SIZE=${entry##*:}
+            test -s "$BUNDLE" && test -s "${BUNDLE%.js}.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+            SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+            echo "$BUNDLE: $SIZE bytes (budget: $MAX_SIZE bytes)"
+            if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+              echo "::error::Lint bundle $BUNDLE size $SIZE exceeds budget of $MAX_SIZE bytes"
+              exit 1
+            fi
+          done
+          echo "✅ Lint bundles within budget"
+
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
         run: |
@@ -208,13 +231,15 @@ jobs:
       # with npx (Node) and bunx --bun (Bun), each template saying which runtime rendered it; the packed manifest names
       # no private package. Then npx with the packed CLI checks and previews an HTML email in a folder with no
       # node_modules, and installs no React (tests/cli-integration/verify.mjs). The CLI's email-clients is its
-      # dependency, from npm.
+      # dependency, from npm; its lint is packed here (it publishes before the CLI).
       - name: CLI consumer app (npx and bunx --bun)
         run: |
           (cd packages/react && pnpm pack --pack-destination /tmp/cli-integration)
           (cd packages/cli && pnpm pack --pack-destination /tmp/cli-integration)
+          (cd packages/lint && pnpm pack --pack-destination /tmp/cli-integration)
           CLI_TARBALL=$(ls /tmp/cli-integration/hyper-elements-cli-*.tgz) \
           REACT_TARBALL=$(ls /tmp/cli-integration/hyper-elements-react-*.tgz) \
+          LINT_TARBALL=$(ls /tmp/cli-integration/hyper-elements-lint-*.tgz) \
             node tests/cli-integration/verify.mjs
 
       - name: Run test coverage
@@ -294,6 +319,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The CLI's workspace dependencies (Elements and lint) build with it.
       - name: Build the CLI and Elements
         run: pnpm --filter "@hyper-elements/cli..." --filter @hyper-elements/email-clients build
 
@@ -305,6 +331,7 @@ jobs:
             packages/internal/core/dist
             packages/react/dist
             packages/email-clients/dist
+            packages/lint/dist
             packages/cli/dist
           if-no-files-found: error
           retention-days: 1
@@ -562,6 +589,12 @@ jobs:
       # says it's done, and runs none of the email's scripts, handlers or navigation (packages/email-clients/test/browser).
       - name: Email client previews in Chromium
         run: pnpm --filter @hyper-elements/email-clients test:browser
+
+      # Lint reads each run of text as Chromium shows it: its size, color and whether it's shown, at desktop and phone
+      # width, over the gallery and stress templates and the cases of what the writers do differently on phones
+      # (packages/lint/test/browser).
+      - name: Lint's tree as Chromium shows it
+        run: pnpm --filter @hyper-elements/lint test:browser
 
       # The CLI's preview --findings in each browser it finds: Playwright's Chromium, one named by CHROME_PATH, the
       # runner's Chrome by its channel; what the drawn previews say, screenshots, nothing fetched with --fonts inline,

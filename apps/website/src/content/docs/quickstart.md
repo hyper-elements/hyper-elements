@@ -161,6 +161,8 @@ import { validate } from "@hyper-elements/react";
 const { valid, diagnostics } = validate(<Welcome name="Ada" />);
 ```
 
+To check that the email is easy to read too (links that say where they go, alternate text, contrast, text size, a `lang`), add [lint](/docs/lint)'s plugin: `npm i -D @hyper-elements/lint`, then `validate(<Welcome name="Ada" />, { plugins: [lint()] })`.
+
 `outline()` prints the laid-out template, each block with its width, so you can check the layout without reading HTML:
 
 ```tsx
@@ -192,7 +194,7 @@ export default Welcome;
 
 ```bash
 npm install -D @hyper-elements/cli
-npx hyper-elements check emails/                # validate(), and the email client checks where email-clients is installed
+npx hyper-elements check emails/                # validate(), lint, and the email client checks where email-clients is installed
 npx hyper-elements render emails/               # out/emails/welcome.html and out/emails/welcome.txt
 npx hyper-elements preview emails/welcome.tsx   # the email in each email client: out/clients/emails/welcome/outlook.html, …
 ```
