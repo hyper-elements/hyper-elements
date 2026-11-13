@@ -16,6 +16,8 @@ import { cliDiagnostic } from "./commands/shared";
 import { outputBase, planDestinations, removeTemporaries, writeAtomically, type Planned } from "./destinations";
 import { errorLine } from "./errors";
 import { checkHtml, readStdin } from "./html";
+import { readLintConfig, type LintConfig } from "./lint-config";
+import { lintHtmlInput } from "./lint";
 import { displayPath, findInputs, moduleFormat, packageFolder, typeScriptTwin, type Input } from "./inputs";
 import { endOrphans, killTree } from "./kill";
 import { cleanFiles, ownToken, parseToken, stale } from "./loader-module";
@@ -310,6 +312,8 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
     if (!folder) throw new UsageError(`--public ${args.public} isn't a folder.`);
   }
   const props = args.props === undefined ? undefined : readProps(args.props, cwd);
+  // Lint's options, their shape checked before anything runs (and not read at all with --no-lint).
+  const lint: LintConfig | false = args.lint ? readLintConfig(cwd) : false;
   const found = await findInputs(args.positional, cwd, undefined, { html: args.command === "check" || args.command === "preview" });
   const { inputs } = found;
   // HTML emails run in this process (no template code, no loader module); templates in children.
@@ -424,12 +428,12 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
   for (const group of groups.values()) {
     let members = group.inputs;
     while (members.length) {
-      const report = await runChild(args.command, members, false, args, props, token, io);
+      const report = await runChild(args.command, members, false, args, props, token, io, { lint });
       if (report.reacts) {
         // More than one React in the group's process: each template again, alone, so only one that itself loads two fails.
         lateFrom(group.group, report, members);
         for (const input of members) {
-          const alone = await runChild(args.command, [input], true, args, props, token, io);
+          const alone = await runChild(args.command, [input], true, args, props, token, io, { lint });
           settle(input, alone.results.get(input.id), alone.ended);
           lateFrom(group.group, alone, [input]);
         }
@@ -455,6 +459,17 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
         html = error instanceof Error ? error : new Error(String(error));
       }
       const result = await checkHtml(args.command as "check" | "preview", input, html, { clients: args.clients, dark: args.dark, fonts: args.fonts, probe });
+      // check: lint's HTML checks too, with the copy of lint the file's folder resolves (else the CLI's own).
+      if (args.command === "check" && lint && typeof html === "string" && !result.usage) {
+        const linted = await lintHtmlInput(input, html, lint, probe);
+        result.outcome.diagnostics = [...result.outcome.diagnostics, ...linted.diagnostics];
+        if (linted.error) {
+          // Beside what email-clients said, where it failed too.
+          result.outcome.status = "error";
+          result.outcome.error = result.outcome.error ? `${result.outcome.error}; ${linted.error}` : linted.error;
+          result.usage = true;
+        }
+      }
       if (result.usage) usage.add(input.id);
       outcomes.set(input.id, { ...result.outcome, ...(result.previews ? { pendingPreviews: result.previews } : {}) });
     }

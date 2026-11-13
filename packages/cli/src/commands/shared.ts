@@ -16,8 +16,11 @@ export interface TemplateContext {
   load(specifier: string): Promise<unknown>;
   /** Resolves a specifier as the template does: a file URL or a path. */
   resolve(specifier: string): string;
-  /** email-clients' plugin, where the template's project has email-clients (made once per process). */
-  plugin(): Promise<{ plugin?: unknown; diagnostics: Diagnostic[] }>;
+  /**
+   * The plugins to check it with: email-clients' where the template's project has email-clients, and lint's for an Email
+   * or a Page unless `--no-lint` (each made once per process), with what the CLI says about them.
+   */
+  plugins(): Promise<PluginsFor>;
   /** The project's email-clients, where it has it (loaded for `check` and `preview`). */
   emailClients?: EmailClientsModule;
   /** inspect()'s result, which the child reads the root from. */
@@ -32,6 +35,21 @@ export class UsageFailure extends Error {}
 /** Whether diagnostics hold an error. */
 export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {
   return diagnostics.some((d) => d.severity === "error");
+}
+
+/**
+ * The plugins a template is checked with, and what the CLI says about them: `diagnostics` always, `ran` only where core
+ * ran the plugins' checks (a template without errors), such as which copy of lint checked it.
+ */
+export interface PluginsFor {
+  plugins: unknown[];
+  diagnostics: Diagnostic[];
+  ran: Diagnostic[];
+}
+
+/** What Elements found, then what the CLI says about the plugins it ran with. */
+export function withPluginNotes(diagnostics: readonly Diagnostic[], { diagnostics: notes, ran }: Pick<PluginsFor, "diagnostics" | "ran">): Diagnostic[] {
+  return [...diagnostics, ...notes, ...(hasErrors(diagnostics) ? [] : ran)];
 }
 
 /** An ElementsError (from any copy of Elements): its diagnostics. */

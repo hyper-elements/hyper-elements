@@ -139,7 +139,7 @@ export class Checks {
             { class: "pg-diag-body" },
             h("p", { class: "pg-diag-message" }, d.message),
             d.fix ? h("p", { class: "pg-diag-fix" }, d.fix) : null,
-            h("span", { class: "pg-diag-path" }, d.path, d.see ? h("a", { href: d.see, target: "_blank", rel: "noopener noreferrer" }, "caniemail ↗") : null),
+            h("span", { class: "pg-diag-path" }, d.path, d.see ? h("a", { href: d.see, target: "_blank", rel: "noopener noreferrer" }, `${seeLabel(d.see)} ↗`) : null),
           ),
         ),
       );
@@ -201,3 +201,9 @@ function splitQuoted(rest: string): Array<Node | string> {
   if (quote === -1) return [h("i", null, rest)];
   return [h("i", null, rest.slice(0, quote)), rest.slice(quote)];
 }
+
+/** What a diagnostic's docs link is called: caniemail's page, or ours. */
+export function seeLabel(see: string): string {
+  return /^https:\/\/(www\.)?caniemail\.com\//.test(see) ? "caniemail" : "docs";
+}
+

@@ -29,7 +29,7 @@ describe("what the CLI loads is what the template loads", () => {
       const dir = project({ "emails/a.tsx": REEXPORTS }, { packageJson: { name: "fixture", type } });
       const ran = await cli(dir, ["render", "emails"], { env: { HYPER_ELEMENTS_CLI_PROBE: "1" } });
       expect(ran.code, ran.stderr).toBe(0);
-      expect(probes(ran.stderr)).toEqual([{ file: join(dir, "emails/a.tsx"), sameRender: true, sameReact: true }]);
+      expect(probes(ran.stderr)).toMatchObject([{ file: join(dir, "emails/a.tsx"), sameRender: true, sameReact: true }]);
     });
   }
 
@@ -41,7 +41,7 @@ describe("what the CLI loads is what the template loads", () => {
     });
     const ran = await cli(dir, ["render", "emails"], { env: { HYPER_ELEMENTS_CLI_PROBE: "1" } });
     expect(ran.code, ran.stderr + ran.stdout).toBe(0);
-    expect(probes(ran.stderr)).toEqual([{ file: join(dir, "emails/a.tsx"), sameRender: true, sameReact: true }]);
+    expect(probes(ran.stderr)).toMatchObject([{ file: join(dir, "emails/a.tsx"), sameRender: true, sameReact: true }]);
     expect(readFileSync(join(dir, "out/emails/a.txt"), "utf8")).toContain("Same objects");
   });
 

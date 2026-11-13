@@ -29,9 +29,10 @@ render   writes each template's output under --out, at its path relative to
          files relative to the template, /paths from --public, and http(s)
          URLs, fetched once and cached.
 check    validates each template (with @hyper-elements/email-clients' email
-         client checks where the project has it) and writes nothing. Given
-         an HTML email (a .html or .htm file by name, or - for stdin), it
-         runs the email client checks on it.
+         client checks where the project has it, and @hyper-elements/lint's
+         checks of an Email or a Page) and writes nothing. Given an HTML email
+         (a .html or .htm file by name, or - for stdin), it runs the email
+         client checks and lint's HTML checks on it.
 outline  prints a template laid out: each block with its width.
 preview  writes each Email as the email clients draw it, one file per client
          and variant (with @hyper-elements/email-clients), under
@@ -71,6 +72,11 @@ Options:
                         fails
   --clients <a,b>       render, check, preview, dev: the email clients to
                         check for, or to preview
+  --no-lint             render, check, dev: leave out @hyper-elements/lint's
+                        checks (on by default for an Email, a Page and an
+                        HTML email; its options are "hyperElements": { "lint":
+                        { "rules": {…}, "kind": "marketing" } } in the nearest
+                        package.json)
   --max-warnings <n>    check: fail (exit 1) with more than n warnings
   --rendered            check: also render, for the checks only the written
                         HTML has (Gmail's size limit)
@@ -142,6 +148,8 @@ export interface Args {
   port?: number;
   /** Milliseconds. */
   timeout: number;
+  /** render, check, dev: @hyper-elements/lint's checks (`--no-lint` turns them off). */
+  lint: boolean;
 }
 
 export class UsageError extends Error {}
@@ -163,6 +171,7 @@ const OPTIONS: Record<string, { value: boolean; commands: Command[] }> = {
   offline: { value: false, commands: ["render"] },
   clients: { value: true, commands: ["render", "check", "preview"] },
   "max-warnings": { value: true, commands: ["check"] },
+  "no-lint": { value: false, commands: ["render", "check", "dev"] },
   rendered: { value: false, commands: ["check"] },
   dark: { value: false, commands: ["preview"] },
   fonts: { value: true, commands: ["preview"] },
@@ -195,7 +204,7 @@ export function parseArgs(argv: string[]): Args {
   }
   if (command === "migrate") {
     // Every argument is migrate's, unchanged (its own --help and options included).
-    return { command, positional: rest, out: "out", json: false, stdout: false, pretty: false, html: false, format: "png", refresh: false, offline: false, rendered: false, timeout: 60_000, dark: false, findings: false, screenshots: false, serve: false, installBrowser: false };
+    return { command, positional: rest, out: "out", json: false, stdout: false, pretty: false, html: false, format: "png", refresh: false, offline: false, rendered: false, timeout: 60_000, dark: false, findings: false, screenshots: false, serve: false, installBrowser: false, lint: false };
   }
   const values: Record<string, string | true> = {};
   const positional: string[] = [];
@@ -246,6 +255,7 @@ export function parseArgs(argv: string[]): Args {
     screenshots: values.screenshots === true,
     serve: values.serve === true,
     installBrowser: values["install-browser"] === true,
+    lint: (command === "render" || command === "check" || command === "dev") && values["no-lint"] !== true,
   };
   if (values.fonts !== undefined) {
     if (values.fonts !== "url" && values.fonts !== "inline") throw new UsageError(`--fonts takes url or inline, not ${JSON.stringify(values.fonts)}`);

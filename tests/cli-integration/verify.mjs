@@ -1,15 +1,17 @@
 /**
  * The packed CLI, as a project gets it: @hyper-elements/cli and @hyper-elements/react installed from their tarballs
- * into an app of a pnpm workspace (a copy of fixture/ in the temporary folder), then `render` and `check --json` on
- * the app's templates with npx (Node) and with bunx --bun (Bun). A template says which runtime rendered it
+ * into an app of a pnpm workspace (a copy of fixture/ in the temporary folder), the CLI's @hyper-elements/lint from
+ * its tarball too (an override), then `render` and `check --json` on the app's templates with npx (Node) and with
+ * bunx --bun (Bun), lint's checks run by the CLI's own copy. A template says which runtime rendered it
  * (process.versions.bun is set only under Bun); plain bunx follows the bin's Node shebang, so it runs Node.
  *
  * Then any HTML email with nothing installed: `npx --package <the packed CLI> hyper-elements check` in a folder with no
- * node_modules, which installs the CLI and its email-clients (from npm) into npx's own cache, and no React or Elements.
+ * node_modules, which installs the CLI, lint (its tarball) and its email-clients (from npm) into npx's own cache, and no
+ * React or Elements; lint's HTML checks run on it.
  * playwright-core is an optional peer, so it isn't installed either: `preview --findings` and `--install-browser` say
  * how to install it, and exit 2.
  *
- *   CLI_TARBALL=/tmp/hyper-elements-cli-0.1.0.tgz REACT_TARBALL=/tmp/hyper-elements-react-0.4.0.tgz node verify.mjs
+ *   CLI_TARBALL=… REACT_TARBALL=… LINT_TARBALL=/tmp/hyper-elements-lint-0.1.0.tgz node verify.mjs
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
@@ -21,8 +23,9 @@ import { fileURLToPath } from "node:url";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const cliTarball = resolve(process.env.CLI_TARBALL ?? "");
 const reactTarball = resolve(process.env.REACT_TARBALL ?? "");
-if (!process.env.CLI_TARBALL || !process.env.REACT_TARBALL) {
-  console.error("Set CLI_TARBALL and REACT_TARBALL to the packed packages (pnpm pack).");
+const lintTarball = resolve(process.env.LINT_TARBALL ?? "");
+if (!process.env.CLI_TARBALL || !process.env.REACT_TARBALL || !process.env.LINT_TARBALL) {
+  console.error("Set CLI_TARBALL, REACT_TARBALL and LINT_TARBALL to the packed packages (pnpm pack).");
   process.exit(2);
 }
 
@@ -35,6 +38,10 @@ const root = realpathSync(mkdtempSync(join(tmpdir(), "cli-integration-")));
 const web = join(root, "apps/web");
 try {
   cpSync(join(here, "fixture"), root, { recursive: true });
+  // The CLI's lint from its tarball, as the release publishes it before the CLI.
+  const workspace = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
+  workspace.pnpm = { overrides: { "@hyper-elements/lint": `file:${lintTarball}` } };
+  writeFileSync(join(root, "package.json"), JSON.stringify(workspace, null, 2));
   const pkg = JSON.parse(readFileSync(join(web, "package.json"), "utf8"));
   pkg.dependencies["@hyper-elements/react"] = `file:${reactTarball}`;
   pkg.devDependencies = { "@hyper-elements/cli": `file:${cliTarball}` };
@@ -74,6 +81,10 @@ try {
       ],
     );
     assert.deepEqual(lines.at(-1), { version: 1, summary: { templates: 2, errors: 0, warnings: 0, skipped: 0, late: [] }, exitCode: 0 });
+    // Lint ran, with the CLI's own copy (the app has none): the Email's short preview text, and the note on each.
+    const welcome = lines.find((line) => line.file === "emails/welcome.tsx");
+    assert.ok(welcome.diagnostics.some((d) => d.code === "email/lint-preview-text"), `no lint finding: ${JSON.stringify(welcome)}`);
+    for (const line of lines.slice(0, -1)) assert.ok(line.diagnostics.some((d) => d.code === "cli/lint-copy"), `no cli/lint-copy note: ${JSON.stringify(line)}`);
     console.log(`✓ ${runner.name}: render and check --json, on ${runner.runtime}`);
   }
   // The same page from both runtimes.
@@ -95,7 +106,7 @@ try {
   const env = { ...process.env, npm_config_cache: cache, npm_config_update_notifier: "false" };
   delete env.NODE_PATH;
   const npx = (args, input) => {
-    const ran = spawnSync("npx", ["--yes", `--package=${cliTarball}`, "hyper-elements", ...args], { cwd: folder, encoding: "utf8", env, input });
+    const ran = spawnSync("npx", ["--yes", `--package=${lintTarball}`, `--package=${cliTarball}`, "hyper-elements", ...args], { cwd: folder, encoding: "utf8", env, input });
     if (ran.error) throw ran.error;
     return { code: ran.status, stdout: ran.stdout, stderr: ran.stderr };
   };
@@ -113,6 +124,9 @@ try {
   assert.equal(position.path, "html");
   assert.equal(position.line, 3);
   assert.ok(line.diagnostics.some((d) => d.code === "cli/email-clients-copy"), "the CLI's own email-clients wasn't said to be used");
+  // Lint's HTML checks, by the CLI's own copy: the email has no lang.
+  assert.ok(line.diagnostics.some((d) => d.code === "lint/lang" && d.line === 2), `no lint/lang at line 2: ${checked.stdout}`);
+  assert.ok(line.diagnostics.some((d) => d.code === "cli/lint-copy"), "the CLI's own lint wasn't said to be used");
   assert.equal(summary.exitCode, 0);
   assert.deepEqual(readdirSync(folder), ["welcome.html"], "check wrote something");
 
@@ -137,7 +151,7 @@ try {
   assert.equal(install.code, 2, `npx preview --install-browser: ${install.stdout}${install.stderr}`);
   assert.match(install.stderr, /playwright-core, which isn't installed/);
 
-  // What npx installed: the CLI, email-clients and its models, and no React, React DOM or Elements.
+  // What npx installed: the CLI, lint, email-clients and its models, and no React, React DOM or Elements.
   const installs = readdirSync(join(cache, "_npx")).map((hash) => join(cache, "_npx", hash, "node_modules"));
   assert.ok(installs.some((modules) => existsSync(join(modules, "@hyper-elements/cli/package.json"))), "npx didn't install the CLI where it was looked for");
   const found = [];
@@ -155,7 +169,7 @@ try {
   };
   for (const modules of installs) visit(modules);
   for (const name of ["react", "react-dom", "@hyper-elements/react", "playwright-core"]) assert.ok(!found.includes(name), `npx installed ${name} for an HTML email: ${found.join(", ")}`);
-  for (const name of ["@hyper-elements/email-clients", "@hyper-elements/email-client-models"]) assert.ok(found.includes(name), `npx didn't install ${name}`);
+  for (const name of ["@hyper-elements/email-clients", "@hyper-elements/email-client-models", "@hyper-elements/lint"]) assert.ok(found.includes(name), `npx didn't install ${name}`);
   console.log(`✓ npx checks and previews an HTML email with nothing installed, and installs no React or playwright-core (${found.length} packages)`);
 } finally {
   rmSync(bare, { recursive: true, force: true });

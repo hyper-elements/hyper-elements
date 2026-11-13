@@ -10,7 +10,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { afterEach } from "vitest";
+import { afterAll, afterEach } from "vitest";
 
 export const CLI_ROOT = fileURLToPath(new URL("..", import.meta.url));
 export const BIN = join(CLI_ROOT, "dist", "bin.js");
@@ -30,10 +30,31 @@ export const MODULES: Record<string, string> = {
 };
 
 const made: string[] = [];
+/** Windows folders still held when their test ended: removed once the file's tests are done. */
+const held: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
-  // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
-  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
+  // Windows doesn't remove a folder a process still has open (EBUSY) for a while after that process ends, longer after
+  // it's killed (the SIGKILL tests, on CI's runners). Tried again for 2 s, then once more after the file's tests: the
+  // tests that end processes check that they ended themselves, and the temporary folder is only tidying.
+  for (const dir of made.splice(0)) {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (!WINDOWS || (code !== "EBUSY" && code !== "EPERM")) throw error;
+      held.push(dir);
+    }
+  }
+});
+afterAll(() => {
+  for (const dir of held.splice(0)) {
+    try {
+      rmSync(dir, { recursive: true, force: true, maxRetries: 50, retryDelay: 100 });
+    } catch (error) {
+      console.warn(`left ${dir}, still held: ${(error as Error).message}`);
+    }
+  }
 });
 
 /** Links `node_modules/<name>` in `folder` to `target` (a folder). */

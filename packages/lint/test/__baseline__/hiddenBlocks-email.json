@@ -1,0 +1,44 @@
+[
+  {
+    "code": "email/lint-lang",
+    "severity": "warning",
+    "path": "root.props.lang",
+    "message": "The Email has no lang, so screen readers guess its language"
+  },
+  {
+    "code": "email/lint-preview-text",
+    "severity": "info",
+    "path": "root.props.previewText",
+    "message": "The Email has no previewText, so inboxes show its first words after the subject"
+  },
+  {
+    "code": "email/lint-unsubscribe",
+    "severity": "warning",
+    "path": "root",
+    "message": "This marketing email has no link to unsubscribe or manage preferences"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[2].children[0].children[1].children[0]",
+    "message": "This text is 12px, under 14px"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[2].children[1].children[0].children[0]",
+    "message": "This text is 12px, under 14px"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[2].children[1].children[1].children[0]",
+    "message": "This text is 12px on desktop, under 14px"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[2].children[1].children[2].children[0]",
+    "message": "This text is 12px on phones, under 14px"
+  }
+]

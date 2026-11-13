@@ -99,7 +99,19 @@ npx hyper-elements check emails/
 1 template: 0 errors, 0 warnings, 0 skipped
 ```
 
-`check` runs every check `render()` runs, without writing anything. Where the project has `@hyper-elements/email-clients` (`npm i -D @hyper-elements/email-clients`), its email client checks run too, naming the clients each problem is about; `--clients gmail,outlook` picks the clients. `--rendered` also renders each template, for the checks only the written HTML has (the email's size against Gmail's limit). `--max-warnings 0` fails the run on any warning.
+`check` runs every check `render()` runs, without writing anything. Where the project has `@hyper-elements/email-clients` (`npm i -D @hyper-elements/email-clients`), its email client checks run too, naming the clients each problem is about; `--clients gmail,outlook` picks the clients. [Lint](#lint)'s checks run on each Email and Page. `--rendered` also renders each template, for the checks only the written HTML has (the email's size against Gmail's limit). `--max-warnings 0` fails the run on any warning.
+
+## Lint
+
+`check`, `render` and `dev` run [lint](/docs/lint) on each Email and Page: links that don't say where they go, images without alternate text, faint or small text, headings out of order, a missing `lang`, merge syntax typed by hand. Its findings are warnings and notes (`email/lint-<rule>`, `page/lint-<rule>`), so they change the exit code only past `--max-warnings`. `check` of an HTML email runs its HTML rules (`lint/<rule>`, each at its line). `--no-lint` leaves them out.
+
+Its options go in the `package.json` nearest the current folder, read once when the run (or `dev`) starts:
+
+```json
+{ "hyperElements": { "lint": { "rules": { "text-size": "off" }, "kind": "marketing" } } }
+```
+
+An option of the wrong shape, or a rule, severity or kind lint doesn't know, exits 2 before anything is checked. Lint is the project's copy where the template resolves one (`npm i -D @hyper-elements/lint` picks its version), else the CLI's own, with an `info` note, `cli/lint-copy`.
 
 ## preview
 
@@ -135,7 +147,7 @@ npx @hyper-elements/cli check email.html
 cat email.html | npx @hyper-elements/cli preview - --findings
 ```
 
-Each diagnostic has the `line` in the file and an excerpt of it. A folder's HTML files aren't picked up, since a folder of templates often holds the HTML rendered from them: give them by name (`check emails/*.html`).
+Each diagnostic has the `line` in the file and an excerpt of it. `check` runs [lint](#lint)'s HTML rules on it too. A folder's HTML files aren't picked up, since a folder of templates often holds the HTML rendered from them: give them by name (`check emails/*.html`).
 
 ## dev
 
