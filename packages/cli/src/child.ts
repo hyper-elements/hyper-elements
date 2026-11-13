@@ -25,7 +25,8 @@ import { formatDiagnostic } from "./format";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { killTree } from "./kill";
-import { installedAbove, LINT, lintCopyNote, lintUsage, ownLintVersion, type LintCopy, type LintModule } from "./lint";
+import { isOptionsError, LINT, lintUsage, ownLint, type LintCopy, type LintModule } from "./lint";
+import { installedAbove } from "./packages";
 import { parentGone } from "./parent";
 import { reactCopies } from "./react-copies";
 
@@ -144,9 +145,6 @@ interface Loaded {
   lint?: LintCopy<LintModule>;
 }
 
-/** The CLI's own copy of lint, imported once (where a template's project has none). */
-let ownLint: Promise<LintModule> | undefined;
-
 class Session {
   private sequence: number;
   /** email-clients' plugin, per copy of email-clients and set of clients. */
@@ -235,17 +233,20 @@ class Session {
       let lint: LintCopy<LintModule> | undefined;
       let lintFrom: string | undefined;
       if (this.message.options.lint) {
-        try {
-          // Bun resolves a package no node_modules above the template holds (the CLI's own, from its store): not the project's.
-          if (bun && !installedAbove(dirname(input.file), LINT)) throw Object.assign(new Error(`Cannot find module '${LINT}'`), { code: "MODULE_NOT_FOUND" });
-          const module = exportsOf<LintModule>(await loader.load(LINT), "lint");
-          lintFrom = resolvedPath(loader.resolve(LINT));
-          lint = { module, version: packageVersion(lintFrom, LINT) ?? "of an unknown version", own: false };
-        } catch (error) {
-          if (!notFound(error, LINT)) throw error;
-          ownLint ??= import(LINT).then((mod) => exportsOf<LintModule>(mod, "lint"));
-          lint = { module: await ownLint, version: ownLintVersion(), own: true };
+        // Bun resolves a package no node_modules above the template holds (the CLI's own, from its store): not the project's.
+        let failure: string | undefined;
+        if (!bun || installedAbove(dirname(input.file), LINT)) {
+          try {
+            const module = exportsOf<LintModule>(await loader.load(LINT), "lint");
+            if (typeof module?.lint !== "function") throw new Error("it has no lint()");
+            lintFrom = resolvedPath(loader.resolve(LINT));
+            lint = { module, version: packageVersion(lintFrom, LINT) ?? "of an unknown version", own: false };
+          } catch (error) {
+            // Not there: the CLI's own. There but broken: the CLI's own too, saying why (lint never stops a render).
+            if (!notFound(error, LINT)) failure = errorLine(error);
+          }
         }
+        lint ??= await ownLint(failure);
       }
       loaded = { elements, inspect, react, emailClients, lint };
       if (process.env.HYPER_ELEMENTS_CLI_PROBE) {
@@ -320,9 +321,10 @@ class Session {
    * The plugins a template is checked with: email-clients' (where the project has it), then lint's (for an Email or a
    * Page, unless --no-lint), with what the CLI says about them.
    */
-  private async pluginsFor(loaded: Loaded, root: Root | null): Promise<{ plugins: unknown[]; diagnostics: Diagnostic[] }> {
+  private async pluginsFor(loaded: Loaded, root: Root | null): Promise<{ plugins: unknown[]; diagnostics: Diagnostic[]; ran: Diagnostic[] }> {
     const { plugin, diagnostics } = await this.plugin(loaded);
     const plugins: unknown[] = plugin ? [plugin] : [];
+    const ran: Diagnostic[] = [];
     const copy = loaded.lint;
     if (copy && (root === "Email" || root === "Page")) {
       let made = this.linters.get(copy.module);
@@ -331,15 +333,16 @@ class Session {
           made = copy.module.lint(this.message.options.lint || {});
         } catch (error) {
           // Options this copy of lint doesn't take: what the run was asked can't be done.
-          if (error instanceof TypeError) throw new UsageFailure(lintUsage(error, copy));
+          if (isOptionsError(error)) throw new UsageFailure(lintUsage(error, copy));
           throw error;
         }
         this.linters.set(copy.module, made);
       }
       plugins.push(made);
-      if (copy.own) diagnostics.push(lintCopyNote(copy.version));
+      // Said of a template core ran the plugins' checks on.
+      if (copy.note) ran.push(copy.note);
     }
-    return { plugins, diagnostics };
+    return { plugins, diagnostics, ran };
   }
 
   /** email-clients' plugin for the clients asked for, made once per copy of email-clients. */

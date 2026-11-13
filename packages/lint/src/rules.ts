@@ -32,7 +32,7 @@ export const DOCS = "https://www.hyperelements.dev/docs/lint";
 
 const BOTH: readonly LintRoot[] = ["Email", "Page"];
 const rule = (id: string, severity: Rule["severity"], roots: readonly LintRoot[], html: Rule["html"], summary: string, fix: string, htmlFix?: string): Rule =>
-  Object.freeze({ id, severity, roots, html, summary, fix, ...(htmlFix ? { htmlFix } : {}), see: `${DOCS}#${id}` });
+  Object.freeze({ id, severity, roots: Object.freeze([...roots]), html, summary, fix, ...(htmlFix ? { htmlFix } : {}), see: `${DOCS}#${id}` });
 
 /** Every rule, in the docs' order. */
 export const rules: readonly Rule[] = Object.freeze([

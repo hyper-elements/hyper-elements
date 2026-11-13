@@ -2,7 +2,7 @@
 import { Button, Column, Email, Image, LineBreak, Link, MergeTag, Page, Section, Span, Text } from "@hyper-elements/react";
 import { cases, layers } from "./cases";
 import { read, run } from "./helpers";
-import { hrefOf, imagesIn, nameOf, ownsText, readTree, wordsOf } from "../src/tree";
+import { hrefOf, imagesIn, insideText, nameOf, ownsText, readTree, wordsOf } from "../src/tree";
 
 describe("text size at each width", () => {
   for (const c of cases) {
@@ -133,7 +133,8 @@ describe("words and names", () => {
   });
 
   it("marks an Email's runs inside text, and a Page has none", () => {
-    expect(tree.nodes.filter((info) => info.inline).map((info) => info.node.type)).toEqual(["MergeTag", "LineBreak", "Span", "Link"]);
+    const inside = (t: typeof tree) => t.nodes.filter((info) => insideText(info.node, info.parent?.node ?? null, t.rootType));
+    expect(inside(tree).map((info) => info.node.type)).toEqual(["MergeTag", "LineBreak", "Span", "Link"]);
     const page = read(
       <Page width={600}>
         <Text>
@@ -141,6 +142,6 @@ describe("words and names", () => {
         </Text>
       </Page>
     );
-    expect(page.nodes.some((info) => info.inline)).toBe(false);
+    expect(inside(page)).toEqual([]);
   });
 });

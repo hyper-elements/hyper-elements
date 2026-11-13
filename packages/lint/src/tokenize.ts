@@ -13,7 +13,10 @@
  * - character references, numeric and the named ones that can hide a character (spaces, invisible characters, and
  *   the punctuation that can disguise a URL's scheme), with each unknown named reference's place kept;
  * - an open-element stack: void elements are never opened, a `/>` elsewhere is ignored, an `<a>` closes an open `<a>`,
- *   an end tag closes the nearest open element of its name (a count by name makes an unmatched one cost nothing).
+ *   an end tag closes the nearest open element of its name (a count by name makes an unmatched one cost nothing), and
+ *   the head ends where the body starts (`</head>` may be left out): at a start tag that doesn't belong in a head, or at
+ *   text that isn't space;
+ * - lines end at `\n`, `\r\n` or a lone `\r`, as HTML reads them.
  */
 
 export interface HtmlText {
@@ -48,6 +51,8 @@ export interface HtmlTree {
   document: boolean;
 }
 
+/** What may be in a head: any other start tag ends it, as browsers read a page whose `</head>` is left out. */
+const HEAD = new Set(["base", "basefont", "bgsound", "link", "meta", "title", "style", "script", "noscript", "template", "head"]);
 const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
 const RAW = new Set(["script", "style", "xmp", "iframe", "noembed", "noframes", "noscript", "textarea", "title"]);
 /** Raw text whose character references are read (RCDATA). */
@@ -108,10 +113,11 @@ export function decode(raw: string): Attribute {
   return { value: out + raw.slice(last), unknown };
 }
 
-/** Line and column (both from 1) of offsets into the input, by a table of where each line starts. */
+/** Line and column (both from 1) of offsets into the input, by a table of where each line starts (after `\n`, `\r\n` or `\r`). */
 function positions(input: string): (offset: number) => { line: number; column: number } {
   const starts = [0];
-  for (let i = input.indexOf("\n"); i !== -1; i = input.indexOf("\n", i + 1)) starts.push(i + 1);
+  const breaks = /\r\n?|\n/g;
+  for (let m = breaks.exec(input); m; m = breaks.exec(input)) starts.push(m.index + m[0].length);
   return (offset) => {
     let lo = 0;
     let hi = starts.length - 1;
@@ -144,6 +150,8 @@ export function readHtml(input: string): HtmlTree {
     if (to <= from) return;
     const raw = input.slice(from, to);
     const value = references ? decode(raw).value : raw;
+    // Text that isn't space, in a head, starts the body.
+    if (current().name === "head" && /[^\t\n\f\r ]/.test(value)) close("head");
     const parent = current();
     const last = parent.children[parent.children.length - 1];
     if (last?.type === "text") last.text += value;
@@ -161,6 +169,13 @@ export function readHtml(input: string): HtmlTree {
   let i = 0;
   let textFrom = 0;
   const n = input.length;
+  // Where the next "-->" is, found once and kept while it's still ahead: every scan for it starts past the last one, so
+  // a run of conditional comments that end far away costs the input's length, not its square.
+  let commentEnd = -2;
+  const nextCommentEnd = (from: number) => {
+    if (commentEnd === -1 || commentEnd >= from) return commentEnd;
+    return (commentEnd = input.indexOf("-->", from));
+  };
   while (i < n) {
     const lt = input.indexOf("<", i);
     if (lt === -1) break;
@@ -168,9 +183,10 @@ export function readHtml(input: string): HtmlTree {
     // A comment, Outlook's conditional ones included.
     if (input.startsWith("<!--", lt)) {
       text(textFrom, lt);
-      const end = input.indexOf("-->", lt + 4);
-      const body = end === -1 ? "" : lower.slice(lt + 4, end);
-      if (body.startsWith("[if") && !REVEALED.test(body)) {
+      const end = nextCommentEnd(lt + 4);
+      // A downlevel-revealed marker is short: only a short comment is read to tell.
+      const revealed = end !== -1 && end - lt < 256 && REVEALED.test(lower.slice(lt + 4, end));
+      if (lower.startsWith("[if", lt + 4) && !revealed) {
         // Outlook's own: skipped to the > of its <![endif]-->.
         const endif = lower.indexOf("<![endif]", lt);
         const after = endif === -1 ? -1 : input.indexOf(">", endif);
@@ -238,6 +254,7 @@ export function readHtml(input: string): HtmlTree {
       continue;
     }
     if (name === "html" || name === "body") document = true;
+    if (!HEAD.has(name) && current().name === "head") close("head");
     if (name === "a") close("a");
     const element: HtmlElement = { type: "element", name, attrs, children: [], parent: current(), ...at(lt) };
     current().children.push(element);

@@ -346,9 +346,6 @@ importers:
 
   packages/lint:
     devDependencies:
-      '@hyper-elements/core':
-        specifier: workspace:*
-        version: link:../internal/core
       '@hyper-elements/email-clients':
         specifier: workspace:*
         version: link:../email-clients

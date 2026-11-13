@@ -20,7 +20,7 @@ export interface TemplateContext {
    * The plugins to check it with: email-clients' where the template's project has email-clients, and lint's for an Email
    * or a Page unless `--no-lint` (each made once per process), with what the CLI says about them.
    */
-  plugins(): Promise<{ plugins: unknown[]; diagnostics: Diagnostic[] }>;
+  plugins(): Promise<PluginsFor>;
   /** The project's email-clients, where it has it (loaded for `check` and `preview`). */
   emailClients?: EmailClientsModule;
   /** inspect()'s result, which the child reads the root from. */
@@ -38,12 +38,18 @@ export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {
 }
 
 /**
- * What the CLI says about the plugins, after what Elements found: without the note on lint's copy where the template has
- * errors (core runs no plugin's checks then).
+ * The plugins a template is checked with, and what the CLI says about them: `diagnostics` always, `ran` only where core
+ * ran the plugins' checks (a template without errors), such as which copy of lint checked it.
  */
-export function withPluginNotes(diagnostics: readonly Diagnostic[], notes: readonly Diagnostic[]): Diagnostic[] {
-  const ran = hasErrors(diagnostics) ? notes.filter((d) => d.code !== "cli/lint-copy") : notes;
-  return [...diagnostics, ...ran];
+export interface PluginsFor {
+  plugins: unknown[];
+  diagnostics: Diagnostic[];
+  ran: Diagnostic[];
+}
+
+/** What Elements found, then what the CLI says about the plugins it ran with. */
+export function withPluginNotes(diagnostics: readonly Diagnostic[], { diagnostics: notes, ran }: Pick<PluginsFor, "diagnostics" | "ran">): Diagnostic[] {
+  return [...diagnostics, ...notes, ...(hasErrors(diagnostics) ? [] : ran)];
 }
 
 /** An ElementsError (from any copy of Elements): its diagnostics. */

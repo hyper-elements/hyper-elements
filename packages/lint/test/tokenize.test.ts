@@ -90,6 +90,12 @@ describe("the tree", () => {
     expect(read(`<p>unclosed<b>still`)).toBe('p("unclosed",b("still"))');
   });
 
+  it("ends a head whose </head> is left out where the body starts: at a body element or at text", () => {
+    expect(read("<html><head><title>T</title><body><p>x</p></body></html>")).toBe('html(head(title("T")),body(p("x")))');
+    expect(read("<head><meta charset=utf-8><style>p{}</style><p>x</p>")).toBe('head(meta[charset="utf-8"](),style("p{}")),p("x")');
+    expect(read("<head><title>T</title>\n  Hello")).toBe('head(title("T")),"\\n  Hello"');
+  });
+
   it("is a document with an <html> or a <body>, else a fragment", () => {
     expect(readHtml("<body><p>x</p></body>").document).toBe(true);
     expect(readHtml("<p>x</p>").document).toBe(false);
@@ -100,6 +106,12 @@ describe("the tree", () => {
     const a = (root.children[0] as HtmlElement).children[1] as HtmlElement;
     expect([a.name, a.line, a.column]).toEqual(["a", 2, 3]);
     expect((a.children[0] as HtmlText)).toMatchObject({ text: "one", line: 2, column: 13 });
+  });
+
+  it("ends lines at \\n, \\r\\n and a lone \\r", () => {
+    const { root } = readHtml("<p>a</p>\r<p>b</p>\r\n<p>c</p>\n<img src=x>");
+    const elements = root.children.filter((c): c is HtmlElement => c.type === "element");
+    expect(elements.map((c) => [c.line, c.column])).toEqual([[1, 1], [2, 1], [3, 1], [4, 1]]);
   });
 
   it("keeps offsets right after characters whose lower case is longer", () => {
@@ -131,6 +143,12 @@ describe("hostile input", () => {
       expect(ms).toBeLessThan(1000);
     }
     expect(time(attrs).tree.root.children[0]).toMatchObject({ name: "a" });
+  });
+
+  it("reads a run of conditional comments that end far away in linear time", () => {
+    const conditional = `${"<!--[if a]><![endif]>".repeat(50_000)}-->`;
+    expect(conditional.length).toBeGreaterThan(1_000_000);
+    expect(time(conditional).ms).toBeLessThan(1000);
   });
 
   it("stays linear: ten times the input, about ten times the time", () => {

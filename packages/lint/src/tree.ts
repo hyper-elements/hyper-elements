@@ -27,11 +27,9 @@ export interface Info {
   visible: Record<Width, boolean>;
   /** Its text's size in px at each width, as the browser computes it. */
   size: Record<Width, number>;
-  /** Written inside text (an Email's runs: a Span, Link, Image, LineBreak or MergeTag in a Text, Heading, …). */
-  inline: boolean;
   /** What's behind its content at each width. */
   under: Record<Width, Under>;
-  /** An Email's phone font size passed down to its children (`mobileTextOf`), undefined where none. */
+  /** An Email block's phone font size passed down to its children (`mobileTextOf`), undefined where none. */
   phoneDown: number | undefined;
 }
 
@@ -56,7 +54,7 @@ const num = (v: unknown): number | undefined => (typeof v === "number" && Number
 const raised = (node: PluginNode) => node.type === "Span" && (node.style.verticalAlign === "super" || node.style.verticalAlign === "sub");
 
 /** An Email writes a node inside text where its parent writes its children through `text()`, or a ListItem's text part. */
-function insideText(node: PluginNode, parent: PluginNode | null, rootType: string): boolean {
+export function insideText(node: PluginNode, parent: PluginNode | null, rootType: string): boolean {
   if (rootType !== "Email" || !parent) return false;
   if (parent.type === "ListItem") return node.type !== "List";
   if (!WRITES_TEXT.has(parent.type)) return false;
@@ -122,7 +120,6 @@ export function readTree(root: PluginNode): Tree | undefined {
       // A Page root: its phone text styles aren't written.
       size = { desktop: own, mobile: own };
     } else {
-      phoneDown = rootType === "Email" ? (ownPhone ?? (node.style.fontSize === undefined ? parent.phoneDown : undefined)) : undefined;
       // A desktop declaration where it differs from its parent's (or one its writer always writes).
       const written = own !== parent.node.text.fontSize || (rootType === "Page" && ALWAYS_SIZE.has(node.type));
       const inherited = (width: Width) => (raised(node) ? parent.size[width] / SMALLER : parent.size[width]);
@@ -137,7 +134,7 @@ export function readTree(root: PluginNode): Tree | undefined {
       if (image && image !== node && imageDrawn(image, width, rootType)) below = "image";
       under[width] = underOf(node, below);
     }
-    const info: Info = { node, parent, visible, size, inline, under, phoneDown };
+    const info: Info = { node, parent, visible, size, under, phoneDown };
     nodes.push(info);
     for (const child of node.children) if (isNode(child)) visit(child, info);
   };

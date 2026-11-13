@@ -143,7 +143,7 @@ export function installAgentPaths(host: AgentHost) {
   await hyperElementsPlayground.render(code, options)      // render without touching the page
       options.root     "Email" | "Page" | "Document" | "Canvas": rewrite the code's root first
       options.include  ["html", "text", "outline", "pdf", "png", "svg"] (default: html, text, outline; files in base64)
-      options.checks   false to leave out the email client checks
+      options.checks   false to leave out the email client checks (lint's checks still run)
       => { ok, root, html, text, outline, diagnostics: [{ severity, code, message, path, fix, clients, line }], error: { kind, message, line } }
   await hyperElementsPlayground.setCode(code, { root })    // put it in the editor and show it; the same answer, without the outputs
   hyperElementsPlayground.getCode()

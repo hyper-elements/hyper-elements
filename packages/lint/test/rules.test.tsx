@@ -89,6 +89,8 @@ describe("the plugin", () => {
       expect(Object.isFrozen(r)).toBe(true);
     }
     expect(rules.filter((r) => r.roots.length)).toHaveLength(17);
+    // Frozen all the way: a rule's roots can't be changed through another rule's.
+    for (const r of rules) expect(Object.isFrozen(r.roots)).toBe(true);
   });
 });
 
@@ -196,6 +198,11 @@ describe("contrast", () => {
     expect(only("contrast", layers.emailHiddenOnDesktop)).toEqual([]);
     expect(only("contrast", layers.emailHiddenOnPhones).map((d) => d.message)).toEqual(["This text is 1:1 against its background (#ffffff on #ffffff) on phones: body text needs 4.5:1"]);
     expect(only("contrast", layers.pageHiddenOnDesktop).map((d) => d.message)).toEqual(["This text is 1:1 against its background (#ffffff on #ffffff) on desktop: body text needs 4.5:1"]);
+  });
+
+  it("skips text with no color at all (transparent): it's hidden on purpose", () => {
+    expect(only("contrast", email(<Text style={{ color: "transparent" }}>Spacer</Text>))).toEqual([]);
+    expect(only("contrast", email(<Text style={{ color: "rgba(0, 0, 0, 0)" }}>Spacer</Text>))).toEqual([]);
   });
 
   it("counts a Button's own background", () => {

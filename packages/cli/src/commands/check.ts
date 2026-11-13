@@ -7,8 +7,8 @@ import { elementsErrorDiagnostics, hasErrors, withPluginNotes, type CommandResul
 
 export async function checkTemplate(context: TemplateContext): Promise<CommandResult> {
   const { element, elements, options } = context;
-  const { plugins: list, diagnostics: notes } = await context.plugins();
-  const plugins = list.length ? { plugins: list } : {};
+  const made = await context.plugins();
+  const plugins = made.plugins.length ? { plugins: made.plugins } : {};
   let diagnostics;
   if (options.rendered) {
     try {
@@ -21,6 +21,6 @@ export async function checkTemplate(context: TemplateContext): Promise<CommandRe
   } else {
     diagnostics = elements.validate(element, plugins).diagnostics;
   }
-  diagnostics = withPluginNotes(diagnostics, notes);
+  diagnostics = withPluginNotes(diagnostics, made);
   return { status: hasErrors(diagnostics) ? "error" : "ok", diagnostics };
 }

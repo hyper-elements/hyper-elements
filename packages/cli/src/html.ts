@@ -18,6 +18,7 @@ import { packageVersion } from "./elements";
 import { errorLine, messageOf } from "./errors";
 import type { Input } from "./inputs";
 import type { Outcome } from "./output";
+import { esmExport, installedAbove } from "./packages";
 import type { Diagnostic, PreviewFile } from "./protocol";
 
 const NAME = "@hyper-elements/email-clients";
@@ -72,17 +73,7 @@ function packageOf(file: string, name: string): { folder: string; manifest: Reco
 
 /** The ES module entry of a package's main export (its `import` condition), else the file `require` resolved. */
 function esmEntry(folder: string, manifest: Record<string, unknown>, resolved: string): string {
-  const exported = (manifest.exports as Record<string, unknown> | undefined)?.["."] ?? manifest.exports;
-  const pick = (value: unknown): string | undefined => {
-    if (typeof value === "string") return value;
-    if (value && typeof value === "object") {
-      const conditions = value as Record<string, unknown>;
-      return pick(conditions.import) ?? pick(conditions.default);
-    }
-    return undefined;
-  };
-  const entry = pick(exported) ?? (typeof manifest.module === "string" ? manifest.module : undefined);
-  return entry ? join(folder, entry) : resolved;
+  return esmExport(folder, manifest, ".") ?? (typeof manifest.module === "string" ? join(folder, manifest.module) : resolved);
 }
 
 /** The CLI's own email-clients (a dependency), loaded once. */
@@ -98,13 +89,6 @@ function ownCopy() {
 
 const bun = typeof (process.versions as Record<string, string | undefined>).bun === "string";
 
-/** Whether a node_modules at or above `folder` holds email-clients. */
-function installedAbove(folder: string): boolean {
-  for (let dir = folder; ; dir = dirname(dir)) {
-    if (existsSync(join(dir, "node_modules", NAME, "package.json"))) return true;
-    if (dirname(dir) === dir) return false;
-  }
-}
 
 /** Each project copy, by its entry, loaded once. */
 const projects = new Map<string, Promise<HtmlEmailClients>>();
@@ -117,7 +101,7 @@ export async function emailClientsFor(file: string): Promise<Copy> {
   let found: { folder: string; version: string | undefined; entry: string } | undefined;
   try {
     // Bun installs a package no node_modules holds, from its cache or npm (auto-install): that's not the project's.
-    if (bun && !installedAbove(dirname(file))) throw new Error(`${NAME} isn't installed`);
+    if (bun && !installedAbove(dirname(file), NAME)) throw new Error(`${NAME} isn't installed`);
     const resolved = createRequire(file).resolve(NAME);
     const pkg = packageOf(resolved, NAME);
     if (pkg) found = { folder: pkg.folder, version: packageVersion(resolved, NAME), entry: esmEntry(pkg.folder, pkg.manifest, resolved) };

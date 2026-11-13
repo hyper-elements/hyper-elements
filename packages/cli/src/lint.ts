@@ -1,19 +1,23 @@
 /**
  * `@hyper-elements/lint` in the CLI: the project's copy where the template (or the HTML file) resolves one, else the
- * CLI's own (a dependency), with an `info` note, `cli/lint-copy`, on each input that used it. Lint imports nothing of
- * Elements or React at run time, so the CLI's copy runs safely beside the project's Elements.
+ * CLI's own (a dependency), with an `info` note, `cli/lint-copy`, on each input that used it. A project's copy that's
+ * there but can't be used (it fails to load, or has no `lint` or `lintHtml`) is passed over for the CLI's own too, with
+ * a warning saying why: a broken lint never stops a template from rendering. Lint imports nothing of Elements or React
+ * at run time, so the CLI's copy runs safely beside the project's Elements.
  *
  * The copy that runs checks what the options mean (the parent checked only their shape): a rule, severity or kind it
- * doesn't know throws a TypeError, which the run reports as a usage error (exit 2) naming that copy and its version.
+ * doesn't know throws a TypeError saying so (`[lint] …`), which the run reports as a usage error (exit 2) naming that
+ * copy and its version.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { cliDiagnostic } from "./commands/shared";
 import { errorLine } from "./errors";
 import type { Input } from "./inputs";
 import type { LintConfig } from "./lint-config";
+import { esmExport, installedAbove } from "./packages";
 import type { Diagnostic } from "./protocol";
 
 export const LINT = "@hyper-elements/lint";
@@ -28,22 +32,38 @@ export interface LintHtmlModule {
   lintHtml(html: string, options?: LintConfig): { diagnostics: Array<{ code: string; severity: "info" | "warning"; message: string; line: number; column: number; fix?: string; see?: string }> };
 }
 
-/** A copy of lint: whose it is and its version, for what the CLI says about it. */
+/** A copy of lint: whose it is, its version, and what the CLI says about it (on the CLI's own copy). */
 export interface LintCopy<T> {
   module: T;
   version: string;
   own: boolean;
+  /** `cli/lint-copy`: the CLI's own copy was used, and why. */
+  note?: Diagnostic;
 }
 
-/** The CLI's own copy's version. */
+let ownVersion: string | undefined;
+/** The CLI's own copy's version, read once. */
 export function ownLintVersion(): string {
-  const manifest = createRequire(import.meta.url).resolve(`${LINT}/package.json`);
-  return (JSON.parse(readFileSync(manifest, "utf8")) as { version?: string }).version ?? "of an unknown version";
+  if (ownVersion === undefined) {
+    const manifest = createRequire(import.meta.url).resolve(`${LINT}/package.json`);
+    ownVersion = (JSON.parse(readFileSync(manifest, "utf8")) as { version?: string }).version ?? "of an unknown version";
+  }
+  return ownVersion;
 }
 
-/** The note on an input checked with the CLI's own copy. */
-export function lintCopyNote(version: string): Diagnostic {
-  return cliDiagnostic("lint-copy", "info", `${LINT} isn't installed where this is: the CLI's own copy (${version}) checked it`, `npm i -D ${LINT} to choose its version`);
+/**
+ * The note on an input checked with the CLI's own copy: an `info` where the project has none, a `warning` naming why
+ * where its copy couldn't be used.
+ */
+export function lintCopyNote(version: string, failure?: string): Diagnostic {
+  return failure
+    ? cliDiagnostic("lint-copy", "warning", `This project's ${LINT} couldn't be used (${failure}): the CLI's own copy (${version}) checked it`, `reinstall ${LINT}, or remove it to use the CLI's`)
+    : cliDiagnostic("lint-copy", "info", `${LINT} isn't installed where this is: the CLI's own copy (${version}) checked it`, `npm i -D ${LINT} to choose its version`);
+}
+
+/** Whether a copy of lint threw for options it doesn't take (its own `[lint]` TypeError), not for a fault of its own. */
+export function isOptionsError(error: unknown): boolean {
+  return error instanceof TypeError && /^\[lint\] /.test(error.message);
 }
 
 /** What a copy of lint threw for options it doesn't take, as the run's usage error. */
@@ -54,49 +74,43 @@ export function lintUsage(error: unknown, copy: { version: string; own: boolean 
 
 const bun = typeof (process.versions as Record<string, string | undefined>).bun === "string";
 
-/** Whether a node_modules at or above `folder` holds `name` (Bun would otherwise resolve one from elsewhere). */
-export function installedAbove(folder: string, name = LINT): boolean {
-  for (let dir = folder; ; dir = dirname(dir)) {
-    if (existsSync(join(dir, "node_modules", name, "package.json"))) return true;
-    if (dirname(dir) === dir) return false;
-  }
-}
-
-/** The ES module file of a package's export `subpath` (its `import` condition). */
-function esmExport(folder: string, manifest: Record<string, unknown>, subpath: string): string | undefined {
-  const exported = (manifest.exports as Record<string, unknown> | undefined)?.[subpath];
-  const pick = (value: unknown): string | undefined => {
-    if (typeof value === "string") return value;
-    if (value && typeof value === "object") {
-      const conditions = value as Record<string, unknown>;
-      return pick(conditions.import) ?? pick(conditions.default);
-    }
-    return undefined;
-  };
-  const entry = pick(exported);
-  return entry ? join(folder, entry) : undefined;
+let ownPlugin: Promise<LintModule> | undefined;
+/** The CLI's own plugin entry, imported once. */
+export async function ownLint(failure?: string): Promise<LintCopy<LintModule>> {
+  ownPlugin ??= import(LINT) as Promise<LintModule>;
+  const version = ownLintVersion();
+  return { module: await ownPlugin, version, own: true, note: lintCopyNote(version, failure) };
 }
 
 const htmlCopies = new Map<string, Promise<LintHtmlModule>>();
 let ownHtml: Promise<LintHtmlModule> | undefined;
 
-/** The lintHtml an HTML file is checked with: the copy its folder resolves, else the CLI's own. */
+/** The lintHtml an HTML file is checked with: the copy its folder resolves, else (or where it can't be used) the CLI's own. */
 async function lintHtmlFor(file: string): Promise<LintCopy<LintHtmlModule>> {
+  let failure: string | undefined;
+  let manifestPath: string | undefined;
   try {
-    if (bun && !installedAbove(dirname(file))) throw new Error(`${LINT} isn't installed`);
-    const manifestPath = createRequire(file).resolve(`${LINT}/package.json`);
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Record<string, unknown>;
-    const entry = esmExport(dirname(manifestPath), manifest, "./html");
-    if (entry) {
+    if (!bun || installedAbove(dirname(file), LINT)) manifestPath = createRequire(file).resolve(`${LINT}/package.json`);
+  } catch {
+    // Not installed there.
+  }
+  if (manifestPath) {
+    try {
+      const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as Record<string, unknown>;
+      const entry = esmExport(dirname(manifestPath), manifest, "./html");
+      if (!entry) throw new Error("it has no ./html entry: lint 0.1.0 and later do");
       let loading = htmlCopies.get(entry);
       if (!loading) htmlCopies.set(entry, (loading = import(pathToFileURL(entry).href) as Promise<LintHtmlModule>));
-      return { module: await loading, version: typeof manifest.version === "string" ? manifest.version : "of an unknown version", own: false };
+      const module = await loading;
+      if (typeof module?.lintHtml !== "function") throw new Error("its ./html entry has no lintHtml");
+      return { module, version: typeof manifest.version === "string" ? manifest.version : "of an unknown version", own: false };
+    } catch (error) {
+      failure = errorLine(error);
     }
-  } catch {
-    // Not installed there (or a copy with no HTML entry): the CLI's own.
   }
   ownHtml ??= import(`${LINT}/html`) as Promise<LintHtmlModule>;
-  return { module: await ownHtml, version: ownLintVersion(), own: true };
+  const version = ownLintVersion();
+  return { module: await ownHtml, version, own: true, note: lintCopyNote(version, failure) };
 }
 
 /** The line of `html` a finding is on, trimmed to 80 characters, as email-clients' HTML diagnostics show it. */
@@ -113,14 +127,15 @@ function excerpt(lines: string[], line: number): string | undefined {
 export async function lintHtmlInput(input: Input, html: string, config: LintConfig, probe?: (text: string) => void): Promise<{ diagnostics: Diagnostic[]; error?: string }> {
   const copy = await lintHtmlFor(input.file);
   probe?.(JSON.stringify({ file: input.display, lint: copy.own ? "cli" : "project", lintVersion: copy.version }));
-  const notes = copy.own ? [lintCopyNote(copy.version)] : [];
+  const notes = copy.note ? [copy.note] : [];
   let found;
   try {
     found = copy.module.lintHtml(html, config);
   } catch (error) {
-    if (error instanceof TypeError) return { diagnostics: notes, error: lintUsage(error, copy) };
+    if (isOptionsError(error)) return { diagnostics: notes, error: lintUsage(error, copy) };
     throw error;
   }
+  // Lines as lint counts them, and HTML reads them: ended by \n, \r\n or a lone \r.
   const lines = html.split(/\r\n|\r|\n/);
   const diagnostics: Diagnostic[] = found.diagnostics.map(({ code, severity, message, line, fix, see }) => {
     const shown = excerpt(lines, line);

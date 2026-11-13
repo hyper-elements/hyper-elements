@@ -165,7 +165,8 @@ function runChecks(info: Info, add: (info: Info, id: string, message: string) =>
   const { node } = info;
   const color = parseColor(node.text.color);
   const weight = node.text.fontWeight;
-  if (color) {
+  // Text with no color at all (transparent) is hidden on purpose: there's nothing to read.
+  if (color && color.a > 0) {
     const faint: Array<{ width: Width; message: string }> = [];
     for (const width of WIDTHS) {
       const under = info.under[width];

@@ -186,6 +186,44 @@ describe("lint's options", () => {
   });
 });
 
+describe("a project's copy that can't be used", () => {
+  /** A copy of lint that's there but broken: its main entry throws when loaded, or has no lint(). */
+  const broken = (index: string) => {
+    const folder = join(project({}, { modules: [] }), "broken-lint");
+    mkdirSync(folder, { recursive: true });
+    writeFileSync(join(folder, "package.json"), JSON.stringify({ name: "@hyper-elements/lint", version: "0.0.2", type: "module", exports: { ".": "./index.js", "./package.json": "./package.json" } }));
+    writeFileSync(join(folder, "index.js"), index);
+    return folder;
+  };
+  const linked = (lint: string, files: Record<string, string>) =>
+    project(files, { modules: { react: "react", "react-dom": "react-dom", "@hyper-elements/react": "@hyper-elements/react", "@hyper-elements/lint": lint } });
+
+  for (const [what, index, why] of [
+    ["one that fails to load", `throw new Error("half installed");\n`, /half installed/],
+    ["one with no lint()", "export const version = '0.0.2';\n", /it has no lint\(\)/],
+  ] as const) {
+    it(`${what}: the CLI's own checks the template, which renders, with a warning saying why`, async () => {
+      const dir = linked(broken(index), { "emails/welcome.tsx": EMAIL });
+      const ran = await cli(dir, ["render", "emails", "--json"]);
+      expect(ran.code, ran.stderr).toBe(0);
+      const [line] = lines(ran);
+      expect(line.outputs).toEqual(["out/emails/welcome.html", "out/emails/welcome.txt"]);
+      expect(codes(line)).toContain("email/lint-lang");
+      const note = line.diagnostics.find((d: any) => d.code === "cli/lint-copy");
+      expect(note).toMatchObject({ severity: "warning", message: expect.stringMatching(why) });
+    });
+  }
+
+  it("on an HTML email, a copy with no ./html entry: the CLI's own, with a warning", async () => {
+    const dir = project({ "mail/welcome.html": HTML }, { modules: { "@hyper-elements/lint": broken("export function lint() {}\n") } });
+    const ran = await cli(dir, ["check", "mail/welcome.html", "--json"]);
+    expect(ran.code, ran.stderr).toBe(0);
+    const [line] = lines(ran);
+    expect(codes(line)).toContain("lint/link-text");
+    expect(line.diagnostics.find((d: any) => d.code === "cli/lint-copy")).toMatchObject({ severity: "warning", message: expect.stringContaining("no ./html entry") });
+  });
+});
+
 describe("lint in render", () => {
   it("reports lint's findings in render's lines, writing the files as before", async () => {
     const dir = project({ "emails/welcome.tsx": EMAIL });

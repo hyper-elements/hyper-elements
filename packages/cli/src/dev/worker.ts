@@ -13,16 +13,16 @@ export async function devTemplate(context: TemplateContext): Promise<CommandResu
   const { element, root, elements } = context;
   if (root !== "Email") return renderTemplate(context);
   // An Email: rendered with the email client checks where the project has them, and lint's, as `check --rendered` gives them.
-  const { plugins, diagnostics: notes } = await context.plugins();
+  const made = await context.plugins();
   let result;
   try {
-    result = await elements.render(element, plugins.length ? { plugins } : {});
+    result = await elements.render(element, made.plugins.length ? { plugins: made.plugins } : {});
   } catch (error) {
     const diagnostics = elementsErrorDiagnostics(error);
-    if (diagnostics) return { status: "error", diagnostics: withPluginNotes(diagnostics, notes) };
+    if (diagnostics) return { status: "error", diagnostics: withPluginNotes(diagnostics, made) };
     throw error;
   }
-  const diagnostics: Diagnostic[] = [...result.diagnostics, ...notes];
+  const diagnostics: Diagnostic[] = withPluginNotes(result.diagnostics, made);
   const outputs = { html: result.html, txt: result.text };
   if (hasErrors(diagnostics) || !context.emailClients?.renderInEmailClients) return { status: hasErrors(diagnostics) ? "error" : "ok", diagnostics, outputs };
   // The previews: what renderInEmailClients() says that the checks above didn't, once.

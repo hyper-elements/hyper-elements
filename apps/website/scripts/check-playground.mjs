@@ -16,7 +16,8 @@
 //      2c. Leaving a view while its file is being drawn leaves no "drawing" notice over the next view.
 //      2d. A link's or an agent's code isn't kept as the visitor's draft until they change it.
 //      2e. Lint's findings show on an Email and a Page, each linked to its docs ("docs"), and the email client checks'
-//          to caniemail ("caniemail"); words that say where a link goes give none.
+//          to caniemail ("caniemail"); words that say where a link goes give none. With the client checks off, lint's
+//          still show.
 //   3. Code a link carries can't reach the page's origin: no request arrives, no storage, no parent. The same
 //      attempts from a worker with no sandbox around it do get through (so "blocked" is the sandbox's doing).
 //   4. Markup a template writes doesn't run in the preview, and can't navigate it. The same markup in a page of its
@@ -225,6 +226,10 @@ try {
         const clients = page.locator("[data-diagnostics] .pg-diag").filter({ hasText: "email/outlook-degraded" }).locator("a");
         assert.equal(await clients.innerText(), "caniemail ↗", "an email client check still links caniemail");
       }
+      // With the email client checks off, lint's still run, and core's note on where the client checks are isn't said.
+      const off = await api(page, "render", template("click here"), { checks: false });
+      assert(off.diagnostics.some((d) => d.code === code), `${prefix}: ${code} with the client checks off`);
+      assert(!off.diagnostics.some((d) => d.code === "email/more-checks" || d.clients), `${prefix}: client checks with them off: ${JSON.stringify(off.diagnostics.map((d) => d.code))}`);
       // Control: words that say where it goes give no finding.
       const fine = await api(page, "setCode", template("See the autumn offer"));
       assert(!fine.diagnostics.some((d) => d.code === code), `${prefix}: ${code} on words that say where the link goes`);

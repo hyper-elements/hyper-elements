@@ -464,8 +464,9 @@ export async function run(args: Args, io: Io, state: RunState = { folders: new S
         const linted = await lintHtmlInput(input, html, lint, probe);
         result.outcome.diagnostics = [...result.outcome.diagnostics, ...linted.diagnostics];
         if (linted.error) {
+          // Beside what email-clients said, where it failed too.
           result.outcome.status = "error";
-          result.outcome.error = linted.error;
+          result.outcome.error = result.outcome.error ? `${result.outcome.error}; ${linted.error}` : linted.error;
           result.usage = true;
         }
       }

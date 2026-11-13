@@ -467,19 +467,16 @@ async function handle(request: Request): Promise<Result> {
     result.root = inspection.root as RootName | null;
     result.nodes = sourceNodes(inspection.nodes, rendered);
     if (inspection.theme) result.theme = { tokens: inspection.theme.tokens.length, styles: inspection.theme.styles, variants: inspection.theme.components.flatMap((c) => c.variants.map((v) => `${c.type}.${v}`)) };
-    const lines = (diagnostics: readonly Elements.Diagnostic[]) => withLines(diagnostics, result.nodes);
-
     const isEmail = result.root === "Email";
     if (isEmail && sandbox.extras.clients) result.clientNames = sandbox.extras.clients.names;
-    // An Email's client checks (where their bundle is loaded) and lint's, on an Email and a Page; none with checks off.
+    // An Email's client checks, where their bundle is loaded and they're on (`checks`, the "Email clients" switch), and
+    // lint's on an Email and a Page whatever the switch says. With the client checks off, core's note on where they are
+    // (email/more-checks) isn't said either.
     const checks = request.checks !== false;
     const lintable = result.root === "Email" || result.root === "Page";
-    const plugins = !checks
-      ? isEmail
-        ? []
-        : undefined
-      : [...(isEmail && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable ? [linter()] : [])];
-    const options = plugins && (plugins.length || !checks) ? { plugins } : {};
+    const plugins = [...(isEmail && checks && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable ? [linter()] : [])];
+    const options = plugins.length ? { plugins } : {};
+    const lines = (diagnostics: readonly Elements.Diagnostic[]) => withLines(checks ? diagnostics : diagnostics.filter((d) => d.code !== "email/more-checks"), result.nodes);
 
     try {
       if (request.kind === "render") {

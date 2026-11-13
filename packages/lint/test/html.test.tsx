@@ -67,6 +67,10 @@ describe("lintHtml()", () => {
     expect(ids('<html><body lang="fr"><title>t</title><p>x</p></body></html>')).toEqual([]);
   });
 
+  it("reads a body whose head has no </head>", () => {
+    expect(ids('<html lang="en"><head><title>T</title><body><a href="#">click here</a><img src="a.png"></body></html>')).toEqual(["lint/link-text", "lint/link-target", "lint/image-alt"]);
+  });
+
   it("skips Outlook's conditional comments, and reads the content every other client shows", () => {
     expect(ids('<!--[if mso]><a href="#">here</a><![endif]-->')).toEqual([]);
     expect(ids('<!--[if !mso]><!--><a href="#">Order</a><!--<![endif]-->')).toEqual(["lint/link-target"]);
