@@ -127,6 +127,7 @@ npx hyper-elements preview emails/welcome.tsx
   gmail: out/clients/emails/welcome/gmail.html
   gmail.mac: out/clients/emails/welcome/gmail.mac.html
   apple-mail: out/clients/emails/welcome/apple-mail.html
+  apple-mail.iphone: out/clients/emails/welcome/apple-mail.iphone.html
 1 template: 0 errors, 0 warnings, 0 skipped
 ```
 
