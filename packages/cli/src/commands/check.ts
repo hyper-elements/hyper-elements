@@ -1,13 +1,14 @@
 /**
- * `check`: validate() with email-clients' plugin where the template's project has @hyper-elements/email-clients;
- * with `--rendered`, render() as well (writing nothing), for the checks only the written HTML has.
+ * `check`: validate() with email-clients' plugin where the template's project has @hyper-elements/email-clients, and
+ * lint's (unless --no-lint); with `--rendered`, render() as well (writing nothing), for the checks only the written
+ * HTML has.
  */
-import { elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "./shared";
+import { elementsErrorDiagnostics, hasErrors, withPluginNotes, type CommandResult, type TemplateContext } from "./shared";
 
 export async function checkTemplate(context: TemplateContext): Promise<CommandResult> {
   const { element, elements, options } = context;
-  const { plugin, diagnostics: notes } = await context.plugin();
-  const plugins = plugin ? { plugins: [plugin] } : {};
+  const { plugins: list, diagnostics: notes } = await context.plugins();
+  const plugins = list.length ? { plugins: list } : {};
   let diagnostics;
   if (options.rendered) {
     try {
@@ -20,6 +21,6 @@ export async function checkTemplate(context: TemplateContext): Promise<CommandRe
   } else {
     diagnostics = elements.validate(element, plugins).diagnostics;
   }
-  diagnostics = [...diagnostics, ...notes];
+  diagnostics = withPluginNotes(diagnostics, notes);
   return { status: hasErrors(diagnostics) ? "error" : "ok", diagnostics };
 }

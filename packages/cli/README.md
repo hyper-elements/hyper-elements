@@ -37,7 +37,7 @@ Welcome.PreviewProps = { name: "Ada" };
 | Command | What it does |
 |---|---|
 | `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the current folder (or `--base <dir>`), whatever else is given with it: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. Where the project has `@hyper-elements/email-clients`, an Email's and a Page's HTML is rendered with its email client checks, as `check` runs them (`--clients` picks the clients). |
-| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
+| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients); [lint](#lint)'s checks run on an Email and a Page (`--no-lint` leaves them out). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
 | `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<its path>/<name>/` (its path from the current folder, or `--base`), named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
 | `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
@@ -189,6 +189,25 @@ The page shows an Email's and a Page's HTML in `<iframe sandbox>` without `allow
 and can't read the page, what it shows or its event stream. The server listens on `127.0.0.1` only, as `--serve` does:
 it answers only its own host (`127.0.0.1`, `localhost` or `[::1]` with its port), with no `Origin` or its own (the event
 stream too), under the random path its URL carries, and only its own files.
+
+## Lint
+
+`check`, `render` and `dev` also run [`@hyper-elements/lint`](https://www.hyperelements.dev/docs/lint) on each Email
+and Page: links that don't say where they go, images without alternate text, faint or small text, headings out of
+order, a missing `lang`, merge syntax typed by hand. Its findings are warnings and notes (`email/lint-<rule>`,
+`page/lint-<rule>`, each with a fix and a docs link), so they change the exit code only past `--max-warnings`. `check` of
+an HTML email runs its HTML rules (`lint/<rule>`, each at its line). `--no-lint` leaves them out.
+
+Its options are in the `package.json` nearest the current folder:
+
+```json
+{ "hyperElements": { "lint": { "rules": { "text-size": "off" }, "kind": "marketing" } } }
+```
+
+They're read once when the run (or `dev`) starts. The CLI checks their shape before anything runs (exit 2); the copy of
+lint that runs checks what they mean, and a rule, severity or kind it doesn't know is exit 2 too, naming that copy and its
+version. That copy is the project's where the template (or the HTML file) resolves one, so the project picks lint's
+version with `npm i -D @hyper-elements/lint`; otherwise it's the CLI's own, with an `info` note, `cli/lint-copy`.
 
 ## Output and exit codes
 

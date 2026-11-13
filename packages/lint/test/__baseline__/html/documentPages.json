@@ -1,5 +1,12 @@
 [
   {
+    "code": "lint/lang",
+    "severity": "warning",
+    "line": 1,
+    "column": 16,
+    "message": "The email has no lang on its <html> or <body>, so screen readers guess its language"
+  },
+  {
     "code": "lint/heading-one",
     "severity": "info",
     "line": 1,
@@ -12,12 +19,5 @@
     "line": 1,
     "column": 7057,
     "message": "This is a second <h1>"
-  },
-  {
-    "code": "lint/lang",
-    "severity": "warning",
-    "line": 1,
-    "column": 16,
-    "message": "The email has no lang on its <html> or <body>, so screen readers guess its language"
   }
 ]

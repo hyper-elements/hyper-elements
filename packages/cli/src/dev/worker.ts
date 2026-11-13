@@ -6,20 +6,20 @@
  */
 import { previewTemplate } from "../commands/preview";
 import { renderTemplate } from "../commands/render";
-import { elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "../commands/shared";
+import { elementsErrorDiagnostics, hasErrors, withPluginNotes, type CommandResult, type TemplateContext } from "../commands/shared";
 import type { Diagnostic } from "../protocol";
 
 export async function devTemplate(context: TemplateContext): Promise<CommandResult> {
   const { element, root, elements } = context;
   if (root !== "Email") return renderTemplate(context);
-  // An Email: rendered with the email client checks where the project has them, as `check --rendered` gives them.
-  const { plugin, diagnostics: notes } = await context.plugin();
+  // An Email: rendered with the email client checks where the project has them, and lint's, as `check --rendered` gives them.
+  const { plugins, diagnostics: notes } = await context.plugins();
   let result;
   try {
-    result = await elements.render(element, plugin ? { plugins: [plugin] } : {});
+    result = await elements.render(element, plugins.length ? { plugins } : {});
   } catch (error) {
     const diagnostics = elementsErrorDiagnostics(error);
-    if (diagnostics) return { status: "error", diagnostics: [...diagnostics, ...notes] };
+    if (diagnostics) return { status: "error", diagnostics: withPluginNotes(diagnostics, notes) };
     throw error;
   }
   const diagnostics: Diagnostic[] = [...result.diagnostics, ...notes];

@@ -73,7 +73,7 @@ function hrefProblem(link: HtmlElement): string | undefined {
 }
 
 /**
- * The HTML rules' findings, in document order. `document` adds the rules that need the whole email: heading order, one
+ * The HTML rules' findings, in the order they're in the HTML. `document` adds the rules that need the whole email: heading order, one
  * level-1 heading, the language and the title.
  */
 export function checkHtml(tree: HtmlTree, on: (id: string, scope: "both" | "document") => boolean): HtmlFound[] {
@@ -132,7 +132,8 @@ export function checkHtml(tree: HtmlTree, on: (id: string, scope: "both" | "docu
     const titled = findTitle(tree.root);
     if (!titled && on("title", "document")) add("title", html ?? { line: 1, column: 1 }, "The email has no <title>, which some email clients and browsers show");
   }
-  return found;
+  // In the order they're in the HTML.
+  return found.sort((a, b) => a.line - b.line || a.column - b.column);
 }
 
 /** Whether there's a non-empty <title>, anywhere (iteratively). */

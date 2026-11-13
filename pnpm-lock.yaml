@@ -194,6 +194,9 @@ importers:
       '@hyper-elements/email-clients':
         specifier: ^0.4.3
         version: 0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@hyper-elements/lint':
+        specifier: workspace:^0.1.0
+        version: link:../lint
       tsx:
         specifier: ^4.20.5
         version: 4.21.0

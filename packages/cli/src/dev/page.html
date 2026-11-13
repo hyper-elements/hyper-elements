@@ -130,6 +130,7 @@ a { color: var(--accent); }
           el("code", { text: d.code }),
           document.createTextNode(` ${d.path ? `at ${d.path}: ` : ""}${d.message}${d.clients ? ` [${d.clients.join(", ")}]` : ""}`),
           d.fix ? el("div", { class: "meta", text: `Fix: ${d.fix}` }) : null,
+          d.see && /^https:\/\//.test(d.see) ? el("div", { class: "meta" }, el("a", { href: d.see, target: "_blank", rel: "noopener noreferrer", text: d.see })) : null,
         ),
       ),
     );
