@@ -16,6 +16,13 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
 
 ### Fixed
 
+- **The space around a Span or a Link in an image.** A Canvas draws a block of text as a flex box, each run of it an
+  item, and a flex item's text is trimmed: `<Text>Hello <Span>world</Span> and more</Text>` was drawn
+  "Helloworldand more", with no warning. The block is drawn under `white-space: pre-wrap` now, and the writer
+  collapses the words' own white space and takes it off the block's two ends, as `white-space: normal` does in the
+  HTML outputs. A space between two runs hangs off the end of the first, so the line a wrap starts still begins at
+  the margin. A PDF, an email and a page were never affected.
+
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

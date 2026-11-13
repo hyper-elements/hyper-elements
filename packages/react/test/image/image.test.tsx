@@ -343,6 +343,73 @@ describe("renderImage", () => {
     centered(await across(canvas("center", <Text style={{ fontSize: 48 }}>{"Five days of new things, one a day, all week long. ".repeat(3)}</Text>)));
   });
 
+  it("keeps the space before and after a Span or a Link, and starts a wrapped line at the margin", async () => {
+    /** Every point of the Canvas's letters, by the line it's drawn on. */
+    const lines = async (children: ReactNode, width = 900) => {
+      const template = (
+        <Canvas width={width} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+      const points = [...svg.matchAll(/<path[^>]* d="([^"]+)"/g)].flatMap((path) => [...path[1].matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((point) => [Number(point[1]), Number(point[2])] as const));
+      const rows = new Map<number, number[]>();
+      // A line's letters sit within about its height of each other; 30px buckets keep each line's points together.
+      for (const [x, y] of points) rows.set(Math.round(y / 30), [...(rows.get(Math.round(y / 30)) ?? []), x]);
+      return [...rows].sort((a, b) => a[0] - b[0]).map(([, xs]) => ({ from: Math.min(...xs), to: Math.max(...xs) }));
+    };
+    const width = async (children: ReactNode) => {
+      const drawn = await lines(children);
+      return Math.max(...drawn.map((line) => line.to)) - Math.min(...drawn.map((line) => line.from));
+    };
+
+    // Each run is a flex item, and a flex item's text is trimmed: the spaces around a Span would be lost, drawing
+    // "Helloworldand more" (about two spaces narrower than the same words written plainly).
+    const plain = await width(<Text>Hello world and more</Text>);
+    expect(Math.abs((await width(<Text>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</Text>)) - plain)).toBeLessThan(2);
+    expect(Math.abs((await width(<Text>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</Text>)) - plain)).toBeLessThan(2);
+    const linked = await width(
+      <Text>
+        Hello <Link href="https://x.test">world</Link> and more
+      </Text>
+    );
+    expect(Math.abs(linked - plain)).toBeLessThan(2);
+    // The space a block of text starts or ends with goes, as white-space: normal drops it in the HTML outputs.
+    expect(Math.abs((await width(<Text> Hello world and more </Text>)) - plain)).toBeLessThan(2);
+    expect(Math.abs((await width(<Text>Hello world and more</Text>)) - plain)).toBeLessThan(2);
+
+    // A space starting a run would be drawn as an indent where the words wrap before that run, so the writer hangs
+    // it off the end of the run before it instead. Every one of a block's runs but the first begins with a letter.
+    type Run = string | { kind: string; runs?: Run[] };
+    const begins = (run: Run): boolean => {
+      if (typeof run === "string") return run.startsWith(" ");
+      const first = run.runs?.[0];
+      return run.kind === "span" && first !== undefined && begins(first);
+    };
+    const drawn = (children: ReactNode) => {
+      const { root } = prepare(
+        <Canvas width={420} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      return writeCanvas(root!, { families: new Set(["liberation sans"]), fallback: "Liberation Sans", fonts: [], image: (src) => src }).children as Array<{ runs?: Run[] }>;
+    };
+    const said = (runs: Run[]): string => runs.map((run) => (typeof run === "string" ? run : (run.runs && said(run.runs)) ?? "")).join("");
+    for (const block of drawn(
+      <>
+        <Text>
+          A line long enough that it wraps with a <Span style={{ color: "#ff0000" }}>run in it</Span> before the words that follow it here
+        </Text>
+        <Text>
+          See <Link href="https://x.test">our site</Link> today
+        </Text>
+      </>
+    )) {
+      expect(block.runs?.slice(1).filter(begins)).toEqual([]);
+    }
+    expect(said(drawn(<Text>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</Text>)[0]!.runs!)).toBe("Hello world and more");
+  });
+
   it("writes a Canvas only", async () => {
     await expect(
       renderImage(

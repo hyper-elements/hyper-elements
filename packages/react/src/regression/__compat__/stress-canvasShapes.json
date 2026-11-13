@@ -51,7 +51,8 @@
        "fontWeight": 400,
        "fontStyle": "normal",
        "lineHeight": "18px",
-       "textAlign": "left"
+       "textAlign": "left",
+       "whiteSpace": "pre-wrap"
       },
       "runs": [
        "Summer timetable, out now"
@@ -149,7 +150,8 @@
        "textAlign": "left",
        "width": "392px",
        "flexShrink": 0,
-       "flexGrow": 0
+       "flexGrow": 0,
+       "whiteSpace": "pre-wrap"
       },
       "runs": [
        "merrow.example"
