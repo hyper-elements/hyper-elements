@@ -12,7 +12,6 @@ const controls = get("email-preview-controls");
 const allButton = get<HTMLButtonElement>("email-all");
 const detailsButton = get<HTMLButtonElement>("email-details");
 const runButton = get<HTMLButtonElement>("email-run");
-const file = get<HTMLInputElement>("email-file");
 const dark = get<HTMLInputElement>("email-dark");
 const status = get("email-status");
 const error = get("email-error");
@@ -27,6 +26,7 @@ const diagnostics = get<HTMLUListElement>("email-diagnostics");
 const skipped = get<HTMLUListElement>("email-skipped");
 const sandbox = new Sandbox({ base: "/playground/runtime", version: root.dataset.runtimeVersion! });
 const names = new Map<string, string>(emailTestingClients.map(({ id, name }) => [id, name]));
+const logos = new Map<string, string>(emailTestingClients.map(({ id, logo }) => [id, logo]));
 
 interface Input { html: string; clients?: string[]; dark?: boolean }
 type Report = Pick<Result, "ok" | "diagnostics" | "skipped" | "error" | "ms"> & { previews: Omit<Preview, "html">[] };
@@ -109,7 +109,12 @@ function drawThumbnails(previews: Preview[]) {
     button.setAttribute("aria-controls", "email-viewport");
     const title = document.createElement("span");
     title.className = "et-thumb-name";
-    title.textContent = client === "outlook-com" ? "Outlook.com" : names.get(client) ?? client;
+    const logo = document.createElement("img");
+    logo.className = "et-client-logo";
+    logo.src = `/img/email-testing/${logos.get(client)}.svg`;
+    logo.alt = "";
+    logo.width = logo.height = 24;
+    title.append(logo, document.createTextNode(client === "outlook-com" ? "Outlook.com" : names.get(client) ?? client));
     const detail = document.createElement("span");
     detail.className = "et-thumb-meta";
     detail.textContent = [previewDevice(preview), preview.dark ? "Dark" : "Light", preview.approximate ? "Approximate" : ""].filter(Boolean).join(" · ");
@@ -189,7 +194,7 @@ function showPreview() {
   sheet.replaceChildren();
   frame = undefined;
   if (!previewFile(next, preview.html, scripts, { canvas: !renderDetails })) {
-    error.textContent = "This preview is too large to display here. Use the CLI in Library & help to preview this email locally.";
+    error.textContent = "This preview is too large to display here. Use @hyper-elements/cli to preview this email locally.";
     error.hidden = false;
     return;
   }
@@ -243,7 +248,7 @@ async function check(input: Input): Promise<Report> {
   invalidate();
   try {
     if (!input || typeof input.html !== "string" || !input.html.trim()) throw new Error("Paste a complete HTML email to test.");
-    if (new TextEncoder().encode(input.html).length > MAX_EMAIL_BYTES) throw new Error("This playground accepts emails up to 250 KB. Use the CLI in Library & help for larger files.");
+    if (new TextEncoder().encode(input.html).length > MAX_EMAIL_BYTES) throw new Error("This playground accepts emails up to 250 KB. Use @hyper-elements/cli for larger files.");
     const clients = input.clients ?? defaultEmailClients;
     if (!Array.isArray(clients) || !clients.length || clients.some((id) => !names.has(id))) throw new Error("Choose at least one supported email client.");
     if (input.dark !== undefined && typeof input.dark !== "boolean") throw new Error("The dark option must be true or false.");
@@ -255,7 +260,10 @@ async function check(input: Input): Promise<Report> {
     status.textContent = "Generating client previews locally…";
     scripts = await sandbox.previewScripts();
     if (run !== sequence) return { ok: false, diagnostics: [], previews: [], ms: 0, error: { kind: "internal", message: "Superseded by another edit or test." } };
-    const output = await sandbox.run({ kind: "html-previews", html: input.html, clients: [...new Set(clients)], dark: input.dark }, ["clients"], "email-testing");
+    // Serve the sample's own image from this deployment, including PR previews and localhost.
+    // Keep the source/export URL portable. Other hosts in user HTML are left as written.
+    const previewHtml = input.html.replaceAll("https://www.hyperelements.dev/img/email-testing/", `${location.origin}/img/email-testing/`);
+    const output = await sandbox.run({ kind: "html-previews", html: previewHtml, clients: [...new Set(clients)], dark: input.dark }, ["clients"], "email-testing");
     const summary: Report = {
       ok: output.ok, diagnostics: output.diagnostics, skipped: output.skipped, error: output.error, ms: output.ms,
       previews: (output.previews ?? []).map(({ html: _html, ...metadata }) => metadata),
@@ -321,30 +329,6 @@ root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((button) => butt
   root.dataset.mobilePane = button.dataset.mobileTab;
   root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((tab) => tab.setAttribute("aria-selected", String(tab === button)));
 }));
-get("email-help-open").addEventListener("click", () => get<HTMLDialogElement>("email-help").showModal());
-get("email-open").addEventListener("click", () => file.click());
-file.addEventListener("change", async () => {
-  const selected = file.files?.[0];
-  file.value = "";
-  if (!selected) return;
-  changed();
-  clearTimeout(liveTimer);
-  const current = sequence;
-  try {
-    if (selected.size > MAX_EMAIL_BYTES) throw new Error("This playground accepts emails up to 250 KB. Use the CLI in Library & help for larger files.");
-    const html = await selected.text();
-    if (current !== sequence) return;
-    source.value = html;
-    status.textContent = `Opened ${selected.name}. Updating preview…`;
-    void runUI();
-  } catch (reason) {
-    if (current !== sequence) return;
-    error.textContent = reason instanceof Error ? reason.message : "The file could not be read.";
-    error.hidden = false;
-    status.textContent = "The file could not be opened.";
-    root.dataset.renderStatus = "error";
-  }
-});
 function save(contents: string, name: string, type: string) {
   const url = URL.createObjectURL(new Blob([contents], { type }));
   const link = document.createElement("a");
@@ -369,5 +353,5 @@ if (modelContext?.registerTool) {
     })).catch(() => undefined);
   } catch { /* The browser API is optional; the window API remains available. */ }
 }
-for (const id of ["email-run", "email-example", "email-open", "email-export"]) get<HTMLButtonElement>(id).disabled = false;
+for (const id of ["email-run", "email-example", "email-export"]) get<HTMLButtonElement>(id).disabled = false;
 void runUI();

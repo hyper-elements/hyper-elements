@@ -78,8 +78,11 @@ After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It 
 
 `/email-testing` opens a full-height HTML editor beside a grid of real email-client thumbnails. Clicking a client
 opens its full preview in the right panel; All clients returns to the overview. Edits update previews after a short
-pause, with an option to turn live updates off. Visitors can open an HTML file and export their edited HTML.
-Compatibility checks are in a drawer and library/agent instructions in a help dialog. The canvas and thumbnails hide
+pause, with an option to turn live updates off. Visitors can paste HTML and export their edits.
+The default is a MacBook Air concept email with a locally served product photo. Client cards include small logos;
+asset sources are recorded in `public/img/email-testing/README.md`. The sample's production image URL stays in
+the editor and exported HTML; previews resolve it against the current deployment.
+Compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
 the preview file's explanatory header; Render details restores the complete file, including browser findings.
 Both views use the same script allowlist and opaque origin. The page reuses the playground's runtime,
 worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
@@ -88,7 +91,7 @@ The package's preview may load referenced images and fonts. Both the window API 
 and return diagnostics and preview metadata; `ok` describes successful generation, not a compatibility guarantee.
 
 After a website build, run `pnpm --filter @hyper-elements/website check:email-testing`. It covers input validation,
-HTML editing, live thumbnails, opening and returning from full previews, HTML export, file upload, client and dark variants, diagnostics, JSON download,
+HTML editing, live thumbnails, opening and returning from full previews, HTML export, client and dark variants, diagnostics, JSON download,
 agent access, responsive layout, discovery links,
 and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 

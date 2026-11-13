@@ -1,41 +1,16 @@
 ---
 import Base from "../layouts/Base.astro";
-import CodeBlock from "../components/CodeBlock.astro";
 import { emailTestingDescription, sampleEmail } from "../lib/email-testing";
 import { engineVersion } from "../lib/playground";
 import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
-
-const cli = `npx @hyper-elements/cli check email.html --json
-npx @hyper-elements/cli preview email.html`;
-const library = `import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { renderInEmailClients } from "@hyper-elements/email-clients";
-
-const html = await readFile("email.html", "utf8");
-const { previews, diagnostics } = await renderInEmailClients(html, {
-  emailClients: ["outlook", "gmail", "apple-mail"],
-});
-
-await mkdir("out", { recursive: true });
-for (const preview of previews) {
-  await writeFile(\`out/\${preview.filename}\`, preview.html);
-}
-console.log(diagnostics);`;
-const agent = `await window.hyperElementsEmailTesting.check({
-  html: "<!doctype html><html><body>…</body></html>",
-  clients: ["outlook", "gmail", "apple-mail"],
-  dark: false,
-});`;
 ---
-<Base title="Test HTML emails across email clients" description={emailTestingDescription} footer={false}>
+<Base title="Test HTML emails in Outlook, Gmail and more" description={emailTestingDescription} footer={false}>
   <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-3`}>
     <header class="et-topbar">
-      <div class="et-heading"><h1 id="playground-title">Email playground</h1><span class="et-local"><i></i> Runs locally</span></div>
+      <div class="et-heading"><h1 id="playground-title">Test HTML emails in Outlook, Gmail and more</h1><span class="et-local"><i></i> Runs locally</span></div>
       <div class="et-top-actions">
-        <button class="et-subtle" id="email-help-open" type="button">Library &amp; help</button>
-        <button class="btn btn-ghost btn-sm" id="email-open" type="button" disabled>Open HTML</button>
         <button class="btn btn-primary btn-sm" id="email-export" type="button" disabled>Export HTML <span aria-hidden="true">↗</span></button>
-        <input id="email-file" type="file" accept=".html,.htm,text/html" hidden />
       </div>
     </header>
 
@@ -79,20 +54,10 @@ const agent = `await window.hyperElementsEmailTesting.check({
         </details>
       </section>
     </div>
-    <div class="et-status-bar"><p id="email-status" role="status" aria-live="polite">Loading the example…</p><a href="/docs/email-client-emulator">Client coverage &amp; accuracy ↗</a></div>
+    <p id="email-status" class="et-sr-only" role="status" aria-live="polite">Loading the example…</p>
     <noscript><p class="et-notice">Enable JavaScript to edit HTML and preview emails, or use the <a href="/docs/cli">CLI</a>.</p></noscript>
   </section>
 
-  <dialog id="email-help" class="et-help" aria-labelledby="help-title">
-    <header><h2 id="help-title">Email testing, in your workflow</h2><form method="dialog"><button class="et-subtle" aria-label="Close help">✕</button></form></header>
-    <div class="et-help-body">
-      <p>Paste or edit a complete HTML email on the left. Compare the client thumbnails on the right, then click a client to open its full preview. Use All clients to return to the overview. Preview Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail locally. HTML from any builder, MJML, or React Email works here.</p>
-      <p>Live preview updates after you pause typing. Export HTML downloads your email; Download report saves compatibility diagnostics. Your HTML is not uploaded or saved as a draft. Referenced images and fonts may load from their hosts.</p>
-      <p>These are modeled previews. Some variants are approximate, and a clean report does not guarantee identical rendering in every inbox. Use <strong>Render details</strong> to see what changed, missing assets, and browser findings for the selected preview. <a href="/docs/email-client-emulator#checks-and-the-emulator">How the checks and emulator work.</a></p>
-      <section id="use-in-code"><h3>Use the library or CLI</h3><p>No React or test send is needed for HTML input. The CLI also adds readability checks.</p><CodeBlock code={cli} lang="bash" file="Terminal" /><p>Open the generated files under <code>out/clients/email/</code> in Chromium or Chrome. See the <a href="/docs/cli#preview">CLI browser setup</a>.</p><CodeBlock code={library} lang="js" file="preview-email.mjs" /><p>Install <code>@hyper-elements/email-clients</code>, run the example with Node, and open <code>out/outlook.html</code>. See the <a href="/docs/email-client-emulator#test-any-html-email">HTML email API</a>.</p></section>
-      <section><h3>For browser agents</h3><p>Use <code>window.hyperElementsEmailTesting.check()</code> or the WebMCP <code>check_html_email</code> tool where supported. Both update the workspace and return diagnostics, preview metadata, and skipped variants. <code>ok</code> means generation succeeded; inspect diagnostics and approximate flags before judging compatibility.</p><CodeBlock code={agent} lang="js" /><p>Client IDs: <code>outlook</code>, <code>outlook-com</code>, <code>gmail</code>, <code>gmail-app</code>, <code>apple-mail</code>, <code>yahoo</code>, <code>aol</code>. Omit them to use Outlook, Gmail and Apple Mail.</p></section>
-    </div>
-  </dialog>
   <script>
     import "../email-testing/main";
   </script>

@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const site = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(site, "dist");
 const html = await readFile(join(dist, "email-testing/index.html"), "utf8");
-assert.match(html, /<title>Test HTML emails across email clients/);
+assert.match(html, /<title>Test HTML emails in Outlook, Gmail and more/);
 assert.match(html, /rel="canonical" href="https:\/\/www.hyperelements.dev\/email-testing"/);
 assert.match(html, /name="description" content="Test HTML email compatibility/);
 assert.match(html, /href="\/email-testing" aria-current="page"/);
@@ -19,7 +19,7 @@ for (const name of ["llms.txt", "llms-full.txt", "sitemap-0.xml", "index.html"])
   assert((await readFile(join(dist, name), "utf8")).includes("/email-testing"), `${name} links the email testing page`);
 }
 assert(JSON.parse(await readFile(join(dist, "search.json"), "utf8")).some((item) => item.href === "/email-testing"));
-const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".txt": "text/plain", ".wasm": "application/wasm" };
+const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".txt": "text/plain", ".wasm": "application/wasm" };
 let attackRequests = 0;
 const server = createServer(async (request, response) => {
   const path = new URL(request.url, "http://localhost").pathname;
@@ -48,6 +48,8 @@ try {
   await page.goto(`${origin}/email-testing`);
   await page.waitForFunction(() => !!window.hyperElementsEmailTesting);
   assert.equal(await page.locator("h1").count(), 1);
+  assert.equal(await page.locator("h1").innerText(), "Test HTML emails in Outlook, Gmail and more");
+  assert.equal(await page.locator(".et-status-bar, #email-open, #email-file, #email-help-open, #email-help").count(), 0);
   // Every on-site link and fragment on the new page resolves in the build.
   for (const href of await page.locator('a[href^="/"]').evaluateAll((links) => [...new Set(links.map((a) => a.getAttribute("href")))])) {
     const url = new URL(href, origin);
@@ -85,11 +87,15 @@ try {
       const thumbnail = await readyPreview(selector);
       const found = JSON.parse(await thumbnail.locator("#email-client-findings").textContent());
       assert.equal(found.client, client, "Each thumbnail actually runs that client's model");
-      assert((await thumbnail.childFrames()[0].locator("body").innerText()).includes(words));
+      const text = (await thumbnail.childFrames()[0].locator("body").innerText()).replace(/\s+/g, " ");
+      assert(text.includes(words), `${client} thumbnail contains the current email: ${text}`);
       assert.equal(await thumbnail.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none");
+      assert(await thumbnail.childFrames()[0].locator('img[alt^="Two sky blue MacBook Air"]').evaluate((image) => image.complete && image.naturalWidth > 0 && !image.hasAttribute("data-email-client-missing")), "The sample's product image loads locally in every client");
     }
+    assert.equal(await page.locator(".et-client-logo").count(), 7);
+    assert(await page.locator(".et-client-logo").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0 && image.alt === "")), "Each client has a loaded, decorative logo beside its label");
   };
-  await checkThumbnails("FIELDNOTES");
+  await checkThumbnails("MacBook Air");
   if (process.env.EMAIL_TESTING_SHOTS) {
     await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
     await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-gallery.png"), fullPage: true });
@@ -115,7 +121,7 @@ try {
   assert(report.previews.every((preview) => !Object.hasOwn(preview, "html")));
   await page.locator("#email-findings summary").click();
   // The selected client stays open while direct HTML edits update its full preview.
-  const edited = sample.replaceAll("Your next adventure starts here.", "Hello from the HTML editor.");
+  const edited = sample.replaceAll("Make room for possibility.", "Hello from the HTML editor.");
   await page.locator("#email-html").fill(edited);
   await updated();
   let selected = await readyFrame();
@@ -145,10 +151,6 @@ try {
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   await page.getByRole("button", { name: "Open Classic Outlook preview", exact: true }).click();
   assert.equal(await page.locator("#email-preview").inputValue(), "outlook");
-  await page.getByRole("button", { name: "Library & help" }).click();
-  assert(await page.getByRole("dialog").isVisible());
-  await page.getByRole("button", { name: "Close help" }).click();
-  assert(!await page.getByRole("dialog").isVisible());
   // Edits invalidate the report, while the last preview stays visible and explicitly marked as previous.
   await page.locator("#email-html").fill("<p>A fragment</p>");
   assert.equal(await page.locator("#email-sheet iframe").count(), 1);
@@ -159,10 +161,6 @@ try {
   assert.equal((await run({ html: sample, clients: ["unknown"] })).ok, false);
   assert.equal((await run({ html: "x".repeat(250001) })).ok, false);
   assert.equal((await run({ html: sample, dark: "yes" })).ok, false);
-  // Upload the same complete email through the visible file workflow.
-  await page.locator("#email-file").setInputFiles({ name: "welcome.html", mimeType: "text/html", buffer: Buffer.from(sample) });
-  await updated();
-  assert.equal(await page.locator("#email-html").inputValue(), sample);
   const clients = ["outlook", "outlook-com", "gmail", "gmail-app", "apple-mail", "yahoo", "aol"];
   const all = await page.evaluate((input) => window.__emailTools[0].execute(input), { html: sample, clients, dark: true });
   assert(all.ok, all.error?.message);
@@ -241,7 +239,7 @@ try {
   await updated();
   assert(await page.locator("#email-gallery").isVisible(), "A phone also opens with the overview");
   assert.equal(await page.locator(".et-thumbnail").count(), 7);
-  await checkThumbnails("FIELDNOTES");
+  await checkThumbnails("MacBook Air");
   if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-gallery-mobile.png"), fullPage: true });
   await page.getByRole("button", { name: "Open Gmail app preview", exact: true }).click();
   await readyFrame();
