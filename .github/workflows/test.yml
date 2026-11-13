@@ -314,6 +314,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # The CLI's workspace dependencies (Elements and lint) build with it.
       - name: Build the CLI and Elements
         run: pnpm --filter "@hyper-elements/cli..." --filter @hyper-elements/email-clients build
 
@@ -325,6 +326,7 @@ jobs:
             packages/internal/core/dist
             packages/react/dist
             packages/email-clients/dist
+            packages/lint/dist
             packages/cli/dist
           if-no-files-found: error
           retention-days: 1
