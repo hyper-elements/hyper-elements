@@ -65,6 +65,8 @@ diagnostics[0].message;
 
 What happens next is up to you or your agent: write `outlook.html` to a file and open it, load it in Playwright and take a screenshot, or read what the client changed (see [What a preview tells you](#what-a-preview-tells-you)). Opened in Chromium, the Outlook preview shows the card and the button with square corners, as classic Outlook draws them.
 
+### Examples
+
 Here's what the emulator draws for three emails, each in four clients, the Gmail app at a phone's width. Open an image to see it at full size.
 
 **The welcome email above**
