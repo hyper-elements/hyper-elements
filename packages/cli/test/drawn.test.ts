@@ -33,9 +33,9 @@ describe("a Document", () => {
     expect(readFileSync(join(dir, "out2/docs/invoice.pdf")).equals(readFileSync(join(dir, "out/docs/invoice.pdf")))).toBe(true);
   });
 
-  // react-pdf loads its text engine with import(), and that engine's package names an `import` condition alone. A
-  // template compiled to CommonJS is loaded through tsx's register, which compiled the dependency too and resolved
-  // that import as a `require`: every Document failed with ERR_PACKAGE_PATH_NOT_EXPORTED, in any project whose
+  // react-pdf's text engine imports a package that names an `import` condition alone. A template compiled to
+  // CommonJS is loaded through tsx's register, which compiled the dependency too and turned that import into a
+  // `require`: every Document failed with ERR_PACKAGE_PATH_NOT_EXPORTED, in any project whose
   // package.json has no "type": "module" (what `npm init` writes). The dependency is left to Node, where Node can
   // `require` an ES module (20.19 and 22.12 on): before those it's tsx's as it was, and the PDF isn't written.
   it.skipIf(ON_BUN || !process.features.require_module)("writes its PDF in a CommonJS project, whose engine loads an ES module of its own", async () => {

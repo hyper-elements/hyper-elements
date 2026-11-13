@@ -114,6 +114,51 @@ export default function A() { return <Email><Signature name="Ada" /></Email>; }
     }
   });
 
+  // A dependency whose entry is an `.mjs` file, importing a package whose "exports" names an `import` condition
+  // alone: what react-pdf's text engine does from a `.js` file. tsx hooks `.mjs` under a key of its own, which Node
+  // has no loader for, so leaving Node's own loaders to Node left this one with tsx: it compiled the file, turned
+  // its import into a `require`, and the package couldn't be found (ERR_PACKAGE_PATH_NOT_EXPORTED). It's read
+  // through Node's `.js` loader, as Node reads an `.mjs` where nothing else is registered for it.
+  it.skipIf(ON_BUN || !process.features.require_module)("a CommonJS project's template imports a dependency whose entry is an .mjs file", async () => {
+    const dir = project(
+      {
+        "emails/a.tsx": email("{word}", `import { word } from "mjs-entry";`),
+        "node_modules/mjs-entry/package.json": JSON.stringify({ name: "mjs-entry", version: "1.0.0", exports: { ".": "./index.mjs" } }),
+        "node_modules/mjs-entry/index.mjs": `import { word } from "import-only";\nexport { word };\n`,
+        "node_modules/import-only/package.json": JSON.stringify({ name: "import-only", version: "1.0.0", type: "module", exports: { ".": { import: "./index.js" } } }),
+        "node_modules/import-only/index.js": `export const word = "From a package only an import finds";\n`,
+      },
+      { packageJson: { name: "fixture", private: true } }
+    );
+    const ran = await cli(dir, ["render", "emails"]);
+    expect(ran.code, ran.stderr + ran.stdout).toBe(0);
+    expect(textOf(dir, "a")).toContain("From a package only an import finds");
+  });
+
+  // A dependency that ships its source: an ES module entry (a `.js` file, or an `.mjs` one) re-exporting a
+  // component from a `.tsx` file of its own. Left to Node, Node 22 on reads the `.tsx` through tsx's ES module
+  // hooks, and Node 20.19 doesn't (`Unknown file extension ".tsx"`): there the dependency is compiled by tsx, as it
+  // was before a dependency's JavaScript was left to Node. (Only a run on Node 20.19 can fail this.)
+  it.skipIf(ON_BUN)("a CommonJS project's template imports a dependency whose ES module entry re-exports its own TSX", async () => {
+    // (A dependency's TSX is compiled without the project's tsconfig: its JSX is React.createElement.)
+    const signature = `import React from "react";\nimport { Span } from "@hyper-elements/react";\nexport function Signature({ from }: { from: string }) {\n  return <Span>From {from}</Span>;\n}\n`;
+    const dir = project(
+      {
+        "emails/a.tsx": email("<Mjs from=\"an .mjs entry\" />, <Js from=\"a .js entry\" />", `import { Signature as Mjs } from "source-mjs";\nimport { Signature as Js } from "source-js";`),
+        "node_modules/source-mjs/package.json": JSON.stringify({ name: "source-mjs", version: "1.0.0", type: "module", exports: "./index.mjs" }),
+        "node_modules/source-mjs/index.mjs": `export { Signature } from "./signature.tsx";\n`,
+        "node_modules/source-mjs/signature.tsx": signature,
+        "node_modules/source-js/package.json": JSON.stringify({ name: "source-js", version: "1.0.0", type: "module", exports: "./index.js" }),
+        "node_modules/source-js/index.js": `export { Signature } from "./signature.tsx";\n`,
+        "node_modules/source-js/signature.tsx": signature,
+      },
+      { packageJson: { name: "fixture", private: true } }
+    );
+    const ran = await cli(dir, ["render", "emails"]);
+    expect(ran.code, ran.stderr + ran.stdout).toBe(0);
+    expect(textOf(dir, "a")).toContain("From an .mjs entry, From a .js entry");
+  });
+
   it("reads PreviewProps through memo and forwardRef, and --props over them", async () => {
     const dir = project({
       "emails/memo.tsx": `import { memo } from "react";

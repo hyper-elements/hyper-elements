@@ -5,11 +5,13 @@
 ### Fixed
 
 - **A Document's PDF in a project without `"type": "module"`.** tsx's CommonJS register compiles every file it is
-  given, a dependency's own ES modules among them, and resolves the `import()` in one as a `require`. A package
-  whose "exports" names an `import` condition alone can't be found that way, and react-pdf loads its text engine
-  like that: every Document failed with `Package subpath './en-us' is not defined by "exports" in
-  @react-pdf/hyphenate`, in any project `npm init` made. A dependency's own JavaScript is left to Node now;
-  TypeScript, and the template's own files, are still tsx's to compile. That needs a Node that can `require` an ES
+  given, a dependency's own ES modules among them, and turns each `import` in one into a `require`. A package
+  whose "exports" names an `import` condition alone can't be found that way, and react-pdf's text engine imports
+  one: every Document failed with `Package subpath './en-us' is not defined by "exports" in
+  @react-pdf/hyphenate`, in any project `npm init` made. A dependency's own JavaScript is left to Node now, its
+  `.mjs` and `.cjs` files with its `.js` (a dependency whose entry is an `.mjs` file failed the same way).
+  TypeScript, the template's own files, and a dependency Node can't load itself (one whose ES module imports its
+  own TypeScript, on Node 20.19) are still tsx's to compile. That needs a Node that can `require` an ES
   module itself (20.19 and 22.12 on). On one before those every file stays tsx's, as it was: a template that imports
   a dependency written as an ES module renders as before, and a Document in such a project still fails this way.
 - **`describe` said a container holds nothing.** A Section, a Row, a Column and each root said `children: none`,

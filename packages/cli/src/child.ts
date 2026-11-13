@@ -62,20 +62,24 @@ type Loaders = Record<string, ((module: NodeJS.Module, file: string) => void) | 
 const extensions = () => (Module as unknown as { _extensions: Loaders })._extensions;
 /** Node's own loaders, read as this module loads, before anything registers one of its own in their place. */
 const NODE_LOADERS: Loaders = { ...extensions() };
+/** The extensions Node has no loader of their own for, and reads through its `.js` one. */
+const READ_AS_JS = [".mjs", ".cjs"];
 
 /**
  * tsx's CommonJS register, with a dependency's own JavaScript left to Node.
  *
  * tsx compiles every file required, those under node_modules among them, so a dependency written as an ES module is
- * turned into CommonJS and the `import()` in it resolved as a `require`. A package whose "exports" names an `import`
- * condition alone then can't be found: `@react-pdf/renderer` loads its text engine that way, so in a project without
- * `"type": "module"` every Document failed with `ERR_PACKAGE_PATH_NOT_EXPORTED` for `@react-pdf/hyphenate/en-us`,
- * and no PDF was written. A package's JavaScript is already the JavaScript its own package.json says it is, so
- * under node_modules it's loaded as Node loads it.
+ * turned into CommonJS and each `import` in it into a `require` (an `import()` is left as it is). A package whose
+ * "exports" names an `import` condition alone then can't be found: react-pdf's text engine imports one, so in a
+ * project without `"type": "module"` every Document failed with `ERR_PACKAGE_PATH_NOT_EXPORTED` for
+ * `@react-pdf/hyphenate/en-us`, and no PDF was written. A package's JavaScript is already the JavaScript its own
+ * package.json says it is, so under node_modules it's loaded as Node loads it.
  *
- * Only an extension Node has a loader for is given back: `.js` today, since `.ts`, `.tsx` and `.jsx` are tsx's to
- * compile wherever they are, and Node reaches a dependency's `.cjs` and `.mjs` without `require.extensions` at all.
- * Reading the loaders again after `register()` keeps this true of whatever tsx hooks next.
+ * Only JavaScript Node loads as it is written is given back: `.js`, and `.mjs` and `.cjs`, which Node has no loader
+ * of their own for and reads through its `.js` one (`.ts`, `.tsx` and `.jsx` are tsx's to compile wherever they
+ * are). tsx hooks `.mjs` under a key of its own, so that one is given Node's `.js` loader: left with tsx, a
+ * dependency whose entry is an `.mjs` file failed the same way. Reading the loaders again after `register()` keeps
+ * this true of whichever of them tsx hooks.
  *
  * And only where Node can `require` an ES module itself (20.19 and 22.12 on, `process.features.require_module`).
  * Before those, tsx compiling it is the one way a CommonJS project reaches a dependency written as one, so there
@@ -84,16 +88,29 @@ const NODE_LOADERS: Loaders = { ...extensions() };
  *
  * `own` is the folders of the packages the templates are in (`ownPackages()`): their files stay tsx's wherever the
  * package is, as they were.
+ *
+ * A dependency Node can't load is tsx's too, as it was: one whose ES module imports its own TypeScript (a package
+ * that ships its source). Node 22 on reads that through tsx's ES module hooks; on Node 20.19 a `require` of an ES
+ * module doesn't go through them, and fails with `ERR_UNKNOWN_FILE_EXTENSION` for the `.tsx` file. Nothing of the
+ * dependency has run by then (everything a module imports is loaded before any of it runs), so tsx compiles it.
  */
 async function registerCommonJs(own: string[]): Promise<void> {
   (await import("tsx/cjs/api")).register();
   if (!process.features.require_module) return;
   const loaders = extensions();
-  for (const [extension, plain] of Object.entries(NODE_LOADERS)) {
+  for (const extension of new Set([...Object.keys(NODE_LOADERS), ...READ_AS_JS])) {
     const compiled = loaders[extension];
+    const plain = NODE_LOADERS[extension] ?? NODE_LOADERS[".js"];
     if (!compiled || !plain || compiled === plain) continue;
+    // (Assigned to the key as it is: tsx keeps `.mjs` off the list `require` tries on a name with no extension.)
     loaders[extension] = function (module: NodeJS.Module, file: string) {
-      return (isDependency(file, own) ? plain : compiled).call(this, module, file);
+      if (!isDependency(file, own)) return compiled.call(this, module, file);
+      try {
+        return plain.call(this, module, file);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException | null)?.code !== "ERR_UNKNOWN_FILE_EXTENSION") throw error;
+        return compiled.call(this, module, file);
+      }
     };
   }
 }
