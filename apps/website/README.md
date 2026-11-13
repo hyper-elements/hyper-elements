@@ -82,6 +82,13 @@ and Apple Mail on Mac and iPhone. Clicking a card opens that exact variant in th
 to the overview. Dark mode swaps in supported dark variants. Thumbnails fill each card's width and crop vertically,
 preserving the client's native layout width. Edits update previews after a short
 pause, with an option to turn live updates off. Visitors can paste and edit HTML directly.
+The editor uses CodeMirror's HTML language support to color tags, attributes, comments and embedded CSS, with
+line numbers, undo/redo and the existing preview shortcut. Its source textarea remains synchronized for browser agents.
+The sandbox also runs `lintHtml()` from `@hyper-elements/lint/html`. Line-specific lint, input-validation and
+email-client findings appear beside the code as warning/error icons with hover details and suggested fixes.
+Document-wide input errors appear on line 1; findings without a source line stay in the Checks drawer.
+Editing clears old markers, and the next completed check replaces them. These are the packages' supported checks,
+not a full HTML conformance validator.
 The default recreates the MacBook Pro email from the [Unlayer Elements playground](https://examples.unlayer.com/examples/elements-playground/).
 Its Hyper Elements source is `examples/email-testing/macbook-pro.tsx`; `render()` writes the editable, indented HTML
 to `src/generated/email-testing.html`. After building the packages, regenerate it with
@@ -89,7 +96,7 @@ to `src/generated/email-testing.html`. After building the packages, regenerate i
 to verify the committed HTML matches its source. Do not edit the generated HTML by hand.
 All six original images and the small client logos live under `public/img/email-testing/`, with sources in its
 README. Production image URLs stay in the editor; previews resolve them against the current deployment.
-Compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
+Validation, lint and compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
 the preview file's explanatory header. Full previews fit the panel's width and expand to their full content height,
 leaving one vertical scrollbar on the surrounding panel. Scrolling is disabled inside both iframe layers.
 Clients are selected from their cards. Both views use opaque origins and allow only trusted scripts; the full

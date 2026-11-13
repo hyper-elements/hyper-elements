@@ -60,6 +60,13 @@ try {
   }
   assert.deepEqual(await page.evaluate(() => window.__emailTools.map((tool) => tool.name)), ["check_html_email"]);
   const sample = await page.locator("#email-html").inputValue();
+  const editorInput = page.locator(".et-html-editor .cm-content");
+  const fillHtml = async (html) => {
+    await editorInput.focus();
+    await editorInput.press("ControlOrMeta+A");
+    await page.keyboard.insertText(html);
+    await page.waitForFunction((html) => document.getElementById("email-html").value === html, html);
+  };
   const run = (input) => page.evaluate((input) => window.hyperElementsEmailTesting.check(input), input);
   const updated = () => page.waitForFunction(() => document.querySelector("[data-email-testing]").dataset.renderStatus === "ok");
   const readyPreview = async (selector) => {
@@ -101,7 +108,10 @@ try {
   await updated(); // All client thumbnails render automatically, without clicking a call to action.
   assert(await page.locator(".et-output").evaluate((panel) => panel.getBoundingClientRect().top < 160 && panel.getBoundingClientRect().bottom < innerHeight));
   assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The workspace fits the first viewport");
-  assert(await page.locator("#email-html").isVisible(), "HTML is the editor's default and only editing surface");
+  assert(await editorInput.isVisible(), "HTML is the editor's default and only editing surface");
+  await page.waitForFunction(() => new Set([...document.querySelectorAll(".et-html-editor .cm-line span")].map((token) => getComputedStyle(token).color)).size >= 4);
+  assert.equal(await editorInput.getAttribute("aria-describedby"), "email-input-help");
+  assert(await page.locator(".cm-lineNumbers .cm-gutterElement").filter({ hasText: /^1$/ }).isVisible(), "Source line numbers are visible");
   assert.equal(await page.locator('[data-design], #email-template, input[type="color"]').count(), 0);
   assert(await page.locator("#email-gallery").isVisible());
   assert.equal(await page.locator(".et-thumbnail").count(), 14);
@@ -143,6 +153,22 @@ try {
     assert(await page.locator(".et-client-logo").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0 && image.alt === "")), "Each client has a loaded, decorative logo beside its label");
   };
   await checkThumbnails("MacBook Pro");
+  // Editing and undo/redo use the real editor, and the existing preview shortcut still works.
+  await page.locator("#email-live").uncheck();
+  await editorInput.focus();
+  await editorInput.press("ControlOrMeta+A");
+  await editorInput.press("ArrowLeft");
+  const comment = "<!-- Editing check -->\n";
+  await page.keyboard.insertText(comment);
+  assert.equal(await page.locator("#email-html").inputValue(), comment + sample);
+  await editorInput.press("ControlOrMeta+z");
+  assert.equal(await page.locator("#email-html").inputValue(), sample);
+  await editorInput.press("ControlOrMeta+Shift+z");
+  assert.equal(await page.locator("#email-html").inputValue(), comment + sample);
+  await editorInput.press("ControlOrMeta+z");
+  await editorInput.press("ControlOrMeta+Enter");
+  await updated();
+  await page.locator("#email-live").check();
   if (process.env.EMAIL_TESTING_SHOTS) {
     await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
     await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-gallery.png"), fullPage: true });
@@ -163,7 +189,7 @@ try {
   await checkPreviewScrolling();
   if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-full-preview.png"), fullPage: true });
   // Exercise findings with an intentional compatibility issue, independent of the sample's design.
-  await page.locator("#email-html").fill(sample.replace("</head>", "<style>body { box-shadow: 0 0 8px #000; }</style></head>"));
+  await fillHtml(sample.replace("</head>", "<style>body { box-shadow: 0 0 8px #000; }</style></head>"));
   await updated();
   await page.locator("#email-findings summary").click();
   assert(await page.locator("#email-diagnostics li").count() > 0, "The checks expose the injected compatibility issue");
@@ -178,7 +204,7 @@ try {
   await page.locator("#email-findings summary").click();
   // The selected client stays open while direct HTML edits update its full preview.
   const edited = sample.replaceAll("Mover. Maker. Boundary breaker.", "Hello from the HTML editor.");
-  await page.locator("#email-html").fill(edited);
+  await fillHtml(edited);
   await updated();
   let selected = await readyFrame();
   assert((await selected.childFrames()[0].locator("body").innerText()).includes("Hello from the HTML editor."));
@@ -190,7 +216,7 @@ try {
   assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "gmail");
   await readyFrame();
   await page.locator("#email-live").uncheck();
-  await page.locator("#email-html").fill(sample);
+  await fillHtml(sample);
   await page.waitForTimeout(800);
   assert.equal(await page.locator("[data-email-testing]").getAttribute("data-render-status"), "pending", "Live preview can be paused");
   assert.match(await page.locator("#email-view-title").innerText(), /Changes pending/);
@@ -200,11 +226,43 @@ try {
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   await page.getByRole("button", { name: "Open Classic Outlook preview", exact: true }).click();
   assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "outlook");
+  // Real HTML lint findings identify their source lines and appear as gutter warning icons.
+  const lintSample = [
+    "<!doctype html>", '<html lang="en">', "<head><title>Editor checks</title></head>", "<body>",
+    "<h1>Editor checks</h1>", '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">',
+    '<a href="https://example.com/collection">Click here</a>', "</body>", "</html>",
+  ].join("\n");
+  const lintResult = await run({ html: lintSample, clients: ["apple-mail"] });
+  assert(lintResult.ok, lintResult.error?.message);
+  assert(lintResult.diagnostics.some((d) => d.code === "lint/image-alt" && d.line === 6));
+  assert(lintResult.diagnostics.some((d) => d.code === "lint/link-text" && d.line === 7));
+  const warning = page.locator(".cm-lint-marker-warning").first();
+  await warning.waitFor({ state: "visible" });
+  const markerBox = await warning.boundingBox();
+  const lineBox = await page.locator(".cm-lineNumbers .cm-gutterElement").filter({ hasText: /^6$/ }).boundingBox();
+  assert(Math.abs((markerBox.y + markerBox.height / 2) - (lineBox.y + lineBox.height / 2)) < 2, "The warning is beside the actual offending line");
+  await warning.hover();
+  await page.locator(".cm-tooltip-lint").waitFor({ state: "visible" });
+  assert.match(await page.locator(".cm-tooltip-lint").innerText(), /alt/i);
+  assert.match(await page.locator(".cm-tooltip-lint").innerText(), /Hyper Elements lint/);
+  if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-editor-warning.png"), fullPage: true });
+  await page.mouse.move(10, 10);
+  await page.locator("#email-live").uncheck();
+  const fixedLint = lintSample.replace("<img ", '<img alt="" ').replace("Click here", "Explore the collection");
+  await fillHtml(fixedLint);
+  await page.waitForFunction(() => !document.querySelector(".cm-lint-marker"));
+  await editorInput.press("ControlOrMeta+Enter");
+  await updated();
+  assert.equal(await page.locator(".cm-lint-marker-warning, .cm-lint-marker-error").count(), 0, "Fixing the HTML clears the warnings");
+  await page.locator("#email-live").check();
   // Edits invalidate the report, while the last preview stays visible and explicitly marked as previous.
-  await page.locator("#email-html").fill("<p>A fragment</p>");
+  await fillHtml("<p>A fragment</p>");
   assert.equal(await page.locator("#email-sheet iframe").count(), 1);
   assert(await page.locator("#email-download").isDisabled());
-  assert.equal((await run({ html: "<p>A fragment</p>" })).ok, false);
+  const invalid = await run({ html: "<p>A fragment</p>" });
+  assert.equal(invalid.ok, false);
+  assert(invalid.diagnostics.some((d) => d.code === "email/html-input" && d.severity === "error" && d.line === 1));
+  await page.locator(".cm-lint-marker-error").waitFor({ state: "visible" });
   assert.match(await page.locator("#email-error").innerText(), /whole email/);
   assert.equal((await run({ html: sample, clients: [] })).ok, false);
   assert.equal((await run({ html: sample, clients: ["unknown"] })).ok, false);
@@ -243,6 +301,7 @@ try {
   const hostile = `<!doctype html><html><head><meta http-equiv="refresh" content="0;url=${origin}/attack"><base href="${origin}/attack"></head><body><p>SAFE_EMAIL_TEXT</p><script>parent.document.body.dataset.emailAttack='yes';fetch('${origin}/attack')</script><svg onload="fetch('${origin}/attack')"></svg><iframe src="${origin}/attack"></iframe></body></html>`;
   const safe = await run({ html: hostile, clients: ["gmail"] });
   assert(safe.ok, safe.error?.message);
+  assert.equal(await editorInput.locator("script, svg, iframe").count(), 0, "Source markup is highlighted as text, never inserted as HTML");
   const frame = await readyFrame();
   assert.match(await frame.childFrames()[0].locator("body").innerText(), /SAFE_EMAIL_TEXT/);
   const shortHeight = await frame.locator("#frames").evaluate((content) => Math.ceil(content.getBoundingClientRect().height));
@@ -290,9 +349,11 @@ try {
   await page.getByRole("tab", { name: "HTML", exact: true }).click();
   assert(await page.locator("#email-editor-panel").isVisible());
   assert(!await page.locator("#email-preview-panel").isVisible());
+  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1 && document.documentElement.scrollHeight <= innerHeight + 1), "Long HTML lines scroll inside the mobile editor without widening or lengthening the page");
+  if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-editor-mobile.png"), fullPage: true });
   await page.getByRole("button", { name: "Load example", exact: true }).click();
   assert.equal(await page.locator("#email-html").inputValue(), sample);
-  assert(await page.locator("#email-html").isVisible());
+  assert(await editorInput.isVisible());
   await page.getByRole("tab", { name: "Preview", exact: true }).click();
   assert(await page.locator("#email-preview-panel").isVisible());
   await page.reload();

@@ -1,5 +1,5 @@
 /* HTML on the left; client thumbnails and the selected full preview on the right. */
-.et-workspace { height: calc(100dvh - var(--header)); min-height: 540px; display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 0 16px 16px; }
+.et-workspace { height: calc(100dvh - var(--header)); min-height: 540px; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding: 0 16px 16px; }
 .et-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 8px 0; }
 .et-intro { min-width: 0; }
 .et-heading { display: flex; align-items: center; gap: 12px; }
@@ -11,7 +11,7 @@
 .et-subtle:hover { color: var(--text); background: var(--hover); border-radius: 5px; }
 .et-workspace button:disabled { opacity: .4; cursor: not-allowed; }
 .et-workspace input { accent-color: var(--text); }
-.et-bench { display: grid; grid-template-columns: minmax(340px, 38%) minmax(0, 1fr); gap: 12px; min-height: 0; }
+.et-bench { display: grid; grid-template-columns: minmax(340px, 38%) minmax(0, 1fr); gap: 12px; min-width: 0; min-height: 0; }
 .et-input, .et-output { min-width: 0; min-height: 0; background: var(--bg-1); border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; }
 .et-input { display: flex; flex-direction: column; }
 .et-editor-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 46px; border-bottom: 1px solid var(--line); padding: 8px 16px; font: 12px var(--mono); }
@@ -22,6 +22,7 @@
 .et-code-caption .et-subtle { font-size: 10px; }
 #email-html { flex: 1; display: block; width: 100%; min-height: 0; resize: none; border: 0; border-radius: 0; background: transparent; color: #d4d4d4; font: 12px/1.85 var(--mono); padding: 6px 16px 16px; tab-size: 2; }
 #email-html:focus { outline: 1px solid #555; outline-offset: -1px; }
+.et-html-editor { flex: 1; min-height: 0; overflow: hidden; }
 .et-editor-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); }
 .et-editor-footer > span { font-size: 10px; color: var(--text-3); }
 .et-editor-footer .btn { font-size: 11px; padding: 7px 10px; }

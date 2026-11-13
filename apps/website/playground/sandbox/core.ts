@@ -6,6 +6,7 @@
 // as data (text shown as text, HTML only inside another sandboxed frame).
 import * as Elements from "@hyper-elements/react";
 import { lint } from "@hyper-elements/lint";
+import { lintHtml } from "@hyper-elements/lint/html";
 import { describeComponents, inspect } from "@hyper-elements/react/inspect";
 import { shownAnywhere } from "@hyper-elements/core";
 import * as React from "react";
@@ -446,6 +447,7 @@ async function handle(request: Request): Promise<Result> {
   const result: Result = { ok: false, kind: request.kind, root: null, diagnostics: [], nodes: [], logs: [], ms: 0 };
   if (request.kind === "html-previews") {
     try {
+      result.diagnostics = lintHtml(request.html).diagnostics.map((d) => ({ ...d, path: "html" }));
       if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
       const output = await sandbox.extras.clients.renderInEmailClients(request.html, { emailClients: request.clients, dark: request.dark, fonts: "url" });
       result.previews = output.previews.map((p) => ({
@@ -454,11 +456,16 @@ async function handle(request: Request): Promise<Result> {
         dark: Boolean(p.dark), width: Number(p.width), approximate: Boolean(p.approximate), html: String(p.html),
       }));
       result.skipped = output.skipped.map((s) => ({ client: String(s.client ?? ""), reason: String(s.reason ?? "") }));
-      result.diagnostics = output.diagnostics.map((d) => ({ ...d, line: d.line ?? undefined }));
+      result.diagnostics.push(...output.diagnostics.map((d) => ({ ...d, line: d.line ?? undefined })));
       result.clientNames = sandbox.extras.clients.names;
       result.ok = true;
     } catch (error) {
-      result.error = failure(error);
+      // This request is HTML, so a worker stack position is not a line in the user's document.
+      result.error = { kind: "runtime", message: describe(error) };
+      if (error instanceof TypeError && error.message.includes("takes a whole email")) {
+        result.error.kind = "template";
+        result.diagnostics.unshift({ code: "email/html-input", severity: "error", message: error.message, path: "html", line: 1 });
+      }
     }
     result.ms = Math.round(performance.now() - started);
     return result;

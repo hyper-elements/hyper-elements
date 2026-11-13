@@ -2,6 +2,7 @@ import { defaultEmailClients, emailTestingClients, MAX_EMAIL_BYTES, sampleEmail 
 import type { Preview, Result } from "../../playground/protocol";
 import { previewDevice, previewFile, type PreviewScripts } from "../playground/preview";
 import { Sandbox } from "../playground/sandbox";
+import { HtmlEditor } from "./editor";
 
 const root = document.querySelector<HTMLElement>("[data-email-testing]")!;
 const get = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -40,6 +41,7 @@ let liveTimer: number | undefined;
 
 function invalidate() {
   report = undefined;
+  editor.setProblems([]);
   diagnostics.replaceChildren();
   skipped.replaceChildren();
   findings.hidden = true;
@@ -217,11 +219,12 @@ function showPreview() {
 }
 
 function showFindings(output: Result) {
+  editor.setProblems(output.diagnostics);
   findings.hidden = false;
   get("email-findings-count").textContent = String(output.diagnostics.length);
   get("email-findings-summary").textContent = output.diagnostics.length
-    ? `${output.diagnostics.length} finding${output.diagnostics.length === 1 ? "" : "s"} from the client compatibility checks.`
-    : "No known compatibility issues found by these checks. Inspect the previews and test critical emails in real clients.";
+    ? `${output.diagnostics.length} finding${output.diagnostics.length === 1 ? "" : "s"} from HTML validation, lint and email-client checks.`
+    : "No issues found by these checks. Inspect the previews and test critical emails in real clients.";
   for (const d of output.diagnostics) {
     const item = document.createElement("li");
     const meta = document.createElement("span");
@@ -257,13 +260,14 @@ async function check(input: Input): Promise<Report> {
   const run = ++sequence;
   sandbox.cancel("email-testing");
   invalidate();
+  let failedReport: Report | undefined;
   try {
     if (!input || typeof input.html !== "string" || !input.html.trim()) throw new Error("Paste a complete HTML email to test.");
     if (new TextEncoder().encode(input.html).length > MAX_EMAIL_BYTES) throw new Error("This playground accepts emails up to 250 KB. Use @hyper-elements/cli for larger files.");
     const clients = input.clients ?? defaultEmailClients;
     if (!Array.isArray(clients) || !clients.length || clients.some((id) => !names.has(id))) throw new Error("Choose at least one supported email client.");
     if (input.dark !== undefined && typeof input.dark !== "boolean") throw new Error("The dark option must be true or false.");
-    if (source.value !== input.html) source.value = input.html;
+    if (source.value !== input.html) editor.setCode(input.html);
     dark.checked = input.dark === true;
     runButton.disabled = true;
     runButton.textContent = "Updating…";
@@ -280,7 +284,12 @@ async function check(input: Input): Promise<Report> {
       previews: (output.previews ?? []).map(({ html: _html, ...metadata }) => metadata),
     };
     if (run !== sequence) return { ...summary, ok: false, error: { kind: "internal", message: "Superseded by another edit or test." } };
-    if (!output.ok) throw new Error(output.error?.message ?? "The email could not be checked. Try again.");
+    if (!output.ok) {
+      failedReport = report = summary;
+      showFindings(output);
+      download.disabled = false;
+      throw new Error(output.error?.message ?? "The email could not be checked. Try again.");
+    }
     result = output;
     report = summary;
     const previews = output.previews ?? [];
@@ -297,7 +306,7 @@ async function check(input: Input): Promise<Report> {
     else mountThumbnails();
     showFindings(output);
     root.dataset.renderStatus = "ok";
-    status.textContent = `${previews.length} previews generated · ${output.diagnostics.length} compatibility finding${output.diagnostics.length === 1 ? "" : "s"}`;
+    status.textContent = `${previews.length} previews generated · ${output.diagnostics.length} finding${output.diagnostics.length === 1 ? "" : "s"}`;
     return summary;
   } catch (reason) {
     const message = reason instanceof Error ? reason.message : "The email could not be checked. Try again.";
@@ -310,7 +319,7 @@ async function check(input: Input): Promise<Report> {
       empty.querySelector("p")!.textContent = "Paste a complete HTML email or load the example.";
       empty.querySelector<HTMLElement>(".et-loading")!.hidden = true;
     }
-    return { ok: false, diagnostics: [], previews: [], ms: 0, error: { kind: "runtime", message } };
+    return failedReport ?? { ok: false, diagnostics: [], previews: [], ms: 0, error: { kind: "runtime", message } };
   } finally {
     if (run === sequence) {
       runButton.disabled = false;
@@ -320,14 +329,13 @@ async function check(input: Input): Promise<Report> {
   }
 }
 
+const editor = new HtmlEditor(source, { onChange: changed, onRun: () => void runUI() });
 runButton.addEventListener("click", () => void runUI());
-source.addEventListener("input", changed);
-source.addEventListener("keydown", (event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void runUI(); } });
 live.addEventListener("change", () => { clearTimeout(liveTimer); if (live.checked && root.dataset.renderStatus !== "ok") void runUI(); });
 dark.addEventListener("change", () => { selectedPreviewId = selectedPreviewId.replace(/\.dark$/, "") + (dark.checked ? ".dark" : ""); changed(); });
 allButton.addEventListener("click", showAll);
 new ResizeObserver(resize).observe(viewport);
-get("email-example").addEventListener("click", () => { source.value = sampleEmail; changed(); void runUI(); });
+get("email-example").addEventListener("click", () => { editor.setCode(sampleEmail); changed(); void runUI(); });
 root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((button) => button.addEventListener("click", () => {
   root.dataset.mobilePane = button.dataset.mobileTab;
   root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((tab) => tab.setAttribute("aria-selected", String(tab === button)));
@@ -349,7 +357,7 @@ if (modelContext?.registerTool) {
   try {
     Promise.resolve(modelContext.registerTool({
       name: "check_html_email",
-      description: "Check complete HTML email compatibility and generate local modeled client previews. Returns diagnostics, preview metadata and skipped variants; ok means generation succeeded, not guaranteed compatibility. Updates this playground.",
+      description: "Validate complete HTML email input, run lint and compatibility checks, and generate local modeled client previews. Returns diagnostics, preview metadata and skipped variants; ok means generation succeeded, not guaranteed compatibility. Updates this playground.",
       inputSchema: { type: "object", properties: { html: { type: "string", description: "The complete HTML email, including html and body tags (up to 250 KB)." }, clients: { type: "array", minItems: 1, items: { type: "string", enum: [...names.keys()] } }, dark: { type: "boolean" } }, required: ["html"], additionalProperties: false },
       execute: check,
     })).catch(() => undefined);

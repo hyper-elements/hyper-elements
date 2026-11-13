@@ -6,7 +6,7 @@ import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
 ---
 <Base title="Test HTML emails in Outlook, Gmail and more" description={emailTestingDescription} footer={false}>
-  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-3`}>
+  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-4`}>
     <header class="et-topbar">
       <div class="et-intro">
         <div class="et-heading"><h1 id="playground-title">Test HTML emails in Outlook, Gmail and more</h1></div>
@@ -42,7 +42,7 @@ import "../styles/email-testing.css";
           <p id="email-error" class="et-notice" role="alert" hidden></p>
         </div>
         <details class="et-findings" id="email-findings" hidden>
-          <summary><span>Compatibility <span id="email-findings-count" class="et-count">0</span></span><span class="et-findings-prompt">Review findings ⌃</span></summary>
+          <summary><span>Checks <span id="email-findings-count" class="et-count">0</span></span><span class="et-findings-prompt">Review findings ⌃</span></summary>
           <div class="et-findings-content"><p id="email-findings-summary"></p><ul id="email-diagnostics"></ul><ul id="email-skipped" class="et-skipped"></ul><button type="button" class="et-subtle" id="email-download" disabled>Download report ↓</button></div>
         </details>
       </section>

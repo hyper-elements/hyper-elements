@@ -39,6 +39,7 @@ const SOURCES = {
   "@hyper-elements/core/image": join(coreDir, "src/image/index.ts"),
   "@hyper-elements/email-clients": join(clientsDir, "src/index.ts"),
   "@hyper-elements/lint": join(lintDir, "src/index.ts"),
+  "@hyper-elements/lint/html": join(lintDir, "src/html.ts"),
 };
 
 /** What a browser has no module for, and the engines' Node-only entries: each a file in playground/sandbox/shims. */
