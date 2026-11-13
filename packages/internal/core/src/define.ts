@@ -39,18 +39,38 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
   /** Editors may change it (default true). */
   editable?: boolean;
   /**
-   * The editor an editing app shows for it, by name, where its kind's own isn't the one wanted (a quantity's
-   * `"counter"`, a price's `"currency"`). The value is its kind's either way; an app with no editor of that name
-   * shows the kind's.
+   * The editor an editing app shows for it, where its kind's own isn't the one wanted: one of the app's own, by its
+   * name (a quantity's `"counter"`), or one of a team's own, as a property the team defines gives it (`defineProperty()`:
+   * `currency({ symbol: "$" })` is the prop, with this). The value is its kind's either way; an app with no editor of
+   * that name shows the kind's.
    */
-  editor?: string;
+  editor?: string | EditorUse<OutputOf<K>>;
   /**
-   * What its editor takes besides the value (a counter's `step`, a currency's `symbol`), given to it as it is. It
-   * changes how the value is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
+   * What an editor named alone takes besides the value (a counter's `step`), given to it as it is. It changes how
+   * the value is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
    */
   editorOptions?: { readonly [name: string]: Json };
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
+}
+
+/**
+ * The editor of a property of a team's own on one prop: its name, the kind of value it edits (by that kind's editor),
+ * and its options as this prop has them. It's data: the editor's control is each editing app's, by this name.
+ */
+export interface EditorUse<V = any> {
+  readonly name: string;
+  readonly edits: EditorKind;
+  readonly options: { readonly [name: string]: Json };
+  /** Type only: the value it edits, so a prop of another kind doesn't take it. */
+  readonly _edits?: (value: V) => void;
+}
+
+/** A prop's editor where it names one, with what the prop gives it: named alone, or a team's own. */
+export function namedEditor(spec: PropSpec): { name: string; options?: { readonly [name: string]: Json } } | undefined {
+  const { editor } = spec;
+  if (editor === undefined) return undefined;
+  return typeof editor === "string" ? { name: editor, options: spec.editorOptions } : { name: editor.name, options: editor.options };
 }
 
 /** A style's or prop's support, by output. */

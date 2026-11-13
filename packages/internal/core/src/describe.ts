@@ -6,7 +6,7 @@
 import { CONDITIONS, type ConditionName } from "./conditions";
 import { registryOf, type ComponentsOption, type Registry } from "./registry";
 import { styleGroup } from "./styles";
-import { ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
+import { namedEditor, ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
 import type { EditorKind, JsonSchema } from "./kinds";
 import type { Json } from "./model";
 
@@ -18,9 +18,9 @@ export interface PropertyDescription {
   kind: string;
   accepts: string;
   editor: EditorKind;
-  /** The editor its prop names (`editor: "counter"`), for an app that has one of that name; another shows `editor`. */
+  /** The editor its prop names (`"counter"`, a team's own `"acme.currency"`), for an app that has one of that name; another shows `editor`. */
   namedEditor?: string;
-  /** What its prop gives its editor besides the value (`editorOptions`: a counter's step, a currency's symbol). */
+  /** What its prop gives that editor besides the value: a counter's step, a currency's symbol (a team's own editor's options, each as the prop has it). */
   editorOptions?: { readonly [name: string]: Json };
   editable: boolean;
   required: boolean;
@@ -144,6 +144,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
   const within = (declared: readonly RootName[] | undefined) => (declared ? roots.filter((root) => declared.includes(root)) : roots);
   const properties: PropertyDescription[] = [];
   for (const [key, spec] of Object.entries(definition.props)) {
+    const named = namedEditor(spec);
     properties.push({
       path: `props.${key}`,
       label: spec.label,
@@ -151,8 +152,8 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       kind: spec.kind.name,
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,
-      ...(spec.editor ? { namedEditor: spec.editor } : {}),
-      ...(spec.editorOptions ? { editorOptions: spec.editorOptions } : {}),
+      ...(named ? { namedEditor: named.name } : {}),
+      ...(named?.options && Object.keys(named.options).length ? { editorOptions: named.options } : {}),
       editable: spec.editable !== false,
       required: !!spec.required,
       ...(spec.default !== undefined ? { default: spec.default } : {}),

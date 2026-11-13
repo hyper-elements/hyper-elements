@@ -14,6 +14,8 @@ import { placementStyle } from "./styles";
 export const CUSTOM_TYPE = /^[a-z][a-z0-9-]*\.[A-Z][A-Za-z0-9]*$/;
 /** An editor's name, as a prop gives one: a word (`counter`, `my_color_picker`). */
 const EDITOR_NAME = /^[A-Za-z][\w-]*$/;
+/** The name of an editor of a team's own: a namespace, a dot, a word ("acme.currency"). No editing app's own looks like this. */
+export const OWN_EDITOR = /^[a-z][a-z0-9-]*\.[A-Za-z][\w-]*$/;
 
 /** Props that always have a value: required ones, and ones with a default (see `prop`). */
 type RequiredOrDefaulted<P extends PropSpecs> = {
@@ -63,7 +65,18 @@ export function defineCustomComponent<const P extends PropSpecs>(spec: CustomCom
     throw new Error(`[Elements] A custom component's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
   }
   for (const [key, prop] of Object.entries(spec.props)) {
-    if (prop.editor !== undefined && !EDITOR_NAME.test(String(prop.editor))) {
+    // A property of a team's own is a prop once it's called.
+    if (typeof prop === "function") throw new Error(`[Elements] ${spec.type}: ${key} is a property's definition: call it for the prop (${key}: currency({ label: "…" }))`);
+    if (typeof prop.label !== "string") throw new Error(`[Elements] ${spec.type}: ${key} needs a label: what an editor shows for it`);
+    const editor: unknown = prop.editor;
+    if (typeof editor === "function") throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a property's definition: that's the prop itself (${key}: currency({ label: "…" }))`);
+    if (typeof editor === "object" && editor !== null) {
+      // One of a team's own, as a property a team defines gives it.
+      const { name, edits } = editor as { name?: unknown; edits?: unknown };
+      if (!OWN_EDITOR.test(String(name))) throw new Error(`[Elements] ${spec.type}: the editor of ${key} is one a property gives (defineProperty()), named like "acme.currency", not ${JSON.stringify(name)}`);
+      if (edits !== prop.kind.editor) throw new Error(`[Elements] ${spec.type}: the editor ${String(name)} edits a ${String(edits)}, and ${key} is a ${prop.kind.editor}`);
+      if (prop.editorOptions !== undefined) throw new Error(`[Elements] ${spec.type}: ${key} gives editorOptions beside the editor ${String(name)}, which takes its options from its property`);
+    } else if (editor !== undefined && !EDITOR_NAME.test(String(editor))) {
       throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a name ("counter", "currency"), not ${JSON.stringify(prop.editor)}`);
     }
     const options: unknown = prop.editorOptions;
