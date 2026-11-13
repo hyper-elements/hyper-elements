@@ -46,8 +46,9 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
    */
   editor?: string | EditorUse<OutputOf<K>>;
   /**
-   * What an editor named alone takes besides the value (a counter's `step`), given to it as it is. It changes how
-   * the value is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
+   * What its editor takes besides the value (a counter's `step`), given to it as it is: the editor it names alone, or
+   * its kind's own where it names none (a property of a team's own has its options instead). It changes how the value
+   * is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
    */
   editorOptions?: { readonly [name: string]: Json };
   /** How each output shows it: required for every output its component renders to (a test checks). */

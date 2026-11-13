@@ -20,7 +20,10 @@ export interface PropertyDescription {
   editor: EditorKind;
   /** The editor its prop names (`"counter"`, a team's own `"acme.currency"`), for an app that has one of that name; another shows `editor`. */
   namedEditor?: string;
-  /** What its prop gives that editor besides the value: a counter's step, a currency's symbol (a team's own editor's options, each as the prop has it). */
+  /**
+   * What its prop gives its editor besides the value: the editor it names, or its kind's own where it names none. A
+   * counter's step, a currency's symbol (a team's own editor's options, each as the prop has it).
+   */
   editorOptions?: { readonly [name: string]: Json };
   editable: boolean;
   required: boolean;
@@ -145,6 +148,8 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
   const properties: PropertyDescription[] = [];
   for (const [key, spec] of Object.entries(definition.props)) {
     const named = namedEditor(spec);
+    // With no editor named, what the prop gives is for its kind's own.
+    const options = named?.options ?? spec.editorOptions;
     properties.push({
       path: `props.${key}`,
       label: spec.label,
@@ -153,7 +158,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,
       ...(named ? { namedEditor: named.name } : {}),
-      ...(named?.options && Object.keys(named.options).length ? { editorOptions: named.options } : {}),
+      ...(options && Object.keys(options).length ? { editorOptions: options } : {}),
       editable: spec.editable !== false,
       required: !!spec.required,
       ...(spec.default !== undefined ? { default: spec.default } : {}),

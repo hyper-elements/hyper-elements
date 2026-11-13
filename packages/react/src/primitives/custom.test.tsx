@@ -255,6 +255,21 @@ describe("component()", () => {
     expect(validate(<Email><Order price={-1} /></Email>).diagnostics.map((d) => d.code)).toEqual(["prop/invalid"]);
   });
 
+  it("says what a prop gives its kind's own editor, where it names no other", () => {
+    const Stepper = component({
+      type: "acme.Stepper",
+      label: "Stepper",
+      props: { steps: prop.number({ label: "Steps", integer: true, default: 10, editorOptions: { step: 5 } }), plain: prop.number({ label: "Plain", default: 1 }) },
+      render: (p) => <Text>{`${p.steps} ${p.plain}`}</Text>,
+    });
+    const described = describeComponent("acme.Stepper", { components: [Stepper.definition] })!;
+    const props = described.properties.filter((property) => property.path.startsWith("props."));
+    expect(props.map((property) => [property.path, property.editor, property.namedEditor, property.editorOptions])).toEqual([
+      ["props.steps", "number", undefined, { step: 5 }],
+      ["props.plain", "number", undefined, undefined],
+    ]);
+  });
+
   it("refuses an editor's name that isn't a word", () => {
     const named = (editor: string) => () => component({ type: "acme.Named", label: "Named", props: { n: prop.number({ label: "N", editor }) }, render: () => <Text>n</Text> });
     expect(named("my_color-picker2")).not.toThrow();
