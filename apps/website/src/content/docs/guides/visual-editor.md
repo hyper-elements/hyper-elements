@@ -168,6 +168,7 @@ A prop's kind says what its value is. The builder edits it with its own property
 | Prop | The builder's editor |
 |------|----------------------|
 | `prop.text()` | `text` |
+| `prop.text()` with an `enum` | `dropdown`, with its texts |
 | `prop.color()` | `color_picker` |
 | `prop.number()` with `integer: true` | `counter`, between the prop's `min` and `max` |
 | `prop.number()` | `text`: a number that isn't whole is kept as text (`"7.99"`) |
@@ -179,36 +180,68 @@ A prop's kind says what its value is. The builder edits it with its own property
 | `prop.image()` | `image` |
 | `prop.fontFamily()` | `font_family` |
 
-A prop can name another editor with `editor`, and give it what it takes besides the value with `editorOptions`:
+A prop can be edited with another editor, which it says in `editor`:
 
 ```tsx
 quantity: prop.number({ label: "Quantity", min: 0, max: 100, integer: true, default: 10, editorOptions: { step: 5 } }),
 due: prop.text({ label: "Due", editor: "datetime" }),
-price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { symbol: "€" } }),
+price: currency({ label: "Price", min: 0, default: 49, symbol: "€" }),
 ```
 
-- **`editorOptions`** go to the prop's editor as the builder takes them, whichever it is (a counter's `step`).
-- **One of the builder's own** is used where it keeps the prop's kind of value: `datetime` for a text, `alignment` for a choice of `left`, `center` and `right`.
-- **One of your own** is given to `registerTools()` in `editors`, by the name props use:
+- **One of the builder's own**, by its name. It's used where it keeps the prop's kind of value: `datetime` for a text, `alignment` for a choice of `left`, `center` and `right`. `editorOptions` go to the builder's editor as it takes them (a counter's `step`).
+- **One of your own**: a property you define once (`currency` here), and then give the builder a control for.
 
-  ```ts
-  registerTools(unlayer, [PriceBand], {
-    editors: {
-      currency: {
-        // Its markup. The builder draws nothing around an editor of your own: its label is here too.
-        render: (value, update, options) => `<label>${options.label}</label> ${options.symbol} <input type="number" value="${value ?? ""}" />`,
-        // Once that's in the page: call update() with the new value.
-        mount: (node, value, update) => {
-          node.querySelector("input").onchange = (event) => update(Number(event.target.value));
-        },
-      },
-    },
-  });
-  ```
+The value stays its kind's either way: a price is still a number, checked as one. An editor the builder doesn't have falls back to the kind's editor.
 
-  It's given the prop's value as the prop has it (a price as a number) and gives back the same. `options` is the prop's label and its `editorOptions`. One you registered yourself with `unlayer.registerPropertyEditor` is `true` there (`editors: { currency: true }`): it's given the value as the builder keeps it.
+### Your own property editor
 
-The value stays its kind's either way: a price is still a number, checked as one. A name that's neither of those falls back to the kind's editor.
+Define a property where your components are: one of `prop`'s helpers, with an editor of your own. A definition is data: its name, the helper it's made on, and the options its editor takes. There's no control in it, so a template that uses it renders anywhere.
+
+```ts
+import { defineProperty, prop } from "@hyper-elements/react";
+
+export const currency = defineProperty({
+  name: "acme.currency",
+  base: prop.number,
+  options: {
+    symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }),
+  },
+});
+```
+
+- **`name`** is a namespace, a dot and a word: `acme.currency`.
+- **`base`** is the helper the prop is made with: `prop.text`, `prop.number`, `prop.color`, `prop.boolean`, `prop.length`, `prop.fontFamily`, `prop.fontWeight`, `prop.image` or `prop.link`. For one of a few values it's `prop.text`, and the prop gives its `enum`.
+- **`options`** are what the editor takes besides the value. Each is made with a helper too, with no label: `prop.text({ enum: ["$", "€", "£"] })` for one of a few texts, `prop.number({ min: 0 })`, `prop.boolean({})`. One with a `default` is always there, and one with `required: true` must be given.
+
+Called, it's a prop. It takes what its base takes, and its own options:
+
+```tsx
+price: currency({ label: "Price", min: 0, default: 49, symbol: "€" }),
+shipping: currency({ label: "Shipping", min: 0, default: 5 }),
+```
+
+The prop is its base's: a number, from 0. That holds whoever writes the value, an editor user, your code or an agent. Its own options say how it's edited, and nothing else. Each is checked by its kind, as a prop is: an option the property doesn't have, or a `symbol` that isn't one of the three, is a type error, and refused where it's written.
+
+Then give the builder the property's control, in `registerTools()`'s `editors`, under the property's name:
+
+```ts
+import { registerTools, type EditorWidget } from "@hyper-elements/react/builder";
+
+const currencyField: EditorWidget<typeof currency> = {
+  // Its markup. The builder draws nothing around an editor of your own: its label is here too.
+  render: (value, update, { label, symbol }) => `<label>${label}</label> ${symbol} <input type="number" value="${value ?? ""}" />`,
+  // Once that's in the page: call update() with the new value.
+  mount: (node, value, update) => {
+    node.querySelector("input").onchange = (event) => update(Number(event.target.value));
+  },
+};
+
+registerTools(unlayer, [PriceBand], { editors: { [currency.name]: currencyField } });
+```
+
+`EditorWidget<typeof currency>` types the control from the property: its value is a number, and its options are the prop's label and the property's own, each as the prop has it. It's given the prop's value as the prop has it (a price as a number) and gives back the same. One you registered yourself with `unlayer.registerPropertyEditor` under that name is `true` there (`editors: { [currency.name]: true }`): it's given the value as the builder keeps it.
+
+A property with no control in `editors` is edited with its base's editor, so a component still works in a builder that doesn't have yours.
 
 ### A field that fills several props
 

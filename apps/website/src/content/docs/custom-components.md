@@ -94,7 +94,7 @@ error prop/invalid at root.children[0].props.size: size: expected one of "compac
 
 | Helper | Takes |
 |--------|-------|
-| `prop.text()` | Text |
+| `prop.text()` | Text, or one of the texts its `enum` lists |
 | `prop.color()` | A color |
 | `prop.image()` | An image: a URL, or `{ src, width, height }` |
 | `prop.link()` | A link: a URL or a merge tag, or `{ href, target }` |
@@ -105,7 +105,7 @@ error prop/invalid at root.children[0].props.size: size: expected one of "compac
 | `prop.fontFamily()` | A font stack |
 | `prop.fontWeight()` | A font weight |
 
-Each takes `label`, and optionally a `description`, `required: true` or a `default`. `editor` names the control a visual editor shows for it, where its kind's own isn't the one wanted, and `editorOptions` is what that control takes besides the value (`prop.number({ label: "Price", editor: "currency", editorOptions: { symbol: "€" } })`): the value is its kind's either way, and an editor that has no control by that name shows the kind's. In Unlayer's builder a component is a tool, with a field for each prop: see [Visual editing](/docs/guides/visual-editor#your-own-components-as-tools). Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, `<ProductCard accent={token("colors.primary")} />`, and `render` gets its value where the instance is.
+Each takes `label`, and optionally a `description`, `required: true` or a `default`. `editor` says what a visual editor edits it with, where its kind's own isn't the one wanted: one of that editor's own, by its name (`editor: "counter"`, with `editorOptions` for what it takes besides the value). For an editor of your own, `defineProperty()` defines a property: a name, the helper it's made on, and the options its editor takes, each made with a helper too (`const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }) } })`). Called, it's a prop that takes what its base takes and its own options: `price: currency({ label: "Price", min: 0, symbol: "€" })`. The value is its kind's either way, and an editor that has no control by that name shows the kind's. In Unlayer's builder a component is a tool, with a field for each prop: see [Visual editing](/docs/guides/visual-editor#your-own-components-as-tools). Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, `<ProductCard accent={token("colors.primary")} />`, and `render` gets its value where the instance is.
 
 ### On each instance
 
