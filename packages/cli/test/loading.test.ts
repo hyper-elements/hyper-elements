@@ -84,6 +84,36 @@ export default function A() { return <Email><Signature name="Ada" /></Email>; }
     expect(readFileSync(join(dir, "before", "emails", "a.txt"), "utf8")).toContain("Hello from an ES module / its default export");
   });
 
+  // A template can be in an installed package itself (templates a team ships compiled, rendered by their path), or
+  // its project under a folder named node_modules. That package's files are the template's own wherever it is: tsx
+  // compiles them as it did, the loader module the CLI writes beside the template among them (ES syntax that calls
+  // `require`, which Node reads as neither kind of module). Left to Node with the dependencies, the first of these
+  // said @hyper-elements/react wasn't installed, and the second "Cannot use import statement outside a module".
+  // (On Bun nothing is left to Node: Bun compiles every file itself.)
+  it.skipIf(ON_BUN)("a template in a CommonJS package under node_modules: its package's own files are compiled as they were", async () => {
+    const compiled = `const React = require("react");\nconst { Email, Text } = require("@hyper-elements/react");\nmodule.exports = function Welcome() {\n  return React.createElement(Email, null, React.createElement(Text, null, "A compiled template"));\n};\n`;
+    const written = `import { createElement } from "react";\nimport { Email, Text } from "@hyper-elements/react";\nimport { word } from "./words.js";\nexport default function Welcome() {\n  return createElement(Email, null, createElement(Text, null, word));\n}\n`;
+    const dir = project(
+      {
+        "node_modules/acme-emails/package.json": JSON.stringify({ name: "acme-emails", version: "1.0.0" }),
+        "node_modules/acme-emails/dist/welcome.js": compiled,
+        // ES syntax in a package that says it's CommonJS: tsx's to compile, and not a module Node loads as written.
+        "node_modules/acme-typed/package.json": JSON.stringify({ name: "acme-typed", version: "1.0.0", type: "commonjs" }),
+        "node_modules/acme-typed/emails/welcome.js": written,
+        "node_modules/acme-typed/emails/words.js": `export const word = "Its own ES syntax";\n`,
+      },
+      { packageJson: { name: "fixture", private: true } }
+    );
+    for (const [file, text] of [
+      ["node_modules/acme-emails/dist/welcome", "A compiled template"],
+      ["node_modules/acme-typed/emails/welcome", "Its own ES syntax"],
+    ]) {
+      const ran = await cli(dir, ["render", `${file}.js`]);
+      expect(ran.code, ran.stderr + ran.stdout).toBe(0);
+      expect(readFileSync(join(dir, "out", `${file}.txt`), "utf8")).toContain(text);
+    }
+  });
+
   it("reads PreviewProps through memo and forwardRef, and --props over them", async () => {
     const dir = project({
       "emails/memo.tsx": `import { memo } from "react";

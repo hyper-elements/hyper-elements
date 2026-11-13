@@ -6,7 +6,7 @@
  * On Node, tsx is registered once, for the group's tsconfig (one tsconfig per process: tsx's registers share one
  * config). On Bun, which compiles TSX and reads the template's tsconfig itself, nothing is registered.
  */
-import { rmSync, writeFileSync } from "node:fs";
+import { realpathSync, rmSync, writeFileSync } from "node:fs";
 import Module, { createRequire } from "node:module";
 import { dirname, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -22,6 +22,7 @@ import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, UsageFailure, type 
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
 import { errorLine, errorText, messageOf, notFound } from "./errors";
 import { formatDiagnostic } from "./format";
+import { packageFolder } from "./inputs";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { killTree } from "./kill";
@@ -80,8 +81,11 @@ const NODE_LOADERS: Loaders = { ...extensions() };
  * Before those, tsx compiling it is the one way a CommonJS project reaches a dependency written as one, so there
  * every file stays tsx's, as it was: a template importing such a dependency renders, and a Document's PDF is still
  * not written.
+ *
+ * `own` is the folders of the packages the templates are in (`ownPackages()`): their files stay tsx's wherever the
+ * package is, as they were.
  */
-async function registerCommonJs(): Promise<void> {
+async function registerCommonJs(own: string[]): Promise<void> {
   (await import("tsx/cjs/api")).register();
   if (!process.features.require_module) return;
   const loaders = extensions();
@@ -89,9 +93,39 @@ async function registerCommonJs(): Promise<void> {
     const compiled = loaders[extension];
     if (!compiled || !plain || compiled === plain) continue;
     loaders[extension] = function (module: NodeJS.Module, file: string) {
-      return (file.includes(DEPENDENCY) ? plain : compiled).call(this, module, file);
+      return (isDependency(file, own) ? plain : compiled).call(this, module, file);
     };
   }
+}
+
+/**
+ * The folders of the packages the templates are in, as given and as they really are (`require` names a file by its
+ * real path). A template can be in an installed package itself (`render node_modules/@acme/emails/dist/welcome.js`),
+ * or its project under a folder named node_modules: that package's files are still the template's own. One of them
+ * is the loader module the CLI writes beside a template, ES syntax that calls `require`, which only tsx reads: a
+ * template's own folder is among these too, for one with no package.json between it and that node_modules.
+ */
+function ownPackages(inputs: ChildInput[]): string[] {
+  const folders = new Set<string>();
+  for (const input of inputs) {
+    const beside = dirname(input.file);
+    for (const folder of [packageFolder(beside), beside]) {
+      if (!folder) continue;
+      folders.add(folder);
+      try {
+        folders.add(realpathSync(folder));
+      } catch {
+        // (the folder as given)
+      }
+    }
+  }
+  return [...folders];
+}
+
+/** Whether a file is a dependency's: under a node_modules folder, other than one a template's own package is under. */
+function isDependency(file: string, own: string[]): boolean {
+  if (!file.includes(DEPENDENCY)) return false;
+  return !own.some((folder) => file.startsWith(folder + sep) && !file.slice(folder.length).includes(DEPENDENCY));
 }
 
 /**
@@ -145,7 +179,7 @@ async function start(message: StartMessage): Promise<void> {
       const previous = process.env.TSX_TSCONFIG_PATH;
       process.env.TSX_TSCONFIG_PATH = config.file;
       try {
-        await registerCommonJs();
+        await registerCommonJs(ownPackages(message.inputs));
       } finally {
         if (previous === undefined) delete process.env.TSX_TSCONFIG_PATH;
         else process.env.TSX_TSCONFIG_PATH = previous;
