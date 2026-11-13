@@ -1,0 +1,26 @@
+[
+  {
+    "code": "email/lint-unsubscribe",
+    "severity": "warning",
+    "path": "root",
+    "message": "This marketing email has no link to unsubscribe or manage preferences"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[0].children[2].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[0].children[3].children[0]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "email/lint-text-size",
+    "severity": "info",
+    "path": "root.children[0].children[5]",
+    "message": "This text is 13px, under 14px"
+  }
+]

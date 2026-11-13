@@ -1,0 +1,86 @@
+[
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[1].children[0].children[0].children[0]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[2].children[0]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[0].children[0]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[0].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[1].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[2].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[3].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[4].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[3].children[1].children[5].children[1].children[1]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[4].children[0]",
+    "message": "This text is 13px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[4].children[1].children[0].children[0].children[1]",
+    "message": "This text is 11px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[4].children[1].children[0].children[1].children[1]",
+    "message": "This text is 11px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[4].children[1].children[1].children[0].children[1]",
+    "message": "This text is 11px, under 14px"
+  },
+  {
+    "code": "page/lint-text-size",
+    "severity": "info",
+    "path": "root.children[4].children[1].children[1].children[1].children[1]",
+    "message": "This text is 11px, under 14px"
+  }
+]

@@ -63,6 +63,7 @@ export const docsNav: DocGroup[] = [
     items: [
       { slug: "diagnostics", label: "Diagnostics" },
       { slug: "email-client-emulator", label: "Email client emulator" },
+      { slug: "lint", label: "Lint" },
     ],
   },
   {

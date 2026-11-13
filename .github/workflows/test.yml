@@ -86,6 +86,9 @@ jobs:
       - name: CLI and template loader typechecks
         run: pnpm --filter @hyper-elements/cli typecheck && pnpm --filter @hyper-elements/template-loader typecheck
 
+      - name: Lint typecheck
+        run: pnpm --filter @hyper-elements/lint typecheck
+
       # The release workflow's decisions (scripts/release.mjs): numbering from the highest version at any tag, the hold
       # tag, and resuming a run whose npm publish succeeded.
       - name: Release script
@@ -178,6 +181,22 @@ jobs:
             exit 1
           fi
           echo "✅ Email client previews bundle within budget"
+
+      # The lint plugin (@hyper-elements/lint, dist/index.js): about 26KB unminified ESM, the rules (their summaries,
+      # fixes and messages), the tree read at both widths, contrast and the CSS color names. It imports nothing at run
+      # time. Raise it on purpose, with what grew.
+      - name: Check lint bundle size
+        run: |
+          BUNDLE="packages/lint/dist/index.js"
+          test -s "$BUNDLE" && test -s "packages/lint/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+          MAX_SIZE=30000
+          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
+          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+            echo "::error::Lint bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
+            exit 1
+          fi
+          echo "✅ Lint bundle within budget"
 
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters
@@ -557,6 +576,12 @@ jobs:
       # says it's done, and runs none of the email's scripts, handlers or navigation (packages/email-clients/test/browser).
       - name: Email client previews in Chromium
         run: pnpm --filter @hyper-elements/email-clients test:browser
+
+      # Lint reads each run of text as Chromium shows it: its size, color and whether it's shown, at desktop and phone
+      # width, over the gallery and stress templates and the cases of what the writers do differently on phones
+      # (packages/lint/test/browser).
+      - name: Lint's tree as Chromium shows it
+        run: pnpm --filter @hyper-elements/lint test:browser
 
       # The CLI's preview --findings in each browser it finds: Playwright's Chromium, one named by CHROME_PATH, the
       # runner's Chrome by its channel; what the drawn previews say, screenshots, nothing fetched with --fonts inline,
