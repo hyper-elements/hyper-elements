@@ -5,6 +5,7 @@
 // Nothing here is trusted by the page: the code it runs shares this worker's globals, so the page reads every result
 // as data (text shown as text, HTML only inside another sandboxed frame).
 import * as Elements from "@hyper-elements/react";
+import { lint } from "@hyper-elements/lint";
 import { describeComponents, inspect } from "@hyper-elements/react/inspect";
 import { shownAnywhere } from "@hyper-elements/core";
 import * as React from "react";
@@ -67,6 +68,10 @@ const ROOTS: readonly string[] = ["Email", "Page", "Document", "Canvas"];
 // ─── Where each component is in the source ─────────────────────────────────
 
 /** Each Elements component rendered, in the order React renders them (document order), with the line its JSX is on. */
+/** Lint's plugin, made once: what makes an Email or a Page hard to read. */
+let lintPlugin: Elements.ElementsPlugin | undefined;
+const linter = () => (lintPlugin ??= lint());
+
 let trace: Array<{ type: string; line?: number }> = [];
 
 /** The prop a component's JSX line travels in, from the JSX runtime below to the component's stand-in. */
@@ -466,8 +471,15 @@ async function handle(request: Request): Promise<Result> {
 
     const isEmail = result.root === "Email";
     if (isEmail && sandbox.extras.clients) result.clientNames = sandbox.extras.clients.names;
-    const plugins = isEmail && request.checks !== false && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : isEmail && request.checks === false ? [] : undefined;
-    const options = plugins ? { plugins } : {};
+    // An Email's client checks (where their bundle is loaded) and lint's, on an Email and a Page; none with checks off.
+    const checks = request.checks !== false;
+    const lintable = result.root === "Email" || result.root === "Page";
+    const plugins = !checks
+      ? isEmail
+        ? []
+        : undefined
+      : [...(isEmail && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable ? [linter()] : [])];
+    const options = plugins && (plugins.length || !checks) ? { plugins } : {};
 
     try {
       if (request.kind === "render") {

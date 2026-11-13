@@ -91,6 +91,8 @@ Each line is a fix the agent can apply without asking you. Warnings and notes le
 warning email/font-fallback at root.children[0].style.fontFamily: This font stack ends with the web font "Inter": where it doesn't load (Gmail, classic Outlook) the email client picks its own font [gmail, outlook] Fix: end it with a font the client has: "Inter, Arial, sans-serif"
 ```
 
+With [lint](/docs/lint)'s plugin (`validate(email, { plugins: [lint()] })`, from `@hyper-elements/lint`), it also hears what makes the email hard to read, each with its fix: a link that says "click here", an image's alt that's a file name, faint or small text, headings out of order, merge syntax typed into the copy. `npx hyper-elements check` runs it already.
+
 ### 3. Outline
 
 `outline()` prints the template as laid out on desktop, and says whether each `Row` stacks on phones:

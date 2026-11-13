@@ -8,6 +8,7 @@ playground/
   protocol.ts        what the page and the sandbox say to each other
   sandbox/runner.ts  the sandboxed frame's script: makes the workers, stops one that runs too long
   sandbox/core.ts    the worker: compiles the code (Sucrase), runs it, renders it with @hyper-elements/react
+                     and @hyper-elements/lint's plugin (on an Email and a Page)
   sandbox/pdf.ts     adds @hyper-elements/react/pdf (react-pdf's browser build)
   sandbox/image.ts   adds @hyper-elements/react/image (Satori, resvg as WebAssembly)
   sandbox/clients.ts adds @hyper-elements/email-clients (the checks' plugin, the previews)

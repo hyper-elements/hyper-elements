@@ -15,6 +15,8 @@
 //          the package doesn't export. Right code in every shape, and every starter, still compiles.
 //      2c. Leaving a view while its file is being drawn leaves no "drawing" notice over the next view.
 //      2d. A link's or an agent's code isn't kept as the visitor's draft until they change it.
+//      2e. Lint's findings show on an Email and a Page, each linked to its docs ("docs"), and the email client checks'
+//          to caniemail ("caniemail"); words that say where a link goes give none.
 //   3. Code a link carries can't reach the page's origin: no request arrives, no storage, no parent. The same
 //      attempts from a worker with no sandbox around it do get through (so "blocked" is the sandbox's doing).
 //   4. Markup a template writes doesn't run in the preview, and can't navigate it. The same markup in a page of its
@@ -202,6 +204,33 @@ try {
     await shown(page).getByText("Welcome to Orbit").waitFor();
     await page.close();
     step("a broken template shows each diagnostic with its fix and its line; the fixed one shows none");
+  }
+
+  // ─── 2e. Lint's findings, linked to their docs ───────────────────────────
+  {
+    const page = await open();
+    const templates = {
+      email: (words) => `export default <Email lang="en" previewText="Our autumn offer, for the next week only"><Column style={{ borderRadius: 8 }}><Text>Our offer: <Link href="https://example.com/offer">${words}</Link></Text></Column></Email>;`,
+      page: (words) => `export default <Page lang="en" title="Offer"><Text>Our offer: <Link href="https://example.com/offer">${words}</Link></Text></Page>;`,
+    };
+    for (const [prefix, template] of Object.entries(templates)) {
+      const result = await api(page, "setCode", template("click here"));
+      assert.equal(result.ok, true, JSON.stringify(result.error ?? result.diagnostics));
+      const code = `${prefix}/lint-link-text`;
+      assert(result.diagnostics.some((d) => d.code === code), `${prefix}: no ${code} in ${JSON.stringify(result.diagnostics.map((d) => d.code))}`);
+      const link = page.locator("[data-diagnostics] .pg-diag").filter({ hasText: code }).locator("a");
+      assert.equal(await link.innerText(), "docs ↗", `${code} links its docs`);
+      assert.equal(await link.getAttribute("href"), "https://www.hyperelements.dev/docs/lint#link-text");
+      if (prefix === "email") {
+        const clients = page.locator("[data-diagnostics] .pg-diag").filter({ hasText: "email/outlook-degraded" }).locator("a");
+        assert.equal(await clients.innerText(), "caniemail ↗", "an email client check still links caniemail");
+      }
+      // Control: words that say where it goes give no finding.
+      const fine = await api(page, "setCode", template("See the autumn offer"));
+      assert(!fine.diagnostics.some((d) => d.code === code), `${prefix}: ${code} on words that say where the link goes`);
+    }
+    await page.close();
+    step("lint's findings show on an Email and a Page, linked to their docs (an email client check still to caniemail)");
   }
 
   // ─── 2b. What the compiler here lets through, a project's own wouldn't ───
