@@ -495,6 +495,31 @@ describe("renderImage", () => {
       expect(said(runs)).toBe("Hello world and more");
       expect(runs.slice(0, -1).filter(ends)).toEqual([]);
     }
+
+    // Of two spaces that collapse the first is the one kept, as in the HTML outputs: before a Link that starts with
+    // a space of its own, that's the space outside it. Whichever run holds it, the Link's underline is under its
+    // word alone (the space is in a run of its own inside the Link, which the underline doesn't reach).
+    for (const style of [{}, right]) {
+      const link = drawn(<Text style={style}>Hello <Link href="https://x.test"> world</Link> and more</Text>)[0]!.runs![1] as { runs: Run[] };
+      expect(link.runs.filter((run) => typeof run === "string"), JSON.stringify(link)).toEqual(["world"]);
+    }
+  });
+
+  it("spaces the words inside a Span or a Link that holds another as it spaces a block's own", async () => {
+    // The runs inside a Span are flex items too: a space on both sides of an edge inside one is one space, and the
+    // space between two of them is held by one of the two, as between a block's own runs.
+    const plain = await width(<Text>Hello world and more</Text>);
+    for (const children of [
+      <Span>Hello <Span style={{ color: "#ff0000" }}> world</Span> and more</Span>,
+      <Span>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</Span>,
+      <Link href="https://x.test">Hello <Span style={{ color: "#ff0000" }}>world </Span> and more</Link>,
+    ]) {
+      for (const style of [{}, { textAlign: "right" } as const]) {
+        const what = JSON.stringify(drawn(<Text style={style}>{children}</Text>)[0]!.runs);
+        expect(said(drawn(<Text style={style}>{children}</Text>)[0]!.runs!), what).toBe("Hello world and more");
+        expect(Math.abs((await width(<Text style={style}>{children}</Text>)) - plain), what).toBeLessThan(2);
+      }
+    }
   });
 
   it("writes a Canvas only", async () => {

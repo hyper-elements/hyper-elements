@@ -139,7 +139,12 @@ function withSpace(run: Run, side: Side): Run | undefined {
  *
  * A space beside a line break on the side it's moved from goes, as a browser drops it, and so does one beside a run
  * that already has a space there: the two are one space in the HTML outputs, where white space collapses across a
- * Span's edge ("Hello <Span> world</Span>"). One beside an Image stays, there being nothing to move it onto.
+ * Span's edge ("Hello <Span> world</Span>"). The one kept is the first, as there: moved forward onto a Link that
+ * starts with a space of its own, it takes that space's place in a run the Link's underline doesn't reach. One
+ * beside an Image stays, there being nothing to move it onto.
+ *
+ * The runs inside a Span or a Link are gathered the same way (`runs()`), each list's own two ends left as they
+ * are: those are spaces between that Span and the runs either side of it.
  */
 function gatherSpaces(runs: Run[], onto: Side): Run[] {
   // Each run gives the space at the side nearest the run it follows here: read in order to move a space back onto
@@ -151,8 +156,13 @@ function gatherSpaces(runs: Run[], onto: Side): Run[] {
     let next = run;
     const taken = beside === undefined ? undefined : withoutSpace(run, from);
     if (beside !== undefined && taken !== undefined) {
-      if (beside === "\n" || spaceAt(beside, onto)) next = taken;
-      else {
+      if (beside === "\n") next = taken;
+      else if (spaceAt(beside, onto)) {
+        next = taken;
+        // Read from the last run to the first, the space kept is this run's, and the one it's beside is the later.
+        const kept = onto === "start" ? withoutSpace(beside, "start") : undefined;
+        if (kept !== undefined) out[out.length - 1] = withSpace(kept, "start") ?? beside;
+      } else {
         const joined = withSpace(beside, onto);
         if (joined !== undefined) {
           out[out.length - 1] = joined;
@@ -352,10 +362,12 @@ class Writer {
    */
   paragraph(node: ResolvedNode, style: Style): Block {
     const drawn: Style = { display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: "pre-wrap" };
-    return { kind: "text", style: aligned(drawn), runs: gatherSpaces(trimEdges(this.runs(node)), drawn.textAlign === "right" ? "start" : "end") };
+    const onto: Side = drawn.textAlign === "right" ? "start" : "end";
+    return { kind: "text", style: aligned(drawn), runs: gatherSpaces(trimEdges(this.runs(node, onto)), onto) };
   }
 
-  runs(node: ResolvedNode): Run[] {
+  /** A node's runs. `onto` is the side of a run that holds the space between it and the next (`gatherSpaces()`). */
+  runs(node: ResolvedNode, onto: Side): Run[] {
     return present(
       node.children.map((child): Run | undefined => {
         // As white space collapses in HTML: a run of spaces, tabs and line breaks is one space, so pre-wrap draws the
@@ -374,7 +386,7 @@ class Writer {
             const style: Style = { ...this.text(child), textAlign: undefined };
             if (child.style.textDecoration !== undefined) style.textDecoration = String(child.style.textDecoration);
             if (typeof child.style.backgroundColor === "string") style.backgroundColor = child.style.backgroundColor;
-            return { kind: "span", style, runs: this.runs(child) };
+            return { kind: "span", style, runs: gatherSpaces(this.runs(child, onto), onto) };
           }
         }
       })
