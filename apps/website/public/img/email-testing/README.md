@@ -2,7 +2,7 @@
 
 These assets are served locally so the default example and client labels also work on preview deployments.
 
-- `og.png`: the email testing page's 1774 × 887 Open Graph and Twitter card, adapted from the site's existing `public/og.png` using built-in image generation. It illustrates HTML source and modeled client previews; it is not a screenshot. The [generation prompt](../../../examples/email-testing/og-prompt.txt) records the copy and visual direction.
+- `og.png`: the email testing page's 1774 × 887 Open Graph and Twitter card, adapted from the site's existing `public/og.png` using built-in image generation. It illustrates HTML source and modeled client previews; it is not a screenshot.
 - `macbook-pro/`: the six original images from the [Unlayer Elements playground's Apple template](https://examples.unlayer.com/examples/elements-playground/), copied unchanged. Product photography and Apple artwork belong to Apple. The source template is recreated in `examples/email-testing/macbook-pro.tsx`.
 - `gmail.svg`: `google-gmail-2020` from [SVG Logos](https://github.com/gilbarbara/logos), via [Iconify's collection](https://github.com/iconify/icon-sets/blob/master/json/logos.json), CC0-1.0.
 - `outlook.svg` and `aol.svg`: [Simple Icons 11.0.0](https://github.com/simple-icons/simple-icons/tree/11.0.0), CC0-1.0. Outlook uses its blue brand color; AOL's view box is cropped to the wordmark.
