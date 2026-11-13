@@ -18,10 +18,11 @@ Accuracy is how closely the emulator matches each real client for emails built w
 | Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
 | Apple Mail on a Mac, light and dark | `apple-mail`, `apple-mail.dark` | 98% |
 | Apple Mail on an iPhone, light and dark | `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
+| Gmail app on an iPhone | `gmail-app.iphone` | 97% |
 
-More email clients are on the way, the Gmail app on an iPhone next.
+More email clients are on the way.
 
-Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
+Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide, and `gmail-app` on Android and on an iPhone, 345px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
 
 ## Test a Hyper Elements email
 
