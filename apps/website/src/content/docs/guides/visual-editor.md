@@ -241,7 +241,7 @@ registerTools(unlayer, [PriceBand], { editors: { [currency.name]: currencyField 
 
 `EditorWidget<typeof currency>` types the control from the property: its value is a number, and its options are the prop's label and the property's own, each as the prop has it. It's given the prop's value as the prop has it (a price as a number) and gives back the same. One you registered yourself with `unlayer.registerPropertyEditor` under that name is `true` there (`editors: { [currency.name]: true }`): it's given the value as the builder keeps it.
 
-A property with no control in `editors` is edited with its base's editor, so a component still works in a builder that doesn't have yours.
+A property with no control in `editors` is edited with its base's editor, so a component still works in a builder that doesn't have yours. A name in `editors` that no prop of the components is edited with is refused, so a mistyped one doesn't go unnoticed.
 
 ### A field that fills several props
 

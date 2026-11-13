@@ -487,6 +487,20 @@ describe("registerTools", () => {
     expect(() => registerTools(bare, [Price], { editors: { currency: true } })).not.toThrow();
   });
 
+  it("refuses an editor given for no prop of the components given: a name mistyped would leave its prop with its kind's editor, without a word", () => {
+    const currency = defineProperty({ name: "acme.currency", base: prop.number });
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: currency({ label: "Price", default: 1 }), due: prop.text({ label: "Due", editor: "datetime" }) }, render: (p) => <Text>{p.price}</Text> });
+    const { builder, tools } = fakeBuilder();
+    expect(() => registerTools(builder, [Price], { editors: { "acme.curency": { render: () => "" } } })).toThrow(
+      "[Elements] registerTools: editors has acme.curency, which is the editor of no prop of the components given (their props name acme.currency, datetime)"
+    );
+    expect(() => registerTools(builder, [Price], { editors: { "acme.curency": true } })).toThrow("editors has acme.curency");
+    expect(() => registerTools(builder, [Footer], { editors: { "acme.currency": true } })).toThrow("editors has acme.currency, which is the editor of no prop of the components given (none of their props names one)");
+    // Nothing is registered where one is refused.
+    expect(tools).toEqual([]);
+    expect(() => registerTools(builder, [Price, Footer], { editors: { "acme.currency": true } })).not.toThrow();
+  });
+
   it("draws the component from the tool's values, as an Email's markup in the canvas and for email, a Page's for web", () => {
     const { builder, tools } = fakeBuilder();
     registerTools(builder, [ProductCard]);

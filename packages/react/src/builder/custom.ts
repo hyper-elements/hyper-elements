@@ -231,7 +231,8 @@ export interface RegisterToolsOptions {
    * The property editors of a team's own, by name (`{ [currency.name]: … }`, the name its property has): each as
    * it's written (`{ render, mount }`), which registerTools() registers in the builder; or `true` for one registered
    * there already (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A prop whose
-   * editor is none of these is edited with its kind's.
+   * editor is none of these is edited with its kind's. One given here for no prop of the components is refused: a
+   * name mistyped.
    */
   editors?: { readonly [name: string]: EditorWidget | true };
   /** The builder's own settings for a component's tool, by the component's type. */
@@ -309,6 +310,11 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
   for (const [name, definition] of tools) if (inSection(definition)) tools.delete(name);
   const canvas = options.displayMode === "web" ? "Page" : "Email";
   const editors = options.editors ?? {};
+  // An editor given for no prop is a name mistyped: its prop would be edited with its kind's, without a word.
+  const asked = new Set(all.flatMap((definition) => (Object.values(definition.props) as Spec[]).flatMap((spec) => namedEditor(spec)?.name ?? [])));
+  for (const name of Object.keys(editors)) {
+    if (!asked.has(name)) throw new Error(`[Elements] registerTools: editors has ${name}, which is the editor of no prop of the components given (${asked.size ? `their props name ${[...asked].join(", ")}` : "none of their props names one"})`);
+  }
   for (const type of Object.keys(options.tools ?? {})) {
     if (!all.some((definition) => definition.type === type)) throw new Error(`[Elements] registerTools: tools has settings for ${type}, which is none of the components given`);
   }
