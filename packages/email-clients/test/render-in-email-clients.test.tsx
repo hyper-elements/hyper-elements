@@ -61,6 +61,7 @@ describe("renderInEmailClients()", () => {
     const { previews, skipped } = await renderInEmailClients(welcome, { emailClients: ["gmail-app", "apple-mail", "yahoo", "outlook", "apple-mail"], dark: true });
     expect(previews.map((p) => [p.id, p.filename, p.variant, p.width])).toEqual([
       ["gmail-app", "gmail-app.html", "phone", 380],
+      ["gmail-app.iphone", "gmail-app.iphone.html", "phone", 345],
       ["apple-mail", "apple-mail.html", "desktop", 820],
       ["apple-mail.iphone", "apple-mail.iphone.html", "phone", 393],
       ["apple-mail.dark", "apple-mail.dark.html", "desktop", 820],
@@ -136,7 +137,7 @@ describe("renderInEmailClients()", () => {
 
   it("previews webmail as read on Windows and on a Mac, or on the computers asked for; the rest once", async () => {
     const both = await renderInEmailClients(welcome, { emailClients: ["outlook", "outlook-com", "gmail", "gmail-app"] });
-    expect(both.previews.map((p) => [p.id, p.computer ?? null])).toEqual([["outlook", null], ["outlook-com", "windows"], ["outlook-com.mac", "mac"], ["gmail", "windows"], ["gmail.mac", "mac"], ["gmail-app", null]]);
+    expect(both.previews.map((p) => [p.id, p.computer ?? null])).toEqual([["outlook", null], ["outlook-com", "windows"], ["outlook-com.mac", "mac"], ["gmail", "windows"], ["gmail.mac", "mac"], ["gmail-app", null], ["gmail-app.iphone", null]]);
     expect(embedded(both.previews[1]!.html, "email-client-config")).toMatchObject({ client: "outlook-com", computer: "windows" });
     const mac = await renderInEmailClients(welcome, { emailClients: ["outlook-com"], computers: ["mac"] });
     expect(mac.previews.map((p) => p.filename)).toEqual(["outlook-com.mac.html"]);

@@ -241,8 +241,8 @@ importers:
   packages/email-clients:
     dependencies:
       '@hyper-elements/email-client-models':
-        specifier: ^1.9.0
-        version: 1.9.0
+        specifier: ^1.10.0
+        version: 1.10.0
     devDependencies:
       '@hyper-elements/core':
         specifier: workspace:*
@@ -1389,8 +1389,8 @@ packages:
   '@hapi/topo@6.0.2':
     resolution: {integrity: sha512-KR3rD5inZbGMrHmgPxsJ9dbi6zEK+C3ZwUwTa+eMwWLz7oijWUTWD2pMSNNYJAU6Qq+65NkxXjqHr/7LM2Xkqg==}
 
-  '@hyper-elements/email-client-models@1.9.0':
-    resolution: {integrity: sha512-E+H2K4jOIW5rrKf2vClnZL3nUyctXa3ilfen3Oh4DzCglhK70dDniXs+SkEyfUw425E2cV503tYJcQzCyRO9Uw==}
+  '@hyper-elements/email-client-models@1.10.0':
+    resolution: {integrity: sha512-0juxdkAE/nbK2S7dx9vYOrCHioQzJWDRAzwUXvsQ6hKWeojB0/9Z59UjeFWPG6RViaHG9gf+6Ptsa3LyCFfvUg==}
     engines: {node: '>=20'}
 
   '@hyper-elements/email-clients@0.4.3':
@@ -7118,11 +7118,11 @@ snapshots:
     dependencies:
       '@hapi/hoek': 11.0.7
 
-  '@hyper-elements/email-client-models@1.9.0': {}
+  '@hyper-elements/email-client-models@1.10.0': {}
 
   '@hyper-elements/email-clients@0.4.3(@hyper-elements/react@packages+react)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@hyper-elements/email-client-models': 1.9.0
+      '@hyper-elements/email-client-models': 1.10.0
     optionalDependencies:
       '@hyper-elements/react': link:packages/react
       react: 18.3.1

@@ -4,6 +4,14 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **The Gmail app on an iPhone:** `gmail-app` previews add `gmail-app.iphone`, the Gmail app on an iPhone 16 with
+  iOS 26, in its 345px card: Gmail's version of the email as on Android, in iOS's fonts, line heights in whole pixels.
+  Drawn with the models' `gmail-app-ios` (1.10.0), 97.1% of the benchmark's lines within 3px. Its dark mode isn't
+  previewed, as the Gmail app's isn't; for HTML not built with Hyper Elements it's approximate.
+- Requires `@hyper-elements/email-client-models` 1.10.0.
+
+## 0.4.6
+
 - **Apple Mail on an iPhone:** `apple-mail` previews add `apple-mail.iphone` (and `apple-mail.iphone.dark` with
   `dark: true`), Mail on an iPhone 16 with iOS 18, 393px wide: the email at the phone's width, its media queries
   matching there, iOS's fonts, and an element wider than the screen shrunk to fit on its own, as Mail does. Drawn with
