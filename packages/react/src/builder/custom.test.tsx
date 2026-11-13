@@ -1,7 +1,7 @@
 /** A template's own components in the builder: as custom tools' blocks in a design, read back, and registered in a builder. */
 import { describe, expect, it } from "vitest";
-import { Button, Column, component, defineTheme, Email, Heading, Image, Page, prop, render, Section, Text, token } from "../primitives/index";
-import { fromDesign, registerTools, toDesign, toolName, type Builder } from "./index";
+import { Button, Column, component, defineProperty, defineTheme, Email, Heading, Image, Page, prop, render, Section, Text, token } from "../primitives/index";
+import { fromDesign, registerTools, toDesign, toolName, type Builder, type EditorWidget } from "./index";
 
 type Values = Record<string, any>;
 type Content = { type: string; slug?: string; values: Values };
@@ -409,6 +409,62 @@ describe("registerTools", () => {
     expect(kept).toEqual(["9.25"]);
     // And the block is drawn from what's kept.
     expect(tools[0].renderer.Viewer.render({ price: "9.25" })).toContain(">9.25</p>");
+  });
+
+  it("gives a property a template defines its control: the prop's own value, and the property's options as the prop has them", () => {
+    const currency = defineProperty({
+      name: "acme.currency",
+      base: prop.number,
+      options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "€" }), decimals: prop.number({ integer: true, min: 0, default: 2 }), note: prop.text({}) },
+    });
+    const Price = component({
+      type: "acme.Price",
+      label: "Price",
+      props: {
+        price: currency({ label: "Price", min: 0, default: 7.5, symbol: "$" }),
+        was: currency({ label: "Was", min: 0, default: 9 }),
+      },
+      render: (p) => <Text>{p.price.toFixed(2)}</Text>,
+    });
+    const { builder, tools, editors } = fakeBuilder();
+    const given: unknown[] = [];
+    // Typed as the property's: the value a number, an option with a default always there, one with none maybe.
+    const field: EditorWidget<typeof currency> = {
+      render: (value, _update, { label, symbol, decimals, note }) => {
+        expectTypeOf(value).toEqualTypeOf<number | undefined>();
+        expectTypeOf(symbol).toEqualTypeOf<"$" | "€" | "£">();
+        expectTypeOf(decimals).toEqualTypeOf<number>();
+        expectTypeOf(note).toEqualTypeOf<string | undefined>();
+        return `<label>${label}</label>${symbol}<input value="${given.push([value, symbol, decimals]) && (value ?? 0).toFixed(decimals)}">`;
+      },
+      mount: (_node, _value, update) => update(9.25),
+    };
+    registerTools(builder, [Price], { editors: { [currency.name]: field } });
+    const properties = tools[0].options.acme_price.options;
+    // Each prop's own options over the property's defaults, and the defaults where the prop gives none.
+    expect(properties.price).toEqual({ label: "Price", defaultValue: "7.5", widget: "acme_currency__acme_price__price", data: { label: "Price", symbol: "$", decimals: 2 } });
+    expect(properties.was).toEqual({ label: "Was", defaultValue: "9", widget: "acme_currency__acme_price__was", data: { label: "Was", symbol: "€", decimals: 2 } });
+    const kept: unknown[] = [];
+    expect(editors[0].Widget.render("7.5", (value: unknown) => kept.push(value))).toBe('<label>Price</label>$<input value="7.50">');
+    expect(given).toEqual([[7.5, "$", 2]]);
+    editors[0].Widget.mount(null, "7.5", (value: unknown) => kept.push(value));
+    expect(kept).toEqual(["9.25"]);
+    // The design keeps the value as its kind's editor does, whatever edits it.
+    const [block] = blocks(toDesign(<Email><Price price={12.5} /></Email>, { customTools: true }).design);
+    expect(block.values).toMatchObject({ price: "12.5", was: "9" });
+    expect(fromDesign({ body: { rows: [{ cells: [1], columns: [{ contents: [block] }] }] } }, { components: [Price] }).code).toContain("<acme.Price price={12.5} />");
+  });
+
+  it("edits a prop with its kind's editor where its property's control isn't given, with none of the property's options", () => {
+    const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ default: "€" }) } });
+    const Stock = component({ type: "acme.Stock", label: "Stock", props: { units: currency({ label: "Units", min: 1, integer: true, default: 3, symbol: "$" }) }, render: (p) => <Text>{p.units}</Text> });
+    const { builder, tools, editors } = fakeBuilder();
+    registerTools(builder, [Stock]);
+    expect(tools[0].options.acme_stock.options.units).toEqual({ label: "Units", defaultValue: 3, widget: "counter", data: { minValue: 1 } });
+    // One registered in the builder already, by the property's name: its options as the prop has them, the value as the builder keeps it.
+    registerTools(builder, [Stock], { editors: { "acme.currency": true } });
+    expect(tools[1].options.acme_stock.options.units).toEqual({ label: "Units", defaultValue: 3, widget: "acme.currency", data: { label: "Units", symbol: "$" } });
+    expect(editors).toEqual([]);
   });
 
   it("refuses an editor given as it's written in a builder that can't register one", () => {

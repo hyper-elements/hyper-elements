@@ -118,14 +118,16 @@ jobs:
       # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
       # written for classic Outlook apart (its own col and first-row cell, without width: auto);
       # 317,500 bytes for what a prop gives its editor (editorOptions: said by
-      # describeComponents(), checked where a component is defined).
+      # describeComponents(), checked where a component is defined); 322,000 bytes for
+      # defineProperty(): a team's own property as data (one of prop's helpers, its editor's
+      # name and its options, each checked by its kind), a text's enum, and what's refused of one.
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=317500
+          MAX_SIZE=322000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

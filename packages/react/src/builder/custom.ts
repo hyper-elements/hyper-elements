@@ -5,7 +5,8 @@
  * tool's block, its props the block's values (`customTools`); fromDesign() reads the block back as the component
  * (`components`); registerTools() gives a builder the tools, each drawn by Elements itself.
  */
-import { ElementsError, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@hyper-elements/core";
+import { ElementsError, namedEditor, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@hyper-elements/core";
+import type { PropertyDefinition } from "../primitives/custom";
 import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
 import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, webLink, type Sides, type Values } from "./read-values";
@@ -114,7 +115,8 @@ const BUILT_IN: Record<string, string> = { datetime: "text", alignment: "choice"
  */
 function editorOf(spec: Spec): PropertyEditor | undefined {
   const own = kindEditor(spec);
-  return own && spec.editor !== undefined && Object.hasOwn(BUILT_IN, spec.editor) && BUILT_IN[spec.editor] === spec.kind.editor ? { ...own, widget: spec.editor } : own;
+  const named = namedEditor(spec)?.name;
+  return own && named !== undefined && Object.hasOwn(BUILT_IN, named) && BUILT_IN[named] === spec.kind.editor ? { ...own, widget: named } : own;
 }
 
 /**
@@ -203,18 +205,20 @@ export interface Builder {
   createWidget?(widget: { render(value: unknown, update: (value: unknown) => void): string; mount(node: HTMLElement, value: unknown, update: (value: unknown) => void): void }): unknown;
 }
 
-/** What an editor of a team's own is given besides the value: its prop's label, and the prop's `editorOptions`. */
-export type EditorOptions = { label: string } & { [name: string]: Json };
+/** What an editor of a team's own is given besides the value: its prop's label, and its options as the prop has them. */
+export type EditorOptions<D = unknown> = { label: string } & (D extends PropertyDefinition<any, infer O> ? O : { [name: string]: Json });
+type Edited<D> = D extends PropertyDefinition<infer V, any> ? V : Json;
 
 /**
- * A property editor of a team's own, as the builder takes one. It's given its prop's value as the prop has it (a
- * price as a number), and gives back the same.
+ * A property editor of a team's own, as the builder takes one: the control of a property a template defines
+ * (`EditorWidget<typeof currency>` types its value and options as the property's). It's given its prop's value as
+ * the prop has it (a price as a number), and gives back the same.
  */
-export interface EditorWidget {
+export interface EditorWidget<D = unknown> {
   /** Its markup. The builder draws nothing around an editor that isn't its own: its label is here too. */
-  render(value: Json | undefined, update: (value: Json | undefined) => void, options: EditorOptions): string;
+  render(value: Edited<D> | undefined, update: (value: Edited<D> | undefined) => void, options: EditorOptions<D>): string;
   /** Once its markup is in the page: where it listens, and calls `update` with the new value. */
-  mount?(node: HTMLElement, value: Json | undefined, update: (value: Json | undefined) => void, options: EditorOptions): void;
+  mount?(node: HTMLElement, value: Edited<D> | undefined, update: (value: Edited<D> | undefined) => void, options: EditorOptions<D>): void;
 }
 
 export interface RegisterToolsOptions {
@@ -223,10 +227,10 @@ export interface RegisterToolsOptions {
   /** Each tool's icon in the builder's panel, by its component's type: a Font Awesome class, an image's URL or an SVG. */
   icons?: Record<string, string>;
   /**
-   * The property editors of a team's own, by the name a prop gives (`editor: "currency"`): each as it's written
-   * (`{ render, mount }`), which registerTools() registers in the builder; or `true` for one registered there already
-   * (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A prop that names any other
-   * editor is edited with its kind's.
+   * The property editors of a team's own, by name (`{ [currency.name]: … }`, the name its property has): each as
+   * it's written (`{ render, mount }`), which registerTools() registers in the builder; or `true` for one registered
+   * there already (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A prop whose
+   * editor is none of these is edited with its kind's.
    */
   editors?: { readonly [name: string]: EditorWidget | true };
   /** The builder's own settings for a component's tool, by the component's type. */
@@ -309,17 +313,18 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
     for (const [key, spec] of Object.entries(definition.props) as Array<[string, Spec]>) {
       const editor = editorOf(spec);
       // An editor of the team's own, where the prop names one of those given; the builder's otherwise.
-      const theirs = spec.editor !== undefined && Object.hasOwn(editors, spec.editor) ? editors[spec.editor] : undefined;
-      let widget = theirs ? spec.editor : editor?.widget;
+      const named = namedEditor(spec);
+      const theirs = named && Object.hasOwn(editors, named.name) ? editors[named.name] : undefined;
+      let widget = theirs ? named?.name : editor?.widget;
       if (!widget || spec.editable === false) continue;
-      const theirOptions: EditorOptions = { label: spec.label, ...spec.editorOptions };
+      const theirOptions: EditorOptions = { label: spec.label, ...named?.options };
       if (theirs && theirs !== true) {
         // Given as it's written: registered for this prop, which it's given as the prop's own value (a price as a
         // number, where the builder keeps one that isn't whole as text), and gives back the same.
-        if (!builder.registerPropertyEditor || !builder.createWidget) throw new Error(`[Elements] registerTools: editors gives ${spec.editor} as it's written, which takes a builder with registerPropertyEditor() and createWidget()`);
+        if (!builder.registerPropertyEditor || !builder.createWidget) throw new Error(`[Elements] registerTools: editors gives ${widget} as it's written, which takes a builder with registerPropertyEditor() and createWidget()`);
         const value = (kept: unknown) => (kept === undefined || kept === null ? undefined : ((editor?.read ? editor.read(kept, () => {}) : kept) as Json | undefined));
         const update = (keep: (value: unknown) => void) => (next: Json | undefined) => keep(next === undefined || next === null ? next : (editor?.store?.(next) ?? next));
-        widget = `${spec.editor}__${name}__${key}`;
+        widget = `${widget.replace(".", "_")}__${name}__${key}`;
         builder.registerPropertyEditor({
           name: widget,
           Widget: builder.createWidget({
@@ -328,6 +333,8 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
           }),
         });
       }
+      // The builder's own editor takes what a prop gives it by name (`editorOptions`); the options of a team's own
+      // editor that isn't given here are that editor's alone.
       const data: Values = theirs ? theirOptions : { ...editor?.data, ...spec.editorOptions };
       // What a block dragged in from the panel starts with: the prop's default, as the editor keeps it. With none, a
       // text is empty and a toggle is off; any other has no value, which each of the builder's editors shows as unset.

@@ -42,6 +42,7 @@
   "Text",
   "Video",
   "component",
+  "defineProperty",
   "defineTheme",
   "extendTheme",
   "formatDiagnostics",

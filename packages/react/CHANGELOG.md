@@ -27,13 +27,24 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   `fromDesign(design, { components })` reads those blocks back as the components. Without the options, both do what
   they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
   component's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…).
-- **A prop names its editor, and gives it options.** `prop.number({ label: "Price", editor: "currency",
-  editorOptions: { symbol: "€" } })`: the control a visual editor shows for a prop, where its kind's own isn't the one
-  wanted, and what that control takes besides the value. The value is its kind's either way. `describeComponents()`
-  gives them as `namedEditor` and `editorOptions`, beside `editor` (its kind's), which an editor with no control by
-  that name shows. In Unlayer's builder the name is one of the builder's own editors that keeps the prop's kind of
-  value, or one of your own, given to `registerTools()` in `editors` as it's written (`{ render, mount }`): it's
-  given the prop's value as the prop has it, with its label and its options.
+- **A prop says what edits it.** `editor` on a prop is the control a visual editor shows for it, where its kind's own
+  isn't the one wanted. One of the editor's own is named (`editor: "counter"`), with `editorOptions` for what it takes
+  besides the value. For an editor of your own, `defineProperty()` defines a property once, as data: a name, the
+  helper of `prop` it's made on, and the options its editor takes, each made with a helper too (`const currency =
+  defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"],
+  default: "$" }) } })`). Called, it's a prop, which takes what its base takes and its own options: `price: currency({
+  label: "Price", min: 0, symbol: "€" })`. The value is its base's either way, with the prop's own limits; an option
+  the property doesn't have, or a value that isn't the option's, is a type error, and refused where it's written.
+  `describeComponents()` gives a prop's editor as `namedEditor` and `editorOptions`, beside `editor` (its kind's),
+  which an editor with no control by that name shows. In Unlayer's builder you give your property's control to
+  `registerTools()` in `editors`, under the property's name, as it's written (`{ render, mount }`):
+  `EditorWidget<typeof currency>` types its value and options from the property, and it's given the prop's value as
+  the prop has it.
+- **A text that's one of a few.** `prop.text({ label: "Tone", enum: ["calm", "loud"] })` takes one of the texts its
+  `enum` lists: typed as those in `render`'s props and in JSX, checked as a `prop.choice()` is, and edited in a
+  dropdown in Unlayer's builder.
+- **A component's prop with no label is refused** where the component is defined, and is a type error. `label` was
+  already required by `prop`'s types.
 
 ### Fixed
 
