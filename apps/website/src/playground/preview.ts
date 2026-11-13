@@ -34,7 +34,8 @@ export interface PreviewScripts {
 export function previewDevice(preview: Preview): string {
   if (preview.id.includes(".iphone")) return "iPhone";
   if (preview.client === "apple-mail") return "Mac";
-  if (preview.client === "gmail-app" || preview.client === "gmail-app-other") return "Android";
+  // The Gmail app's own preview is Android's; its other-accounts preview isn't drawn on a particular phone.
+  if (preview.client === "gmail-app") return "Android";
   return preview.computer === "mac" ? "Mac" : preview.computer === "windows" ? "Windows" : "";
 }
 

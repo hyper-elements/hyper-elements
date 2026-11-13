@@ -28,6 +28,8 @@ type Extras = {
     renderInEmailClients: (element: React.ReactElement | string, options?: object) => Promise<{ previews: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>>; diagnostics: Array<Elements.Diagnostic & { line?: number | null }> }>;
     /** Each client's name, as @hyper-elements/email-clients says it. */
     names: Record<string, string>;
+    /** renderInEmailClients(html)'s own input check: throws unless the HTML is a whole email. */
+    checkWholeEmail: (html: unknown) => void;
   };
 };
 
@@ -449,6 +451,15 @@ async function handle(request: Request): Promise<Result> {
     try {
       result.diagnostics = lintHtml(request.html).diagnostics.map((d) => ({ ...d, path: "html" }));
       if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
+      try {
+        sandbox.extras.clients.checkWholeEmail(request.html);
+      } catch (invalid) {
+        // HTML that isn't a whole email is the input's problem, shown on its first line.
+        result.error = { kind: "template", message: describe(invalid) };
+        result.diagnostics.unshift({ code: "email/html-input", severity: "error", message: invalid instanceof Error ? invalid.message : describe(invalid), path: "html", line: 1 });
+        result.ms = Math.round(performance.now() - started);
+        return result;
+      }
       const output = await sandbox.extras.clients.renderInEmailClients(request.html, { emailClients: request.clients, dark: request.dark, fonts: "url" });
       result.previews = output.previews.map((p) => ({
         id: String(p.id), client: String(p.client),
@@ -462,10 +473,6 @@ async function handle(request: Request): Promise<Result> {
     } catch (error) {
       // This request is HTML, so a worker stack position is not a line in the user's document.
       result.error = { kind: "runtime", message: describe(error) };
-      if (error instanceof TypeError && error.message.includes("takes a whole email")) {
-        result.error.kind = "template";
-        result.diagnostics.unshift({ code: "email/html-input", severity: "error", message: error.message, path: "html", line: 1 });
-      }
     }
     result.ms = Math.round(performance.now() - started);
     return result;

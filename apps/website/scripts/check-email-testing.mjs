@@ -119,6 +119,8 @@ try {
   const checkThumbnails = async (words) => {
     for (const { client, id } of await page.locator(".et-thumbnail button").evaluateAll((buttons) => buttons.map((button) => ({ client: button.dataset.client, id: button.dataset.preview })))) {
       const selector = `.et-thumbnail:has(button[data-preview="${id}"]) iframe`;
+      // Thumbnails mount as they come on screen.
+      await page.locator(`.et-thumbnail:has(button[data-preview="${id}"])`).scrollIntoViewIfNeeded();
       const thumbnail = await readyPreview(selector);
       const found = JSON.parse(await thumbnail.locator("#email-client-findings").textContent());
       assert.equal(found.client, client, "Each thumbnail actually runs that client's model");
@@ -269,6 +271,8 @@ try {
   assert.equal((await run({ html: "x".repeat(250001) })).ok, false);
   assert.equal((await run({ html: sample, dark: "yes" })).ok, false);
   const clients = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol"];
+  const defaults = await run({ html: sample });
+  assert(defaults.ok && defaults.previews.length === 14, "An agent's check covers every client unless it names some");
   const all = await page.evaluate((input) => window.__emailTools[0].execute(input), { html: sample, clients, dark: true });
   assert(all.ok, all.error?.message);
   assert(all.previews.length > 12, "The complete selection is not truncated to the original playground's 12-preview limit");

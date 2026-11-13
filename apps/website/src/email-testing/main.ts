@@ -64,20 +64,21 @@ function changed() {
   if (live.checked) liveTimer = window.setTimeout(() => void runUI(), 650);
 }
 
-const runUI = () => check({ html: source.value, clients: emailTestingClients.map((client) => client.id), dark: dark.checked });
+const runUI = () => check({ html: source.value, dark: dark.checked });
 
-function label(preview: Preview): string {
-  const name = names.get(preview.client) ?? preview.client;
-  const device = previewDevice(preview);
-  return [name, device, preview.dark ? "Dark" : "Light"].filter(Boolean).join(" · ");
-}
-
+/** Each card's name: the client and, where it has more than one preview, the computer or phone. */
 function previewName(preview: Preview): string {
-  if (preview.client === "gmail-app-other") return "Gmail App (Other accounts)";
-  const name = preview.client === "outlook-com" ? "Outlook.com" : preview.client === "gmail-app" ? "Gmail App" : names.get(preview.client) ?? preview.client;
+  const name = names.get(preview.client) ?? preview.client;
   const device = previewDevice(preview);
   return device ? `${name} (${device})` : name;
 }
+
+const label = (preview: Preview) => `${previewName(preview)} · ${preview.dark ? "Dark" : "Light"}`;
+
+// The sample's images are served by this deployment (PR previews and localhost too). The checks read the HTML as
+// given; only what the frames draw loads them from here. The URL holds nothing the preview file's JSON escapes.
+const SAMPLE_IMAGES = "https://www.hyperelements.dev/img/email-testing/";
+const displayed = (html: string) => html.replaceAll(SAMPLE_IMAGES, `${location.origin}/img/email-testing/`);
 
 const previewGroup = (id: string) => id.replace(/\.dark$/, "");
 
@@ -97,6 +98,7 @@ function resizeThumbnails() {
 
 function drawThumbnails(previews: Preview[]) {
   thumbnailResize.disconnect();
+  thumbnailMount.disconnect();
   gallery.replaceChildren();
   const variants = previews.filter((preview) => !preview.dark).map((light) =>
     dark.checked ? previews.find((preview) => preview.id === `${light.id}.dark`) ?? light : light,
@@ -138,26 +140,33 @@ function drawThumbnails(previews: Preview[]) {
     card.append(stage, button);
     gallery.append(card);
     thumbnailResize.observe(stage);
+    thumbnailMount.observe(stage);
   }
   if (!focused) get("email-view-title").textContent = `Client previews (${variants.length})`;
   resizeThumbnails();
 }
 
-/** Only mount thumbnail documents while the overview is visible, so their layout is measured at its real size. */
-function mountThumbnails() {
-  if (gallery.hidden || !scripts) return;
-  gallery.querySelectorAll<HTMLElement>(".et-thumb-image").forEach((stage) => {
-    if (stage.querySelector("iframe")) return;
-    const preview = result?.previews?.find((preview) => preview.id === stage.dataset.preview);
-    if (!preview) return;
-    const thumbnail = document.createElement("iframe");
-    thumbnail.title = `${label(preview)} thumbnail`;
-    thumbnail.tabIndex = -1;
-    thumbnail.style.width = `${preview.width}px`;
-    thumbnail.style.height = "900px";
-    if (previewFile(thumbnail, preview.html, scripts!, { canvas: true })) stage.append(thumbnail);
-    else stage.textContent = "Too large to preview here";
-  });
+/**
+ * Each thumbnail runs the client models in a document of its own, so only cards on screen (or about to be) get one,
+ * and only while the overview is visible, so their layout is measured at its real size. A card that scrolls in or an
+ * overview that's shown again crosses the observer's threshold, which mounts it then.
+ */
+const thumbnailMount = new IntersectionObserver((entries) => {
+  for (const entry of entries) if (entry.isIntersecting) mountThumbnail(entry.target as HTMLElement);
+}, { rootMargin: "400px 0px" });
+
+function mountThumbnail(stage: HTMLElement) {
+  if (gallery.hidden || !scripts || stage.querySelector("iframe")) return;
+  const preview = result?.previews?.find((preview) => preview.id === stage.dataset.preview);
+  if (!preview) return;
+  thumbnailMount.unobserve(stage);
+  const thumbnail = document.createElement("iframe");
+  thumbnail.title = `${label(preview)} thumbnail`;
+  thumbnail.tabIndex = -1;
+  thumbnail.style.width = `${preview.width}px`;
+  thumbnail.style.height = "900px";
+  if (previewFile(thumbnail, displayed(preview.html), scripts, { canvas: true })) stage.append(thumbnail);
+  else stage.textContent = "Too large to preview here";
   resizeThumbnails();
 }
 
@@ -169,7 +178,6 @@ function showAll() {
   frame = undefined;
   get("email-view-title").textContent = `Client previews (${gallery.children.length})`;
   if (root.dataset.renderStatus !== "ok") get("email-view-title").textContent += " · Changes pending";
-  mountThumbnails();
   [...gallery.querySelectorAll<HTMLButtonElement>("button")].find((button) => previewGroup(button.dataset.preview!) === previewGroup(selectedPreviewId))?.focus({ preventScroll: true });
 }
 
@@ -207,7 +215,7 @@ function showPreview() {
   frameHeight = 900;
   heightToken = crypto.randomUUID();
   viewport.scrollTop = 0;
-  if (!previewFile(next, preview.html, scripts, { canvas: true, heightToken })) {
+  if (!previewFile(next, displayed(preview.html), scripts, { canvas: true, heightToken })) {
     error.textContent = "This preview is too large to display here. Use @hyper-elements/cli to preview this email locally.";
     error.hidden = false;
     return;
@@ -275,10 +283,7 @@ async function check(input: Input): Promise<Report> {
     status.textContent = "Generating client previews locally…";
     scripts = await sandbox.previewScripts();
     if (run !== sequence) return { ok: false, diagnostics: [], previews: [], ms: 0, error: { kind: "internal", message: "Superseded by another edit or test." } };
-    // Serve the sample's own image from this deployment, including PR previews and localhost.
-    // Keep the source URL portable. Other hosts in user HTML are left as written.
-    const previewHtml = input.html.replaceAll("https://www.hyperelements.dev/img/email-testing/", `${location.origin}/img/email-testing/`);
-    const output = await sandbox.run({ kind: "html-previews", html: previewHtml, clients: [...new Set(clients)], dark: input.dark }, ["clients"], "email-testing");
+    const output = await sandbox.run({ kind: "html-previews", html: input.html, clients: [...new Set(clients)], dark: input.dark }, ["clients"], "email-testing");
     const summary: Report = {
       ok: output.ok, diagnostics: output.diagnostics, skipped: output.skipped, error: output.error, ms: output.ms,
       previews: (output.previews ?? []).map(({ html: _html, ...metadata }) => metadata),
@@ -303,7 +308,6 @@ async function check(input: Input): Promise<Report> {
     empty.hidden = !!previews.length;
     download.disabled = false;
     if (focused) showPreview();
-    else mountThumbnails();
     showFindings(output);
     root.dataset.renderStatus = "ok";
     status.textContent = `${previews.length} previews generated · ${output.diagnostics.length} finding${output.diagnostics.length === 1 ? "" : "s"}`;
@@ -358,7 +362,7 @@ if (modelContext?.registerTool) {
     Promise.resolve(modelContext.registerTool({
       name: "check_html_email",
       description: "Validate complete HTML email input, run lint and compatibility checks, and generate local modeled client previews. Returns diagnostics, preview metadata and skipped variants; ok means generation succeeded, not guaranteed compatibility. Updates this playground.",
-      inputSchema: { type: "object", properties: { html: { type: "string", description: "The complete HTML email, including html and body tags (up to 250 KB)." }, clients: { type: "array", minItems: 1, items: { type: "string", enum: [...names.keys()] } }, dark: { type: "boolean" } }, required: ["html"], additionalProperties: false },
+      inputSchema: { type: "object", properties: { html: { type: "string", description: "The complete HTML email, including html and body tags (up to 250 KB)." }, clients: { type: "array", minItems: 1, items: { type: "string", enum: [...names.keys()] }, description: "The clients to preview. Every client when left out." }, dark: { type: "boolean" } }, required: ["html"], additionalProperties: false },
       execute: check,
     })).catch(() => undefined);
   } catch { /* The browser API is optional; the window API remains available. */ }

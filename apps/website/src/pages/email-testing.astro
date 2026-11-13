@@ -6,7 +6,7 @@ import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
 ---
 <Base title="Test HTML emails in Outlook, Gmail and more" description={emailTestingDescription} footer={false}>
-  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-4`}>
+  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-5`}>
     <header class="et-topbar">
       <div class="et-intro">
         <div class="et-heading"><h1 id="playground-title">Test HTML emails in Outlook, Gmail and more</h1></div>
@@ -32,7 +32,7 @@ import "../styles/email-testing.css";
 
       <section class="et-output" id="email-preview-panel" aria-label="Email preview">
         <div class="et-output-bar">
-          <div><button type="button" id="email-all" class="et-subtle" hidden>← All clients</button><h2 id="email-view-title">Client previews <span id="email-client-count"></span></h2></div>
+          <div><button type="button" id="email-all" class="et-subtle" hidden>← All clients</button><h2 id="email-view-title">Client previews</h2></div>
           <label class="et-dark"><input id="email-dark" type="checkbox" /> Dark mode</label>
         </div>
         <div class="et-canvas">
