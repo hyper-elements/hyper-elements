@@ -160,7 +160,18 @@ get_playground_code()`;
             <div class="pg-device" data-device-frame><div class="pg-device-screen" data-preview></div></div>
           </div>
           <div class="pg-view pg-view-clients" data-view-pane="clients" hidden>
-            <div class="pg-clients-tabs" role="tablist" aria-label="Email client" data-clients-tabs></div>
+            <div class="pg-clients-bar" data-clients-bar hidden>
+              <div class="pg-menu pg-clients-menu" data-menu="clients">
+                <button class="pg-clients-open" type="button" data-clients-open aria-haspopup="menu" aria-expanded="false">
+                  <span class="pg-clients-name" data-clients-name></span>
+                  <span class="pg-caret" set:html={icons.caret} />
+                </button>
+                <div class="pg-menu-list pg-clients-list" role="menu" aria-label="Email client" data-clients-list hidden></div>
+              </div>
+              <div class="pg-seg pg-seg-text" role="radiogroup" aria-label="Device" data-clients-device></div>
+              <div class="pg-seg pg-seg-text" role="radiogroup" aria-label="Light or dark mode" data-clients-scheme></div>
+              <span class="pg-clients-width" data-clients-width></span>
+            </div>
             <div class="pg-clients-stage" data-clients-stage></div>
           </div>
           <div class="pg-view pg-view-source" data-view-pane="html" hidden><pre class="pg-source" data-source="html" tabindex="0"></pre></div>

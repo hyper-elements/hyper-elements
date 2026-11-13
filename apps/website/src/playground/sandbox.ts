@@ -110,7 +110,7 @@ function read(value: unknown, kind: Request["kind"]): Result {
       : undefined,
     bytes,
     previews: Array.isArray(r.previews)
-      ? list(r.previews, 12).flatMap((p): Preview[] => {
+      ? list(r.previews, 40).flatMap((p): Preview[] => {
           const preview = record(p);
           const html = text(preview.html, 12e6);
           const id = text(preview.id, 80);
