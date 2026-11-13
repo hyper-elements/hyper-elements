@@ -6,6 +6,25 @@ description: "Hyper Elements comes with an email client emulator: see your email
 
 Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`: test an email in email clients like Outlook and Gmail without sending it. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` returns a preview per client: a self-contained HTML page that shows the email as that client does when Chromium opens it.
 
+## Supported email clients
+
+Accuracy is how closely the emulator matches each real client for emails built with Hyper Elements.
+
+| Client | `id` | Accuracy |
+|--------|------|----------|
+| Classic Outlook for Windows | `outlook` | 97% |
+| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
+| Gmail on the web | `gmail`, `gmail.mac` | 99% |
+| Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
+| Apple Mail on a Mac, light and dark | `apple-mail`, `apple-mail.dark` | 98% |
+| Apple Mail on an iPhone, light and dark | `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
+
+More email clients are on the way, the Gmail app on an iPhone next. A client that changes a lot, like classic Outlook, marks its preview as `approximate`.
+
+Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
+
+## Test a Hyper Elements email
+
 ```bash
 npm i @hyper-elements/email-clients
 ```
@@ -27,7 +46,8 @@ const welcome = (
 const { previews, skipped, diagnostics } = await renderInEmailClients(welcome, { dark: true });
 
 previews.map((preview) => preview.id);
-// ["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.dark"]
+// ["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac",
+//  "apple-mail", "apple-mail.iphone", "apple-mail.dark", "apple-mail.iphone.dark"]
 
 const outlook = previews.find((preview) => preview.id === "outlook");
 // { id: "outlook", client: "outlook", variant: "desktop", dark: false, width: 820,
@@ -117,22 +137,6 @@ For an agent or a CI job that wants what each client changed as data, there are 
 - **It runs where your code runs.** In a test, in CI, or in an agent's loop: an agent with a browser can open a preview, read what the client changed, and fix the template.
 - **The same answer every time.** The same email gives the same preview, so a preview can be a snapshot in a test.
 
-## Supported email clients
-
-Accuracy is how closely the emulator matches each real client for emails built with Hyper Elements.
-
-| Client | `id` | Accuracy |
-|--------|------|----------|
-| Classic Outlook for Windows | `outlook` | 97% |
-| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
-| Gmail on the web | `gmail`, `gmail.mac` | 99% |
-| Gmail app on Android | `gmail-app`, `gmail-app-other` | 97% |
-| Apple Mail, light and dark | `apple-mail`, `apple-mail.dark` | 97% |
-
-More email clients are on the way. A client that changes a lot, like classic Outlook, marks its preview as `approximate`.
-
-Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set below. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
-
 ## Compared with screenshot services
 
 | | Email client emulator | Screenshot services |
@@ -151,7 +155,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 | Option | What it does |
 |--------|--------------|
 | `emailClients` | The clients to emulate (default: `outlook`, `outlook-com`, `gmail`, `apple-mail`) |
-| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail today) |
+| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail, on a Mac and an iPhone, today) |
 | `widths` | The width a client's preview draws the email at, where it isn't the client's own: `{ "outlook-com": 540 }` for Outlook.com's reading pane beside the message list. Webmail matches media queries at the browser window's width, not the pane's, so a narrow pane keeps the email's desktop styles, as it does for its readers |
 | `computers` | Webmail draws with the reader's computer's fonts. Outlook.com and Gmail on the web are each previewed on Windows (`outlook-com`, `gmail`) and on a Mac (`outlook-com.mac`, `gmail.mac`). `computers: ["windows"]` keeps one |
 | `fonts` | `"url"` (the default) loads the open fonts the previews draw with from a CDN; `"inline"` puts them in each preview, so it draws offline |
@@ -159,7 +163,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 
 `renderInEmailClients()` returns:
 
-- `previews`: `{ id, client, computer, variant, dark, width, filename, html, approximate }` for each client and variant, light before dark;
+- `previews`: `{ id, client, model, computer, variant, dark, width, filename, html, approximate }` for each client and variant, light before dark;
 - `skipped`: what wasn't emulated, and why (a client with no dark mode);
 - `diagnostics`: `render()`'s, with the email client checks for the clients emulated.
 
