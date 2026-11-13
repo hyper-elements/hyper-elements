@@ -35,6 +35,23 @@ describe("describe", () => {
     expect(all.stdout).toMatch(/^Roots: Email\n/);
   });
 
+  // A container holds categories of components, not named types, so the line said "children: none" for every one of
+  // them: a Section, a Row, a Column and each root. It's the line an agent reads to find out what goes inside one.
+  it("says what a container holds, in the words the package's guide uses", async () => {
+    const dir = project({});
+    const section = await cli(dir, ["describe", "Section"]);
+    expect(section.code, section.stderr).toBe(0);
+    expect(section.stdout).toContain("children: layout, blocks");
+    const email = await cli(dir, ["describe", "Email"]);
+    expect(email.stdout).toContain("children: sections, layout, blocks");
+    // Text takes words and the components that go in them, which it named before and still does.
+    const text = await cli(dir, ["describe", "Text"]);
+    expect(text.stdout).toContain("children: text, inline, Image");
+    // A component that holds nothing still says so.
+    const divider = await cli(dir, ["describe", "Divider"]);
+    expect(divider.stdout).toContain("children: none");
+  });
+
   it("exits 2 for a component or a root there isn't, and where no Elements resolves", async () => {
     const dir = project({});
     const unknown = await cli(dir, ["describe", "Carousel", "--json"]);

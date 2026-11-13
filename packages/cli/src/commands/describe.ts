@@ -25,8 +25,11 @@ interface Component {
   description?: string;
   roots?: string[];
   properties?: Property[];
-  children?: { text?: boolean; types?: string[] };
+  children?: { text?: boolean; categories?: string[]; types?: string[] };
 }
+
+/** A category of children, in the words the package's own guide uses for it (packages/react's reference.ts). */
+const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
 
 export async function runDescribe(args: Args, io: Io, state: RunState): Promise<number> {
   const { cwd } = io;
@@ -67,7 +70,9 @@ function componentText(component: Component): string {
   for (const [group, names] of groups) lines.push(`    ${group || "props"}: ${names.join(", ")}`);
   const children = component.children;
   if (children) {
-    const takes = [...(children.text ? ["text"] : []), ...(children.types ?? [])];
+    // A container holds whole categories, not named types: without them a Section, a Row and a Column each said
+    // "children: none", the one line an agent reads to find out what goes inside one.
+    const takes = [...(children.text ? ["text"] : []), ...(children.categories ?? []).map((category) => CATEGORY[category] ?? category), ...(children.types ?? [])];
     lines.push(`    children: ${takes.length ? takes.join(", ") : "none"}`);
   }
   return `${lines.join("\n")}\n`;
