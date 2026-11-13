@@ -7,6 +7,7 @@
  * `tools.ts`). A component drawn in the editor is drawn on its own, so each sets its own font and colors.
  */
 import { Button, Column, Heading, Image, Row, Span, Text, component, prop } from "@hyper-elements/react";
+import { currency } from "../properties";
 
 export const INK = "#14171A";
 export const MUTED = "#5E6670";
@@ -35,8 +36,8 @@ export const ProductCard = component({
     photo: prop.image({ label: "Photo" }),
     name: prop.text({ label: "Name", default: "Product name" }),
     description: prop.text({ label: "Description", default: "" }),
-    // A number either way: the editor a team registers under this name shows it as money.
-    price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { step: 1 } }),
+    // The example's own property (`../properties.ts`): a number, from 0, edited as money in steps of 1.
+    price: currency({ label: "Price", min: 0, default: 49, step: 1 }),
     currency: prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" }),
     badge: prop.choice(["none", "new", "sale", "low stock"], { label: "Badge", default: "none" }),
     button: prop.text({ label: "Button", default: "Add to cart" }),

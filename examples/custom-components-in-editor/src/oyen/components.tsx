@@ -9,6 +9,7 @@
  * template's.
  */
 import { Button, Column, Heading, Row, Text, component, prop } from "@hyper-elements/react";
+import { currency } from "../properties";
 
 export const PAPER = "#F3F1EC";
 export const INK = "#1A1917";
@@ -30,7 +31,7 @@ export const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSp
 const SYMBOL = { EUR: "€", USD: "$", GBP: "£" } as const;
 /** A price as Oyen writes one: no decimals where there are none. */
 const money = (amount: number, currency: keyof typeof SYMBOL) => `${SYMBOL[currency]}${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
-const currency = prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" });
+const currencyCode = prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" });
 
 /** The announcement: what's new, in one line, with the way to get it. */
 export const Announcement = component({
@@ -42,9 +43,9 @@ export const Announcement = component({
     lede: prop.text({ label: "Lede", default: "" }),
     button: prop.text({ label: "Button", default: "Pre-order" }),
     href: prop.link({ label: "Button link", default: SITE }),
-    // A number either way: the editor a team registers under this name shows it as money.
-    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency", editorOptions: { step: 1 } }),
-    currency,
+    // The example's own property (`../properties.ts`): a number, from 0, edited as money in steps of 1.
+    price: currency({ label: "Price", min: 0, default: 349, step: 1 }),
+    currency: currencyCode,
     ships: prop.text({ label: "Ships", default: "Ships 2 December" }),
   },
   render: (p) => (
@@ -139,8 +140,8 @@ export const PriceBand = component({
   label: "Price band",
   props: {
     eyebrow: prop.text({ label: "Eyebrow", default: "First run" }),
-    price: prop.number({ label: "Price", min: 0, default: 349, editor: "currency", editorOptions: { step: 1 } }),
-    currency,
+    price: currency({ label: "Price", min: 0, default: 349, step: 1 }),
+    currency: currencyCode,
     note: prop.text({ label: "Note", default: "" }),
     button: prop.text({ label: "Button", default: "Pre-order" }),
     href: prop.link({ label: "Button link", default: SITE }),

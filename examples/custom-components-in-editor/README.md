@@ -42,7 +42,8 @@ Things to try in the shop's set:
 | [`src/shop/email.tsx`](./src/shop/email.tsx) | An email: plain blocks and the components, as tags |
 | [`src/shop/tools.ts`](./src/shop/tools.ts) | `registerTools(unlayer, components, …)`: each component becomes a tool, with a field for each prop. Also the store picker |
 | [`src/shop/design.tsx`](./src/shop/design.tsx) | `toDesign(<Weekly />, { customTools: true })`: the email as a design the editor opens |
-| [`src/currency.ts`](./src/currency.ts) | A property editor of the example's own, for a price |
+| [`src/properties.ts`](./src/properties.ts) | A property of the example's own, for a price, as the components know it: its name, the helper it's made on, its options |
+| [`src/currency.ts`](./src/currency.ts) | That property's control in the Unlayer editor, typed from its definition |
 | [`editor.html`](./editor.html) | Creates the editor with `customJS: [tools]` and loads the design |
 
 `src/oyen` has the same four files.
@@ -66,19 +67,29 @@ A prop says what its value is; the editor picks its control from that. A testimo
 rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5, editor: "counter" }),
 ```
 
-A price asks for an editor of the example's own. `src/currency.ts` writes it as the editor takes one (its markup, and what it does once that's in the page), and `registerTools()` registers it:
-
-```tsx
-price: prop.number({ label: "Price", min: 0, default: 49, editor: "currency", editorOptions: { step: 1 } }),
-```
+A price is a property of the example's own. `src/properties.ts` defines it, as data: its name, the helper of `prop` it's made on, and its options, each made with a helper too.
 
 ```ts
-import { currency } from "../currency";
-
-registerTools(unlayer, components, { editors: { currency } });
+export const currency = defineProperty({
+  name: "example.currency",
+  base: prop.number,
+  options: { step: prop.number({ min: 0, default: 0.01 }) },
+});
 ```
 
-The editor is given the price as the number it is, with the prop's label and what its `editorOptions` say, and gives a number back. The price is still checked as a number. Without the editor, it would be edited with a number's own field.
+Called, it's the prop. It takes what `prop.number` takes, and its own options:
+
+```tsx
+price: currency({ label: "Price", min: 0, default: 49, step: 1 }),
+```
+
+`src/currency.ts` writes its control as the editor takes one (its markup, and what it does once that's in the page), and `registerTools()` registers it under the property's name:
+
+```ts
+registerTools(unlayer, components, { editors: { [currency.name]: currencyField } });
+```
+
+The control is given the price as the number it is, with the prop's label and the property's options, and gives a number back. The price is still checked as a number, from 0: that's its base's, whatever edits it. Without the control, it would be edited with a number's own field.
 
 ## A field that fills several props
 

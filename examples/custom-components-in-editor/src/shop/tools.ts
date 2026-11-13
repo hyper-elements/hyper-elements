@@ -10,7 +10,8 @@
  * - `transformer`: the editor's hook that runs when a field changes, and returns the block's values.
  */
 import { registerTools } from "@hyper-elements/react/builder";
-import { currency } from "../currency";
+import { currencyField } from "../currency";
+import { currency } from "../properties";
 import { components } from "./components";
 
 /** The part of the editor's `unlayer` object the picker below is registered with. */
@@ -60,7 +61,7 @@ unlayer.registerPropertyEditor({
 });
 
 registerTools(unlayer, components, {
-  editors: { currency },
+  editors: { [currency.name]: currencyField },
   icons: {
     "shop.ProductCard": "fa-bag-shopping",
     "shop.Testimonial": "fa-quote-left",
