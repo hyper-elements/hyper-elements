@@ -32,8 +32,9 @@ export const MODULES: Record<string, string> = {
 const made: string[] = [];
 afterEach(() => {
   // (A test that makes a folder read-only makes it writable again itself. rmSync removes links, not what they lead to.)
-  // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again.
-  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 20 : 0, retryDelay: 100 });
+  // Windows doesn't remove a folder a process still has open (EBUSY) a moment after that process ends: tried again, for
+  // up to 5 s (a killed dev's children take over 2 s on CI's runners to let theirs go).
+  for (const dir of made.splice(0)) rmSync(dir, { recursive: true, force: true, maxRetries: WINDOWS ? 50 : 0, retryDelay: 100 });
 });
 
 /** Links `node_modules/<name>` in `folder` to `target` (a folder). */
