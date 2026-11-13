@@ -2,7 +2,7 @@
 
 The email client emulator that comes with [Hyper Elements](https://hyperelements.dev): test an email in email clients
 like Outlook and Gmail without sending it. `renderInEmailClients()` previews a Hyper Elements email as classic Outlook,
-Outlook.com, Gmail, the Gmail app and Apple Mail (on a Mac and an iPhone) draw it, on your own machine, and `emailClients()` checks it for what
+Outlook.com, Gmail, the Gmail app (on Android and an iPhone) and Apple Mail (on a Mac and an iPhone) draw it, on your own machine, and `emailClients()` checks it for what
 each client removes or changes.
 
 ```bash
@@ -60,8 +60,9 @@ Each preview is one self-contained HTML file. Open it in Chromium: it draws the 
 what the client changed. To show a preview, write the files and open them in your browser; otherwise give the paths.
 
 - `widths`: the width a client's preview draws the email at, where it isn't the client's own (820px on desktop, 380px
-  for the Gmail apps, the width the Gmail app on Android lays an email out at). Apple Mail is previewed on an iPhone
-  too (`apple-mail.iphone`, 393px, an iPhone 16), whatever its desktop width. Outlook.com and Gmail on the web match an email's media queries at the browser window, not the
+  for the Gmail apps, the width the Gmail app on Android lays an email out at). Apple Mail and the Gmail app are
+  previewed on an iPhone too (`apple-mail.iphone`, 393px; `gmail-app.iphone`, 345px, the app's card; an iPhone 16),
+  whatever their own width. Outlook.com and Gmail on the web match an email's media queries at the browser window, not the
   pane the email is in, so at 540px Outlook.com keeps the email's desktop styles, as it does for its readers.
 - `computers`: Outlook.com and Gmail on the web are read in a browser, whose fonts are the reader's computer's. Each is
   previewed on Windows (`outlook-com`, `gmail`: font stacks resolved against Windows' fonts, as Chrome there does, so
@@ -69,7 +70,7 @@ what the client changed. To show a preview, write the files and open them in you
   preview is opened on). `computers: ["windows"]` keeps one.
 - `previews`: `{ id, client, model, computer, variant, dark, width, filename, html, approximate }` for each client and
   variant, in the order asked for, light before dark; `model` is the models' client it's drawn with (`apple-mail-ios`
-  for Apple Mail on an iPhone).
+  for Apple Mail on an iPhone, `gmail-app-ios` for the Gmail app on one).
 - `skipped`: what wasn't previewed, and why (a client with no model to draw with, a dark mode not measured).
 - `diagnostics`: `render()`'s, with the plugin's checks for the clients previewed (unless you passed your own
   `emailClients()` in `plugins`, which is used as it is).
@@ -98,7 +99,8 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
 - Its options are the preview options above: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 - The models are measured mostly on Hyper Elements emails. HTML built another way is emulated less closely in some
   clients, so its previews are `approximate` where a client is under 95% on such emails or isn't measured on them:
-  classic Outlook, the Gmail apps, Apple Mail's dark mode, Apple Mail on an iPhone, and webmail read on a Mac.
+  classic Outlook, the Gmail apps, Apple Mail's dark mode, Apple Mail and the Gmail app on an iPhone, and webmail read
+  on a Mac.
 - It rejects with the import's error where `@hyper-elements/email-client-models` can't be loaded, and with
   `email-clients/version-mismatch` where the one installed speaks a protocol this package doesn't read. A template
   without `@hyper-elements/react` installed is `email-clients/version-mismatch` too, with what to install.

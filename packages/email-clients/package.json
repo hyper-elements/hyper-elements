@@ -60,7 +60,7 @@
     "test:pack": "node scripts/pack-check.mjs"
   },
   "dependencies": {
-    "@hyper-elements/email-client-models": "^1.9.0"
+    "@hyper-elements/email-client-models": "^1.10.0"
   },
   "peerDependencies": {
     "@hyper-elements/react": "^0.4.0",
