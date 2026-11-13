@@ -36,8 +36,12 @@ export interface DrawingBrowser {
 }
 
 export type Opened =
-  | { browser: DrawingBrowser; name: string }
+  | { browser: DrawingBrowser; name: string; /** Whether it started in Chromium's sandbox. */ sandboxed: boolean }
   | { browser: null; tried: string[]; bun?: string; /** playwright-core isn't installed. */ missing?: boolean };
+
+/** Said once where the browser drawing the previews couldn't start sandboxed. */
+export const NO_SANDBOX_HELP =
+  "the previews are drawn in a browser without Chromium's sandbox, which it couldn't start with: on Linux that needs the kernel's user namespaces (a container started with --cap-add=SYS_ADMIN, or an unprivileged user). The previews are the same either way.";
 
 /** Whether `error` says playwright-core itself can't be found (not a module it imports). */
 function isMissing(error: unknown): boolean {
@@ -58,6 +62,12 @@ async function playwright(): Promise<typeof import("playwright-core") | null> {
 
 /** A failure that says only that the browser isn't there (not that it couldn't be started). */
 const NOT_THERE = /Executable doesn't exist|is not found at|is not installed|ENOENT|no such file|not found|cannot find/i;
+/**
+ * A failure that says the browser took too long, which the sandbox isn't the reason for: a loaded machine can miss
+ * the deadline, and starting again without the sandbox would turn that into a browser drawing untrusted HTML
+ * without one. A sandbox a kernel won't give fails at once, well inside the deadline.
+ */
+const TOO_SLOW = /Timeout .* exceeded|timed out/i;
 
 /** The channels tried after Playwright's Chromium. (`HYPER_ELEMENTS_CLI_BROWSER_CHANNELS`, for the CLI's own tests.) */
 function channels(): string[] {
@@ -78,16 +88,30 @@ export async function openBrowser(): Promise<Opened> {
   const tried: string[] = [];
   let startFailed: string | undefined;
   for (const attempt of attempts) {
-    let browser: Browser;
-    try {
-      browser = await chromium.launch({ ...attempt.options, headless: true, timeout: LAUNCH_TIMEOUT });
-    } catch (error) {
-      const line = (error instanceof Error ? error.message : String(error)).split("\n").find((l) => l.trim()) ?? "";
-      tried.push(`${attempt.what}: ${line.replace(/^browserType\.launch: /, "")}`);
-      if (!NOT_THERE.test(line)) startFailed ??= line;
+    let browser: Browser | undefined;
+    let sandboxed = true;
+    let failure = "";
+    // A preview draws an email the CLI was given, which is content from outside: it's drawn in Chromium's sandbox.
+    // Playwright starts a browser without one unless it's asked (`chromiumSandbox` is false by default), and a
+    // container without the kernel's user namespaces can't start one at all, so the browser that can't is started
+    // as before and says so in its name.
+    for (const sandbox of [true, false]) {
+      try {
+        browser = await chromium.launch({ ...attempt.options, headless: true, chromiumSandbox: sandbox, timeout: LAUNCH_TIMEOUT });
+        sandboxed = sandbox;
+        break;
+      } catch (error) {
+        failure = (error instanceof Error ? error.message : String(error)).split("\n").find((l) => l.trim()) ?? "";
+        // It isn't there to start, or it was too slow: the sandbox is the reason for neither, so it isn't dropped.
+        if (NOT_THERE.test(failure) || TOO_SLOW.test(failure)) break;
+      }
+    }
+    if (!browser) {
+      tried.push(`${attempt.what}: ${failure.replace(/^browserType\.launch: /, "")}`);
+      if (!NOT_THERE.test(failure)) startFailed ??= failure;
       continue;
     }
-    return { browser: drawing(browser), name: attempt.label(browser.version()) };
+    return { browser: drawing(browser), name: `${attempt.label(browser.version())}${sandboxed ? "" : ", no sandbox"}`, sandboxed };
   }
   return {
     browser: null,

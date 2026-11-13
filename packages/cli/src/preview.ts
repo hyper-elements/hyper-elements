@@ -92,7 +92,7 @@ export interface Drawn {
  */
 export async function drawPreviews(outcomes: Outcome[], options: { cwd: string; screenshots: boolean; stderr(text: string): void }): Promise<Drawn> {
   const previews = outcomes.flatMap((outcome) => (outcome.previews ?? []).map((preview) => ({ outcome, preview })));
-  const { openBrowser } = await import("./preview/browser.js");
+  const { openBrowser, NO_SANDBOX_HELP } = await import("./preview/browser.js");
   const opened = await openBrowser();
   if (!opened.browser) {
     const reason = opened.missing ? ("no-playwright-core" as const) : ("no-browser" as const);
@@ -100,6 +100,7 @@ export async function drawPreviews(outcomes: Outcome[], options: { cwd: string; 
     return { browser: null, tried: opened.tried, ...(opened.bun ? { bun: opened.bun } : {}), ...(opened.missing ? { missing: true } : {}) };
   }
   const { browser, name } = opened;
+  if (!opened.sandboxed) options.stderr(`hyper-elements: ${NO_SANDBOX_HELP}\n`);
   try {
     const queue = [...previews];
     const worker = async () => {

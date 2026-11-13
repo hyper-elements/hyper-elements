@@ -1,5 +1,28 @@
 # @hyper-elements/cli
 
+## Unreleased
+
+### Fixed
+
+- **A Document's PDF in a project without `"type": "module"`.** tsx's CommonJS register compiles every file it is
+  given, a dependency's own ES modules among them, and resolves the `import()` in one as a `require`. A package
+  whose "exports" names an `import` condition alone can't be found that way, and react-pdf loads its text engine
+  like that: every Document failed with `Package subpath './en-us' is not defined by "exports" in
+  @react-pdf/hyphenate`, in any project `npm init` made. A dependency's own JavaScript is left to Node now;
+  TypeScript, and the template's own files, are still tsx's to compile.
+- **`describe` said a container holds nothing.** A Section, a Row, a Column and each root said `children: none`,
+  because a container holds categories of components rather than named types. It says what it holds, in the words
+  the package's guide uses: `children: layout, blocks`. `--json` is unchanged, and was always right.
+- **A template whose project has no React** said `Cannot find module 'react/jsx-runtime'`. It's a `cli/react-missing`
+  error now, with `npm i @hyper-elements/react react react-dom` to fix it.
+
+### Changed
+
+- `preview --findings` draws each preview in Chromium's sandbox, which Playwright leaves off unless it's asked for:
+  a preview holds an email the CLI was given, which is content from outside. A browser that can't start sandboxed
+  (a container without the kernel's user namespaces) is started as it was, with a line on stderr saying so. A
+  browser that was too slow to start isn't taken for one that can't be sandboxed.
+
 ## 0.2.0
 
 - **Lint**: `check`, `render` and `dev` run `@hyper-elements/lint` on each Email and Page, and `check` runs its HTML
