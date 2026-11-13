@@ -300,13 +300,6 @@ export function previewFile(frame: HTMLIFrameElement, html: string, scripts: Pre
 /** 1.1 MB of HTML is about 1.5 MB in base64, under the 2 MB a data: URL may be. */
 const MAX_PREVIEW_FILE = 1_100_000;
 
-/** HTML the sandbox wrote, as a document that only draws: for a frame with `sandbox=""`, where nothing runs. */
-export const stillDocument = (html: string): string =>
-  documentOf(
-    html.replaceAll("https://hyperelements.dev/img/", `${location.origin}/img/`),
-    `default-src 'none'; style-src 'unsafe-inline' https:; img-src https: data: ${location.origin}; font-src https: data:; base-uri 'none'; form-action 'none'`,
-  );
-
 /** Whether the page may open a link a preview reported: web and mail addresses only. */
 export const opensSafely = (href: string): boolean => {
   try {

@@ -8,8 +8,8 @@
 //
 // What it holds the page to, each with a control that shows the check can fail:
 //
-//   1. It loads, and the first starter renders under each root: what a visitor sees, and the real files (a PDF by its
-//      signature, a PNG by decoding it).
+//   1. It loads and the first template renders; one template (scripts/fixtures/one-template.tsx) renders under each
+//      root: what a visitor sees, and the real files (a PDF by its signature, a PNG by decoding it).
 //   2. A broken template shows its diagnostics, on the lines they're about; the fixed one shows none.
 //      2b. What the compiler here would let through is stopped: a closing tag that isn't its opening tag's, a name
 //          the package doesn't export. Right code in every shape, and every starter, still compiles.
@@ -96,6 +96,10 @@ const browser = await playwright[engine].launch();
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
 // Offline: nothing but this server answers.
 await context.route("**/*", (route) => (new URL(route.request().url()).origin === origin ? route.continue() : route.abort()));
+// Save a web font's file, which the page fetches from Fontsource for a Document's PDF: answered here, with a font of
+// this site's, so the PDF a page draws has font files to embed (as an agent's, given none, doesn't).
+const FONT = readFileSync(join(dist, "playground/fonts/LiberationSans-Regular.ttf"));
+await context.route("https://cdn.jsdelivr.net/fontsource/fonts/**", (route) => route.fulfill({ status: 200, contentType: "font/ttf", headers: { "access-control-allow-origin": "*" }, body: FONT }));
 
 const errors = [];
 async function open(hash = "", { webmcp = false, keep = false } = {}) {
@@ -130,27 +134,39 @@ const shown = (page) => page.frameLocator('.pg-preview-frame[data-buffer="front"
 const encode = (code) => Buffer.from(code, "utf8").toString("base64url");
 const step = (name) => console.log(`  ✓ ${name}`);
 
+// One themed template that renders under every root (not a starter): what step 1 rewrites to each root.
+const ONE_TEMPLATE = readFileSync(join(site, "scripts/fixtures/one-template.tsx"), "utf8");
 const HEADLINE = "Come and see how a pot is made.";
+// A draft with five mistakes, each one diagnostic (not a template: step 2 opens it from a link).
+const MISTAKES = readFileSync(join(site, "scripts/fixtures/fix-the-diagnostics.tsx"), "utf8");
 
 try {
   // ─── 1. The first starter, under each root ───────────────────────────────
   {
     const page = await open();
-    assert.equal(await page.locator("[data-status-text]").innerText().then((text) => /^Rendered in \d+ ms/.test(text)), true, "The status says it rendered");
+    assert.equal(await page.locator("[data-status-text]").innerText().then((text) => /^Rendered in \d+ ms/.test(text)), true, "The status says the first template rendered");
+    await api(page, "setCode", ONE_TEMPLATE);
     await shown(page).getByText(HEADLINE).waitFor();
     assert.equal(await api(page, "getResult").then((r) => [r.ok, r.root]).then(String), "true,Email");
     assert((await api(page, "getResult")).diagnostics.some((d) => d.clients?.includes("outlook")), "An Email's diagnostics name the email clients they're about");
+    // The views are the root's: an Email's are its preview, its email clients and its source (HTML or plain text).
+    assert.deepEqual(await page.locator("[data-views] [data-slot]").evaluateAll((tabs) => tabs.map((tab) => tab.dataset.slot)), ["preview", "clients", "source"]);
+    await page.locator('[data-slot="source"]').click();
     await page.locator('[data-view-tab="text"]').click();
     assert.match(await page.locator('[data-source="text"]').innerText(), /COME AND SEE HOW A POT IS MADE|Come and see how a pot is made/i, "The plain text is shown");
-    await page.locator('[data-view-tab="preview"]').click();
+    await page.locator('[data-slot="preview"]').click();
 
+    // The same template under each root, as an agent's setRoot() rewrites it (the root picker brings a starter of
+    // the root instead: below).
     for (const root of ["Page", "Document", "Canvas", "Email"]) {
-      await page.locator(`[data-root="${root}"]`).click();
+      await api(page, "setRoot", root);
       await page.waitForFunction((root) => window.hyperElementsPlayground.getResult().root === root, root);
       const result = await api(page, "getResult");
       assert.equal(result.ok, true, `${root}: ${JSON.stringify(result.error ?? result.diagnostics.filter((d) => d.severity === "error"))}`);
       assert(new RegExp(`<${root}[\\s>]`).test(await api(page, "getCode")), `${root}: the code's root is rewritten`);
       assert.equal(await page.locator(`[data-root="${root}"]`).getAttribute("aria-checked"), "true");
+      // Only an Email has email clients to show.
+      assert.equal(await page.locator('[data-views] [data-slot="clients"]').count(), root === "Email" ? 1 : 0, `${root}: an Email clients tab only for an Email`);
       if (root === "Canvas") {
         // The PNG the sandbox drew, decoded by the browser at the Canvas's size.
         const image = page.locator('[data-file="png"] img');
@@ -172,13 +188,108 @@ try {
     // Control: a PDF isn't a Canvas's output, and the page says so rather than answering with one.
     const wrong = await api(page, "render", await api(page, "getCode"), { root: "Email", include: ["pdf"] });
     assert.equal(wrong.pdf, undefined);
+    // And the PDF as the page draws it, which (unlike an agent's) is given the font files the page fetched. Their
+    // bytes go into the PDF as base64, with the Buffer the runtime build gives the PDF entry's files: a file it
+    // misses has none in a browser, and the PDF isn't written.
+    await api(page, "setRoot", "Document");
+    await page.waitForFunction(() => window.hyperElementsPlayground.getResult().root === "Document");
+    await page.locator('[data-view-tab="pdf"]').click();
+    // Shown in a frame, or (a browser with no PDF viewer, as headless ones are) a card with a link to it.
+    const drawnPdf = page.locator('[data-file="pdf"] iframe, [data-file="pdf"] a[href^="blob:"], [data-file="pdf"] .pg-file-card:not(:has(a))').first();
+    await drawnPdf.waitFor({ timeout: 60_000 });
+    const href = await drawnPdf.evaluate((element) => element.getAttribute("src") ?? element.getAttribute("href"));
+    assert(href, `The page's PDF: ${await page.locator('[data-file="pdf"]').innerText()}`);
+    const written = await page.evaluate(async (url) => new TextDecoder("latin1").decode(await (await fetch(url.split("#")[0])).arrayBuffer()), href);
+    assert(written.startsWith("%PDF-"), "The page's PDF is a PDF");
+    assert.match(written, /\/BaseFont\s*\/[A-Z]{6}\+/, "The page's PDF has the font file the page gave it, embedded");
+    assert.match(await page.locator(".pg-file-facts").innerText(), /^1 page · \d+/, "The bar says what the PDF is");
+    // A PNG with transparency (the Release notes logo): react-pdf reads its pixels with fflate's inflate(), which
+    // starts a Worker, and the sandbox's code has none (the runtime build makes it synchronous). Its alpha is the
+    // PDF's soft mask.
+    await api(page, "loadStarter", "release-notes");
+    await api(page, "setView", "pdf");
+    // Its own file, not the last one's, which stays up until it's in.
+    const logoHref = await page
+      .waitForFunction(
+        (last) => {
+          if (document.querySelector('[data-file="pdf"] .pg-file-card:not(:has(a))')) return "failed";
+          const shown = document.querySelector('[data-file="pdf"] iframe, [data-file="pdf"] a[href^="blob:"]');
+          const url = shown?.getAttribute("src") ?? shown?.getAttribute("href");
+          return url && url !== last ? url : false;
+        },
+        href,
+        { timeout: 60_000 },
+      )
+      .then((handle) => handle.jsonValue())
+      .then((url) => (url === "failed" ? null : url));
+    assert(logoHref, `A PDF with a transparent PNG: ${await page.locator('[data-file="pdf"]').innerText()}`);
+    const withLogo = await page.evaluate(async (url) => new TextDecoder("latin1").decode(await (await fetch(url.split("#")[0])).arrayBuffer()), logoHref);
+    assert.match(withLogo, /\/SMask/, "The transparent PNG is in the PDF, with its alpha");
     await page.close();
-    step("the first starter renders as an Email, a Page, a Document (with its PDF) and a Canvas (with its PNG and SVG)");
+    step("the first template renders; one template renders as an Email, a Page, a Document (with its PDF, on the page too) and a Canvas (with its PNG and SVG)");
+  }
+
+  // ─── 1b. The root picker: each root its own starters, and the visitor's code kept ─
+  {
+    const page = await open();
+    const original = await api(page, "getCode");
+    const starters = await api(page, "starters");
+    const firstPage = starters.find((starter) => starter.root === "Page");
+    // Changed here, by typing: the visitor's own code.
+    // At the very start: the first line wraps, and Home goes to the start of the wrapped part it's in, then the line's.
+    await page.locator(".cm-line").first().click();
+    for (let i = 0; i < 4; i++) await page.keyboard.press("Home");
+    await page.keyboard.type("// mine");
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Enter");
+    // (The slashes are typed into the code: the site's "/" for search is for outside a field or the editor.)
+    await page.waitForFunction(() => window.hyperElementsPlayground.getCode().startsWith("// mine"));
+    // Control: outside the editor, "/" still opens the search.
+    await page.evaluate(() => document.activeElement?.blur());
+    await page.keyboard.press("/");
+    assert.equal(await page.evaluate(() => Boolean(document.querySelector("dialog[open]"))), true, '"/" outside the editor opens the search');
+    await page.keyboard.press("Escape");
+    // A Page: its first template, named on the Template button, and only Page templates in its menu.
+    await page.locator('[data-root="Page"]').click();
+    await page.waitForFunction(() => window.hyperElementsPlayground.getResult().root === "Page" && !window.hyperElementsPlayground.getCode().startsWith("// mine"));
+    assert.equal(await page.locator("[data-starter-name]").innerText(), firstPage.title, "A Page's first starter is up");
+    assert.equal(await page.locator('[data-root="Page"]').getAttribute("aria-checked"), "true");
+    await page.locator("[data-templates-open]").click();
+    const listed = await page.locator("[data-templates-list] [role=menuitemradio]:not([hidden])").evaluateAll((items) => items.map((item) => [item.dataset.starter, item.getAttribute("aria-checked")]));
+    const pages = starters.filter((starter) => starter.root === "Page").map((starter) => starter.id);
+    assert.deepEqual(listed.map(([id]) => id), pages, "The menu lists a Page's templates, in order");
+    assert.deepEqual(listed.filter(([, on]) => on === "true").map(([id]) => id), [firstPage.id], "The one that's up is marked");
+    // Each with a thumbnail: the site's rendering of it, in a frame that runs nothing.
+    await page.waitForFunction((count) => document.querySelectorAll("[data-templates-list] [role=menuitemradio]:not([hidden]) .pg-template-thumb iframe[sandbox='']").length === count, pages.length);
+    // Picked from the menu: the other Page template.
+    await page.locator(`[data-templates-list] [data-starter="${pages[1]}"]`).click();
+    await page.waitForFunction((title) => document.querySelector("[data-starter-name]")?.textContent === title, starters.find((starter) => starter.id === pages[1]).title);
+    assert.equal(await page.locator("[data-templates-list]").isHidden(), true, "The menu closes once one is picked");
+    // Through a Canvas and back to the Email: the code typed there is there again, and the Page's starter after it.
+    await page.locator('[data-root="Canvas"]').click();
+    await page.waitForFunction(() => window.hyperElementsPlayground.getResult().root === "Canvas");
+    await page.locator('[data-root="Email"]').click();
+    await page.waitForFunction(() => window.hyperElementsPlayground.getCode().startsWith("// mine") && window.hyperElementsPlayground.getResult().root === "Email");
+    assert.equal(await api(page, "getCode"), `// mine\n${original}`, "The Email's code is the visitor's, as they left it");
+    // Control: picking roots fast leaves each root its own (the last pick wins, and nothing lands under another root).
+    await page.locator('[data-root="Page"]').click();
+    await page.locator('[data-root="Document"]').click();
+    await page.waitForFunction(() => window.hyperElementsPlayground.getResult().root === "Document");
+    await page.waitForTimeout(800);
+    assert.equal(await page.locator('[data-root="Document"]').getAttribute("aria-checked"), "true");
+    assert.match(await api(page, "getCode"), /<Document[\s>]/, "The last root picked is the one shown");
+    // The changed Email is kept for the next visit, under its root.
+    const next = await open("", { keep: true });
+    await next.locator('[data-root="Email"]').click();
+    await next.waitForFunction(() => window.hyperElementsPlayground.getCode().startsWith("// mine"));
+    await next.close();
+    await page.close();
+    step("picking a root brings its first template, and the Template menu lists only its templates; the visitor's code under a root comes back, on the next visit too");
   }
 
   // ─── 2. A broken template shows its diagnostics ──────────────────────────
   {
-    const page = await open("#starter=fix-the-diagnostics");
+    const page = await open(`#code=${encode(MISTAKES)}`);
     assert.equal(await page.evaluate(() => document.documentElement.dataset.renderStatus), "error");
     const rows = page.locator("[data-diagnostics] .pg-diag");
     assert.equal(await rows.count(), 5, "Its five mistakes are five diagnostics");
@@ -258,13 +369,13 @@ try {
       `const pick = <T,>(items: T[]) => items[0];\nconst few = 1 < 2 && 3 > 2;\nexport default function A() {\n  return (\n    <Document>\n      <Document.Page>\n        <>\n          <Text>{few ? <Span style={{ fontWeight: 700 }}>Bold</Span> : null} and {pick(["plain"])}</Text>\n          <Divider />\n        </>\n      </Document.Page>\n    </Document>\n  );\n}`,
     );
     assert.equal(fine.ok, true, JSON.stringify(fine.error ?? fine.diagnostics));
-    // And every starter still compiles (the one with mistakes on purpose has Elements' errors, not a syntax error).
+    // And every template renders.
     const starters = await page.evaluate(() => fetch("/playground/starters.json").then((response) => response.json()));
-    assert(starters.length >= 20);
+    assert(starters.length >= 17, `${starters.length} templates`);
     for (const starter of starters) {
       const result = await api(page, "render", starter.source, { include: [] });
       assert.notEqual(result.error?.kind, "syntax", `${starter.id}: ${result.error?.message}`);
-      assert.equal(result.ok, starter.id !== "fix-the-diagnostics", `${starter.id}: ${JSON.stringify(result.error)}`);
+      assert.equal(result.ok, true, `${starter.id}: ${JSON.stringify(result.error ?? result.diagnostics.filter((d) => d.severity === "error"))}`);
     }
 
     // A name the package doesn't export: said by name, with the nearest one it has, on the line that uses it.
@@ -289,8 +400,8 @@ try {
       void window.hyperElementsPlayground.loadStarter("morning-pages-quote");
     });
     await page.waitForFunction(() => document.querySelector('[data-root="Canvas"]')?.getAttribute("aria-checked") === "true");
-    await api(page, "loadStarter", "four-outputs");
-    await shown(page).getByText(HEADLINE).waitFor();
+    await api(page, "loadStarter", "launch-email");
+    await page.waitForFunction(() => window.hyperElementsPlayground.getResult().root === "Email");
     await page.waitForTimeout(4000);
     assert.equal(await page.locator("[data-veil]").getAttribute("data-on"), null, `The stage still says "${await page.locator("[data-veil-title]").innerText()}"`);
     // The same for an Email's client previews, left for its preview.

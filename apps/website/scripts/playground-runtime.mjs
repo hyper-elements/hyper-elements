@@ -60,9 +60,15 @@ const SHARED = {
   "@hyper-elements/react": "shared-elements.cjs",
 };
 
-/** Node's Buffer, which the PDF and image entries turn bytes into base64 with: given to those files only. */
+/**
+ * Node's Buffer, which the PDF and image entries turn bytes into base64 with: given to those files only, in a
+ * published package or an internal one (core is packages/internal/core). A file this misses calls a Buffer the
+ * browser doesn't have: check-playground.mjs opens a Document's PDF on the page to catch it.
+ */
 const BUFFER = join(sandbox, "shims/buffer.ts");
-const USES_BUFFER = /packages\/(core|react)\/src\/(pdf|image)\/[^/]+\.tsx?$/;
+const USES_BUFFER = /packages\/(?:internal\/)?(core|react)\/src\/(pdf|image)\/[^/]+\.tsx?$/;
+/** fflate's asynchronous functions without the Worker they start (see the plugin). */
+const FFLATE = join(sandbox, "shims/fflate.ts");
 
 const plugin = (name) => ({
   name: "playground-runtime",
@@ -78,6 +84,23 @@ const plugin = (name) => ({
     b.onResolve({ filter: /^(node:)?(fs|fs\/promises|path|url|module)$/ }, () => ({ path: join(sandbox, "shims/empty.cjs") }));
     // The sandbox's own files import the React that packages/react is developed with.
     b.onResolve({ filter: /^react(\/.*)?$/ }, (args) => (args.pluginData?.real || !args.importer.startsWith(sandbox) ? undefined : b.resolve(args.path, { resolveDir: reactDir, kind: args.kind, pluginData: { real: true } })));
+    // fflate's asynchronous functions start a Worker, which the code the sandbox runs doesn't have: each import of
+    // fflate gets the copy its importer would, with those functions made from its synchronous ones (shims/fflate.ts).
+    b.onResolve({ filter: /^fflate$/ }, async (args) => {
+      if (args.pluginData?.real) return undefined;
+      const real = await b.resolve("fflate", { resolveDir: args.resolveDir, kind: args.kind, pluginData: { real: true } });
+      return real.errors.length ? { errors: real.errors } : { path: real.path, namespace: "fflate-sync" };
+    });
+    b.onLoad({ filter: /.*/, namespace: "fflate-sync" }, ({ path }) => ({
+      contents: [
+        `import * as real from ${JSON.stringify(path)};`,
+        `import { sync } from ${JSON.stringify(FFLATE)};`,
+        `export * from ${JSON.stringify(path)};`,
+        `export const { inflate, unzlib, gunzip, decompress, deflate, zlib, gzip } = sync(real);`,
+      ].join("\n"),
+      resolveDir: dirname(path),
+      loader: "js",
+    }));
     b.onLoad({ filter: USES_BUFFER }, async ({ path }) => {
       const source = await readFile(path, "utf8");
       if (!/\bBuffer\./.test(source)) return undefined;

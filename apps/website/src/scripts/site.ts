@@ -208,7 +208,8 @@ document.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
     e.preventDefault();
     dialog?.open ? dialog.close() : openSearch();
-  } else if (e.key === "/" && !dialog?.open && !(e.target as HTMLElement).closest("input, textarea")) {
+  } else if (e.key === "/" && !dialog?.open && !(e.target as HTMLElement).closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) {
+    // Not while typing: in a field, or in an editor (the playground's is contenteditable, and its code has slashes).
     e.preventDefault();
     openSearch();
   }
