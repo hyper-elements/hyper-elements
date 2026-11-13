@@ -4,6 +4,16 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **Yahoo Mail and AOL Mail:** `yahoo` and `aol` are previewed, as webmail read on Windows and on a Mac (`yahoo`,
+  `yahoo.mac`, and so on), in their message panes, 758px and 869px wide, with a dark preview of each with `dark: true`.
+  Drawn with the models' `yahoo` and `aol` (1.11.0).
+  - On the models' benchmark: 99.3% of lines within 3px for Yahoo Mail (98.4% in dark mode), 99.0% for AOL Mail.
+  - For HTML not built with Hyper Elements, they're approximate (measured on two such emails), as
+    `APPROXIMATE_FOR_HTML` lists.
+  - AOL Mail draws text the email doesn't style in its own web font: previews draw it with Roboto and Open Sans Italic,
+    loaded whether or not the email names Open Sans.
+  - AOL Mail's dark mode leaves the email as it is.
+- Requires `@hyper-elements/email-client-models` 1.11.0.
 - **The Gmail app on an iPhone:** `gmail-app` previews add `gmail-app.iphone`, the Gmail app on an iPhone 16 with
   iOS 26, in its 345px card: Gmail's version of the email as on Android, in iOS's fonts, line heights in whole pixels.
   Drawn with the models' `gmail-app-ios` (1.10.0), 97.1% of the benchmark's lines within 3px. Its dark mode isn't

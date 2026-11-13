@@ -6,7 +6,7 @@
 import type { EmailClient, EmailClientInfo } from "./email-clients";
 
 /** The email clients there's a model to preview with. */
-export const PREVIEW_CLIENTS = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail"] as const satisfies readonly EmailClient[];
+export const PREVIEW_CLIENTS = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol"] as const satisfies readonly EmailClient[];
 
 export type PreviewClient = (typeof PREVIEW_CLIENTS)[number];
 
@@ -30,15 +30,15 @@ export type Computer = "windows" | "mac";
 export const COMPUTERS: readonly Computer[] = ["windows", "mac"];
 
 /** The webmail clients, read in a browser on either computer: a preview each, on Windows as `<client>`, on a Mac as `<client>.mac`. */
-export const WEBMAIL: readonly PreviewClient[] = ["outlook-com", "gmail"];
+export const WEBMAIL: readonly PreviewClient[] = ["outlook-com", "gmail", "yahoo", "aol"];
 
 export interface PreviewVariant {
-  /** `<client>`, `<client>.mac` (webmail read on a Mac), `<client>.iphone` (Apple Mail or the Gmail app on an iPhone), and `.dark` after either. */
+  /** `<client>`, `<client>.mac` (webmail read on a Mac), `<client>.iphone` (Apple Mail or the Gmail app on an iPhone), and `.dark` after any of them. */
   id: string;
   client: PreviewClient;
   /** The models' client it's drawn with. */
   model: ModelClient;
-  /** For webmail (Outlook.com, Gmail on the web), the computer it's read on. */
+  /** For webmail (Outlook.com, Gmail, Yahoo Mail and AOL Mail on the web), the computer it's read on. */
   computer?: Computer;
   /** Desktop (820px), or a phone: 380px for the Gmail apps (the width the app on Android lays an email out at), 393px
    * for Apple Mail on an iPhone and 345px for the Gmail app on one (an iPhone 16's screen, and the app's card on it). */
@@ -101,20 +101,21 @@ export function variantsOf(clients: readonly EmailClient[], dark: boolean, info:
     const variant = widths.desktop !== undefined ? "desktop" : "phone";
     const width = Math.round(widthsAsked[client] ?? widths[variant] ?? (variant === "desktop" ? 820 : 380));
     const light = { id: client, client, model: client, variant, dark: false, width, filename: `${client}.html`, approximate } as PreviewVariant;
-    if (WEBMAIL.includes(client)) {
-      // A preview for each computer it's read on: Windows as `<client>`, a Mac as `<client>.mac`.
-      for (const computer of [...new Set(computers)]) {
-        const id = computer === "windows" ? client : `${client}.mac`;
-        variants.push({ ...light, id, computer, filename: `${id}.html` });
-      }
-    } else variants.push(light);
+    // Webmail, a preview for each computer it's read on: Windows as `<client>`, a Mac as `<client>.mac`.
+    const lights = WEBMAIL.includes(client)
+      ? [...new Set(computers)].map((computer) => {
+          const id = computer === "windows" ? client : `${client}.mac`;
+          return { ...light, id, computer, filename: `${id}.html` };
+        })
+      : [light];
+    variants.push(...lights);
     // Beside its own preview, an iPhone one where the models draw the client on an iPhone: `<client>.iphone`.
     const phone = PHONE_MODELS[client];
     const phoneVariant = phone ? ({ ...light, id: `${client}.${phone.id}`, model: phone.model, variant: "phone", width: phone.width, filename: `${client}.${phone.id}.html` } as PreviewVariant) : null;
     if (phoneVariant) variants.push(phoneVariant);
     if (!dark) continue;
     if (info[client].dark) {
-      variants.push({ ...light, id: `${client}.dark`, dark: true, filename: `${client}.dark.html` });
+      for (const one of lights) variants.push({ ...one, id: `${one.id}.dark`, dark: true, filename: `${one.id}.dark.html` });
       if (phoneVariant) variants.push({ ...phoneVariant, id: `${phoneVariant.id}.dark`, dark: true, filename: `${phoneVariant.id}.dark.html` });
     } else skipped.push({ client, dark: true, reason: `${name}'s dark mode isn't measured` });
   }

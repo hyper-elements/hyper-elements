@@ -58,7 +58,7 @@ describe("renderInEmailClients()", () => {
   });
 
   it("keeps the order asked for, each client once, light before dark; skips what can't be previewed, saying why", async () => {
-    const { previews, skipped } = await renderInEmailClients(welcome, { emailClients: ["gmail-app", "apple-mail", "yahoo", "outlook", "apple-mail"], dark: true });
+    const { previews, skipped } = await renderInEmailClients(welcome, { emailClients: ["gmail-app", "apple-mail", "yahoo", "samsung-email", "outlook", "apple-mail"], dark: true });
     expect(previews.map((p) => [p.id, p.filename, p.variant, p.width])).toEqual([
       ["gmail-app", "gmail-app.html", "phone", 380],
       ["gmail-app.iphone", "gmail-app.iphone.html", "phone", 345],
@@ -66,11 +66,16 @@ describe("renderInEmailClients()", () => {
       ["apple-mail.iphone", "apple-mail.iphone.html", "phone", 393],
       ["apple-mail.dark", "apple-mail.dark.html", "desktop", 820],
       ["apple-mail.iphone.dark", "apple-mail.iphone.dark.html", "phone", 393],
+      ["yahoo", "yahoo.html", "desktop", 758],
+      ["yahoo.mac", "yahoo.mac.html", "desktop", 758],
+      ["yahoo.dark", "yahoo.dark.html", "desktop", 758],
+      ["yahoo.mac.dark", "yahoo.mac.dark.html", "desktop", 758],
       ["outlook", "outlook.html", "desktop", 820],
     ]);
+    expect(previews.find((p) => p.id === "yahoo.mac.dark")).toMatchObject({ model: "yahoo", computer: "mac", dark: true });
     expect(skipped).toEqual([
       { client: "gmail-app", dark: true, reason: "Gmail app's dark mode isn't measured" },
-      { client: "yahoo", dark: false, reason: "Yahoo Mail has no model to draw with: what's known of it is caniemail's tables" },
+      { client: "samsung-email", dark: false, reason: "Samsung Email has no model to draw with: what's known of it is caniemail's tables" },
       { client: "outlook", dark: true, reason: "Classic Outlook's dark mode isn't measured" },
     ]);
     // Every client with a model is one the plugin knows.
@@ -146,7 +151,7 @@ describe("renderInEmailClients()", () => {
   });
 
   it("refuses widths that aren't a width for a client there's a model of", async () => {
-    await expect(renderInEmailClients(welcome, { widths: { yahoo: 540 } as never })).rejects.toThrow(/"yahoo", which isn't a client there's a model of/);
+    await expect(renderInEmailClients(welcome, { widths: { "samsung-email": 540 } as never })).rejects.toThrow(/"samsung-email", which isn't a client there's a model of/);
     await expect(renderInEmailClients(welcome, { widths: { "outlook-com": 100 } })).rejects.toThrow(/a width is a number of px from 240 to 2560/);
     await expect(renderInEmailClients(welcome, { widths: { "outlook-com": "540" as never } })).rejects.toThrow(/gives outlook-com "540"/);
     await expect(renderInEmailClients(welcome, { widths: [540] as never })).rejects.toThrow(/takes an object of widths by client/);

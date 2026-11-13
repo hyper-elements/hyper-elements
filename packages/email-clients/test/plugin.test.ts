@@ -33,7 +33,9 @@ describe("email clients", () => {
     expect(EMAIL_CLIENTS.outlook.measured).toMatchObject({ elements: "0.3.0", wordsWithin4px: 0.85 });
     expect(EMAIL_CLIENTS.outlook.approximate).toBe(true);
     expect(ALL.filter((client) => EMAIL_CLIENTS[client].measured)).toEqual(["outlook", "outlook-com", "gmail", "apple-mail"]);
-    expect(EMAIL_CLIENTS.yahoo).toEqual({ name: "Yahoo Mail", widths: {}, dark: false, approximate: true, measured: null });
+    expect(EMAIL_CLIENTS["samsung-email"]).toEqual({ name: "Samsung Email", widths: {}, dark: false, approximate: true, measured: null });
+    // Yahoo Mail and AOL Mail have models (1.11.0), measured on the accuracy benchmark rather than the 0.3.0 captures.
+    expect(EMAIL_CLIENTS.yahoo).toEqual({ name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null });
   });
 
   it("is a plugin named email-clients, for the api core reads", async () => {
