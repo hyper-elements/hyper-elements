@@ -22,8 +22,10 @@
 
 - `preview --findings` draws each preview in Chromium's sandbox, which Playwright leaves off unless it's asked for:
   a preview holds an email the CLI was given, which is content from outside. A browser that can't start sandboxed
-  (a container without the kernel's user namespaces) is started as it was, with a line on stderr saying so. A
-  browser that was too slow to start isn't taken for one that can't be sandboxed.
+  (a container without the kernel's user namespaces, and GitHub's Ubuntu runners) is started as it was, with a line
+  on stderr saying so and `, no sandbox` after its name (`"browser": "chromium 148.0.7778.96, playwright, no
+  sandbox"`): what reads that name should expect both. A browser that was too slow to start isn't taken for one
+  that can't be sandboxed.
 
 ## 0.2.0
 
