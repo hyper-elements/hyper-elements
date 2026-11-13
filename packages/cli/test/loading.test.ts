@@ -62,6 +62,28 @@ export default function A() { return <Email><Signature name="Ada" /></Email>; }
     }
   });
 
+  // A dependency with no CommonJS build ("type": "module", its "exports" one ES module), imported by a template in
+  // a project without "type": "module". Node loads one by `require` from 20.19 and 22.12 on; before those, tsx
+  // compiling it is the only way in, so a dependency's JavaScript is left to Node only where Node can load it.
+  it("a CommonJS project's template imports a dependency written as an ES module, on a Node that can't require one too", async () => {
+    const dir = project(
+      {
+        "emails/a.tsx": email("{greeting} / {word}", `import word, { greeting } from "esm-only";`),
+        "node_modules/esm-only/package.json": JSON.stringify({ name: "esm-only", version: "1.0.0", type: "module", exports: { ".": "./index.js" } }),
+        "node_modules/esm-only/index.js": `export const greeting = "Hello from an ES module";\nexport default "its default export";\n`,
+      },
+      { packageJson: { name: "fixture", private: true } }
+    );
+    const ran = await cli(dir, ["render", "emails"]);
+    expect(ran.code, ran.stderr + ran.stdout).toBe(0);
+    expect(textOf(dir, "a")).toContain("Hello from an ES module / its default export");
+    // As Node before 20.19 and 22.12 is: its `require` of an ES module turned off (a flag only a Node with one takes).
+    if (ON_BUN || !process.features.require_module) return;
+    const before = await cli(dir, ["render", "emails", "--out", "before"], { env: { NODE_OPTIONS: "--no-experimental-require-module" } });
+    expect(before.code, before.stderr + before.stdout).toBe(0);
+    expect(readFileSync(join(dir, "before", "emails", "a.txt"), "utf8")).toContain("Hello from an ES module / its default export");
+  });
+
   it("reads PreviewProps through memo and forwardRef, and --props over them", async () => {
     const dir = project({
       "emails/memo.tsx": `import { memo } from "react";

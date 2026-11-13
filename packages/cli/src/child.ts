@@ -75,9 +75,15 @@ const NODE_LOADERS: Loaders = { ...extensions() };
  * Only an extension Node has a loader for is given back: `.js` today, since `.ts`, `.tsx` and `.jsx` are tsx's to
  * compile wherever they are, and Node reaches a dependency's `.cjs` and `.mjs` without `require.extensions` at all.
  * Reading the loaders again after `register()` keeps this true of whatever tsx hooks next.
+ *
+ * And only where Node can `require` an ES module itself (20.19 and 22.12 on, `process.features.require_module`).
+ * Before those, tsx compiling it is the one way a CommonJS project reaches a dependency written as one, so there
+ * every file stays tsx's, as it was: a template importing such a dependency renders, and a Document's PDF is still
+ * not written.
  */
 async function registerCommonJs(): Promise<void> {
   (await import("tsx/cjs/api")).register();
+  if (!process.features.require_module) return;
   const loaders = extensions();
   for (const [extension, plain] of Object.entries(NODE_LOADERS)) {
     const compiled = loaders[extension];
