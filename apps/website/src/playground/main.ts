@@ -7,7 +7,7 @@ import { fetchAssets } from "./assets";
 import { Checks, clientName, type Pick } from "./checks";
 import { $, $$, bytes, copy, download, h, plural } from "./dom";
 import { Templates, type StarterInfo } from "./templates";
-import { opensSafely, previewFile, PreviewFrame } from "./preview";
+import { opensSafely, previewDevice, previewFile, PreviewFrame } from "./preview";
 import { rootsIn, ROOTS, switchRoot, type Stash } from "./roots";
 import { Sandbox, SUPERSEDED, type Bundle } from "./sandbox";
 import { readHash, shareUrl } from "./share";
@@ -807,7 +807,8 @@ async function drawClients() {
   }
   clientsKey = code;
   const frames = result.previews.map((each, index) => {
-    const on = each.computer ? ` on ${each.computer === "mac" ? "a Mac" : "Windows"}` : "";
+    const device = previewDevice(each);
+    const on = device ? ` on ${device}` : "";
     const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)}${on} draws it${each.dark ? ", in dark mode" : ""}`, hidden: index !== 0 });
     if (previewFile(frame, each.html, scripts)) return frame;
     return h("div", { class: "pg-file-card", hidden: index !== 0, style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "Too large to preview here"), "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
@@ -822,8 +823,8 @@ async function drawClients() {
         "button",
         { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) },
         clientName(each.client, result.clientNames),
-        // Webmail is previewed on Windows and on a Mac, whose fonts differ: the tab says which.
-        each.computer ? h("small", null, each.computer === "mac" ? "Mac" : "Windows") : null,
+        // Name the computer or phone so every variant has a distinct tab.
+        previewDevice(each) ? h("small", null, previewDevice(each)) : null,
         each.dark ? h("small", null, "dark") : null,
         // (An approximate preview, classic Outlook's, says so in the preview itself.)
       ),

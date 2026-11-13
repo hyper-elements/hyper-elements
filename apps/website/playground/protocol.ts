@@ -23,6 +23,8 @@ interface Common {
 }
 
 export type Request =
+  /** Existing HTML is data, never compiled or evaluated as template code. */
+  | { kind: "html-previews"; html: string; clients?: string[]; dark?: boolean }
   | (Common & { kind: "render" })
   | (Common & { kind: "pdf"; fonts: FontFile[]; images: Record<string, Uint8Array> })
   | (Common & { kind: "image"; format: "png" | "svg"; scale: number; fonts: FontFile[]; images: Record<string, Uint8Array> })

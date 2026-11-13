@@ -15,7 +15,7 @@ const SANDBOX = "allow-scripts";
 /** Inside it: nothing loads from the network. Scripts are the runner (inline) and the workers it makes from text. */
 const POLICY = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob:; worker-src blob:; child-src blob:";
 
-const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, describe: 8000 };
+const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, "html-previews": 25000, describe: 8000 };
 /** How long after the frame's own timeout the page gives up on the frame and makes another. */
 const GRACE = 2500;
 
@@ -110,7 +110,7 @@ function read(value: unknown, kind: Request["kind"]): Result {
       : undefined,
     bytes,
     previews: Array.isArray(r.previews)
-      ? list(r.previews, 12).flatMap((p): Preview[] => {
+      ? list(r.previews, 32).flatMap((p): Preview[] => {
           const preview = record(p);
           const html = text(preview.html, 12e6);
           const id = text(preview.id, 80);

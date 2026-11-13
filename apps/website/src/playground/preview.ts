@@ -4,7 +4,7 @@
 //
 // The document is put together with a parser, never by searching the text: what a template writes can't move the
 // policy, navigate the frame (no <meta refresh>, no <base>), or run before the policy is read.
-import type { Result } from "../../playground/protocol";
+import type { Preview, Result } from "../../playground/protocol";
 import { base64 } from "./dom";
 
 /** Scripts only: no same-origin access, no popups, no forms, no navigating the page. Links are opened by the page. */
@@ -28,6 +28,14 @@ const policy = (nonce: string) =>
 export interface PreviewScripts {
   runtime: string;
   models: string;
+}
+
+/** The device as well as the client distinguishes desktop and phone previews. */
+export function previewDevice(preview: Preview): string {
+  if (preview.id.includes(".iphone")) return "iPhone";
+  if (preview.client === "apple-mail") return "Mac";
+  if (preview.client === "gmail-app") return "Android";
+  return preview.computer === "mac" ? "Mac" : preview.computer === "windows" ? "Windows" : "";
 }
 
 /**

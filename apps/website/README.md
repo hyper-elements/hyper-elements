@@ -56,6 +56,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/components` | The component gallery |
 | `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
+| `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page, component and blog tutorial, for AI agents |
@@ -72,6 +73,18 @@ Names and links (package names, GitHub, install commands) are in `src/lib/site.t
 - **Agents** drive it by a link (`#code=`), by `window.hyperElementsPlayground` or by WebMCP tools (`src/playground/agent.ts`). The page documents all three under the bench.
 
 After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It opens the built page in Chromium (Playwright's, from `packages/react`) and checks that every root renders, that a broken template shows its diagnostics, that a mismatched closing tag and a misspelled import are errors with their lines, that code from a link can't reach the site's origin or the network and isn't kept as the visitor's draft, that markup in a template doesn't run in the preview, and that a loop is stopped. It makes no requests off this machine.
+
+## Email testing
+
+`/email-testing` accepts complete HTML without converting it to a template. It reuses the playground's runtime,
+worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
+`renderInEmailClients(html)` directly; the input never enters the JSX compiler. HTML is not uploaded or persisted.
+The package's preview may load referenced images and fonts. Both the window API and WebMCP tool update the same UI
+and return diagnostics and preview metadata; `ok` describes successful generation, not a compatibility guarantee.
+
+After a website build, run `pnpm --filter @hyper-elements/website check:email-testing`. It covers input validation,
+file upload, client and dark variants, diagnostics, JSON download, agent access, responsive layout, discovery links,
+and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 
 ## Writing docs
 

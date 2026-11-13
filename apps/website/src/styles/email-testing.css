@@ -1,0 +1,75 @@
+.et-hero { padding-top: 78px; padding-bottom: 48px; }
+.et-hero h1 { font-size: clamp(44px, 6.2vw, 76px); line-height: 1.06; letter-spacing: -.055em; font-weight: 600; margin: 18px 0 24px; }
+.et-hero .lede { max-width: 740px; }
+.et-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 28px 0 18px; }
+.et-facts { color: var(--text-2); font-size: 13px; }
+.et-workspace { scroll-margin-top: 90px; }
+.et-section-heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; }
+.et-section-heading h2 { font-size: clamp(24px, 3vw, 34px); line-height: 1.2; font-weight: 500; letter-spacing: -.035em; margin: 10px 0 0; }
+.et-doc-link { color: var(--text-2); font-size: 13px; white-space: nowrap; }
+.et-intro, .et-limit { color: var(--text-2); font-size: 13px; line-height: 1.7; margin: 18px 0; }
+.et-bench { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); border: 1px solid var(--line-2); border-radius: 14px; overflow: hidden; background: var(--bg-1); }
+.et-input, .et-output { min-width: 0; }
+.et-input { border-right: 1px solid var(--line-2); }
+.et-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; min-height: 49px; gap: 10px; border-bottom: 1px solid var(--line-2); font-size: 12px; font-weight: 500; }
+.et-tools { display: flex; gap: 14px; }
+.et-toolbar button { background: transparent; border: 0; padding: 0; color: var(--text-2); font: inherit; cursor: pointer; }
+.et-toolbar button:hover { color: var(--text); }
+.et-workspace button:disabled { opacity: .45; cursor: not-allowed; }
+.et-workspace input, .et-workspace select { accent-color: var(--text); }
+#email-html { display: block; box-sizing: border-box; width: 100%; height: 360px; resize: vertical; border: 0; border-radius: 0; background: #111; color: #d4d4d4; font: 12px/1.8 var(--mono); padding: 18px; tab-size: 2; }
+#email-html:focus { outline: 2px solid var(--text-2); outline-offset: -2px; }
+.et-input-help { padding: 8px 16px; margin: 0; color: var(--text-2); font-size: 11px; border-bottom: 1px solid var(--line-2); }
+.et-clients { padding: 14px 16px 16px; margin: 0; border: 0; }
+.et-clients legend { float: left; width: 100%; margin-bottom: 12px; font-size: 12px; font-weight: 500; }
+.et-clients > div { clear: both; display: flex; flex-wrap: wrap; gap: 8px; }
+.et-clients label { display: flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); border-radius: 6px; padding: 7px 9px; font-size: 11px; cursor: pointer; }
+.et-clients label:has(:checked) { background: var(--hover-2); border-color: var(--line-3); }
+.et-clients input, .et-dark input { margin: 0; }
+.et-run-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px 16px; }
+.et-dark { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-2); }
+.et-empty { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; text-align: center; }
+.et-envelope { font-size: 44px; color: var(--text-3); }
+.et-empty h3 { font-size: 18px; font-weight: 500; margin: 18px 0 8px; letter-spacing: -.02em; }
+.et-empty p { max-width: 32ch; font-size: 13px; line-height: 1.7; color: var(--text-2); margin: 0; }
+.et-preview-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line-2); }
+.et-preview-controls select { flex: 1; min-width: 0; max-width: 100%; padding: 8px; background: var(--bg); color: var(--text); border: 1px solid var(--line-2); border-radius: 6px; font: 12px var(--sans); }
+#email-preview-note { font-size: 11px; color: var(--text-2); }
+.et-viewport { height: 530px; overflow: auto; background: var(--bg-2); }
+#email-sheet { position: relative; margin: 0 auto; }
+#email-sheet iframe { position: absolute; left: 0; top: 0; max-width: none; border: 0; transform-origin: top left; background: white; }
+.et-status-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
+#email-status { margin: 0; font-size: 13px; color: var(--text-2); }
+.et-notice { border: 1px solid var(--line-3); border-left: 3px solid var(--err); border-radius: 6px; padding: 14px 16px; font-size: 13px; overflow-wrap: anywhere; }
+.et-findings { border: 1px solid var(--line-2); border-radius: 10px; padding: 22px; }
+.et-findings h3 { font-size: 17px; font-weight: 500; margin: 0 0 8px; }
+#email-findings-summary { font-size: 13px; color: var(--text-2); }
+#email-diagnostics, .et-skipped { list-style: none; padding: 0; margin: 0; }
+#email-diagnostics li { border-top: 1px solid var(--line); padding: 14px 0; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.et-diagnostic-meta { display: block; color: var(--text-2); font: 11px/1.7 var(--mono); margin-bottom: 5px; }
+.et-diagnostic-fix { display: block; margin-top: 6px; color: var(--text-2); }
+.et-skipped li { margin: 10px 0; color: var(--text-2); font-size: 12px; line-height: 1.6; }
+.et-limit a, .et-details a { text-underline-offset: 3px; }
+.et-details { padding-top: 80px; padding-bottom: 88px; scroll-margin-top: 90px; }
+.et-details > .lede { max-width: 780px; margin: 22px 0 32px; }
+.et-recipes { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 32px; }
+.et-recipes article { min-width: 0; }
+.et-recipes h3 { font-size: 18px; font-weight: 500; margin: 0 0 12px; }
+.et-recipes p, .et-agent p { font-size: 14px; color: var(--text-2); line-height: 1.8; }
+.et-recipes .code-block { margin: 22px 0; }
+.et-recipes code, .et-agent p code { font-size: 12px; overflow-wrap: anywhere; }
+.et-agent { margin-top: 38px; padding: 22px 0; border-top: 1px solid var(--line-2); border-bottom: 1px solid var(--line-2); }
+.et-agent summary { cursor: pointer; font-size: 15px; font-weight: 500; }
+.et-agent .code-block { margin: 18px 0; }
+.et-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.et-workspace [hidden] { display: none !important; }
+@media (max-width: 860px) {
+  .et-hero { padding-top: 48px; }
+  .et-section-heading { align-items: start; flex-direction: column; gap: 12px; }
+  .et-bench, .et-recipes { grid-template-columns: minmax(0, 1fr); }
+  .et-input { border-right: 0; border-bottom: 1px solid var(--line-2); }
+  .et-empty { min-height: 260px; }
+  #email-html { height: 280px; }
+  .et-viewport { height: 440px; }
+  .et-details { padding-top: 52px; }
+}

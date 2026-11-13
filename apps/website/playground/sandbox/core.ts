@@ -24,7 +24,7 @@ type Extras = {
   };
   clients?: {
     emailClients: (options?: object) => Promise<Elements.ElementsPlugin>;
-    renderInEmailClients: (element: React.ReactElement, options?: object) => Promise<{ previews: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>>; diagnostics: Elements.Diagnostic[] }>;
+    renderInEmailClients: (element: React.ReactElement | string, options?: object) => Promise<{ previews: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>>; diagnostics: Array<Elements.Diagnostic & { line?: number | null }> }>;
     /** Each client's name, as @hyper-elements/email-clients says it. */
     names: Record<string, string>;
   };
@@ -444,6 +444,25 @@ const isElementsError = (error: unknown): error is Elements.ElementsError => err
 async function handle(request: Request): Promise<Result> {
   const started = performance.now();
   const result: Result = { ok: false, kind: request.kind, root: null, diagnostics: [], nodes: [], logs: [], ms: 0 };
+  if (request.kind === "html-previews") {
+    try {
+      if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
+      const output = await sandbox.extras.clients.renderInEmailClients(request.html, { emailClients: request.clients, dark: request.dark, fonts: "url" });
+      result.previews = output.previews.map((p) => ({
+        id: String(p.id), client: String(p.client),
+        ...(p.computer === "windows" || p.computer === "mac" ? { computer: p.computer } : {}),
+        dark: Boolean(p.dark), width: Number(p.width), approximate: Boolean(p.approximate), html: String(p.html),
+      }));
+      result.skipped = output.skipped.map((s) => ({ client: String(s.client ?? ""), reason: String(s.reason ?? "") }));
+      result.diagnostics = output.diagnostics.map((d) => ({ ...d, line: d.line ?? undefined }));
+      result.clientNames = sandbox.extras.clients.names;
+      result.ok = true;
+    } catch (error) {
+      result.error = failure(error);
+    }
+    result.ms = Math.round(performance.now() - started);
+    return result;
+  }
   if (request.kind === "describe") {
     // What each component takes, from the definitions: no code runs for it.
     const named = (properties: ReadonlyArray<{ path: string; accepts: string }>, group: string) => properties.filter((p) => p.path.startsWith(`${group}.`)).map((p) => ({ name: p.path.slice(group.length + 1), detail: p.accepts }));
