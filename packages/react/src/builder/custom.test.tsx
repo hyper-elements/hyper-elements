@@ -257,6 +257,25 @@ describe("fromDesign with components", () => {
     expect(code).toContain('name="Morning Mug"');
   });
 
+  it("says what the builder keeps on a block that a component has no place for: a display condition, an anchor, a prop's value on phones", () => {
+    const { design } = toDesign(email, { customTools: true });
+    Object.assign(blocks(design)[1].values, {
+      displayCondition: { type: "custom", label: "Members", before: "{% if member %}", after: "{% endif %}" },
+      anchor: "mug",
+      // Its space on phones is read, as the space of any block is; a prop has one value.
+      _override: { mobile: { containerPadding: "4px", name: "Mug" } },
+    });
+    const { code, report } = fromDesign(design, { components: [ProductCard, Footer] });
+    expect(report).toEqual([
+      "rows[0].columns[0].contents[1]: its display condition, which the builder's exporters keep for the email service to apply, isn't read: it's shown to everyone",
+      "rows[0].columns[0].contents[1]: its anchor isn't read: links to it go nowhere",
+      'rows[0].columns[0].contents[1]: its name on phones "Mug" isn\'t read: left out',
+    ]);
+    // The block is still its component, with its own values.
+    expect(code).toContain('name="Morning Mug"');
+    expect(code).toContain("mobile: { padding: 4 }");
+  });
+
   it("leaves out a block with no value for a prop its component needs, and says so: the rest still renders", async () => {
     const Photo = component({ type: "acme.Photo", label: "Photo", props: { photo: prop.image({ label: "Photo", required: true }) }, render: (p) => <Image src={p.photo} alt="" /> });
     const Count = component({ type: "acme.Count", label: "Count", props: { n: prop.number({ label: "Count", required: true, min: 1 }) }, render: (p) => <Text>{p.n}</Text> });

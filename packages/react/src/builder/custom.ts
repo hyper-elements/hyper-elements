@@ -11,6 +11,7 @@ import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
 import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, webLink, type Sides, type Values } from "./read-values";
 import { make, obj, placed, type Context } from "./reading";
+import { sayUnread } from "./unread";
 import { builderFont, builderLink, cssSides, decode, encode } from "./values";
 
 /** A template's own component, as `component()` makes one. */
@@ -47,8 +48,10 @@ const inSection = (definition: CustomDefinition<any>): boolean => definition.cat
 
 /** A block's values that are the builder's own: its spacing, its place, and what its user may do with it. */
 const BLOCK_VALUES = ["containerPadding", "anchor", "displayCondition", "hideDesktop", "hideMobile", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked"];
-/** A prop that a block can't keep under its name, which is one of the builder's own there (or starts as its own do, `_…`): none where it keeps them all. */
-export const unkept = (definition: CustomDefinition<any>): string | undefined => Object.keys(definition.props).find((key) => key.startsWith("_") || BLOCK_VALUES.includes(key));
+/** Whether a block's value is the builder's own, by its name: one of those, or one that starts as its own do (`_…`). */
+const builders = (key: string): boolean => key.startsWith("_") || BLOCK_VALUES.includes(key);
+/** A prop that a block can't keep under its name, which is one of the builder's own there: none where it keeps them all. */
+export const unkept = (definition: CustomDefinition<any>): string | undefined => Object.keys(definition.props).find(builders);
 
 type Spec = CustomDefinition<any>["props"][string];
 type Schema = { type?: string; minimum?: number; maximum?: number; enum?: Json[]; anyOf?: Schema[] };
@@ -190,6 +193,13 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
     context.say(`${tool} has no ${missing.join(" or ")}, which a ${definition.type} needs: left out`);
     return [];
   }
+  // What the builder keeps on any block that a component has no place for is said, as a built-in block's is: a display
+  // condition, an anchor, a prop's value on phones. A value that's neither the builder's own nor a prop's is the
+  // tool's own (registerTools()'s `properties`): it stays in the block, and isn't the component's.
+  const read = Object.keys(definition.props);
+  const its = (kept: unknown): Values => Object.fromEntries(Object.entries(obj(kept)).filter(([key]) => read.includes(key) || builders(key)));
+  const devices = obj(values._override);
+  sayUnread("custom", { ...its(values), _override: { ...devices, mobile: its(devices.mobile) } }, undefined, context.say, { values: [...read, "containerPadding"], phone: ["containerPadding", "hideMobile"] });
   const node = make(definition.type, { id: givenId(values), props });
   return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), hiddenOn(values))];
 }

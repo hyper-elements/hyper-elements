@@ -152,15 +152,16 @@ jobs:
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
       # grew: 485.5KB for the same scan and encoding, in the writers it shares;
       # 479,000 bytes for a Table's free column written for classic Outlook apart;
-      # 494,000 bytes for a template's own components as the builder's custom tools
+      # 494,500 bytes for a template's own components as the builder's custom tools
       # (custom.ts: their blocks in a design both ways, and registerTools(), with a field
-      # for every kind of prop and a team's own editors).
+      # for every kind of prop and a team's own editors; and what the builder keeps on
+      # such a block that isn't read, said as a built-in block's is).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=494000
+          MAX_SIZE=494500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
