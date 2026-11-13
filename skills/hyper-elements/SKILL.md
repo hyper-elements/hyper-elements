@@ -28,7 +28,7 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
-- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering, giving `{ valid, diagnostics }` and throwing nothing; `outline(element)` prints the laid-out template (each block, its width, its text) and throws as `render()` does, so check `valid` first.
+- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering, giving `{ valid, diagnostics }` and throwing no `ElementsError`; `outline(element)` prints the laid-out template (each block, its width, its text) and throws as `render()` does, so check `valid` first.
 - Email clients: `@hyper-elements/email-clients`. `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and others remove or change, naming its `clients`, with a `fix` (without it, one note: `email/more-checks`). To test an email in them, `await renderInEmailClients(email)` gives a preview per client: HTML that shows the email as that client does, in Chromium.
 
 ```tsx
@@ -148,7 +148,12 @@ const { pdf, diagnostics } = await renderPdf(
     <PageFooter><Text>Page <PageNumber /> of <PageNumber total /></Text></PageFooter>
     <Heading level={1}>Invoice INV-2041</Heading>
   </Document>,
-  { fonts: [{ family: "Inter", src: await readFile("Inter.ttf"), weight: 400 }] }
+  {
+    fonts: [
+      { family: "Inter", src: await readFile("Inter.ttf"), weight: 400 },
+      { family: "Inter", src: await readFile("Inter-Bold.ttf"), weight: 700 },
+    ],
+  }
 );
 ```
 
