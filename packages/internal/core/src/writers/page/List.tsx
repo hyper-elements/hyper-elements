@@ -4,12 +4,16 @@ import type { Insets } from "../../kinds";
 import { h } from "../jsx";
 import { px, textDeclarations } from "../shared/css";
 import { isNode, type Component } from "./context";
+import { inRow } from "./layout";
 
 const NONE: Insets = { top: 0, right: 0, bottom: 0, left: 0 };
 
+/** A padding side with the markers' indent added: px as today, a Page's rem or calc() side inside a calc(). */
+const edge = (side: number | string, indent: number) => (typeof side === "number" ? px(side + indent) : indent ? `calc(${side} + ${px(indent)})` : side);
+
 export const List: Component = ({ node, style, parent, placement, classes, rtl, render }) => {
   const Tag = node.props.type === "number" ? "ol" : "ul";
-  const padding = (style.padding as Insets | undefined) ?? NONE;
+  const padding = (style.padding as Record<keyof Insets, number | string> | undefined) ?? NONE;
   const indent = toPx(style.indent, null) ?? 0;
   const start = Number(node.props.start);
   return (
@@ -21,10 +25,10 @@ export const List: Component = ({ node, style, parent, placement, classes, rtl, 
         placement,
         {
           margin: 0,
-          padding: `${px(padding.top)} ${px(padding.right + (rtl ? indent : 0))} ${px(padding.bottom)} ${px(padding.left + (rtl ? 0 : indent))}`,
+          padding: `${edge(padding.top, 0)} ${edge(padding.right, rtl ? indent : 0)} ${edge(padding.bottom, 0)} ${edge(padding.left, rtl ? 0 : indent)}`,
           listStyleType: Tag === "ol" ? "decimal" : "disc",
           boxSizing: "border-box",
-          width: parent.type === "Row" ? undefined : style.width,
+          width: inRow(parent) ? undefined : style.width,
           maxWidth: style.maxWidth,
           backgroundColor: style.backgroundColor,
           border: style.border,

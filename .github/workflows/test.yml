@@ -116,17 +116,20 @@ jobs:
       # said (every root's formats, `by` values, root variants, a theme at a document's
       # top level), about 42KB; defineTheme(), extendTheme()
       # and token(), about 4KB), its JSX API (about 17KB) and the
-      # render that collects a template (about 5KB). Raise it on purpose, with what grew:
-      # 322KB for plain text's one-pass scan of service tags in large headings and
-      # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
-      # written for classic Outlook apart (its own col and first-row cell, without width: auto).
+      # render that collects a template (about 5KB), and a Page's styles (Box, the CSS value kinds
+      # that check each page style (with calc() typed as CSS types it), their serializer, the flex
+      # and grid layout model (CSS grid's placement and track sizing, border overrides) and outline(),
+      # about 82KB). Raise it on purpose, with what grew: 400KB with the email client checks moved
+      # out (to @hyper-elements/email-clients) and plain text's one-pass scan of service tags in
+      # large headings and the email's encoding of URLs in CSS; 403,000 bytes for grid lines read
+      # by name and a Table's free column written for classic Outlook apart.
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=317000
+          MAX_SIZE=403000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -135,25 +138,27 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 476KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 563KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, plugins (the email
       # client checks are email-clients'), render()'s blockMap, the roots check and themes (with their guard on
       # JavaScript's own names, body text roles, the token() hint and the checks that a
-      # theme's mistakes are said) among
-      # them (about 279KB); the main
+      # theme's mistakes are said), and a Page's styles (Box, their CSS value kinds and
+      # serializer, the flex and grid layout model, a Page's padding and gaps as px) among
+      # them (about 293KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
-      # grew: 485.5KB for the same scan and encoding, in the writers it shares;
-      # 479,000 bytes for a Table's free column written for classic Outlook apart.
+      # grew: 563.5KB with the client checks moved out and the same scan and encoding;
+      # 566,500 bytes for grid lines read by name and a Table's free column written for
+      # classic Outlook apart.
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=479000
+          MAX_SIZE=566500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

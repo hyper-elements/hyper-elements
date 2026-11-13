@@ -53,16 +53,16 @@ describe("preview --serve", () => {
     const child = spawn(RUNTIME === "bun" ? "bun" : process.execPath, [BIN, "preview", "emails", "--json", "--clients", "gmail"], { cwd: dir, env: cliEnv(), stdio: ["ignore", "pipe", "pipe"] });
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (d) => (stdout += d));
-    child.stderr.on("data", (d) => (stderr += d));
+    child.stdout.setEncoding("utf8").on("data", (d: string) => (stdout += d));
+    child.stderr.setEncoding("utf8").on("data", (d: string) => (stderr += d));
     // The run without --serve, to compare: then the same run serving.
     await new Promise((resolve) => child.on("close", resolve));
     expect(stdout.trim().split("\n")).toHaveLength(2);
 
     const served = spawn(RUNTIME === "bun" ? "bun" : process.execPath, [BIN, "preview", "emails", "--json", "--clients", "gmail", "--serve"], { cwd: dir, env: cliEnv(), stdio: ["ignore", "pipe", "pipe"] });
     let out = "";
-    served.stdout.on("data", (d) => (out += d));
-    served.stderr.on("data", (d) => (stderr += d));
+    served.stdout.setEncoding("utf8").on("data", (d: string) => (out += d));
+    served.stderr.setEncoding("utf8").on("data", (d: string) => (stderr += d));
     const exited = new Promise<number | null>((resolve) => served.on("close", (code) => resolve(code)));
     try {
       expect(await until(() => out.includes("\n"), 30_000), stderr).toBe(true);
@@ -139,7 +139,7 @@ describe("preview --serve", () => {
     const dir = project({ "emails/a.tsx": email() }, { modules: WITH_CLIENTS });
     const served = spawn(RUNTIME === "bun" ? "bun" : process.execPath, [BIN, "preview", "emails", "--clients", "outlook", "--serve"], { cwd: dir, env: cliEnv(), stdio: ["ignore", "pipe", "pipe"] });
     let out = "";
-    served.stdout.on("data", (d) => (out += d));
+    served.stdout.setEncoding("utf8").on("data", (d: string) => (out += d));
     const exited = new Promise<number | null>((resolve) => served.on("close", (code) => resolve(code)));
     try {
       expect(await until(() => out.includes("until Ctrl-C"), 30_000)).toBe(true);

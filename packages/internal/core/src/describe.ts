@@ -28,6 +28,11 @@ export interface PropertyDescription {
   /** A style's group ("Typography", "Spacing", …); props have none. */
   group?: StyleGroup;
   schema: JsonSchema;
+  /**
+   * What it takes under a Page, where that's more (rem, em, calc(), more keywords): described for every root, and
+   * what `accepts` and `schema` say once narrowed to a Page.
+   */
+  onPage?: { accepts: string; schema: JsonSchema };
 }
 
 export interface ComponentDescription {
@@ -91,7 +96,7 @@ function forRoot(description: ComponentDescription, root: RootName, registry: Re
     roots: [root],
     properties: description.properties
       .filter((property) => property.roots.includes(root))
-      .map((property) => ({ ...property, roots: [root], mobile: property.mobile && responsive })),
+      .map(({ onPage, ...property }) => ({ ...property, ...(root === "Page" && onPage ? onPage : {}), roots: [root], mobile: property.mobile && responsive })),
   };
 }
 
@@ -179,6 +184,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       roots: within(spec.roots),
       ...(group ? { group } : {}),
       schema: spec.kind.jsonSchema(),
+      ...(spec.pageKind ? { onPage: { accepts: spec.pageKind.accepts, schema: spec.pageKind.jsonSchema() } } : {}),
     };
     properties.push({ path: `style.${key}`, ...base, ...(defaults[key] !== undefined ? { default: defaults[key] } : {}) });
     if (hover.has(key)) properties.push({ path: `hover.${key}`, ...base, label: `${spec.label} on hover`, mobile: false });

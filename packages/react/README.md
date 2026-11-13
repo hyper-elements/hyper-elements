@@ -134,6 +134,7 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 | `<Column>` | Its children stacked, with its own spacing and box; with a background, a card |
 | `<Grid>` | Its children in columns of equal width, row after row |
 | `<Layer>` | Its children over each other: an image with words on it |
+| `<Box>` | A Page's general element (on a Page only): any structure, laid out with CSS's flex, grid and position |
 
 ### Content
 
@@ -295,6 +296,34 @@ declare module "@hyper-elements/react" {
 
 Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme. The [Themes page](https://hyperelements.dev/docs/themes) has the rest: which style takes which tokens, the order styles merge in, `formats`, and your own components.
 
+## Pages: Box and CSS layout
+
+A `Page` takes CSS's own layout, with typed styles checked against CSS's syntax. `Box` is its general element, written as the element `as` names (`header`, `nav`, `main`, `article`, `aside`, `footer`, …); it's a flex column with its `gap` until its styles say `flexDirection: "row"` or `display: "grid"`, and directly in a Page it spans the window.
+
+```tsx
+import { Box, Button, Heading, Image, Page, Text } from "@hyper-elements/react";
+
+<Page width={1200}>
+  <Box as="header" style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: "1rem 2rem", position: "sticky", top: 0 }}>
+    <Image src={{ src: "https://example.com/logo.png", width: 240, height: 80 }} alt="Acme" style={{ width: 120 }} />
+    <Button href="https://example.com/login">Sign in</Button>
+  </Box>
+  <Box as="main" style={{ maxWidth: 1200, padding: "2rem", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(16rem, 1fr))", gap: "1.5rem" }}>
+    <Box as="article" style={{ padding: 24, borderRadius: 12, boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)" }}>
+      <Heading level={2} style={{ fontSize: "clamp(1.25rem, 2vw, 1.5rem)" }}>A card</Heading>
+      <Text>As many as fit, side by side.</Text>
+    </Box>
+  </Box>
+</Page>
+```
+
+- **Page styles**, on a Page only: layout (`display`, flex, grid templates and areas), a block's place in a flex box or grid (`gridColumn: "span 2"`, `alignSelf`, `flexGrow`), size (`minHeight`, `aspectRatio`, an Image's `objectFit`), position (`sticky`, `absolute`, `inset`, `zIndex`), wrapping (`whiteSpace`, `lineClamp`), backgrounds (url()s and gradients), borders by side and `outline`, and effects (`boxShadow`, `transform`, `transition`, `filter`, `opacity`). A Box takes every one; Section, Row and Column their layout; every block its place.
+- **CSS lengths on a Page**: rem, em, %, vw, vh and `calc()`, `min()`, `max()`, `clamp()`. A number is still px.
+- `Span as="strong"` (or `em`, `code`, `kbd`, `time`, `mark`, …) gives a run its meaning.
+- Section, Row, Column and Grid still work on a Page, and stay the way to write an email. A page style in an Email, a Document or a Canvas is an error that says what that root uses instead.
+
+`outline()` works out the widths of flex rows and grids, and says "fits its content" where a width depends on the content. The [layout](https://hyperelements.dev/docs/layout#box-css-layout-on-a-page) and [styles](https://hyperelements.dev/docs/styles#on-a-page) pages have the rest.
+
 ## Common design patterns
 
 ### Header with a logo
@@ -405,7 +434,7 @@ The design holds no Hyper Elements data. A style or prop a builder tool has no f
 
 ## What each root takes
 
-Not everything goes in every root: an `Svg` isn't in an Email, a `PageNumber` is only in a Document, and phone styles are only in an Email or a Page. `@hyper-elements/react/inspect` says which, as data, for an agent or an editor: before writing a template, what a root takes; after, whether each part of it is allowed where it is.
+Not everything goes in every root: an `Svg` isn't in an Email, a `PageNumber` is only in a Document, a `Box` and the page styles are only in a Page, and phone styles are only in an Email or a Page. `@hyper-elements/react/inspect` says which, as data, for an agent or an editor: before writing a template, what a root takes; after, whether each part of it is allowed where it is.
 
 ```tsx
 import { describeComponent, describeComponents, inspect } from "@hyper-elements/react/inspect";

@@ -43,6 +43,7 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
   const { head, body } = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never });
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
   // A page's <main> is centered by its margins: in a flex box, which the builder may draw a block in, those shrink it to its words. It fills its block.
-  const filled = body.replace(/^<main style="/, '<main style="width:100%;');
+  // (A div where a Box in it is the page's main.)
+  const filled = body.replace(/^<(main|div) style="/, '<$1 style="width:100%;');
   return withParagraphMargin(style + filled, "margin-top:1em;margin-bottom:1em");
 }

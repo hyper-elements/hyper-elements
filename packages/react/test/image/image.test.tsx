@@ -299,7 +299,7 @@ describe("renderImage", () => {
 
     it("has a sample of each (a new block needs its case in the writer, and one here)", () => {
       const takes = new Set(COMPONENTS.Canvas.children.categories);
-      const blocks = Object.values(COMPONENTS).filter((definition) => definition.categories.some((category) => takes.has(category)));
+      const blocks = Object.values(COMPONENTS).filter((definition) => definition.categories.some((category) => takes.has(category)) && (!definition.roots || definition.roots.includes("Canvas")));
       expect(Object.keys(SAMPLES).sort()).toEqual(blocks.map((definition) => definition.type).sort());
     });
 

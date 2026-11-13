@@ -24,7 +24,7 @@ const BODY_ROLES = { color: ["color", "colors.foreground"], fontFamily: ["font",
 type InheritedKey = keyof typeof BODY_ROLES;
 const INHERITED = Object.keys(BODY_ROLES) as InheritedKey[];
 /** The components that take `tokens`: a scope over what they hold. */
-const SCOPES = new Set(["Section", "Row", "Column", "Grid"]);
+const SCOPES = new Set(["Section", "Row", "Column", "Grid", "Box"]);
 /** An id is written into HTML ids and CSS selectors. */
 const ID = /^[A-Za-z][A-Za-z0-9_-]*$/;
 
@@ -316,7 +316,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   let scope: Record<string, Json> | undefined;
   if (input.tokens !== undefined) {
     if (!SCOPES.has(definition.type)) {
-      d.error("prop/unknown", `${a(definition.type)} has no prop "tokens": a Section, Row, Column or Grid takes tokens, for itself and what's in it`, `${path}.tokens`, id);
+      d.error("prop/unknown", `${a(definition.type)} has no prop "tokens": a Section, Row, Column, Grid or Box takes tokens, for itself and what's in it`, `${path}.tokens`, id);
     } else {
       scope = readScope(input.tokens, `${path}.tokens`, context.environment, d, id);
       if (scope && Object.keys(scope).length) {
@@ -551,14 +551,17 @@ function readStyles(
       continue;
     }
     if (!rootTakes(spec.roots, root)) {
-      d.error("style/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, at(key), id);
+      // A page style under another root: with what that root does instead, where there's a way (a Layer for a background image).
+      const instead = UNSUPPORTED_CSS[key] ? `: ${UNSUPPORTED_CSS[key]}` : "";
+      d.error("style/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}${instead}`, at(key), id);
       continue;
     }
     if (!allowed(spec, key)) {
       d.error(`${what}/not-allowed`, `"${key}" can't be set ${forLabel ?? "here"}`, at(key), id);
       continue;
     }
-    const parsed = spec.kind.parse(value);
+    // Under a Page a style takes its page kind where it has one (rem, em, calc(), …).
+    const parsed = (root?.type === "Page" && spec.pageKind ? spec.pageKind : spec.kind).parse(value);
     if (parsed.ok) out[key] = parsed.value;
     else d.error(`${what}/invalid`, `${key}: ${parsed.message}${aliasHint(value)}`, at(key), id);
   }

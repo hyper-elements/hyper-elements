@@ -50,7 +50,7 @@ const ok = <T>(value: T): Parsed<T> => ({ ok: true, value });
 const fail = (message: string): Parsed<never> => ({ ok: false, message });
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
-function kind<In, Out extends Json>(spec: Omit<Kind<In, Out>, "__in">): Kind<In, Out> {
+export function kind<In, Out extends Json>(spec: Omit<Kind<In, Out>, "__in">): Kind<In, Out> {
   return spec;
 }
 
@@ -665,7 +665,7 @@ export function lineHeight(): Kind<LineHeightInput, LineHeight> {
 const SERVICE_TAG = /<%[\s\S]*?%>|\{%[\s\S]*?%\}|\{\{[\s\S]*?\}\}|\uFDD0\d+\uFDD1/g;
 
 /** A URL scheme that runs code or reads local files, after the characters browsers ignore in one, and without what a service fills in. */
-function unsafeUrl(url: string, allowedData?: RegExp): boolean {
+export function unsafeUrl(url: string, allowedData?: RegExp): boolean {
   // eslint-disable-next-line no-control-regex
   const compact = url.replace(SERVICE_TAG, "").replace(/[\u0000- \u007f-\u009f]/g, "").toLowerCase();
   if (compact.startsWith("data:")) return !allowedData || !allowedData.test(compact);
@@ -676,7 +676,7 @@ export type AssetInput = string | { src: string; width?: number; height?: number
 /** A URL, or one with the image's own size in px (used to size it where no width is set). */
 export type Asset = string | { src: string; width?: number; height?: number };
 
-const IMAGE_DATA = /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/;
+export const IMAGE_DATA = /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml)[;,]/;
 
 export function asset(): Kind<AssetInput, Asset> {
   const accepts = "an image URL (http, https or a data:image URI), or { src, width, height }";

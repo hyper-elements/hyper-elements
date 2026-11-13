@@ -29,6 +29,7 @@
 Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed components. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
 
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
+- **Build real web pages.** On a Page, `Box` and typed CSS styles (flex, grid, position, gradients, shadows) lay out any structure, while the same components still write email-safe HTML.
 - **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
 - **Test existing HTML emails locally.** Check and preview Outlook, Gmail and Apple Mail with the companion JavaScript library or CLI. Works with HTML from MJML, React Email or any email builder; no React required, no test sends, no account, nothing uploaded.
@@ -219,6 +220,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 - **Start from a design:** [Templates](https://hyperelements.dev/templates) · [Component gallery](https://hyperelements.dev/components)
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
+- **Build pages:** [Box and CSS layout](https://hyperelements.dev/docs/layout#box-css-layout-on-a-page) · [Page styles](https://hyperelements.dev/docs/styles#on-a-page)
 - **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)
 - **Work from the shell:** [Command line](https://hyperelements.dev/docs/cli) · [`@hyper-elements/cli`](./packages/cli)
 - **Use it in your app:** [Next.js example](./examples/nextjs-app-router) · [Email providers](./packages/react/docs/email-providers.md)

@@ -6,7 +6,7 @@
 import { h } from "../jsx";
 import { columnWidth, textDeclarations } from "../shared/css";
 import { isNode, type Component } from "./context";
-import { box } from "./layout";
+import { box, inRow } from "./layout";
 
 export const Table: Component = ({ node, style, parent, placement, classes, render }) => {
   const rows = node.children.filter(isNode);
@@ -23,9 +23,9 @@ export const Table: Component = ({ node, style, parent, placement, classes, rend
       style={[
         placement,
         { borderCollapse: style.borderCollapse ?? "separate", borderSpacing: 0, tableLayout: "fixed" },
-        box(node, parent.type !== "Row"),
+        box(node, !inRow(parent)),
         // A table is as wide as its content unless told: this one fills its parent.
-        { width: style.width === undefined && parent.type !== "Row" ? "100%" : undefined },
+        { width: style.width === undefined && !inRow(parent) ? "100%" : undefined },
         textDeclarations(node.text, parent.text),
       ]}
     >

@@ -68,6 +68,25 @@ function samples(key: string, kindName: string, schema: { enum?: Json[] }, fallb
     d: ["M1 1 L29 1 L15 19 Z"],
     viewBox: ["0 0 50 30"],
     breakpoints: [{ mobile: 600 }],
+    // Page styles (Decision 5).
+    order: [2],
+    zIndex: [3],
+    flexGrow: [2],
+    flexShrink: [0],
+    lineClamp: [2],
+    top: [7, "1.5rem"],
+    right: [7],
+    bottom: [7],
+    left: [7],
+    minHeight: [77, "10vh"],
+    maxHeight: [77],
+    flexBasis: [120, "10rem"],
+    rowGap: [23],
+    columnGap: [23],
+    paddingTop: [7],
+    paddingRight: [7],
+    paddingBottom: [7],
+    paddingLeft: [7],
   };
   if (byKey[key]) return byKey[key];
   const byKind: Record<string, Json[]> = {
@@ -81,6 +100,22 @@ function samples(key: string, kindName: string, schema: { enum?: Json[] }, fallb
     asset: [{ src: "https://sample.test/s.png", width: 123 }],
     boolean: [!fallback],
     fontFaces: [[{ family: "Sample", src: "https://sample.test/s.woff2" }]],
+    // Page styles' kinds (Decision 5).
+    lengths: ["2px 4px"],
+    tracks: ["1fr 2fr"],
+    areas: [["a b"]],
+    gridPlace: ["span 2"],
+    ratio: ["16 / 9"],
+    position: ["right 20px top 10px"],
+    images: ["linear-gradient(#123456, #654321)"],
+    backgroundSize: ["cover"],
+    backgroundRepeat: ["no-repeat"],
+    shadows: ["0 1px 2px #123456"],
+    transform: ["rotate(3deg)"],
+    filter: ["blur(2px)"],
+    transition: ["opacity 150ms ease"],
+    outline: ["2px solid #123456"],
+    origin: ["top left"],
   };
   return byKind[kindName] ?? [];
 }
@@ -122,6 +157,7 @@ function nodeOf(type: string, style: Record<string, Json>, props: Record<string,
   switch (type) {
     case "Section":
     case "Column":
+    case "Box":
     case "DocumentPage":
     case "PageHeader":
     case "PageFooter":
@@ -214,17 +250,24 @@ function declaredOtherwise(support: Support | readonly Support[], value: Json, p
   return ([] as Support[]).concat(support).some((rule) => rule.level !== "full" && (!rule.values || rule.values.some((v) => JSON.stringify(v) === JSON.stringify(value))) && (!rule.when || rule.when(value, { props })));
 }
 
-const entries = (definition: ComponentDefinition) => [
-  ...Object.entries(definition.style).map(([key, spec]) => ({ where: "style" as const, key, spec: spec as { kind: { name: string; jsonSchema(): unknown; parse(value: unknown): { ok: boolean } }; support?: SupportByTarget; default?: Json } })),
-  ...Object.entries(definition.props).map(([key, spec]) => ({ where: "props" as const, key, spec: spec as { kind: { name: string; jsonSchema(): unknown; parse(value: unknown): { ok: boolean } }; support?: SupportByTarget; default?: Json } })),
-];
+type Entry = { kind: { name: string; jsonSchema(): unknown; parse(value: unknown): { ok: boolean } }; pageKind?: Entry["kind"]; support?: SupportByTarget; default?: Json; roots?: readonly string[] };
+/** A component's styles and props under `root`: those declared for other roots only (a page style under an Email) aren't its there. */
+const entries = (definition: ComponentDefinition, root?: string) =>
+  [
+    ...Object.entries(definition.style).map(([key, spec]) => ({ where: "style" as const, key, spec: spec as Entry })),
+    ...Object.entries(definition.props).map(([key, spec]) => ({ where: "props" as const, key, spec: spec as Entry })),
+  ].filter(({ spec }) => !root || !spec.roots || spec.roots.includes(root));
+/** The kind a style takes under `root`: its page kind under a Page. */
+const kindUnder = (spec: Entry, root: string) => (root === "Page" && spec.pageKind ? spec.pageKind : spec.kind);
 
 for (const { target, root } of OUTPUTS) {
-  const components = Object.values(COMPONENTS).filter((definition) => definition.targets[target] && (!ROOTS.has(definition.type) || definition.type === root) && sampled(root, definition.type));
+  const components = Object.values(COMPONENTS).filter(
+    (definition) => definition.targets[target] && (!ROOTS.has(definition.type) || definition.type === root) && sampled(root, definition.type) && (!definition.roots || definition.roots.includes(root as never))
+  );
 
   describe(`support in ${target} (${root})`, () => {
     it("is declared on every style and prop of every component that renders to it", () => {
-      const missing = components.flatMap((definition) => entries(definition).filter(({ spec }) => !spec.support?.[target]).map(({ where, key }) => `${definition.type}.${where}.${key}`));
+      const missing = components.flatMap((definition) => entries(definition, root).filter(({ spec }) => !spec.support?.[target]).map(({ where, key }) => `${definition.type}.${where}.${key}`));
       expect(missing).toEqual([]);
     });
 
@@ -243,11 +286,12 @@ for (const { target, root } of OUTPUTS) {
     const failed: string[] = [];
     for (const definition of components) {
       const type = definition.type;
-      for (const { where, key, spec } of entries(definition)) {
+      for (const { where, key, spec } of entries(definition, root)) {
         const base = render(root, type, {}, {}, key);
         const current = inEffect(root, type, where, key);
+        const kind = kindUnder(spec, root);
         // Only values its kind takes (a root's width is px only).
-        for (const value of samples(key, spec.kind.name, spec.kind.jsonSchema() as { enum?: Json[] }, spec.default).filter((v) => spec.kind.parse(v).ok)) {
+        for (const value of samples(key, kind.name, kind.jsonSchema() as { enum?: Json[] }, spec.default).filter((v) => kind.parse(v).ok)) {
           // Setting what's in effect is no change: on the node, or its definition's default (a component made of
           // primitives, Social, is expanded away).
           const fallback = where === "props" ? spec.default : (definition.defaultStyle as Record<string, Json> | undefined)?.[key];

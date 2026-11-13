@@ -63,7 +63,11 @@ A root, a `Section` and a `Column` stack what they hold. Styles go in `style` (t
 in its `mobile` block and hover styles in its `hover` block: `style={{ padding: 24, mobile: { padding: 16 } }}`. The
 conditions are one list in `packages/internal/core/src/conditions.ts`, each with its support per output. A Page's phone width is
 its `breakpoints={{ mobile }}` (480px where it isn't set); an Email's is its width + 20px. There are no margins: space
-between blocks is the parent's `gap`. Every
+between blocks is the parent's `gap`. On a Page, `Box` (any element, from an allowlist) and the page styles (Decision 5
+of the themes and pages plan: display, grid, flex, position, backgrounds, effects; `roots: ["Page"]` in `styles.ts`)
+write CSS's own layout, and length styles also take rem, em, viewport units and calc() (a style's `pageKind`). A page
+style is written after its writer's declarations; the resolver models flex rows and grids at the Page's base window
+and leaves a size that depends on content unknown (`null`). Every
 component and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
 writes from the definitions. Don't edit them by hand.
 
@@ -122,6 +126,8 @@ JSX
 | `packages/internal/core/src/writers/{email,page}/` | One writer per component per output (`Button.tsx`, `Row.tsx`, …), in a JSX that writes strings (`packages/internal/core/src/writers/jsx.ts`, no React); each output's document shell is its `index.tsx` |
 | `packages/internal/core/src/resolve.ts` | Layout: the width of every block, which every output reads |
 | `packages/internal/core/src/theme.ts` | Themes: reading one, token environments and scopes, and merging a theme into a node's style |
+| `packages/internal/core/src/css-kinds.ts` | A Page's CSS values: the kinds of its page styles (lengths in rem, em and calc(), grid tracks, gradients, shadows, transforms, filters), each read into terms and checked, and lengths evaluated to px for layout |
+| `packages/internal/core/src/css-serialize.ts` | Writing page styles: after each writer's own declarations (`withPageStyles()` in `writers/page/index.tsx`), values as written |
 | `packages/react/src/utils/` | The collecting render: `collect.ts`, `server-renderer.ts`, `render-scope.ts` |
 | `packages/react/src/builder/` | `/builder`. `toDesign()` writes a template as the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
 | `packages/react/src/builder/tool-defaults.ts` | Each tool's default values and the design's schema version, in the editor's key order |
@@ -239,8 +245,8 @@ skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
   template loader; the release script's tests
-  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 317,000 bytes, `dist/builder.js`
-  479,000 bytes, email-clients' `dist/index.js` 62,400 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 403,000 bytes, `dist/builder.js`
+  566,500 bytes, email-clients' `dist/index.js` 62,400 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
   email-clients packed and installed beside the packed core and the models package from npm (`test:pack`); the CLI's
   tests on Node and Bun, and its consumer app (`tests/cli-integration`).

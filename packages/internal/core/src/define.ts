@@ -74,6 +74,11 @@ export type Support =
 
 export interface StyleSpec<K extends Kind<any, any> = Kind<any, any>> {
   kind: K;
+  /**
+   * What it takes under a Page, where that's more than `kind` (rem, em, viewport units, calc(), …): a value `kind`
+   * accepts keeps its meaning and output there (Decision 5 of the themes and pages plan).
+   */
+  pageKind?: Kind<any, any>;
   label: string;
   description?: string;
   /** Passed down to children that don't set it (text styles). */

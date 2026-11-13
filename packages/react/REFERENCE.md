@@ -26,10 +26,23 @@ What a property takes, where it says *kind*:
 - *border*: "1px solid #ccc", { width, style, color } for all sides, or { top, right, bottom, left } with one of those each
 - *radius*: px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }
 - *flex*: a share of the free width (0 or more), or "none"
+- *tracks*: tracks ("1fr 2fr", "200px 1fr", "repeat(3, 1fr)", "repeat(auto-fill, minmax(200px, 1fr))", "none")
+- *areas*: a row of area names per string, as many in each ("header header", "nav main"), "." for an empty cell
+- *ratio*: a ratio: a number, "16 / 9" or "auto"
+- *images*: images: url(…), a gradient (linear-gradient(…), radial-gradient(…), conic-gradient(…)), several separated by commas, or "none"
+- *backgroundSize*: a size ("cover", "contain", "auto", "100% auto", "200px"), per layer
+- *position*: a position ("center", "50% 25%", "right 20px top 10px")
+- *backgroundRepeat*: "repeat", "no-repeat", "repeat-x", "repeat-y", "space", "round", per layer
+- *line*: "1px solid #ccc" or { width, style, color }
+- *outline*: an outline ("2px solid #2563eb") or "none"
+- *shadows*: shadows ("0 1px 2px rgba(0, 0, 0, 0.1)", "inset 0 0 0 1px #e5e7eb"), several separated by commas, or "none"
+- *transform*: transforms ("translateY(-2px)", "scale(1.05) rotate(3deg)") or "none"
+- *origin*: an origin ("center", "top left", "50% 100%")
+- *transition*: transitions ("background-color 150ms ease", "all 0.2s"), several separated by commas, or "none"
+- *filter*: filters (blur(), drop-shadow(), hue-rotate(), brightness(), contrast(), grayscale(), invert(), opacity(), saturate(), sepia()) or "none"
 - *link*: a URL (http, https, mailto, tel, a path, or a merge tag) or { href, target }
 - *attributes*: attributes by name, each a text value (no on… handlers, href or style)
 - *asset*: an image URL (http, https or a data:image URI), or { src, width, height }
-- *line*: "1px solid #ccc" or { width, style, color }
 - *video*: a YouTube or Vimeo video's https link
 
 ## Roots
@@ -40,7 +53,7 @@ A template is one of these, and the root decides the output: `render()` writes a
 
 An email. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `600`)
@@ -70,7 +83,7 @@ Props:
 
 A web page. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
@@ -84,16 +97,16 @@ Props:
 `style`:
 - `color`: *color* (default `"#000000"`, inherited, Typography)
 - `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
-- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `16`, inherited, Typography)
 - `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `backgroundColor`: *color* (Background). The window's background, behind the content.
-- `gap`: a length (a number of px) (Spacing). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `gap`.
 
@@ -101,7 +114,7 @@ Props:
 
 A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter.
 
 Props:
 - `size`: one of "A3", "A4", "A5", "Letter", "Legal", "Tabloid" (default `"A4"`)
@@ -130,7 +143,7 @@ Props:
 
 An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The image's width, in px.
@@ -164,23 +177,80 @@ Bands and boxes that arrange blocks. None is required: a root stacks its childre
 
 A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
+- `display`: one of "block", "flex", "grid", "inline", "inline-block", "inline-flex", "none" (only in Page, Layout). How it lays out its children, as CSS display: a Box is a flex column unless it says otherwise.
+- `flexDirection`: one of "row", "row-reverse", "column", "column-reverse" (only in Page, Layout). Its children side by side (row) or one under another (column), where it's a flex box.
+- `flexWrap`: one of "nowrap", "wrap", "wrap-reverse" (only in Page, Layout). Children that don't fit go onto another line, where it's a flex box.
+- `gridTemplateColumns`: *tracks* (only in Page, Layout). Its grid's columns: "1fr 2fr", "repeat(3, 1fr)", "repeat(auto-fill, minmax(200px, 1fr))".
+- `gridTemplateRows`: *tracks* (only in Page, Layout). Its grid's rows.
+- `gridTemplateAreas`: *areas* (only in Page, Layout). Its grid's named areas, a string per row: ["header header", "nav main"].
+- `gridAutoFlow`: one of "row", "column", "dense", "row dense", "column dense" (only in Page, Layout). Where its grid puts children not placed.
+- `rowGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its rows.
+- `columnGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its columns.
+- `alignContent`: one of "start", "center", "end", "stretch", "space-between", "space-around", "space-evenly" (only in Page, Layout). Where its lines or rows sit, as CSS align-content.
+- `justifyItems`: one of "start", "center", "end", "stretch" (only in Page, Layout). Where each child sits across its grid cell, as CSS justify-items.
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `backgroundColor`: *color* (Background)
-- `padding`: *insets* (Spacing)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `border`: *border* (Border)
-- `gap`: a length (a number of px) (Spacing). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `padding`, `border`, `gap`.
 
@@ -188,35 +258,91 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `stackOnMobile`: true or false (default `true`). Its children stack full-width on phones (in an Email or a Page).
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
+- `display`: one of "block", "flex", "grid", "inline", "inline-block", "inline-flex", "none" (only in Page, Layout). How it lays out its children, as CSS display: a Box is a flex column unless it says otherwise.
+- `flexDirection`: one of "row", "row-reverse", "column", "column-reverse" (only in Page, Layout). Its children side by side (row) or one under another (column), where it's a flex box.
+- `flexWrap`: one of "nowrap", "wrap", "words" (Layout). "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
+- `gridTemplateColumns`: *tracks* (only in Page, Layout). Its grid's columns: "1fr 2fr", "repeat(3, 1fr)", "repeat(auto-fill, minmax(200px, 1fr))".
+- `gridTemplateRows`: *tracks* (only in Page, Layout). Its grid's rows.
+- `gridTemplateAreas`: *areas* (only in Page, Layout). Its grid's named areas, a string per row: ["header header", "nav main"].
+- `gridAutoFlow`: one of "row", "column", "dense", "row dense", "column dense" (only in Page, Layout). Where its grid puts children not placed.
+- `rowGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its rows.
+- `columnGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its columns.
+- `alignContent`: one of "start", "center", "end", "stretch", "space-between", "space-around", "space-evenly" (only in Page, Layout). Where its lines or rows sit, as CSS align-content.
+- `justifyItems`: one of "start", "center", "end", "stretch" (only in Page, Layout). Where each child sits across its grid cell, as CSS justify-items.
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `minWidth`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `height`: a length (a number of px) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `minWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
-- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
-- `gap`: a length (a number of px) (Spacing). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-- `justifyContent`: one of "start", "center", "end", "space-between" (Layout). Where children sit along the layout's direction, as CSS justify-content.
-- `flexWrap`: one of "nowrap", "wrap", "words" (Layout). "wrap": children that don't fit wrap onto another line, as CSS flex-wrap (in an email, in a Row kept side by side on phones, with no gap between the lines). "words": in an email, also a space of the text's font apart, on lines at least as tall as its, as words are.
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `overflow`: one of "visible", "hidden"; on a Page, one of "visible", "hidden", "clip", "scroll", "auto" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `justifyContent`: one of "start", "center", "end", "space-between"; on a Page, one of "start", "center", "end", "space-between", "space-around", "space-evenly", "stretch" (Layout). Where children sit along the layout's direction, as CSS justify-content.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
@@ -225,30 +351,182 @@ Props:
 
 Stacks its children vertically, with its own spacing and box.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
+- `display`: one of "block", "flex", "grid", "inline", "inline-block", "inline-flex", "none" (only in Page, Layout). How it lays out its children, as CSS display: a Box is a flex column unless it says otherwise.
+- `flexDirection`: one of "row", "row-reverse", "column", "column-reverse" (only in Page, Layout). Its children side by side (row) or one under another (column), where it's a flex box.
+- `flexWrap`: one of "nowrap", "wrap", "wrap-reverse" (only in Page, Layout). Children that don't fit go onto another line, where it's a flex box.
+- `gridTemplateColumns`: *tracks* (only in Page, Layout). Its grid's columns: "1fr 2fr", "repeat(3, 1fr)", "repeat(auto-fill, minmax(200px, 1fr))".
+- `gridTemplateRows`: *tracks* (only in Page, Layout). Its grid's rows.
+- `gridTemplateAreas`: *areas* (only in Page, Layout). Its grid's named areas, a string per row: ["header header", "nav main"].
+- `gridAutoFlow`: one of "row", "column", "dense", "row dense", "column dense" (only in Page, Layout). Where its grid puts children not placed.
+- `rowGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its rows.
+- `columnGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing). Space between its columns.
+- `alignContent`: one of "start", "center", "end", "stretch", "space-between", "space-around", "space-evenly" (only in Page, Layout). Where its lines or rows sit, as CSS align-content.
+- `justifyItems`: one of "start", "center", "end", "stretch" (only in Page, Layout). Where each child sits across its grid cell, as CSS justify-items.
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `minWidth`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `height`: a length (a number of px) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `minWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
-- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
-- `gap`: a length (a number of px) (Spacing). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
-- `justifyContent`: one of "start", "center", "end", "space-between" (Layout). Where children sit along the layout's direction, as CSS justify-content.
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `overflow`: one of "visible", "hidden"; on a Page, one of "visible", "hidden", "clip", "scroll", "auto" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `justifyContent`: one of "start", "center", "end", "space-between"; on a Page, one of "start", "center", "end", "space-between", "space-around", "space-evenly", "stretch" (Layout). Where children sit along the layout's direction, as CSS justify-content.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+
+`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
+
+### Box
+
+A page's general element: any structure, laid out with page styles (flex, grid, position). A flex column with its gap unless its display says otherwise; directly in a Page it spans the window, as a Section does, and its own maxWidth and padding set its content's width.
+
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Page.
+
+Props:
+- `as`: one of "div", "section", "header", "footer", "nav", "main", "article", "aside", "figure", "figcaption", "blockquote", "address", "ul", "ol", "li" (default `"div"`). The HTML element it's written as, for its meaning: a page's header, nav, main, footer, an article, a list.
+
+`style`:
+- `display`: one of "block", "flex", "grid", "inline", "inline-block", "inline-flex", "none" (Layout). How it lays out its children, as CSS display: a Box is a flex column unless it says otherwise.
+- `flexDirection`: one of "row", "row-reverse", "column", "column-reverse" (Layout). Its children side by side (row) or one under another (column), where it's a flex box.
+- `flexWrap`: one of "nowrap", "wrap", "wrap-reverse" (Layout). Children that don't fit go onto another line, where it's a flex box.
+- `gridTemplateColumns`: *tracks* (Layout). Its grid's columns: "1fr 2fr", "repeat(3, 1fr)", "repeat(auto-fill, minmax(200px, 1fr))".
+- `gridTemplateRows`: *tracks* (Layout). Its grid's rows.
+- `gridTemplateAreas`: *areas* (Layout). Its grid's named areas, a string per row: ["header header", "nav main"].
+- `gridAutoFlow`: one of "row", "column", "dense", "row dense", "column dense" (Layout). Where its grid puts children not placed.
+- `rowGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between its rows.
+- `columnGap`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between its columns.
+- `alignContent`: one of "start", "center", "end", "stretch", "space-between", "space-around", "space-evenly" (Layout). Where its lines or rows sit, as CSS align-content.
+- `justifyItems`: one of "start", "center", "end", "stretch" (Layout). Where each child sits across its grid cell, as CSS justify-items.
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (Layout). Where it sits along its grid cell.
+- `order`: a whole number (Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `aspectRatio`: *ratio* (Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (Position)
+- `inset`: one to 4 lengths or "auto" (Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing)
+- `backgroundImage`: *images* (Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (Border)
+- `borderRight`: *line* (Border)
+- `borderBottom`: *line* (Border)
+- `borderLeft`: *line* (Border)
+- `borderColor`: *color* (Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (Effects). How it blends with what's behind it.
+- `maskImage`: *images* (Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (Effects). "none": clicks go through it to what's under it.
+- `whiteSpace`: one of "normal", "nowrap", "pre", "pre-wrap", "pre-line", "break-spaces" (Typography). Whether its text wraps and keeps its spaces.
+- `textOverflow`: one of "clip", "ellipsis" (Typography). Text cut off at its edge ends with "…" (ellipsis), with overflow hidden and whiteSpace nowrap.
+- `lineClamp`: a whole number from 1 or "none" (Typography). Its text cut off after this many lines, with an ellipsis.
+- `color`: *color* (inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `minWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `overflow`: one of "visible", "hidden"; on a Page, one of "visible", "hidden", "clip", "scroll", "auto" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `justifyContent`: one of "start", "center", "end", "space-between"; on a Page, one of "start", "center", "end", "space-between", "space-around", "space-evenly", "stretch" (Layout). Where children sit along the layout's direction, as CSS justify-content.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`.
@@ -257,34 +535,76 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Its children in columns of equal width, row after row; on phones, one under another.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `columns`: an integer from 1 to 12 (default `2`). How many children to a row.
 - `stackOnMobile`: true or false (default `true`). Its children one under another on phones (in an Email or a Page).
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `minWidth`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `height`: a length (a number of px) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `minWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
-- `overflow`: one of "visible", "hidden" (Layout). Whether content past a set height is cut off.
-- `gap`: a length (a number of px) (Spacing). Space between its children, across and down (unless rowGap is set).
-- `rowGap`: a length (a number of px) (Spacing). Space between its rows (gap by default); on phones, where the children stack, gap is between them.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where each child sits in its row's height, as CSS align-items.
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `overflow`: one of "visible", "hidden"; on a Page, one of "visible", "hidden", "clip", "scroll", "auto" (Layout). Whether content past a set height is cut off.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between its children, across and down (unless rowGap is set).
+- `rowGap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between its rows (gap by default); on phones, where the children stack, gap is between them.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where each child sits in its row's height, as CSS align-items.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`.
@@ -293,26 +613,53 @@ Props:
 
 Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `minWidth`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `minWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
-- `height`: a length (a number of px) (Size). Its height: the image under its children covers it, cut at its sides or its top and bottom.
-- `alignItems`: one of "start", "center", "end", "stretch" (default `"start"`, Layout). Where its children sit in its height, as CSS align-items.
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size). Its height: the image under its children covers it, cut at its sides or its top and bottom.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (default `"start"`, Layout). Where its children sit in its height, as CSS align-items.
 - `justifyItems`: one of "start", "center", "end", "stretch" (default `"stretch"`, Layout). Where its children sit across its width, as CSS justify-items: stretched to it by default.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
@@ -335,10 +682,19 @@ Props:
 - `title`: text. What it shows, read out by screen readers.
 
 `style`:
-- `padding`: *insets* (Spacing)
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `padding`, `border`.
@@ -353,22 +709,71 @@ Props:
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `whiteSpace`: one of "normal", "nowrap", "pre", "pre-wrap", "pre-line", "break-spaces" (only in Page, Typography). Whether its text wraps and keeps its spaces.
+- `textOverflow`: one of "clip", "ellipsis" (only in Page, Typography). Text cut off at its edge ends with "…" (ellipsis), with overflow hidden and whiteSpace nowrap.
+- `lineClamp`: a whole number from 1 or "none" (only in Page, Typography). Its text cut off after this many lines, with an ellipsis.
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
@@ -384,22 +789,71 @@ Props:
 - `dir`: one of "ltr", "rtl", "auto". Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `minHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `maxHeight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (only in Page, Size)
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `paddingTop`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingRight`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingBottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `paddingLeft`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (only in Page, Spacing)
+- `whiteSpace`: one of "normal", "nowrap", "pre", "pre-wrap", "pre-line", "break-spaces" (only in Page, Typography). Whether its text wraps and keeps its spaces.
+- `textOverflow`: one of "clip", "ellipsis" (only in Page, Typography). Text cut off at its edge ends with "…" (ellipsis), with overflow hidden and whiteSpace nowrap.
+- `lineClamp`: a whole number from 1 or "none" (only in Page, Typography). Its text cut off after this many lines, with an ellipsis.
+- `backgroundImage`: *images* (only in Page, Background). Images and gradients behind it, the first on top: "url(…)", "linear-gradient(…)", several separated by commas.
+- `backgroundSize`: *backgroundSize* (only in Page, Background). "cover", "contain", or a size, per layer.
+- `backgroundPosition`: *position* (only in Page, Background). "center", "50% 0", per layer.
+- `backgroundRepeat`: *backgroundRepeat* (only in Page, Background). "no-repeat", "repeat-x", per layer.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (default `700`, inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (default `1.25`, inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (default `1.25`, inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
@@ -417,29 +871,63 @@ Props:
 - `attrs`: *attributes*. More attributes for its link: a class, a `data-` attribute.
 
 `style`:
+- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `borderTop`: *line* (only in Page, Border)
+- `borderRight`: *line* (only in Page, Border)
+- `borderBottom`: *line* (only in Page, Border)
+- `borderLeft`: *line* (only in Page, Border)
+- `borderColor`: *color* (only in Page, Border). Every side's colour, over border's.
+- `borderStyle`: one of "solid", "dashed", "dotted", "double", "none" (only in Page, Border). Every side's style, over border's.
+- `borderWidth`: one to 4 lengths (only in Page, Border). Every side's width (one to four lengths), over border's.
+- `outline`: *outline* (only in Page, Border). A line around it outside its border, taking no room: "2px solid #2563eb".
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
 - `color`: *color* (default `"#ffffff"`, inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (default `14`, inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `14`, inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (default `1.2`, inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (default `1.2`, inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (default `"center"`, inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `padding`: *insets* (default `{"top":10,"right":20,"bottom":10,"left":20}`, Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (default `{"top":10,"right":20,"bottom":10,"left":20}`, Spacing)
 - `backgroundColor`: *color* (default `"#0879a1"`, Background)
 - `border`: *border* (Border)
-- `borderRadius`: *radius* (default `4`, Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (default `4`, Border)
 - `boxSizing`: one of "border-box", "content-box" (Size). Whether its width holds its padding and border (border-box), or they go on top of it (content-box).
-- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.hover`: `color`, `backgroundColor`.
 
-`style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `alignSelf`.
+`style.mobile` (on phones): `alignSelf`, `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`.
 
 ### Image
 
@@ -453,16 +941,45 @@ Props:
 - `title`: text. Shown as a tooltip by mail clients and browsers that show one.
 
 `style`:
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `height`: a length (a number of px) (Size)
-- `border`: *border* (Border)
-- `borderRadius`: *radius* (Border)
-- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 - `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack on phones, where that's another place than on desktop.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `aspectRatio`: *ratio* (only in Page, Size). Its height from its width: "16 / 9".
+- `objectFit`: one of "fill", "contain", "cover", "none", "scale-down" (only in Page, Size). How the picture fills its box: cover crops it, contain fits it in.
+- `objectPosition`: *position* (only in Page, Size). Where the picture sits in its box.
+- `position`: one of "static", "relative", "absolute", "fixed", "sticky" (only in Page, Position). How it's placed: sticky keeps it in view as the page scrolls; absolute and fixed take it out of the flow.
+- `top`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `right`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `bottom`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `left`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto") (only in Page, Position)
+- `inset`: one to 4 lengths or "auto" (only in Page, Position). top, right, bottom and left at once, as CSS inset.
+- `zIndex`: a whole number or "auto" (only in Page, Position). Over or under what it overlaps, highest on top.
+- `opacity`: a number from 0 to 1 (only in Page, Effects). 0 is invisible, 1 solid.
+- `boxShadow`: *shadows* (only in Page, Effects). "0 1px 2px rgba(0, 0, 0, 0.1)", several separated by commas.
+- `transform`: *transform* (only in Page, Effects). Moved, scaled, rotated or skewed as drawn, taking the room it took: "translateY(-2px)".
+- `transformOrigin`: *origin* (only in Page, Effects). The point it's scaled and rotated about.
+- `transition`: *transition* (only in Page, Effects). How a change of style animates: "background-color 150ms ease".
+- `filter`: *filter* (only in Page, Effects). blur(), brightness(), grayscale() and the rest, as drawn: "grayscale(1)".
+- `backdropFilter`: *filter* (only in Page, Effects). Filters on what's behind it: "blur(8px)".
+- `mixBlendMode`: one of "normal", "multiply", "screen", "overlay", "darken", "lighten", "color-dodge", "color-burn", "difference", "exclusion", "luminosity" (only in Page, Effects). How it blends with what's behind it.
+- `maskImage`: *images* (only in Page, Effects). An image or gradient whose see-through parts hide it.
+- `cursor`: one of "auto", "default", "pointer", "text", "move", "not-allowed", "grab", "grabbing", "help", "wait", "crosshair", "zoom-in", "zoom-out" (only in Page, Effects). The pointer over it.
+- `pointerEvents`: one of "auto", "none" (only in Page, Effects). "none": clicks go through it to what's under it.
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `border`: *border* (Border)
+- `borderRadius`: *radius*; on a Page, px for every corner, [topLeft, topRight, bottomRight, bottomLeft], or { topLeft, topRight, bottomRight, bottomLeft }, or on a Page one to 4 lengths (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 - `verticalAlign`: one of "top", "middle" (Layout). Where it sits in a line of text it's in.
 
-`style.mobile` (on phones): `width`, `maxWidth`, `border`, `alignSelf`.
+`style.mobile` (on phones): `alignSelf`, `width`, `maxWidth`, `border`.
 
 ### Divider
 
@@ -471,6 +988,15 @@ A horizontal line.
 Holds: nothing.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
 - `borderTop`: *line* (default `{"width":1,"style":"solid","color":"#bbbbbb"}`, Border). The line, as CSS border-top: "1px solid #bbbbbb".
 - `width`: a length (a number of px, %) (default `"100%"`, Size)
 - `padding`: *insets* (Spacing)
@@ -488,18 +1014,27 @@ Props:
 - `start`: an integer from 0 (default `1`). The first item's number, in a numbered list.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
-- `padding`: *insets* (Spacing)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
 - `gap`: a length (a number of px) (Spacing). Space between items.
@@ -515,17 +1050,26 @@ A table of data: TableRows of TableCells. Columns take their cells' widths; the 
 Holds: TableRow.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
 - `cellPadding`: *insets* (Spacing). Every cell's padding, where the cell doesn't set its own.
@@ -547,8 +1091,17 @@ Props:
 - `title`: text (default `"Video"`). The player's title on a page, the thumbnail's alternate text in an email.
 
 `style`:
-- `width`: a length (a number of px, %) (Size)
-- `maxWidth`: a length (a number of px, %) (Size)
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
+- `width`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
+- `maxWidth`: a length (a number of px, %); on a Page, a length (a number of px, %), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "none", "min-content", "max-content", "fit-content") (Size)
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `width`, `maxWidth`.
@@ -565,7 +1118,7 @@ Props:
 - `size`: an integer from 1 (default `32`). Each icon's width and height, in px.
 
 `style`:
-- `gap`: a length (a number of px) (default `5`, Spacing). Space between children.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `5`, Spacing). Space between children.
 - `justifyContent`: one of "start", "center", "end" (default `"center"`, Layout). Where the icons sit across the line.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
@@ -585,10 +1138,10 @@ Props:
 `style`:
 - `color`: *color* (default `"#0068A5"`, inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (default `14`, inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `14`, inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
-- `lineHeight`: *lineHeight* (default `1.2`, inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (default `1.2`, inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `separatorColor`: *color* (default `"#444444"`, Border)
 - `padding`: *insets* (default `{"top":5,"right":15,"bottom":5,"left":15}`, Spacing). Around each link: its sides are the space between them.
@@ -606,6 +1159,17 @@ Holds: nothing.
 Props:
 - `html`: text (required). The markup, written as it is: only markup you trust. Or give it as JSX inside the block, which React writes.
 - `text`: text. What it reads as in the plain-text version, and in a PDF or an image (its markup's words where there's none).
+
+`style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
 
 ## Inline
 
@@ -626,13 +1190,17 @@ Styled text inside text; raised or lowered (superscript, subscript) with vertica
 
 Holds: text; PageNumber, Span, Link, LineBreak, MergeTag.
 
+Props:
+- `as`: one of "strong", "em", "code", "kbd", "time", "mark", "abbr", "sup", "sub", "small", "cite", "q" (only in Page). The inline element it's written as, for its meaning: strong, em, code, kbd, time, mark, abbr, sup, sub, small, cite or q. On a Page only.
+
 `style`:
+- `whiteSpace`: one of "normal", "nowrap", "pre", "pre-wrap", "pre-line", "break-spaces" (only in Page, Typography). Whether its text wraps and keeps its spaces.
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
 - `backgroundColor`: *color* (Background)
@@ -653,12 +1221,21 @@ Props:
 - `attrs`: *attributes*. More attributes for it: a class, a `data-` attribute.
 
 `style`:
+- `alignSelf`: one of "auto", "start", "center", "end", "stretch", "baseline" (only in Page, Layout). Where it sits across its parent's flex box or grid cell, over the parent's alignItems.
+- `justifySelf`: one of "auto", "start", "center", "end", "stretch" (only in Page, Layout). Where it sits along its grid cell.
+- `order`: a whole number (only in Page, Layout). Its place among its siblings in a flex box or grid, lowest first.
+- `flexGrow`: a number from 0 to Infinity (only in Page, Layout). Its share of the room left in its parent's flex box.
+- `flexShrink`: a number from 0 to Infinity (only in Page, Layout). How much it gives up where its parent's flex box is too small.
+- `flexBasis`: a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "content") (only in Page, Layout). Its size along its parent's flex box before what's left is shared.
+- `gridColumn`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The columns it takes in its parent's grid: "span 2", "1 / 3".
+- `gridRow`: a grid line, "span n", an area's name or "auto", up to 2 separated by " / " (only in Page, Layout). The rows it takes in its parent's grid.
+- `gridArea`: a grid line, "span n", an area's name or "auto", up to 4 separated by " / " (only in Page, Layout). The named area it takes in its parent's grid (gridTemplateAreas), or its lines.
 - `color`: *color* (default `"#0000ee"`, inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (default `"underline"`, Typography)
 - `backgroundColor`: *color* (Background)
@@ -691,7 +1268,7 @@ Only inside the component named: a list's items, a table's rows and cells, a doc
 
 One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -717,7 +1294,7 @@ Holds: nothing. Only in a Document.
 
 In a Document: drawn at the top of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -739,7 +1316,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 In a Document: drawn at the bottom of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -769,11 +1346,11 @@ Props:
 `style`:
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
@@ -793,15 +1370,15 @@ Props:
 `style`:
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `backgroundColor`: *color* (Background)
-- `height`: a length (a number of px) (Size)
+- `height`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp(), "auto", "min-content", "max-content", "fit-content") (Size)
 
 `style.mobile` (on phones): `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`.
 
@@ -818,15 +1395,15 @@ Props:
 `style`:
 - `color`: *color* (inherited, Typography)
 - `fontFamily`: *fontFamily* (inherited, Typography)
-- `fontSize`: a length (a number of px) (inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `fontWeight`: *fontWeight* (inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `textDecoration`: one of "none", "underline", "line-through" (Typography)
-- `padding`: *insets* (Spacing)
+- `padding`: *insets*; on a Page, px for all sides, "8px 16px" (1 to 4 values), [v, h] or [t, r, b, l], or { top, right, bottom, left }, or on a Page one to four lengths ("1rem 2rem", "clamp(1rem, 4vw, 3rem)") or { top, right, bottom, left } of lengths (Spacing)
 - `backgroundColor`: *color* (Background)
 - `border`: *border* (Border)
 - `width`: a length (a number of px, %) (Size). Its column's width (of a cell spanning one column).

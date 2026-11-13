@@ -4,6 +4,42 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### Pages: Box and page styles
+
+A `Page` takes CSS's own layout, with typed styles. Templates that use none of it render as they did, byte for byte.
+
+```tsx
+<Page width={1200}>
+  <Box as="header" style={{ flexDirection: "row", gap: 16, padding: "1rem 2rem", position: "sticky", top: 0 }}>…</Box>
+  <Box as="main" style={{ maxWidth: 1200, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(16rem, 1fr))", gap: "1.5rem" }}>…</Box>
+</Page>
+```
+
+- New: `Box`, a Page's general element, written as the element its `as` names (div, section, header, footer, nav,
+  main, article, aside, figure, figcaption, blockquote, address, ul, ol, li). A flex column with its `gap` until its
+  styles say otherwise; directly in a Page it spans the window, as a Section does. On a Page only.
+- New: page styles, on a Page only, each checked against CSS's syntax for it: layout (`display`, `flexDirection`,
+  `flexWrap`, `gridTemplateColumns`, `gridTemplateRows`, `gridTemplateAreas`, `gridAutoFlow`, `rowGap`, `columnGap`,
+  `alignContent`, `justifyItems`), place in a flex box or grid (`alignSelf`, `justifySelf`, `order`, `flexGrow`,
+  `flexShrink`, `flexBasis`, `gridColumn`, `gridRow`, `gridArea`), size (`minHeight`, `maxHeight`, `aspectRatio`, and
+  an Image's `objectFit` and `objectPosition`), position (`position`, `top`, `right`, `bottom`, `left`, `inset`,
+  `zIndex`), padding by side, text wrapping (`whiteSpace`, `textOverflow`, `lineClamp`), backgrounds
+  (`backgroundImage` with url()s and gradients, `backgroundSize`, `backgroundPosition`, `backgroundRepeat`), borders by
+  part and `outline`, and effects (`opacity`, `boxShadow`, `transform`, `transformOrigin`, `transition`, `filter`,
+  `backdropFilter`, `mixBlendMode`, `maskImage`, `cursor`, `pointerEvents`). A Box takes every one; Section, Row and
+  Column their layout and how they're drawn; Text and Heading their wrapping and how they're drawn; every block its
+  place in a flex box or a grid. Under another root a page style is `style/not-supported`.
+- New: on a Page, a length style also takes rem, em, %, viewport units and calc(), min(), max() and clamp()
+  (`fontSize: "clamp(2rem, 5vw, 3.5rem)"`, `padding: "4rem 1.5rem"`). A value accepted before keeps its meaning and
+  output.
+- New: `Span as` (strong, em, code, kbd, time, mark, abbr, sup, sub, small, cite, q), on a Page.
+- New: a Box takes `tokens`, as a Section, Row, Column and Grid do.
+- `prepare()` and `outline()` work out widths in flex rows and grids at the Page's base window (its width, or one
+  more than its phone width where that's wider), and `outline()` says "fits its content" where a width depends on the content. `ResolvedText` may hold
+  the text metrics as written (`authored`), its numbers being what they come to.
+- The builder (`toDesign()`) draws a Box as an HTML block of its own markup, and says which page styles its tools have
+  no place for.
+
 ### What a PDF or an image looks for
 
 `@hyper-elements/react/pdf` and `@hyper-elements/react/image` export `templateAssets(element)`: the fonts and images

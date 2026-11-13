@@ -8,8 +8,15 @@
  *     Column 600px, background #ffffff
  *       Heading h1 536px "Thanks for your order, {{first_name}}"
  *       Row 536px: 2 side by side, stacked on phones
+ *
+ * On a Page, a Box (and a container its page styles lay out) says its layout, and a block in one whose width depends
+ * on its content says it fits its content:
+ *
+ *   Box header 1280px: flex row, sticky
+ *     Image 120px [Acme] https://example.com/logo.png
+ *     Button: fits its content "Sign in" → https://example.com/login
  */
-import { linkParts, shownAnywhere, type LinkValue, type ResolvedNode } from "@hyper-elements/core";
+import { linkParts, pageLayout as layoutOf, shownAnywhere, type LinkValue, type ResolvedNode } from "@hyper-elements/core";
 
 const LONGEST = 80;
 const clip = (text: string) => (text.length > LONGEST ? `${text.slice(0, LONGEST - 1)}…` : text);
@@ -33,11 +40,29 @@ function words(node: ResolvedNode): string {
     .trim();
 }
 
-function describe(node: ResolvedNode): string {
+/** How a node's page styles lay out its children: a grid with its columns as written, a flex row (wrapping), or none. */
+function pageLayout(node: ResolvedNode): string | undefined {
+  const { flexWrap, gridTemplateColumns } = node.style;
+  const layout = layoutOf(node.style);
+  if (layout === "grid") return gridTemplateColumns !== undefined ? `grid ${String(gridTemplateColumns)}` : "grid";
+  if (layout === "flex") return `flex row${flexWrap === "wrap" || flexWrap === "wrap-reverse" ? ", wraps" : ""}`;
+  return undefined;
+}
+
+/** Whether a node's width depends on its content, in a Box or a layout a Page's styles make (unknown to the resolver). */
+const fits = (node: ResolvedNode, parent: ResolvedNode | undefined) =>
+  node.width === null && node.available !== null && !!parent && (parent.type === "Box" || pageLayout(parent) !== undefined || node.type === "Box");
+
+function describe(node: ResolvedNode, parent?: ResolvedNode): string {
   const parts: string[] = [node.type === "DocumentPage" ? "Document.Page" : node.type];
   if (node.type === "Heading") parts.push(`h${node.props.level}`);
+  if (node.type === "Box" && node.props.as !== undefined && node.props.as !== "div") parts.push(String(node.props.as));
   if (node.width !== null) parts.push(`${Math.round(node.width)}px`);
   const details: string[] = [];
+  if (fits(node, parent)) details.push("fits its content");
+  const layout = pageLayout(node);
+  if (layout) details.push(layout);
+  if (node.style.position === "sticky" || node.style.position === "fixed" || node.style.position === "absolute") details.push(String(node.style.position));
   const children = blocks(node);
   // A Grid, a Menu and a Social are laid out as Rows (a Menu's and a Social's of Links), so they show as those.
   if (node.type === "Row") details.push(`${children.length} side by side${node.props.stackOnMobile === false ? "" : ", stacked on phones"}`);
@@ -61,11 +86,11 @@ function describe(node: ResolvedNode): string {
 }
 
 /** The lines of a node and what it holds, indented under it. Text and its inline parts are its line; Lists in it go under it. */
-function lines(node: ResolvedNode, indent: string): string[] {
-  const own = `${indent}${describe(node)}`;
+function lines(node: ResolvedNode, indent: string, parent?: ResolvedNode): string[] {
+  const own = `${indent}${describe(node, parent)}`;
   if (node.type === "Svg") return [own];
   const under = node.definition.children.text ? blocks(node).filter((child) => child.type === "List") : blocks(node);
-  return [own, ...under.flatMap((child) => lines(child, `${indent}  `))];
+  return [own, ...under.flatMap((child) => lines(child, `${indent}  `, node))];
 }
 
 export function outlineOf(root: ResolvedNode): string {
