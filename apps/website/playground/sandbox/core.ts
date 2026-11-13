@@ -508,7 +508,15 @@ async function handle(request: Request): Promise<Result> {
       } else if (request.kind === "previews") {
         if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
         const output = await sandbox.extras.clients.renderInEmailClients(element, { emailClients: request.clients, dark: request.dark, fonts: "url" });
-        result.previews = output.previews.map((p) => ({ id: String(p.id), client: String(p.client), dark: Boolean(p.dark), width: Number(p.width), approximate: Boolean(p.approximate), html: String(p.html) }));
+        result.previews = output.previews.map((p) => ({
+          id: String(p.id),
+          client: String(p.client),
+          ...(p.computer === "windows" || p.computer === "mac" ? { computer: p.computer } : {}),
+          dark: Boolean(p.dark),
+          width: Number(p.width),
+          approximate: Boolean(p.approximate),
+          html: String(p.html),
+        }));
         result.skipped = output.skipped.map((s) => ({ client: String(s.client ?? s.id ?? ""), reason: String(s.reason ?? "") }));
         result.diagnostics = lines(output.diagnostics);
       }

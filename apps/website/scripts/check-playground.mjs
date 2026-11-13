@@ -598,6 +598,11 @@ attempt("origin", () => { if (self.origin === "null") throw 0; return self.origi
   {
     const page = await open("#view=clients");
     await page.locator("[data-clients-stage] iframe").first().waitFor({ timeout: 60_000 });
+    // Each client's tab says which preview it is: webmail is previewed on Windows and on a Mac, Apple Mail light and dark.
+    const tabs = (await page.locator("[data-clients-tabs] button").allInnerTexts()).map((text) => text.replace(/\s+/g, " ").trim());
+    assert.equal(new Set(tabs).size, tabs.length, `Two tabs read the same: ${tabs.join(" | ")}`);
+    const tags = await page.locator("[data-clients-tabs] button small").allTextContents();
+    assert(tags.includes("Mac") && tags.includes("Windows"), `The webmail tabs name the computer: ${tabs.join(" | ")}`);
     const frames = await page.evaluate(() => [...document.querySelectorAll("iframe")].map((frame) => ({ sandbox: frame.getAttribute("sandbox"), src: (frame.getAttribute("src") ?? "").slice(0, 40), srcdoc: frame.hasAttribute("srcdoc"), allow: frame.getAttribute("allow"), where: frame.className || [...frame.parentElement.attributes].map((a) => a.name).join(" ") })));
     assert(frames.length >= 6, "The sandbox, the preview's two frames and the email clients' are on the page");
     for (const frame of frames) {

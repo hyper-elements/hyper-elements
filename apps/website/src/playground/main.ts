@@ -807,7 +807,8 @@ async function drawClients() {
   }
   clientsKey = code;
   const frames = result.previews.map((each, index) => {
-    const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)} draws it`, hidden: index !== 0 });
+    const on = each.computer ? ` on ${each.computer === "mac" ? "a Mac" : "Windows"}` : "";
+    const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)}${on} draws it${each.dark ? ", in dark mode" : ""}`, hidden: index !== 0 });
     if (previewFile(frame, each.html, scripts)) return frame;
     return h("div", { class: "pg-file-card", hidden: index !== 0, style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "Too large to preview here"), "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
   });
@@ -817,7 +818,15 @@ async function drawClients() {
   };
   tabs.replaceChildren(
     ...result.previews.map((each, index) =>
-      h("button", { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) }, clientName(each.client, result.clientNames), each.dark ? h("small", null, "dark") : null, each.approximate ? h("small", null, "approximate") : null),
+      h(
+        "button",
+        { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) },
+        clientName(each.client, result.clientNames),
+        // Webmail is previewed on Windows and on a Mac, whose fonts differ: the tab says which.
+        each.computer ? h("small", null, each.computer === "mac" ? "Mac" : "Windows") : null,
+        each.dark ? h("small", null, "dark") : null,
+        each.approximate ? h("small", null, "approximate") : null,
+      ),
     ),
   );
   host.replaceChildren(...frames);
