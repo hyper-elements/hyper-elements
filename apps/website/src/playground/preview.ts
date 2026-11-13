@@ -297,8 +297,14 @@ export class PreviewFrame {
  *
  * False where the file is too long for a data: URL (browsers stop at about 2 MB): the caller says so.
  */
-export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts): boolean {
-  const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts)));
+export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts, options: { canvas?: boolean } = {}): boolean {
+  const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts), undefined, (doc) => {
+    if (!options.canvas) return;
+    // Presentation only: retain the package's report and scripts. The caller offers the full report view too.
+    const style = doc.createElement("style");
+    style.textContent = "body{background:transparent}body>header.note{display:none}#frames{padding:0;gap:0}#frames>iframe{box-shadow:none}";
+    doc.head.append(style);
+  }));
   if (bytes.length > MAX_PREVIEW_FILE) return false;
   frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
   frame.setAttribute("referrerpolicy", "no-referrer");

@@ -76,14 +76,20 @@ After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It 
 
 ## Email testing
 
-`/email-testing` accepts complete HTML without converting it to a template. It reuses the playground's runtime,
+`/email-testing` opens a full-height workspace with newsletter, launch and receipt starters, content/color controls,
+an HTML editor, and a client preview. Edits update the preview after a short pause; live updates can be turned off.
+Visitors can also open complete HTML without converting it to a template, and export their edited HTML.
+Compatibility checks are in a drawer and library/agent instructions in a help dialog. The canvas hides the preview
+file's explanatory header; Render details restores the complete file, including missing assets and browser findings.
+Both views use the same script allowlist and opaque origin. The page reuses the playground's runtime,
 worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
 `renderInEmailClients(html)` directly; the input never enters the JSX compiler. HTML is not uploaded or persisted.
 The package's preview may load referenced images and fonts. Both the window API and WebMCP tool update the same UI
 and return diagnostics and preview metadata; `ok` describes successful generation, not a compatibility guarantee.
 
 After a website build, run `pnpm --filter @hyper-elements/website check:email-testing`. It covers input validation,
-file upload, client and dark variants, diagnostics, JSON download, agent access, responsive layout, discovery links,
+editable templates, live updates, HTML export, file upload, client and dark variants, diagnostics, JSON download,
+agent access, responsive layout, discovery links,
 and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 
 ## Writing docs

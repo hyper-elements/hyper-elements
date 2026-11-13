@@ -1,11 +1,12 @@
 ---
 import Base from "../layouts/Base.astro";
 import CodeBlock from "../components/CodeBlock.astro";
-import { defaultEmailClients, emailTestingClients, emailTestingDescription, sampleEmail } from "../lib/email-testing";
+import { emailDesigns, emailTestingClients, emailTestingDescription, sampleEmail } from "../lib/email-testing";
 import { engineVersion } from "../lib/playground";
 import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
 
+const design = emailDesigns[0];
 const cli = `npx @hyper-elements/cli check email.html --json
 npx @hyper-elements/cli preview email.html`;
 const library = `import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -27,84 +28,91 @@ const agent = `await window.hyperElementsEmailTesting.check({
   dark: false,
 });`;
 ---
-<Base title="Test HTML emails across email clients" description={emailTestingDescription}>
-  <section class="et-hero wrap">
-    <p class="eyebrow">Email testing · by Hyper Elements</p>
-    <h1>Test your HTML email.<br /><span class="grad">See it across clients.</span></h1>
-    <p class="lede">Check HTML email compatibility and preview Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail locally. Use an email from any builder, MJML, React Email, or your own HTML.</p>
-    <div class="et-actions">
-      <a class="btn btn-primary" href="#playground">Test your HTML <span aria-hidden="true">↓</span></a>
-      <a class="btn btn-ghost" href="#use-in-code">Use the library or CLI</a>
-    </div>
-    <p class="et-facts">Free · No account · No React required · No test send</p>
-  </section>
+<Base title="Test HTML emails across email clients" description={emailTestingDescription} footer={false}>
+  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-2`}>
+    <header class="et-topbar">
+      <div class="et-heading"><h1 id="playground-title">Email playground</h1><span class="et-local"><i></i> Runs locally</span></div>
+      <div class="et-top-actions">
+        <button class="et-subtle" id="email-help-open" type="button">Library &amp; help</button>
+        <button class="btn btn-ghost btn-sm" id="email-open" type="button" disabled>Open HTML</button>
+        <button class="btn btn-primary btn-sm" id="email-export" type="button" disabled>Export HTML <span aria-hidden="true">↗</span></button>
+        <input id="email-file" type="file" accept=".html,.htm,text/html" hidden />
+      </div>
+    </header>
 
-  <section id="playground" class="wrap et-workspace" aria-labelledby="playground-title" data-email-testing data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-1`}>
-    <div class="et-section-heading">
-      <div><p class="eyebrow">Try it here</p><h2 id="playground-title">The email testing playground</h2></div>
-      <a class="et-doc-link" href="/docs/email-client-emulator">Client coverage &amp; documentation ↗</a>
+    <div class="et-mobile-tabs" role="tablist" aria-label="Workspace panel">
+      <button type="button" role="tab" data-mobile-tab="edit" aria-selected="false" aria-controls="email-editor-panel">Edit</button>
+      <button type="button" role="tab" data-mobile-tab="preview" aria-selected="true" aria-controls="email-preview-panel">Preview</button>
     </div>
-    <p class="et-intro">Paste a complete HTML email or open an .html file. Your HTML stays in this tab. Referenced images and fonts may load from their hosts.</p>
-    <noscript><p class="et-notice">Enable JavaScript to use the playground, or use the library and CLI commands below.</p></noscript>
+
     <div class="et-bench">
-      <div class="et-input">
-        <div class="et-toolbar">
-          <label for="email-html">Your email HTML</label>
-          <div class="et-tools">
-            <button type="button" id="email-example" disabled>Example</button>
-            <button type="button" id="email-open" disabled>Open .html</button>
-            <input id="email-file" type="file" accept=".html,.htm,text/html" hidden />
+      <section class="et-input" id="email-editor-panel" aria-label="Email editor">
+        <div class="et-template-picker">
+          <label for="email-template">START WITH A TEMPLATE</label>
+          <div><select id="email-template">{emailDesigns.map((template) => <option value={template.id}>{template.name}</option>)}<option value="custom" hidden>Custom HTML</option></select><button type="button" id="email-example" class="et-subtle" title="Reset this template" disabled>Reset</button></div>
+        </div>
+        <div class="et-editor-bar">
+          <div class="et-tabs" role="tablist" aria-label="Editor mode"><button type="button" role="tab" id="email-design-tab" data-editor-tab="design" aria-controls="email-design" aria-selected="true">Design</button><button type="button" role="tab" id="email-html-tab" data-editor-tab="html" aria-controls="email-code" aria-selected="false">HTML</button></div>
+          <label class="et-live"><input id="email-live" type="checkbox" checked /> Live preview</label>
+        </div>
+        <div class="et-design" id="email-design" role="tabpanel" aria-labelledby="email-design-tab">
+          <div id="email-design-fields">
+            <p class="et-editor-hint">Make it yours. Changes appear as you type.</p>
+            <label>Brand<input data-design="brand" maxlength="80" value={design.brand} /></label>
+            <label>Eyebrow<input data-design="eyebrow" maxlength="120" value={design.eyebrow} /></label>
+            <label>Heading<textarea data-design="heading" rows="2" maxlength="180">{design.heading}</textarea></label>
+            <label>Message<textarea data-design="body" rows="4" maxlength="2000">{design.body}</textarea></label>
+            <label>Button text<input data-design="button" maxlength="80" value={design.button} /></label>
+            <div class="et-colors"><label><input type="color" data-design="accent" value={design.accent} /><span>Accent</span></label><label><input type="color" data-design="background" value={design.background} /><span>Background</span></label></div>
           </div>
+          <p id="email-custom-hint" hidden>This is your own HTML. Edit it in the HTML tab, or choose a starter template to use the design controls.</p>
         </div>
-        <textarea id="email-html" aria-describedby="email-input-help" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">{sampleEmail}</textarea>
-        <p id="email-input-help" class="et-input-help">Complete document, including &lt;html&gt; and &lt;body&gt; · Up to 250 KB</p>
-        <fieldset class="et-clients">
-          <legend>Preview in</legend>
-          <div>{emailTestingClients.map((client) => <label><input type="checkbox" name="email-client" value={client.id} checked={defaultEmailClients.includes(client.id)} /><span>{client.name}</span></label>)}</div>
-        </fieldset>
-        <div class="et-run-bar">
-          <label class="et-dark"><input id="email-dark" type="checkbox" /> Include dark mode</label>
-          <button class="btn btn-primary" type="button" id="email-run" disabled>Test email <span aria-hidden="true">→</span></button>
+        <div class="et-code surface-dark" id="email-code" role="tabpanel" aria-labelledby="email-html-tab" hidden>
+          <label for="email-html" class="et-code-caption">email.html <span>⌘ / Ctrl + Enter to preview</span></label>
+          <textarea id="email-html" aria-describedby="email-input-help" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">{sampleEmail}</textarea>
+          <p id="email-input-help">Complete HTML document · Up to 250 KB</p>
         </div>
-      </div>
-      <div class="et-output">
-        <div class="et-toolbar">
-          <span>Client preview</span>
-          <button type="button" id="email-size" disabled>Actual size</button>
+        <div class="et-editor-footer"><span>HTML stays in this tab</span><button type="button" id="email-run" class="btn btn-ghost btn-sm" disabled>Update preview ↵</button></div>
+      </section>
+
+      <section class="et-output" id="email-preview-panel" aria-label="Email preview">
+        <div class="et-client-bar">
+          <div id="email-client-tabs" class="et-client-tabs" role="tablist" aria-label="Email client"></div>
+          <details class="et-client-menu"><summary>Clients <span aria-hidden="true">⌄</span></summary><fieldset class="et-clients"><legend>Generate previews for</legend>{emailTestingClients.map((client) => <label><input type="checkbox" name="email-client" value={client.id} checked /><span>{client.name}</span></label>)}</fieldset></details>
         </div>
-        <div class="et-preview-controls" hidden id="email-preview-controls">
-          <label class="et-sr-only" for="email-preview">Choose a client preview</label>
-          <select id="email-preview"></select>
-          <span id="email-preview-note"></span>
+        <div class="et-preview-controls" id="email-preview-controls">
+          <label class="et-sr-only" for="email-preview">Choose a client preview</label><select id="email-preview" disabled><option>Loading the example…</option></select>
+          <label class="et-dark"><input id="email-dark" type="checkbox" /> Dark variants</label>
+          <span class="et-preview-spacer"></span>
+          <button type="button" id="email-details" class="et-subtle" aria-pressed="false" disabled>Render details</button>
+          <button type="button" id="email-size" class="et-subtle" disabled>Actual size</button>
         </div>
-        <div class="et-empty" id="email-empty">
-          <span class="et-envelope" aria-hidden="true">✉</span>
-          <h3>Same HTML. Different clients.</h3>
-          <p>Test the example to see how Classic Outlook handles rounded corners, then try your own email.</p>
+        <div class="et-canvas">
+          <div class="et-empty" id="email-empty"><span class="et-loading" aria-hidden="true"></span><h2>Your email, across clients.</h2><p>Preparing the first preview…</p></div>
+          <div class="et-viewport" id="email-viewport" hidden><div id="email-sheet"></div></div>
+          <p id="email-error" class="et-notice" role="alert" hidden></p>
         </div>
-        <div class="et-viewport" id="email-viewport" hidden><div id="email-sheet"></div></div>
-      </div>
+        <div class="et-canvas-footer"><span id="email-preview-note">Modeled email preview</span><span>Images and fonts may load from their hosts</span></div>
+        <details class="et-findings" id="email-findings" hidden>
+          <summary><span>Compatibility <span id="email-findings-count" class="et-count">0</span></span><span class="et-findings-prompt">Review findings ⌃</span></summary>
+          <div class="et-findings-content"><p id="email-findings-summary"></p><ul id="email-diagnostics"></ul><ul id="email-skipped" class="et-skipped"></ul><button type="button" class="et-subtle" id="email-download" disabled>Download report ↓</button></div>
+        </details>
+      </section>
     </div>
-    <div class="et-status-bar"><p id="email-status" role="status" aria-live="polite">Ready when you are.</p><button type="button" class="btn btn-ghost btn-sm" id="email-download" disabled>Download report</button></div>
-    <p id="email-error" class="et-notice" role="alert" hidden></p>
-    <section class="et-findings" id="email-findings" aria-labelledby="findings-title" hidden>
-      <h3 id="findings-title">Compatibility findings</h3>
-      <p id="email-findings-summary"></p>
-      <ul id="email-diagnostics"></ul>
-      <ul id="email-skipped" class="et-skipped"></ul>
-    </section>
-    <p class="et-limit">These are modeled client previews, with compatibility diagnostics. Some client variants are approximate; a clean report does not guarantee an identical render in every inbox. <a href="/docs/email-client-emulator#checks-and-the-emulator">Read how the checks and emulator work.</a></p>
+    <div class="et-status-bar"><p id="email-status" role="status" aria-live="polite">Loading the example…</p><a href="/docs/email-client-emulator">Client coverage &amp; accuracy ↗</a></div>
+    <noscript><p class="et-notice">Enable JavaScript to edit templates and preview emails, or use the <a href="/docs/cli">CLI</a>.</p></noscript>
   </section>
 
-  <section class="wrap et-details" id="use-in-code" aria-labelledby="code-title">
-    <div class="et-section-heading"><div><p class="eyebrow">For your workflow</p><h2 id="code-title">The same checks, in your code.</h2></div></div>
-    <p class="lede">Keep the email you already have. The JavaScript and TypeScript library takes complete HTML, and the CLI checks a file directly. Neither needs React for HTML input.</p>
-    <div class="et-recipes">
-      <article><h3>From the terminal or an agent</h3><p>Check compatibility and readability, then write the client previews. The CLI adds lint checks to the client diagnostics shown here.</p><CodeBlock code={cli} lang="bash" file="Terminal" /><p>Open the generated files under <code>out/clients/email/</code> in Chromium or Chrome. For browser findings and screenshots, follow the <a href="/docs/cli#preview">CLI browser setup</a>.</p></article>
-      <article><h3>From JavaScript or TypeScript</h3><p>Install <code>@hyper-elements/email-clients</code>, save this as <code>preview-email.mjs</code>, and run <code>node preview-email.mjs</code>.</p><CodeBlock code={library} lang="js" file="preview-email.mjs" /><p>Open <code>out/outlook.html</code>. See the <a href="/docs/email-client-emulator#test-any-html-email">HTML email API</a> for all options.</p></article>
+  <dialog id="email-help" class="et-help" aria-labelledby="help-title">
+    <header><h2 id="help-title">Email testing, in your workflow</h2><form method="dialog"><button class="et-subtle" aria-label="Close help">✕</button></form></header>
+    <div class="et-help-body">
+      <p>Choose a template and edit its content and colors, or paste a complete HTML email in the HTML tab. Preview Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail locally. HTML from any builder, MJML, or React Email works here.</p>
+      <p>Live preview updates after you pause typing. Export HTML downloads your email; Download report saves compatibility diagnostics. Your HTML is not uploaded or saved as a draft. Referenced images and fonts may load from their hosts.</p>
+      <p>These are modeled previews. Some variants are approximate, and a clean report does not guarantee identical rendering in every inbox. Use <strong>Render details</strong> to see what changed, missing assets, and browser findings for the selected preview. <a href="/docs/email-client-emulator#checks-and-the-emulator">How the checks and emulator work.</a></p>
+      <section id="use-in-code"><h3>Use the library or CLI</h3><p>No React or test send is needed for HTML input. The CLI also adds readability checks.</p><CodeBlock code={cli} lang="bash" file="Terminal" /><p>Open the generated files under <code>out/clients/email/</code> in Chromium or Chrome. See the <a href="/docs/cli#preview">CLI browser setup</a>.</p><CodeBlock code={library} lang="js" file="preview-email.mjs" /><p>Install <code>@hyper-elements/email-clients</code>, run the example with Node, and open <code>out/outlook.html</code>. See the <a href="/docs/email-client-emulator#test-any-html-email">HTML email API</a>.</p></section>
+      <section><h3>For browser agents</h3><p>Use <code>window.hyperElementsEmailTesting.check()</code> or the WebMCP <code>check_html_email</code> tool where supported. Both update the workspace and return diagnostics, preview metadata, and skipped variants. <code>ok</code> means generation succeeded; inspect diagnostics and approximate flags before judging compatibility.</p><CodeBlock code={agent} lang="js" /><p>Client IDs: <code>outlook</code>, <code>outlook-com</code>, <code>gmail</code>, <code>gmail-app</code>, <code>apple-mail</code>, <code>yahoo</code>, <code>aol</code>. Omit them to use Outlook, Gmail and Apple Mail.</p></section>
     </div>
-    <details class="et-agent"><summary>Use this playground from a browser agent</summary><p>The page exposes <code>window.hyperElementsEmailTesting.check()</code> and, in browsers that support WebMCP, the <code>check_html_email</code> tool. Both update the playground and return diagnostics, preview metadata, and skipped variants as JSON. <code>ok</code> means previews were generated; inspect the diagnostics and approximate flags before judging compatibility.</p><CodeBlock code={agent} lang="js" /><p>The <code>clients</code> IDs are <code>outlook</code>, <code>outlook-com</code>, <code>gmail</code>, <code>gmail-app</code>, <code>apple-mail</code>, <code>yahoo</code>, and <code>aol</code>. Omit them to use Outlook, Gmail and Apple Mail. HTML is processed locally and is not saved as a draft.</p></details>
-  </section>
+  </dialog>
   <script>
     import "../email-testing/main";
   </script>

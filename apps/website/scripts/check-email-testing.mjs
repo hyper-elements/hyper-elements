@@ -59,6 +59,7 @@ try {
   assert.deepEqual(await page.evaluate(() => window.__emailTools.map((tool) => tool.name)), ["check_html_email"]);
   const sample = await page.locator("#email-html").inputValue();
   const run = (input) => page.evaluate((input) => window.hyperElementsEmailTesting.check(input), input);
+  const updated = () => page.waitForFunction(() => document.querySelector("[data-email-testing]").dataset.renderStatus === "ok");
   const readyFrame = async () => {
     const frame = await page.locator("#email-sheet iframe").elementHandle().then((handle) => handle.contentFrame());
     await frame.waitForFunction(() => document.documentElement.hasAttribute("data-email-client-ready"), undefined, { timeout: 20000 });
@@ -69,8 +70,16 @@ try {
     assert(frame.childFrames().length >= 2, "The modeled email and its baseline were drawn");
     return frame;
   };
-  await page.getByRole("button", { name: "Test email", exact: false }).click();
-  await page.waitForFunction(() => document.getElementById("email-status").textContent.includes("previews generated"));
+  await updated(); // The first design renders automatically, without clicking a call to action.
+  assert(await page.locator(".et-output").evaluate((panel) => panel.getBoundingClientRect().top < 160 && panel.getBoundingClientRect().bottom < innerHeight));
+  assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The workspace fits the first viewport");
+  const first = await readyFrame();
+  assert.equal(await first.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none", "The canvas leads with the email, not the preview report");
+  if (process.env.EMAIL_TESTING_SHOTS) {
+    await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
+    await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-workspace-initial.png"), fullPage: true });
+  }
+  await page.locator("#email-findings summary").click();
   assert(await page.locator("#email-diagnostics li").count() > 0, "The example exposes actual client compatibility findings");
   assert(await page.locator("#email-diagnostics").innerText().then((text) => /box-shadow/i.test(text)));
   await readyFrame();
@@ -83,9 +92,49 @@ try {
   const report = JSON.parse(await readFile(await saved.path(), "utf8"));
   assert(report.ok && report.previews.length === labels.length && report.diagnostics.some((d) => d.line > 0));
   assert(report.previews.every((preview) => !Object.hasOwn(preview, "html")));
-  // New state invalidates the displayed result and its downloadable report immediately.
+  await page.locator("#email-findings summary").click();
+  // Editable templates and live HTML stay in sync. Text fields cannot inject markup.
+  await page.locator('[data-design="heading"]').fill("A fresh idea <b>for Friday</b>");
+  await updated();
+  let designed = await readyFrame();
+  assert.match(await designed.childFrames()[0].locator("body").innerText(), /A fresh idea <b>for Friday<\/b>/);
+  assert((await page.locator("#email-html").inputValue()).includes("&lt;b&gt;for Friday&lt;/b&gt;"));
+  await page.locator('[data-design="accent"]').fill("#b3432c");
+  await updated();
+  assert((await page.locator("#email-html").inputValue()).includes("#b3432c"));
+  for (const [id, text] of [["orbit", "Space for your next big idea."], ["studio", "Good things are on their way."]]) {
+    await page.locator("#email-template").selectOption(id);
+    await updated();
+    designed = await readyFrame();
+    assert((await designed.childFrames()[0].locator("body").innerText()).includes(text));
+  }
+  await page.locator("#email-template").selectOption("fieldnotes");
+  await updated();
+  await page.locator("#email-live").uncheck();
+  await page.locator('[data-design="heading"]').fill("A paused edit");
+  await page.waitForTimeout(800);
+  assert.equal(await page.locator("[data-email-testing]").getAttribute("data-render-status"), "pending", "Live preview can be paused");
+  assert.match(await page.locator("#email-preview-note").innerText(), /Previous preview/);
+  await page.locator("#email-live").check();
+  await updated();
+  const exportedEvent = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export HTML" }).click();
+  const exported = await exportedEvent;
+  assert.equal(await readFile(await exported.path(), "utf8"), await page.locator("#email-html").inputValue());
+  await page.getByRole("button", { name: "Render details", exact: true }).click();
+  designed = await readyFrame();
+  assert.notEqual(await designed.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none", "Full browser findings remain available");
+  await page.getByRole("button", { name: "Back to email", exact: true }).click();
+  await page.getByRole("tab", { name: "Outlook", exact: true }).click();
+  assert.equal(await page.locator("#email-preview").inputValue(), "outlook");
+  await page.getByRole("button", { name: "Library & help" }).click();
+  assert(await page.getByRole("dialog").isVisible());
+  await page.getByRole("button", { name: "Close help" }).click();
+  assert(!await page.getByRole("dialog").isVisible());
+  // Edits invalidate the report, while the last preview stays visible and explicitly marked as previous.
+  await page.getByRole("tab", { name: "HTML", exact: true }).click();
   await page.locator("#email-html").fill("<p>A fragment</p>");
-  assert.equal(await page.locator("#email-sheet iframe").count(), 0);
+  assert.equal(await page.locator("#email-sheet iframe").count(), 1);
   assert(await page.locator("#email-download").isDisabled());
   assert.equal((await run({ html: "<p>A fragment</p>" })).ok, false);
   assert.match(await page.locator("#email-error").innerText(), /whole email/);
@@ -95,9 +144,9 @@ try {
   assert.equal((await run({ html: sample, dark: "yes" })).ok, false);
   // Upload the same complete email through the visible file workflow.
   await page.locator("#email-file").setInputFiles({ name: "welcome.html", mimeType: "text/html", buffer: Buffer.from(sample) });
-  await page.waitForFunction(() => document.getElementById("email-status").textContent.includes("Opened welcome.html"));
+  await updated();
   assert.equal(await page.locator("#email-html").inputValue(), sample);
-  assert.match(await page.locator("#email-status").innerText(), /Opened welcome.html/);
+  assert.equal(await page.locator("#email-template").inputValue(), "custom");
   const clients = ["outlook", "outlook-com", "gmail", "gmail-app", "apple-mail", "yahoo", "aol"];
   const all = await page.evaluate((input) => window.__emailTools[0].execute(input), { html: sample, clients, dark: true });
   assert(all.ok, all.error?.message);
@@ -129,14 +178,19 @@ try {
   const frames = await page.locator("iframe").evaluateAll((items) => items.map((f) => ({ sandbox: f.getAttribute("sandbox"), src: f.getAttribute("src"), srcdoc: f.hasAttribute("srcdoc") })));
   assert(frames.every((f) => f.sandbox));
   assert(frames.filter((f) => f.sandbox.includes("allow-same-origin")).every((f) => f.src.startsWith("data:") && !f.srcdoc));
-  await run({ html: sample, clients: defaultClients() });
+  await run({ html: sample, clients });
+  await page.locator("#email-template").selectOption("fieldnotes");
+  await updated();
+  await page.locator("#email-preview").selectOption("outlook");
   await readyFrame();
   for (const width of [1440, 1100, 1024, 900, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.waitForFunction(() => {
       const frame = document.querySelector("#email-sheet iframe");
       const panel = document.getElementById("email-viewport");
-      return frame.clientWidth === 820 && Math.abs(frame.getBoundingClientRect().width - Math.min(820, panel.clientWidth)) < 1;
+      const style = getComputedStyle(panel);
+      const width = panel.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      return frame.clientWidth === 820 && Math.abs(frame.getBoundingClientRect().width - Math.min(820, width)) < 1;
     });
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), `No horizontal page overflow at ${width}px`);
     const overlaps = await page.evaluate(() => {
@@ -144,6 +198,7 @@ try {
       return getComputedStyle(nav).display !== "none" && nav.getBoundingClientRect().right > document.querySelector(".header-actions").getBoundingClientRect().left + 1;
     });
     assert(!overlaps, `Header navigation fits at ${width}px`);
+    assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), `Workspace fits the viewport at ${width}px`);
     if (process.env.EMAIL_TESTING_SHOTS && [1440, 390].includes(width)) {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
       await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
@@ -155,14 +210,24 @@ try {
   assert.equal(await page.locator("#email-sheet iframe").evaluate((frame) => frame.getBoundingClientRect().width), 820);
   assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "Actual size scrolls inside the preview panel");
   await page.getByRole("button", { name: "Fit to panel", exact: true }).click();
-  await page.getByRole("button", { name: "Example", exact: true }).click();
+  await page.getByRole("tab", { name: "Edit", exact: true }).click();
+  assert(await page.locator("#email-editor-panel").isVisible());
+  assert(!await page.locator("#email-preview-panel").isVisible());
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
   assert.equal(await page.locator("#email-html").inputValue(), sample);
+  await page.getByRole("tab", { name: "HTML", exact: true }).click();
+  assert(await page.locator("#email-html").isVisible());
+  await page.getByRole("tab", { name: "Preview", exact: true }).click();
+  assert(await page.locator("#email-preview-panel").isVisible());
   await page.reload();
   assert.equal(await page.locator("#email-html").inputValue(), sample, "A submitted email is not persisted");
+  await updated();
+  assert.equal(await page.locator("#email-preview").inputValue(), "apple-mail.iphone", "A phone opens with a phone preview");
+  await readyFrame();
+  if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-workspace-mobile.png"), fullPage: true });
   assert.deepEqual(errors, []);
-  console.log("Email testing: discovery, previews, client variants, findings, upload, JSON, agents, hostile HTML and responsive layout passed.");
+  console.log("Email workspace: editable templates, live updates, HTML export, client variants, render details, reports, agents, isolation and responsive layout passed.");
 } finally {
   await browser.close();
   await new Promise((done) => server.close(done));
 }
-function defaultClients() { return ["outlook", "gmail", "apple-mail"]; }
