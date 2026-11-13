@@ -1,15 +1,29 @@
 # @hyper-elements/cli
 
+Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally, with no React or Hyper Elements
+installation required:
+
+```bash
+npx @hyper-elements/cli check email.html
+npx @hyper-elements/cli preview email.html
+```
+
+The preview command writes `out/clients/email/outlook.html` and the other client previews to open in Chromium or Chrome.
+To collect browser findings automatically, see [Previews](#previews) for `playwright-core` and browser setup.
+
 Render, check and preview [Hyper Elements](https://github.com/hyper-elements/hyper-elements) templates from the shell,
 with no script of your own: an Email's HTML and plain text, a Page's HTML, a Document's PDF, a Canvas's image, the email
 client checks, and an Email as each email client draws it, with stable exit codes and JSON for agents and CI.
+
+For templates, install `@hyper-elements/cli` beside `@hyper-elements/react` in your project (`npm install -D @hyper-elements/cli`),
+then use the `hyper-elements` command:
 
 ```bash
 npx hyper-elements render emails/          # out/emails/welcome.html, out/emails/welcome.txt, … paths kept
 npx hyper-elements render docs/ cards/     # out/docs/invoice.pdf, out/cards/social.png
 npx hyper-elements check emails/ --json    # validate() and the email client checks; exit 1 on errors
 npx hyper-elements outline emails/welcome.tsx
-npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/emails/welcome/outlook.html, … drawn in Chromium
+npx hyper-elements preview emails/welcome.tsx   # out/clients/emails/welcome/outlook.html, …
 npx hyper-elements describe Button --root Email --json
 npx @hyper-elements/cli check email.html   # any HTML email: the email client checks, with nothing installed
 npx hyper-elements dev emails/ docs/       # a page on 127.0.0.1 showing each template, rendered again on each change
@@ -98,8 +112,8 @@ Each preview gets `ready` (`ok`, `incomplete` where a font or image was missing,
 preview whose page says `error` fails its template (`cli/preview-failed`, exit 1); one that's `incomplete` doesn't.
 Where no browser is found, the files are still written and the email client checks reported, each preview's `findings`
 is `null`, the input has `"browser": null, "reason": "no-browser"`, and the run exits 2. Where `playwright-core` isn't
-installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it; with npx, add it to the
-run: `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings`.
+installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it. Install both packages in
+the project with `npm install -D @hyper-elements/cli playwright-core`, then run `npx hyper-elements preview email.html --findings`.
 
 ```json
 {"version":1,"command":"preview","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":["out/clients/emails/welcome/gmail.html","out/clients/emails/welcome/gmail.mac.html"],"diagnostics":[],"previews":[{"id":"gmail","client":"gmail","path":"out/clients/welcome/gmail.html","ready":"ok","findings":{…}},{"id":"gmail.mac","client":"gmail","path":"out/clients/welcome/gmail.mac.html","ready":"ok","findings":{…}}],"browser":"chromium 148.0.7778.96, playwright"}
@@ -124,8 +138,17 @@ already HTML.
 
 ```bash
 npx @hyper-elements/cli check email.html --json
-cat email.html | npx @hyper-elements/cli preview - --findings
+cat email.html | npx @hyper-elements/cli preview -
 ```
+
+To collect findings, install the CLI and its optional browser dependency together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`.
 
 Both call `@hyper-elements/email-clients`' `renderInEmailClients(html)`. `check` keeps only its diagnostics, for the
 clients `--clients` names or, by default, those the plugin checks a template for (Yahoo and AOL among them, which have
