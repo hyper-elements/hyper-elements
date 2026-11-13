@@ -25,7 +25,7 @@ Install: \`${site.install}\`. Import components from \`${site.pkg}\`. A template
 
 To check an email or a page is easy to read (link words, alternate text, contrast, text size, headings, language, merge syntax typed by hand), use \`@hyper-elements/lint\`: \`validate(email, { plugins: [lint()] })\`, or \`lintHtml(html)\` from \`@hyper-elements/lint/html\` for any HTML email; the CLI runs it in \`check\`. See [Lint](${new URL(docHref("lint"), site.url).href}).
 
-To test an email in email clients (how it looks in Outlook, Gmail, Apple Mail and others) without sending it, use the email client emulator that comes with Hyper Elements: \`npm i @hyper-elements/email-clients\`, then \`renderInEmailClients(email)\` gives a preview per client. See [Email client emulator](${new URL(docHref("email-client-emulator"), site.url).href}).
+To check existing HTML emails and preview Outlook, Gmail and Apple Mail locally, use the JavaScript/TypeScript library \`@hyper-elements/email-clients\`: \`npm i @hyper-elements/email-clients\`, then \`await renderInEmailClients(html)\` takes the complete HTML string and returns previews and diagnostics. No React, account or test send is required. From the shell, \`npx @hyper-elements/cli check email.html\` checks the email and \`npx @hyper-elements/cli preview email.html\` writes the preview files. The library also takes Hyper Elements Email templates. See [Email client emulator](${new URL(docHref("email-client-emulator"), site.url).href}) for saving previews and the browser setup for CLI findings.
 `;
 
 export const abs = (slug: string) => new URL(docHref(slug), site.url).href;

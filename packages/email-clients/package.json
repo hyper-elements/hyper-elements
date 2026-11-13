@@ -1,7 +1,7 @@
 {
   "name": "@hyper-elements/email-clients",
   "version": "0.4.0",
-  "description": "Test emails in email clients without sending them: the email client emulator for Hyper Elements previews an email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, and checks it for what each client removes or changes.",
+  "description": "Check existing HTML emails and preview classic Outlook, Outlook.com, Gmail and Apple Mail locally. A JavaScript and TypeScript library with compatibility diagnostics and client previews; no React, account or test send required.",
   "license": "MIT",
   "type": "module",
   "repository": {
