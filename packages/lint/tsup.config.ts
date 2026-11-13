@@ -3,10 +3,10 @@ import { defineConfig } from "tsup";
 
 const { version } = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf8")) as { version: string };
 
-// The plugin (`.`): it imports nothing at run time. Elements is read through the tree a plugin is handed (types
-// only).
+// Two entries: the plugin (`.`) and lintHtml (`./html`). Neither imports anything at run time: Elements is read
+// through the tree a plugin is handed (types only), and HTML by the package's own tokenizer.
 export default defineConfig({
-  entry: { index: "src/index.ts" },
+  entry: { index: "src/index.ts", html: "src/html.ts" },
   format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,

@@ -182,21 +182,25 @@ jobs:
           fi
           echo "✅ Email client previews bundle within budget"
 
-      # The lint plugin (@hyper-elements/lint, dist/index.js): about 26KB unminified ESM, the rules (their summaries,
-      # fixes and messages), the tree read at both widths, contrast and the CSS color names. It imports nothing at run
-      # time. Raise it on purpose, with what grew.
-      - name: Check lint bundle size
+      # Lint (@hyper-elements/lint): the plugin, dist/index.js, about 39.3KB unminified ESM (the rules, their summaries,
+      # fixes and messages; the tree read at both widths; contrast and the CSS color names; and the HTML tokenizer and
+      # rules for Html blocks, about 13KB), and lintHtml, dist/html.js, about 20.7KB (the tokenizer, the HTML rules and
+      # the registry). Neither imports anything at run time. Each set from its size plus 2,000 bytes. Raise one on
+      # purpose, with what grew.
+      - name: Check lint bundle sizes
         run: |
-          BUNDLE="packages/lint/dist/index.js"
-          test -s "$BUNDLE" && test -s "packages/lint/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
-          SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=30000
-          echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
-          if [ "$SIZE" -gt "$MAX_SIZE" ]; then
-            echo "::error::Lint bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
-            exit 1
-          fi
-          echo "✅ Lint bundle within budget"
+          for entry in index:41500 html:22700; do
+            BUNDLE="packages/lint/dist/${entry%%:*}.js"
+            MAX_SIZE=${entry##*:}
+            test -s "$BUNDLE" && test -s "${BUNDLE%.js}.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
+            SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
+            echo "$BUNDLE: $SIZE bytes (budget: $MAX_SIZE bytes)"
+            if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+              echo "::error::Lint bundle $BUNDLE size $SIZE exceeds budget of $MAX_SIZE bytes"
+              exit 1
+            fi
+          done
+          echo "✅ Lint bundles within budget"
 
       # The closed @unlayer/exporters isn't a dependency: no package's bundle imports it (a message naming it doesn't count).
       - name: No bundle imports @unlayer/exporters

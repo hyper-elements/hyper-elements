@@ -1,0 +1,16 @@
+[
+  {
+    "code": "lint/lang",
+    "severity": "warning",
+    "line": 1,
+    "column": 123,
+    "message": "The email has no lang on its <html> or <body>, so screen readers guess its language"
+  },
+  {
+    "code": "lint/title",
+    "severity": "info",
+    "line": 1,
+    "column": 123,
+    "message": "The email has no <title>, which some email clients and browsers show"
+  }
+]
