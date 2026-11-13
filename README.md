@@ -208,4 +208,9 @@ Contributions are welcome. Use the Node.js version in [`.nvmrc`](./.nvmrc) and p
 
 ## License
 
-[MIT](./LICENSE). Built by the team behind [Unlayer](https://unlayer.com); works independently of the Unlayer platform.
+[MIT](./LICENSE). The one exception is the email client emulator's models of the clients, which come in
+[`@hyper-elements/email-client-models`](https://www.npmjs.com/package/@hyper-elements/email-client-models): free to
+use, commercially or not, under [its own licence](https://www.npmjs.com/package/@hyper-elements/email-client-models),
+which isn't an open-source one. Everything in this repository, `@hyper-elements/email-clients` included, is MIT.
+
+Built by the team behind [Unlayer](https://unlayer.com); works independently of the Unlayer platform.
