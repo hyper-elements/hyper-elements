@@ -16,7 +16,7 @@ describe("the stand-in fonts", () => {
   it("are each in fonts/, as WOFF2, beside their licences", () => {
     const files = new Set(PREVIEW_CLIENTS.flatMap((client) => fontFiles(client)));
     expect([...files].sort()).toEqual(readdirSync(fonts).filter((f) => f.endsWith(".woff2")).sort());
-    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
+    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt", "aptos-widths-LICENSE.txt", "lato-OFL.txt", "montserrat-OFL.txt", "open-sans-OFL.txt", "poppins-OFL.txt", "nunito-sans-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
   });
 
   it("inline within the budget for each client: 2,000,000 base64 bytes at most", () => {
@@ -50,9 +50,13 @@ describe("the stand-in fonts", () => {
     expect([...namedFamilies('<p style="font-family:&nbsp;Inter, Arial">')]).toEqual([]);
   });
 
-  it("leaves nothing out by default: no family is named-only since models 1.7.0 (Windows has no Inter)", () => {
+  it("leaves out Office's cloud fonts where the email doesn't name them (models 1.9.0), and keeps the one it names", () => {
     const leftOut = unnamed('<p style="font-family:Arial">Hi</p>');
-    expect([[...leftOut.files], leftOut.families]).toEqual([[], []]);
+    expect(leftOut.families).toEqual(["Lato", "Montserrat", "Open Sans", "Poppins", "Nunito Sans"]);
+    expect(leftOut.files.has("Lato-Regular.woff2")).toBe(true);
+    const lato = unnamed('<p style="font-family:Lato, Arial">Hi</p>');
+    expect(lato.families).toEqual(["Montserrat", "Open Sans", "Poppins", "Nunito Sans"]);
+    expect(lato.files.has("Lato-Regular.woff2")).toBe(false);
   });
 
   it("leaves a family's @font-face rules out of the preview's font CSS, and nothing else", () => {
