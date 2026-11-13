@@ -216,13 +216,23 @@
 .pg-file-card strong { color: var(--text); font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 
 .pg-view-clients { display: flex; flex-direction: column; }
-.pg-clients-tabs { flex: none; display: flex; gap: 2px; padding: 8px 10px 0; overflow-x: auto; scrollbar-width: none; }
-.pg-clients-tabs button {
-  flex: none; height: 28px; padding: 0 11px; border: 0; border-radius: 999px; background: none; color: var(--text-3); font: 500 12.5px var(--sans); cursor: pointer;
+/* The client, then the device it's read on and light or dark: one menu and two switches, not a tab per preview. */
+.pg-clients-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 14px 0; min-width: 0; }
+.pg-clients-bar[hidden], .pg-clients-bar .pg-seg[hidden] { display: none; }
+.pg-clients-menu { min-width: 0; }
+.pg-clients-open {
+  all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 8px; height: 32px; max-width: 100%; padding: 0 9px 0 12px;
+  border-radius: 9px; box-shadow: inset 0 0 0 1px var(--line-2); background: var(--bg-1); color: var(--text); font: 500 13px var(--sans); cursor: pointer;
+  transition: box-shadow 0.15s;
 }
-.pg-clients-tabs button:hover { color: var(--text); }
-.pg-clients-tabs button[aria-selected="true"] { color: var(--text); background: var(--hover-2); box-shadow: inset 0 0 0 1px var(--line-2); }
-.pg-clients-tabs button small { font: 500 10px var(--mono); color: var(--text-3); margin-left: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.pg-clients-open:hover { box-shadow: inset 0 0 0 1px var(--line-3); }
+.pg-clients-open:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+.pg-clients-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pg-clients-list { left: 0; right: auto; width: min(340px, calc(100vw - 32px)); max-height: min(520px, calc(100dvh - 200px)); overflow: auto; overscroll-behavior: contain; }
+.pg-clients-list button[aria-checked="true"] { background: var(--hover-2); }
+.pg-menu-group { padding: 8px 10px 4px; font: 500 10px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); }
+.pg-menu-group:not(:first-child) { margin-top: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
+.pg-clients-width { margin-left: auto; font: 400 12px var(--mono); color: var(--text-3); white-space: nowrap; }
 .pg-clients-stage { flex: 1; min-height: 0; position: relative; margin: 10px 14px 0; border-radius: 12px 12px 0 0; overflow: hidden; background: #fff; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 30px 80px -30px #000; }
 .pg-clients-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
 .pg-clients-stage iframe[hidden] { display: none; }

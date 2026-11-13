@@ -1,13 +1,13 @@
 // The playground's page: the editor, the root switch, the output's views and the checks, around a sandbox that runs
 // the code (sandbox.ts). What the sandbox answers is data: text is written as text, HTML goes into sandboxed frames
 // (preview.ts), a PDF or an image into a file of the type this page says it is.
-import type { Diagnostic, FontNeed, Request, Result, RootName } from "../../playground/protocol";
+import type { Diagnostic, FontNeed, Preview, Request, Result, RootName } from "../../playground/protocol";
 import { installAgentPaths } from "./agent";
 import { fetchAssets } from "./assets";
 import { Checks, clientName, type Pick } from "./checks";
 import { $, $$, bytes, copy, download, h, plural } from "./dom";
 import { Templates, type StarterInfo } from "./templates";
-import { opensSafely, previewDevice, previewFile, PreviewFrame } from "./preview";
+import { opensSafely, previewFile, PreviewFrame, type PreviewScripts } from "./preview";
 import { rootsIn, ROOTS, switchRoot, type Stash } from "./roots";
 import { Sandbox, SUPERSEDED, type Bundle } from "./sandbox";
 import { readHash, shareUrl } from "./share";
@@ -83,6 +83,8 @@ interface Saved {
   inspect?: boolean;
   /** Code the visitor changed under another root than the one that's up, kept for when they pick that root again. */
   drafts?: Partial<Record<RootName, Draft>>;
+  /** The email client preview last picked. */
+  client?: { client?: string; device?: string; dark?: boolean };
 }
 interface Draft {
   code: string;
@@ -785,13 +787,37 @@ async function drawFile(kind: FileKind) {
 
 let clientsKey = "";
 let clientsSequence = 0;
+/** The preview asked for: a client, the device it's read on, light or dark. A client without the device or the scheme
+ * asked for shows its first, and the ask stays for the next client that has it. */
+interface ClientChoice {
+  client?: string;
+  device?: string;
+  dark?: boolean;
+}
+let chosen: ClientChoice = saved.client ?? {};
+/** The previews drawn for the code that's up, each preview's frame made the first time it's picked. */
+let drawn: { previews: Preview[]; names?: Record<string, string>; scripts: PreviewScripts; frames: Map<number, HTMLElement> } | null = null;
+const clientsBar = $("[data-clients-bar]");
+const clientsOpen = $("[data-clients-open]");
+const clientsList = $("[data-clients-list]");
+const clientsDevice = $("[data-clients-device]");
+const clientsScheme = $("[data-clients-scheme]");
+const clientsHost = $("[data-clients-stage]");
+
+/** Where a preview is read: webmail on Windows or a Mac, an app on its own device or an iPhone. */
+const deviceOf = (preview: Preview): string => preview.computer ?? (/\.iphone(\.|$)/.test(preview.id) ? "iphone" : "own");
+/** The device an app's own preview is drawn for. */
+const OWN_DEVICE: Record<string, string> = { outlook: "Windows", "apple-mail": "Mac", "gmail-app": "Android", "gmail-app-other": "Android" };
+const DEVICE_NAMES: Record<string, string> = { windows: "Windows", mac: "Mac", iphone: "iPhone" };
+const deviceName = (client: string, device: string) => DEVICE_NAMES[device] ?? OWN_DEVICE[client] ?? "Desktop";
+const clientOf = (preview: Preview) => clientName(preview.client, drawn?.names);
+const card = (title: string, text: string) => h("div", { class: "pg-file-card", style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, title), text);
+
 async function drawClients() {
   const code = state.goodCode;
   if (clientsKey === code) return;
   const mine = ++clientsSequence;
   const owner = {};
-  const tabs = $("[data-clients-tabs]");
-  const host = $("[data-clients-stage]");
   showWorking(owner, "Drawing it as each client does…");
   sandbox.cancel("editor-clients");
   // The scripts a preview may run come from the site, not with the previews: without them, no preview is shown.
@@ -800,38 +826,98 @@ async function drawClients() {
   if (mine !== clientsSequence || state.view !== "clients") return;
   if (!result.ok || !result.previews?.length || scripts instanceof Error) {
     if (result.error?.message === SUPERSEDED) return;
-    tabs.replaceChildren();
+    drawn = null;
+    clientsBar.hidden = true;
     const problem = scripts instanceof Error ? `The playground's runtime didn't load (${scripts.message}). Check your connection and try again` : firstProblem(result) || "The email client models didn't load.";
-    host.replaceChildren(h("div", { class: "pg-file-card", style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "No client previews"), problem));
+    clientsHost.replaceChildren(card("No client previews", problem));
     return;
   }
   clientsKey = code;
-  const frames = result.previews.map((each, index) => {
-    const device = previewDevice(each);
-    const on = device ? ` on ${device}` : "";
-    const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)}${on} draws it${each.dark ? ", in dark mode" : ""}`, hidden: index !== 0 });
-    if (previewFile(frame, each.html, scripts)) return frame;
-    return h("div", { class: "pg-file-card", hidden: index !== 0, style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "Too large to preview here"), "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
-  });
-  const select = (index: number) => {
-    frames.forEach((frame, i) => (frame.hidden = i !== index));
-    [...tabs.children].forEach((tab, i) => tab.setAttribute("aria-selected", String(i === index)));
-  };
-  tabs.replaceChildren(
-    ...result.previews.map((each, index) =>
-      h(
-        "button",
-        { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) },
-        clientName(each.client, result.clientNames),
-        // Name the computer or phone so every variant has a distinct tab.
-        previewDevice(each) ? h("small", null, previewDevice(each)) : null,
-        each.dark ? h("small", null, "dark") : null,
-        // (An approximate preview, classic Outlook's, says so in the preview itself.)
-      ),
-    ),
-  );
-  host.replaceChildren(...frames);
+  drawn = { previews: result.previews, names: result.clientNames, scripts, frames: new Map() };
+  clientsHost.replaceChildren();
+  clientsBar.hidden = false;
+  showClient();
 }
+
+/** Show the preview `ask` comes to, and the bar for it: its client, its devices, and light and dark where it has both. */
+function showClient(ask: ClientChoice = chosen) {
+  if (!drawn) return;
+  const { previews, frames } = drawn;
+  const client = previews.some((p) => p.client === ask.client) ? ask.client! : previews[0]!.client;
+  const its = previews.filter((p) => p.client === client);
+  const devices = [...new Set(its.map(deviceOf))];
+  const device = ask.device && devices.includes(ask.device) ? ask.device : devices[0]!;
+  const there = its.filter((p) => deviceOf(p) === device);
+  const dark = there.some((p) => p.dark === Boolean(ask.dark)) ? Boolean(ask.dark) : there[0]!.dark;
+  const index = previews.findIndex((p) => p.client === client && deviceOf(p) === device && p.dark === dark);
+  const preview = previews[index]!;
+  chosen = { client, device: ask.device ?? device, dark: ask.dark ?? dark };
+  save({ client: chosen });
+
+  // Each preview's frame is made when it's first shown: a frame runs the models, and there are twenty previews.
+  let frame = frames.get(index);
+  if (!frame) {
+    const iframe = h("iframe", { title: `As ${clientOf(preview)} on ${deviceName(client, device)} draws it${dark ? ", in dark mode" : ""}` });
+    frame = previewFile(iframe, preview.html, drawn.scripts) ? iframe : card("Too large to preview here", "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
+    frames.set(index, frame);
+    clientsHost.append(frame);
+  }
+  for (const [i, each] of frames) each.hidden = i !== index;
+
+  $("[data-clients-name]").textContent = clientOf(preview);
+  const radio = (label: string, checked: boolean, pick: () => void) => h("button", { type: "button", role: "radio", "aria-checked": String(checked), tabindex: checked ? "0" : "-1", onclick: pick }, label);
+  clientsDevice.hidden = devices.length < 2;
+  clientsDevice.replaceChildren(...devices.map((d) => radio(deviceName(client, d), d === device, () => showClient({ ...chosen, device: d }))));
+  // Light and dark, where the client's dark mode is modelled.
+  clientsScheme.hidden = !there.some((p) => p.dark) || !there.some((p) => !p.dark);
+  clientsScheme.replaceChildren(radio("Light", !dark, () => showClient({ ...chosen, dark: false })), radio("Dark", dark, () => showClient({ ...chosen, dark: true })));
+  $("[data-clients-width]").textContent = `${preview.width}px`;
+}
+
+// The device and scheme switches: the arrow keys move along them.
+for (const group of [clientsDevice, clientsScheme])
+  group.addEventListener("keydown", (event) => {
+    const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const buttons = $$<HTMLButtonElement>("button", group);
+    const at = buttons.findIndex((b) => b.getAttribute("aria-checked") === "true");
+    buttons[(at + step + buttons.length) % buttons.length]!.click();
+    $$("button", group).find((b) => b.getAttribute("aria-checked") === "true")?.focus();
+  });
+
+// The client menu: the apps, then webmail, each with the devices it's previewed on and whether it has dark mode.
+function closeClients(focus = false) {
+  if (clientsList.hidden) return;
+  clientsList.hidden = true;
+  clientsOpen.setAttribute("aria-expanded", "false");
+  if (focus) clientsOpen.focus();
+}
+clientsOpen.addEventListener("click", () => {
+  if (!clientsList.hidden || !drawn) return closeClients();
+  const { previews } = drawn;
+  const clients = [...new Set(previews.map((p) => p.client))];
+  const item = (client: string) => {
+    const its = previews.filter((p) => p.client === client);
+    const note = [...new Set(its.map(deviceOf))].map((d) => deviceName(client, d)).join(" · ") + (its.some((p) => p.dark) ? " · Dark" : "");
+    return h("button", { type: "button", role: "menuitemradio", "aria-checked": String(client === chosen.client), onclick: () => (closeClients(true), showClient({ ...chosen, client })) }, clientOf(its[0]!), h("small", null, note));
+  };
+  const webmail = (client: string) => previews.some((p) => p.client === client && p.computer);
+  const group = (title: string, members: string[]) => (members.length ? [h("div", { class: "pg-menu-group", role: "presentation" }, title), ...members.map(item)] : []);
+  clientsList.replaceChildren(...group("Apps", clients.filter((c) => !webmail(c))), ...group("Webmail", clients.filter(webmail)));
+  clientsList.hidden = false;
+  clientsOpen.setAttribute("aria-expanded", "true");
+  (clientsList.querySelector<HTMLElement>('[aria-checked="true"]') ?? clientsList.querySelector<HTMLElement>("button"))?.focus();
+});
+clientsList.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") return closeClients(true);
+  const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+  if (!step) return;
+  event.preventDefault();
+  const items = $$("button", clientsList);
+  items[(items.indexOf(document.activeElement as HTMLElement) + step + items.length) % items.length]?.focus();
+});
+document.addEventListener("click", (event) => !clientsOpen.parentElement!.contains(event.target as Node) && closeClients());
 
 // ─── Checks tabs, panes, splitters ─────────────────────────────────────────
 

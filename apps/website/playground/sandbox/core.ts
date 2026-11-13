@@ -28,6 +28,8 @@ type Extras = {
     renderInEmailClients: (element: React.ReactElement | string, options?: object) => Promise<{ previews: Array<Record<string, unknown>>; skipped: Array<Record<string, unknown>>; diagnostics: Array<Elements.Diagnostic & { line?: number | null }> }>;
     /** Each client's name, as @hyper-elements/email-clients says it. */
     names: Record<string, string>;
+    /** The clients there's a model to preview with. */
+    previewClients: string[];
     /** renderInEmailClients(html)'s own input check: throws unless the HTML is a whole email. */
     checkWholeEmail: (html: unknown) => void;
   };
@@ -540,7 +542,7 @@ async function handle(request: Request): Promise<Result> {
         result.diagnostics = lines(output.diagnostics);
       } else if (request.kind === "previews") {
         if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
-        const output = await sandbox.extras.clients.renderInEmailClients(element, { emailClients: request.clients, dark: request.dark, fonts: "url" });
+        const output = await sandbox.extras.clients.renderInEmailClients(element, { emailClients: request.clients ?? sandbox.extras.clients.previewClients, dark: request.dark, fonts: "url" });
         result.previews = output.previews.map((p) => ({
           id: String(p.id),
           client: String(p.client),
