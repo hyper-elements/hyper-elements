@@ -16,9 +16,9 @@ Accuracy is how closely the emulator matches each real client for emails built w
 | Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
 | Gmail on the web | `gmail`, `gmail.mac` | 99% |
 | Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
+| Gmail app on an iPhone | `gmail-app.iphone` | 97% |
 | Apple Mail on a Mac, light and dark | `apple-mail`, `apple-mail.dark` | 98% |
 | Apple Mail on an iPhone, light and dark | `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
-| Gmail app on an iPhone | `gmail-app.iphone` | 97% |
 
 More email clients are on the way.
 
