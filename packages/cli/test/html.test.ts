@@ -111,7 +111,7 @@ describe("check on HTML", () => {
     expect(readdirSync(join(dir, "mail"))).toEqual(["welcome.html"]);
   });
 
-  it("--clients yahoo,gmail checks for those two: Yahoo has no model to preview with, and its checks still run", async () => {
+  it("--clients yahoo,gmail checks for those two, and check writes no previews", async () => {
     const dir = bare({ "mail/welcome.html": HTML });
     const ran = await cli(dir, ["check", "mail/welcome.html", "--json", "--clients", "yahoo,gmail"]);
     expect(ran.code, ran.stderr).toBe(0);
@@ -186,14 +186,14 @@ describe("preview on HTML", () => {
     expect(lines(ran)[0]).toMatchObject({ file: "stdin", input: "html", previews: [{ id: "gmail", path: "out/clients/stdin/gmail.html" }, { id: "gmail.mac", path: "out/clients/stdin/gmail.mac.html" }] });
   });
 
-  it("--clients yahoo,gmail: no Yahoo preview (cli/preview-skipped), its checks still run", async () => {
+  it("--clients gmx,gmail: no GMX preview (cli/preview-skipped), its checks still run", async () => {
     const dir = bare({ "mail/welcome.html": HTML });
-    const ran = await cli(dir, ["preview", "mail/welcome.html", "--json", "--clients", "yahoo,gmail"]);
+    const ran = await cli(dir, ["preview", "mail/welcome.html", "--json", "--clients", "gmx,gmail"]);
     expect(ran.code, ran.stderr).toBe(0);
     const [line] = lines(ran);
     expect(line.previews.map((p: any) => p.id)).toEqual(["gmail", "gmail.mac"]);
-    expect(line.diagnostics.filter((d: any) => d.code === "cli/preview-skipped").map((d: any) => d.clients)).toEqual([["yahoo"]]);
-    expect(line.diagnostics.some((d: any) => d.code === "email/html-css" && d.clients.includes("yahoo"))).toBe(true);
+    expect(line.diagnostics.filter((d: any) => d.code === "cli/preview-skipped").map((d: any) => d.clients)).toEqual([["gmx"]]);
+    expect(line.diagnostics.some((d: any) => d.code === "email/html-css" && d.clients.includes("gmx"))).toBe(true);
   });
 
   it("two HTML files with one name from different folders get a folder each, at their paths", async () => {

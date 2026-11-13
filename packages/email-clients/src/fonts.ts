@@ -75,9 +75,16 @@ export function unnamed(html: string, known: Readonly<Record<string, readonly st
   return { files: new Set(families.flatMap((family) => known[family]!)), families };
 }
 
+/**
+ * Files a client draws its own text with, though a NAMED_ONLY family shares them: AOL Mail's web font, drawn with Roboto
+ * and Open Sans Italic at its widths (models 1.11.0), whether or not the email names Open Sans.
+ */
+export const CLIENT_FILES: Partial<Record<ModelClient, readonly string[]>> = { aol: ["Roboto-Variable.woff2", "OpenSans-Italic-Variable.woff2"] };
+
 /** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */
 export async function fontSources(client: ModelClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set(), computer?: Computer): Promise<Record<string, string>> {
-  const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => !skip.has(file));
+  const own = CLIENT_FILES[client] ?? [];
+  const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => own.includes(file) || !skip.has(file));
   const sources = await Promise.all(files.map(async (file) => [file, how === "url" ? fontUrl(file) : `data:font/woff2;base64,${await read(file)}`] as const));
   return Object.fromEntries(sources);
 }
