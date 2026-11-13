@@ -11,6 +11,13 @@ import type { PreviewBlockMap } from "./preview-config";
 import { RUNTIME } from "./runtime.generated";
 import { previewFile, type PreviewSource } from "./shell";
 
+/**
+ * A stand-in the models list that's only their fallback where the host gives no file: its family ends in " Local"
+ * (models 1.9.0: classic Outlook's Aptos on the Mac's own Helvetica Neue). This package gives the files, so it neither
+ * waits for one nor checks it: a computer without that font (Windows, Linux) would list it as missing.
+ */
+const isFallback = (family: string) => family.endsWith(" Local");
+
 /** A block map with no blocks: HTML the caller gave names none, so findings point at the email as a whole. */
 export const NO_BLOCKS: PreviewBlockMap = { version: 2, unit: "utf8", entries: [] };
 
@@ -39,10 +46,10 @@ export async function previewsOf(
         name: info.name,
         blocks,
         fontOrigin,
-        fontSources: await fontSources(variant.client, fonts, read, skip.files, variant.computer),
-        faces: models.facesToLoad(variant.client, variant.computer).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`))),
+        fontSources: await fontSources(variant.model, fonts, read, skip.files, variant.computer),
+        faces: models.facesToLoad(variant.model, variant.computer).filter((face) => !skip.families.some((family) => face.endsWith(`"${family}"`)) && !isFallback(face.replace(/^.*"([^"]+)"$/, "$1"))),
         leftOut: skip.families,
-        standIns: models.standIns(variant.client, variant.computer),
+        standIns: models.standIns(variant.model, variant.computer).filter((family) => !isFallback(family)),
         elements: info.measured?.elements ?? null,
         runtime: RUNTIME.sha256,
         models: { script: script.sha256, protocol: models.PROTOCOL },

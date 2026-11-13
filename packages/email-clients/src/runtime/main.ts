@@ -93,9 +93,11 @@ async function main(): Promise<void> {
     const html = json<string>("email");
     const models = await loadModels(config.models.protocol);
     const mark = (text: string, limit?: number) => markPaths(text, config.blocks.entries, limit);
-    const processed = models.process(config.client, html, { mark, dark: config.dark, fonts: config.fontSources, computer: config.computer });
+    // The models' client: its own, or Mail on an iPhone for Apple Mail's phone preview (a preview written before 0.4.4 has none).
+    const model = config.model ?? config.client;
+    const processed = models.process(model, html, { mark, dark: config.dark, fonts: config.fontSources, computer: config.computer });
     findings.removed = Object.entries(processed.removed).map(([what, count]) => ({ what, count }));
-    const fontCss = withoutFaces(models.fontCss(config.client, config.fontSources), config.leftOut ?? []);
+    const fontCss = withoutFaces(models.fontCss(model, config.fontSources), config.leftOut ?? []);
     // Outlook.com's version has its web font from the model itself, as its scorer's has.
     const clientHtml = config.client === "outlook-com" ? processed.html : withCss(processed.html, fontCss);
     const height = WINDOW[config.variant];
@@ -119,7 +121,7 @@ async function main(): Promise<void> {
     findings.missing = [...standInsMissing.map((family) => ({ kind: "font" as const, family })), ...system.missing, ...author.map((a) => ({ kind: "author-font" as const, ...a })), ...images!.map((src) => ({ kind: "image" as const, src }))];
     findings.fonts = system.fonts;
     const types = new Map(config.blocks.entries.map((entry) => [entry.path, entry.type]));
-    findings.diagnostics.push(...models.findings(config.client, { shown: docs[0]!, baseline: docs[1]!, report, types, dark: config.dark }));
+    findings.diagnostics.push(...models.findings(model, { shown: docs[0]!, baseline: docs[1]!, report, types, dark: config.dark }));
     if (processed.cut !== null && (config.client === "gmail" || config.client === "gmail-app" || config.client === "gmail-app-other")) findings.diagnostics.push(clipped(config.client, processed.cut, processed.size ?? 0, config.blocks.entries));
     grow(shown);
     baseline.hidden = true;
