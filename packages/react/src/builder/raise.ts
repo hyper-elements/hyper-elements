@@ -105,10 +105,13 @@ export function raise(element: React.ReactElement, options: { customTools?: bool
       const own = at(path);
       return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
     },
-    custom: (node, around, hiding) => {
+    custom: (node, path, around, hiding) => {
       // A component placed where a Section goes renders a band across the window, which no block in a column is; one
       // with a prop named as one of the builder's own for a block can't keep it there.
       const definition = options.customTools ? components.find((c) => c.type === node.type && !c.categories.includes("section") && !unkept(c)) : undefined;
+      // The builder has these tools for emails and pages (registerTools()): in a document it keeps the block, as it
+      // does an HTML block, and fromDesign() reads it back as the component.
+      if (definition && root.type === "Document") report.push(`${path}: a ${node.type} is its custom tool's block: ${NOT_IN_DOCUMENTS}`);
       return definition && put(customBlock(node, definition, around, hiding));
     },
     stack: (node, path, around) => stack(node, path, at(path), around),

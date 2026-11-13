@@ -25,7 +25,7 @@ export interface Place {
   sayLeftOut(tool: string, node: Node, path: string, fields: readonly string[]): void;
   locked(node: Node, path: string, why: string, around: Sides): Block;
   /** A template's own component as its custom tool's block, where the design is written with them (custom.ts). */
-  custom(node: Node, around: Sides, hiding: { hideOnMobile?: boolean; hideOnDesktop?: boolean }): Block | undefined;
+  custom(node: Node, path: string, around: Sides, hiding: { hideOnMobile?: boolean; hideOnDesktop?: boolean }): Block | undefined;
   stack(node: Node, path: string, around: Sides): Block[];
   /** The text styles a block takes from its parents that the root's don't give it. */
   textAround(path: string): Record<string, Json>;
@@ -260,7 +260,7 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
     case "PageBreak":
       return place.put(block("page_break"));
     default: {
-      const tool = place.custom(node, around, hiding);
+      const tool = place.custom(node, path, around, hiding);
       if (tool) return tool;
       // A plain stack (a Column without a box of its own) is its blocks, in the same column.
       if ((node.type === "Column" || node.type === "Section") && !Object.keys(node.style ?? {}).some((key) => !["padding", "gap", "alignItems", ...TEXT_STYLES].includes(key)) && !node.hidden) {

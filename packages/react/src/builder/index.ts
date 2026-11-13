@@ -20,7 +20,9 @@ export interface ToDesignOptions {
    * Write each of the template's own components (made with `component()`) as its custom tool's block, its props the
    * block's values, for a builder those tools are registered in (`registerTools()`): there it's edited by its props,
    * and `fromDesign()` reads it back as the component. Without it, each is an HTML block of its own markup, which any
-   * builder draws and none edits. A component placed where a Section goes is that HTML block either way.
+   * builder draws and none edits. A component placed where a Section goes is that HTML block either way. In a
+   * Document the block is written and read back the same, but the builder's document mode doesn't draw it (the
+   * report says so): the tools are for emails and pages.
    */
   customTools?: boolean;
 }

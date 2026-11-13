@@ -1,6 +1,6 @@
 /** A template's own components in the builder: as custom tools' blocks in a design, read back, and registered in a builder. */
 import { describe, expect, it } from "vitest";
-import { Button, Column, component, defineProperty, defineTheme, Email, Heading, Image, Page, prop, render, Row, Section, Text, token } from "../primitives/index";
+import { Button, Column, component, defineProperty, defineTheme, Document, Email, Heading, Image, Page, prop, render, Row, Section, Text, token } from "../primitives/index";
 import { fromDesign, registerTools, toDesign, toolName, type Builder, type EditorWidget } from "./index";
 
 type Values = Record<string, any>;
@@ -141,6 +141,19 @@ describe("toDesign with customTools", () => {
     const { design, report } = toDesign(<Email><Hero title="Launch" /></Email>, { customTools: true });
     expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
     expect(report.join("\n")).toContain("HTML block");
+  });
+
+  it("says of a Document's own component that the builder's document mode doesn't draw its tool's block", () => {
+    const document = <Document><Footer /></Document>;
+    const { design, report } = toDesign(document, { customTools: true });
+    expect(blocks(design).map((content) => content.slug)).toEqual(["acme_legal_footer"]);
+    expect(report).toEqual(["root.children[0]: a acme.LegalFooter is its custom tool's block: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF"]);
+    // It comes back as the component still.
+    const back = fromDesign(design, { displayMode: "document", components: [Footer] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain("<acme.LegalFooter />");
+    // An Email's or a Page's is drawn there: nothing to say.
+    expect(toDesign(<Email><Footer /></Email>, { customTools: true }).report).toEqual([]);
   });
 
   it("writes a prop given a theme's token as the value it has there: the builder keeps no theme", () => {
