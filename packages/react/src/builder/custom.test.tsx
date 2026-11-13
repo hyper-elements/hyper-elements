@@ -1,6 +1,6 @@
 /** A template's own components in the builder: as custom tools' blocks in a design, read back, and registered in a builder. */
 import { describe, expect, it } from "vitest";
-import { Button, Column, component, defineProperty, defineTheme, Email, Heading, Image, Page, prop, render, Section, Text, token } from "../primitives/index";
+import { Button, Column, component, defineProperty, defineTheme, Email, Heading, Image, Page, prop, render, Row, Section, Text, token } from "../primitives/index";
 import { fromDesign, registerTools, toDesign, toolName, type Builder, type EditorWidget } from "./index";
 
 type Values = Record<string, any>;
@@ -506,6 +506,69 @@ describe("registerTools", () => {
     const half = tools[0].renderer.Viewer.render(values, { contentWidth: "600px" }, { columnIndex: 1, rowCells: [1, 1] });
     expect(full).toContain('width="600"');
     expect(half).toContain('width="300"');
+  });
+
+  it("draws in a column with less room than a root can be at the room it has, not wider", () => {
+    const { builder, tools } = fakeBuilder();
+    // A photo, which fills its room, over a Row, whose columns are one under the other where they don't fit in it.
+    const Pair = component({
+      type: "acme.Pair",
+      label: "Pair",
+      props: {},
+      render: () => (
+        <Column>
+          <Image src={{ src: "https://example.com/wide.png", width: 1200, height: 600 }} alt="" />
+          <Row><Column><Text>Left</Text></Column><Column><Text>Right</Text></Column></Row>
+        </Column>
+      ),
+    });
+    registerTools(builder, [Pair]);
+    const { Viewer, exporters } = tools[0].renderer;
+    const widths = (html: string) => [...new Set(html.match(/max-width:\d+px/g))];
+    // One of three columns of a 600px email, with the 10px the builder puts around a block: 180px.
+    const third = Viewer.render({ containerPadding: "10px" }, { contentWidth: "600px" }, { columnIndex: 0, rowCells: [1, 1, 1] });
+    expect(third).toContain('width="180"');
+    expect(widths(third)).toEqual(["max-width:200px", "max-width:180px", "max-width:90px"]);
+    expect(exporters.email({ containerPadding: "10px" }, 0, 0, [1, 1, 1], { contentWidth: "600px" })).toBe(third);
+    // One of four, with nothing around it: 150px. And of three in the builder's own 500px, a share that isn't whole.
+    expect(Viewer.render({ containerPadding: "0px" }, { contentWidth: "600px" }, { columnIndex: 3, rowCells: [1, 1, 1, 1] })).toContain('width="150"');
+    expect(Viewer.render({ containerPadding: "10px" }, { contentWidth: "500px" }, { columnIndex: 1, rowCells: [1, 1, 1] })).toContain('width="146"');
+    // A page's, the same.
+    expect(exporters.web({ containerPadding: "10px" }, 0, 0, [1, 1, 1], { contentWidth: "600px" })).toContain('width="180"');
+  });
+
+  it("draws a block at the width its column leaves it: less the column's own padding and border, where the builder gives them", () => {
+    const { builder, tools } = fakeBuilder();
+    const Pair = component({ type: "acme.Pair", label: "Pair", props: {}, render: () => <Row><Column><Text>Left</Text></Column><Column><Text>Right</Text></Column></Row> });
+    registerTools(builder, [Pair]);
+    const { Viewer, exporters } = tools[0].renderer;
+    // A Row's gap and a Column's padding and border are the builder's columns' own.
+    const template = (
+      <Email width={600}>
+        <Row style={{ gap: 18 }}>
+          <Column style={{ padding: 16, border: { width: 1, style: "solid", color: "#cccccc" } }}><Pair /></Column>
+          <Column><Pair /></Column>
+        </Row>
+      </Email>
+    );
+    const outer = (html: string) => Number(/max-width:(\d+)px/.exec(html)?.[1]);
+    // What the template itself gives each: as the same design's HTML blocks are drawn.
+    const drawn = toDesign(template).design.body.rows[0].columns.map((column: any) => outer(column.contents[0].values.html));
+    expect(drawn).toEqual([274, 274]);
+    const { design } = toDesign(template, { customTools: true });
+    const row = design.body.rows[0] as any;
+    expect(row.columns.map((column: any) => [column.values.padding, column.values.border.borderLeftWidth])).toEqual([["16px 25px 16px 16px", "1px"], ["0px 0px 0px 9px", undefined]]);
+    // What the builder exports is given its column's values (its last argument).
+    const exported = row.columns.map((column: any, index: number) =>
+      exporters.email(column.contents[0].values, 0, index, row.cells, design.body.values, row.values, {}, { index: 0, columnIndex: index, columnValues: column.values, rowCells: row.cells, rowValues: row.values, bodyValues: design.body.values })
+    );
+    expect(exported.map(outer)).toEqual(drawn);
+    // Its Row's columns are half of that each, so they fit side by side.
+    expect(exported[1]).toContain("max-width:137px");
+    expect(exported[1]).not.toContain("max-width:150px");
+    // A canvas is drawn the same from its column's values, where a builder gives it them.
+    const canvas = row.columns.map((column: any, index: number) => Viewer.render(column.contents[0].values, design.body.values, { columnIndex: index, rowCells: row.cells, columnValues: column.values }));
+    expect(canvas).toEqual(exported);
   });
 
   it("starts a block's phone styles where the email's do, whatever its column's width", async () => {

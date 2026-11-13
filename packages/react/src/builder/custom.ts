@@ -199,7 +199,8 @@ export function readCustom(slug: unknown, values: Values, context: Context, tool
 /** The part of the builder's `unlayer` object registerTools() uses. */
 export interface Builder {
   registerTool(tool: Record<string, unknown>): void;
-  createViewer(viewer: { render(values: Values, body?: Values, place?: { columnIndex?: number; rowCells?: number[] }): string }): unknown;
+  /** `place` is where the block is: its row's cells and its column's index. The builder gives a canvas no values of its column (it gives them to what it exports): where one does, `columnValues`, they're read. */
+  createViewer(viewer: { render(values: Values, body?: Values, place?: { columnIndex?: number; rowCells?: number[]; columnValues?: Values }): string }): unknown;
   /** For the editors given as they're written (`editors`). */
   registerPropertyEditor?(editor: { name: string; Widget: unknown }): void;
   createWidget?(widget: { render(value: unknown, update: (value: unknown) => void): string; mount(node: HTMLElement, value: unknown, update: (value: unknown) => void): void }): unknown;
@@ -258,22 +259,33 @@ const GIVEN = ["name", "label", "icon", "supportedDisplayModes", "options", "val
 
 const escape = (text: string) => text.replace(/[&<>"]/g, (c) => `&#${c.charCodeAt(0)};`);
 
-/** A block's width where the builder draws it: its column's share of the content width, less its own spacing. */
-function widthOf(values: Values, content: number, cells: number[] | undefined, index: number | undefined): number {
+/**
+ * The room a block has where the builder draws it: its column's share of the content width, less the column's own
+ * padding and border (`column`, its values, where the builder gives them) and the block's own spacing. Rounded down:
+ * drawn any wider than its room, a Row in it has its columns one under the other.
+ */
+function roomOf(values: Values, content: number, cells: number[] | undefined, index: number | undefined, column: Values): number {
   const total = (cells ?? []).reduce((sum, cell) => sum + cell, 0);
   const share = total && cells && index !== undefined && cells[index] ? cells[index] / total : 1;
-  const padding = sides(values.containerPadding ?? "10px");
-  return Math.max(200, Math.round(content * share) - (padding ? padding.left + padding.right : 0));
+  const own = sides(values.containerPadding ?? "10px");
+  const around = sides(column.padding);
+  const lines = obj(column.border);
+  const taken = [own?.left, own?.right, around?.left, around?.right, px(lines.borderLeftWidth), px(lines.borderRightWidth)].reduce<number>((sum, part) => sum + (part ?? 0), 0);
+  return Math.max(1, Math.floor(content * share - taken));
 }
 
 /**
- * A component drawn on its own from its tool's values, as an Email's markup or a Page's, with its stylesheet: at its
- * block's width, which is its column's share (`cells`, `index`) of the builder's content width (`body`).
+ * A component drawn on its own from its tool's values, as an Email's markup or a Page's, with its stylesheet: at the
+ * room its block has, which is its column's share (`cells`, `index`) of the builder's content width (`body`), less
+ * what's around it there (`column`).
  */
-function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinition<any>[], root: "Email" | "Page", values: Values, body: Values | undefined, cells: number[] | undefined, index: number | undefined): string {
+function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinition<any>[], root: "Email" | "Page", values: Values, body: Values | undefined, cells: number[] | undefined, index: number | undefined, column: Values = {}): string {
   const content = px(obj(body).contentWidth) ?? 600;
-  const width = widthOf(values, content, cells, index);
-  const node: Node = make(definition.type, { props: toolProps(definition, values) });
+  const room = roomOf(values, content, cells, index, column);
+  // A root is 200px wide at least: in less room than that, the component is in a Column of the room's width.
+  const width = Math.max(200, room);
+  const own: Node = make(definition.type, { props: toolProps(definition, values) });
+  const node: Node = room < width ? { type: "Column", style: { width: room }, children: [own] } : own;
   const written = renderTemplate({ root: { type: root, props: { width }, children: [node] } }, { components: tools });
   const style = /<style>[\s\S]*?<\/style>/.exec(written.head)?.[0] ?? "";
   // An Email is on a phone below its own width, which here is its block's: its styles for phones start where the
@@ -347,7 +359,7 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
       const cells = (Array.isArray(rest[2]) ? rest[2] : meta.rowCells) as number[] | undefined;
       const index = (typeof rest[1] === "number" ? rest[1] : meta.columnIndex) as number | undefined;
       try {
-        return draw(definition, all, root, values, obj(rest[3] ?? meta.bodyValues), cells, index);
+        return draw(definition, all, root, values, obj(rest[3] ?? meta.bodyValues), cells, index, obj(meta.columnValues));
       } catch {
         return "";
       }
@@ -365,7 +377,7 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
         Viewer: builder.createViewer({
           render(values, body, place) {
             try {
-              return draw(definition, all, canvas, values, body, place?.rowCells, place?.columnIndex);
+              return draw(definition, all, canvas, values, body, place?.rowCells, place?.columnIndex, obj(place?.columnValues));
             } catch (error) {
               const problems = error instanceof ElementsError ? error.diagnostics.map((d) => d.message) : [String((error as Error)?.message ?? error)];
               return `<div style="padding:12px;border:1px dashed #b91c1c;color:#b91c1c;font:13px/1.4 sans-serif">${escape(`${definition.label}: ${problems[0]}`)}</div>`;
