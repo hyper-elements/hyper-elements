@@ -57,26 +57,42 @@ export function writeCanvas(root: ResolvedNode, context: WriteContext): DrawnCan
 
 const gap = (node: ResolvedNode): Style => (typeof node.style.gap === "number" ? { gap: px(node.style.gap) } : {});
 
+/** A run with nothing to draw: no text, or a Span or a Link holding none. It would be a flex item of its own. */
+const blank = (run: Run): boolean => (typeof run === "string" ? run === "" : run.kind === "span" && run.runs.every(blank));
+
+/** Whether a run ends in a space: inside a Span or a Link, whether the run that ends it does. */
+const endsInSpace = (run: Run): boolean => {
+  if (typeof run === "string") return run.endsWith(" ");
+  const last = run.kind === "span" ? run.runs[run.runs.length - 1] : undefined;
+  return last !== undefined && endsInSpace(last);
+};
+
 /**
  * The space at a block of text's own edges, taken off: `white-space: normal` drops it in the HTML outputs, and the
  * `pre-wrap` a block of text is drawn under (`paragraph()`) would otherwise draw it as an indent. Each end is taken
- * off the run that holds it, inside a Span or a Link at that end; an Image at one ends the walk, having no space.
+ * off the run that holds it, inside a Span or a Link at that end. A run left with nothing goes, and the edge is then
+ * the run beside it: the space after a Span that held only a space starts the block as much as that Span's own did.
+ * An Image at an end ends the walk, having no space.
  */
 function trimEdges(runs: Run[]): Run[] {
   const trim = (list: Run[], side: "start" | "end"): Run[] => {
-    const at = side === "start" ? 0 : list.length - 1;
-    const run = list[at];
-    if (run === undefined) return list;
-    let edge: Run;
-    if (typeof run === "string") edge = side === "start" ? run.replace(/^ +/, "") : run.replace(/ +$/, "");
-    else if (run.kind === "span") edge = { ...run, runs: trim(run.runs, side) };
-    else return list;
-    const next = [...list];
-    next[at] = edge;
-    return next;
+    const rest = [...list];
+    while (rest.length > 0) {
+      const at = side === "start" ? 0 : rest.length - 1;
+      const run = rest[at]!;
+      let edge: Run;
+      if (typeof run === "string") edge = side === "start" ? run.replace(/^ +/, "") : run.replace(/ +$/, "");
+      else if (run.kind === "span") edge = { ...run, runs: trim(run.runs, side) };
+      else break;
+      if (!blank(edge)) {
+        rest[at] = edge;
+        break;
+      }
+      rest.splice(at, 1);
+    }
+    return rest;
   };
-  // An emptied run would be a flex item of its own, so it goes.
-  return trim(trim(runs, "start"), "end").filter((run) => run !== "");
+  return trim(trim(runs, "start"), "end");
 }
 
 /** The space a run starts with, taken off it: inside a Span or a Link, off the run that starts it. */
@@ -103,25 +119,32 @@ function appendSpace(run: Run): Run | undefined {
  * The space between two runs, moved to the end of the first. Each run is a flex item, and `pre-wrap` keeps a space
  * wherever it sits, so a space starting a run is drawn as an indent where that run begins a new line ("Hello
  * <Span>world</Span> and more" wrapping before "and"). At the end of the run before it, it hangs off the line's end
- * as `white-space: normal` hangs it in the HTML outputs. A space after a line break goes, as a browser drops it;
- * one after an Image stays, there being nothing to hang it on.
+ * as `white-space: normal` hangs it in the HTML outputs. A space after a line break goes, as a browser drops it,
+ * and so does one after a run that ends in a space: the two are one space in the HTML outputs, where white space
+ * collapses across a Span's edge ("Hello <Span> world</Span>"). One after an Image stays, there being nothing to
+ * hang it on.
  */
 function hoistSpaces(runs: Run[]): Run[] {
-  const out = [...runs];
-  for (let at = 1; at < out.length; at++) {
-    const taken = takeLeadingSpace(out[at]!);
-    if (!taken.took) continue;
-    const before = out[at - 1]!;
-    if (before === "\n") {
-      out[at] = taken.run;
-      continue;
+  const out: Run[] = [];
+  for (const run of runs) {
+    const before = out[out.length - 1];
+    let next = run;
+    const taken = before === undefined ? undefined : takeLeadingSpace(run);
+    if (before !== undefined && taken?.took) {
+      if (before === "\n" || endsInSpace(before)) next = taken.run;
+      else {
+        const joined = appendSpace(before);
+        if (joined !== undefined) {
+          out[out.length - 1] = joined;
+          next = taken.run;
+        }
+      }
     }
-    const joined = appendSpace(before);
-    if (joined === undefined) continue;
-    out[at - 1] = joined;
-    out[at] = taken.run;
+    // A run with nothing to draw isn't one: a Span that was only that space, or one that held nothing (a value that
+    // came empty), which would otherwise stand between the space after it and the space that one collapses into.
+    if (!blank(next)) out.push(next);
   }
-  return out.filter((run) => run !== "");
+  return out;
 }
 
 class Writer {
@@ -314,8 +337,10 @@ class Writer {
   runs(node: ResolvedNode): Run[] {
     return present(
       node.children.map((child): Run | undefined => {
-        // As white space collapses in HTML: a run of it is one space, so pre-wrap draws the words as the others do.
-        if (typeof child === "string") return child.replace(/\s+/g, " ");
+        // As white space collapses in HTML: a run of spaces, tabs and line breaks is one space, so pre-wrap draws the
+        // words as the others do. A non-breaking space isn't among them (`\s` would take U+00A0 and U+202F too):
+        // each is kept and drawn, and keeps the words either side of it on one line.
+        if (typeof child === "string") return child.replace(/[ \t\n\r\f]+/g, " ");
         if (!shown(child)) return undefined;
         switch (child.type) {
           case "LineBreak":

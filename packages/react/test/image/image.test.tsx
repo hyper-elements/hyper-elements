@@ -343,26 +343,43 @@ describe("renderImage", () => {
     centered(await across(canvas("center", <Text style={{ fontSize: 48 }}>{"Five days of new things, one a day, all week long. ".repeat(3)}</Text>)));
   });
 
-  it("keeps the space before and after a Span or a Link, and starts a wrapped line at the margin", async () => {
-    /** Every point of the Canvas's letters, by the line it's drawn on. */
-    const lines = async (children: ReactNode, width = 900) => {
-      const template = (
-        <Canvas width={width} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
-          {children}
-        </Canvas>
-      );
-      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
-      const points = [...svg.matchAll(/<path[^>]* d="([^"]+)"/g)].flatMap((path) => [...path[1].matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((point) => [Number(point[1]), Number(point[2])] as const));
-      const rows = new Map<number, number[]>();
-      // A line's letters sit within about its height of each other; 30px buckets keep each line's points together.
-      for (const [x, y] of points) rows.set(Math.round(y / 30), [...(rows.get(Math.round(y / 30)) ?? []), x]);
-      return [...rows].sort((a, b) => a[0] - b[0]).map(([, xs]) => ({ from: Math.min(...xs), to: Math.max(...xs) }));
-    };
-    const width = async (children: ReactNode) => {
-      const drawn = await lines(children);
-      return Math.max(...drawn.map((line) => line.to)) - Math.min(...drawn.map((line) => line.from));
-    };
+  /** The lines of a Canvas's text, top to bottom: where each one's letters start and end across it, and its top. */
+  const lines = async (children: ReactNode, width = 900) => {
+    const template = (
+      <Canvas width={width} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+        {children}
+      </Canvas>
+    );
+    const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+    const points = [...svg.matchAll(/<path[^>]* d="([^"]+)"/g)].flatMap((path) => [...path[1].matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((point) => [Number(point[1]), Number(point[2])] as const));
+    // Lines are 36px apart and a line's letters under 24px tall, so 10px with no point in it is the space between two.
+    const rows: Array<{ top: number; xs: number[] }> = [];
+    let last = -Infinity;
+    for (const [x, y] of points.sort((a, b) => a[1] - b[1])) {
+      if (y - last > 10) rows.push({ top: y, xs: [] });
+      rows[rows.length - 1]!.xs.push(x);
+      last = y;
+    }
+    return rows.map(({ top, xs }) => ({ from: Math.min(...xs), to: Math.max(...xs), top }));
+  };
+  /** How wide its text is drawn. */
+  const width = async (children: ReactNode) => {
+    const drawn = await lines(children);
+    return Math.max(...drawn.map((line) => line.to)) - Math.min(...drawn.map((line) => line.from));
+  };
+  type Run = string | { kind: string; runs?: Run[] };
+  /** What the writer gives the engine to draw: each block's runs. */
+  const drawn = (children: ReactNode) => {
+    const { root } = prepare(
+      <Canvas width={420} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+        {children}
+      </Canvas>
+    );
+    return writeCanvas(root!, { families: new Set(["liberation sans"]), fallback: "Liberation Sans", fonts: [], image: (src) => src }).children as Array<{ runs?: Run[] }>;
+  };
+  const said = (runs: Run[]): string => runs.map((run) => (typeof run === "string" ? run : (run.runs && said(run.runs)) ?? "")).join("");
 
+  it("keeps the space before and after a Span or a Link, and starts a wrapped line at the margin", async () => {
     // Each run is a flex item, and a flex item's text is trimmed: the spaces around a Span would be lost, drawing
     // "Helloworldand more" (about two spaces narrower than the same words written plainly).
     const plain = await width(<Text>Hello world and more</Text>);
@@ -380,21 +397,11 @@ describe("renderImage", () => {
 
     // A space starting a run would be drawn as an indent where the words wrap before that run, so the writer hangs
     // it off the end of the run before it instead. Every one of a block's runs but the first begins with a letter.
-    type Run = string | { kind: string; runs?: Run[] };
     const begins = (run: Run): boolean => {
       if (typeof run === "string") return run.startsWith(" ");
       const first = run.runs?.[0];
       return run.kind === "span" && first !== undefined && begins(first);
     };
-    const drawn = (children: ReactNode) => {
-      const { root } = prepare(
-        <Canvas width={420} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
-          {children}
-        </Canvas>
-      );
-      return writeCanvas(root!, { families: new Set(["liberation sans"]), fallback: "Liberation Sans", fonts: [], image: (src) => src }).children as Array<{ runs?: Run[] }>;
-    };
-    const said = (runs: Run[]): string => runs.map((run) => (typeof run === "string" ? run : (run.runs && said(run.runs)) ?? "")).join("");
     for (const block of drawn(
       <>
         <Text>
@@ -408,6 +415,55 @@ describe("renderImage", () => {
       expect(block.runs?.slice(1).filter(begins)).toEqual([]);
     }
     expect(said(drawn(<Text>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</Text>)[0]!.runs!)).toBe("Hello world and more");
+  });
+
+  it("keeps a non-breaking space: each one drawn, and the words either side of it on one line", async () => {
+    const NBSP = "\u00a0";
+    // Spaces collapse into one; non-breaking spaces don't (`\s` takes both, and would make the four of them one).
+    const one = await width(<Text>A B</Text>);
+    expect(Math.abs((await width(<Text>{"A    B"}</Text>)) - one)).toBeLessThan(1);
+    expect((await width(<Text>{`A${NBSP.repeat(4)}B`}</Text>)) - one).toBeGreaterThan(15);
+    // Only the space that collapses is taken off a block's start: two non-breaking ones indent it.
+    const [flush] = await lines(<Text>Hello</Text>);
+    const [indented] = await lines(<Text>{`${NBSP}${NBSP}Hello`}</Text>);
+    expect(indented!.from - flush!.from).toBeGreaterThan(10);
+    // A price too wide to share a line with the word either side of it isn't split: "Buy", "100 USD", "today".
+    const price = await lines(<Text>{`Buy 100${NBSP}USD today`}</Text>, 160);
+    const [whole] = await lines(<Text>{`100${NBSP}USD`}</Text>);
+    expect(price).toHaveLength(3);
+    expect(Math.abs(price[1]!.to - price[1]!.from - (whole!.to - whole!.from))).toBeLessThan(2);
+    // The narrow one (U+202F, in a French number as Intl writes it) reaches the engine as it was written too.
+    const amount = `1\u202f234,50${NBSP}\u20ac`;
+    expect(said(drawn(<Text>{amount}</Text>)[0]!.runs!)).toBe(amount);
+  });
+
+  it("draws nothing for a Span that holds nothing: the space after it is the block's edge, or the one space between two words", async () => {
+    // A value that came empty, as a template's data gives one.
+    const title = "";
+    // At the block's start the space after it goes, as at any block's start: the words are drawn where they are
+    // without it (left in, the space would be a run of its own, a line the words no longer fit beside, and they
+    // would be drawn on the line under it).
+    const fits = await lines(<Text>Hello world</Text>, 160);
+    const after = await lines(<Text><Span>{title}</Span> Hello world</Text>, 160);
+    expect(fits).toHaveLength(1);
+    expect(after).toHaveLength(1);
+    for (const edge of ["from", "to", "top"] as const) expect(Math.abs(after[0]![edge] - fits[0]![edge]), edge).toBeLessThan(1);
+    // A Span that holds only a space is the same edge.
+    expect(said(drawn(<Text><Span> </Span> Hello world</Text>)[0]!.runs!)).toBe("Hello world");
+    expect(said(drawn(<Text>Hello world <Span> </Span></Text>)[0]!.runs!)).toBe("Hello world");
+
+    // Between two words, the space before it and the space after it are one space, as white space collapses across
+    // a Span's edge in the HTML outputs: so are a space ending one run and a space starting the next.
+    const plain = await width(<Text>Hello world and more</Text>);
+    for (const children of [
+      <>Hello <Span>{title}</Span> world and more</>,
+      <>Hello <Span style={{ color: "#ff0000" }}> world</Span> and more</>,
+      <>Hello <Span style={{ color: "#ff0000" }}>world </Span> and more</>,
+      <>Hello <Link href="https://x.test"> world</Link> and more</>,
+    ]) {
+      expect(said(drawn(<Text>{children}</Text>)[0]!.runs!)).toBe("Hello world and more");
+      expect(Math.abs((await width(<Text>{children}</Text>)) - plain)).toBeLessThan(2);
+    }
   });
 
   it("writes a Canvas only", async () => {
