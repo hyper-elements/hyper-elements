@@ -598,11 +598,25 @@ attempt("origin", () => { if (self.origin === "null") throw 0; return self.origi
   {
     const page = await open("#view=clients");
     await page.locator("[data-clients-stage] iframe").first().waitFor({ timeout: 60_000 });
-    // Each client's tab says which preview it is: webmail is previewed on Windows and on a Mac, Apple Mail light and dark.
-    const tabs = (await page.locator("[data-clients-tabs] button").allInnerTexts()).map((text) => text.replace(/\s+/g, " ").trim());
-    assert.equal(new Set(tabs).size, tabs.length, `Two tabs read the same: ${tabs.join(" | ")}`);
-    const tags = await page.locator("[data-clients-tabs] button small").allTextContents();
-    assert(tags.includes("Mac") && tags.includes("Windows"), `The webmail tabs name the computer: ${tabs.join(" | ")}`);
+    // Every client there's a model of is in the client menu once, the apps and then webmail. Picking one shows its
+    // preview, with a switch for the devices it's read on and one for light and dark where it has both.
+    const pick = async (client) => {
+      await page.locator("[data-clients-open]").click();
+      await page.locator("[data-clients-list] button").evaluateAll((items, name) => items.find((item) => item.firstChild.textContent === name).click(), client);
+      assert.equal(await page.locator("[data-clients-name]").innerText(), client);
+    };
+    await page.locator("[data-clients-open]").click();
+    const names = (await page.locator("[data-clients-list] button").evaluateAll((items) => items.map((item) => item.firstChild.textContent)));
+    await page.locator("[data-clients-open]").click();
+    assert.equal(new Set(names).size, names.length, `A client listed twice: ${names.join(" | ")}`);
+    for (const client of ["Classic Outlook", "Apple Mail", "Gmail", "Yahoo Mail", "AOL Mail"]) assert(names.includes(client), `${client} isn't in the menu: ${names.join(" | ")}`);
+    for (const client of ["Outlook.com and new Outlook", "Gmail", "Apple Mail"]) await pick(client);
+    await pick("Yahoo Mail");
+    const radios = async (group) => (await page.locator(`[data-clients-${group}] button`).allInnerTexts()).join(" ");
+    assert.equal(await radios("device"), "Windows Mac", "Webmail's devices are the two computers");
+    await page.locator("[data-clients-device] button", { hasText: "Mac" }).click();
+    await page.locator("[data-clients-scheme] button", { hasText: "Dark" }).click();
+    assert.match(await page.locator("[data-clients-stage] iframe:not([hidden])").getAttribute("title"), /Yahoo Mail on Mac draws it, in dark mode/);
     const frames = await page.evaluate(() => [...document.querySelectorAll("iframe")].map((frame) => ({ sandbox: frame.getAttribute("sandbox"), src: (frame.getAttribute("src") ?? "").slice(0, 40), srcdoc: frame.hasAttribute("srcdoc"), allow: frame.getAttribute("allow"), where: frame.className || [...frame.parentElement.attributes].map((a) => a.name).join(" ") })));
     assert(frames.length >= 6, "The sandbox, the preview's two frames and the email clients' are on the page");
     for (const frame of frames) {
@@ -658,6 +672,11 @@ export default <Email><Text>A rewritten preview</Text></Email>;
 `;
     const page = await open(`#code=${encode(code)}&view=clients`);
     await page.locator("[data-clients-stage] iframe").first().waitFor({ timeout: 60_000 });
+    // A preview's frame is made when its client is picked: four clients picked, four frames.
+    for (const client of ["Outlook.com and new Outlook", "Gmail", "Apple Mail"]) {
+      await page.locator("[data-clients-open]").click();
+      await page.locator("[data-clients-list] button").evaluateAll((items, name) => items.find((item) => item.firstChild.textContent === name).click(), client);
+    }
     // Each preview's frame, once it has loaded its file.
     let previews = [];
     for (let wait = 0; wait < 100 && previews.length < 4; wait++) {

@@ -69,7 +69,7 @@ export interface PlaygroundError {
 export interface Preview {
   id: string;
   client: string;
-  /** For webmail (Outlook.com, Gmail on the web), the computer it's read on: each is previewed on both. */
+  /** For webmail (Outlook.com, Gmail, Yahoo Mail and AOL Mail on the web), the computer it's read on: each is previewed on both. */
   computer?: "windows" | "mac";
   dark: boolean;
   width: number;
