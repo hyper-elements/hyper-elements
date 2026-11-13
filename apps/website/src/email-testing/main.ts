@@ -30,6 +30,8 @@ let result: Result | undefined;
 let report: Report | undefined;
 let scripts: PreviewScripts | undefined;
 let frame: HTMLIFrameElement | undefined;
+let frameHeight = 900;
+let heightToken = "";
 let sequence = 0;
 let selectedPreviewId = matchMedia("(max-width: 760px)").matches ? "apple-mail.iphone" : "apple-mail";
 let focused = false;
@@ -175,16 +177,21 @@ function resize() {
   if (!viewport.clientWidth) return;
   const padding = getComputedStyle(viewport);
   const width = viewport.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight);
-  const height = viewport.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
   const scale = Math.min(1, width / preview.width);
-  // Only the preview document scrolls; its fitted frame stays inside the panel.
-  const frameHeight = Math.max(1, Math.floor(height / scale));
   frame.style.width = `${preview.width}px`;
   frame.style.height = `${frameHeight}px`;
   frame.style.transform = `scale(${scale})`;
   sheet.style.width = `${preview.width * scale}px`;
   sheet.style.height = `${frameHeight * scale}px`;
 }
+
+addEventListener("message", (event) => {
+  const data = event.data;
+  if (!frame || event.source !== frame.contentWindow || !data || data.type !== "email-preview-height" || data.token !== heightToken) return;
+  if (typeof data.height !== "number" || !Number.isFinite(data.height) || data.height <= 0) return;
+  frameHeight = Math.min(Math.ceil(data.height), 10_000_000);
+  resize();
+});
 
 function showPreview() {
   const preview = result?.previews?.find((p) => p.id === selectedPreviewId);
@@ -195,7 +202,10 @@ function showPreview() {
   error.hidden = true;
   sheet.replaceChildren();
   frame = undefined;
-  if (!previewFile(next, preview.html, scripts, { canvas: true })) {
+  frameHeight = 900;
+  heightToken = crypto.randomUUID();
+  viewport.scrollTop = 0;
+  if (!previewFile(next, preview.html, scripts, { canvas: true, heightToken })) {
     error.textContent = "This preview is too large to display here. Use @hyper-elements/cli to preview this email locally.";
     error.hidden = false;
     return;
@@ -262,7 +272,7 @@ async function check(input: Input): Promise<Report> {
     scripts = await sandbox.previewScripts();
     if (run !== sequence) return { ok: false, diagnostics: [], previews: [], ms: 0, error: { kind: "internal", message: "Superseded by another edit or test." } };
     // Serve the sample's own image from this deployment, including PR previews and localhost.
-    // Keep the source/export URL portable. Other hosts in user HTML are left as written.
+    // Keep the source URL portable. Other hosts in user HTML are left as written.
     const previewHtml = input.html.replaceAll("https://www.hyperelements.dev/img/email-testing/", `${location.origin}/img/email-testing/`);
     const output = await sandbox.run({ kind: "html-previews", html: previewHtml, clients: [...new Set(clients)], dark: input.dark }, ["clients"], "email-testing");
     const summary: Report = {
@@ -331,7 +341,6 @@ function save(contents: string, name: string, type: string) {
   window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 download.addEventListener("click", () => { if (report) save(JSON.stringify(report, null, 2), "email-compatibility-report.json", "application/json"); });
-get("email-export").addEventListener("click", () => save(source.value, "email.html", "text/html"));
 
 Object.defineProperty(window, "hyperElementsEmailTesting", { value: Object.freeze({ check }), configurable: true });
 type ModelContext = { registerTool(tool: object): unknown };
@@ -346,5 +355,5 @@ if (modelContext?.registerTool) {
     })).catch(() => undefined);
   } catch { /* The browser API is optional; the window API remains available. */ }
 }
-for (const id of ["email-run", "email-example", "email-export"]) get<HTMLButtonElement>(id).disabled = false;
+for (const id of ["email-run", "email-example"]) get<HTMLButtonElement>(id).disabled = false;
 void runUI();

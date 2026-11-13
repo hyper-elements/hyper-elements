@@ -1,7 +1,7 @@
 /* HTML on the left; client thumbnails and the selected full preview on the right. */
 .et-workspace { height: calc(100dvh - var(--header)); min-height: 540px; display: grid; grid-template-rows: auto minmax(0, 1fr); padding: 0 16px 16px; }
 .et-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; }
-.et-heading, .et-top-actions { display: flex; align-items: center; gap: 12px; }
+.et-heading { display: flex; align-items: center; gap: 12px; }
 .et-heading h1 { font-size: 17px; font-weight: 550; letter-spacing: -.035em; margin: 0; line-height: 1.35; }
 .et-local { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-2); white-space: nowrap; }
 .et-local i { width: 5px; height: 5px; border-radius: 50%; background: var(--ok); }
@@ -46,7 +46,7 @@
 .et-thumb-name { display: flex; align-items: center; gap: 7px; min-height: 2.7em; font: 500 12px/1.35 var(--sans); }
 .et-client-logo { flex: none; width: 24px; height: 24px; padding: 3px; border-radius: 5px; background: #fff; object-fit: contain; }
 .et-canvas { position: relative; min-height: 0; overflow: hidden; background-color: var(--bg-2); background-image: radial-gradient(var(--line-3) .6px, transparent .6px); background-size: 12px 12px; }
-.et-viewport { position: absolute; inset: 0; overflow: hidden; padding: 24px; }
+.et-viewport { position: absolute; inset: 0; overflow: auto; padding: 24px; }
 #email-sheet { position: relative; margin: 0 auto; overflow: hidden; box-shadow: 0 10px 32px -14px #0003; }
 #email-sheet iframe { position: absolute; left: 0; top: 0; max-width: none; border: 0; transform-origin: top left; background: white; }
 .et-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
@@ -75,9 +75,6 @@
   .et-workspace { padding: 0 8px 8px; grid-template-rows: auto auto minmax(0, 1fr); }
   .et-topbar { flex-wrap: wrap; gap: 8px; padding: 12px 4px; }
   .et-heading h1 { font-size: 15px; }
-  .et-top-actions { gap: 6px; margin-left: auto; }
-  .et-top-actions .btn { font-size: 11px; padding: 7px 9px; }
-  .et-top-actions .et-subtle { font-size: 10px; }
   .et-mobile-tabs { display: flex; gap: 2px; padding: 0 0 8px; }
   .et-mobile-tabs button { flex: 1; border: 0; padding: 6px 12px; border-radius: 6px; background: none; color: var(--text-2); font: 500 12px var(--sans); cursor: pointer; }
   .et-mobile-tabs [aria-selected="true"] { background: var(--hover-2); color: var(--text); }

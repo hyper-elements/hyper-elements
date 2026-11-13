@@ -81,25 +81,26 @@ Outlook.com, Gmail, Yahoo and AOL on Windows and Mac; Gmail on Android and iPhon
 and Apple Mail on Mac and iPhone. Clicking a card opens that exact variant in the right panel; All clients returns
 to the overview. Dark mode swaps in supported dark variants. Thumbnails fill each card's width and crop vertically,
 preserving the client's native layout width. Edits update previews after a short
-pause, with an option to turn live updates off. Visitors can paste HTML and export their edits.
+pause, with an option to turn live updates off. Visitors can paste and edit HTML directly.
 The default recreates the MacBook Pro email from the [Unlayer Elements playground](https://examples.unlayer.com/examples/elements-playground/).
 Its Hyper Elements source is `examples/email-testing/macbook-pro.tsx`; `render()` writes the editable, indented HTML
 to `src/generated/email-testing.html`. After building the packages, regenerate it with
 `pnpm --filter @hyper-elements/website generate:email-testing` (also included in `generate`), or add `--check`
 to verify the committed HTML matches its source. Do not edit the generated HTML by hand.
 All six original images and the small client logos live under `public/img/email-testing/`, with sources in its
-README. Production image URLs stay in the editor and exported HTML; previews resolve them against the current deployment.
+README. Production image URLs stay in the editor; previews resolve them against the current deployment.
 Compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
-the preview file's explanatory header. Full previews automatically fit the panel and use one vertical scrollbar;
-clients are selected from their cards.
-Both views use the same script allowlist and opaque origin. The page reuses the playground's runtime,
+the preview file's explanatory header. Full previews fit the panel's width and expand to their full content height,
+leaving one vertical scrollbar on the surrounding panel. Scrolling is disabled inside both iframe layers.
+Clients are selected from their cards. Both views use opaque origins and allow only trusted scripts; the full
+preview adds a site-written height reporter with a fresh nonce. The page reuses the playground's runtime,
 worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
 `renderInEmailClients(html)` directly; the input never enters the JSX compiler. HTML is not uploaded or persisted.
 The package's preview may load referenced images and fonts. Both the window API and WebMCP tool update the same UI
 and return diagnostics and preview metadata; `ok` describes successful generation, not a compatibility guarantee.
 
 After a website build, run `pnpm --filter @hyper-elements/website check:email-testing`. It covers input validation,
-HTML editing, live thumbnails, opening and returning from full previews, HTML export, client and dark variants, diagnostics, JSON download,
+HTML editing, live thumbnails, opening and returning from full previews, panel-only scrolling, client and dark variants, diagnostics, JSON download,
 agent access, responsive layout, discovery links,
 and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 

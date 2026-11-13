@@ -75,17 +75,28 @@ try {
   const readyFrame = () => readyPreview("#email-sheet iframe");
   const checkPreviewScrolling = async () => {
     const preview = await readyFrame();
-    assert(await page.locator("#email-viewport").evaluate((panel) => panel.scrollHeight <= panel.clientHeight + 1), "The preview panel has no second vertical scroll area");
+    const contentHeight = await preview.locator("#frames").evaluate((content) => Math.ceil(content.getBoundingClientRect().height));
+    await page.waitForFunction((height) => document.querySelector("#email-sheet iframe").clientHeight === height, contentHeight);
+    assert.equal(await page.locator("#email-sheet iframe").getAttribute("scrolling"), "no");
+    assert.equal(await preview.evaluate(() => getComputedStyle(document.documentElement).overflowY), "hidden");
+    assert.equal(await preview.locator("#frames > iframe").first().getAttribute("scrolling"), "no");
+    assert.equal(await preview.childFrames()[0].evaluate(() => getComputedStyle(document.documentElement).overflowY), "hidden");
+    assert(await page.locator("#email-viewport").evaluate((panel) => panel.scrollHeight > panel.clientHeight), "The surrounding panel owns the scrollbar");
+    assert(await preview.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The full preview iframe matches its content height");
     assert(await preview.childFrames()[0].evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The modeled email fits its inner frame without another scrollbar");
+    await page.locator("#email-viewport").evaluate((panel) => { panel.scrollTop = 0; });
     const box = await page.locator("#email-sheet").boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + Math.min(100, box.height / 2));
     await page.mouse.wheel(0, 450);
-    await preview.waitForFunction(() => scrollY > 0);
-    assert.equal(await preview.childFrames()[0].evaluate(() => scrollY), 0, "The wheel scrolls the preview, not a nested email frame");
-    assert.equal(await page.locator("#email-viewport").evaluate((panel) => panel.scrollTop), 0);
-    await preview.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    assert(await preview.locator("#frames > iframe").first().evaluate((email) => Math.abs(email.getBoundingClientRect().bottom - innerHeight) < 2), "The single scrollbar reaches the bottom of the complete email");
-    await preview.evaluate(() => scrollTo(0, 0));
+    await page.waitForFunction(() => document.getElementById("email-viewport").scrollTop > 0);
+    assert.equal(await preview.evaluate(() => scrollY), 0, "The wheel scrolls the panel, not the preview iframe");
+    assert.equal(await preview.childFrames()[0].evaluate(() => scrollY), 0, "The inner email has no independent scrolling");
+    assert(await page.locator("#email-viewport").evaluate((panel) => {
+      panel.scrollTop = panel.scrollHeight;
+      const bottom = document.getElementById("email-sheet").getBoundingClientRect().bottom;
+      return Math.abs(bottom - (panel.getBoundingClientRect().bottom - parseFloat(getComputedStyle(panel).paddingBottom))) < 2;
+    }), "The panel scrollbar reaches the bottom of the complete email");
+    await page.locator("#email-viewport").evaluate((panel) => { panel.scrollTop = 0; });
   };
   await updated(); // All client thumbnails render automatically, without clicking a call to action.
   assert(await page.locator(".et-output").evaluate((panel) => panel.getBoundingClientRect().top < 160 && panel.getBoundingClientRect().bottom < innerHeight));
@@ -185,10 +196,7 @@ try {
   assert.match(await page.locator("#email-view-title").innerText(), /Changes pending/);
   await page.locator("#email-live").check();
   await updated();
-  const exportedEvent = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Export HTML" }).click();
-  const exported = await exportedEvent;
-  assert.equal(await readFile(await exported.path(), "utf8"), await page.locator("#email-html").inputValue());
+  assert.equal(await page.getByRole("button", { name: "Export HTML" }).count(), 0);
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   await page.getByRole("button", { name: "Open Classic Outlook preview", exact: true }).click();
   assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "outlook");
@@ -237,6 +245,9 @@ try {
   assert(safe.ok, safe.error?.message);
   const frame = await readyFrame();
   assert.match(await frame.childFrames()[0].locator("body").innerText(), /SAFE_EMAIL_TEXT/);
+  const shortHeight = await frame.locator("#frames").evaluate((content) => Math.ceil(content.getBoundingClientRect().height));
+  await page.waitForFunction((height) => document.querySelector("#email-sheet iframe").clientHeight === height, shortHeight);
+  assert(shortHeight < 1000, "Replacing a long email with a short one shrinks the preview frame");
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   for (const id of ["gmail", "gmail.mac"]) {
     const hostileThumbnail = await readyPreview(`.et-thumb-image[data-preview="${id}"] iframe`);
@@ -297,7 +308,7 @@ try {
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   assert(await page.locator("#email-gallery").isVisible());
   assert.deepEqual(errors, []);
-  console.log("Email testing: HTML editor, 14 client/device thumbnails without side gutters, full preview navigation, live updates, export, client variants, reports, agents, isolation and responsive layout passed.");
+  console.log("Email testing: HTML editor, 14 client/device thumbnails without side gutters, full preview navigation, panel-only scrolling, live updates, client variants, reports, agents, isolation and responsive layout passed.");
 } finally {
   await browser.close();
   await new Promise((done) => server.close(done));

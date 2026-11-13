@@ -42,12 +42,13 @@ export function previewDevice(preview: Preview): string {
  * For an email client's preview file (@hyper-elements/email-clients): its own two scripts, by their sha256, and no
  * requests of their own. The file says as much in a policy of its own, but the file is what the sandbox answered, which
  * the code it ran can rewrite (a template can take over its worker's postMessage). So this policy is the page's, with
- * hashes the page read from the site (Sandbox.previewScripts): a script the package didn't write doesn't run.
+ * hashes the page read from the site (Sandbox.previewScripts), plus a fresh nonce for an optional site-written
+ * height reporter: scripts supplied by a template don't run.
  */
-const previewFilePolicy = (scripts: PreviewScripts) =>
+const previewFilePolicy = (scripts: PreviewScripts, nonce?: string) =>
   [
     "default-src 'none'",
-    `script-src 'sha256-${scripts.models}' 'sha256-${scripts.runtime}' 'wasm-unsafe-eval'`,
+    `script-src 'sha256-${scripts.models}' 'sha256-${scripts.runtime}' 'wasm-unsafe-eval'${nonce ? ` 'nonce-${nonce}'` : ""}`,
     "style-src 'unsafe-inline' https:",
     `img-src https: data: blob: ${location.origin}`,
     "font-src https: data:",
@@ -289,7 +290,8 @@ export class PreviewFrame {
  * in frames it makes and reads, so its own document can't be origin-sandboxed (their documents would be closed to
  * it). It's loaded from a data: URL instead, which always gets an origin of its own, never this page's: the file's
  * scripts reach its own frames and nothing here. The sandbox still takes away popups, forms, dialogs and navigating
- * the page, and the policy written into it takes away the network and every script but the package's two.
+ * the page, and the policy written into it takes away the network and every script but the package's two and,
+ * when requested, the site's own height reporter.
  *
  * Never give this frame its document as `srcdoc` or from a blob: URL: a srcdoc document has this page's origin, and
  * so has a blob this page made. With these flags its scripts would then have this page. A data: URL is the only
@@ -297,8 +299,46 @@ export class PreviewFrame {
  *
  * False where the file is too long for a data: URL (browsers stop at about 2 MB): the caller says so.
  */
-export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts, options: { canvas?: boolean } = {}): boolean {
-  const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts), undefined, (doc) => {
+export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts, options: { canvas?: boolean; heightToken?: string } = {}): boolean {
+  const heightScript = options.heightToken ? { nonce: random(), code: `(() => {
+    const start = () => {
+      const frames = document.getElementById("frames");
+      if (!frames) return;
+      let previous = 0;
+      const report = () => {
+        const children = frames.querySelectorAll(":scope > iframe");
+        for (const frame of children) frame.setAttribute("scrolling", "no");
+        if (!document.documentElement.hasAttribute("data-email-client-ready")) return;
+        // Keep scrolling on the host panel, including when rounding leaves a tiny inner overflow.
+        for (const frame of children) {
+          if (frame.contentDocument) frame.contentDocument.documentElement.style.overflow = "hidden";
+        }
+        const height = Math.max(1, Math.ceil(frames.getBoundingClientRect().height));
+        if (height === previous) return;
+        previous = height;
+        parent.postMessage({ type: "email-preview-height", token: ${JSON.stringify(options.heightToken)}, height }, "*");
+      };
+      new ResizeObserver(report).observe(frames);
+      new MutationObserver(report).observe(document.documentElement, { attributes: true, attributeFilter: ["data-email-client-ready"] });
+      report();
+    };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+  })();` } : undefined;
+  const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts, heightScript?.nonce), heightScript, (doc) => {
+    if (heightScript) {
+      // The package also supplies a CSP. Both policies must allow this one site-written script.
+      for (const meta of doc.querySelectorAll("meta[http-equiv]")) {
+        if (meta.getAttribute("http-equiv")?.toLowerCase() !== "content-security-policy") continue;
+        const directives = (meta.getAttribute("content") ?? "").split(";");
+        const index = directives.findIndex((directive) => /^\s*script-src(?:\s|$)/.test(directive));
+        if (index >= 0) directives[index] += ` 'nonce-${heightScript.nonce}'`;
+        else directives.push(`script-src 'nonce-${heightScript.nonce}'`);
+        meta.setAttribute("content", directives.join(";"));
+      }
+      const style = doc.createElement("style");
+      style.textContent = "html{overflow:hidden}";
+      doc.head.append(style);
+    }
     if (!options.canvas) return;
     // Presentation only: retain the package's report and scripts while hiding its explanatory header.
     const style = doc.createElement("style");
@@ -308,6 +348,7 @@ export function previewFile(frame: HTMLIFrameElement, html: string, scripts: Pre
   if (bytes.length > MAX_PREVIEW_FILE) return false;
   frame.setAttribute("sandbox", "allow-scripts allow-same-origin");
   frame.setAttribute("referrerpolicy", "no-referrer");
+  if (heightScript) frame.setAttribute("scrolling", "no");
   frame.src = `data:text/html;charset=utf-8;base64,${base64(bytes)}`;
   return true;
 }
