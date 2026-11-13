@@ -20,9 +20,12 @@ export const mainNav = [
   { href: "/docs", label: "Docs" },
   { href: "/components", label: "Components" },
   { href: "/templates", label: "Templates" },
+  { href: "/ai", label: "AI" },
+];
+
+export const resourcesNav = [
   { href: "/playground", label: "Playground" },
   { href: "/email-testing", label: "Email testing" },
-  { href: "/ai", label: "AI" },
   { href: "/blog", label: "Blog" },
 ];
 
