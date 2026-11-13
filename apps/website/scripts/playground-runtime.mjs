@@ -2,7 +2,7 @@
 // compiler for the code a visitor writes. Each bundle is one classic script the sandbox loads from text (it has no
 // network): /playground/runtime/<name>.js serves them (src/pages/playground/runtime/).
 //
-//   core     React, @hyper-elements/react (render, validate, outline), /inspect, and Sucrase
+//   core     React, @hyper-elements/react (render, validate, outline), /inspect, @hyper-elements/lint, and Sucrase
 //   pdf      @hyper-elements/react/pdf with react-pdf's browser build
 //   image    @hyper-elements/react/image with Satori, and resvg as WebAssembly (resvg.wasm, served beside it)
 //   clients  @hyper-elements/email-clients (the checks' plugin and the previews) with its models
@@ -22,6 +22,9 @@ const sandbox = join(root, "playground/sandbox");
 const reactDir = join(repo, "packages/react");
 const coreDir = join(repo, "packages/internal/core");
 const clientsDir = join(repo, "packages/email-clients");
+const lintDir = join(repo, "packages/lint");
+
+const lintVersion = JSON.parse(await readFile(join(lintDir, "package.json"), "utf8")).version;
 
 export const RUNTIME_BUNDLES = ["runner", "core", "pdf", "image", "clients"];
 
@@ -35,6 +38,7 @@ const SOURCES = {
   "@hyper-elements/core/pdf": join(coreDir, "src/pdf/index.ts"),
   "@hyper-elements/core/image": join(coreDir, "src/image/index.ts"),
   "@hyper-elements/email-clients": join(clientsDir, "src/index.ts"),
+  "@hyper-elements/lint": join(lintDir, "src/index.ts"),
 };
 
 /** What a browser has no module for, and the engines' Node-only entries: each a file in playground/sandbox/shims. */
@@ -66,7 +70,7 @@ const plugin = (name) => ({
     if (name !== "core" && name !== "runner") {
       b.onResolve({ filter: /^(react|react\/jsx-runtime|@hyper-elements\/react)$/ }, ({ path }) => ({ path: join(sandbox, "shims", SHARED[path]) }));
     }
-    b.onResolve({ filter: /^(@hyper-elements\/(react|email-clients)|@hyper-elements\/core)(\/.*)?$/ }, ({ path }) => (SOURCES[path] ? { path: SOURCES[path] } : undefined));
+    b.onResolve({ filter: /^(@hyper-elements\/(react|email-clients|lint)|@hyper-elements\/core)(\/.*)?$/ }, ({ path }) => (SOURCES[path] ? { path: SOURCES[path] } : undefined));
     // A shim imports the module it stands in for as "real:<name>".
     b.onResolve({ filter: /^real:/ }, (args) => b.resolve(args.path.slice(5), { resolveDir: realDir(args.path.slice(5)), kind: args.kind, pluginData: { real: true } }));
     b.onResolve({ filter: /^(node:crypto|@react-pdf\/renderer|@resvg\/resvg-js|harfbuzzjs)$/ }, (args) => (args.pluginData?.real ? undefined : { path: join(sandbox, "shims", SHIMS[args.path]) }));
@@ -104,7 +108,8 @@ export function buildRuntime(name, { fresh = false, minify = true } = {}) {
         // The engines and React read these; nothing else of Node's `process` is in a browser.
         // (A classic script has no import.meta.url: react-pdf's PDF library makes a URL from it when it loads, for a
         // file it reads only for PDF/A.)
-        define: { "process.env.NODE_ENV": '"production"', __HYPER_ELEMENTS_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"' },
+        // Lint's version, as its own build writes it in.
+        define: { "process.env.NODE_ENV": '"production"', __HYPER_ELEMENTS_CJS__: "false", global: "globalThis", "import.meta.url": '"https://playground.invalid/"', __VERSION__: JSON.stringify(lintVersion) },
         plugins: [plugin(name)],
       }).then((result) => result.outputFiles[0].text),
     );
