@@ -203,9 +203,10 @@ export const Box = defineComponent({
   children: { categories: ["layout", "block"] },
   sizing: "stretch",
   targets: { web: {} },
+  // Under every other root, what to use instead: Section, Row and Column go in each of them.
   unsupported: { email: "it's a Page's element; an Email is laid out with Section, Row and Column" },
   roots: ["Page"],
-  notAllowed: { code: "component/not-supported", message: (root) => `A Box is a Page's element; a ${root} is laid out with its own components` },
+  notAllowed: { code: "component/not-supported", message: (root) => `A Box is a Page's element; a ${root} is laid out with Section, Row and Column` },
 });
 
 const TEXT_BLOCK_STYLE = {

@@ -5,7 +5,7 @@
 import type { ReactElement } from "react";
 import { describeComponents } from "@hyper-elements/core";
 import { toDesign } from "../../src/builder";
-import { Box, Button, Canvas, Column, Email, Grid, List, ListItem, Heading, Image, Layer, outline, Page, prepare, render, Row, Section, Span, Table, TableCell, TableRow, Text, validate, type ResolvedNode } from "../../src/primitives";
+import { Box, Button, Canvas, Column, Document, Email, Grid, List, ListItem, Heading, Image, Layer, outline, Page, prepare, render, Row, Section, Span, Table, TableCell, TableRow, Text, validate, type ResolvedNode } from "../../src/primitives";
 
 const photo = { src: "https://example.com/p.png", width: 400, height: 300 };
 const find = (node: ResolvedNode, id: string): ResolvedNode | undefined =>
@@ -67,10 +67,21 @@ describe("a Box with the layout components", () => {
     expect(widthOf(all, "in-section")).toBe(800);
   });
 
-  it("is a Page's only: an Email, a Document and a Canvas lay out with their own components", () => {
-    expect(errors(<Email><Box><Text>a</Text></Box></Email>).map((d) => [d.code, d.message])).toEqual([
+  it("is a Page's only: under an Email, a Document or a Canvas the error says to use Section, Row and Column", () => {
+    const said = (element: ReactElement) => errors(element).map((d) => [d.code, d.message]);
+    // An Email: the output check's code, as for any component an email can't show.
+    expect(said(<Email><Box><Text>a</Text></Box></Email>)).toEqual([
       ["target/unsupported", "A Box can't be rendered to email: it's a Page's element; an Email is laid out with Section, Row and Column"],
     ]);
+    expect(said(<Document><Box><Text>a</Text></Box></Document>)).toEqual([
+      ["component/not-supported", "A Box is a Page's element; a Document is laid out with Section, Row and Column"],
+    ]);
+    expect(said(<Canvas width={600} height={300}><Box><Text>a</Text></Box></Canvas>)).toEqual([
+      ["component/not-supported", "A Box is a Page's element; a Canvas is laid out with Section, Row and Column"],
+    ]);
+    // What it names works there.
+    expect(errors(<Document><Section><Row><Column><Text>a</Text></Column></Row></Section></Document>)).toEqual([]);
+    expect(errors(<Canvas width={600} height={300}><Section><Row><Column><Text>a</Text></Column></Row></Section></Canvas>)).toEqual([]);
   });
 });
 
