@@ -11,7 +11,7 @@ import { BIN, cli, cliEnv, email, exists, lines, ON_BUN, project } from "./helpe
 
 const WIDE = `import { Email, Image } from "@hyper-elements/react";
 export default function Wide() {
-  return <Email width={600}><Image src={{ src: "https://example.com/a.png", width: 600, height: 400 }} alt="" style={{ width: 900 }} /></Email>;
+  return <Email width={600} lang="en"><Image src={{ src: "https://example.com/a.png", width: 600, height: 400 }} alt="" style={{ width: 900 }} /></Email>;
 }
 `;
 

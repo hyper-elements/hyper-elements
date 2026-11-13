@@ -104,8 +104,9 @@ export default function A() { return <Email width={600}>${images}</Email>; }
     const ran = await cli(dir, ["check", "emails", "--json"], { slowStdout: 2500 });
     expect(ran.stdout.length).toBeGreaterThan(256 * 1024);
     const got = lines(ran);
-    const warnings = got[0].diagnostics.filter((d: any) => d.severity === "warning").length;
-    expect(warnings).toBeGreaterThan(1000);
+    const warningsOf = (line: any) => line.diagnostics.filter((d: any) => d.severity === "warning").length;
+    expect(warningsOf(got[0])).toBeGreaterThan(1000);
+    const warnings = got.slice(0, -1).reduce((sum: number, line: any) => sum + warningsOf(line), 0);
     const summary = got[got.length - 1];
     expect(summary.summary.late).toEqual([{ kind: "throw", group: { package: ".", tsconfig: null }, message: "thrown from a timer" }]);
     expect(summary.summary.warnings).toBe(warnings);

@@ -22,6 +22,8 @@ export interface Rule {
   readonly summary: string;
   /** What to do about a finding. */
   readonly fix: string;
+  /** What to do about it in HTML, where that's said another way (`<html lang>`, not the root's `lang`). */
+  readonly htmlFix?: string;
   /** Its section of the docs. */
   readonly see: string;
 }
@@ -29,8 +31,8 @@ export interface Rule {
 export const DOCS = "https://www.hyperelements.dev/docs/lint";
 
 const BOTH: readonly LintRoot[] = ["Email", "Page"];
-const rule = (id: string, severity: Rule["severity"], roots: readonly LintRoot[], html: Rule["html"], summary: string, fix: string): Rule =>
-  Object.freeze({ id, severity, roots, html, summary, fix, see: `${DOCS}#${id}` });
+const rule = (id: string, severity: Rule["severity"], roots: readonly LintRoot[], html: Rule["html"], summary: string, fix: string, htmlFix?: string): Rule =>
+  Object.freeze({ id, severity, roots, html, summary, fix, ...(htmlFix ? { htmlFix } : {}), see: `${DOCS}#${id}` });
 
 /** Every rule, in the docs' order. */
 export const rules: readonly Rule[] = Object.freeze([
@@ -79,9 +81,9 @@ export const rules: readonly Rule[] = Object.freeze([
     "darken the text or lighten the background (or the reverse) until it reaches the ratio"
   ),
   rule("text-size", "info", BOTH, null, "Body text is under 14px, hard to read on a phone.", "make it 14px or larger, on phones at least (style.mobile.fontSize)"),
-  rule("lang", "warning", BOTH, "document", "The email or page doesn't say its language, so a screen reader may read it in the wrong one.", 'give the root a lang ("en", "fr")'),
+  rule("lang", "warning", BOTH, "document", "The email or page doesn't say its language, so a screen reader may read it in the wrong one.", 'give the root a lang ("en", "fr")', 'give <html> a lang ("en", "fr")'),
   rule("dir", "warning", BOTH, null, "The language is written right to left, but the root doesn't say so.", 'give the root dir="rtl"'),
-  rule("title", "info", ["Page"], "document", "The page has no title for the browser's tab and for screen readers.", "give the root a title"),
+  rule("title", "info", ["Page"], "document", "The page has no title for the browser's tab and for screen readers.", "give the root a title", "give the email a <title> in its <head>"),
   rule("preview-text", "info", ["Email"], null, "The email has no preview text, or a very short one: inboxes show its first words instead.", "give the Email a previewText of 30 characters or more"),
   rule(
     "merge-syntax",

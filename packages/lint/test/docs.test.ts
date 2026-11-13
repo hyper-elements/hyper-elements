@@ -16,7 +16,7 @@ export function section(rule: Rule): string {
     roots === "Email and Page" ? "an Email and a Page" : roots ? `a ${roots}` : "",
     rule.html === "both" ? "HTML (an `Html` block's and `lintHtml()`'s)" : rule.html === "document" ? "a whole HTML document (`lintHtml()`'s)" : "",
   ].filter(Boolean);
-  return `### \`${rule.id}\`\n\n${rule.summary}\n\n${rule.severity === "warning" ? "A warning" : "A note"} by default, on ${where.join(", and on ")}. **Fix:** ${rule.fix}.\n`;
+  return `### \`${rule.id}\`\n\n${rule.summary}\n\n${rule.severity === "warning" ? "A warning" : "A note"} by default, on ${where.join(", and on ")}. **Fix:** ${rule.fix}${rule.htmlFix ? ` (in HTML, ${rule.htmlFix})` : ""}.\n`;
 }
 
 describe("/docs/lint", () => {

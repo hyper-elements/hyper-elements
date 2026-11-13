@@ -17,6 +17,7 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 import { projectConfig } from "@hyper-elements/template-loader";
 import { UsageError, type Args } from "../args";
 import { serveDev } from "../dev/server";
+import { readLintConfig, type LintConfig } from "../lint-config";
 import { watchRoots, Watcher } from "../dev/watcher";
 import { errorLine } from "../errors";
 import { displayPath, findInputs, packageFolder, typeScriptTwin, type Input } from "../inputs";
@@ -81,6 +82,8 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
     if (!folder) throw new UsageError(`--public ${args.public} isn't a folder.`);
   }
   const props = args.props === undefined ? undefined : readProps(args.props, cwd);
+  // Lint's options, read once: a bad shape stops dev before it serves; changing them needs a restart.
+  const lint: LintConfig | false = args.lint ? readLintConfig(cwd) : false;
   // What's given is checked once, as `render` checks it (a missing file, a folder with no template: exit 2).
   const first = await findInputs(args.positional, cwd);
   for (const link of first.links) io.stderr(`- ${displayPath(cwd, link)}: a symbolic link to a folder, not followed (give the folder itself to include what's in it)\n`);
@@ -109,6 +112,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   await io.stdout(`Serving the templates at ${server.base} until Ctrl-C\n`);
 
   const extra = {
+    lint,
     public: args.public === undefined ? undefined : resolve(cwd, args.public),
     offline: args.offline || undefined,
     dark: args.dark || undefined,

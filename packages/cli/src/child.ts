@@ -25,6 +25,7 @@ import { formatDiagnostic } from "./format";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { killTree } from "./kill";
+import { installedAbove, LINT, lintCopyNote, lintUsage, ownLintVersion, type LintCopy, type LintModule } from "./lint";
 import { parentGone } from "./parent";
 import { reactCopies } from "./react-copies";
 
@@ -133,18 +134,25 @@ async function start(message: StartMessage): Promise<void> {
   await send({ type: "done", late: guarded.late() });
 }
 
-/** Elements' entries and email-clients, as loaded for one template (each template loads its own). */
+/** Elements' entries, email-clients and lint, as loaded for one template (each template loads its own). */
 interface Loaded {
   elements: ElementsMain;
   inspect: ElementsInspect;
   react: ReactModule;
   emailClients?: EmailClientsModule;
+  /** The project's copy of lint, else the CLI's own: where the command lints (render, check, dev, without --no-lint). */
+  lint?: LintCopy<LintModule>;
 }
+
+/** The CLI's own copy of lint, imported once (where a template's project has none). */
+let ownLint: Promise<LintModule> | undefined;
 
 class Session {
   private sequence: number;
   /** email-clients' plugin, per copy of email-clients and set of clients. */
   private plugins = new Map<unknown, Promise<unknown>>();
+  /** lint's plugin, per copy of lint (the options are the run's). */
+  private linters = new Map<unknown, unknown>();
 
   constructor(
     private message: StartMessage,
@@ -224,11 +232,28 @@ class Session {
           if (!notFound(error, "@hyper-elements/email-clients")) throw error;
         }
       }
-      loaded = { elements, inspect, react, emailClients };
+      let lint: LintCopy<LintModule> | undefined;
+      let lintFrom: string | undefined;
+      if (this.message.options.lint) {
+        try {
+          // Bun resolves a package no node_modules above the template holds (the CLI's own, from its store): not the project's.
+          if (bun && !installedAbove(dirname(input.file), LINT)) throw Object.assign(new Error(`Cannot find module '${LINT}'`), { code: "MODULE_NOT_FOUND" });
+          const module = exportsOf<LintModule>(await loader.load(LINT), "lint");
+          lintFrom = resolvedPath(loader.resolve(LINT));
+          lint = { module, version: packageVersion(lintFrom, LINT) ?? "of an unknown version", own: false };
+        } catch (error) {
+          if (!notFound(error, LINT)) throw error;
+          ownLint ??= import(LINT).then((mod) => exportsOf<LintModule>(mod, "lint"));
+          lint = { module: await ownLint, version: ownLintVersion(), own: true };
+        }
+      }
+      loaded = { elements, inspect, react, emailClients, lint };
       if (process.env.HYPER_ELEMENTS_CLI_PROBE) {
         // For the CLI's own tests: whether what the template imports is what the CLI renders with.
         const own = exportsOf<Record<string, unknown>>(loader.template, "render");
-        process.stderr.write(`[probe] ${JSON.stringify({ file: input.file, sameRender: "render" in own ? own.render === elements.render : null, sameReact: "React" in own ? exportsOf<ReactModule>(own.React, "createElement").createElement === react.createElement : null })}\n`);
+        process.stderr.write(
+          `[probe] ${JSON.stringify({ file: input.file, sameRender: "render" in own ? own.render === elements.render : null, sameReact: "React" in own ? exportsOf<ReactModule>(own.React, "createElement").createElement === react.createElement : null, ...(lint ? { lint: lint.own ? "cli" : "project", lintVersion: lint.version, lintFrom: lintFrom } : {}) })}\n`,
+        );
       }
     } catch (error) {
       if (notFound(error, "@hyper-elements/react")) return this.elementsMissing(input);
@@ -277,7 +302,7 @@ class Session {
         cwd: this.message.cwd,
         load: async (specifier) => await loader.load(specifier),
         resolve: (specifier) => loader.resolve(specifier),
-        plugin: () => this.plugin(loaded),
+        plugins: () => this.pluginsFor(loaded, root),
         emailClients: loaded.emailClients,
         inspection,
       };
@@ -289,6 +314,32 @@ class Session {
       if (diagnostics) return this.result(input, { status: "error", diagnostics }, loaded);
       return this.result(input, { status: "error", error: errorText(error, this.message.cwd), usage: exitCalled(error) || error instanceof UsageFailure || undefined, diagnostics: notes }, loaded);
     }
+  }
+
+  /**
+   * The plugins a template is checked with: email-clients' (where the project has it), then lint's (for an Email or a
+   * Page, unless --no-lint), with what the CLI says about them.
+   */
+  private async pluginsFor(loaded: Loaded, root: Root | null): Promise<{ plugins: unknown[]; diagnostics: Diagnostic[] }> {
+    const { plugin, diagnostics } = await this.plugin(loaded);
+    const plugins: unknown[] = plugin ? [plugin] : [];
+    const copy = loaded.lint;
+    if (copy && (root === "Email" || root === "Page")) {
+      let made = this.linters.get(copy.module);
+      if (!made) {
+        try {
+          made = copy.module.lint(this.message.options.lint || {});
+        } catch (error) {
+          // Options this copy of lint doesn't take: what the run was asked can't be done.
+          if (error instanceof TypeError) throw new UsageFailure(lintUsage(error, copy));
+          throw error;
+        }
+        this.linters.set(copy.module, made);
+      }
+      plugins.push(made);
+      if (copy.own) diagnostics.push(lintCopyNote(copy.version));
+    }
+    return { plugins, diagnostics };
   }
 
   /** email-clients' plugin for the clients asked for, made once per copy of email-clients. */

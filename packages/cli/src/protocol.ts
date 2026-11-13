@@ -71,6 +71,11 @@ export interface ChildOptions {
   /** describe: the component (all where none) and the root. */
   component?: string;
   root?: string;
+  /**
+   * render, check, dev: lint's options, their shape checked (`hyperElements.lint`, `{}` where none), for the copy of
+   * `@hyper-elements/lint` the child loads to check what they mean; false with `--no-lint`.
+   */
+  lint?: { rules?: Record<string, string>; kind?: string } | false;
 }
 
 /** One preview file from renderInEmailClients(), for the parent to write. */

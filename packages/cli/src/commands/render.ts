@@ -15,13 +15,13 @@ import type { Diagnostic } from "../protocol";
 import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, type CommandResult, type TemplateContext } from "./shared";
 
 /**
- * render()'s options: `--pretty`, and email-clients' plugin where the template's project has
- * @hyper-elements/email-clients (for the clients `--clients` names), as `check` passes it. `notes`: what the CLI says
- * about it (`--clients` with no email-clients installed).
+ * render()'s options: `--pretty`, and the plugins `check` passes: email-clients' where the template's project has
+ * @hyper-elements/email-clients (for the clients `--clients` names), and lint's unless --no-lint. `notes`: what the CLI
+ * says about them (`--clients` with no email-clients installed, the copy of lint used).
  */
 async function renderOptions(context: TemplateContext): Promise<{ options: { pretty?: boolean; plugins?: unknown[] }; notes: Diagnostic[] }> {
-  const { plugin, diagnostics: notes } = await context.plugin();
-  return { options: { ...(context.options.pretty ? { pretty: true } : {}), ...(plugin ? { plugins: [plugin] } : {}) }, notes };
+  const { plugins, diagnostics: notes } = await context.plugins();
+  return { options: { ...(context.options.pretty ? { pretty: true } : {}), ...(plugins.length ? { plugins } : {}) }, notes };
 }
 
 /** The files `render` writes for each root, by extension: a root's first is its main output (`--stdout`'s). */

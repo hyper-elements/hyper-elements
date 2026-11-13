@@ -53,6 +53,20 @@ rules.find((rule) => rule.id === "contrast");
 // { id: "contrast", severity: "warning", roots: ["Email", "Page"], summary: "…", fix: "…", see: "…#contrast" }
 ```
 
+## From the command line
+
+[`@hyper-elements/cli`](/docs/cli#lint) runs lint in `check`, `render` and `dev`, with its options from `package.json`:
+
+```json
+{ "hyperElements": { "lint": { "rules": { "text-size": "off" }, "kind": "marketing" } } }
+```
+
+```bash
+npx hyper-elements check emails/                   # lint's findings with the other checks
+npx hyper-elements check emails/ --max-warnings 0  # fail CI on any warning
+npx hyper-elements check email.html                # lintHtml() on any HTML email
+```
+
 ## Any HTML email
 
 `lintHtml()`, from `@hyper-elements/lint/html`, runs the rules HTML can show on any HTML email, however it was made (MJML, React Email, by hand). It needs nothing else installed: no Elements, no React.
@@ -139,7 +153,7 @@ A note by default, on an Email and a Page. **Fix:** make it 14px or larger, on p
 
 The email or page doesn't say its language, so a screen reader may read it in the wrong one.
 
-A warning by default, on an Email and a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a lang ("en", "fr").
+A warning by default, on an Email and a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a lang ("en", "fr") (in HTML, give <html> a lang ("en", "fr")).
 
 ### `dir`
 
@@ -151,7 +165,7 @@ A warning by default, on an Email and a Page. **Fix:** give the root dir="rtl".
 
 The page has no title for the browser's tab and for screen readers.
 
-A note by default, on a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a title.
+A note by default, on a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a title (in HTML, give the email a <title> in its <head>).
 
 ### `preview-text`
 

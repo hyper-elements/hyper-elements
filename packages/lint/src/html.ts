@@ -36,7 +36,7 @@ export function lintHtml(html: string, options?: LintOptions): { diagnostics: Ht
   const on = (id: string, scope: "both" | "document") => settings.get(id) !== "off" && (ruleById(id)!.html === scope || ruleById(id)!.html === "both");
   const diagnostics = checkHtml(tree, on).map(({ id, message, line, column }) => {
     const rule = ruleById(id)!;
-    return { code: `lint/${id}`, severity: settings.get(id) as "info" | "warning", message, line, column, fix: rule.fix, see: rule.see };
+    return { code: `lint/${id}`, severity: settings.get(id) as "info" | "warning", message, line, column, fix: rule.htmlFix ?? rule.fix, see: rule.see };
   });
   return { diagnostics };
 }

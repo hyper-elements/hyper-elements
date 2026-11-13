@@ -16,8 +16,11 @@ export interface TemplateContext {
   load(specifier: string): Promise<unknown>;
   /** Resolves a specifier as the template does: a file URL or a path. */
   resolve(specifier: string): string;
-  /** email-clients' plugin, where the template's project has email-clients (made once per process). */
-  plugin(): Promise<{ plugin?: unknown; diagnostics: Diagnostic[] }>;
+  /**
+   * The plugins to check it with: email-clients' where the template's project has email-clients, and lint's for an Email
+   * or a Page unless `--no-lint` (each made once per process), with what the CLI says about them.
+   */
+  plugins(): Promise<{ plugins: unknown[]; diagnostics: Diagnostic[] }>;
   /** The project's email-clients, where it has it (loaded for `check` and `preview`). */
   emailClients?: EmailClientsModule;
   /** inspect()'s result, which the child reads the root from. */
@@ -32,6 +35,15 @@ export class UsageFailure extends Error {}
 /** Whether diagnostics hold an error. */
 export function hasErrors(diagnostics: readonly Diagnostic[]): boolean {
   return diagnostics.some((d) => d.severity === "error");
+}
+
+/**
+ * What the CLI says about the plugins, after what Elements found: without the note on lint's copy where the template has
+ * errors (core runs no plugin's checks then).
+ */
+export function withPluginNotes(diagnostics: readonly Diagnostic[], notes: readonly Diagnostic[]): Diagnostic[] {
+  const ran = hasErrors(diagnostics) ? notes.filter((d) => d.code !== "cli/lint-copy") : notes;
+  return [...diagnostics, ...ran];
 }
 
 /** An ElementsError (from any copy of Elements): its diagnostics. */
