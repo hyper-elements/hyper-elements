@@ -41,7 +41,7 @@ export const starters: Starter[] = [
   ...byRoot("Page"),
   // Pell & Ashby's invoice first: what a Document opens with.
   ...byRoot("Document").filter((starter) => starter.id === "pell-ashby-invoice"),
-  fromExample(examples.showcase.document, { id: "release-notes", title: "Release notes", description: "A printed document with a header, a footer and page numbers.", root: "Document" }),
+  fromExample(examples.showcase.document, { id: "growth-report", title: "Growth report", description: "A quarterly board report: three figures, monthly revenue drawn in Svg, a table by region, and a header and page numbers on every page.", root: "Document" }),
   ...byRoot("Document").filter((starter) => starter.id !== "pell-ashby-invoice"),
   ...byRoot("Canvas"),
 ];

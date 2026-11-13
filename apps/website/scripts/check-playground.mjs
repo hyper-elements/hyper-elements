@@ -203,10 +203,11 @@ try {
     assert(written.startsWith("%PDF-"), "The page's PDF is a PDF");
     assert.match(written, /\/BaseFont\s*\/[A-Z]{6}\+/, "The page's PDF has the font file the page gave it, embedded");
     assert.match(await page.locator(".pg-file-facts").innerText(), /^1 page · \d+/, "The bar says what the PDF is");
-    // A PNG with transparency (the Release notes logo): react-pdf reads its pixels with fflate's inflate(), which
+    // A PNG with transparency (the Growth report's logo): react-pdf reads its pixels with fflate's inflate(), which
     // starts a Worker, and the sandbox's code has none (the runtime build makes it synchronous). Its alpha is the
     // PDF's soft mask.
-    await api(page, "loadStarter", "release-notes");
+    // (By the id it had before: a link that names it still opens it.)
+    assert.equal((await api(page, "loadStarter", "release-notes"))?.root, "Document", "A template's old id still opens it");
     await api(page, "setView", "pdf");
     // Its own file, not the last one's, which stays up until it's in.
     const logoHref = await page

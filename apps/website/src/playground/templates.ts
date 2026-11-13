@@ -15,6 +15,9 @@ export interface Starter extends StarterInfo {
   html?: string;
 }
 
+/** Templates under an id they had before, so a link that names it (`#starter=`) still opens them. */
+const RENAMED: Record<string, string> = { "release-notes": "growth-report" };
+
 /** A thumbnail's box, in CSS pixels (.pg-template-thumb in playground.css). */
 const THUMB = { width: 84, height: 63 };
 
@@ -78,6 +81,7 @@ export class Templates {
   }
 
   async find(id: string): Promise<Starter | undefined> {
+    id = RENAMED[id] ?? id;
     try {
       return (await this.all()).find((starter) => starter.id === id);
     } catch {
