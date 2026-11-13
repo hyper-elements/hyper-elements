@@ -1,7 +1,7 @@
 {
   "name": "@hyper-elements/cli",
-  "version": "0.1.0",
-  "description": "Render, check and preview Hyper Elements templates from the shell: an email's HTML and text, a page's HTML, a document's PDF, a canvas's image, the email client checks, and an email as each email client draws it, with stable exit codes and JSON for agents and CI.",
+  "version": "0.2.0",
+  "description": "Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally, with no React required. Render Hyper Elements templates to HTML, PDF and images. Stable exit codes and JSON for agents and CI.",
   "license": "MIT",
   "type": "module",
   "repository": {
@@ -25,7 +25,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=20.6"
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "@hyper-elements/email-clients": "^0.4.3",
+    "@hyper-elements/lint": "workspace:^0.1.0",
     "tsx": "^4.20.5",
     "typescript": "^5.6.3"
   },

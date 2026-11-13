@@ -70,7 +70,7 @@ export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
   gmail: { name: "Gmail", widths: { desktop: 820 }, dark: false, approximate: false, measured: captured("Gmail on the web", 1, 1) },
   "gmail-app": { name: "Gmail app", widths: { phone: 380 }, dark: false, approximate: true, measured: null },
   "gmail-app-other": { name: "Gmail app, another account", widths: { phone: 380 }, dark: false, approximate: true, measured: null },
-  "apple-mail": { name: "Apple Mail", widths: { desktop: 820 }, dark: true, approximate: false, measured: captured("Mail 16 on macOS 26", 0.999, 0.999) },
+  "apple-mail": { name: "Apple Mail", widths: { desktop: 820, phone: 393 }, dark: true, approximate: false, measured: captured("Mail 16 on macOS 26", 0.999, 0.999) },
   yahoo: tables("Yahoo Mail"),
   aol: tables("AOL Mail"),
   "samsung-email": tables("Samsung Email"),
@@ -100,10 +100,11 @@ export const DEFAULT_EMAIL_CLIENTS: readonly EmailClient[] = ["outlook", "outloo
 /**
  * The previews (by id) that are approximate for HTML not built with Hyper Elements: those under 95% on such emails in
  * the latest benchmark (classic Outlook, the Gmail app, Apple Mail's dark mode), and those not measured on them (the
- * Gmail app with another account, and Gmail and Outlook.com read on a Mac). A release that moves one over the line
- * changes this list and the docs' numbers together.
+ * Gmail app with another account, Gmail and Outlook.com read on a Mac, and Apple Mail and the Gmail app on an iPhone,
+ * each measured on two).
+ * A release that moves one over the line changes this list and the docs' numbers together.
  */
-export const APPROXIMATE_FOR_HTML: readonly string[] = ["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac"];
+export const APPROXIMATE_FOR_HTML: readonly string[] = ["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone"];
 
 /** caniemail's page about a feature (its slug, as in the page's address). */
 export const caniemail = (feature: string): string => `https://www.caniemail.com/features/${feature}/`;

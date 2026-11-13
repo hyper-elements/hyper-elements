@@ -1,5 +1,6 @@
-// One template, four outputs. Its root decides what Hyper Elements writes: switch it above the preview
-// (Email, Page, Document, Canvas) and watch one word change here.
+// check-playground.mjs's template: one themed template that renders under every root, so an agent's setRoot() and a
+// link's root= can rewrite it to each, with props only an Email takes (previewText) to move out and come back, and
+// web fonts for a Document's PDF to embed. Not a starter.
 import { Button, Column, defineTheme, Email, Heading, Row, Section, Text, token } from "@hyper-elements/react";
 
 // The brand, written once: every root that takes it is on brand.

@@ -1,10 +1,32 @@
 ---
-title: "Email client emulator"
-metaTitle: "Email client emulator: test emails in Outlook, Gmail and more"
-description: "Hyper Elements comes with an email client emulator: see your email as each email client shows it, on your own machine. Free, no test sends and nothing uploaded."
+title: "Test emails in Outlook and Gmail locally"
+metaTitle: "Test HTML emails in Outlook and Gmail locally"
+description: "Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally with a free JavaScript library or CLI. No React, account or test send required."
 ---
 
-Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`: test an email in email clients like Outlook and Gmail without sending it. It shows your email as each supported email client shows it, on your own machine, and lists what each client changed. It's a free alternative to screenshot services: no API key, no account, no cost per preview, no test send, and nothing uploaded. `renderInEmailClients()` returns a preview per client: a self-contained HTML page that shows the email as that client does when Chromium opens it.
+`@hyper-elements/email-clients` is a free JavaScript and TypeScript library for checking existing HTML emails and previewing Outlook, Gmail and Apple Mail locally. It takes a Hyper Elements email, or complete HTML from MJML, React Email, an email builder or a hand-written email; the HTML needs no React. Use the library in your code or [`@hyper-elements/cli`](#test-an-email-from-the-shell) from the shell. No account, API key or test send is needed, and the email is never uploaded.
+
+`renderInEmailClients()` returns a preview per client: a self-contained HTML page that opens in a browser and lists what the client changed.
+
+## Supported email clients
+
+Accuracy is how closely the emulator matches each real client for emails.
+
+| Client | ID | Accuracy |
+|--------|------|----------|
+| Classic Outlook for Windows | `outlook` | 97% |
+| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
+| Gmail on the web | `gmail`, `gmail.mac` | 99% |
+| Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
+| Gmail app on an iPhone | `gmail-app.iphone` | 97% |
+| Apple Mail on a Mac, light and dark | `apple-mail`, `apple-mail.dark` | 98% |
+| Apple Mail on an iPhone, light and dark | `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
+
+More email clients are on the way.
+
+Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide, and `gmail-app` on Android and on an iPhone, 345px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
+
+## Test a Hyper Elements email
 
 ```bash
 npm i @hyper-elements/email-clients
@@ -27,7 +49,8 @@ const welcome = (
 const { previews, skipped, diagnostics } = await renderInEmailClients(welcome, { dark: true });
 
 previews.map((preview) => preview.id);
-// ["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.dark"]
+// ["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac",
+//  "apple-mail", "apple-mail.iphone", "apple-mail.dark", "apple-mail.iphone.dark"]
 
 const outlook = previews.find((preview) => preview.id === "outlook");
 // { id: "outlook", client: "outlook", variant: "desktop", dark: false, width: 820,
@@ -41,6 +64,8 @@ diagnostics[0].message;
 ```
 
 What happens next is up to you or your agent: write `outlook.html` to a file and open it, load it in Playwright and take a screenshot, or read what the client changed (see [What a preview tells you](#what-a-preview-tells-you)). Opened in Chromium, the Outlook preview shows the card and the button with square corners, as classic Outlook draws them.
+
+### Examples
 
 Here's what the emulator draws for three emails, each in four clients, the Gmail app at a phone's width. Open an image to see it at full size.
 
@@ -75,14 +100,23 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 
 An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `renderInEmailClients()` takes its HTML as a string too. React and `@hyper-elements/react` aren't needed for that: `npm i @hyper-elements/email-clients` is enough.
 
-```ts
-import { readFile } from "node:fs/promises";
+```bash
+npm install @hyper-elements/email-clients
+```
+
+Save this as `preview-email.mjs` beside your complete `welcome.html` email:
+
+```js
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { renderInEmailClients } from "@hyper-elements/email-clients";
 
 const html = await readFile("welcome.html", "utf8");
 const { previews } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"] });
-// The same previews, one per client: open one in Chromium, screenshot it, or read what the client changed.
+await mkdir("out", { recursive: true });
+for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
 ```
+
+Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. You can also screenshot it or read what the client changed.
 
 It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 
@@ -96,12 +130,21 @@ const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlo
 
 ## Test an email from the shell
 
-[`@hyper-elements/cli`](/docs/cli) writes the previews with no script, for a template or for any HTML email:
+[`@hyper-elements/cli`](/docs/cli) checks and previews an existing HTML email with no script or React installation:
 
 ```bash
-npx hyper-elements preview emails/welcome.tsx           # out/clients/emails/welcome/outlook.html, gmail.html, …
-npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings   # an HTML email, with nothing installed
+npx @hyper-elements/cli check email.html
+npx @hyper-elements/cli preview email.html
 ```
+
+The preview command writes `out/clients/email/outlook.html` and the other client previews. To draw them and collect findings automatically, install the CLI and `playwright-core` together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. For Hyper Elements templates, [install the CLI in your project](/docs/cli#install) and run `npx hyper-elements preview emails/welcome.tsx`.
 
 For an agent or a CI job that wants what each client changed as data, there are three ways, by what it has:
 
@@ -116,22 +159,6 @@ For an agent or a CI job that wants what each client changed as data, there are 
 - **Nothing leaves your machine.** The email isn't sent anywhere or uploaded to a screenshot service, which matters for customer data, unreleased products and regulated content.
 - **It runs where your code runs.** In a test, in CI, or in an agent's loop: an agent with a browser can open a preview, read what the client changed, and fix the template.
 - **The same answer every time.** The same email gives the same preview, so a preview can be a snapshot in a test.
-
-## Supported email clients
-
-Accuracy is how closely the emulator matches each real client for emails built with Hyper Elements.
-
-| Client | `id` | Accuracy |
-|--------|------|----------|
-| Classic Outlook for Windows | `outlook` | 97% |
-| Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
-| Gmail on the web | `gmail`, `gmail.mac` | 99% |
-| Gmail app on Android | `gmail-app`, `gmail-app-other` | 97% |
-| Apple Mail, light and dark | `apple-mail`, `apple-mail.dark` | 97% |
-
-More email clients are on the way. A client that changes a lot, like classic Outlook, marks its preview as `approximate`.
-
-Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set below. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
 
 ## Compared with screenshot services
 
@@ -151,7 +178,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 | Option | What it does |
 |--------|--------------|
 | `emailClients` | The clients to emulate (default: `outlook`, `outlook-com`, `gmail`, `apple-mail`) |
-| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail today) |
+| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail, on a Mac and an iPhone, today) |
 | `widths` | The width a client's preview draws the email at, where it isn't the client's own: `{ "outlook-com": 540 }` for Outlook.com's reading pane beside the message list. Webmail matches media queries at the browser window's width, not the pane's, so a narrow pane keeps the email's desktop styles, as it does for its readers |
 | `computers` | Webmail draws with the reader's computer's fonts. Outlook.com and Gmail on the web are each previewed on Windows (`outlook-com`, `gmail`) and on a Mac (`outlook-com.mac`, `gmail.mac`). `computers: ["windows"]` keeps one |
 | `fonts` | `"url"` (the default) loads the open fonts the previews draw with from a CDN; `"inline"` puts them in each preview, so it draws offline |
@@ -159,7 +186,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 
 `renderInEmailClients()` returns:
 
-- `previews`: `{ id, client, computer, variant, dark, width, filename, html, approximate }` for each client and variant, light before dark;
+- `previews`: `{ id, client, model, computer, variant, dark, width, filename, html, approximate }` for each client and variant, light before dark;
 - `skipped`: what wasn't emulated, and why (a client with no dark mode);
 - `diagnostics`: `render()`'s, with the email client checks for the clients emulated.
 

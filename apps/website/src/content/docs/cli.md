@@ -1,15 +1,17 @@
 ---
 title: "Command line"
-description: "Render, check and preview templates from the shell with @hyper-elements/cli: HTML and plain text, PDFs and images, the email client checks and previews, with JSON and stable exit codes for agents and CI."
+description: "Check existing HTML emails and preview Outlook and Gmail locally, with no React required. Render Hyper Elements templates from the shell, with JSON and stable exit codes."
 ---
 
-`@hyper-elements/cli` renders, checks and previews templates from the shell, with no script of your own. It writes an Email's HTML and plain text, a Page's HTML, a Document's PDF and a Canvas's image, runs the email client checks, and draws an Email as each email client shows it. Every command has stable exit codes, and `--json` for agents and CI.
+`@hyper-elements/cli` checks existing HTML emails and previews Outlook, Gmail and Apple Mail locally, with no React required. Start with `npx @hyper-elements/cli check email.html` or `npx @hyper-elements/cli preview email.html` (see [Any HTML email](#any-html-email)).
+
+It also renders, checks and previews Hyper Elements templates from the shell, with no script of your own. It writes an Email's HTML and plain text, a Page's HTML, a Document's PDF and a Canvas's image, runs the email client checks, and draws an Email as each email client shows it. Every command has stable exit codes, and `--json` for agents and CI. After [installing the CLI](#install) in your template project:
 
 ```bash
 npx hyper-elements check emails/           # validate each template, with the email client checks
 npx hyper-elements render emails/          # out/emails/welcome.html, out/emails/welcome.txt, …
 npx hyper-elements outline emails/welcome.tsx
-npx hyper-elements preview emails/welcome.tsx --findings   # each email client's view, drawn in Chromium
+npx hyper-elements preview emails/welcome.tsx   # each email client's preview, ready to open in Chromium
 npx hyper-elements dev emails/             # a local page showing each template, rendered again on each change
 ```
 
@@ -99,7 +101,19 @@ npx hyper-elements check emails/
 1 template: 0 errors, 0 warnings, 0 skipped
 ```
 
-`check` runs every check `render()` runs, without writing anything. Where the project has `@hyper-elements/email-clients` (`npm i -D @hyper-elements/email-clients`), its email client checks run too, naming the clients each problem is about; `--clients gmail,outlook` picks the clients. `--rendered` also renders each template, for the checks only the written HTML has (the email's size against Gmail's limit). `--max-warnings 0` fails the run on any warning.
+`check` runs every check `render()` runs, without writing anything. Where the project has `@hyper-elements/email-clients` (`npm i -D @hyper-elements/email-clients`), its email client checks run too, naming the clients each problem is about; `--clients gmail,outlook` picks the clients. [Lint](#lint)'s checks run on each Email and Page. `--rendered` also renders each template, for the checks only the written HTML has (the email's size against Gmail's limit). `--max-warnings 0` fails the run on any warning.
+
+## Lint
+
+`check`, `render` and `dev` run [lint](/docs/lint) on each Email and Page: links that don't say where they go, images without alternate text, faint or small text, headings out of order, a missing `lang`, merge syntax typed by hand. Its findings are warnings and notes (`email/lint-<rule>`, `page/lint-<rule>`), so they change the exit code only past `--max-warnings`. `check` of an HTML email runs its HTML rules (`lint/<rule>`, each at its line). `--no-lint` leaves them out.
+
+Its options go in the `package.json` nearest the current folder, read once when the run (or `dev`) starts:
+
+```json
+{ "hyperElements": { "lint": { "rules": { "text-size": "off" }, "kind": "marketing" } } }
+```
+
+An option of the wrong shape, or a rule, severity or kind lint doesn't know, exits 2 before anything is checked. Lint is the project's copy where the template resolves one (`npm i -D @hyper-elements/lint` picks its version), else the CLI's own, with an `info` note, `cli/lint-copy`.
 
 ## preview
 
@@ -115,6 +129,7 @@ npx hyper-elements preview emails/welcome.tsx
   gmail: out/clients/emails/welcome/gmail.html
   gmail.mac: out/clients/emails/welcome/gmail.mac.html
   apple-mail: out/clients/emails/welcome/apple-mail.html
+  apple-mail.iphone: out/clients/emails/welcome/apple-mail.iphone.html
 1 template: 0 errors, 0 warnings, 0 skipped
 ```
 
@@ -132,10 +147,19 @@ Nothing is sent anywhere to be drawn: the requests a preview makes are its stand
 
 ```bash
 npx @hyper-elements/cli check email.html
-cat email.html | npx @hyper-elements/cli preview - --findings
+cat email.html | npx @hyper-elements/cli preview -
 ```
 
-Each diagnostic has the `line` in the file and an excerpt of it. A folder's HTML files aren't picked up, since a folder of templates often holds the HTML rendered from them: give them by name (`check emails/*.html`).
+To draw the previews and collect findings automatically, install the CLI and `playwright-core` together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. See [preview](#preview) for browser selection and findings.
+
+Each diagnostic has the `line` in the file and an excerpt of it. `check` runs [lint](#lint)'s HTML rules on it too. A folder's HTML files aren't picked up, since a folder of templates often holds the HTML rendered from them: give them by name (`check emails/*.html`).
 
 ## dev
 

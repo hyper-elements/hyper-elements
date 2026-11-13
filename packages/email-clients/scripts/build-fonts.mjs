@@ -21,8 +21,16 @@ const FILES = {
   roboto: ['Roboto-Variable.woff2', 'Roboto-Italic-Variable.woff2'],
   'noto-serif': ['NotoSerif-Variable.woff2', 'NotoSerif-Italic-Variable.woff2'],
   'noto-sans-mono': ['NotoSansMono-Variable.woff2'],
+  // Classic Outlook's Aptos (models 1.9.0): Inter with Aptos's advances, character by character.
+  'aptos-widths': ['AptosWidths-Regular.woff2', 'AptosWidths-Bold.woff2'],
+  // Office's cloud fonts, which classic Outlook draws by name (models 1.9.0): Google Fonts' builds.
+  lato: ['Lato-Regular.woff2', 'Lato-Bold.woff2', 'Lato-Italic.woff2', 'Lato-BoldItalic.woff2'],
+  montserrat: ['Montserrat-Variable.woff2', 'Montserrat-Italic-Variable.woff2'],
+  'open-sans': ['OpenSans-Variable.woff2', 'OpenSans-Italic-Variable.woff2'],
+  poppins: ['Poppins-Regular.woff2', 'Poppins-SemiBold.woff2', 'Poppins-Bold.woff2', 'Poppins-Italic.woff2', 'Poppins-BoldItalic.woff2'],
+  'nunito-sans': ['NunitoSans-Variable.woff2', 'NunitoSans-Italic-Variable.woff2'],
 };
-const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt' };
+const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt', 'aptos-widths': 'LICENSE.txt', lato: 'OFL.txt', montserrat: 'OFL.txt', 'open-sans': 'OFL.txt', poppins: 'OFL.txt', 'nunito-sans': 'OFL.txt' };
 for (const [family, files] of Object.entries(FILES)) {
   for (const file of files) {
     const source = readFileSync(join(fonts, family, file));

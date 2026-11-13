@@ -24,7 +24,6 @@ const icons = {
   link: icon('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1 1"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1-1"/>'),
   download: icon('<path d="M12 4v11M7 11l5 5 5-5M5 20h14"/>'),
   grid: icon('<rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/>'),
-  close: icon('<path d="M6 6l12 12M18 6 6 18"/>'),
   open: icon('<path d="M14 5h5v5M19 5l-8 8M11 6H7a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-4"/>', 13),
 };
 
@@ -100,16 +99,22 @@ get_playground_code()`;
     </section>
 
     <div class="pg-top">
-      <div class="pg-id">
-        <h1>Playground</h1>
-        <span class="pg-engine" title="The engine this page runs, in your browser">engine {engineVersion}</span>
+      <h1 class="sr-only">Playground</h1>
+      <div class="pg-roots" role="radiogroup" aria-label="Root: the output this template writes" data-roots>
+        {roots.map((r) => (
+          <button type="button" role="radio" aria-checked="false" data-root={r.root} title={`<${r.root}>: ${r.writes}`}>
+            <span class="pg-root-icon" set:html={icons[r.root]} /><span class="pg-root-name">{r.label}</span>
+          </button>
+        ))}
       </div>
-      <button class="pg-starter" type="button" data-starters-open aria-haspopup="dialog">
-        <span class="pg-starter-icon" set:html={icons.grid} />
-        <span class="pg-starter-text"><span class="pg-starter-kicker">Starter</span><span class="pg-starter-name" data-starter-name>{defaultStarter.title}</span></span>
-        <span class="pg-caret" set:html={icons.caret} />
-      </button>
-      <p class="pg-tagline">Write a template. The engine itself renders it, here in your browser.</p>
+      <div class="pg-menu pg-templates" data-menu="templates">
+        <button class="pg-starter" type="button" data-templates-open aria-haspopup="menu" aria-expanded="false">
+          <span class="pg-starter-icon" set:html={icons.grid} />
+          <span class="pg-starter-text"><span class="pg-starter-kicker">Template</span><span class="pg-starter-name" data-starter-name>{defaultStarter.title}</span></span>
+          <span class="pg-caret" set:html={icons.caret} />
+        </button>
+        <div class="pg-menu-list pg-templates-list" role="menu" aria-label="Templates" data-templates-list hidden></div>
+      </div>
       <span class="pg-origin" data-origin hidden></span>
       <div class="pg-top-actions">
         <button class="btn btn-ghost btn-sm" type="button" data-share><span set:html={icons.link} /><span class="pg-label">Share</span></button>
@@ -138,19 +143,10 @@ get_playground_code()`;
       <div class="pg-split pg-split-x" data-split="x" role="separator" aria-orientation="vertical" aria-label="Resize the code and the output" tabindex="0"></div>
 
       <section class="pg-panel pg-out surface-dark" data-panel="output" aria-label="Output">
-        <header class="pg-bar pg-bar-roots">
-          <div class="pg-roots" role="radiogroup" aria-label="Root: the output this template writes" data-roots>
-            {roots.map((r) => (
-              <button type="button" role="radio" aria-checked="false" data-root={r.root} title={`<${r.root}>: ${r.writes}`}>
-                <span set:html={icons[r.root]} /><span class="pg-root-name">{r.label}</span>
-              </button>
-            ))}
-          </div>
-          <span class="pg-writes" data-writes></span>
-        </header>
-        <div class="pg-bar pg-bar-views">
+        <header class="pg-bar pg-bar-views">
           <div class="pg-views" role="tablist" aria-label="View" data-views></div>
           <div class="pg-tools">
+            <div class="pg-seg pg-seg-text" role="radiogroup" data-formats hidden></div>
             <div class="pg-file-tools" data-file-tools hidden></div>
             <div class="pg-seg" role="radiogroup" aria-label="Preview width" data-devices>
               <button type="button" role="radio" aria-checked="true" data-device="desktop" title="Desktop width" aria-label="Desktop width" set:html={icons.desktop} />
@@ -158,7 +154,7 @@ get_playground_code()`;
             </div>
             <button class="pg-toggle" type="button" aria-pressed="true" data-inspect title="Inspect: point at a block to find it in the code" aria-label="Inspect blocks" set:html={icons.inspect} />
           </div>
-        </div>
+        </header>
         <div class="pg-stage" data-stage data-view="preview" data-device="desktop">
           <div class="pg-view pg-view-preview" data-view-pane="preview">
             <div class="pg-device" data-device-frame><div class="pg-device-screen" data-preview></div></div>
@@ -188,6 +184,7 @@ get_playground_code()`;
           <span class="pg-dot" aria-hidden="true"></span>
           <span class="pg-status-text" data-status-text role="status" aria-live="polite">Loading the engine…</span>
           <span class="pg-status-meta" data-status-meta></span>
+          <span class="pg-engine" title="The engine this page runs, in your browser">engine {engineVersion}</span>
         </footer>
       </section>
 
@@ -198,11 +195,8 @@ get_playground_code()`;
           <div class="pg-views" role="tablist" aria-label="Checks">
             <button type="button" role="tab" aria-selected="true" data-check="diagnostics">Diagnostics <span class="pg-count" data-count="diagnostics" hidden></span></button>
             <button type="button" role="tab" aria-selected="false" data-check="outline">Outline</button>
-            <button type="button" role="tab" aria-selected="false" data-check="console">Console <span class="pg-count" data-count="console" hidden></span></button>
+            <button type="button" role="tab" aria-selected="false" data-check="console" hidden>Console <span class="pg-count" data-count="console" hidden></span></button>
           </div>
-          <label class="pg-check-clients" title="What classic Outlook, Gmail, Apple Mail and other clients remove or change, from @hyper-elements/email-clients">
-            <input type="checkbox" data-clients-check checked aria-label="Email client checks" /><span class="pg-switch" aria-hidden="true"></span><span class="pg-switch-label">Email clients</span>
-          </label>
         </header>
         <div class="pg-check-panes">
           <div class="pg-check-pane" data-check-pane="diagnostics"><ul class="pg-diags" data-diagnostics></ul></div>
@@ -212,17 +206,6 @@ get_playground_code()`;
       </section>
     </div>
   </div>
-
-  <dialog class="pg-gallery" data-gallery aria-label="Starters">
-    <header class="pg-gallery-head">
-      <div>
-        <p class="eyebrow">Starters</p>
-        <h2>Start from something real.</h2>
-      </div>
-      <button class="icon-link" type="button" data-gallery-close aria-label="Close" set:html={icons.close} />
-    </header>
-    <div class="pg-gallery-body" data-gallery-body></div>
-  </dialog>
 
   <div class="pg-toast" data-toast role="status" aria-live="polite" hidden></div>
 

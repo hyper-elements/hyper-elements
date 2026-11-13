@@ -114,7 +114,8 @@ function read(value: unknown, kind: Request["kind"]): Result {
           const preview = record(p);
           const html = text(preview.html, 12e6);
           const id = text(preview.id, 80);
-          return html && id ? [{ id, client: text(preview.client, 80) ?? id, dark: preview.dark === true, width: count(preview.width, 4000) ?? 600, approximate: preview.approximate === true, html }] : [];
+          const computer = preview.computer === "windows" || preview.computer === "mac" ? preview.computer : undefined;
+          return html && id ? [{ id, client: text(preview.client, 80) ?? id, ...(computer ? { computer } : {}), dark: preview.dark === true, width: count(preview.width, 4000) ?? 600, approximate: preview.approximate === true, html }] : [];
         })
       : undefined,
     skipped: Array.isArray(r.skipped) ? list(r.skipped, 40).map((s) => ({ client: text(record(s).client, 80) ?? "", reason: text(record(s).reason, 500) ?? "" })) : undefined,

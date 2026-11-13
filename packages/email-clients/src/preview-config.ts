@@ -3,7 +3,7 @@
  * shape, so the shell, and HTML previewed without core, need no types from core; the runtime's
  * Config is this type, and core's BlockMap fits `PreviewBlockMap`.
  */
-import type { Computer, PreviewClient } from "./clients";
+import type { Computer, ModelClient, PreviewClient } from "./clients";
 
 /** One block in the email (render()'s blockMap entry): its path, id, component and where its element starts. */
 export interface PreviewBlockEntry {
@@ -24,6 +24,8 @@ export interface PreviewBlockMap {
 export interface PreviewConfig {
   id: string;
   client: PreviewClient;
+  /** The models' client it's drawn with (Apple Mail on an iPhone: apple-mail-ios). */
+  model: ModelClient;
   name: string;
   variant: "desktop" | "phone";
   /** For webmail, the computer it's read on (its fonts). */

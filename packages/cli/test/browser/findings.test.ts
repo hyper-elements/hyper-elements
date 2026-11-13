@@ -83,7 +83,7 @@ describe("preview --findings", () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--dark", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     const line = expectDrawn(ran, /^chromium \d+\.[\d.]+, playwright$/);
-    expect(line.previews.map((p: any) => p.id)).toEqual(["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.dark"]);
+    expect(line.previews.map((p: any) => p.id)).toEqual(["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.iphone", "apple-mail.dark", "apple-mail.iphone.dark"]);
     // What the page wrote is what the CLI reports.
     const text = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--clients", "gmail"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     expect(text.code, text.stderr).toBe(0);
@@ -128,7 +128,7 @@ describe("preview --findings", () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--screenshots", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     const line = expectDrawn(ran, /, playwright$/);
-    expect(line.previews.map((p: any) => p.screenshot)).toEqual(["out/clients/emails/order/gmail.png", "out/clients/emails/order/gmail.mac.png", "out/clients/emails/order/apple-mail.png"]);
+    expect(line.previews.map((p: any) => p.screenshot)).toEqual(["out/clients/emails/order/gmail.png", "out/clients/emails/order/gmail.mac.png", "out/clients/emails/order/apple-mail.png", "out/clients/emails/order/apple-mail.iphone.png"]);
     for (const preview of line.previews) {
       const png = readFileSync(join(dir, preview.screenshot));
       expect(png.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
@@ -182,7 +182,10 @@ export async function renderInEmailClients(element, options) {
     const ran = await cli(dir, ["preview", "mail/order.html", "--findings", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     const line = expectDrawn(ran, /, playwright$/);
     expect(line).toMatchObject({ file: "mail/order.html", input: "html", root: null, status: "ok" });
-    expect(line.previews.map((p: any) => p.path)).toEqual(["out/clients/mail/order/gmail.html", "out/clients/mail/order/gmail.mac.html", "out/clients/mail/order/apple-mail.html"]);
+    // The email-clients npm installs here is the published one: Apple Mail's iPhone preview comes with it once it has one.
+    const paths: string[] = line.previews.map((p: any) => p.path);
+    expect(paths.filter((path) => !path.includes(".iphone."))).toEqual(["out/clients/mail/order/gmail.html", "out/clients/mail/order/gmail.mac.html", "out/clients/mail/order/apple-mail.html"]);
+    expect(paths.filter((path) => path.includes(".iphone."))).toEqual(paths.length > 3 ? ["out/clients/mail/order/apple-mail.iphone.html"] : []);
     const stdin = await cli(dir, ["preview", "-", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000, input: html });
     expect(expectDrawn(stdin, /, playwright$/).previews.map((p: any) => p.path)).toEqual(["out/clients/stdin/gmail.html", "out/clients/stdin/gmail.mac.html"]);
   });

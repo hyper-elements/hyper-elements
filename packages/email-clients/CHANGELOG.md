@@ -2,6 +2,34 @@
 
 Each release records the models package it was tested with.
 
+## Unreleased
+
+- **The Gmail app on an iPhone:** `gmail-app` previews add `gmail-app.iphone`, the Gmail app on an iPhone 16 with
+  iOS 26, in its 345px card: Gmail's version of the email as on Android, in iOS's fonts, line heights in whole pixels.
+  Drawn with the models' `gmail-app-ios` (1.10.0), 97.1% of the benchmark's lines within 3px. Its dark mode isn't
+  previewed, as the Gmail app's isn't; for HTML not built with Hyper Elements it's approximate.
+- Requires `@hyper-elements/email-client-models` 1.10.0.
+
+## 0.4.6
+
+- **Apple Mail on an iPhone:** `apple-mail` previews add `apple-mail.iphone` (and `apple-mail.iphone.dark` with
+  `dark: true`), Mail on an iPhone 16 with iOS 18, 393px wide: the email at the phone's width, its media queries
+  matching there, iOS's fonts, and an element wider than the screen shrunk to fit on its own, as Mail does. Drawn with
+  the models' `apple-mail-ios` (each preview's config names its `model`). On the models' benchmark it places 98.0% of
+  lines within 3px; for HTML not built with Hyper Elements it's approximate (measured on two such emails), as
+  `APPROXIMATE_FOR_HTML` lists.
+- **Classic Outlook draws Aptos with a stand-in of its widths**, character by character (Inter, SIL OFL), shipped in
+  `fonts/` (`AptosWidths-Regular.woff2`, `AptosWidths-Bold.woff2`): before, Helvetica Neue stood in, which only a Mac
+  has. **Office's cloud fonts** (Lato, Montserrat, Open Sans, Poppins, Nunito Sans), which classic Outlook draws by
+  name, are in `fonts/` too, loaded only where the email names the family.
+- **Apple Mail draws a font stack as a standard Mac with Microsoft Office has it**: Segoe UI and Calibri with Selawik
+  and Carlito, which its previews now load; a family such a Mac doesn't have falls through to the next one.
+- From models 1.9.0 too: classic Outlook's columns wider than their row, fonts that don't reach into a table, a table's
+  own borders, the Gmail app's Noto Serif weights and its cells' min-width; see the models' changelog.
+- A preview of classic Outlook with its fonts inline is about 1.2 MB (the Aptos stand-in and the larger models).
+- The preview runtime is rebuilt (its sha256 changes).
+- Requires `@hyper-elements/email-client-models` 1.9.0.
+
 ## 0.4.3
 
 - **`renderInEmailClients()` takes any HTML email as a string too**, however it was made (MJML, React Email, by hand):

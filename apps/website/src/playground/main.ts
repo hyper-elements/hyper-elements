@@ -6,8 +6,8 @@ import { installAgentPaths } from "./agent";
 import { fetchAssets } from "./assets";
 import { Checks, clientName, type Pick } from "./checks";
 import { $, $$, bytes, copy, download, h, plural } from "./dom";
-import { Gallery, type StarterInfo } from "./gallery";
-import { opensSafely, previewFile, PreviewFrame, stillDocument } from "./preview";
+import { Templates, type StarterInfo } from "./templates";
+import { opensSafely, previewFile, PreviewFrame } from "./preview";
 import { rootsIn, ROOTS, switchRoot, type Stash } from "./roots";
 import { Sandbox, SUPERSEDED, type Bundle } from "./sandbox";
 import { readHash, shareUrl } from "./share";
@@ -40,12 +40,30 @@ const VIEWS: Record<RootName, View[]> = {
   Document: ["preview", "pdf", "html", "text"],
   Canvas: ["png", "svg", "html", "text"],
 };
-const LABELS: Record<View, string> = { preview: "Preview", clients: "Email clients", html: "HTML", text: "Plain text", pdf: "PDF", png: "PNG", svg: "SVG" };
-const WRITES: Record<RootName, [string, string]> = {
-  Email: ["render()", "email HTML + plain text"],
-  Page: ["render()", "a responsive web page"],
-  Document: ["render() · renderPdf()", "print HTML + a PDF"],
-  Canvas: ["renderImage()", "a PNG or an SVG"],
+const VIEW_NAMES: readonly View[] = ["preview", "clients", "html", "text", "pdf", "png", "svg"];
+
+// What the bar above the stage shows: a tab for each slot the root has, and where a slot shows one of two formats
+// (the source as HTML or plain text, a Document as its pages or its PDF), a switch beside them. A Canvas's preview is
+// its PNG; its SVG is a link's or an agent's (`view=svg`), and the Export menu's.
+type Slot = "preview" | "clients" | "source";
+const SLOTS: Record<RootName, Slot[]> = {
+  Email: ["preview", "clients", "source"],
+  Page: ["preview", "source"],
+  Document: ["preview", "source"],
+  Canvas: ["preview", "source"],
+};
+const SLOT_LABELS: Record<Slot, string> = { preview: "Preview", clients: "Email clients", source: "Source" };
+const slotOf = (view: View): Slot => (view === "clients" ? "clients" : view === "html" || view === "text" ? "source" : "preview");
+function formatsOf(root: RootName | null, slot: Slot): View[] {
+  if (slot === "source") return ["html", "text"];
+  if (slot === "preview" && root === "Document") return ["preview", "pdf"];
+  return [];
+}
+const FORMAT_LABELS: Partial<Record<View, [string, string]>> = {
+  html: ["HTML", "The HTML render() writes"],
+  text: ["Plain text", "The plain text render() writes"],
+  preview: ["Pages", "The print HTML render() writes, as pages"],
+  pdf: ["PDF", "The PDF renderPdf() writes"],
 };
 const FILE_TYPES = { pdf: "application/pdf", png: "image/png", svg: "image/svg+xml" } as const;
 type FileKind = keyof typeof FILE_TYPES;
@@ -62,8 +80,14 @@ interface Saved {
   starter?: string;
   x?: number;
   y?: number;
-  checks?: boolean;
   inspect?: boolean;
+  /** Code the visitor changed under another root than the one that's up, kept for when they pick that root again. */
+  drafts?: Partial<Record<RootName, Draft>>;
+}
+interface Draft {
+  code: string;
+  from?: "link" | "agent";
+  starter?: string;
 }
 const saved: Saved = (() => {
   try {
@@ -94,7 +118,8 @@ const state = {
   device: "desktop" as Device,
   layout: "split" as Layout,
   inspect: saved.inspect ?? true,
-  checks: saved.checks ?? true,
+  /** Whether the visitor has changed the code that's up (since it was a starter's, a link's or an agent's). */
+  changed: false,
   /** The latest answer, and the latest that rendered: its output stays up while the code is being fixed. */
   result: null as Result | null,
   good: null as Result | null,
@@ -102,7 +127,6 @@ const state = {
   goodCode: "",
   /** The block picked in the preview, a diagnostic or the outline. */
   selected: null as string | null,
-  scale: 1,
 };
 
 const sandbox = new Sandbox({ base: "/playground/runtime", version: boot.build });
@@ -119,6 +143,7 @@ const editor = new Editor({
     // they changed still says where it came from.
     const from = state.origin === "link" || state.origin === "agent" ? state.origin : undefined;
     if (!from) state.origin = "saved";
+    state.changed = true;
     save({ code, from, starter: state.starter ?? undefined });
     clearTimeout(typing);
     typing = window.setTimeout(() => void render(), 260);
@@ -247,7 +272,8 @@ let shownRoot: RootName | null = null;
 let sawEmail = boot.starter.root === "Email";
 let settle: Array<(result: Result) => void> = [];
 
-const wantsClients = (code: string) => state.checks && (sawEmail || /<Email[\s/>]/.test(code));
+// An Email is always checked against the email clients; the other roots have no clients to check.
+const wantsClients = (code: string) => sawEmail || /<Email[\s/>]/.test(code);
 
 /** Render the editor's code. Resolves with the answer to the latest call: an earlier one is dropped. */
 export async function render(): Promise<Result> {
@@ -256,9 +282,9 @@ export async function render(): Promise<Result> {
   setStatus("rendering");
   sandbox.cancel("editor");
   const needs: Bundle[] = wantsClients(code) ? ["clients"] : [];
-  let result = await sandbox.run({ kind: "render", code, checks: state.checks }, needs, "editor");
+  let result = await sandbox.run({ kind: "render", code, checks: true }, needs, "editor");
   if (mine !== sequence) return new Promise((resolve) => settle.push(resolve));
-  if (result.root === "Email" && state.checks && !needs.includes("clients")) {
+  if (result.root === "Email" && !needs.includes("clients")) {
     // An Email the code's text didn't give away: again, with its client checks.
     sawEmail = true;
     result = await sandbox.run({ kind: "render", code, checks: true }, ["clients"], "editor");
@@ -335,6 +361,9 @@ function drawCounts() {
   const badge = $("[data-count='console']");
   badge.hidden = !logs;
   badge.textContent = String(logs);
+  // The console's tab is there while the code logs something (or while it's open).
+  const tab = $("[data-check='console']");
+  tab.hidden = !logs && tab.getAttribute("aria-selected") !== "true";
 }
 
 function setStatus(status: "loading" | "rendering" | "ok" | "error") {
@@ -385,15 +414,10 @@ function doneWorking(owner: object) {
 
 const rootsHost = $("[data-roots]");
 function drawRoots() {
-  const inCode = rootsIn(editor.code);
-  const switchable = inCode.length === 1;
-  rootsHost.toggleAttribute("data-locked", !switchable);
-  rootsHost.title = switchable ? "" : inCode.length > 1 ? "This code names more than one root: change it in the code" : "This code's root isn't written as a tag here: change it in the code";
   for (const button of $$<HTMLButtonElement>("[data-root]", rootsHost)) {
     const on = button.dataset.root === state.root;
     button.setAttribute("aria-checked", String(on));
     button.tabIndex = on || !state.root ? 0 : -1;
-    button.setAttribute("aria-disabled", String(!switchable && !on));
     if (on) {
       // The thumb goes under it.
       rootsHost.style.setProperty("--pg-thumb-x", `${button.offsetLeft}px`);
@@ -402,11 +426,9 @@ function drawRoots() {
     }
   }
   if (!state.root) rootsHost.style.setProperty("--pg-thumb-on", "0");
-  const writes = $("[data-writes]");
-  writes.replaceChildren(...(state.root ? [h("b", null, WRITES[state.root][0]), ` → ${WRITES[state.root][1]}`] : []));
 }
 
-/** Rewrite the code's root, and render it. False where the code's root can't be switched from here. */
+/** Rewrite the code's root, and render it: an agent's and a link's (`root=`). False where the code's root can't be switched. */
 export function setRoot(to: RootName): boolean {
   if (rootsIn(editor.code)[0] === to) return true;
   const switched = switchRoot(editor.code, to, stash);
@@ -422,18 +444,71 @@ export function setRoot(to: RootName): boolean {
   editor.setCode(switched.code, { flash: { from: at + 1, to: at + 1 + to.length } });
   return true;
 }
+
+// The root picker: each root has a template of its own, one of its starters until the visitor changes it. Picking a
+// root puts the code that's up by, with the root it was (changed code is kept for this browser's next visit too), and
+// brings back what the picked root had, or its first starter.
+interface Left {
+  code: string;
+  origin: typeof state.origin;
+  starter: string | null;
+  view: View;
+  changed: boolean;
+}
+const left: Partial<Record<RootName, Left>> = {};
+for (const [root, draft] of Object.entries(saved.drafts ?? {}) as Array<[RootName, Draft]>) {
+  if (ROOTS.includes(root) && typeof draft?.code === "string") left[root] = { code: draft.code, origin: draft.from ?? "saved", starter: draft.starter ?? null, view: VIEWS[root][0], changed: true };
+}
+let picks = 0;
+/** The root whose template is on its way: until it's in, the code that's up isn't its. */
+let arriving: RootName | null = null;
+
+export async function pickRoot(to: RootName): Promise<Result | undefined> {
+  if (to === state.root && !arriving) return undefined;
+  const mine = ++picks;
+  const from = state.root;
+  if (from && from !== arriving) {
+    left[from] = { code: editor.code, origin: state.origin, starter: state.starter, view: state.view, changed: state.changed };
+    const drafts = { ...saved.drafts };
+    if (state.changed) drafts[from] = { code: editor.code, from: state.origin === "link" || state.origin === "agent" ? state.origin : undefined, starter: state.starter ?? undefined };
+    else delete drafts[from];
+    save({ drafts });
+  }
+  // Shown as picked at once; its template follows.
+  arriving = to;
+  state.root = to;
+  drawRoots();
+  const next = left[to] ?? (await firstStarter(to));
+  // Another root was picked meanwhile: that pick shows its own.
+  if (mine !== picks) return undefined;
+  arriving = null;
+  if (!next) return undefined;
+  delete left[to];
+  if (saved.drafts?.[to]) {
+    const { [to]: _, ...rest } = saved.drafts;
+    save({ drafts: rest });
+  }
+  state.view = next.view;
+  return setCode(next.code, next.origin, next.starter, { changed: next.changed });
+}
+
+/** The template a root starts with: its first in the Template menu. */
+async function firstStarter(root: RootName): Promise<Left | undefined> {
+  const info = boot.starters.find((starter) => starter.root === root);
+  const starter = info && (await templates.find(info.id));
+  return starter ? { code: starter.source, origin: "starter", starter: starter.id, view: VIEWS[root][0], changed: false } : undefined;
+}
 rootsHost.addEventListener("click", (event) => {
   const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-root]");
-  if (!button) return;
-  const to = button.dataset.root as RootName;
-  if (!setRoot(to) && to !== state.root) toast(rootsHost.title || "This code's root can't be switched from here");
+  if (button) void pickRoot(button.dataset.root as RootName);
 });
 rootsHost.addEventListener("keydown", (event) => {
   const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
   if (!step || !state.root) return;
   event.preventDefault();
   const to = ROOTS[(ROOTS.indexOf(state.root) + step + ROOTS.length) % ROOTS.length];
-  if (setRoot(to)) $(`[data-root="${to}"]`, rootsHost).focus();
+  void pickRoot(to);
+  $(`[data-root="${to}"]`, rootsHost).focus();
 });
 
 // ─── Views ─────────────────────────────────────────────────────────────────
@@ -456,13 +531,20 @@ function drawViews() {
     if (veil.dataset.on === "working") hideVeil();
     viewShown = state.view;
   }
+  const slot = slotOf(state.view);
+  lastIn[slot] = state.view;
   viewsHost.replaceChildren(
-    ...views.map((view) =>
-      h(
-        "button",
-        { type: "button", role: "tab", "aria-selected": String(view === state.view), tabindex: view === state.view ? 0 : -1, "data-view-tab": view, onclick: () => setView(view) },
-        view === "preview" && state.root === "Document" ? "Pages" : LABELS[view],
-      ),
+    ...slotsOf(state.root).map((each) =>
+      h("button", { type: "button", role: "tab", "aria-selected": String(each === slot), tabindex: each === slot ? 0 : -1, "data-slot": each, onclick: () => setSlot(each) }, SLOT_LABELS[each]),
+    ),
+  );
+  const formats = formatsOf(state.root, slot);
+  const formatsHost = $("[data-formats]");
+  formatsHost.hidden = formats.length < 2;
+  formatsHost.setAttribute("aria-label", slot === "source" ? "Source" : "Pages or PDF");
+  formatsHost.replaceChildren(
+    ...formats.map((view) =>
+      h("button", { type: "button", role: "radio", "aria-checked": String(view === state.view), title: FORMAT_LABELS[view]![1], "data-view-tab": view, onclick: () => setView(view) }, FORMAT_LABELS[view]![0]),
     ),
   );
   stage.dataset.view = state.view;
@@ -478,12 +560,25 @@ function drawViews() {
 }
 viewsHost.addEventListener("keydown", (event) => {
   const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
-  const views = state.root ? VIEWS[state.root] : [];
-  if (!step || !views.length) return;
+  const slots = slotsOf(state.root);
+  if (!step) return;
   event.preventDefault();
-  setView(views[(views.indexOf(state.view) + step + views.length) % views.length]);
-  $(`[data-view-tab="${state.view}"]`, viewsHost).focus();
+  const to = slots[(slots.indexOf(slotOf(state.view)) + step + slots.length) % slots.length];
+  setSlot(to);
+  $(`[data-slot="${to}"]`, viewsHost).focus();
 });
+
+function slotsOf(root: RootName | null): Slot[] {
+  return root ? SLOTS[root] : ["preview", "source"];
+}
+/** The view each slot showed last (the source as plain text stays plain text), for when it's opened again. */
+const lastIn: Partial<Record<Slot, View>> = {};
+function setSlot(slot: Slot): boolean {
+  const views = state.root ? VIEWS[state.root] : (["preview", "html", "text"] as View[]);
+  const last = lastIn[slot];
+  const to = last && views.includes(last) ? last : (views.find((view) => slotOf(view) === slot) ?? views[0]);
+  return setView(to);
+}
 
 export function setView(view: View): boolean {
   if (state.root && !VIEWS[state.root].includes(view)) return false;
@@ -616,11 +711,12 @@ function fileUrl(kind: FileKind, bytes: Uint8Array): Promise<string> {
 }
 
 /** The file of the last good render, drawn by the sandbox with the fonts and images this page fetched for it. */
-async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: FontNeed[]; images: string[] } | undefined = state.good?.assets, group = "editor-file"): Promise<{ drawn?: Drawn; result: Result; missing: string[] }> {
-  const key = `${kind}|${kind === "png" ? state.scale : 1}|${code}`;
+async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: FontNeed[]; images: string[] } | undefined = state.good?.assets, group = "editor-file", scale = 1): Promise<{ drawn?: Drawn; result: Result; missing: string[] }> {
+  if (kind !== "png") scale = 1;
+  const key = `${kind}|${scale}|${code}`;
   if (group === "editor-file" && files[kind]?.key === key) return { drawn: files[kind], result: state.good!, missing: [] };
   const assets = await fetchAssets(needs, { fallback: kind !== "pdf" });
-  const request: Request = kind === "pdf" ? { kind: "pdf", code, fonts: assets.fonts, images: assets.images } : { kind: "image", code, format: kind, scale: kind === "png" ? state.scale : 1, fonts: assets.fonts, images: assets.images };
+  const request: Request = kind === "pdf" ? { kind: "pdf", code, fonts: assets.fonts, images: assets.images } : { kind: "image", code, format: kind, scale, fonts: assets.fonts, images: assets.images };
   const result = await sandbox.run(request, [kind === "pdf" ? "pdf" : "image"], group);
   if (!result.ok || !result.bytes) return { result, missing: assets.missing };
   // It says it's a PDF (a PNG, an SVG): it's kept only if its first bytes agree, as a file of that type and no other.
@@ -648,6 +744,8 @@ async function drawFile(kind: FileKind) {
   if (!drawn) {
     if (result.error?.message === SUPERSEDED) return;
     host.replaceChildren(h("div", { class: "pg-file-card" }, h("strong", null, kind === "pdf" ? "The PDF wasn't written" : "The image wasn't drawn"), firstProblem(result)));
+    // The bar says nothing about a file there isn't (not the size of the last one that was).
+    $("[data-file-tools]").replaceChildren();
     fileDiagnostics = result.diagnostics;
     checks.show(state.result, fileDiagnostics);
     drawCounts();
@@ -656,14 +754,11 @@ async function drawFile(kind: FileKind) {
   fileDiagnostics = [...result.diagnostics, ...missing.map((what): Diagnostic => ({ code: "playground/not-fetched", severity: "info", message: `The playground couldn't fetch the ${what}, so the ${kind === "pdf" ? "PDF" : "image"} is drawn without it. In your own code you give renderPdf() and renderImage() the file`, path: "root" }))];
   checks.show(state.result, fileDiagnostics);
   drawCounts();
-  // What the file is, and how to keep it, in the bar above the stage.
-  const name = `template${kind === "png" && state.scale > 1 ? `@${state.scale}x` : ""}.${kind}`;
-  const save = h("button", { class: "pg-file-save", type: "button", onclick: () => download(name, drawn.bytes as BlobPart, FILE_TYPES[kind]) }, "Download");
+  // What the file is, in the bar above the stage. It's kept from the Export menu.
   const tools = $("[data-file-tools]");
   if (kind === "pdf") {
     const pages = (new TextDecoder("latin1").decode(drawn.bytes).match(/\/Type\s*\/Page[^s]/g) ?? []).length;
-    const open = h("a", { class: "pg-file-open", href: drawn.url, target: "_blank", rel: "noopener" }, "Open");
-    tools.replaceChildren(h("span", { class: "pg-file-facts" }, `${pages ? `${plural(pages, "page")} · ` : ""}${bytes(drawn.bytes.length)}`), open, save);
+    tools.replaceChildren(h("span", { class: "pg-file-facts" }, `${pages ? `${plural(pages, "page")} · ` : ""}${bytes(drawn.bytes.length)}`));
     if ((navigator as Navigator & { pdfViewerEnabled?: boolean }).pdfViewerEnabled === false) {
       // A browser that shows no PDFs in a page (most phones): the file is there to open or save.
       host.replaceChildren(
@@ -680,18 +775,7 @@ async function drawFile(kind: FileKind) {
     // The browser's own PDF viewer draws it (it doesn't load in a sandboxed frame): a file of this page's making, typed as a PDF.
     host.replaceChildren(h("iframe", { title: "The template as a PDF", src: `${drawn.url}#toolbar=0&navpanes=0&view=FitH` }));
   } else {
-    const facts = h("span", { class: "pg-file-facts" }, `${drawn.size ? `${drawn.size.width} × ${drawn.size.height} · ` : ""}${bytes(drawn.bytes.length)}`);
-    const scales =
-      kind === "png"
-        ? h(
-            "div",
-            { class: "pg-seg pg-seg-text", role: "radiogroup", "aria-label": "Pixels per point" },
-            ...[1, 2].map((scale) =>
-              h("button", { type: "button", role: "radio", "aria-checked": String(state.scale === scale), title: `${scale === 1 ? "One pixel" : "Two pixels"} per point`, onclick: () => ((state.scale = scale), void drawFile("png")) }, `${scale}×`),
-            ),
-          )
-        : null;
-    tools.replaceChildren(facts, ...(scales ? [scales] : []), save);
+    tools.replaceChildren(h("span", { class: "pg-file-facts" }, `${kind.toUpperCase()} · ${drawn.size ? `${drawn.size.width} × ${drawn.size.height} · ` : ""}${bytes(drawn.bytes.length)}`));
     // An image element draws a PNG or an SVG without running anything in it.
     host.replaceChildren(h("img", { src: drawn.url, alt: `The template as ${kind === "svg" ? "an SVG" : "a PNG"}`, style: drawn.size ? `aspect-ratio:${drawn.size.width}/${drawn.size.height}` : undefined }));
   }
@@ -723,7 +807,8 @@ async function drawClients() {
   }
   clientsKey = code;
   const frames = result.previews.map((each, index) => {
-    const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)} draws it`, hidden: index !== 0 });
+    const on = each.computer ? ` on ${each.computer === "mac" ? "a Mac" : "Windows"}` : "";
+    const frame = h("iframe", { title: `As ${clientName(each.client, result.clientNames)}${on} draws it${each.dark ? ", in dark mode" : ""}`, hidden: index !== 0 });
     if (previewFile(frame, each.html, scripts)) return frame;
     return h("div", { class: "pg-file-card", hidden: index !== 0, style: "position:absolute;inset:0;margin:auto;height:max-content;color:#525252" }, h("strong", { style: "color:#0a0a0a" }, "Too large to preview here"), "This email's preview file is longer than a browser shows this way. renderInEmailClients() writes the same file in your own project.");
   });
@@ -733,7 +818,15 @@ async function drawClients() {
   };
   tabs.replaceChildren(
     ...result.previews.map((each, index) =>
-      h("button", { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) }, clientName(each.client, result.clientNames), each.dark ? h("small", null, "dark") : null, each.approximate ? h("small", null, "approximate") : null),
+      h(
+        "button",
+        { type: "button", role: "tab", "aria-selected": String(index === 0), onclick: () => select(index) },
+        clientName(each.client, result.clientNames),
+        // Webmail is previewed on Windows and on a Mac, whose fonts differ: the tab says which.
+        each.computer ? h("small", null, each.computer === "mac" ? "Mac" : "Windows") : null,
+        each.dark ? h("small", null, "dark") : null,
+        // (An approximate preview, classic Outlook's, says so in the preview itself.)
+      ),
     ),
   );
   host.replaceChildren(...frames);
@@ -744,17 +837,10 @@ async function drawClients() {
 function showChecks(tab: string) {
   for (const button of $$("[data-check]")) button.setAttribute("aria-selected", String(button.dataset.check === tab));
   for (const pane of $$("[data-check-pane]")) pane.hidden = pane.dataset.checkPane !== tab;
+  drawCounts();
   if (matchMedia("(max-width: 860px)").matches) showPane("checks");
 }
 for (const button of $$("[data-check]")) button.addEventListener("click", () => showChecks(button.dataset.check!));
-
-const clientsCheck = $<HTMLInputElement>("[data-clients-check]");
-clientsCheck.checked = state.checks;
-clientsCheck.addEventListener("change", () => {
-  state.checks = clientsCheck.checked;
-  save({ checks: state.checks });
-  void render();
-});
 
 /** On a phone, one panel at a time. */
 function showPane(pane: string) {
@@ -843,22 +929,27 @@ exportButton.addEventListener("click", () => {
     h("button", { type: "button", role: "menuitem", disabled: !enabled, onclick: () => (closeMenu(), void run()) }, label, h("small", null, note));
   const fileItem = (kind: FileKind, label: string, scale = 1) =>
     item(label, kind === "pdf" ? "renderPdf()" : "renderImage()", async () => {
-      state.scale = kind === "png" ? scale : state.scale;
       toast(kind === "pdf" ? "Writing the PDF…" : "Drawing the image…");
-      const { drawn, result } = await fileOf(kind);
-      if (drawn) download(`template${kind === "png" && scale > 1 ? `@${scale}x` : ""}.${kind}`, drawn.bytes as BlobPart, FILE_TYPES[kind]);
+      // At 1× it's the file the stage shows (drawn once); at 2× a file of its own, which leaves the stage's be.
+      const { drawn, result } = await fileOf(kind, undefined, undefined, scale > 1 ? "export" : "editor-file", scale);
+      if (drawn) download(`template${scale > 1 ? `@${scale}x` : ""}.${kind}`, drawn.bytes as BlobPart, FILE_TYPES[kind]);
       else toast(firstProblem(result) || "That didn't render");
-    });
+    }, Boolean(good));
+  // What the root writes, and nothing it doesn't: an Email's plain text, a Document's PDF, a Canvas's images.
   const stale = good && state.result && !state.result.ok ? " (last render that worked)" : "";
-  exportList.replaceChildren(
-    item(`Copy HTML${stale}`, good?.html ? bytes(new Blob([good.html]).size) : "", async () => toast((await copy(good!.html!)) ? "HTML copied" : "Couldn't copy"), Boolean(good?.html)),
-    item("Download HTML", ".html", () => download("template.html", good!.html!, "text/html"), Boolean(good?.html)),
-    item("Copy plain text", ".txt", async () => toast((await copy(good!.text ?? "")) ? "Plain text copied" : "Couldn't copy"), Boolean(good?.text)),
-    ...(good?.root === "Document" ? [h("hr"), fileItem("pdf", "Download PDF")] : []),
-    ...(good?.root === "Canvas" ? [h("hr"), fileItem("png", "Download PNG"), fileItem("png", "Download PNG at 2×", 2), fileItem("svg", "Download SVG")] : []),
-    h("hr"),
-    item("Copy the code", "template.tsx", async () => toast((await copy(editor.code)) ? "Code copied" : "Couldn't copy")),
-  );
+  const root = good?.root ?? state.root;
+  const print = root === "Document" ? "print " : "";
+  const copyHtml = item(`Copy ${print}HTML${stale}`, good?.html ? bytes(new Blob([good.html]).size) : "", async () => toast((await copy(good!.html!)) ? "HTML copied" : "Couldn't copy"), Boolean(good?.html));
+  const downloadHtml = item(`Download ${print}HTML`, ".html", () => download("template.html", good!.html!, "text/html"), Boolean(good?.html));
+  const own =
+    root === "Canvas"
+      ? [fileItem("png", "Download PNG"), fileItem("png", "Download PNG at 2×", 2), fileItem("svg", "Download SVG")]
+      : root === "Document"
+        ? [fileItem("pdf", "Download PDF"), h("hr"), copyHtml, downloadHtml]
+        : root === "Email"
+          ? [copyHtml, downloadHtml, item("Copy plain text", ".txt", async () => toast((await copy(good!.text ?? "")) ? "Plain text copied" : "Couldn't copy"), Boolean(good?.text))]
+          : [copyHtml, downloadHtml];
+  exportList.replaceChildren(...own, h("hr"), item("Copy the code", "template.tsx", async () => toast((await copy(editor.code)) ? "Code copied" : "Couldn't copy")));
   exportList.hidden = false;
   exportButton.setAttribute("aria-expanded", "true");
 });
@@ -882,9 +973,10 @@ function drawOrigin() {
 }
 
 /** Replace the code: a starter's, a link's, an agent's. The editor's own typing doesn't come through here. */
-export function setCode(code: string, origin: typeof state.origin, starter: string | null = null): Promise<Result> {
+export function setCode(code: string, origin: typeof state.origin, starter: string | null = null, options: { changed?: boolean } = {}): Promise<Result> {
   state.origin = origin;
   state.starter = starter;
+  state.changed = options.changed ?? false;
   state.selected = null;
   for (const root of ROOTS) delete stash[root];
   preview.resetScroll();
@@ -893,40 +985,31 @@ export function setCode(code: string, origin: typeof state.origin, starter: stri
   // A starter the visitor picked replaces their draft. A link's or an agent's code is only shown: the draft they had
   // is still theirs, and is what the next plain visit opens.
   if (origin === "starter") save({ code: undefined, from: undefined, starter: starter ?? undefined });
+  // Code the visitor changed, brought back (from another root): their draft again.
+  else if (state.changed) save({ code, from: origin === "link" || origin === "agent" ? origin : undefined, starter: starter ?? undefined });
   drawOrigin();
   drawRoots();
   return render();
 }
 
-const gallery = new Gallery(
-  $<HTMLDialogElement>("[data-gallery]"),
+const templates = new Templates(
+  $("[data-menu='templates']"),
   boot.starters,
+  () => ({ current: state.origin === "starter" ? state.starter : null, root: state.root }),
   (starter) => {
     state.view = VIEWS[starter.root][0];
     void setCode(starter.source, "starter", starter.id);
   },
-  async (starter) => {
-    const drawn: Array<{ html: string; width: number }> = [];
-    for (const [root, width] of [["Email", 640], ["Page", 1100], ["Document", 794], ["Canvas", 1200]] as const) {
-      const result = await sandbox.run({ kind: "render", code: root === starter.root ? starter.source : switchRoot(starter.source, root).code, checks: false }, [], "thumbnails");
-      if (result.ok && result.html) drawn.push({ html: stillDocument(result.html), width });
-    }
-    return drawn;
-  },
 );
-$("[data-starters-open]").addEventListener("click", () => gallery.open(state.origin === "starter" ? state.starter : null));
-$("[data-gallery-close]").addEventListener("click", () => gallery.close());
 
 export async function loadStarter(id: string): Promise<Result | undefined> {
-  const starter = await gallery.find(id);
+  const starter = await templates.find(id);
   if (!starter) return undefined;
   state.view = VIEWS[starter.root][0];
   return setCode(starter.source, "starter", starter.id);
 }
 
 // ─── Start ─────────────────────────────────────────────────────────────────
-
-const VIEW_NAMES: readonly string[] = Object.keys(LABELS);
 
 /** What the link says: its code (text for the editor), and how to show it. */
 async function applyHash(): Promise<boolean> {
@@ -943,7 +1026,7 @@ async function applyHash(): Promise<boolean> {
     const root = ROOTS.find((each) => each.toLowerCase() === link.root);
     if (root) setRoot(root);
   }
-  if (link.view && VIEW_NAMES.includes(link.view)) setView(link.view as View);
+  if (link.view && (VIEW_NAMES as readonly string[]).includes(link.view)) setView(link.view as View);
   return loaded;
 }
 
@@ -960,7 +1043,16 @@ async function start() {
   if (await applyHash()) return;
   // The draft from this browser's last visit, said to be a link's or an agent's where it began as one.
   if (saved.code && saved.code !== boot.starter.source) {
-    await setCode(saved.code, saved.from === "link" || saved.from === "agent" ? saved.from : "saved", saved.starter ?? null);
+    await setCode(saved.code, saved.from === "link" || saved.from === "agent" ? saved.from : "saved", saved.starter ?? null, { changed: true });
+    return;
+  }
+  // No draft that's up, but one under the first starter's root (left there when another root was picked).
+  const draft = left[boot.starter.root];
+  if (draft) {
+    delete left[boot.starter.root];
+    const { [boot.starter.root]: _, ...rest } = saved.drafts ?? {};
+    save({ drafts: rest });
+    await setCode(draft.code, draft.origin, draft.starter, { changed: true });
     return;
   }
   await render();

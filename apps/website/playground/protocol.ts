@@ -18,7 +18,7 @@ export interface FontFile extends FontNeed {
 interface Common {
   /** The template's code: a module, or JSX alone. */
   code: string;
-  /** An Email's client checks (on unless false). */
+  /** An Email's client checks (on unless false). Lint's checks run either way. */
   checks?: boolean;
 }
 
@@ -69,6 +69,8 @@ export interface PlaygroundError {
 export interface Preview {
   id: string;
   client: string;
+  /** For webmail (Outlook.com, Gmail on the web), the computer it's read on: each is previewed on both. */
+  computer?: "windows" | "mac";
   dark: boolean;
   width: number;
   approximate: boolean;

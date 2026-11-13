@@ -5,7 +5,7 @@
  */
 import type { Diagnostic } from "@hyper-elements/react";
 
-export type Client = "outlook" | "outlook-com" | "gmail" | "gmail-app" | "gmail-app-other" | "apple-mail";
+export type Client = "outlook" | "outlook-com" | "gmail" | "gmail-app" | "gmail-app-other" | "apple-mail" | "apple-mail-ios" | "gmail-app-ios";
 
 export interface Processed {
   /** The client's version of the email, with the block paths in it. */

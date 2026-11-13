@@ -20,7 +20,7 @@ describe("renderInEmailClients(html) and what it loads", () => {
     });
     const { renderInEmailClients } = await import("../src/index");
     const { previews } = await renderInEmailClients(email, { emailClients: ["apple-mail"] });
-    expect(previews.map((p) => p.id)).toEqual(["apple-mail"]);
+    expect(previews.map((p) => p.id)).toEqual(["apple-mail", "apple-mail.iphone"]);
   });
 });
 
@@ -35,7 +35,7 @@ describe("renderInEmailClients(html) when the models package can't be used", () 
     await expect(renderInEmailClients(email)).rejects.toThrow();
     vi.doUnmock("@hyper-elements/email-client-models");
     const { previews } = await renderInEmailClients(email, { emailClients: ["apple-mail"] });
-    expect(previews.map((p) => p.id)).toEqual(["apple-mail"]);
+    expect(previews.map((p) => p.id)).toEqual(["apple-mail", "apple-mail.iphone"]);
   });
 
   it("rejects with email-clients/version-mismatch for a protocol it doesn't read", async () => {

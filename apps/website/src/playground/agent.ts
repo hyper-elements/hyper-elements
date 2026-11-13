@@ -4,7 +4,7 @@
 import type { Diagnostic, FontNeed, Result, RootName } from "../../playground/protocol";
 import { base64 } from "./dom";
 import type { Editor } from "./editor";
-import type { StarterInfo } from "./gallery";
+import type { StarterInfo } from "./templates";
 import type { View } from "./main";
 import { ROOTS, rootsIn, switchRoot } from "./roots";
 import type { Bundle, Sandbox } from "./sandbox";
@@ -143,7 +143,7 @@ export function installAgentPaths(host: AgentHost) {
   await hyperElementsPlayground.render(code, options)      // render without touching the page
       options.root     "Email" | "Page" | "Document" | "Canvas": rewrite the code's root first
       options.include  ["html", "text", "outline", "pdf", "png", "svg"] (default: html, text, outline; files in base64)
-      options.checks   false to leave out the email client checks
+      options.checks   false to leave out the email client checks (lint's checks still run)
       => { ok, root, html, text, outline, diagnostics: [{ severity, code, message, path, fix, clients, line }], error: { kind, message, line } }
   await hyperElementsPlayground.setCode(code, { root })    // put it in the editor and show it; the same answer, without the outputs
   hyperElementsPlayground.getCode()
@@ -152,7 +152,7 @@ export function installAgentPaths(host: AgentHost) {
   hyperElementsPlayground.setView("pdf")                   // preview | clients | html | text | pdf | png | svg (those the root has)
   hyperElementsPlayground.setDevice("phone")               // desktop | phone
   hyperElementsPlayground.setLayout("preview")             // split | code | preview
-  await hyperElementsPlayground.loadStarter("four-outputs")
+  await hyperElementsPlayground.loadStarter("launch-email")
   hyperElementsPlayground.starters()                       // [{ id, title, description, root }]
   await hyperElementsPlayground.getShareUrl()              // a link that carries the editor's code
   hyperElementsPlayground.encode(code)                     // base64url, for a #code= link

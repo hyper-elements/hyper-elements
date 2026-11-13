@@ -28,6 +28,7 @@ describe("renderInEmailClients(html)", () => {
       { id: "gmail", approximate: false },
       { id: "gmail.mac", approximate: true },
       { id: "apple-mail", approximate: false },
+      { id: "apple-mail.iphone", approximate: true },
     ]);
     expect(skipped).toEqual([]);
     // Nothing in this email for the clients previewed; at most a note that the captured checks for HTML need models 1.8.
@@ -36,8 +37,8 @@ describe("renderInEmailClients(html)", () => {
     for (const preview of previews) expect(embedded(preview.html, "email-client-config")).toMatchObject({ id: preview.id, approximate: preview.approximate });
   });
 
-  it("marks exactly the six previews APPROXIMATE_FOR_HTML lists, and Apple Mail light, Gmail and Outlook.com on Windows not", async () => {
-    expect(APPROXIMATE_FOR_HTML).toEqual(["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac"]);
+  it("marks exactly the nine previews APPROXIMATE_FOR_HTML lists, and Apple Mail light, Gmail and Outlook.com on Windows not", async () => {
+    expect(APPROXIMATE_FOR_HTML).toEqual(["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone"]);
     const { previews } = await renderInEmailClients(receipt, { emailClients: ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail"], dark: true });
     const flags = Object.fromEntries(previews.map((p) => [p.id, p.approximate]));
     expect(flags).toEqual({
@@ -47,9 +48,12 @@ describe("renderInEmailClients(html)", () => {
       gmail: false,
       "gmail.mac": true,
       "gmail-app": true,
+      "gmail-app.iphone": true,
       "gmail-app-other": true,
       "apple-mail": false,
+      "apple-mail.iphone": true,
       "apple-mail.dark": true,
+      "apple-mail.iphone.dark": true,
     });
   });
 
@@ -103,7 +107,7 @@ describe("renderInEmailClients(html)", () => {
   it("previews an email with a head stylesheet and media queries as given", async () => {
     const newsletter = fixture("newsletter.html");
     const { previews } = await renderInEmailClients(newsletter, { emailClients: ["gmail-app"] });
-    expect(previews.map((p) => p.id)).toEqual(["gmail-app"]);
+    expect(previews.map((p) => p.id)).toEqual(["gmail-app", "gmail-app.iphone"]);
     expect(embedded(previews[0]!.html, "email")).toBe(newsletter);
   });
 });

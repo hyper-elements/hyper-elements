@@ -214,7 +214,7 @@ describe("what a preview lists, and when it's incomplete", () => {
     await page.close();
   });
 
-  it("lists the email's own web font that fails, and a system font that isn't there", async () => {
+  it("lists the email's own web font that fails, and draws a family a Mac doesn't have in the stack's next one", async () => {
     const element = (
       <Email width={600} fonts={[{ family: "Brand", src: "https://example.test/brand.woff2", format: "woff2", weight: 400, style: "normal" }]} style={{ fontFamily: "Brand, Arial, sans-serif" }}>
         <Text>Brand words</Text>
@@ -224,7 +224,10 @@ describe("what a preview lists, and when it's incomplete", () => {
     const { previews } = await renderInEmailClients(element, { emailClients: ["apple-mail"] });
     const { page, ready, findings } = await open("missing-fonts.html", previews[0]!.html);
     expect(ready).toBe("incomplete");
-    expect(findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Zzz No Such Font" }, { kind: "author-font", family: "Brand", src: "https://example.test/brand.woff2" }]));
+    expect(findings.missing).toEqual(expect.arrayContaining([{ kind: "author-font", family: "Brand", src: "https://example.test/brand.woff2" }]));
+    // Apple Mail draws a stack as a standard Mac with Office has it (models 1.9.0): a family it doesn't have isn't
+    // missing, its next one draws.
+    expect(findings.missing).not.toEqual(expect.arrayContaining([{ kind: "font", family: "Zzz No Such Font" }]));
     // What drew instead was checked against the probe's widths: Arial everywhere (Liberation Sans has its widths), and
     // Georgia, which only the Mac has here (on Linux it's listed as missing).
     expect(findings.fonts).toEqual(expect.arrayContaining([{ family: "Arial", verified: "widths" }]));
@@ -353,11 +356,11 @@ describe("what a preview lists, and when it's incomplete", () => {
 });
 
 describe.runIf(process.platform === "linux")("on Linux, without the Mac's fonts", () => {
-  it("draws classic Outlook incomplete for want of Helvetica Neue (its Aptos stand-in), and accepts Arial's metric twin", async () => {
+  it("draws classic Outlook's Aptos with the package's own stand-in, Helvetica Neue or not, and accepts Arial's metric twin", async () => {
     const { previews } = await renderInEmailClients(email, { emailClients: ["outlook", "gmail"], fonts: "inline" });
     const outlook = await open("linux-outlook.html", previews[0]!.html);
-    expect(outlook.ready).toBe("incomplete");
-    expect(outlook.findings.missing).toEqual(expect.arrayContaining([{ kind: "font", family: "Aptos Stand-in" }]));
+    // Since models 1.9.0, Aptos's stand-in is a file in fonts/ (Inter at Aptos's widths), not the Mac's Helvetica Neue.
+    expect(outlook.findings.missing.filter((m) => m.family?.startsWith("Aptos"))).toEqual([]);
     await outlook.page.close();
     // Gmail draws in Arial: Linux has none, and draws Liberation Sans, which has Arial's widths: the layout matches.
     const gmail = await open("linux-gmail.html", previews[1]!.html);
@@ -373,7 +376,8 @@ describe("HTML given as a string", () => {
     const renderHtml = renderInEmailClients;
     for (const [name, words] of [["receipt.html", "Thanks for your order"], ["newsletter.html", "The weekly letter"]] as const) {
       const { previews } = await renderHtml(fixture(name), { emailClients: [...PREVIEW_CLIENTS], dark: true });
-      expect(previews.length).toBe(PREVIEW_CLIENTS.length + 3);
+      // Webmail on a Mac too (2), Apple Mail's dark mode, Apple Mail on an iPhone, light and dark, and the Gmail app on one.
+      expect(previews.length).toBe(PREVIEW_CLIENTS.length + 6);
       for (const preview of previews) {
         const { page, ready, errors, findings } = await open(`html-${name}-${preview.id}.html`, preview.html);
         try {

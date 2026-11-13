@@ -20,7 +20,7 @@
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#build-with-ai-agents">AI agents</a> ·
-  <a href="#test-it-in-email-clients">Test in email clients</a> ·
+  <a href="#preview-and-test-emails-in-outlook-and-gmail-locally">Test in email clients</a> ·
   <a href="https://hyperelements.dev/templates">Templates</a> ·
   <a href="https://hyperelements.dev/docs">Documentation</a> ·
   <a href="https://hyperelements.dev">Website</a>
@@ -31,7 +31,7 @@ Hyper Elements is an open-source React library for generating content. Write a r
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
 - **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
-- **Test emails in email clients, locally.** See an email as Outlook, Gmail and other email clients show it, with the email client emulator that comes with Hyper Elements: no test sends, no account, nothing uploaded.
+- **Test existing HTML emails locally.** Check and preview Outlook, Gmail and Apple Mail with the companion JavaScript library or CLI. Works with HTML from MJML, React Email or any email builder; no React required, no test sends, no account, nothing uploaded.
 - **Render in your own app.** Generate output on your server, with no browser, hosted service, or API key required.
 
 <p align="center">
@@ -130,27 +130,54 @@ Email 600px
 
 An agent can spot missing content, incorrect widths, and layout mistakes before rendering, then see the email in each email client with the emulator below.
 
-The same loop runs from the shell, with no script, using [`@hyper-elements/cli`](./packages/cli) (`npm install -D @hyper-elements/cli`): `npx hyper-elements check emails/ --json` validates each template, `outline` prints its layout, `render` writes its HTML and plain text, and `preview --findings` draws it in each email client with the emulator. Exit codes are stable (`1` when a template has errors) for agents and CI.
+The same loop runs from the shell, with no script, using [`@hyper-elements/cli`](./packages/cli) (`npm install -D @hyper-elements/cli`): `npx hyper-elements check emails/ --json` validates each template, `outline` prints its layout, `render` writes its HTML and plain text, and `preview` writes each email client's preview. Add `--findings` with the [browser setup below](#preview-and-test-emails-in-outlook-and-gmail-locally) to draw the previews and collect findings. Exit codes are stable (`1` when a template has errors) for agents and CI.
 
 [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
 
-## Test it in email clients
+<a id="test-it-in-email-clients"></a>
 
-How will this email look in Outlook, or in Gmail? Hyper Elements comes with an email client emulator, `@hyper-elements/email-clients`, that shows an email as each email client does, on your own machine: free, with no test sends, no account and nothing uploaded. For emails built with Hyper Elements, it's 97–99% accurate against the real clients.
+## Preview and test emails in Outlook and Gmail locally
+
+`@hyper-elements/email-clients` is a free JavaScript and TypeScript library for checking existing HTML emails and previewing Outlook, Gmail and Apple Mail locally. Give it the complete HTML from MJML, React Email, an email builder, or a hand-written email. No React is required, and the email is never sent or uploaded.
 
 ```bash
 npm install @hyper-elements/email-clients
 ```
 
-```tsx
+Save this as `preview-email.mjs` beside your `email.html`:
+
+```js
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { renderInEmailClients } from "@hyper-elements/email-clients";
 
-const { previews } = await renderInEmailClients(<Email width={600}><OrderUpdate name="Ada" /></Email>);
-// A preview per email client (classic Outlook, Outlook.com, Gmail, Apple Mail and more):
-// a self-contained HTML page that shows the email as that client does when Chromium opens it.
+const html = await readFile("email.html", "utf8");
+const { previews, diagnostics } = await renderInEmailClients(html, {
+  emailClients: ["outlook", "gmail", "apple-mail"],
+});
+await mkdir("out", { recursive: true });
+for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
+console.log(diagnostics);
 ```
 
-Save a preview and open it, take a screenshot with Playwright, or read the list of what the client changed (rounded corners, a `<style>` rule, a font). An email sign-in code, drawn by the emulator in four email clients:
+Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. Each preview lists what the client changed. The same API takes a Hyper Elements template: `await renderInEmailClients(<Email><OrderUpdate name="Ada" /></Email>)`.
+
+You can also check and preview an HTML email from the shell, with no script or React installation:
+
+```bash
+npx @hyper-elements/cli check email.html
+npx @hyper-elements/cli preview email.html
+```
+
+The second command writes `out/clients/email/outlook.html` and the other client previews. To draw them and collect findings automatically, install the CLI and `playwright-core` together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. See [browser setup and findings](https://hyperelements.dev/docs/cli#preview).
+
+For emails built with Hyper Elements, the emulator is 97–99% accurate against the real clients. An email sign-in code, drawn by the emulator in four email clients:
 
 <p align="center">
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-outlook.png" alt="A sign-in code email in classic Outlook, drawn by the Hyper Elements email client emulator" width="230" />
@@ -158,10 +185,6 @@ Save a preview and open it, take a screenshot with Playwright, or read the list 
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-apple-mail.png" alt="The sign-in code email in Apple Mail, drawn by the emulator" width="230" />
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-gmail-app.png" alt="The sign-in code email in the Gmail app on Android, drawn by the emulator" width="107" />
 </p>
-
-Built your email another way (MJML, React Email, by hand)? `renderInEmailClients()` takes its HTML too, with no React or Hyper Elements needed: `await renderInEmailClients(html)`.
-
-From the shell: `npx @hyper-elements/cli preview email.html --findings` writes a preview per client and reports what each changed, and `npx @hyper-elements/cli check email.html` runs the email client checks.
 
 [Email client emulator: supported clients, accuracy and options →](https://hyperelements.dev/docs/email-client-emulator)
 

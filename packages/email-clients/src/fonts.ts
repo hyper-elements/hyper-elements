@@ -1,13 +1,14 @@
 /**
  * The fonts a preview draws with: the open stand-ins the captures were scored with (Selawik for Segoe UI, Carlito for
- * Calibri, Android's own fonts for the Gmail apps; SIL OFL 1.1, in fonts/ with their licences, as WOFF2), loaded from a
+ * Calibri, Inter at Aptos's widths for Aptos, Office's cloud fonts, Android's own fonts for the Gmail apps; SIL OFL 1.1,
+ * in fonts/ with their licences, as WOFF2), loaded from a
  * URL or inlined. Which
  * files each client loads, and the faces drawn from them, are the models package's (fontFiles, and its browser
  * script's fontCss).
  */
 import { loadModelsPackage } from "./models";
 import { version } from "../package.json";
-import type { Computer, PreviewClient } from "./clients";
+import type { Computer, ModelClient } from "./clients";
 
 /** Where `fonts: "url"` loads the stand-ins from: this package's own files, by its version. */
 export const FONT_ORIGIN = "https://cdn.jsdelivr.net";
@@ -41,11 +42,17 @@ export async function readPackageFont(file: string): Promise<string> {
 
 /**
  * The stand-ins for a family an email chooses itself, by their files here: loaded, and inlined, only where the email
- * names the family. The others (Segoe UI, Calibri, the client's default) are what the client draws with whatever the
- * email names. None since models 1.7.0: Inter was one, until the models learnt Windows doesn't have it (a stack naming
- * it draws in its next font, as classic Outlook does).
+ * names the family. The others (Segoe UI, Calibri, Aptos, the client's default) are what the client draws with whatever
+ * the email names. Since models 1.9.0, Office's cloud fonts, which classic Outlook draws by name (Inter was one until
+ * models 1.7.0, when they learnt Windows doesn't have it).
  */
-export const NAMED_ONLY: Readonly<Record<string, readonly string[]>> = {};
+export const NAMED_ONLY: Readonly<Record<string, readonly string[]>> = {
+  Lato: ["Lato-Regular.woff2", "Lato-Bold.woff2", "Lato-Italic.woff2", "Lato-BoldItalic.woff2"],
+  Montserrat: ["Montserrat-Variable.woff2", "Montserrat-Italic-Variable.woff2"],
+  "Open Sans": ["OpenSans-Variable.woff2", "OpenSans-Italic-Variable.woff2"],
+  Poppins: ["Poppins-Regular.woff2", "Poppins-SemiBold.woff2", "Poppins-Bold.woff2", "Poppins-Italic.woff2", "Poppins-BoldItalic.woff2"],
+  "Nunito Sans": ["NunitoSans-Variable.woff2", "NunitoSans-Italic-Variable.woff2"],
+};
 
 const ENTITIES: Record<string, string> = { quot: '"', apos: "'", "#39": "'", "#x27": "'", amp: "&" };
 
@@ -69,7 +76,7 @@ export function unnamed(html: string, known: Readonly<Record<string, readonly st
 }
 
 /** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */
-export async function fontSources(client: PreviewClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set(), computer?: Computer): Promise<Record<string, string>> {
+export async function fontSources(client: ModelClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set(), computer?: Computer): Promise<Record<string, string>> {
   const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => !skip.has(file));
   const sources = await Promise.all(files.map(async (file) => [file, how === "url" ? fontUrl(file) : `data:font/woff2;base64,${await read(file)}`] as const));
   return Object.fromEntries(sources);

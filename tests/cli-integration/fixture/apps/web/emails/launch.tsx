@@ -3,7 +3,7 @@ import { brand } from "@/brand";
 
 export default function Launch() {
   return (
-    <Page title={`${brand.name} launch`}>
+    <Page title={`${brand.name} launch`} lang="en">
       <Section style={{ padding: 32, gap: 16 }}>
         <Heading level={1}>{brand.name} is live</Heading>
         <Row style={{ gap: 16 }}>

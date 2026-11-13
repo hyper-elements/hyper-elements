@@ -1,15 +1,29 @@
 # @hyper-elements/cli
 
+Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally, with no React or Hyper Elements
+installation required:
+
+```bash
+npx @hyper-elements/cli check email.html
+npx @hyper-elements/cli preview email.html
+```
+
+The preview command writes `out/clients/email/outlook.html` and the other client previews to open in Chromium or Chrome.
+To collect browser findings automatically, see [Previews](#previews) for `playwright-core` and browser setup.
+
 Render, check and preview [Hyper Elements](https://github.com/hyper-elements/hyper-elements) templates from the shell,
 with no script of your own: an Email's HTML and plain text, a Page's HTML, a Document's PDF, a Canvas's image, the email
 client checks, and an Email as each email client draws it, with stable exit codes and JSON for agents and CI.
+
+For templates, install `@hyper-elements/cli` beside `@hyper-elements/react` in your project (`npm install -D @hyper-elements/cli`),
+then use the `hyper-elements` command:
 
 ```bash
 npx hyper-elements render emails/          # out/emails/welcome.html, out/emails/welcome.txt, … paths kept
 npx hyper-elements render docs/ cards/     # out/docs/invoice.pdf, out/cards/social.png
 npx hyper-elements check emails/ --json    # validate() and the email client checks; exit 1 on errors
 npx hyper-elements outline emails/welcome.tsx
-npx hyper-elements preview emails/welcome.tsx --findings   # out/clients/emails/welcome/outlook.html, … drawn in Chromium
+npx hyper-elements preview emails/welcome.tsx   # out/clients/emails/welcome/outlook.html, …
 npx hyper-elements describe Button --root Email --json
 npx @hyper-elements/cli check email.html   # any HTML email: the email client checks, with nothing installed
 npx hyper-elements dev emails/ docs/       # a page on 127.0.0.1 showing each template, rendered again on each change
@@ -37,7 +51,7 @@ Welcome.PreviewProps = { name: "Ada" };
 | Command | What it does |
 |---|---|
 | `render <files or folders…>` | Writes each template's output under `--out` (default `out/`), at its path relative to the current folder (or `--base <dir>`), whatever else is given with it: an Email's `name.html` and `name.txt`, a Page's `name.html`, a Document's `name.pdf` (with `--html`, its print HTML `name.html` too), a Canvas's `name.png` (`name.svg` with `--format svg`; `--scale 2` for twice the pixels). `--stdout` writes one template's HTML, PDF or image to stdout; `--pretty` indents the HTML. Where the project has `@hyper-elements/email-clients`, an Email's and a Page's HTML is rendered with its email client checks, as `check` runs them (`--clients` picks the clients). |
-| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
+| `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients); [lint](#lint)'s checks run on an Email and a Page (`--no-lint` leaves them out). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
 | `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<its path>/<name>/` (its path from the current folder, or `--base`), named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
 | `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
@@ -98,8 +112,8 @@ Each preview gets `ready` (`ok`, `incomplete` where a font or image was missing,
 preview whose page says `error` fails its template (`cli/preview-failed`, exit 1); one that's `incomplete` doesn't.
 Where no browser is found, the files are still written and the email client checks reported, each preview's `findings`
 is `null`, the input has `"browser": null, "reason": "no-browser"`, and the run exits 2. Where `playwright-core` isn't
-installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it; with npx, add it to the
-run: `npx -p @hyper-elements/cli -p playwright-core hyper-elements preview email.html --findings`.
+installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it. Install both packages in
+the project with `npm install -D @hyper-elements/cli playwright-core`, then run `npx hyper-elements preview email.html --findings`.
 
 ```json
 {"version":1,"command":"preview","file":"emails/welcome.tsx","input":"template","root":"Email","status":"ok","outputs":["out/clients/emails/welcome/gmail.html","out/clients/emails/welcome/gmail.mac.html"],"diagnostics":[],"previews":[{"id":"gmail","client":"gmail","path":"out/clients/welcome/gmail.html","ready":"ok","findings":{…}},{"id":"gmail.mac","client":"gmail","path":"out/clients/welcome/gmail.mac.html","ready":"ok","findings":{…}}],"browser":"chromium 148.0.7778.96, playwright"}
@@ -124,8 +138,17 @@ already HTML.
 
 ```bash
 npx @hyper-elements/cli check email.html --json
-cat email.html | npx @hyper-elements/cli preview - --findings
+cat email.html | npx @hyper-elements/cli preview -
 ```
+
+To collect findings, install the CLI and its optional browser dependency together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`.
 
 Both call `@hyper-elements/email-clients`' `renderInEmailClients(html)`. `check` keeps only its diagnostics, for the
 clients `--clients` names or, by default, those the plugin checks a template for (Yahoo and AOL among them, which have
@@ -189,6 +212,25 @@ The page shows an Email's and a Page's HTML in `<iframe sandbox>` without `allow
 and can't read the page, what it shows or its event stream. The server listens on `127.0.0.1` only, as `--serve` does:
 it answers only its own host (`127.0.0.1`, `localhost` or `[::1]` with its port), with no `Origin` or its own (the event
 stream too), under the random path its URL carries, and only its own files.
+
+## Lint
+
+`check`, `render` and `dev` also run [`@hyper-elements/lint`](https://www.hyperelements.dev/docs/lint) on each Email
+and Page: links that don't say where they go, images without alternate text, faint or small text, headings out of
+order, a missing `lang`, merge syntax typed by hand. Its findings are warnings and notes (`email/lint-<rule>`,
+`page/lint-<rule>`, each with a fix and a docs link), so they change the exit code only past `--max-warnings`. `check` of
+an HTML email runs its HTML rules (`lint/<rule>`, each at its line). `--no-lint` leaves them out.
+
+Its options are in the `package.json` nearest the current folder:
+
+```json
+{ "hyperElements": { "lint": { "rules": { "text-size": "off" }, "kind": "marketing" } } }
+```
+
+They're read once when the run (or `dev`) starts. The CLI checks their shape before anything runs (exit 2); the copy of
+lint that runs checks what they mean, and a rule, severity or kind it doesn't know is exit 2 too, naming that copy and its
+version. That copy is the project's where the template (or the HTML file) resolves one, so the project picks lint's
+version with `npm i -D @hyper-elements/lint`; otherwise it's the CLI's own, with an `info` note, `cli/lint-copy`.
 
 ## Output and exit codes
 

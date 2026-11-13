@@ -5,6 +5,7 @@
 // Nothing here is trusted by the page: the code it runs shares this worker's globals, so the page reads every result
 // as data (text shown as text, HTML only inside another sandboxed frame).
 import * as Elements from "@hyper-elements/react";
+import { lint } from "@hyper-elements/lint";
 import { describeComponents, inspect } from "@hyper-elements/react/inspect";
 import { shownAnywhere } from "@hyper-elements/core";
 import * as React from "react";
@@ -67,6 +68,10 @@ const ROOTS: readonly string[] = ["Email", "Page", "Document", "Canvas"];
 // ─── Where each component is in the source ─────────────────────────────────
 
 /** Each Elements component rendered, in the order React renders them (document order), with the line its JSX is on. */
+/** Lint's plugin, made once: what makes an Email or a Page hard to read. */
+let lintPlugin: Elements.ElementsPlugin | undefined;
+const linter = () => (lintPlugin ??= lint());
+
 let trace: Array<{ type: string; line?: number }> = [];
 
 /** The prop a component's JSX line travels in, from the JSX runtime below to the component's stand-in. */
@@ -462,12 +467,16 @@ async function handle(request: Request): Promise<Result> {
     result.root = inspection.root as RootName | null;
     result.nodes = sourceNodes(inspection.nodes, rendered);
     if (inspection.theme) result.theme = { tokens: inspection.theme.tokens.length, styles: inspection.theme.styles, variants: inspection.theme.components.flatMap((c) => c.variants.map((v) => `${c.type}.${v}`)) };
-    const lines = (diagnostics: readonly Elements.Diagnostic[]) => withLines(diagnostics, result.nodes);
-
     const isEmail = result.root === "Email";
     if (isEmail && sandbox.extras.clients) result.clientNames = sandbox.extras.clients.names;
-    const plugins = isEmail && request.checks !== false && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : isEmail && request.checks === false ? [] : undefined;
-    const options = plugins ? { plugins } : {};
+    // An Email's client checks, where their bundle is loaded and they're on (`checks`, the "Email clients" switch), and
+    // lint's on an Email and a Page whatever the switch says. With the client checks off, core's note on where they are
+    // (email/more-checks) isn't said either.
+    const checks = request.checks !== false;
+    const lintable = result.root === "Email" || result.root === "Page";
+    const plugins = [...(isEmail && checks && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable ? [linter()] : [])];
+    const options = plugins.length ? { plugins } : {};
+    const lines = (diagnostics: readonly Elements.Diagnostic[]) => withLines(checks ? diagnostics : diagnostics.filter((d) => d.code !== "email/more-checks"), result.nodes);
 
     try {
       if (request.kind === "render") {
@@ -499,7 +508,15 @@ async function handle(request: Request): Promise<Result> {
       } else if (request.kind === "previews") {
         if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
         const output = await sandbox.extras.clients.renderInEmailClients(element, { emailClients: request.clients, dark: request.dark, fonts: "url" });
-        result.previews = output.previews.map((p) => ({ id: String(p.id), client: String(p.client), dark: Boolean(p.dark), width: Number(p.width), approximate: Boolean(p.approximate), html: String(p.html) }));
+        result.previews = output.previews.map((p) => ({
+          id: String(p.id),
+          client: String(p.client),
+          ...(p.computer === "windows" || p.computer === "mac" ? { computer: p.computer } : {}),
+          dark: Boolean(p.dark),
+          width: Number(p.width),
+          approximate: Boolean(p.approximate),
+          html: String(p.html),
+        }));
         result.skipped = output.skipped.map((s) => ({ client: String(s.client ?? s.id ?? ""), reason: String(s.reason ?? "") }));
         result.diagnostics = lines(output.diagnostics);
       }
