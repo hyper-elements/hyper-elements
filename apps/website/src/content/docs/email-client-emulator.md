@@ -4,15 +4,15 @@ metaTitle: "Test HTML emails in Outlook and Gmail locally"
 description: "Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally with a free JavaScript library or CLI. No React, account or test send required."
 ---
 
-`@hyper-elements/email-clients` is a free JavaScript and TypeScript library for checking existing HTML emails and previewing Outlook, Gmail and Apple Mail locally. It takes complete HTML from MJML, React Email, an email builder or a hand-written email, with no React required. Use the library in your code or [`@hyper-elements/cli`](#test-an-email-from-the-shell) from the shell. No account, API key or test send is needed, and the email is never uploaded.
+`@hyper-elements/email-clients` is a free JavaScript and TypeScript library for checking existing HTML emails and previewing Outlook, Gmail and Apple Mail locally. It takes a Hyper Elements email, or complete HTML from MJML, React Email, an email builder or a hand-written email; the HTML needs no React. Use the library in your code or [`@hyper-elements/cli`](#test-an-email-from-the-shell) from the shell. No account, API key or test send is needed, and the email is never uploaded.
 
-`renderInEmailClients()` returns a preview per client: a self-contained HTML page that opens in Chromium and lists what the client changed. It also accepts a Hyper Elements `Email` template.
+`renderInEmailClients()` returns a preview per client: a self-contained HTML page that opens in a browser and lists what the client changed.
 
 ## Supported email clients
 
-Accuracy is how closely the emulator matches each real client for emails built with Hyper Elements.
+Accuracy is how closely the emulator matches each real client for emails.
 
-| Client | `id` | Accuracy |
+| Client | ID | Accuracy |
 |--------|------|----------|
 | Classic Outlook for Windows | `outlook` | 97% |
 | Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
@@ -25,62 +25,6 @@ Accuracy is how closely the emulator matches each real client for emails built w
 More email clients are on the way.
 
 Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide, and `gmail-app` on Android and on an iPhone, 345px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`.
-
-## Test any HTML email
-
-An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `renderInEmailClients()` takes its HTML as a string too. React and `@hyper-elements/react` aren't needed for that: `npm i @hyper-elements/email-clients` is enough.
-
-```bash
-npm install @hyper-elements/email-clients
-```
-
-Save this as `preview-email.mjs` beside your complete `welcome.html` email:
-
-```js
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { renderInEmailClients } from "@hyper-elements/email-clients";
-
-const html = await readFile("welcome.html", "utf8");
-const { previews } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"] });
-await mkdir("out", { recursive: true });
-for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
-```
-
-Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. You can also screenshot it or read what the client changed.
-
-It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
-
-Its `diagnostics` list what each client previewed removes or changes in the HTML, each with its line:
-
-```ts
-const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail", "gmail-app"] });
-// [{ code: "email/html-css", severity: "info", line: 5, excerpt: "<style>", clients: ["outlook"],
-//    message: "This email may have an @media in a <style>: the client applies no media query, …", fix: "…" }]
-```
-
-## Test an email from the shell
-
-[`@hyper-elements/cli`](/docs/cli) checks and previews an existing HTML email with no script or React installation:
-
-```bash
-npx @hyper-elements/cli check email.html
-npx @hyper-elements/cli preview email.html
-```
-
-The preview command writes `out/clients/email/outlook.html` and the other client previews. To draw them and collect findings automatically, install the CLI and `playwright-core` together, and have Chrome, Edge or Playwright's Chromium installed:
-
-```bash
-npm install -D @hyper-elements/cli playwright-core
-npx hyper-elements preview email.html --findings
-```
-
-If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. For Hyper Elements templates, [install the CLI in your project](/docs/cli#install) and run `npx hyper-elements preview emails/welcome.tsx`.
-
-For an agent or a CI job that wants what each client changed as data, there are three ways, by what it has:
-
-1. **A Chromium the CLI finds.** `npx hyper-elements preview emails/welcome.tsx --findings --json` opens each preview in Chromium, with `playwright-core` (install it beside the CLI): the browser `CHROME_PATH` names, else Playwright's Chromium (`npx hyper-elements preview --install-browser` downloads it), else an installed Chrome or Edge. Its JSON line gives each preview's `ready` (`ok`; `incomplete` where a font or an image didn't load; `error`) and its `findings`: what the client removed, what was missing, the fonts and the findings listed under [What a preview tells you](#what-a-preview-tells-you).
-2. **A browser of its own.** Where the CLI finds none, the run exits `2` with `"browser": null, "reason": "no-browser"` (`"no-playwright-core"` where that isn't installed), and the files are written all the same. Open each file, or the URLs `preview --serve` prints for a browser that can't open `file://` paths, wait for `<html data-email-client-ready>`, and read the JSON in `#email-client-findings`.
-3. **No browser at all.** `npx hyper-elements check emails/welcome.tsx --json` gives the email client checks: each problem with the clients it's about and what to change. That's what's known without drawing the email.
 
 ## Test a Hyper Elements email
 
@@ -149,6 +93,62 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/keel-sign-in-code-apple-mail.png" title="Open the Keel sign-in code email in Apple Mail at full size"><img src="/generated/email-clients/keel-sign-in-code-apple-mail.png" width="820" height="823" loading="lazy" alt="The Keel sign-in code email in Apple Mail, drawn by the email client emulator"></a><figcaption>Apple Mail</figcaption></figure>
 <figure><a href="/generated/email-clients/keel-sign-in-code-gmail-app.png" title="Open the Keel sign-in code email in the Gmail app on Android at full size"><img src="/generated/email-clients/keel-sign-in-code-gmail-app.png" width="380" height="817" loading="lazy" alt="The Keel sign-in code email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
+
+## Test any HTML email
+
+An email built another way (MJML, React Email, by hand, an email builder's export) can be tested as it is: `renderInEmailClients()` takes its HTML as a string too. React and `@hyper-elements/react` aren't needed for that: `npm i @hyper-elements/email-clients` is enough.
+
+```bash
+npm install @hyper-elements/email-clients
+```
+
+Save this as `preview-email.mjs` beside your complete `welcome.html` email:
+
+```js
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { renderInEmailClients } from "@hyper-elements/email-clients";
+
+const html = await readFile("welcome.html", "utf8");
+const { previews } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail-app"] });
+await mkdir("out", { recursive: true });
+for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
+```
+
+Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. You can also screenshot it or read what the client changed.
+
+It takes the whole email, from `<html>` to `</html>`, exactly as you send it, and the preview options: `emailClients`, `dark`, `fonts`, `widths` and `computers`.
+
+Its `diagnostics` list what each client previewed removes or changes in the HTML, each with its line:
+
+```ts
+const { diagnostics } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail", "gmail-app"] });
+// [{ code: "email/html-css", severity: "info", line: 5, excerpt: "<style>", clients: ["outlook"],
+//    message: "This email may have an @media in a <style>: the client applies no media query, …", fix: "…" }]
+```
+
+## Test an email from the shell
+
+[`@hyper-elements/cli`](/docs/cli) checks and previews an existing HTML email with no script or React installation:
+
+```bash
+npx @hyper-elements/cli check email.html
+npx @hyper-elements/cli preview email.html
+```
+
+The preview command writes `out/clients/email/outlook.html` and the other client previews. To draw them and collect findings automatically, install the CLI and `playwright-core` together, and have Chrome, Edge or Playwright's Chromium installed:
+
+```bash
+npm install -D @hyper-elements/cli playwright-core
+npx hyper-elements preview email.html --findings
+```
+
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. For Hyper Elements templates, [install the CLI in your project](/docs/cli#install) and run `npx hyper-elements preview emails/welcome.tsx`.
+
+For an agent or a CI job that wants what each client changed as data, there are three ways, by what it has:
+
+1. **A Chromium the CLI finds.** `npx hyper-elements preview emails/welcome.tsx --findings --json` opens each preview in Chromium, with `playwright-core` (install it beside the CLI): the browser `CHROME_PATH` names, else Playwright's Chromium (`npx hyper-elements preview --install-browser` downloads it), else an installed Chrome or Edge. Its JSON line gives each preview's `ready` (`ok`; `incomplete` where a font or an image didn't load; `error`) and its `findings`: what the client removed, what was missing, the fonts and the findings listed under [What a preview tells you](#what-a-preview-tells-you).
+2. **A browser of its own.** Where the CLI finds none, the run exits `2` with `"browser": null, "reason": "no-browser"` (`"no-playwright-core"` where that isn't installed), and the files are written all the same. Open each file, or the URLs `preview --serve` prints for a browser that can't open `file://` paths, wait for `<html data-email-client-ready>`, and read the JSON in `#email-client-findings`.
+3. **No browser at all.** `npx hyper-elements check emails/welcome.tsx --json` gives the email client checks: each problem with the clients it's about and what to change. That's what's known without drawing the email.
 
 ## Why it matters
 
