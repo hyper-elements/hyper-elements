@@ -12,7 +12,7 @@ const dist = join(site, "dist");
 const html = await readFile(join(dist, "email-testing/index.html"), "utf8");
 assert.match(html, /<title>Test HTML emails in Outlook, Gmail and more/);
 assert.match(html, /rel="canonical" href="https:\/\/www.hyperelements.dev\/email-testing"/);
-assert.match(html, /name="description" content="Test HTML email compatibility/);
+assert.match(html, /name="description" content="Test HTML emails in Outlook, Gmail, Apple Mail, Yahoo and AOL\./);
 assert.match(html, /href="\/email-testing" aria-current="page"/);
 assert(!html.includes('content="noindex"'));
 for (const name of ["llms.txt", "llms-full.txt", "sitemap-0.xml", "index.html"]) {

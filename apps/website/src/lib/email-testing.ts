@@ -15,7 +15,7 @@ export const emailTestingClients = [
 /** The page and browser agents check every client unless an agent names some. */
 export const defaultEmailClients: string[] = emailTestingClients.map((client) => client.id);
 export const MAX_EMAIL_BYTES = 250_000;
-export const emailTestingDescription = "Test HTML email compatibility and preview Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail locally. Paste or edit HTML and compare client previews in the free live playground. No React or test send required.";
+export const emailTestingDescription = "Test HTML emails in Outlook, Gmail, Apple Mail, Yahoo and AOL. Paste your HTML for client previews and compatibility checks, free in your browser.";
 
 /** Generated from examples/email-testing/macbook-pro.tsx with render(). */
 export { sampleEmail };
