@@ -7,8 +7,8 @@
  * config). On Bun, which compiles TSX and reads the template's tsconfig itself, nothing is registered.
  */
 import { rmSync, writeFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { dirname, relative } from "node:path";
+import Module, { createRequire } from "node:module";
+import { dirname, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import { defaultExport, guard, projectTsconfig, templateComponent } from "@hyper-elements/template-loader";
@@ -53,6 +53,40 @@ if (!bun) {
 
 /** The files this child wrote beside the templates (loader modules, a tsconfig): removed when it's done. */
 const written = new Set<string>();
+
+const DEPENDENCY = `${sep}node_modules${sep}`;
+/** The loaders `require` reads, by extension. */
+type Loaders = Record<string, ((module: NodeJS.Module, file: string) => void) | undefined>;
+/** `Module._extensions` is `require.extensions`, which this file has no `require` to reach (it's an ES module). */
+const extensions = () => (Module as unknown as { _extensions: Loaders })._extensions;
+/** Node's own loaders, read as this module loads, before anything registers one of its own in their place. */
+const NODE_LOADERS: Loaders = { ...extensions() };
+
+/**
+ * tsx's CommonJS register, with a dependency's own JavaScript left to Node.
+ *
+ * tsx compiles every file required, those under node_modules among them, so a dependency written as an ES module is
+ * turned into CommonJS and the `import()` in it resolved as a `require`. A package whose "exports" names an `import`
+ * condition alone then can't be found: `@react-pdf/renderer` loads its text engine that way, so in a project without
+ * `"type": "module"` every Document failed with `ERR_PACKAGE_PATH_NOT_EXPORTED` for `@react-pdf/hyphenate/en-us`,
+ * and no PDF was written. A package's JavaScript is already the JavaScript its own package.json says it is, so
+ * under node_modules it's loaded as Node loads it.
+ *
+ * Only an extension Node has a loader for is given back: `.js` today, since `.ts`, `.tsx` and `.jsx` are tsx's to
+ * compile wherever they are, and Node reaches a dependency's `.cjs` and `.mjs` without `require.extensions` at all.
+ * Reading the loaders again after `register()` keeps this true of whatever tsx hooks next.
+ */
+async function registerCommonJs(): Promise<void> {
+  (await import("tsx/cjs/api")).register();
+  const loaders = extensions();
+  for (const [extension, plain] of Object.entries(NODE_LOADERS)) {
+    const compiled = loaders[extension];
+    if (!compiled || !plain || compiled === plain) continue;
+    loaders[extension] = function (module: NodeJS.Module, file: string) {
+      return (file.includes(DEPENDENCY) ? plain : compiled).call(this, module, file);
+    };
+  }
+}
 
 /**
  * The parent's gone without ending this child (it was killed, or on Windows ended by another process, which leaves its
@@ -105,7 +139,7 @@ async function start(message: StartMessage): Promise<void> {
       const previous = process.env.TSX_TSCONFIG_PATH;
       process.env.TSX_TSCONFIG_PATH = config.file;
       try {
-        (await import("tsx/cjs/api")).register();
+        await registerCommonJs();
       } finally {
         if (previous === undefined) delete process.env.TSX_TSCONFIG_PATH;
         else process.env.TSX_TSCONFIG_PATH = previous;
@@ -418,8 +452,23 @@ class Session {
     });
   }
 
+  /**
+   * React isn't installed beside the template. A project with the CLI alone fails on the first template it loads,
+   * at `react/jsx-runtime` (what the JSX compiles to), which says nothing about what to install.
+   */
+  private reactMissing(input: ChildInput): ResultMessage {
+    return this.result(input, {
+      status: "error",
+      usage: true,
+      diagnostics: [
+        cliDiagnostic("react-missing", "error", "React isn't installed where this template is: a template is a React component, and the CLI renders it with the project's React", "npm i @hyper-elements/react react react-dom"),
+      ],
+    });
+  }
+
   private loadFailure(input: ChildInput, error: unknown): ResultMessage {
     if (notFound(error, "@hyper-elements/react")) return this.elementsMissing(input);
+    if (notFound(error, "react") || notFound(error, "react-dom")) return this.reactMissing(input);
     return this.result(input, { status: "error", error: errorText(error, this.message.cwd), ...(exitCalled(error) ? { usage: true } : {}) });
   }
 }

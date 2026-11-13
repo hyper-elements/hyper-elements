@@ -33,6 +33,18 @@ describe("a Document", () => {
     expect(readFileSync(join(dir, "out2/docs/invoice.pdf")).equals(readFileSync(join(dir, "out/docs/invoice.pdf")))).toBe(true);
   });
 
+  // react-pdf loads its text engine with import(), and that engine's package names an `import` condition alone. A
+  // template compiled to CommonJS is loaded through tsx's register, which compiled the dependency too and resolved
+  // that import as a `require`: every Document failed with ERR_PACKAGE_PATH_NOT_EXPORTED, in any project whose
+  // package.json has no "type": "module" (what `npm init` writes).
+  it.skipIf(ON_BUN)("writes its PDF in a CommonJS project, whose engine loads an ES module of its own", async () => {
+    const dir = withFixtures(project({ "docs/invoice.tsx": documentTemplate(FONTS) }, { packageJson: { name: "fixture", private: true } }));
+    const ran = await cli(dir, ["render", "docs", "--json"]);
+    expect(ran.code, ran.stdout + ran.stderr).toBe(0);
+    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.pdf"], diagnostics: [] });
+    expect(readFileSync(join(dir, "out/docs/invoice.pdf")).subarray(0, 5).toString()).toBe("%PDF-");
+  });
+
   it.runIf(ON_BUN)("isn't written on Bun: exit 2, saying to use Node", async () => {
     const dir = withFixtures(project({ "docs/invoice.tsx": documentTemplate(FONTS) }));
     const ran = await cli(dir, ["render", "docs", "--json"]);

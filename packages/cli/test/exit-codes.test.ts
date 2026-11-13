@@ -127,6 +127,15 @@ describe("exit 2", () => {
     expect(lines(ran)[0]).toMatchObject({ status: "error", diagnostics: [{ code: "cli/elements-missing", severity: "error" }] });
   });
 
+  // A project with the CLI alone fails on `react/jsx-runtime`, which the JSX compiles to: the first thing someone
+  // following the README hits, and it says nothing about what to install.
+  it("where the template's folder has no React", async () => {
+    const dir = project({ "emails/a.tsx": email() }, { modules: ["@hyper-elements/react"] });
+    const ran = await cli(dir, ["check", "emails", "--json"]);
+    expect(ran.code).toBe(2);
+    expect(lines(ran)[0]).toMatchObject({ status: "error", diagnostics: [{ code: "cli/react-missing", severity: "error", fix: "npm i @hyper-elements/react react react-dom" }] });
+  });
+
   it("where the template's Elements is outside the CLI's range", async () => {
     const dir = project({ "emails/a.tsx": `import { render } from "@hyper-elements/react";\nexport default function A() { return render; }\n` }, { modules: ["react", "react-dom"] });
     const fake = join(dir, "node_modules/@hyper-elements/react");
