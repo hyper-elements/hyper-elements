@@ -466,6 +466,37 @@ describe("renderImage", () => {
     }
   });
 
+  it("ends a right-aligned line at the margin where the words wrap beside a Span or a Link", async () => {
+    // Each run is a flex item, and a space ending a run is part of the width of the line that run ends. At the left
+    // that end is ragged; at the right it would hold the line a space short of the margin, so there the space
+    // between two runs starts the second, where it's a line's start that is ragged.
+    const right = { textAlign: "right" } as const;
+    const margin = 280; // a 300px Canvas, 20px of padding
+    // (A letter's own side bearing leaves a line a pixel or two inside the margin; a space here is 6.7px.)
+    for (const line of await lines(<Text style={right}>A line that wraps with a red run and then more words</Text>, 300)) expect(margin - line.to).toBeLessThan(3.5);
+    for (const run of [<Span style={{ color: "#ff0000" }}>red run</Span>, <Link href="https://x.test">red run</Link>]) {
+      const wrapped = await lines(<Text style={right}>A line that wraps with a {run} and then more words</Text>, 300);
+      expect(wrapped.length).toBeGreaterThan(1);
+      for (const line of wrapped) expect(margin - line.to, JSON.stringify(wrapped)).toBeLessThan(3.5);
+    }
+
+    // What the writer gives the engine: no run but the last ends with a space, and the words are spaced the same.
+    const ends = (run: Run): boolean => {
+      if (typeof run === "string") return run.endsWith(" ");
+      const last = run.runs?.[run.runs.length - 1];
+      return run.kind === "span" && last !== undefined && ends(last);
+    };
+    for (const children of [
+      <>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</>,
+      <>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</>,
+      <>Hello <Link href="https://x.test"> world</Link> and more</>,
+    ]) {
+      const runs = drawn(<Text style={right}>{children}</Text>)[0]!.runs!;
+      expect(said(runs)).toBe("Hello world and more");
+      expect(runs.slice(0, -1).filter(ends)).toEqual([]);
+    }
+  });
+
   it("writes a Canvas only", async () => {
     await expect(
       renderImage(

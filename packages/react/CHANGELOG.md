@@ -23,8 +23,10 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   HTML outputs: spaces, tabs and line breaks, across a Span's edge too (`Hello <Span> world</Span>` has one space),
   and never a non-breaking space, which is drawn and keeps its words on one line as it did. A Span or a Link that
   holds nothing draws nothing, so the space after it isn't an indent. A space between two runs hangs off the end
-  of the first, so the line a wrap starts still begins at the margin. A PDF, an email and a page were never
-  affected.
+  of the first, so the line a wrap starts still begins at the margin; in a block aligned at the right it starts the
+  second instead, so the line a wrap ends still reaches the margin. (A centered line that wraps beside a Span can
+  sit half a space off: nothing but measuring the words says which line the space is on.) A PDF, an email and a
+  page were never affected.
 
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the

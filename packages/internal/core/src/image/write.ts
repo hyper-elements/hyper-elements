@@ -60,11 +60,14 @@ const gap = (node: ResolvedNode): Style => (typeof node.style.gap === "number" ?
 /** A run with nothing to draw: no text, or a Span or a Link holding none. It would be a flex item of its own. */
 const blank = (run: Run): boolean => (typeof run === "string" ? run === "" : run.kind === "span" && run.runs.every(blank));
 
-/** Whether a run ends in a space: inside a Span or a Link, whether the run that ends it does. */
-const endsInSpace = (run: Run): boolean => {
-  if (typeof run === "string") return run.endsWith(" ");
-  const last = run.kind === "span" ? run.runs[run.runs.length - 1] : undefined;
-  return last !== undefined && endsInSpace(last);
+/** An end of a run, or of a block's runs. */
+type Side = "start" | "end";
+
+/** Whether a run has a space at one end: inside a Span or a Link, whether the run at that end of it has. */
+const spaceAt = (run: Run, side: Side): boolean => {
+  if (typeof run === "string") return side === "start" ? run.startsWith(" ") : run.endsWith(" ");
+  const edge = run.kind === "span" ? run.runs[side === "start" ? 0 : run.runs.length - 1] : undefined;
+  return edge !== undefined && spaceAt(edge, side);
 };
 
 /**
@@ -75,7 +78,7 @@ const endsInSpace = (run: Run): boolean => {
  * An Image at an end ends the walk, having no space.
  */
 function trimEdges(runs: Run[]): Run[] {
-  const trim = (list: Run[], side: "start" | "end"): Run[] => {
+  const trim = (list: Run[], side: Side): Run[] => {
     const rest = [...list];
     while (rest.length > 0) {
       const at = side === "start" ? 0 : rest.length - 1;
@@ -95,48 +98,65 @@ function trimEdges(runs: Run[]): Run[] {
   return trim(trim(runs, "start"), "end");
 }
 
-/** The space a run starts with, taken off it: inside a Span or a Link, off the run that starts it. */
-function takeLeadingSpace(run: Run): { took: boolean; run: Run } {
-  if (typeof run === "string") return run.startsWith(" ") ? { took: true, run: run.slice(1) } : { took: false, run };
-  if (run.kind !== "span") return { took: false, run };
-  const [first, ...rest] = run.runs;
-  if (first === undefined) return { took: false, run };
-  const taken = takeLeadingSpace(first);
-  return taken.took ? { took: true, run: { ...run, runs: [taken.run, ...rest] } } : { took: false, run };
+/** A run without the space at one end of it (inside a Span or a Link, off the run at that end), or undefined where it has none. */
+function withoutSpace(run: Run, side: Side): Run | undefined {
+  if (typeof run === "string") {
+    if (!spaceAt(run, side)) return undefined;
+    return side === "start" ? run.slice(1) : run.slice(0, -1);
+  }
+  if (run.kind !== "span") return undefined;
+  const at = side === "start" ? 0 : run.runs.length - 1;
+  const edge = run.runs[at];
+  const taken = edge === undefined ? undefined : withoutSpace(edge, side);
+  if (taken === undefined) return undefined;
+  const runs = [...run.runs];
+  runs[at] = taken;
+  return { ...run, runs };
 }
 
 /**
- * A space put at the end of a run. Inside a Span or a Link it goes in a run of its own, which the Span's underline,
+ * A space put at one end of a run. Inside a Span or a Link it goes in a run of its own, which the Span's underline,
  * line-through and background don't reach: a Link drawn "our site " would be underlined under the space too.
  */
-function appendSpace(run: Run): Run | undefined {
-  if (typeof run === "string") return `${run} `;
+function withSpace(run: Run, side: Side): Run | undefined {
+  if (typeof run === "string") return side === "start" ? ` ${run}` : `${run} `;
   if (run.kind !== "span") return undefined;
-  return { ...run, runs: [...run.runs, { kind: "span", style: { textDecoration: "none", backgroundColor: "transparent" }, runs: [" "] }] };
+  const space: Run = { kind: "span", style: { textDecoration: "none", backgroundColor: "transparent" }, runs: [" "] };
+  return { ...run, runs: side === "start" ? [space, ...run.runs] : [...run.runs, space] };
 }
 
 /**
- * The space between two runs, moved to the end of the first. Each run is a flex item, and `pre-wrap` keeps a space
- * wherever it sits, so a space starting a run is drawn as an indent where that run begins a new line ("Hello
- * <Span>world</Span> and more" wrapping before "and"). At the end of the run before it, it hangs off the line's end
- * as `white-space: normal` hangs it in the HTML outputs. A space after a line break goes, as a browser drops it,
- * and so does one after a run that ends in a space: the two are one space in the HTML outputs, where white space
- * collapses across a Span's edge ("Hello <Span> world</Span>"). One after an Image stays, there being nothing to
- * hang it on.
+ * The space between two runs, moved onto one of them. Each run is a flex item, and `pre-wrap` keeps a space wherever
+ * it sits, so where the words wrap between the two it's drawn on one line or the other: at the start of the second
+ * run it indents the line that run begins, at the end of the first it's part of the width of the line that run ends.
+ *
+ * `onto` is the side of a run that holds it. "end" (the end of the first run) is right for a block aligned at the
+ * left, where a line's end is ragged: "Hello <Span>world</Span> and more" wrapping before "and" starts that line at
+ * the margin, and the space hangs off the line before as `white-space: normal` hangs it in the HTML outputs.
+ * "start" (the start of the second) is right for one aligned at the right, where it's a line's start that is ragged
+ * and its end that must reach the margin. Neither is right for a centered block, where the space moves that one line
+ * by half its width either way: only measuring the words could say which line has it, so it's held as at the left.
+ *
+ * A space beside a line break on the side it's moved from goes, as a browser drops it, and so does one beside a run
+ * that already has a space there: the two are one space in the HTML outputs, where white space collapses across a
+ * Span's edge ("Hello <Span> world</Span>"). One beside an Image stays, there being nothing to move it onto.
  */
-function hoistSpaces(runs: Run[]): Run[] {
+function gatherSpaces(runs: Run[], onto: Side): Run[] {
+  // Each run gives the space at the side nearest the run it follows here: read in order to move a space back onto
+  // the run before it, and from the last run to the first to move one forward onto the run after it.
+  const from: Side = onto === "end" ? "start" : "end";
   const out: Run[] = [];
-  for (const run of runs) {
-    const before = out[out.length - 1];
+  for (const run of onto === "end" ? runs : [...runs].reverse()) {
+    const beside = out[out.length - 1];
     let next = run;
-    const taken = before === undefined ? undefined : takeLeadingSpace(run);
-    if (before !== undefined && taken?.took) {
-      if (before === "\n" || endsInSpace(before)) next = taken.run;
+    const taken = beside === undefined ? undefined : withoutSpace(run, from);
+    if (beside !== undefined && taken !== undefined) {
+      if (beside === "\n" || spaceAt(beside, onto)) next = taken;
       else {
-        const joined = appendSpace(before);
+        const joined = withSpace(beside, onto);
         if (joined !== undefined) {
           out[out.length - 1] = joined;
-          next = taken.run;
+          next = taken;
         }
       }
     }
@@ -144,7 +164,7 @@ function hoistSpaces(runs: Run[]): Run[] {
     // came empty), which would otherwise stand between the space after it and the space that one collapses into.
     if (!blank(next)) out.push(next);
   }
-  return out;
+  return onto === "end" ? out : out.reverse();
 }
 
 class Writer {
@@ -331,7 +351,8 @@ class Writer {
    * words are spaced as `white-space: normal` spaces them in the HTML outputs.
    */
   paragraph(node: ResolvedNode, style: Style): Block {
-    return { kind: "text", style: aligned({ display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: "pre-wrap" }), runs: hoistSpaces(trimEdges(this.runs(node))) };
+    const drawn: Style = { display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: "pre-wrap" };
+    return { kind: "text", style: aligned(drawn), runs: gatherSpaces(trimEdges(this.runs(node)), drawn.textAlign === "right" ? "start" : "end") };
   }
 
   runs(node: ResolvedNode): Run[] {
