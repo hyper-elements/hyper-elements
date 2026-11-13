@@ -22,6 +22,10 @@ const HTML = `<!DOCTYPE html>
 `;
 
 const DEFAULT_PREVIEWS = ["apple-mail.html", "gmail.html", "gmail.mac.html", "outlook-com.html", "outlook-com.mac.html", "outlook.html"];
+// With nothing installed, npm installs the published email-clients: Apple Mail's iPhone preview comes with it once it
+// has one (its file left out here, and checked on its own).
+const IPHONE = "apple-mail.iphone.html";
+const noIphone = (files: string[]) => files.filter((file) => !file.endsWith(IPHONE));
 
 /** A project with nothing installed: no node_modules at all. */
 const bare = (files: Record<string, string>) => project(files, { modules: [] });
@@ -162,11 +166,13 @@ describe("preview on HTML", () => {
     const dir = bare({ "mail/welcome.html": HTML });
     const ran = await cli(dir, ["preview", "mail/welcome.html", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(readdirSync(join(dir, "out/clients/mail/welcome")).sort()).toEqual(DEFAULT_PREVIEWS);
+    const written = readdirSync(join(dir, "out/clients/mail/welcome")).sort();
+    expect(noIphone(written)).toEqual(DEFAULT_PREVIEWS);
+    expect(written.filter((file) => file === IPHONE).length).toBeLessThanOrEqual(1);
     const [line] = lines(ran);
     expect(line).toMatchObject({ command: "preview", file: "mail/welcome.html", input: "html", root: null, status: "ok" });
-    expect(line.previews.map((p: any) => p.path).sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
-    expect(line.outputs.sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
+    expect(noIphone(line.previews.map((p: any) => p.path)).sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
+    expect(noIphone(line.outputs).sort()).toEqual(DEFAULT_PREVIEWS.map((f) => `out/clients/mail/welcome/${f}`));
     // The email as given, as data inside each file.
     expect(readFileSync(join(dir, "out/clients/mail/welcome/gmail.html"), "utf8")).toContain("data-email-client-ready");
     expect(readFileSync(join(dir, "out/clients/mail/welcome/gmail.html"), "utf8")).toContain("Welcome aboard");
