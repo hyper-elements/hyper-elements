@@ -10,6 +10,8 @@ description: "Check existing HTML emails and preview Outlook, Gmail and Apple Ma
 
 ## Supported email clients
 
+[Try the email testing playground](/email-testing) to paste an existing HTML email, select clients, and inspect previews and compatibility findings in your browser.
+
 Accuracy is how closely the emulator matches each real client for emails.
 
 | Client | ID | Accuracy |

@@ -15,7 +15,7 @@ const SANDBOX = "allow-scripts";
 /** Inside it: nothing loads from the network. Scripts are the runner (inline) and the workers it makes from text. */
 const POLICY = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob:; worker-src blob:; child-src blob:";
 
-const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, describe: 8000 };
+const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, "html-previews": 25000, describe: 8000 };
 /** How long after the frame's own timeout the page gives up on the frame and makes another. */
 const GRACE = 2500;
 
@@ -28,6 +28,8 @@ const LEVELS: readonly string[] = ["log", "info", "warn", "error"];
 
 const text = (value: unknown, limit: number): string | undefined => (typeof value === "string" ? (value.length > limit ? value.slice(0, limit) : value) : undefined);
 const count = (value: unknown, max = 1e7): number | undefined => (typeof value === "number" && Number.isFinite(value) ? Math.min(Math.max(Math.round(value), 0), max) : undefined);
+/** The most previews a result shows: every client's variants, light and dark, with room to spare. */
+const PREVIEW_LIMIT = 64;
 const list = (value: unknown, limit: number): unknown[] => (Array.isArray(value) ? value.slice(0, limit) : []);
 const record = (value: unknown): Record<string, unknown> => (value && typeof value === "object" ? (value as Record<string, unknown>) : {});
 
@@ -110,7 +112,7 @@ function read(value: unknown, kind: Request["kind"]): Result {
       : undefined,
     bytes,
     previews: Array.isArray(r.previews)
-      ? list(r.previews, 40).flatMap((p): Preview[] => {
+      ? list(r.previews, PREVIEW_LIMIT).flatMap((p): Preview[] => {
           const preview = record(p);
           const html = text(preview.html, 12e6);
           const id = text(preview.id, 80);
@@ -129,6 +131,11 @@ function read(value: unknown, kind: Request["kind"]): Result {
         })
       : undefined,
   };
+  // Previews past the limit aren't shown: say so rather than drop them silently.
+  if (Array.isArray(r.previews) && r.previews.length > PREVIEW_LIMIT) {
+    const left = r.previews.length - PREVIEW_LIMIT;
+    result.diagnostics.push({ code: "playground/previews-limit", severity: "warning", path: "", message: `${left} more ${left === 1 ? "preview wasn't" : "previews weren't"} shown: the playground shows up to ${PREVIEW_LIMIT}. Name fewer clients, or use @hyper-elements/cli to preview them all.` });
+  }
   // A result that says it's fine and carries an error isn't.
   if (result.error) result.ok = false;
   return result;

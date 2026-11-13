@@ -11,15 +11,18 @@
     "dev": "astro dev --port 4321",
     "build": "astro build",
     "preview": "astro preview --port 4321",
-    "generate": "node scripts/generate.mjs",
+    "generate": "node scripts/generate.mjs && node scripts/generate-email-testing.mjs",
+    "generate:email-testing": "node scripts/generate-email-testing.mjs",
     "generate:email-clients": "node scripts/email-client-previews.mjs",
     "check:blog": "node scripts/check-blog.mjs",
-    "check:playground": "node scripts/check-playground.mjs"
+    "check:playground": "node scripts/check-playground.mjs",
+    "check:email-testing": "node scripts/check-email-testing.mjs"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
     "@codemirror/autocomplete": "^6.20.4",
     "@codemirror/commands": "^6.11.1",
+    "@codemirror/lang-html": "^6.4.12",
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/language": "^6.13.1",
     "@codemirror/lint": "^6.9.7",

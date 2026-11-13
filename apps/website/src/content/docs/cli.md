@@ -143,6 +143,8 @@ Nothing is sent anywhere to be drawn: the requests a preview makes are its stand
 
 ## Any HTML email
 
+To try the client previews before installing anything, open the [email testing playground](/email-testing). It runs the email-clients package in your browser; the CLI also adds lint checks.
+
 `check` and `preview` also take an HTML email however it was made (MJML, React Email, by hand, an email builder's export): an `.html` or `.htm` file given by name, or `-` to read one from stdin. No template code runs, so neither React nor Elements is needed:
 
 ```bash

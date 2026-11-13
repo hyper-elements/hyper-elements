@@ -56,6 +56,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/components` | The component gallery |
 | `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
+| `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page, component and blog tutorial, for AI agents |
@@ -72,6 +73,43 @@ Names and links (package names, GitHub, install commands) are in `src/lib/site.t
 - **Agents** drive it by a link (`#code=`), by `window.hyperElementsPlayground` or by WebMCP tools (`src/playground/agent.ts`). The page documents all three under the bench.
 
 After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It opens the built page in Chromium (Playwright's, from `packages/react`) and checks that every root renders, that a broken template shows its diagnostics, that a mismatched closing tag and a misspelled import are errors with their lines, that code from a link can't reach the site's origin or the network and isn't kept as the visitor's draft, that markup in a template doesn't run in the preview, and that a loop is stopped. It makes no requests off this machine.
+
+## Email testing
+
+`/email-testing` opens a full-height HTML editor beside 14 client/device thumbnails: classic Outlook;
+Outlook.com, Gmail, Yahoo and AOL on Windows and Mac; Gmail on Android and iPhone, plus other accounts;
+and Apple Mail on Mac and iPhone. Clicking a card opens that exact variant in the right panel; All clients returns
+to the overview. Dark mode swaps in supported dark variants. Thumbnails fill each card's width and crop vertically,
+preserving the client's native layout width. Edits update previews after a short
+pause, with an option to turn live updates off. Visitors can paste and edit HTML directly.
+The editor uses CodeMirror's HTML language support to color tags, attributes, comments and embedded CSS, with
+line numbers, undo/redo and the existing preview shortcut. Its source textarea remains synchronized for browser agents.
+The sandbox also runs `lintHtml()` from `@hyper-elements/lint/html`. Line-specific lint, input-validation and
+email-client findings appear beside the code as warning/error icons with hover details and suggested fixes.
+Document-wide input errors appear on line 1; findings without a source line stay in the Checks drawer.
+Editing clears old markers, and the next completed check replaces them. These are the packages' supported checks,
+not a full HTML conformance validator.
+The default recreates the MacBook Pro email from the [Unlayer Elements playground](https://examples.unlayer.com/examples/elements-playground/).
+Its Hyper Elements source is `examples/email-testing/macbook-pro.tsx`; `render()` writes the editable, indented HTML
+to `src/generated/email-testing.html`. After building the packages, regenerate it with
+`pnpm --filter @hyper-elements/website generate:email-testing` (also included in `generate`), or add `--check`
+to verify the committed HTML matches its source. Do not edit the generated HTML by hand.
+All six original images and the small client logos live under `public/img/email-testing/`, with sources in its
+README. Production image URLs stay in the editor; previews resolve them against the current deployment.
+Validation, lint and compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
+the preview file's explanatory header. Full previews fit the panel's width and expand to their full content height,
+leaving one vertical scrollbar on the surrounding panel. Scrolling is disabled inside both iframe layers.
+Clients are selected from their cards. Both views use opaque origins and allow only trusted scripts; the full
+preview adds a site-written height reporter with a fresh nonce. The page reuses the playground's runtime,
+worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
+`renderInEmailClients(html)` directly; the input never enters the JSX compiler. HTML is not uploaded or persisted.
+The package's preview may load referenced images and fonts. Both the window API and WebMCP tool update the same UI
+and return diagnostics and preview metadata; `ok` describes successful generation, not a compatibility guarantee.
+
+After a website build, run `pnpm --filter @hyper-elements/website check:email-testing`. It covers input validation,
+HTML editing, live thumbnails, opening and returning from full previews, panel-only scrolling, client and dark variants, diagnostics, JSON download,
+agent access, responsive layout, discovery links,
+and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 
 ## Writing docs
 

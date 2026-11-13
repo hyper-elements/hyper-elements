@@ -8,7 +8,7 @@ import { defaultStarter, engineVersion, starterList } from "../lib/playground";
 import { site } from "../lib/site";
 
 const description =
-  "Write a Hyper Elements template and see it rendered live, in your browser, as an email, a web page, a PDF and an image, with every diagnostic and its fix. For AI agents: WebMCP tools, a window.hyperElementsPlayground API and #code= links.";
+  "Write a Hyper Elements template in JSX and see it rendered live as an email, web page, PDF and image, with every diagnostic and its fix.";
 
 const icon = (d: string, size = 15) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -69,7 +69,7 @@ show_hyper_elements_preview({ code, root?, view?, device? })
 get_hyper_elements_reference()
 get_playground_code()`;
 ---
-<Base title="Playground" description={description}>
+<Base title="Email, web page, PDF and image playground" description={description}>
   <div class="pg" data-playground data-status="loading" data-layout="split" data-pane="output">
     <!--
       For AI agents and automation (browser agents, page-text extractors, accessibility trees): how to drive this

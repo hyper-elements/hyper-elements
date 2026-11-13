@@ -1,0 +1,65 @@
+---
+import Base from "../layouts/Base.astro";
+import { emailTestingDescription, sampleEmail } from "../lib/email-testing";
+import { engineVersion } from "../lib/playground";
+import clientsPackage from "../../../../packages/email-clients/package.json";
+import "../styles/email-testing.css";
+---
+<Base
+  title="Test HTML emails in Outlook, Gmail and more"
+  description={emailTestingDescription}
+  image="/img/email-testing/og.png"
+  imageAlt="Hyper Elements: Test HTML emails across clients. An HTML editor connects to modeled Outlook, Gmail and Apple Mail previews."
+  imageWidth={1774}
+  imageHeight={887}
+  footer={false}
+>
+  <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-5`}>
+    <header class="et-topbar">
+      <div class="et-intro">
+        <div class="et-heading"><h1 id="playground-title">Test HTML emails in Outlook, Gmail and more</h1></div>
+        <p class="et-description">Paste HTML to check email compatibility and compare modeled previews across Outlook, Gmail, Apple Mail, Yahoo and AOL—free, locally in your browser.</p>
+      </div>
+      <a class="et-api-link" href="/docs/email-client-emulator">Email client emulator API <span aria-hidden="true">→</span></a>
+    </header>
+
+    <div class="et-mobile-tabs" role="tablist" aria-label="Workspace panel">
+      <button type="button" role="tab" data-mobile-tab="edit" aria-selected="false" aria-controls="email-editor-panel">HTML</button>
+      <button type="button" role="tab" data-mobile-tab="preview" aria-selected="true" aria-controls="email-preview-panel">Preview</button>
+    </div>
+
+    <div class="et-bench">
+      <section class="et-input" id="email-editor-panel" aria-label="Email editor">
+        <div class="et-editor-bar"><label for="email-html">email.html</label><label class="et-live"><input id="email-live" type="checkbox" checked /> Live preview</label></div>
+        <div class="et-code surface-dark" id="email-code">
+          <div class="et-code-caption"><span>HTML</span><button type="button" id="email-example" class="et-subtle" disabled>Load example</button></div>
+          <textarea id="email-html" aria-describedby="email-input-help" spellcheck="false" autocapitalize="off" autocomplete="off" wrap="off">{sampleEmail}</textarea>
+        </div>
+        <div class="et-editor-footer"><span id="email-input-help">Complete HTML · Up to 250 KB · ⌘ / Ctrl + Enter to preview</span><button type="button" id="email-run" class="btn btn-ghost btn-sm" disabled>Update preview ↵</button></div>
+      </section>
+
+      <section class="et-output" id="email-preview-panel" aria-label="Email preview">
+        <div class="et-output-bar">
+          <div><button type="button" id="email-all" class="et-subtle" hidden>← All clients</button><h2 id="email-view-title">Client previews</h2></div>
+          <label class="et-dark"><input id="email-dark" type="checkbox" /> Dark mode</label>
+        </div>
+        <div class="et-canvas">
+          <div class="et-empty" id="email-empty"><span class="et-loading" aria-hidden="true"></span><h2>Your email, across clients.</h2><p>Preparing client previews…</p></div>
+          <div class="et-gallery" id="email-gallery" aria-label="Email client thumbnails" hidden></div>
+          <div class="et-viewport" id="email-viewport" hidden><div id="email-sheet"></div></div>
+          <p id="email-error" class="et-notice" role="alert" hidden></p>
+        </div>
+        <details class="et-findings" id="email-findings" hidden>
+          <summary><span>Checks <span id="email-findings-count" class="et-count">0</span></span><span class="et-findings-prompt">Review findings ⌃</span></summary>
+          <div class="et-findings-content"><p id="email-findings-summary"></p><ul id="email-diagnostics"></ul><ul id="email-skipped" class="et-skipped"></ul><button type="button" class="et-subtle" id="email-download" disabled>Download report ↓</button></div>
+        </details>
+      </section>
+    </div>
+    <p id="email-status" class="et-sr-only" role="status" aria-live="polite">Loading the example…</p>
+    <noscript><p class="et-notice">Enable JavaScript to edit HTML and preview emails, or use the <a href="/docs/cli">CLI</a>.</p></noscript>
+  </section>
+
+  <script>
+    import "../email-testing/main";
+  </script>
+</Base>

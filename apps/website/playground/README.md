@@ -94,6 +94,11 @@ their sha256, and takes away the network. The page reads those hashes from the s
 (`scripts/playground-runtime.mjs`, which stops the build if a script isn't the one its package's hash says). Without
 them the page shows no preview rather than a looser policy.
 
+The email testing page also injects its own height reporter, authorized with a fresh nonce in both policies.
+After the client model finishes, it reports the rendered content height so the surrounding panel can scroll the
+entire email. The page accepts only bounded numeric heights from the current preview window with its matching token.
+The reporter never runs template code or gives the frame access to the site's origin.
+
 **Never give that frame its document as `srcdoc` or from a `blob:` URL.** Both would have the site's origin, and with
 those two flags a script in it would have the site. The check script fails on any frame with `allow-same-origin`
 whose source isn't a `data:` URL.
