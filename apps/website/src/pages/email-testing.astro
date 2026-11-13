@@ -5,7 +5,15 @@ import { engineVersion } from "../lib/playground";
 import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
 ---
-<Base title="Test HTML emails in Outlook, Gmail and more" description={emailTestingDescription} footer={false}>
+<Base
+  title="Test HTML emails in Outlook, Gmail and more"
+  description={emailTestingDescription}
+  image="/img/email-testing/og.png"
+  imageAlt="Hyper Elements: Test HTML emails across clients. An HTML editor connects to modeled Outlook, Gmail and Apple Mail previews."
+  imageWidth={1774}
+  imageHeight={887}
+  footer={false}
+>
   <section id="playground" class="et-workspace" aria-labelledby="playground-title" data-email-testing data-mobile-pane="preview" data-runtime-version={`${engineVersion}-${clientsPackage.version}-html-5`}>
     <header class="et-topbar">
       <div class="et-intro">

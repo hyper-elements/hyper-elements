@@ -1,0 +1,11 @@
+Use case: ads-marketing.
+Asset type: Open Graph social preview for Hyper Elements' email testing playground.
+Image 1 is the edit target: adapt this existing Hyper Elements social card into a new dedicated email testing card. Keep its 2:1 wide canvas, near-black background, faint technical grid, crisp off-white typography, red-and-white Hyper Elements brand mark and wordmark at top left, and refined minimal developer-tool style. Produce a polished 1280 x 640 image.
+Replace the large left headline with exactly:
+"Test HTML emails
+across clients."
+Use very large bold sans-serif type, clean spacing, easily legible at a small social-card size. Under it, smaller muted gray copy exactly:
+"Outlook, Gmail, Apple Mail & more."
+Replace the right-hand React / Email / Web / PDF / Image diagram with a sophisticated flat UI illustration of this email playground: a small dark HTML source editor with syntax-colored code strokes and line numbers on the left, and three white email preview cards on the right with small colored mail icons and the labels "Outlook", "Gmail", "Apple Mail". Each preview shows the same abstract professional email layout, with a red hero band, gray text lines and a red button. Show the relationship between one HTML source and multiple email client previews. This is an illustrative UI graphic, not a realistic browser screenshot. Straight-on view, hairline borders, precise alignment, no perspective tilt. Keep the UI large enough to recognize, and keep it separate from the headline.
+Retain the lower horizontal rule. Replace the bottom-left text with "FREE EMAIL TESTING". Replace the bottom-right domain with "hyperelements.dev/email-testing". Add a discreet small label "MODELED PREVIEWS" above the right-hand illustration.
+Keep all text within generous outer safe margins. No badges claiming compatibility guarantees. No extra text, no other products, no watermarks. Preserve the brand mark's exact red and white chevrons.
