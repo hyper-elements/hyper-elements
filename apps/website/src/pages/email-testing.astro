@@ -35,19 +35,12 @@ import "../styles/email-testing.css";
           <div><button type="button" id="email-all" class="et-subtle" hidden>← All clients</button><h2 id="email-view-title">Client previews <span id="email-client-count"></span></h2></div>
           <label class="et-dark"><input id="email-dark" type="checkbox" /> Dark mode</label>
         </div>
-        <div class="et-preview-controls" id="email-preview-controls" hidden>
-          <label class="et-sr-only" for="email-preview">Choose a client preview</label><select id="email-preview" disabled></select>
-          <span class="et-preview-spacer"></span>
-          <button type="button" id="email-details" class="et-subtle" aria-pressed="false" disabled>Render details</button>
-          <button type="button" id="email-size" class="et-subtle" disabled>Actual size</button>
-        </div>
         <div class="et-canvas">
           <div class="et-empty" id="email-empty"><span class="et-loading" aria-hidden="true"></span><h2>Your email, across clients.</h2><p>Preparing client previews…</p></div>
           <div class="et-gallery" id="email-gallery" aria-label="Email client thumbnails" hidden></div>
           <div class="et-viewport" id="email-viewport" hidden><div id="email-sheet"></div></div>
           <p id="email-error" class="et-notice" role="alert" hidden></p>
         </div>
-        <div class="et-canvas-footer"><span id="email-preview-note">Modeled email preview</span><span>Images and fonts may load from their hosts</span></div>
         <details class="et-findings" id="email-findings" hidden>
           <summary><span>Compatibility <span id="email-findings-count" class="et-count">0</span></span><span class="et-findings-prompt">Review findings ⌃</span></summary>
           <div class="et-findings-content"><p id="email-findings-summary"></p><ul id="email-diagnostics"></ul><ul id="email-skipped" class="et-skipped"></ul><button type="button" class="et-subtle" id="email-download" disabled>Download report ↓</button></div>

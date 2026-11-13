@@ -76,14 +76,22 @@ After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It 
 
 ## Email testing
 
-`/email-testing` opens a full-height HTML editor beside a grid of real email-client thumbnails. Clicking a client
-opens its full preview in the right panel; All clients returns to the overview. Edits update previews after a short
+`/email-testing` opens a full-height HTML editor beside 14 client/device thumbnails: classic Outlook;
+Outlook.com, Gmail, Yahoo and AOL on Windows and Mac; Gmail on Android and iPhone, plus other accounts;
+and Apple Mail on Mac and iPhone. Clicking a card opens that exact variant in the right panel; All clients returns
+to the overview. Dark mode swaps in supported dark variants. Thumbnails fill each card's width and crop vertically,
+preserving the client's native layout width. Edits update previews after a short
 pause, with an option to turn live updates off. Visitors can paste HTML and export their edits.
-The default is a MacBook Air concept email with a locally served product photo. Client cards include small logos;
-asset sources are recorded in `public/img/email-testing/README.md`. The sample's production image URL stays in
-the editor and exported HTML; previews resolve it against the current deployment.
+The default recreates the MacBook Pro email from the [Unlayer Elements playground](https://examples.unlayer.com/examples/elements-playground/).
+Its Hyper Elements source is `examples/email-testing/macbook-pro.tsx`; `render()` writes the editable, indented HTML
+to `src/generated/email-testing.html`. After building the packages, regenerate it with
+`pnpm --filter @hyper-elements/website generate:email-testing` (also included in `generate`), or add `--check`
+to verify the committed HTML matches its source. Do not edit the generated HTML by hand.
+All six original images and the small client logos live under `public/img/email-testing/`, with sources in its
+README. Production image URLs stay in the editor and exported HTML; previews resolve them against the current deployment.
 Compatibility checks are in a drawer; the docs and agent text endpoints describe library and agent use. The canvas and thumbnails hide
-the preview file's explanatory header; Render details restores the complete file, including browser findings.
+the preview file's explanatory header. Full previews automatically fit the panel and use one vertical scrollbar;
+clients are selected from their cards.
 Both views use the same script allowlist and opaque origin. The page reuses the playground's runtime,
 worker timeouts, result validation, and isolated preview frames. The `html-previews` request calls
 `renderInEmailClients(html)` directly; the input never enters the JSX compiler. HTML is not uploaded or persisted.

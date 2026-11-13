@@ -8,18 +8,14 @@ const get = <T extends HTMLElement>(id: string) => document.getElementById(id) a
 const source = get<HTMLTextAreaElement>("email-html");
 const live = get<HTMLInputElement>("email-live");
 const gallery = get("email-gallery");
-const controls = get("email-preview-controls");
 const allButton = get<HTMLButtonElement>("email-all");
-const detailsButton = get<HTMLButtonElement>("email-details");
 const runButton = get<HTMLButtonElement>("email-run");
 const dark = get<HTMLInputElement>("email-dark");
 const status = get("email-status");
 const error = get("email-error");
-const select = get<HTMLSelectElement>("email-preview");
 const empty = get("email-empty");
 const viewport = get("email-viewport");
 const sheet = get("email-sheet");
-const sizeButton = get<HTMLButtonElement>("email-size");
 const download = get<HTMLButtonElement>("email-download");
 const findings = get("email-findings");
 const diagnostics = get<HTMLUListElement>("email-diagnostics");
@@ -35,9 +31,7 @@ let report: Report | undefined;
 let scripts: PreviewScripts | undefined;
 let frame: HTMLIFrameElement | undefined;
 let sequence = 0;
-let fit = true;
-let renderDetails = false;
-let preferredPreview = matchMedia("(max-width: 760px)").matches ? "apple-mail.iphone" : "apple-mail";
+let selectedPreviewId = matchMedia("(max-width: 760px)").matches ? "apple-mail.iphone" : "apple-mail";
 let focused = false;
 const thumbnailResize = new ResizeObserver(() => resizeThumbnails());
 let liveTimer: number | undefined;
@@ -47,11 +41,11 @@ function invalidate() {
   diagnostics.replaceChildren();
   skipped.replaceChildren();
   findings.hidden = true;
-  download.disabled = select.disabled = detailsButton.disabled = sizeButton.disabled = true;
+  download.disabled = true;
   gallery.querySelectorAll<HTMLButtonElement>("button").forEach((button) => { button.disabled = true; });
   error.hidden = true;
   root.dataset.renderStatus = "pending";
-  if (result) get("email-preview-note").textContent = "Previous previews · Changes pending";
+  if (result) get("email-view-title").textContent = get("email-view-title").textContent!.replace(/ · Changes pending$/, "") + " · Changes pending";
 }
 
 function changed() {
@@ -74,26 +68,37 @@ function label(preview: Preview): string {
   return [name, device, preview.dark ? "Dark" : "Light"].filter(Boolean).join(" · ");
 }
 
+function previewName(preview: Preview): string {
+  if (preview.client === "gmail-app-other") return "Gmail App (Other accounts)";
+  const name = preview.client === "outlook-com" ? "Outlook.com" : preview.client === "gmail-app" ? "Gmail App" : names.get(preview.client) ?? preview.client;
+  const device = previewDevice(preview);
+  return device ? `${name} (${device})` : name;
+}
+
+const previewGroup = (id: string) => id.replace(/\.dark$/, "");
+
 function resizeThumbnails() {
   gallery.querySelectorAll<HTMLElement>(".et-thumb-image").forEach((stage) => {
     const iframe = stage.querySelector("iframe");
     if (!iframe || !stage.clientWidth) return;
     const width = Number(stage.dataset.width);
-    const scale = Math.min(stage.clientWidth / width, stage.clientHeight / 900);
+    // Fill the card's width at the client's native layout width; crop the long email vertically.
+    const scale = stage.clientWidth / width;
     iframe.style.width = `${width}px`;
-    iframe.style.height = "900px";
+    iframe.style.height = `${Math.max(900, Math.ceil(stage.clientHeight / scale))}px`;
     iframe.style.transform = `scale(${scale})`;
-    iframe.style.left = `${(stage.clientWidth - width * scale) / 2}px`;
+    iframe.style.left = "0";
   });
 }
 
 function drawThumbnails(previews: Preview[]) {
   thumbnailResize.disconnect();
   gallery.replaceChildren();
-  const clients = [...new Set(previews.map((preview) => preview.client))];
-  for (const client of clients) {
-    const variants = previews.filter((preview) => preview.client === client);
-    const preview = variants.find((preview) => preview.dark === dark.checked) ?? variants[0];
+  const variants = previews.filter((preview) => !preview.dark).map((light) =>
+    dark.checked ? previews.find((preview) => preview.id === `${light.id}.dark`) ?? light : light,
+  );
+  for (const preview of variants) {
+    const client = preview.client;
     const card = document.createElement("div");
     card.className = "et-thumbnail";
     const stage = document.createElement("div");
@@ -105,8 +110,10 @@ function drawThumbnails(previews: Preview[]) {
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.client = client;
-    button.setAttribute("aria-label", `Open ${names.get(client) ?? client} preview`);
+    button.dataset.preview = preview.id;
+    button.setAttribute("aria-label", `Open ${previewName(preview)} preview`);
     button.setAttribute("aria-controls", "email-viewport");
+    button.title = `${label(preview)}${preview.approximate ? " · Approximate" : ""}`;
     const title = document.createElement("span");
     title.className = "et-thumb-name";
     const logo = document.createElement("img");
@@ -114,16 +121,13 @@ function drawThumbnails(previews: Preview[]) {
     logo.src = `/img/email-testing/${logos.get(client)}.svg`;
     logo.alt = "";
     logo.width = logo.height = 24;
-    title.append(logo, document.createTextNode(client === "outlook-com" ? "Outlook.com" : names.get(client) ?? client));
-    const detail = document.createElement("span");
-    detail.className = "et-thumb-meta";
-    detail.textContent = [previewDevice(preview), preview.dark ? "Dark" : "Light", preview.approximate ? "Approximate" : ""].filter(Boolean).join(" · ");
-    button.append(title, detail);
+    title.append(logo, document.createTextNode(previewName(preview)));
+    button.append(title);
     button.addEventListener("click", () => {
       focused = true;
       gallery.hidden = true;
-      viewport.hidden = controls.hidden = allButton.hidden = false;
-      select.value = preview.id;
+      viewport.hidden = allButton.hidden = false;
+      selectedPreviewId = preview.id;
       showPreview();
       allButton.focus({ preventScroll: true });
     });
@@ -131,7 +135,7 @@ function drawThumbnails(previews: Preview[]) {
     gallery.append(card);
     thumbnailResize.observe(stage);
   }
-  if (!focused) get("email-view-title").textContent = `Client previews (${clients.length})`;
+  if (!focused) get("email-view-title").textContent = `Client previews (${variants.length})`;
   resizeThumbnails();
 }
 
@@ -156,27 +160,25 @@ function mountThumbnails() {
 function showAll() {
   focused = false;
   gallery.hidden = false;
-  viewport.hidden = controls.hidden = allButton.hidden = true;
+  viewport.hidden = allButton.hidden = true;
   sheet.replaceChildren();
   frame = undefined;
   get("email-view-title").textContent = `Client previews (${gallery.children.length})`;
-  get("email-preview-note").textContent = root.dataset.renderStatus === "ok"
-    ? `${gallery.children.length} clients · Modeled previews · Click a thumbnail to enlarge`
-    : "Previous previews · Changes pending";
+  if (root.dataset.renderStatus !== "ok") get("email-view-title").textContent += " · Changes pending";
   mountThumbnails();
-  const client = result?.previews?.find((preview) => preview.id === select.value)?.client;
-  [...gallery.querySelectorAll<HTMLButtonElement>("button")].find((button) => button.dataset.client === client)?.focus({ preventScroll: true });
+  [...gallery.querySelectorAll<HTMLButtonElement>("button")].find((button) => previewGroup(button.dataset.preview!) === previewGroup(selectedPreviewId))?.focus({ preventScroll: true });
 }
 
 function resize() {
-  const preview = result?.previews?.find((p) => p.id === select.value);
+  const preview = result?.previews?.find((p) => p.id === selectedPreviewId);
   if (!preview || !frame) return;
   if (!viewport.clientWidth) return;
   const padding = getComputedStyle(viewport);
   const width = viewport.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight);
   const height = viewport.clientHeight - parseFloat(padding.paddingTop) - parseFloat(padding.paddingBottom);
-  const scale = fit ? Math.min(1, width / preview.width) : 1;
-  const frameHeight = Math.max(800, height);
+  const scale = Math.min(1, width / preview.width);
+  // Only the preview document scrolls; its fitted frame stays inside the panel.
+  const frameHeight = Math.max(1, Math.floor(height / scale));
   frame.style.width = `${preview.width}px`;
   frame.style.height = `${frameHeight}px`;
   frame.style.transform = `scale(${scale})`;
@@ -185,23 +187,22 @@ function resize() {
 }
 
 function showPreview() {
-  const preview = result?.previews?.find((p) => p.id === select.value);
+  const preview = result?.previews?.find((p) => p.id === selectedPreviewId);
   if (!preview || !scripts) return;
-  preferredPreview = preview.id;
   const next = document.createElement("iframe");
   next.title = label(preview);
+  next.dataset.preview = preview.id;
   error.hidden = true;
   sheet.replaceChildren();
   frame = undefined;
-  if (!previewFile(next, preview.html, scripts, { canvas: !renderDetails })) {
+  if (!previewFile(next, preview.html, scripts, { canvas: true })) {
     error.textContent = "This preview is too large to display here. Use @hyper-elements/cli to preview this email locally.";
     error.hidden = false;
     return;
   }
   frame = next;
   sheet.append(next);
-  get("email-view-title").textContent = names.get(preview.client) ?? preview.client;
-  get("email-preview-note").textContent = `${preview.width}px · Modeled preview${preview.approximate ? " · Approximate" : ""}`;
+  get("email-view-title").textContent = previewName(preview);
   resize();
 }
 
@@ -273,22 +274,17 @@ async function check(input: Input): Promise<Report> {
     result = output;
     report = summary;
     const previews = output.previews ?? [];
-    select.replaceChildren();
-    for (const preview of previews) select.add(new Option(label(preview), preview.id));
-    select.disabled = !previews.length;
-    if (previews.some((preview) => preview.id === preferredPreview)) select.value = preferredPreview;
+    selectedPreviewId = previews.find((preview) => preview.id === selectedPreviewId)?.id
+      ?? previews.find((preview) => previewGroup(preview.id) === previewGroup(selectedPreviewId))?.id
+      ?? previews[0]?.id ?? "";
     drawThumbnails(previews);
     gallery.hidden = focused || !previews.length;
     viewport.hidden = !focused || !previews.length;
-    controls.hidden = allButton.hidden = !focused;
+    allButton.hidden = !focused;
     empty.hidden = !!previews.length;
-    sizeButton.disabled = detailsButton.disabled = !previews.length;
     download.disabled = false;
     if (focused) showPreview();
-    else {
-      mountThumbnails();
-      get("email-preview-note").textContent = `${new Set(previews.map((preview) => preview.client)).size} clients · Modeled previews · Click a thumbnail to enlarge`;
-    }
+    else mountThumbnails();
     showFindings(output);
     root.dataset.renderStatus = "ok";
     status.textContent = `${previews.length} previews generated · ${output.diagnostics.length} compatibility finding${output.diagnostics.length === 1 ? "" : "s"}`;
@@ -318,13 +314,10 @@ runButton.addEventListener("click", () => void runUI());
 source.addEventListener("input", changed);
 source.addEventListener("keydown", (event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) { event.preventDefault(); void runUI(); } });
 live.addEventListener("change", () => { clearTimeout(liveTimer); if (live.checked && root.dataset.renderStatus !== "ok") void runUI(); });
-dark.addEventListener("change", () => { preferredPreview = preferredPreview.replace(/\.dark$/, "") + (dark.checked ? ".dark" : ""); changed(); });
-select.addEventListener("change", showPreview);
+dark.addEventListener("change", () => { selectedPreviewId = selectedPreviewId.replace(/\.dark$/, "") + (dark.checked ? ".dark" : ""); changed(); });
 allButton.addEventListener("click", showAll);
-sizeButton.addEventListener("click", () => { fit = !fit; sizeButton.textContent = fit ? "Actual size" : "Fit to panel"; resize(); });
 new ResizeObserver(resize).observe(viewport);
 get("email-example").addEventListener("click", () => { source.value = sampleEmail; changed(); void runUI(); });
-detailsButton.addEventListener("click", () => { renderDetails = !renderDetails; detailsButton.setAttribute("aria-pressed", String(renderDetails)); detailsButton.textContent = renderDetails ? "Back to email" : "Render details"; showPreview(); });
 root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((button) => button.addEventListener("click", () => {
   root.dataset.mobilePane = button.dataset.mobileTab;
   root.querySelectorAll<HTMLElement>("[data-mobile-tab]").forEach((tab) => tab.setAttribute("aria-selected", String(tab === button)));

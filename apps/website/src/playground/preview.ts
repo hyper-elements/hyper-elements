@@ -34,7 +34,7 @@ export interface PreviewScripts {
 export function previewDevice(preview: Preview): string {
   if (preview.id.includes(".iphone")) return "iPhone";
   if (preview.client === "apple-mail") return "Mac";
-  if (preview.client === "gmail-app") return "Android";
+  if (preview.client === "gmail-app" || preview.client === "gmail-app-other") return "Android";
   return preview.computer === "mac" ? "Mac" : preview.computer === "windows" ? "Windows" : "";
 }
 
@@ -300,7 +300,7 @@ export class PreviewFrame {
 export function previewFile(frame: HTMLIFrameElement, html: string, scripts: PreviewScripts, options: { canvas?: boolean } = {}): boolean {
   const bytes = new TextEncoder().encode(documentOf(html, previewFilePolicy(scripts), undefined, (doc) => {
     if (!options.canvas) return;
-    // Presentation only: retain the package's report and scripts. The caller offers the full report view too.
+    // Presentation only: retain the package's report and scripts while hiding its explanatory header.
     const style = doc.createElement("style");
     style.textContent = "body{background:transparent}body>header.note{display:none}#frames{padding:0;gap:0}#frames>iframe{box-shadow:none}";
     doc.head.append(style);

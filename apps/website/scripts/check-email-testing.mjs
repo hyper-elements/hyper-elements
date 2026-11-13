@@ -49,7 +49,7 @@ try {
   await page.waitForFunction(() => !!window.hyperElementsEmailTesting);
   assert.equal(await page.locator("h1").count(), 1);
   assert.equal(await page.locator("h1").innerText(), "Test HTML emails in Outlook, Gmail and more");
-  assert.equal(await page.locator(".et-status-bar, #email-open, #email-file, #email-help-open, #email-help").count(), 0);
+  assert.equal(await page.locator(".et-status-bar, #email-open, #email-file, #email-help-open, #email-help, #email-preview-controls, #email-preview, #email-details, #email-size, .et-canvas-footer").count(), 0);
   // Every on-site link and fragment on the new page resolves in the build.
   for (const href of await page.locator('a[href^="/"]').evaluateAll((links) => [...new Set(links.map((a) => a.getAttribute("href")))])) {
     const url = new URL(href, origin);
@@ -73,55 +73,100 @@ try {
     return frame;
   };
   const readyFrame = () => readyPreview("#email-sheet iframe");
+  const checkPreviewScrolling = async () => {
+    const preview = await readyFrame();
+    assert(await page.locator("#email-viewport").evaluate((panel) => panel.scrollHeight <= panel.clientHeight + 1), "The preview panel has no second vertical scroll area");
+    assert(await preview.childFrames()[0].evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The modeled email fits its inner frame without another scrollbar");
+    const box = await page.locator("#email-sheet").boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + Math.min(100, box.height / 2));
+    await page.mouse.wheel(0, 450);
+    await preview.waitForFunction(() => scrollY > 0);
+    assert.equal(await preview.childFrames()[0].evaluate(() => scrollY), 0, "The wheel scrolls the preview, not a nested email frame");
+    assert.equal(await page.locator("#email-viewport").evaluate((panel) => panel.scrollTop), 0);
+    await preview.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    assert(await preview.locator("#frames > iframe").first().evaluate((email) => Math.abs(email.getBoundingClientRect().bottom - innerHeight) < 2), "The single scrollbar reaches the bottom of the complete email");
+    await preview.evaluate(() => scrollTo(0, 0));
+  };
   await updated(); // All client thumbnails render automatically, without clicking a call to action.
   assert(await page.locator(".et-output").evaluate((panel) => panel.getBoundingClientRect().top < 160 && panel.getBoundingClientRect().bottom < innerHeight));
   assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), "The workspace fits the first viewport");
   assert(await page.locator("#email-html").isVisible(), "HTML is the editor's default and only editing surface");
   assert.equal(await page.locator('[data-design], #email-template, input[type="color"]').count(), 0);
   assert(await page.locator("#email-gallery").isVisible());
-  assert.equal(await page.locator(".et-thumbnail").count(), 7);
+  assert.equal(await page.locator(".et-thumbnail").count(), 14);
   assert.equal(await page.locator("#email-sheet iframe").count(), 0, "The overview comes before a full preview");
   const checkThumbnails = async (words) => {
-    for (const client of await page.locator(".et-thumbnail button").evaluateAll((buttons) => buttons.map((button) => button.dataset.client))) {
-      const selector = `.et-thumbnail:has(button[data-client="${client}"]) iframe`;
+    for (const { client, id } of await page.locator(".et-thumbnail button").evaluateAll((buttons) => buttons.map((button) => ({ client: button.dataset.client, id: button.dataset.preview })))) {
+      const selector = `.et-thumbnail:has(button[data-preview="${id}"]) iframe`;
       const thumbnail = await readyPreview(selector);
       const found = JSON.parse(await thumbnail.locator("#email-client-findings").textContent());
       assert.equal(found.client, client, "Each thumbnail actually runs that client's model");
+      assert.equal(JSON.parse(await thumbnail.locator("#email-client-config").textContent()).id, id, "The thumbnail uses its own device/computer variant");
+      assert(await page.locator(selector).evaluate((iframe) => {
+        const box = iframe.getBoundingClientRect();
+        const stage = iframe.parentElement.getBoundingClientRect();
+        return Math.abs(box.left - stage.left) < 1 && Math.abs(box.width - stage.width) < 1 && box.height >= stage.height;
+      }), `${id}: the thumbnail fills its width without artificial side gutters`);
       const text = (await thumbnail.childFrames()[0].locator("body").innerText()).replace(/\s+/g, " ");
       assert(text.includes(words), `${client} thumbnail contains the current email: ${text}`);
       assert.equal(await thumbnail.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none");
-      assert(await thumbnail.childFrames()[0].locator('img[alt^="Two sky blue MacBook Air"]').evaluate((image) => image.complete && image.naturalWidth > 0 && !image.hasAttribute("data-email-client-missing")), "The sample's product image loads locally in every client");
+      const images = thumbnail.childFrames()[0].locator("img");
+      assert.equal(await images.count(), 6, "The full template retains all six original images");
+      assert(await images.evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0 && !image.hasAttribute("data-email-client-missing"))), "All sample images load locally in every client");
     }
-    assert.equal(await page.locator(".et-client-logo").count(), 7);
+    assert.equal(await page.locator(".et-client-logo").count(), 14);
+    assert.equal(await page.locator(".et-thumb-meta").count(), 0, "No subtext is shown below the client name");
+    assert(await page.locator(".et-thumbnail").evaluateAll((cards) => {
+      const heights = cards.map((card) => card.getBoundingClientRect().height);
+      return Math.max(...heights) - Math.min(...heights) < 1;
+    }), "Client cards have equal heights with one- or two-line labels");
+    assert(await page.locator(".et-thumbnail").evaluateAll((cards) => cards.every((card) => {
+      const label = card.querySelector(".et-thumb-name").getBoundingClientRect();
+      return card.getBoundingClientRect().bottom - label.bottom <= 14;
+    })), "Cards have no reserved blank space below their labels");
+    assert(await page.locator(".et-thumbnail").evaluateAll((cards) => {
+      const boxes = cards.map((card) => card.getBoundingClientRect());
+      return boxes.every((a, i) => boxes.slice(i + 1).every((b) => a.right <= b.left + 1 || b.right <= a.left + 1 || a.bottom <= b.top + 1 || b.bottom <= a.top + 1));
+    }), "Cards and their click targets never overlap when the gallery scrolls");
+    assert.equal(new Set(await page.locator(".et-thumb-name").allTextContents()).size, 14, "Every client/device card has a distinct name");
     assert(await page.locator(".et-client-logo").evaluateAll((images) => images.every((image) => image.complete && image.naturalWidth > 0 && image.alt === "")), "Each client has a loaded, decorative logo beside its label");
   };
-  await checkThumbnails("MacBook Air");
+  await checkThumbnails("MacBook Pro");
   if (process.env.EMAIL_TESTING_SHOTS) {
     await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
     await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-gallery.png"), fullPage: true });
   }
-  await page.getByRole("button", { name: "Open Apple Mail preview", exact: true }).click();
+  // The iPhone, Android and other-account Gmail cards open distinct full previews.
+  for (const [name, id] of [["Gmail App (iPhone)", "gmail-app.iphone"], ["Gmail App (Android)", "gmail-app"], ["Gmail App (Other accounts)", "gmail-app-other"]]) {
+    await page.locator(`.et-thumbnail:has(button[data-preview="${id}"])`).click({ position: { x: 25, y: 40 } });
+    assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), id);
+    await readyFrame();
+    await page.getByRole("button", { name: "All clients", exact: false }).click();
+    assert.equal(await page.evaluate(() => document.activeElement.dataset.preview), id, "Return focus to the exact variant card");
+  }
+  await page.getByRole("button", { name: "Open Apple Mail (Mac) preview", exact: true }).click();
   const first = await readyFrame();
   assert.equal(await first.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none");
   assert(!await page.locator("#email-gallery").isVisible());
   assert(await page.locator("#email-viewport").isVisible());
+  await checkPreviewScrolling();
   if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-full-preview.png"), fullPage: true });
+  // Exercise findings with an intentional compatibility issue, independent of the sample's design.
+  await page.locator("#email-html").fill(sample.replace("</head>", "<style>body { box-shadow: 0 0 8px #000; }</style></head>"));
+  await updated();
   await page.locator("#email-findings summary").click();
-  assert(await page.locator("#email-diagnostics li").count() > 0, "The example exposes actual client compatibility findings");
+  assert(await page.locator("#email-diagnostics li").count() > 0, "The checks expose the injected compatibility issue");
   assert(await page.locator("#email-diagnostics").innerText().then((text) => /box-shadow/i.test(text)));
   await readyFrame();
-  const labels = await page.locator("#email-preview option").allTextContents();
-  assert.equal(new Set(labels).size, labels.length, "Desktop, phone and computer variants have distinct labels");
-  assert(labels.some((label) => /Apple Mail.*iPhone/.test(label)));
   const downloadEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download report" }).click();
   const saved = await downloadEvent;
   const report = JSON.parse(await readFile(await saved.path(), "utf8"));
-  assert(report.ok && report.previews.length === labels.length && report.diagnostics.some((d) => d.line > 0));
+  assert(report.ok && report.previews.length === 14 && report.diagnostics.some((d) => d.line > 0));
   assert(report.previews.every((preview) => !Object.hasOwn(preview, "html")));
   await page.locator("#email-findings summary").click();
   // The selected client stays open while direct HTML edits update its full preview.
-  const edited = sample.replaceAll("Make room for possibility.", "Hello from the HTML editor.");
+  const edited = sample.replaceAll("Mover. Maker. Boundary breaker.", "Hello from the HTML editor.");
   await page.locator("#email-html").fill(edited);
   await updated();
   let selected = await readyFrame();
@@ -130,27 +175,23 @@ try {
   assert(await page.locator("#email-gallery").isVisible());
   assert.equal(await page.locator("#email-sheet iframe").count(), 0);
   await checkThumbnails("Hello from the HTML editor.");
-  await page.getByRole("button", { name: "Open Gmail preview", exact: true }).click();
-  assert.equal(await page.locator("#email-preview").inputValue(), "gmail");
+  await page.getByRole("button", { name: "Open Gmail (Windows) preview", exact: true }).click();
+  assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "gmail");
   await readyFrame();
   await page.locator("#email-live").uncheck();
   await page.locator("#email-html").fill(sample);
   await page.waitForTimeout(800);
   assert.equal(await page.locator("[data-email-testing]").getAttribute("data-render-status"), "pending", "Live preview can be paused");
-  assert.match(await page.locator("#email-preview-note").innerText(), /Previous previews/);
+  assert.match(await page.locator("#email-view-title").innerText(), /Changes pending/);
   await page.locator("#email-live").check();
   await updated();
   const exportedEvent = page.waitForEvent("download");
   await page.getByRole("button", { name: "Export HTML" }).click();
   const exported = await exportedEvent;
   assert.equal(await readFile(await exported.path(), "utf8"), await page.locator("#email-html").inputValue());
-  await page.getByRole("button", { name: "Render details", exact: true }).click();
-  selected = await readyFrame();
-  assert.notEqual(await selected.locator("header.note").evaluate((header) => getComputedStyle(header).display), "none", "Full browser findings remain available");
-  await page.getByRole("button", { name: "Back to email", exact: true }).click();
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   await page.getByRole("button", { name: "Open Classic Outlook preview", exact: true }).click();
-  assert.equal(await page.locator("#email-preview").inputValue(), "outlook");
+  assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "outlook");
   // Edits invalidate the report, while the last preview stays visible and explicitly marked as previous.
   await page.locator("#email-html").fill("<p>A fragment</p>");
   assert.equal(await page.locator("#email-sheet iframe").count(), 1);
@@ -161,7 +202,7 @@ try {
   assert.equal((await run({ html: sample, clients: ["unknown"] })).ok, false);
   assert.equal((await run({ html: "x".repeat(250001) })).ok, false);
   assert.equal((await run({ html: sample, dark: "yes" })).ok, false);
-  const clients = ["outlook", "outlook-com", "gmail", "gmail-app", "apple-mail", "yahoo", "aol"];
+  const clients = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol"];
   const all = await page.evaluate((input) => window.__emailTools[0].execute(input), { html: sample, clients, dark: true });
   assert(all.ok, all.error?.message);
   assert(all.previews.length > 12, "The complete selection is not truncated to the original playground's 12-preview limit");
@@ -170,17 +211,26 @@ try {
   assert(all.previews.some((p) => p.client === "aol" && p.dark));
   assert(all.skipped.some((p) => p.client === "outlook"));
   for (const id of ["gmail", "apple-mail.iphone.dark", "yahoo.dark", "aol.dark"]) {
-    await page.locator("#email-preview").selectOption(id);
+    await page.getByRole("button", { name: "All clients", exact: false }).click();
+    await page.locator(`.et-thumbnail button[data-preview="${id}"]`).click();
+    assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), id);
     await readyFrame();
   }
-  assert.equal(new Set(await page.locator("#email-preview option").allTextContents()).size, all.previews.length);
+  assert.equal(new Set(all.previews.map((preview) => preview.id)).size, all.previews.length);
+  await page.getByRole("button", { name: "All clients", exact: false }).click();
+  assert.equal(await page.locator(".et-thumbnail").count(), 14, "Dark mode retains each device without duplicate light/dark cards");
+  assert.equal(await page.getByRole("button", { name: "Open Apple Mail (iPhone) preview", exact: true }).getAttribute("data-preview"), "apple-mail.iphone.dark");
+  assert.equal(await page.getByRole("button", { name: "Open Gmail App (iPhone) preview", exact: true }).getAttribute("data-preview"), "gmail-app.iphone");
+  await page.getByRole("button", { name: "Open Apple Mail (iPhone) preview", exact: true }).click();
+  assert.equal(await page.locator("#email-sheet iframe").getAttribute("data-preview"), "apple-mail.iphone.dark");
+  await readyFrame();
   const concurrent = await page.evaluate(async (html) => Promise.all([
     window.hyperElementsEmailTesting.check({ html, clients: ["outlook"] }),
     window.hyperElementsEmailTesting.check({ html, clients: ["apple-mail"] }),
   ]), sample);
   assert.equal(concurrent[0].ok, false);
   assert(concurrent[1].ok);
-  assert((await page.locator("#email-preview option").allTextContents()).every((text) => text.startsWith("Apple Mail")));
+  assert(concurrent[1].previews.every((preview) => preview.client === "apple-mail"));
   // The email remains data: scripts, handlers, frames and meta redirects cannot act on the parent or make requests.
   const hostile = `<!doctype html><html><head><meta http-equiv="refresh" content="0;url=${origin}/attack"><base href="${origin}/attack"></head><body><p>SAFE_EMAIL_TEXT</p><script>parent.document.body.dataset.emailAttack='yes';fetch('${origin}/attack')</script><svg onload="fetch('${origin}/attack')"></svg><iframe src="${origin}/attack"></iframe></body></html>`;
   const safe = await run({ html: hostile, clients: ["gmail"] });
@@ -188,16 +238,19 @@ try {
   const frame = await readyFrame();
   assert.match(await frame.childFrames()[0].locator("body").innerText(), /SAFE_EMAIL_TEXT/);
   await page.getByRole("button", { name: "All clients", exact: false }).click();
-  const hostileThumbnail = await readyPreview(".et-thumb-image iframe");
-  assert.match(await hostileThumbnail.childFrames()[0].locator("body").innerText(), /SAFE_EMAIL_TEXT/);
+  for (const id of ["gmail", "gmail.mac"]) {
+    const hostileThumbnail = await readyPreview(`.et-thumb-image[data-preview="${id}"] iframe`);
+    assert.match(await hostileThumbnail.childFrames()[0].locator("body").innerText(), /SAFE_EMAIL_TEXT/);
+  }
   assert.equal(await page.evaluate(() => document.body.dataset.emailAttack), undefined);
   assert.equal(attackRequests, 0);
   const frames = await page.locator("iframe").evaluateAll((items) => items.map((f) => ({ sandbox: f.getAttribute("sandbox"), src: f.getAttribute("src"), srcdoc: f.hasAttribute("srcdoc") })));
   assert(frames.every((f) => f.sandbox));
   assert(frames.filter((f) => f.sandbox.includes("allow-same-origin")).every((f) => f.src.startsWith("data:") && !f.srcdoc));
-  await page.getByRole("button", { name: "Open Gmail preview", exact: true }).click();
+  await page.getByRole("button", { name: "Open Gmail (Windows) preview", exact: true }).click();
   await run({ html: sample, clients });
-  await page.locator("#email-preview").selectOption("outlook");
+  await page.getByRole("button", { name: "All clients", exact: false }).click();
+  await page.getByRole("button", { name: "Open Classic Outlook preview", exact: true }).click();
   await readyFrame();
   for (const width of [1440, 1100, 1024, 900, 390]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -215,6 +268,7 @@ try {
     });
     assert(!overlaps, `Header navigation fits at ${width}px`);
     assert(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1), `Workspace fits the viewport at ${width}px`);
+    await checkPreviewScrolling();
     if (process.env.EMAIL_TESTING_SHOTS && [1440, 390].includes(width)) {
       await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
       await mkdir(process.env.EMAIL_TESTING_SHOTS, { recursive: true });
@@ -222,10 +276,6 @@ try {
       await page.locator(".et-output").screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, `email-testing-preview-${width}.png`) });
     }
   }
-  await page.getByRole("button", { name: "Actual size", exact: true }).click();
-  assert.equal(await page.locator("#email-sheet iframe").evaluate((frame) => frame.getBoundingClientRect().width), 820);
-  assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "Actual size scrolls inside the preview panel");
-  await page.getByRole("button", { name: "Fit to panel", exact: true }).click();
   await page.getByRole("tab", { name: "HTML", exact: true }).click();
   assert(await page.locator("#email-editor-panel").isVisible());
   assert(!await page.locator("#email-preview-panel").isVisible());
@@ -238,16 +288,16 @@ try {
   assert.equal(await page.locator("#email-html").inputValue(), sample, "A submitted email is not persisted");
   await updated();
   assert(await page.locator("#email-gallery").isVisible(), "A phone also opens with the overview");
-  assert.equal(await page.locator(".et-thumbnail").count(), 7);
-  await checkThumbnails("MacBook Air");
+  assert.equal(await page.locator(".et-thumbnail").count(), 14);
+  await checkThumbnails("MacBook Pro");
   if (process.env.EMAIL_TESTING_SHOTS) await page.screenshot({ path: join(process.env.EMAIL_TESTING_SHOTS, "email-gallery-mobile.png"), fullPage: true });
-  await page.getByRole("button", { name: "Open Gmail app preview", exact: true }).click();
+  await page.getByRole("button", { name: "Open Gmail App (Android) preview", exact: true }).click();
   await readyFrame();
   assert(await page.locator("#email-viewport").isVisible());
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   assert(await page.locator("#email-gallery").isVisible());
   assert.deepEqual(errors, []);
-  console.log("Email testing: HTML editor, seven live client thumbnails, full preview navigation, live updates, export, client variants, reports, agents, isolation and responsive layout passed.");
+  console.log("Email testing: HTML editor, 14 client/device thumbnails without side gutters, full preview navigation, live updates, export, client variants, reports, agents, isolation and responsive layout passed.");
 } finally {
   await browser.close();
   await new Promise((done) => server.close(done));
