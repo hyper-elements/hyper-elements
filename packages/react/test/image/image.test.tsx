@@ -19,6 +19,7 @@ import {
   Html,
   Image,
   Layer,
+  LineBreak,
   Link,
   List,
   ListItem,
@@ -520,6 +521,75 @@ describe("renderImage", () => {
         expect(Math.abs((await width(<Text style={style}>{children}</Text>)) - plain), what).toBeLessThan(2);
       }
     }
+  });
+
+  it("highlights a Span under its letters alone, not under the space held with it", async () => {
+    // The space between a Span and the words after it is held with the Span (before it, in a block aligned at the
+    // right), and a background fills a Span's whole box: the highlight would run under that space too, on that one
+    // side. Each run the Span held is filled instead, and the space beside them isn't.
+    const mark = { backgroundColor: "#ffff00" };
+    /** Where the highlight is across the Canvas: the left of its first box and the right of its last. */
+    const highlighted = async (children: ReactNode, width = 400) => {
+      const template = (
+        <Canvas width={width} height={240} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+      const boxes = [...svg.matchAll(/<rect\b[^>]*>/g)]
+        .map((rect) => rect[0])
+        .filter((rect) => /fill="#ffff00"/i.test(rect))
+        .map((rect) => {
+          const left = Number(/\bx="([\d.]+)"/.exec(rect)?.[1]);
+          return [left, left + Number(/\bwidth="([\d.]+)"/.exec(rect)?.[1])] as const;
+        });
+      expect(boxes.length).toBeGreaterThan(0);
+      return { from: Math.min(...boxes.map((box) => box[0])), to: Math.max(...boxes.map((box) => box[1])) };
+    };
+    const alone = await highlighted(<Text><Span style={mark}>our site</Span></Text>);
+    const letters = alone.to - alone.from;
+    expect(letters).toBeGreaterThan(50);
+    for (const style of [{}, { textAlign: "right" } as const]) {
+      const box = await highlighted(<Text style={style}>See <Span style={mark}>our site</Span> today</Text>);
+      // (A space here is 6.7px.)
+      expect(Math.abs(box.to - box.from - letters), JSON.stringify([style, box])).toBeLessThan(1);
+    }
+    // The words are spaced as they are with no highlight.
+    const plain = await width(<Text>See our site today</Text>);
+    expect(Math.abs((await width(<Text>See <Span style={mark}>our site</Span> today</Text>)) - plain)).toBeLessThan(2);
+    expect(said(drawn(<Text>See <Span style={{ ...mark, textDecoration: "underline" }}>our site</Span> today</Text>)[0]!.runs!)).toBe("See our site today");
+    // A space the Span itself holds between its words is the Span's, and highlighted with them.
+    const whole = await highlighted(<Text><Span style={mark}>See <Link href="https://x.test">our site</Link> today</Span> and more</Text>);
+    expect(Math.abs(whole.to - whole.from - plain)).toBeLessThan(4);
+
+    // A highlight moves no letter: a Span that holds several runs, on a line too narrow for them, is laid out as the
+    // same Span is without one (given to one run holding the rest, the background had them sized another way, and
+    // the last word pushed past the Canvas's edge), and a line break among its words still breaks the line (the
+    // words either side of it boxed apart, it broke nothing).
+    const shapes = [
+      (style: Record<string, string>) => (
+        <Text>
+          See <Span style={style}>our <Span style={{ color: "#ff0000" }}>lovely site</Span> today</Span> again
+        </Text>
+      ),
+      (style: Record<string, string>) => (
+        <Text>
+          See <Span style={style}>our<LineBreak />site</Span> today
+        </Text>
+      ),
+    ];
+    for (const [shape, text] of shapes.entries()) {
+      for (const canvas of [200, 260, 400]) {
+        const marked = await lines(text(mark), canvas);
+        const unmarked = await lines(text({ color: "#000000" }), canvas);
+        expect(marked, `shape ${shape}, ${canvas}px`).toHaveLength(unmarked.length);
+        for (const [i, line] of marked.entries()) {
+          for (const edge of ["from", "to", "top"] as const) expect(Math.abs(line[edge] - unmarked[i]![edge]), `shape ${shape}, ${canvas}px, line ${i}, ${edge}`).toBeLessThan(2);
+          expect(line.to, `shape ${shape}, ${canvas}px, line ${i}`).toBeLessThanOrEqual(canvas - 20);
+        }
+      }
+    }
+    expect(await lines(shapes[1]!(mark), 400)).toHaveLength(2);
   });
 
   it("writes a Canvas only", async () => {

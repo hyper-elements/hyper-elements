@@ -115,14 +115,50 @@ function withoutSpace(run: Run, side: Side): Run | undefined {
 }
 
 /**
- * A space put at one end of a run. Inside a Span or a Link it goes in a run of its own, which the Span's underline,
- * line-through and background don't reach: a Link drawn "our site " would be underlined under the space too.
+ * A space put at one end of a run. Inside a Span or a Link it goes in a run of its own, which the Span's underline
+ * and line-through don't reach: a Link drawn "our site " would be underlined under the space too.
  */
 function withSpace(run: Run, side: Side): Run | undefined {
   if (typeof run === "string") return side === "start" ? ` ${run}` : `${run} `;
   if (run.kind !== "span") return undefined;
   const space: Run = { kind: "span", style: { textDecoration: "none", backgroundColor: "transparent" }, runs: [" "] };
-  return { ...run, runs: side === "start" ? [space, ...run.runs] : [...run.runs, space] };
+  const { style, runs } = filledRuns(run);
+  return { ...run, style, runs: side === "start" ? [space, ...runs] : [...runs, space] };
+}
+
+/**
+ * A Span's style and runs, for a space to be put beside the runs: its background, where it has one, on each of its
+ * runs instead of on the Span. A background fills a Span's whole box, the runs inside it with theirs, whatever their
+ * own, so the space would be highlighted with the word beside it, on that one side.
+ *
+ * Words can only take a background in a box of their own, and the Span's runs must be laid out as they were. So the
+ * words between two of its Spans, Links or Images go in one box, the line breaks among them too (boxed apart, the
+ * words either side of a line break would no longer be one text for it to break). And where a line is too narrow
+ * for a Span's runs, a box that holds words gives way and the words themselves don't (the engine's rule, which a
+ * box around the words would change both ways): each box of words is told not to give way, and the Span, which held
+ * words and now holds their boxes, that it still does.
+ */
+function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: Run[] } {
+  const { backgroundColor, ...style } = run.style;
+  if (backgroundColor === undefined) return { style: run.style, runs: run.runs };
+  const runs: Run[] = [];
+  let words: string[] = [];
+  const box = () => {
+    // (Line breaks with no words between two runs stay as they are.)
+    if (words.some((text) => text !== "\n")) runs.push({ kind: "span", style: { backgroundColor, flexShrink: 0 }, runs: words });
+    else runs.push(...words);
+    words = [];
+  };
+  for (const held of run.runs) {
+    if (typeof held === "string") {
+      words.push(held);
+      continue;
+    }
+    box();
+    runs.push(held.kind === "span" ? { ...held, style: { backgroundColor, ...held.style } } : held);
+  }
+  box();
+  return { style: run.runs.some((held) => typeof held === "string") ? { ...style, flexShrink: 1 } : style, runs };
 }
 
 /**
