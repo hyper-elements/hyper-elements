@@ -11,8 +11,12 @@ const START = /<!-- rules:start[^>]*-->\n/;
 const END = "<!-- rules:end -->";
 
 export function section(rule: Rule): string {
-  const where = rule.roots.join(" and ");
-  return `### \`${rule.id}\`\n\n${rule.summary}\n\n${rule.severity === "warning" ? "A warning" : "A note"} by default, on ${where === "Email and Page" ? "an Email and a Page" : `a ${where}`}. **Fix:** ${rule.fix}.\n`;
+  const roots = rule.roots.join(" and ");
+  const where = [
+    roots === "Email and Page" ? "an Email and a Page" : roots ? `a ${roots}` : "",
+    rule.html === "both" ? "HTML (an `Html` block's and `lintHtml()`'s)" : rule.html === "document" ? "a whole HTML document (`lintHtml()`'s)" : "",
+  ].filter(Boolean);
+  return `### \`${rule.id}\`\n\n${rule.summary}\n\n${rule.severity === "warning" ? "A warning" : "A note"} by default, on ${where.join(", and on ")}. **Fix:** ${rule.fix}.\n`;
 }
 
 describe("/docs/lint", () => {
@@ -20,7 +24,7 @@ describe("/docs/lint", () => {
     const page = readFileSync(PAGE, "utf8");
     const start = START.exec(page)!;
     const end = page.indexOf(END);
-    const written = rules.filter((rule) => rule.roots.length).map(section).join("\n");
+    const written = rules.map(section).join("\n");
     const want = `${page.slice(0, start.index + start[0].length)}\n${written}\n${page.slice(end)}`;
     if (process.env.UPDATE_LINT_DOCS) writeFileSync(PAGE, want);
     else expect(page).toBe(want);

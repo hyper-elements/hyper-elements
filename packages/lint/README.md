@@ -38,10 +38,26 @@ lint({ rules: { "text-size": "off", contrast: "info" }, kind: "marketing" });
 A rule, severity or kind it doesn't know throws a `TypeError` when `lint()` is called. `rules` lists every rule (its id,
 default severity, roots, summary, fix and docs link).
 
+## Any HTML email
+
+```ts
+import { lintHtml } from "@hyper-elements/lint/html";
+
+const { diagnostics } = lintHtml(html);
+// [{ code: "lint/image-alt", severity: "warning", line: 42, column: 7, message: "…", fix: "…", see: "…" }]
+```
+
+`lintHtml()` runs the rules HTML can show on any HTML email, however it was made, with nothing else installed: images
+without `alt`, links with nothing to name them or that say "click here", targets that go nowhere or run a script, empty
+headings, `role="button"` on a link, and on a whole document the heading order, one `<h1>`, `lang` and `<title>`.
+Outlook's conditional comments are skipped. It takes the same options. An `Html` block in a template gets the same
+rules.
+
 ## Rules
 
 `image-alt`, `alt-text`, `link-text`, `link-empty`, `link-target`, `heading-order`, `heading-one`, `heading-empty`,
-`contrast`, `text-size`, `lang`, `dir`, `title`, `preview-text`, `merge-syntax`, `unsubscribe`, `video-title`. Each is
+`contrast`, `text-size`, `lang`, `dir`, `title`, `preview-text`, `merge-syntax`, `unsubscribe`, `video-title`, and for
+HTML only, `role-button`. Each is
 described at [hyperelements.dev/docs/lint](https://www.hyperelements.dev/docs/lint).
 
 Works with `@hyper-elements/react` 0.4. Lint imports nothing of it at run time: it reads the tree the plugin is handed.

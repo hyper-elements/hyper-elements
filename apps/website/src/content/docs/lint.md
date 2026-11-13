@@ -10,7 +10,7 @@ description: "@hyper-elements/lint checks an email or a page for what makes it h
 npm i -D @hyper-elements/lint
 ```
 
-It's a plugin, so it runs wherever `validate()` and `render()` do: in a test, on a server, in the browser.
+It's a plugin, so it runs wherever `validate()` and `render()` do: in a test, on a server, in the browser. For HTML made any other way, there's [`lintHtml()`](#any-html-email).
 
 ```tsx
 import { render, validate } from "@hyper-elements/react";
@@ -53,15 +53,33 @@ rules.find((rule) => rule.id === "contrast");
 // { id: "contrast", severity: "warning", roots: ["Email", "Page"], summary: "…", fix: "…", see: "…#contrast" }
 ```
 
+## Any HTML email
+
+`lintHtml()`, from `@hyper-elements/lint/html`, runs the rules HTML can show on any HTML email, however it was made (MJML, React Email, by hand). It needs nothing else installed: no Elements, no React.
+
+```ts
+import { lintHtml } from "@hyper-elements/lint/html";
+
+const { diagnostics } = lintHtml(html, { rules: { title: "off" } });
+diagnostics[0];
+// { code: "lint/image-alt", severity: "warning", line: 42, column: 7,
+//   message: 'This image has no alt attribute: a screen reader reads out its file name instead (src "hero.png")',
+//   fix: "…", see: "https://www.hyperelements.dev/docs/lint#image-alt" }
+```
+
+Its findings are `lint/<rule>`, each with its line and column. It takes the same options as `lint()`. On HTML with an `<html>` or a `<body>`, a whole document, it also checks the heading order, one `<h1>`, the language and the title. Outlook's conditional comments (`<!--[if mso]>`) are skipped: what's in them is Outlook's copy of what's outside them. An `Html` block's markup in a template gets the same rules, at the block's `html`, with its line.
+
+HTML can't say what a template can. `lintHtml()` doesn't check contrast or text size (that needs the CSS cascade), and doesn't check merge syntax: in HTML, a hand-typed `{{name}}` and a `MergeTag`'s output look the same.
+
 ## Rules
 
 <!-- rules:start (written from the package's rules by its docs test: UPDATE_LINT_DOCS=1 pnpm --filter @hyper-elements/lint test docs) -->
 
 ### `image-alt`
 
-A link that holds only images, none with alternate text, has no name a screen reader can read out (in HTML, an image with no alt attribute too).
+A link holds only images with no alternate text, so a screen reader has nothing to read out for it. In HTML, any link with nothing to name it, and an image with no alt attribute at all.
 
-A warning by default, on an Email and a Page. **Fix:** give the image an alt that says where the link goes, or the link an aria-label.
+A warning by default, on an Email and a Page, and on HTML (an `Html` block's and `lintHtml()`'s). **Fix:** give the image an alt that says where the link goes, or the link an aria-label.
 
 ### `alt-text`
 
@@ -73,7 +91,7 @@ A note by default, on an Email and a Page. **Fix:** say what the image shows ("T
 
 A link or button says only "click here", "read more" or the like: screen readers list links by their words alone.
 
-A warning by default, on an Email and a Page. **Fix:** say where it goes ("Confirm your email"), or give it an aria-label.
+A warning by default, on an Email and a Page, and on HTML (an `Html` block's and `lintHtml()`'s). **Fix:** say where it goes ("Confirm your email"), or give it an aria-label.
 
 ### `link-empty`
 
@@ -85,25 +103,25 @@ A warning by default, on an Email and a Page. **Fix:** give it words, or an aria
 
 A link goes nowhere (empty, #, a mailto: or tel: with no address or number), over http: rather than https:, or (in HTML) runs a script.
 
-A warning by default, on an Email and a Page. **Fix:** link to the page it's for, over https:.
+A warning by default, on an Email and a Page, and on HTML (an `Html` block's and `lintHtml()`'s). **Fix:** link to the page it's for, over https:.
 
 ### `heading-order`
 
 A heading is more than one level below the heading before it (an h2 followed by an h4).
 
-A warning by default, on an Email and a Page. **Fix:** use the next level down, and style it as you want it to look.
+A warning by default, on an Email and a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** use the next level down, and style it as you want it to look.
 
 ### `heading-one`
 
 There's more than one level-1 heading.
 
-A note by default, on an Email and a Page. **Fix:** keep one level-1 heading, the title, and use level 2 for the rest.
+A note by default, on an Email and a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** keep one level-1 heading, the title, and use level 2 for the rest.
 
 ### `heading-empty`
 
 A heading has no words.
 
-A warning by default, on an Email and a Page. **Fix:** give it words, or take it out.
+A warning by default, on an Email and a Page, and on HTML (an `Html` block's and `lintHtml()`'s). **Fix:** give it words, or take it out.
 
 ### `contrast`
 
@@ -121,7 +139,7 @@ A note by default, on an Email and a Page. **Fix:** make it 14px or larger, on p
 
 The email or page doesn't say its language, so a screen reader may read it in the wrong one.
 
-A warning by default, on an Email and a Page. **Fix:** give the root a lang ("en", "fr").
+A warning by default, on an Email and a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a lang ("en", "fr").
 
 ### `dir`
 
@@ -133,7 +151,7 @@ A warning by default, on an Email and a Page. **Fix:** give the root dir="rtl".
 
 The page has no title for the browser's tab and for screen readers.
 
-A note by default, on a Page. **Fix:** give the root a title.
+A note by default, on a Page, and on a whole HTML document (`lintHtml()`'s). **Fix:** give the root a title.
 
 ### `preview-text`
 
@@ -158,5 +176,11 @@ A warning by default, on a Email. **Fix:** add a link to unsubscribe or manage p
 A video's title is the default, "Video": the alternate text of its thumbnail in an email.
 
 A note by default, on an Email and a Page. **Fix:** give it a title that says what the video is.
+
+### `role-button`
+
+A link has role="button": screen readers announce a button, which a link in an email isn't.
+
+A warning by default, on HTML (an `Html` block's and `lintHtml()`'s). **Fix:** take the role off: a link is a link, however it looks.
 
 <!-- rules:end -->

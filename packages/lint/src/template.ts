@@ -1,10 +1,12 @@
 /** The template rules, over the tree as a reader gets it (tree.ts). */
 import type { PluginDiagnostic, PluginInput, PluginNode } from "@hyper-elements/react";
 import { genericWords, meaninglessAlt, mergeSyntaxIn, targetProblem } from "./checks";
+import { checkHtml } from "./html-rules";
 import { contrast, hex, over, parseColor } from "./color";
 import type { Settings } from "./options";
 import { quote } from "./quote";
 import { ruleById, rules } from "./rules";
+import { readHtml } from "./tokenize";
 import { hrefOf, imagesIn, nameOf, ownsText, readTree, WIDTHS, wordsOf, type Info, type Tree, type Width } from "./tree";
 
 /** Right-to-left languages, by their primary subtag. */
@@ -33,15 +35,20 @@ export interface Found {
 }
 
 /** Every template rule's findings on a tree, in reading order. */
-export function checkTree(tree: Tree, kind: "marketing" | "transactional" | undefined, on: (id: string) => boolean): Found[] {
+/**
+ * `on` says whether a rule runs: on the template (by its roots), or on an `Html` block's markup (`html`, by where it runs
+ * on HTML).
+ */
+export function checkTree(tree: Tree, kind: "marketing" | "transactional" | undefined, on: (id: string, html?: boolean) => boolean): Found[] {
   const found: Found[] = [];
   const seen = new Set<string>();
   const index = new Map(tree.nodes.map((info, i) => [info.node, i]));
   // What each node's run got, so a run inside text (a Span) doesn't repeat what the run around it got.
   const ofRun = new Map<PluginNode, Set<string>>();
-  const add = (id: string, node: PluginNode, message: string, under?: string) => {
-    if (!on(id)) return;
-    const key = `${id}\u0000${node.path}`;
+  /** A finding; `where` is a place in an Html block's markup, for its HTML rules. */
+  const add = (id: string, node: PluginNode, message: string, under?: string, where = "") => {
+    if (!on(id, where !== "")) return;
+    const key = `${id}\u0000${node.path}\u0000${where}`;
     if (seen.has(key)) return;
     seen.add(key);
     found.push({ id, node, at: index.get(node) ?? 0, message, ...(under ? { under } : {}) });
@@ -130,6 +137,15 @@ export function checkTree(tree: Tree, kind: "marketing" | "transactional" | unde
         if (meaninglessAlt(alt)) add("alt-text", node, `The image's alt, ${quote(alt)}, says nothing about what it shows`, "props.alt");
         break;
       }
+      case "Html": {
+        // Its markup, as a fragment: the HTML rules that don't need the whole document.
+        const markup = node.props.html;
+        if (typeof markup !== "string") break;
+        for (const f of checkHtml(readHtml(markup), (id, scope) => scope === "both" && on(id, true))) {
+          add(f.id, node, `In its HTML, line ${f.line}: ${f.message}`, "props.html", `${f.line}:${f.column}`);
+        }
+        break;
+      }
       case "Video":
         if (node.props.title === "Video") add("video-title", node, 'The video\'s title is the default, "Video"', "props.title");
         break;
@@ -180,7 +196,10 @@ export function lintInput(input: PluginInput, settings: Settings, kind: "marketi
   const tree = readTree(input.root);
   if (!tree) return [];
   const prefix = tree.rootType === "Email" ? "email" : "page";
-  const on = (id: string) => settings.get(id) !== "off" && ruleById(id)!.roots.includes(tree.rootType);
+  const on = (id: string, html?: boolean) => {
+    const rule = ruleById(id)!;
+    return settings.get(id) !== "off" && (html ? rule.html === "both" : rule.roots.includes(tree.rootType));
+  };
   return checkTree(tree, kind, on).map(({ id, node, message, under }) => {
     const rule = ruleById(id)!;
     const d: PluginDiagnostic = { code: `${prefix}/lint-${id}`, severity: settings.get(id) as "info" | "warning", message, path: under ? `${node.path}.${under}` : node.path, fix: rule.fix, see: rule.see };

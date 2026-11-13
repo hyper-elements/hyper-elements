@@ -39,7 +39,7 @@ export const rules: readonly Rule[] = Object.freeze([
     "warning",
     BOTH,
     "both",
-    "A link that holds only images, none with alternate text, has no name a screen reader can read out (in HTML, an image with no alt attribute too).",
+    "A link holds only images with no alternate text, so a screen reader has nothing to read out for it. In HTML, any link with nothing to name it, and an image with no alt attribute at all.",
     "give the image an alt that says where the link goes, or the link an aria-label"
   ),
   rule(

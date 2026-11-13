@@ -1,0 +1,9 @@
+[
+  {
+    "code": "lint/heading-order",
+    "severity": "warning",
+    "line": 1,
+    "column": 11811,
+    "message": "This <h3> follows an <h1>: a screen reader's list of headings skips a level"
+  }
+]
