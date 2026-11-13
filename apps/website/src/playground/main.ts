@@ -825,7 +825,7 @@ async function drawClients() {
         // Webmail is previewed on Windows and on a Mac, whose fonts differ: the tab says which.
         each.computer ? h("small", null, each.computer === "mac" ? "Mac" : "Windows") : null,
         each.dark ? h("small", null, "dark") : null,
-        each.approximate ? h("small", null, "approximate") : null,
+        // (An approximate preview, classic Outlook's, says so in the preview itself.)
       ),
     ),
   );
