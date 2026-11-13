@@ -24,8 +24,10 @@
   a preview holds an email the CLI was given, which is content from outside. A browser that can't start sandboxed
   (a container without the kernel's user namespaces, and GitHub's Ubuntu runners) is started as it was, with a line
   on stderr saying so and `, no sandbox` after its name (`"browser": "chromium 148.0.7778.96, playwright, no
-  sandbox"`): what reads that name should expect both. A browser that was too slow to start isn't taken for one
-  that can't be sandboxed.
+  sandbox"`): what reads that name should expect both. The sandbox is dropped at once only where the failed start
+  names it (`No usable sandbox!`, `Running as root without --no-sandbox`); any other failed start is tried in the
+  sandbox once more first, so one crash doesn't draw a run's previews without it. A browser that was too slow to
+  start, or isn't there, is never started without it.
 
 ## 0.2.0
 

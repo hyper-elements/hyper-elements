@@ -68,6 +68,45 @@ const NOT_THERE = /Executable doesn't exist|is not found at|is not installed|ENO
  * without one. A sandbox a kernel won't give fails at once, well inside the deadline.
  */
 const TOO_SLOW = /Timeout .* exceeded|timed out/i;
+/**
+ * A failure that says the sandbox is why, anywhere in it: Playwright's own heading over what Chromium wrote as it
+ * ended, and Chromium's words for a kernel that gives it no user namespaces ("No usable sandbox!"), for root
+ * ("Running as root without --no-sandbox is not supported") and for a setuid helper that isn't set up.
+ */
+const NAMES_SANDBOX = /Chromium sandboxing failed|No usable sandbox|without --no-sandbox|sandbox helper/i;
+
+/** A failed start's first line, which says what failed (the browser's own output follows it). */
+const firstLine = (error: unknown): string => (error instanceof Error ? error.message : String(error)).split("\n").find((l) => l.trim()) ?? "";
+
+/**
+ * One browser, started in Chromium's sandbox, or without it where it can't start in one.
+ *
+ * A preview draws an email the CLI was given, which is content from outside: it's drawn in Chromium's sandbox.
+ * Playwright starts a browser without one unless it's asked (`chromiumSandbox` is false by default), and some
+ * machines can't start one at all (root in a container, a kernel without user namespaces, GitHub's Ubuntu runners):
+ * there the browser is started as before, and says so in its name.
+ *
+ * The sandbox is dropped at once only where the failure names it. A browser that isn't there, or was too slow, is
+ * never started without it. Any other failed start (a crash, say) is tried in the sandbox once more, so that one bad
+ * start doesn't draw a run's previews without it; a second one is taken for a sandbox that can't start and doesn't
+ * say so, which is still better drawn than not.
+ */
+async function start(launch: (sandbox: boolean) => Promise<Browser>): Promise<{ browser: Browser; sandboxed: boolean } | { failure: string }> {
+  for (let tries = 0; tries < 2; tries++) {
+    try {
+      return { browser: await launch(true), sandboxed: true };
+    } catch (error) {
+      const failure = firstLine(error);
+      if (NOT_THERE.test(failure) || TOO_SLOW.test(failure)) return { failure };
+      if (NAMES_SANDBOX.test(error instanceof Error ? error.message : String(error))) break;
+    }
+  }
+  try {
+    return { browser: await launch(false), sandboxed: false };
+  } catch (error) {
+    return { failure: firstLine(error) };
+  }
+}
 
 /** The channels tried after Playwright's Chromium. (`HYPER_ELEMENTS_CLI_BROWSER_CHANNELS`, for the CLI's own tests.) */
 function channels(): string[] {
@@ -88,29 +127,13 @@ export async function openBrowser(): Promise<Opened> {
   const tried: string[] = [];
   let startFailed: string | undefined;
   for (const attempt of attempts) {
-    let browser: Browser | undefined;
-    let sandboxed = true;
-    let failure = "";
-    // A preview draws an email the CLI was given, which is content from outside: it's drawn in Chromium's sandbox.
-    // Playwright starts a browser without one unless it's asked (`chromiumSandbox` is false by default), and a
-    // container without the kernel's user namespaces can't start one at all, so the browser that can't is started
-    // as before and says so in its name.
-    for (const sandbox of [true, false]) {
-      try {
-        browser = await chromium.launch({ ...attempt.options, headless: true, chromiumSandbox: sandbox, timeout: LAUNCH_TIMEOUT });
-        sandboxed = sandbox;
-        break;
-      } catch (error) {
-        failure = (error instanceof Error ? error.message : String(error)).split("\n").find((l) => l.trim()) ?? "";
-        // It isn't there to start, or it was too slow: the sandbox is the reason for neither, so it isn't dropped.
-        if (NOT_THERE.test(failure) || TOO_SLOW.test(failure)) break;
-      }
-    }
-    if (!browser) {
-      tried.push(`${attempt.what}: ${failure.replace(/^browserType\.launch: /, "")}`);
-      if (!NOT_THERE.test(failure)) startFailed ??= failure;
+    const started = await start((sandbox) => chromium.launch({ ...attempt.options, headless: true, chromiumSandbox: sandbox, timeout: LAUNCH_TIMEOUT }));
+    if ("failure" in started) {
+      tried.push(`${attempt.what}: ${started.failure.replace(/^browserType\.launch: /, "")}`);
+      if (!NOT_THERE.test(started.failure)) startFailed ??= started.failure;
       continue;
     }
+    const { browser, sandboxed } = started;
     return { browser: drawing(browser), name: `${attempt.label(browser.version())}${sandboxed ? "" : ", no sandbox"}`, sandboxed };
   }
   return {
