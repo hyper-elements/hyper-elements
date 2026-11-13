@@ -136,12 +136,12 @@ export function cli(cwd: string, args: string[], options: RunOptions = {}): Prom
     if (options.input !== undefined) child.stdin.end(options.input);
     let stdout = "";
     let stderr = "";
-    child.stdout.on("data", (d) => (stdout += d));
+    child.stdout.setEncoding("utf8").on("data", (d: string) => (stdout += d));
     if (options.slowStdout) {
       child.stdout.pause();
       setTimeout(() => child.stdout.resume(), options.slowStdout);
     }
-    child.stderr.on("data", (d) => (stderr += d));
+    child.stderr.setEncoding("utf8").on("data", (d: string) => (stderr += d));
     const timer = setTimeout(() => child.kill("SIGKILL"), options.timeout ?? 50_000);
     child.on("error", reject);
     child.on("close", (code, signal) => {
@@ -380,8 +380,8 @@ export async function startDev(cwd: string, args: string[], options: { runtime?:
   devs.push(child);
   let out = "";
   let err = "";
-  child.stdout.on("data", (d) => (out += d));
-  child.stderr.on("data", (d) => (err += d));
+  child.stdout.setEncoding("utf8").on("data", (d: string) => (out += d));
+  child.stderr.setEncoding("utf8").on("data", (d: string) => (err += d));
   const exited = new Promise<number | null>((resolve) => child.on("close", (code) => resolve(code)));
   await until(() => / until Ctrl-C\n/.test(out) || child.exitCode !== null, 30_000);
   const match = /(http:\/\/127\.0\.0\.1:(\d+)\/([0-9a-f]{32})\/)/.exec(out);
