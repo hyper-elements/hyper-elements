@@ -121,9 +121,10 @@ describe("words and names", () => {
     expect(nameOf(titled!)).toBe("Only a title");
   });
 
-  it("unwraps an href", () => {
+  it("unwraps an href, and has none for a node without one", () => {
     expect(hrefOf(inlineLink!)).toBe("https://example.test/x");
     expect(hrefOf(imageLink!)).toBe("https://example.test/y");
+    expect(hrefOf(text!)).toBeUndefined();
   });
 
   it("knows which nodes own text", () => {

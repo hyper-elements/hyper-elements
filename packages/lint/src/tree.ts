@@ -166,18 +166,9 @@ export function wordsOf(node: PluginNode, { mergeTags = true } = {}): string {
   return parts.join("").replace(/\s+/g, " ").trim();
 }
 
-/** The Images inside a node's text, in order. */
+/** The Images a node holds, in order (a Link's are its own children: no inline component holds one). */
 export function imagesIn(node: PluginNode): PluginNode[] {
-  const out: PluginNode[] = [];
-  const walk = (n: PluginNode) => {
-    for (const child of n.children) {
-      if (!isNode(child)) continue;
-      if (child.type === "Image") out.push(child);
-      else if (INLINE.has(child.type)) walk(child);
-    }
-  };
-  walk(node);
-  return out;
+  return node.children.filter((child): child is PluginNode => isNode(child) && child.type === "Image");
 }
 
 const text = (v: unknown): string => (typeof v === "string" ? v.trim() : "");

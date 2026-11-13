@@ -71,6 +71,10 @@ describe("the plugin", () => {
     expect(() => lint({ rules: [] as never })).toThrow(/rules takes an object/);
     expect(() => lint({ severity: "info" } as never)).toThrow(/has no option "severity"/);
     expect(() => lint("strict" as never)).toThrow(/takes an options object/);
+    expect(() => lint({ kind: 1 as never })).toThrow(/not number$/);
+    expect(() => lint({ kind: null as never })).toThrow(/not null$/);
+    expect(() => lint({ rules: { contrast: "x".repeat(60) as never } })).toThrow(new RegExp(`not "${"x".repeat(40)}…"$`));
+    expect(() => lint({ rules: { contrast: ["warning"] as never } })).toThrow(/not an array$/);
     expect(() => lint({})).not.toThrow();
   });
 
