@@ -186,8 +186,12 @@ Safe to cache and prerender.</span></pre>
           <div class="comp">
             <pre class="mini nowrap"><span class="d">const</span> ProductCard = component({"{"}
   type: "acme.ProductCard",
-  props: {"{"} name: prop.text({"{"} required: true {"}"}),
-           photo: prop.image({"{"} required: true {"}"}) {"}"},
+  label: "Product",
+  props: {"{"}
+    name: prop.text({"{"} label: "Name" {"}"}),
+    photo: prop.image({"{"}
+      label: "Photo", required: true {"}"})
+  {"}"},
   render: ({"{"} name, photo {"}"}) =&gt; …,
 {"}"});</pre>
             <pre class="mini">&lt;<span class="tg">ProductCard</span> name="Linen shirt" /&gt;
