@@ -30,6 +30,12 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   within a space of the edge. On a Canvas with no room to spare, its last line can then fall outside it.) A PDF, an
   email and a page were never affected.
 
+- **A LineBreak in an image, inside or beside a Span or a Link.** Each run of a block of text is a flex item, so a
+  break didn't start the next line at the margin: beside a Span its line started beside the Span, and between two
+  Spans it broke nothing. Each break is a line of its own now, and the words after it start at the margin. A Span or
+  a Link with a break inside is drawn on both lines, its color, underline and background on each part, as a browser
+  draws it; and a line with nothing on it is a line high, so two breaks leave one empty line, as in the HTML outputs.
+
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

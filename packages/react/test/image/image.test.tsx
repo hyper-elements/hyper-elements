@@ -592,6 +592,43 @@ describe("renderImage", () => {
     expect(await lines(shapes[1]!(mark), 400)).toHaveLength(2);
   });
 
+  it("starts the line after a LineBreak at the margin, a break inside a Span or a Link and beside one too", async () => {
+    // Each run is a flex item: a break inside a Span broke the Span's own box, and the words after the Span carried
+    // on beside that box ("See our today", with "site" under "our"); a break beside a Span started its line beside
+    // the Span; one between two Spans broke nothing.
+    const red = { color: "#ff0000" };
+    const highlighted = { backgroundColor: "#fde68a" };
+    const expected = [(await lines(<Text>See our</Text>))[0]!, (await lines(<Text>site today</Text>))[0]!];
+    const shapes: Record<string, ReactNode> = {
+      "in the block": <Text>See our<LineBreak />site today</Text>,
+      "after a Span": <Text>See <Span style={red}>our</Span><LineBreak />site today</Text>,
+      "inside a Span": <Text>See <Span style={red}>our<LineBreak />site</Span> today</Text>,
+      "inside a Link": <Text>See <Link href="https://x.test">our<LineBreak />site</Link> today</Text>,
+      "inside a highlighted Span": <Text>See <Span style={highlighted}>our<LineBreak />site</Span> today</Text>,
+      "inside a Span in a Span": <Text>See <Span style={red}><Span style={{ textDecoration: "underline" }}>our<LineBreak />site</Span></Span> today</Text>,
+      "between two Spans": <Text>See <Span style={red}>our</Span><LineBreak /><Span style={red}>site</Span> today</Text>,
+    };
+    for (const [name, text] of Object.entries(shapes)) {
+      const drawn = await lines(text);
+      expect(drawn, name).toHaveLength(2);
+      for (const [i, line] of drawn.entries()) {
+        for (const edge of ["from", "to"] as const) expect(Math.abs(line[edge] - expected[i]![edge]), `${name}, line ${i}, ${edge}`).toBeLessThan(2);
+      }
+    }
+
+    // A line with nothing on it is a line high, as in the HTML outputs: two breaks leave one between the words,
+    // beside Spans too, and a break that starts a block starts it with one.
+    const [first, second] = await lines(<Text>See our<LineBreak />site today</Text>);
+    const line = second!.top - first!.top;
+    for (const text of [<Text>See our<LineBreak /><LineBreak />site today</Text>, <Text>See <Span style={red}>our</Span><LineBreak /><LineBreak /><Span style={red}>site</Span> today</Text>]) {
+      const [above, below] = await lines(text);
+      expect(Math.abs(below!.top - above!.top - 2 * line)).toBeLessThan(2);
+    }
+    const [plain] = await lines(<Text>See our</Text>);
+    const [broken] = await lines(<Text><LineBreak />See our</Text>);
+    expect(Math.abs(broken!.top - plain!.top - line)).toBeLessThan(2);
+  });
+
   it("writes a Canvas only", async () => {
     await expect(
       renderImage(
