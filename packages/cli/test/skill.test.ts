@@ -8,7 +8,8 @@ import { describe, expect, it } from "vitest";
 import { parseArgs } from "../src/args";
 import { DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS } from "../../email-clients/src/clients";
 
-const skill = readFileSync(join(__dirname, "../../../skills/email-testing/SKILL.md"), "utf8");
+// Line endings as Git checks them out on Windows (CRLF) read as LF.
+const skill = readFileSync(join(__dirname, "../../../skills/email-testing/SKILL.md"), "utf8").replace(/\r\n/g, "\n");
 
 /** Each command the skill gives, as the CLI's arguments: `npx @hyper-elements/cli …` and `npx -p … hyper-elements …`. */
 function commands(): string[][] {
