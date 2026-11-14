@@ -9,6 +9,9 @@ It also previews [Hyper Elements](https://hyperelements.dev) templates and provi
 `validate()` and `render()` calls. Previews include classic Outlook, Outlook.com, Outlook for Mac, Gmail, the Gmail app on
 Android and an iPhone, Apple Mail on a Mac and an iPhone, Yahoo Mail and AOL Mail.
 
+For AI agents, the [email-testing skill](https://www.hyperelements.dev/skills/email-testing.md) has the steps:
+`npx skills add hyper-elements/hyper-elements --skill email-testing`.
+
 ```bash
 npm i @hyper-elements/email-clients
 ```

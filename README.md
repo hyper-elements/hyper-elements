@@ -28,12 +28,6 @@
 
 Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed components. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
 
-> **AI agents:** to preview or test an email in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail (a template or any
-> HTML email), follow the [email-testing skill](./skills/email-testing/SKILL.md)
-> ([hyperelements.dev/skills/email-testing.md](https://www.hyperelements.dev/skills/email-testing.md)). To write
-> templates, follow the [hyper-elements skill](./skills/hyper-elements/SKILL.md). Install both with
-> `npx skills add hyper-elements/hyper-elements`.
-
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
 - **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
@@ -102,9 +96,9 @@ Give Claude Code, Codex, Cursor, or another coding agent the guide:
 npx skills add hyper-elements/hyper-elements
 ```
 
-It offers two skills: `hyper-elements`, the guide for writing templates, and `email-testing`, for previewing and checking
-any email (a template or HTML from anywhere) in Outlook, Gmail and the other clients. `--skill email-testing` installs
-that one alone.
+It offers two skills: [`hyper-elements`](./skills/hyper-elements/SKILL.md), the guide for writing templates, and
+[`email-testing`](./skills/email-testing/SKILL.md), for previewing and checking any email (a template or HTML from
+anywhere) in Outlook, Gmail and the other clients. `--skill email-testing` installs that one alone.
 
 In Claude Code they're plugins too: `/plugin marketplace add hyper-elements/hyper-elements`, then
 `/plugin install email-testing@hyper-elements` or `/plugin install hyper-elements@hyper-elements`.
