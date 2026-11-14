@@ -114,9 +114,9 @@ describe("renderInEmailClients()", () => {
     const { previews } = await renderInEmailClients(welcome, { emailClients: [...PREVIEW_CLIENTS], dark: true, fonts: "inline" });
     for (const preview of previews) expect([preview.id, Buffer.byteLength(preview.html) < 2_000_000]).toEqual([preview.id, true]);
     // Classic Outlook's: Selawik, Carlito and the Aptos stand-in inline (models 1.9.0; Office's cloud fonts only where
-    // the email names them), and the models' script.
+    // the email names them), and the models' script (about 12 KB larger with Outlook for Mac's model, models 1.12.0).
     const outlook = previews.find((p) => p.id === "outlook")!;
-    expect(Buffer.byteLength(outlook.html)).toBeLessThan(1_250_000);
+    expect(Buffer.byteLength(outlook.html)).toBeLessThan(1_300_000);
     const config = embedded(outlook.html, "email-client-config");
     expect(Object.keys(config.fontSources).some((file: string) => file.startsWith("InterVariable"))).toBe(false);
     expect(config.faces.some((face: string) => face.endsWith('"Inter"'))).toBe(false);

@@ -6,8 +6,8 @@ Yahoo Mail and AOL Mail locally. Pass the complete HTML from MJML, React Email, 
 or uploaded. The [CLI](https://hyperelements.dev/docs/cli#any-html-email) provides the same workflow from the shell.
 
 It also previews [Hyper Elements](https://hyperelements.dev) templates and provides `emailClients()`, a plugin for their
-`validate()` and `render()` calls. Previews include classic Outlook, Outlook.com, Gmail, the Gmail app on Android and an
-iPhone, Apple Mail on a Mac and an iPhone, Yahoo Mail and AOL Mail.
+`validate()` and `render()` calls. Previews include classic Outlook, Outlook.com, Outlook for Mac, Gmail, the Gmail app on
+Android and an iPhone, Apple Mail on a Mac and an iPhone, Yahoo Mail and AOL Mail.
 
 ```bash
 npm i @hyper-elements/email-clients
@@ -39,8 +39,8 @@ Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome
 - Its options are the [preview options](#previews): `emailClients`, `dark`, `fonts`, `widths` and `computers`.
 - The models are measured mostly on Hyper Elements emails. HTML built another way is emulated less closely in some
   clients, so its previews are `approximate` where a client is under 95% on such emails or isn't measured on them:
-  classic Outlook, the Gmail apps, Apple Mail's dark mode, Apple Mail and the Gmail app on an iPhone, Yahoo Mail and AOL
-  Mail, and webmail read on a Mac.
+  classic Outlook, Outlook for Mac, the Gmail apps, Apple Mail's dark mode, Apple Mail and the Gmail app on an iPhone,
+  Yahoo Mail and AOL Mail, and webmail read on a Mac.
 - It rejects with the import's error where `@hyper-elements/email-client-models` can't be loaded, and with
   `email-clients/version-mismatch` where the one installed speaks a protocol this package doesn't read. A template
   without `@hyper-elements/react` installed is `email-clients/version-mismatch` too, with what to install.
@@ -102,7 +102,7 @@ import { renderInEmailClients } from "@hyper-elements/email-clients";
 
 const { previews, skipped, diagnostics } = await renderInEmailClients(<Welcome />, {
   emailClients: ["outlook", "gmail", "apple-mail"], // default: classic Outlook, Outlook.com, Gmail and Apple Mail
-  dark: true, // also a dark preview where the client's dark mode was measured (Apple Mail, Yahoo Mail and AOL Mail)
+  dark: true, // also a dark preview where the client's dark mode was measured (Apple Mail, Outlook for Mac, Yahoo Mail and AOL Mail)
   widths: { "outlook-com": 540 }, // optional: Outlook.com's reading pane beside its message list
   computers: ["windows", "mac"], // the default: Outlook.com, Gmail, Yahoo Mail and AOL Mail on the web as read on each
 });

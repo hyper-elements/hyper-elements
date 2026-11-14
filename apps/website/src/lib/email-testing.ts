@@ -4,6 +4,7 @@ import sampleEmail from "../generated/email-testing.html?raw";
 export const emailTestingClients = [
   { id: "outlook", name: "Classic Outlook", logo: "outlook" },
   { id: "outlook-com", name: "Outlook.com", logo: "outlook" },
+  { id: "outlook-mac", name: "Outlook for Mac", logo: "outlook" },
   { id: "gmail", name: "Gmail", logo: "gmail" },
   { id: "gmail-app", name: "Gmail App", logo: "gmail" },
   { id: "gmail-app-other", name: "Gmail App (Other accounts)", logo: "gmail" },
