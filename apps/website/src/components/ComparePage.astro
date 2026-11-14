@@ -3,7 +3,7 @@ import Base from "../layouts/Base.astro";
 import CodeBlock from "./CodeBlock.astro";
 import Cmd from "./Cmd.astro";
 import { site } from "../lib/site";
-import { template } from "../lib/examples";
+import { showcase, template } from "../lib/examples";
 
 // A comparison page, /compare/<slug>: Hyper Elements against one other tool. Each page in src/pages/compare/ gives the
 // other tool's facts; the email client emulator, the themes and the four outputs are Hyper Elements' own, the same on
@@ -35,14 +35,15 @@ interface Props {
   matrix: Row[];
   emuSub: string;
   brandNote: string;
-  outputsSub: string;
+  /** One line on how the other tool checks an email, under the diagnostics. */
+  checksNote: string;
   code: { sub: string; he: Code; other: Code };
   faqTitle: string;
   /** Plain text: it's also the page's FAQPage for search engines. */
   faq: { q: string; a: string }[];
   final: { title: string; sub: string; cmd: string; ctas: Link[] };
 }
-const { path, name, article = "a", metaTitle, description, lede, ctas, race, raceNote, matrix, emuSub, brandNote, outputsSub, code, faqTitle, faq, final } = Astro.props;
+const { path, name, article = "a", metaTitle, description, lede, ctas, race, raceNote, matrix, emuSub, brandNote, checksNote, code, faqTitle, faq, final } = Astro.props;
 
 const bench = "/docs/benchmark";
 /** Every comparison page: each links to the others. Add a page here when you add one to src/pages/compare/. */
@@ -76,10 +77,25 @@ const brandParts = [
   { t: "Everywhere", d: "The same theme brands emails, pages, PDFs and images" },
 ];
 
-// One template, four outputs: real output of the site's templates, as images (scripts/compare-previews.mjs; the
+// Checked as it renders: what render() returned for the site's launch email (examples/showcase/email.tsx, from
+// examples.json), one line per kind, after the error a margin gets (validate()'s own message, from the diagnostics docs).
+const seen = new Set<string>();
+const clientNotes = showcase.email.diagnostics
+  .filter((d) => d.code !== "email/phone-styles" && !seen.has(d.message.split(" on this ")[0]) && seen.add(d.message.split(" on this ")[0]))
+  .slice(0, 4);
+const checks = [
+  { severity: "error", code: "style/unknown", message: "\"marginBottom\" isn't a style a Text takes: use the parent's gap, or padding." },
+  ...clientNotes.map((d) => ({ severity: d.severity, code: d.code, message: d.message })),
+];
+const checkPoints = [
+  { t: "In your code", d: "render() and validate() return them, with where each one is" },
+  { t: "In CI", d: "The CLI's check exits 1 on an error, with --json for scripts" },
+  { t: "With the fix", d: "Each one says what to write instead, so an agent fixes it itself" },
+];
+
+// Beyond email: a page, a PDF and an image, real output of the site's templates, as images (scripts/compare-previews.mjs; the
 // Canvas is its own PNG from generate), so their copy isn't read as this page's text.
 const outputs = [
-  { kind: "Email", ex: template("oyen-launch"), img: "/generated/compare/oyen-launch.jpg", w: 620, h: 589, href: "/docs/outputs/email" },
   { kind: "Web page", ex: template("casa-albero-page"), img: "/generated/compare/casa-albero-page.jpg", w: 900, h: 855, href: "/docs/outputs/page" },
   { kind: "PDF", ex: template("pell-ashby-invoice"), img: "/generated/compare/pell-ashby-invoice.jpg", w: 860, h: 817, href: "/docs/outputs/pdf" },
   { kind: "Image", ex: template("fernway-spring-sale"), img: "/generated/templates/fernway-spring-sale.png", w: 1080, h: 1080, href: "/docs/outputs/image" },
@@ -205,6 +221,34 @@ const jsonLd = [
 
   <section class="section">
     <div class="wrap">
+      <div class="chk reveal">
+        <div class="chk-copy">
+          <p class="eyebrow">Before you send</p>
+          <h2 class="chk-title">Every email checked, in code and in CI</h2>
+          <p class="chk-sub">Each render lists what classic Outlook, Gmail and the other clients will change, and a mistake stops it with what to write instead.</p>
+          <ul class="chk-points">
+            {checkPoints.map((p) => <li><b>{p.t}</b><span>{p.d}</span></li>)}
+          </ul>
+          <p class="brand-re"><span class="mk part" aria-hidden="true"></span><span>{checksNote}</span></p>
+          <a class="brand-more" href="/docs/diagnostics">How diagnostics work →</a>
+        </div>
+        <div class="diag" aria-label="Diagnostics from a real render">
+          <div class="diag-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>render(&lt;LaunchEmail /&gt;).diagnostics</div>
+          <ul class="diag-list">
+            {checks.map((c) => (
+              <li class:list={["diag-row", c.severity]}>
+                <span class="diag-sev">{c.severity}</span>
+                <span class="diag-body"><code>{c.code}</code><span>{c.message}</span></span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
       <div class="sec-head reveal">
         <h2 class="h-section">On brand, in every email</h2>
         <p class="sec-sub">Write your brand once as a theme. The template names no colors or fonts; swap the theme and the same email is someone else's.</p>
@@ -235,23 +279,6 @@ const jsonLd = [
   <section class="section">
     <div class="wrap">
       <div class="sec-head reveal">
-        <h2 class="h-section">One template, four outputs</h2>
-        <p class="sec-sub">{outputsSub}</p>
-      </div>
-      <div class="outs">
-        {outputs.map((o) => (
-          <a class="out reveal" href={o.href}>
-            <img class="out-img" src={o.img} width={o.w} height={o.h} alt={`${o.ex.title}, a Hyper Elements ${o.kind === "Image" ? "image" : o.kind === "PDF" ? "PDF" : o.kind.toLowerCase()}`} loading="lazy" decoding="async" />
-            <span class="out-label"><span class="out-root">&lt;{o.ex.root}&gt;</span><b>{o.kind}</b></span>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
         <h2 class="h-section">The same email in {name} and Hyper Elements</h2>
         <p class="sec-sub">{code.sub}</p>
       </div>
@@ -264,6 +291,24 @@ const jsonLd = [
           <p class="ba-label"><span class="ba-name re">{name}</span> <a class="ba-stats was" href={bench} title={`Median time and output tokens for a coding agent to write a passing email with ${name}`}><span>{race[0].fmt(race[0].re)}</span><span>{race[1].fmt(race[1].re)} tokens</span></a></p>
           <CodeBlock code={code.other.code.trim()} lang={code.other.lang} file={code.other.file} />
         </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Beyond email: a small strip, since these pages are about email. */}
+  <section class="section beyond">
+    <div class="wrap">
+      <div class="beyond-head reveal">
+        <h2>Beyond email</h2>
+        <p>Change a template's root and the same content becomes a web page, a PDF or an image.</p>
+      </div>
+      <div class="outs">
+        {outputs.map((o) => (
+          <a class="out reveal" href={o.href}>
+            <img class="out-img" src={o.img} width={o.w} height={o.h} alt={`${o.ex.title}, a Hyper Elements ${o.kind === "Image" ? "image" : o.kind === "PDF" ? "PDF" : o.kind.toLowerCase()}`} loading="lazy" decoding="async" />
+            <span class="out-label"><span class="out-root">&lt;{o.ex.root}&gt;</span><b>{o.kind}</b></span>
+          </a>
+        ))}
       </div>
     </div>
   </section>
@@ -290,7 +335,7 @@ const jsonLd = [
       <div class="c-cta">
         {final.ctas.map((c, i) => i === 0 ? <a class="btn btn-primary" href={c.href}>{c.label} <span class="arrow">→</span></a> : <a class="btn btn-ghost" href={c.href}>{c.label}</a>)}
       </div>
-      {others.length > 0 && <p class="others">Also compare: {others.map((c, i) => <>{i > 0 && " · "}<a href={c.path}>Hyper Elements vs {c.name}</a></>)}</p>}
+      <p class="others">Also compare: {others.map((c) => <><a href={c.path}>Hyper Elements vs {c.name}</a> · </>)}<a href="/alternatives/react-email">React Email alternatives</a></p>
     </div>
   </section>
 </Base>
@@ -407,13 +452,37 @@ const jsonLd = [
   .brand-more { font-size: 14px; color: var(--text-2); text-decoration: none; }
   .brand-more:hover { color: var(--text); }
 
-  /* One template, four outputs. */
-  .outs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  /* Checked as it renders: the copy, and a real render's diagnostics. */
+  .chk { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; align-items: center; }
+  .chk-copy { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .chk-title { margin: 0; font-size: clamp(28px, 3.2vw, 38px); line-height: 1.08; letter-spacing: -0.04em; font-weight: 600; }
+  .chk-sub { margin: 0; color: var(--text-2); font-size: 17px; line-height: 1.5; }
+  .chk-points { list-style: none; margin: 4px 0; padding: 0; display: grid; gap: 10px; }
+  .chk-points li { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-1); }
+  .chk-points b { font-size: 15px; font-weight: 600; }
+  .chk-points span { font-size: 14px; line-height: 1.45; color: var(--text-2); }
+  .diag { min-width: 0; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: #0e0e0e; box-shadow: var(--shadow); }
+  .diag-bar { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04); font: 500 12.5px var(--mono); color: #8a8a8a; }
+  .diag-list { list-style: none; margin: 0; padding: 8px 0; }
+  .diag-row { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 12px; padding: 12px 18px; }
+  .diag-row + .diag-row { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+  .diag-sev { align-self: start; height: 22px; display: inline-grid; place-items: center; border-radius: 999px; font: 600 11px var(--mono); color: #7ee2a8; background: rgba(126, 226, 168, 0.12); }
+  .diag-row.error .diag-sev { color: #ff7b6e; background: rgba(255, 123, 110, 0.14); }
+  .diag-body { display: grid; gap: 4px; min-width: 0; }
+  .diag-body code { font: 500 12px var(--mono); color: #8a8a8a; background: none; border: 0; padding: 0; }
+  .diag-body span { font: 400 13.5px/1.5 var(--mono); color: #ededed; overflow-wrap: anywhere; }
+
+  /* Beyond email: a small strip of the other outputs. */
+  .beyond { padding-top: 0; }
+  .beyond-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 20px; }
+  .beyond-head h2 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }
+  .beyond-head p { margin: 0; font-size: 15px; color: var(--text-2); }
+  .outs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
   .out { display: block; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
   .out:hover, .out:focus-visible { border-color: var(--line-3); transform: translateY(-3px); }
-  .out-img { display: block; width: 100%; height: 260px; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); background: #fff; }
-  .out-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; }
-  .out-label b { font-size: 15px; font-weight: 600; }
+  .out-img { display: block; width: 100%; height: 150px; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); background: #fff; }
+  .out-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; }
+  .out-label b { font-size: 14px; font-weight: 600; }
   .out-root { font: 500 12px var(--mono); color: var(--ok); }
 
   /* The same email in both. */
@@ -451,9 +520,9 @@ const jsonLd = [
 
   @media (max-width: 1000px) {
     .race-row { grid-template-columns: 200px minmax(0, 1fr); gap: 20px; }
-    .emu, .ba, .brand-row { grid-template-columns: minmax(0, 1fr); }
+    .emu, .ba, .brand-row, .chk { grid-template-columns: minmax(0, 1fr); }
     .emu { padding: 28px; gap: 28px; }
-    .outs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .outs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
   @media (max-width: 640px) {
     .sec-head { margin-bottom: 32px; }
@@ -474,6 +543,8 @@ const jsonLd = [
     .emu-front { height: 250px; }
     .emu-phone { height: 230px; width: 32%; }
     .outs { grid-template-columns: minmax(0, 1fr); }
+    .chk-points li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+    .diag-row { padding: 12px 14px; }
     .brand-shots { grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .faq-item summary { padding: 18px 48px 18px 18px; font-size: 15.5px; }
     .faq-item summary::after { right: 18px; }

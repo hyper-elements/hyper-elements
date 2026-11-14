@@ -20,7 +20,6 @@ const { chromium } = createRequire(join(clientsDir, "package.json"))("playwright
 /** Each image: the example, the width it's drawn at, and its height: its top (`ratio` of the width), a fixed `height` (the
  * email's background fills it, so images side by side match), or else the whole of it. */
 const IMAGES = [
-  { kind: "templates", slug: "oyen-launch", width: 620, ratio: 0.95 },
   { kind: "templates", slug: "casa-albero-page", width: 900, ratio: 0.95 },
   { kind: "templates", slug: "pell-ashby-invoice", width: 860, ratio: 0.95 },
   { kind: "showcase", slug: "brand-north", width: 620, height: 470 },

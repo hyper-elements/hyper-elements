@@ -32,6 +32,7 @@ export const GET: APIRoute = async () => {
     `- [Migrate from React Email](${site.url}/migrate): convert React Email templates in one command`,
     `- [Hyper Elements vs React Email](${site.url}/compare/react-email): when to pick each, feature by feature, and the agent benchmark`,
     `- [Hyper Elements vs MJML](${site.url}/compare/mjml): feature by feature, the same email in each, and the agent benchmark`,
+    `- [React Email alternatives](${site.url}/alternatives/react-email): Hyper Elements, MJML, Maizzle and jsx-email, when to pick each, and the agent benchmark`,
     `- [Source](${site.github})`,
     "",
   );
