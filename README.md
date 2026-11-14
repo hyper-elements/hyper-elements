@@ -100,6 +100,9 @@ It offers two skills: `hyper-elements`, the guide for writing templates, and `em
 any email (a template or HTML from anywhere) in Outlook, Gmail and the other clients. `--skill email-testing` installs
 that one alone.
 
+In Claude Code they're plugins too: `/plugin marketplace add hyper-elements/hyper-elements`, then
+`/plugin install email-testing@hyper-elements` or `/plugin install hyper-elements@hyper-elements`.
+
 Or add this to your project's `AGENTS.md` or agent rules:
 
 ```text

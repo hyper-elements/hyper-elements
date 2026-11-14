@@ -1,0 +1,27 @@
+{
+  "name": "hyper-elements",
+  "description": "Agent skills from Hyper Elements: test any email in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail, and write emails, pages, PDFs and images in code.",
+  "owner": { "name": "Hyper Elements", "url": "https://www.hyperelements.dev" },
+  "plugins": [
+    {
+      "name": "email-testing",
+      "source": "./skills/email-testing",
+      "description": "Preview and check any email, a Hyper Elements template or HTML from anywhere, in Outlook, Gmail, Apple Mail, Yahoo Mail, AOL Mail and other email clients, locally and free: each client's screenshot and what it changed.",
+      "homepage": "https://www.hyperelements.dev/email-testing",
+      "repository": "https://github.com/hyper-elements/hyper-elements",
+      "license": "MIT",
+      "keywords": ["email", "email-testing", "outlook", "gmail", "html-email", "email-preview"],
+      "category": "development"
+    },
+    {
+      "name": "hyper-elements",
+      "source": "./skills/hyper-elements",
+      "description": "Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements, React components that render email-safe HTML, page HTML, PDFs and PNG or SVG images.",
+      "homepage": "https://www.hyperelements.dev",
+      "repository": "https://github.com/hyper-elements/hyper-elements",
+      "license": "MIT",
+      "keywords": ["email", "react", "pdf", "html-email", "templates"],
+      "category": "development"
+    }
+  ]
+}

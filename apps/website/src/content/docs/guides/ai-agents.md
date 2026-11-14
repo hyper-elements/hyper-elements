@@ -40,6 +40,13 @@ npx skills add hyper-elements/hyper-elements
 
 It offers two skills: `hyper-elements`, the guide, and `email-testing`, which tells an agent how to preview and check any email (a template, or HTML from MJML, React Email or a builder) in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail. `npx skills add hyper-elements/hyper-elements --skill email-testing` installs that one alone.
 
+In Claude Code, both are plugins as well, in the repository's plugin marketplace:
+
+```text
+/plugin marketplace add hyper-elements/hyper-elements
+/plugin install email-testing@hyper-elements
+```
+
 ### For any model, from the web
 
 The site serves the docs in plain text for language models:
