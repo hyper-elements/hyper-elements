@@ -59,6 +59,10 @@ function atBreaks(item: Run): Run[] {
  * "site" under "our", for `See <Span>our<LineBreak />site</Span> today`), and a break between two Spans would break
  * nothing. So each line the breaks make is drawn as a box of its own (`text()`). A break that ends the block starts
  * no line, as in the HTML outputs.
+ *
+ * A line a break makes with nothing on it (at the block's start, or between two breaks) holds a space, so it's a line
+ * high, as it is in the HTML outputs: a block that's a break alone too (`<Text><LineBreak /></Text>`, a line of space
+ * between two blocks), which drew nothing. A block with no break and nothing in it is still no line high.
  */
 function lines(runs: Run[]): ReactNode[][] {
   const drawn: ReactNode[][] = [[]];
@@ -66,22 +70,22 @@ function lines(runs: Run[]): ReactNode[][] {
     if (item === BREAK) drawn.push([]);
     else drawn[drawn.length - 1]!.push(run(item, key));
   }
-  if (drawn.length > 1 && drawn[drawn.length - 1]!.length === 0) drawn.pop();
-  return drawn;
+  if (drawn.length === 1) return drawn;
+  if (drawn[drawn.length - 1]!.length === 0) drawn.pop();
+  return drawn.map((line) => (line.length > 0 ? line : [" "]));
 }
 
 /**
  * A block of text. One with line breaks is a column of its lines, each a box its runs wrap in, aligned in it as the
  * block's are: as wide as its widest line where the block is as wide as its words (a Button's), as in the HTML
  * outputs. (A break drawn as an item as wide as the block, for the items after it to wrap below, made such a block
- * as wide as it could grow.) A line with nothing on it (at the block's start, or between two breaks) holds a space,
- * so it's a line high, as it is in the HTML outputs.
+ * as wide as it could grow.)
  */
 function text(item: Extract<Block, { kind: "text" }>, key?: number): ReactElement {
   const drawn = lines(item.runs);
   if (drawn.length === 1) return createElement("div", { key, style: item.style }, ...drawn[0]!);
   const { justifyContent, flexWrap: _, ...style } = item.style;
-  const line = (runs: ReactNode[], i: number) => createElement("div", { key: i, style: { display: "flex", flexWrap: "wrap", justifyContent } }, ...(runs.length > 0 ? runs : [" "]));
+  const line = (runs: ReactNode[], i: number) => createElement("div", { key: i, style: { display: "flex", flexWrap: "wrap", justifyContent } }, ...runs);
   return createElement("div", { key, style: { ...style, flexDirection: "column" } }, ...drawn.map(line));
 }
 

@@ -723,6 +723,15 @@ describe("renderImage", () => {
     const [plain] = await lines(<Text>See our</Text>);
     const [broken] = await lines(<Text><LineBreak />See our</Text>);
     expect(Math.abs(broken!.top - plain!.top - line)).toBeLessThan(2);
+    // A block that's a break alone is a line high too, a line of space between two blocks, as `<p><br></p>` is in the
+    // HTML outputs (it drew nothing). A block with nothing in it is still none.
+    const [block, next] = await lines(<><Text>See our</Text><Text>site today</Text></>);
+    for (const spacer of [<Text><LineBreak /></Text>, <Text><Span style={red}><LineBreak /></Span></Text>]) {
+      const [above, below] = await lines(<><Text>See our</Text>{spacer}<Text>site today</Text></>);
+      expect(Math.abs(below!.top - above!.top - (next!.top - block!.top) - line)).toBeLessThan(2);
+    }
+    const [, unspaced] = await lines(<><Text>See our</Text><Text>{" "}</Text><Text>site today</Text></>);
+    expect(Math.abs(unspaced!.top - next!.top)).toBeLessThan(2);
 
     // A Button is as wide as its widest line, a break in it inside a Span too. Each break drawn as an item as wide as
     // the block, in a box as wide as its words (a Button's), took all the width the box could grow to: the Button
