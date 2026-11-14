@@ -70,6 +70,13 @@ const spaceAt = (run: Run, side: Side): boolean => {
   return edge !== undefined && spaceAt(edge, side);
 };
 
+/** Whether a run is a line break at one end: is one, or is a Span or a Link whose run at that end is. */
+const breakAt = (run: Run, side: Side): boolean => {
+  if (typeof run === "string") return run === "\n";
+  const edge = run.kind === "span" ? run.runs[side === "start" ? 0 : run.runs.length - 1] : undefined;
+  return edge !== undefined && breakAt(edge, side);
+};
+
 /**
  * The space at a block of text's own edges, taken off: `white-space: normal` drops it in the HTML outputs, and the
  * `pre-wrap` a block of text is drawn under (`paragraph()`) would otherwise draw it as an indent. Each end is taken
@@ -173,7 +180,9 @@ function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: 
  * and its end that must reach the margin. Neither is right for a centered block, where the space moves that one line
  * by half its width either way: only measuring the words could say which line has it, so it's held as at the left.
  *
- * A space beside a line break on the side it's moved from goes, as a browser drops it, and so does one beside a run
+ * A space beside a line break on the side it's moved from goes, as a browser drops it, a break at the edge of a Span
+ * or a Link beside it too ("<Span>Name<LineBreak /></Span> value" would start its second line with the space, and
+ * "Hello <Span><LineBreak />x</Span>" aligned at the right end its first a space short), and so does one beside a run
  * that already has a space there: the two are one space in the HTML outputs, where white space collapses across a
  * Span's edge ("Hello <Span> world</Span>"). The one kept is the first, as there: moved forward onto a Link that
  * starts with a space of its own, it takes that space's place in a run the Link's underline doesn't reach. One
@@ -192,7 +201,7 @@ function gatherSpaces(runs: Run[], onto: Side): Run[] {
     let next = run;
     const taken = beside === undefined ? undefined : withoutSpace(run, from);
     if (beside !== undefined && taken !== undefined) {
-      if (beside === "\n") next = taken;
+      if (breakAt(beside, onto)) next = taken;
       else if (spaceAt(beside, onto)) {
         next = taken;
         // Read from the last run to the first, the space kept is this run's, and the one it's beside is the later.

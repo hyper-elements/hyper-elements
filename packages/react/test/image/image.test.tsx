@@ -616,6 +616,26 @@ describe("renderImage", () => {
       }
     }
 
+    // A break at the edge of a Span or a Link is a break beside the space outside it, which goes as it does beside a
+    // break of the block's own: kept, it started the next line a space in from the margin at the left, and at the
+    // right ended the line before a space short of it. (A space here is 6.7px.)
+    const right = { textAlign: "right" } as const;
+    const atRight = [(await lines(<Text style={right}>See our</Text>))[0]!, (await lines(<Text style={right}>site today</Text>))[0]!];
+    const edges: Array<[string, ReactNode, typeof expected]> = [
+      ["a break ending a Span, then a space", <Text>See <Span style={red}>our<LineBreak /></Span> site today</Text>, expected],
+      ["a break ending a Span in a Span, then a space", <Text>See <Span style={red}><Span style={{ textDecoration: "underline" }}>our<LineBreak /></Span></Span> site today</Text>, expected],
+      ["a break ending a Link, then a space", <Text>See <Link href="https://x.test">our<LineBreak /></Link> site today</Text>, expected],
+      ["a space, then a break starting a Span, at the right", <Text style={right}>See our <Span style={red}><LineBreak />site</Span> today</Text>, atRight],
+      ["a space, then a break starting a Link, at the right", <Text style={right}>See our <Link href="https://x.test"><LineBreak />site</Link> today</Text>, atRight],
+    ];
+    for (const [name, text, lined] of edges) {
+      const drawn = await lines(text);
+      expect(drawn, name).toHaveLength(2);
+      for (const [i, line] of drawn.entries()) {
+        for (const edge of ["from", "to"] as const) expect(Math.abs(line[edge] - lined[i]![edge]), `${name}, line ${i}, ${edge}`).toBeLessThan(2);
+      }
+    }
+
     // A line with nothing on it is a line high, as in the HTML outputs: two breaks leave one between the words,
     // beside Spans too, and a break that starts a block starts it with one.
     const [first, second] = await lines(<Text>See our<LineBreak />site today</Text>);
