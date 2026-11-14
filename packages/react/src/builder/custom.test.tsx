@@ -532,6 +532,35 @@ describe("registerTools", () => {
     expect(web).not.toContain("<table");
   });
 
+  it("draws the ids inside the component as its block's id makes them, so a link to one finds it", async () => {
+    const Faq = component({
+      type: "acme.Faq",
+      label: "FAQ",
+      props: { question: prop.text({ label: "Question", default: "How long is delivery?" }) },
+      render: (p) => (
+        <Column>
+          <Button href="#faq-answer">{p.question}</Button>
+          <Text id="answer">Two days.</Text>
+        </Column>
+      ),
+    });
+    const { builder, tools } = fakeBuilder();
+    registerTools(builder, [Faq]);
+    const { Viewer, exporters } = tools[0].renderer;
+    const template = <Email><Faq id="faq" /></Email>;
+    const [block] = blocks(toDesign(template, { customTools: true }).design);
+    expect(block.values._meta.htmlID).toBe("faq");
+    const ids = (html: string) => [...html.matchAll(/ id="([^"]+)"/g)].map((match) => match[1]);
+    // As the template draws them, in the canvas and in what the builder exports.
+    expect(ids((await render(template)).html)).toEqual(["faq-answer"]);
+    expect(ids(Viewer.render(block.values))).toEqual(["faq-answer"]);
+    expect(ids(exporters.email(block.values))).toEqual(["faq-answer"]);
+    expect(ids(exporters.web(block.values))).toEqual(["faq-answer"]);
+    // A block the builder numbered itself has no id of its author's, as fromDesign() reads it: none inside it either.
+    const numbered = { ...block.values, _meta: { htmlID: "u_content_custom_acme_faq_2", htmlClassNames: "u_content_custom_acme_faq" } };
+    expect(ids(exporters.email(numbered))).toEqual([]);
+  });
+
   it("draws a Page's markup in the canvas of a builder in web mode", () => {
     const { builder, tools } = fakeBuilder();
     registerTools(builder, [ProductCard], { displayMode: "web" });

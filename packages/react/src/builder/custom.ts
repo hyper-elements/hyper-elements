@@ -283,7 +283,8 @@ function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinitio
   const room = roomOf(values, content, cells, index, column);
   // A root is 200px wide at least: in less room than that, the component is in a Column of the room's width.
   const width = Math.max(200, room);
-  const own: Node = make(definition.type, { props: toolProps(definition, values) });
+  // With the id its block keeps, as fromDesign() reads it: the ids inside it are that id's (a link to one finds it).
+  const own: Node = make(definition.type, { id: givenId(values), props: toolProps(definition, values) });
   const node: Node = room < width ? { type: "Column", style: { width: room }, children: [own] } : own;
   const written = renderTemplate({ root: { type: root, props: { width }, children: [node] } }, { components: tools });
   const style = /<style>[\s\S]*?<\/style>/.exec(written.head)?.[0] ?? "";
