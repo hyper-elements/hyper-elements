@@ -21,6 +21,10 @@ interface Props {
   path: string;
   metaTitle: string;
   description: string;
+  image?: string;
+  imageAlt?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   /** The H1. */
   title: string;
   lede: string;
@@ -40,7 +44,7 @@ interface Props {
   faq: { q: string; a: string }[];
   final: { title: string; sub: string; cmd: string; ctas: Link[]; others: Link[] };
 }
-const { path, metaTitle, description, title, lede, ctas = [], tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
+const { path, metaTitle, description, image, imageAlt, imageWidth, imageHeight, title, lede, ctas = [], tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
 const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No", na: "Doesn't apply" };
 
 const url = new URL(path, site.url).href;
@@ -64,7 +68,7 @@ const jsonLd = [
   { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
 ];
 ---
-<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd}>
+<Base title={metaTitle} titleSuffix={false} description={description} image={image} imageAlt={imageAlt} imageWidth={imageWidth} imageHeight={imageHeight} jsonLd={jsonLd}>
   <section class="a-hero">
     <div class="wrap a-hero-inner">
       <h1 class="h-page">{title}</h1>
