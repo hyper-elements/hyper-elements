@@ -96,8 +96,7 @@ export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
   "gmail-app-other": { name: "Gmail app, another account", widths: { phone: 380 }, dark: false, approximate: true, measured: null },
   "apple-mail": { name: "Apple Mail", widths: { desktop: 820, phone: 393 }, dark: true, approximate: false, measured: captured("Mail 16 on macOS 26", 0.999, 0.999) },
   // Yahoo Mail and AOL Mail on the web (models 1.11.0): their message panes, 758px and 869px, in a 1440px window. AOL's
-  // dark mode leaves the email as it is, so its dark preview is its light one. Measured on screenshots of 60 emails they
-  // weren't tuned on: AOL's own web font, drawn with Roboto, makes it the less close of the two.
+  // dark mode leaves the email as it is, so its dark preview is its light one.
   yahoo: { name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null, screenshots: screenshots("Yahoo Mail in Chrome on Windows 10", 0.978, 0.971) },
   aol: { name: "AOL Mail", widths: { desktop: 869 }, dark: true, approximate: true, measured: null, screenshots: screenshots("AOL Mail in Chrome on Windows 10", 0.923, 0.923) },
   "samsung-email": tables("Samsung Email"),
