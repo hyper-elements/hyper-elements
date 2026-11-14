@@ -9,6 +9,8 @@ description: Write emails, web pages, printed documents, PDFs and images in code
 
 Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements (`npm install @hyper-elements/react`). This is the package's own guide to its components at `@hyper-elements/react` (GUIDE.md in the package), written from their definitions: everything needed to write a template, in short. Every prop's and style's details, with its default: `node_modules/@hyper-elements/react/REFERENCE.md`.
 
+To test an email in Outlook, Gmail and other clients, a template or any HTML: the `email-testing` skill has the steps, or run `npx @hyper-elements/cli preview emails/welcome.tsx`.
+
 ## Templates from Unlayer Elements
 
 A project may have templates written with Unlayer Elements: they import `Body`, `ColumnLayouts` or `renderToHtml()` from `@unlayer/react-elements`, and use `values`, `layout`, `html` and style props such as `backgroundColor="#fff"`. Those components aren't in Hyper Elements, a new package: these are its components.
@@ -29,7 +31,7 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
 - `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).
-- Email clients: `@hyper-elements/email-clients`. `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and others remove or change, naming its `clients`, with a `fix` (without it, one note: `email/more-checks`). To test an email in them, `await renderInEmailClients(email)` gives a preview per client: HTML that shows the email as that client does, in Chromium.
+- Email clients: `@hyper-elements/email-clients`. `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and others remove or change, naming its `clients`, with a `fix` (without it, one note: `email/more-checks`). To test an email in them, `await renderInEmailClients(email)` gives a preview per client: HTML that shows the email as that client does, in Chromium. It takes any other HTML email too.
 
 ```tsx
 import { writeFile } from "node:fs/promises";
