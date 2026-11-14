@@ -122,7 +122,7 @@ export default function Receipt() {
 
 `renderPdf(element, options)` (`@hyper-elements/react/pdf`) writes a `Document` as a PDF: `{ pdf, diagnostics }`, errors throwing an `ElementsError`. `fonts` and `images` are given as `renderImage`'s are, below; a standard PDF font needs no file and draws Western European characters alone.
 
-**Nothing flows from one page to the next**: what doesn't fit a page is cut off, with a `document/overflow` warning. Split long content yourself, with a `PageBreak` or a `Document.Page` per page; a long `Table` becomes one `Table` a page, its header row repeated.
+**Nothing flows from one page to the next**: what doesn't fit a page is cut off, and `document/overflow` warns only when content looks clearly too tall (text isn't measured). Split long content yourself, with a `PageBreak` or a `Document.Page` per page; split a long `Table` into one `Table` a page, repeating its header row.
 
 ```tsx
 import { readFile } from "node:fs/promises";
@@ -145,7 +145,7 @@ const { pdf, diagnostics } = await renderPdf(
 
 ## A Canvas as an image
 
-`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`. What doesn't fit the Canvas is cut off at its edges, with a `canvas/overflow` warning.
+`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`. What doesn't fit the Canvas is cut off at its edges, and `canvas/overflow` warns only when content looks clearly too tall.
 
 ```tsx
 import { readFile } from "node:fs/promises";
