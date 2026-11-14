@@ -69,7 +69,8 @@ jobs:
       # ── Type contract ───────────────────────────────────────────
       # tsc gate over the components' prop types, render()'s and component()'s
       # (src/primitives/types.test-d.tsx and the other files in
-      # tsconfig.typecheck.json, which include /pdf and /image and their tests)
+      # tsconfig.typecheck.json, which include /builder, /pdf and /image and their
+      # tests: a test's expectTypeOf is checked here, not when vitest runs it)
       # and the core's sources. The build only type-checks each entry's import
       # graph, so this catches a relaxed or broken input type.
       - name: Type contract
