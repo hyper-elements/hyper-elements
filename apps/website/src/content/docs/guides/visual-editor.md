@@ -180,18 +180,18 @@ A prop's kind says what its value is. The builder edits it with its own property
 | `prop.image()` | `image` |
 | `prop.fontFamily()` | `font_family` |
 
-A prop can be edited with another editor, which it says in `editor`:
+There's no editor to name: what a prop says about its value is what its editor gets. A whole number's `min` and `max` are where the counter stops, and a text's `enum` is its dropdown's choices:
 
 ```tsx
-quantity: prop.number({ label: "Quantity", min: 0, max: 100, integer: true, default: 10, editorOptions: { step: 5 } }),
-due: prop.text({ label: "Due", editor: "datetime" }),
-price: currency({ label: "Price", min: 0, default: 49, symbol: "€" }),
+quantity: prop.number({ label: "Quantity", min: 0, max: 10, integer: true }),
+width: prop.length({ label: "Width", units: ["px", "%"] }),
+background: prop.color({ label: "Background", transparency: true }),
+price: currency({ label: "Price", symbol: "€", min: 0 }),
 ```
 
-- **One of the builder's own**, by its name. It's used where it keeps the prop's kind of value: `datetime` for a text, `alignment` for a choice of `left`, `center` and `right`. `editorOptions` go to the builder's editor as it takes them (a counter's `step`).
-- **One of your own**: a property you define once (`currency` here), and then give the builder a control for.
+A color may be see-through unless its `transparency` is `false`, which takes an opaque color alone. The builder's color picker gives see-through colors in a page, not in an email.
 
-The value stays its kind's either way: a price is still a number, checked as one. An editor the builder doesn't have falls back to the kind's editor.
+For an editor of your own, a prop is a property you define once (`currency` here), and then give the builder a control for. Its value stays its kind's: a price is still a number, checked as one.
 
 ### Your own property editor
 
