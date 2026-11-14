@@ -27,7 +27,7 @@ import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } fr
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { killTree } from "./kill";
 import { isOptionsError, LINT, lintUsage, ownLint, type LintCopy, type LintModule } from "./lint";
-import { installedAbove } from "./packages";
+import { importFinds, installedAbove } from "./packages";
 import { parentGone } from "./parent";
 import { reactCopies } from "./react-copies";
 
@@ -446,16 +446,20 @@ class Session {
    */
   private commonJsImport(input: ChildInput, error: unknown, loaded?: Loaded): ResultMessage | undefined {
     if (bun || input.format !== "cjs" || (error as NodeJS.ErrnoException | null)?.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") return undefined;
-    // Node names the package.json: `No "exports" main defined in <file>`, `… is not defined by "exports" in <file>`.
-    const manifest = /\bin (.+?package\.json)(?: imported from |$)/m.exec(messageOf(error))?.[1];
+    // Node names the package.json and the subpath: `No "exports" main defined in <file>` (the package's own name),
+    // `Package subpath './x' is not defined by "exports" in <file>`.
+    const message = messageOf(error);
+    const manifest = /\bin (.+?package\.json)(?: imported from |$)/m.exec(message)?.[1];
+    const subpath = /\bPackage subpath '([^']+)'/.exec(message)?.[1] ?? (/\bNo "exports" main defined\b/.test(message) ? "." : undefined);
     let pkg: { name?: unknown; exports?: unknown };
     try {
       pkg = JSON.parse(readFileSync(manifest ?? "", "utf8"));
     } catch {
       return undefined;
     }
-    const forImport = (value: unknown): boolean => typeof value === "object" && value !== null && Object.entries(value).some(([key, held]) => key === "import" || forImport(held));
-    if (!forImport(pkg.exports)) return undefined;
+    // Only where an import would find the subpath: one the package doesn't export at all (a name mistyped) is the same
+    // error from Node, and an ES module wouldn't help it, though the package's other entries have `import` conditions.
+    if (subpath === undefined || !importFinds(pkg.exports, subpath)) return undefined;
     const name = typeof pkg.name === "string" ? pkg.name : "A package this template imports";
     const cwd = this.message.cwd;
     const extension = /\.c([jt])s$/.exec(input.file)?.[1];

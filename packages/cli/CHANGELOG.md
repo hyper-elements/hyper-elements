@@ -11,7 +11,9 @@
   `import` loads ("exports" with an `import` condition and no `require` one), which react-pdf's text engine
   imports. It's a `cli/commonjs-import` error now (exit 2), for any such package: it names the package and says to
   add `"type": "module"` to the package.json, or to put the templates in a folder with a package.json of
-  `{"type": "module"}` (a `.cts` template: to rename it `.mts`). Loaded as an ES module, the PDF is written.
+  `{"type": "module"}` (a `.cts` template: to rename it `.mts`). Loaded as an ES module, the PDF is written. A
+  subpath a package doesn't export at all (a name mistyped) gets the same error from Node, and stays that error
+  (exit 1): an ES module wouldn't find it either.
 - **`describe` said a container holds nothing.** A Section, a Row, a Column and each root said `children: none`,
   because a container holds categories of components rather than named types. It says what it holds, in the words
   the package's guide uses: `children: layout, blocks`. `--json` is unchanged, and was always right.

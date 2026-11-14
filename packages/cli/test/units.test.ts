@@ -16,6 +16,7 @@ import { errorLine } from "../src/errors";
 import { hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
 import { orphansOf } from "../src/kill";
+import { importFinds } from "../src/packages";
 import { openBrowser } from "../src/preview/browser";
 import { cli, email, lines, project, WINDOWS } from "./helpers";
 
@@ -148,6 +149,37 @@ describe("errorLine", () => {
     expect(errorLine({ message: "Cannot find module './missing' from '/x/emails/b.tsx'" })).toBe("Cannot find module './missing'");
     expect(errorLine(new Error("Cannot find package 'left-pad' imported from /x/b.tsx"))).toBe("Cannot find module 'left-pad'");
     expect(errorLine("thrown string\nsecond")).toBe("thrown string");
+  });
+});
+
+// Whether `cli/commonjs-import` says to load the template as an ES module: only where an import would find the subpath
+// a require couldn't.
+describe("whether an import finds a package's subpath", () => {
+  it("finds an entry an import condition names, exactly or by a pattern", () => {
+    expect(importFinds({ ".": { import: "./index.js" } }, ".")).toBe(true);
+    expect(importFinds({ import: "./index.js" }, ".")).toBe(true);
+    expect(importFinds("./index.js", ".")).toBe(true);
+    // @react-pdf/hyphenate's, which react-pdf's text engine imports `./en-us` of.
+    const hyphenate = { ".": { types: "./lib/index.d.ts", import: "./lib/index.js" }, "./*": { types: "./lib/*.d.ts", import: "./lib/*.js" } };
+    expect(importFinds(hyphenate, "./en-us")).toBe(true);
+    expect(importFinds({ ".": { node: { import: "./a.mjs" } } }, ".")).toBe(true);
+    expect(importFinds({ ".": [{ import: "./a.mjs" }, "./a.cjs"] }, ".")).toBe(true);
+  });
+
+  it("finds none for a subpath the package doesn't export, whatever conditions its other entries have", () => {
+    const both = { import: "./index.mjs", require: "./index.cjs" };
+    expect(importFinds({ ".": both, "./util": both }, "./utils")).toBe(false);
+    expect(importFinds({ ".": both }, "./en-us")).toBe(false);
+    expect(importFinds({ import: "./index.js" }, "./x")).toBe(false);
+    expect(importFinds("./index.js", "./x")).toBe(false);
+    expect(importFinds(undefined, ".")).toBe(false);
+  });
+
+  it("finds none where no condition an import is resolved with applies, or the subpath is taken out", () => {
+    expect(importFinds({ ".": { require: "./index.cjs" } }, ".")).toBe(false);
+    expect(importFinds({ ".": { browser: "./index.js" } }, ".")).toBe(false);
+    expect(importFinds({ "./*": { import: "./lib/*.js" }, "./private/*": null }, "./private/x")).toBe(false);
+    expect(importFinds({ "./*": { import: "./lib/*.js" }, "./private/*": null }, "./public")).toBe(true);
   });
 });
 
