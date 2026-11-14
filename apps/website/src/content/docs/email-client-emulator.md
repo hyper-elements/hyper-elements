@@ -176,7 +176,7 @@ For an agent or a CI job that wants what each client changed as data, there are 
 | What you get | A preview per client, and what each one changed | A screenshot per client |
 | Clients | The clients above, with more on the way | Dozens, on real devices |
 
-Use the emulator in the loop, on every change; use a screenshot service, or a real inbox, for a final check across many clients.
+Use the emulator in the loop, on every change; use a screenshot service, or a real inbox, for a final check across many clients. [Litmus alternatives](/alternatives/litmus) compares Hyper Elements with Litmus, Parcel and Mailosaur.
 
 ## Options
 
