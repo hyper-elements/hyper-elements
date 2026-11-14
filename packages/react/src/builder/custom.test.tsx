@@ -12,7 +12,7 @@ const ProductCard = component({
   label: "Product",
   props: {
     name: prop.text({ label: "Product title", default: "Product title" }),
-    price: prop.number({ label: "Price", min: 0, default: 7.99, editor: "currency" }),
+    price: prop.number({ label: "Price", min: 0, default: 7.99 }),
     quantity: prop.number({ label: "Quantity", min: 1, max: 99, integer: true, default: 1 }),
     href: prop.link({ label: "Button link", default: "https://example.com" }),
     buttonColor: prop.color({ label: "Button color", default: "#007bff" }),
@@ -358,7 +358,7 @@ describe("registerTools", () => {
     expect(product.options.acme_product_card.title).toBe("Product");
     expect(properties).toEqual({
       name: { label: "Product title", defaultValue: "Product title", widget: "text" },
-      // An editor nobody gave ("currency"): its kind's, which for a number that isn't whole is the text field, keeping text.
+      // A number that isn't whole: the text field, keeping text.
       price: { label: "Price", defaultValue: "7.99", widget: "text" },
       // A whole number is the counter's, between the prop's own limits.
       quantity: { label: "Quantity", defaultValue: 1, widget: "counter", data: { minValue: 1, maxValue: 99 } },
@@ -387,52 +387,46 @@ describe("registerTools", () => {
     });
   });
 
-  it("edits a prop with the editor it names: one of the builder's own that keeps its kind's value, or one of the team's", () => {
+  it("edits a prop with the builder's editor for its kind, given what its kind gives it and nothing else", () => {
     const Order = component({
       type: "acme.Order",
       label: "Order",
       props: {
-        price: prop.number({ label: "Price", default: 5, editor: "currency", editorOptions: { symbol: "€" } }),
-        steps: prop.number({ label: "Steps", min: 0, max: 100, integer: true, default: 10, editorOptions: { step: 5 } }),
-        // The builder's counter shows whole numbers alone: a number that isn't whole keeps its kind's.
-        rating: prop.number({ label: "Rating", min: 0, max: 5, default: 4.5, editor: "counter" }),
-        side: prop.choice(["left", "center", "right"], { label: "Side", default: "left", editor: "alignment" }),
-        due: prop.text({ label: "Due", editor: "datetime" }),
-        // Editors that keep what the prop isn't (markup, an image), and one nobody has: its kind's.
-        note: prop.text({ label: "Note", editor: "rich_text" }),
-        title: prop.text({ label: "Title", editor: "image" }),
-        when: prop.text({ label: "When", editor: "date_range" }),
+        steps: prop.number({ label: "Steps", min: 0, max: 100, integer: true, default: 10 }),
+        side: prop.choice(["left", "center", "right"], { label: "Side", default: "left" }),
+        due: prop.text({ label: "Due" }),
       },
-      render: (p) => <Text>{p.note ?? ""}</Text>,
+      render: (p) => <Text>{`${p.steps} ${p.side} ${p.due ?? ""}`}</Text>,
     });
-    const { builder, tools, editors } = fakeBuilder();
-    registerTools(builder, [Order], { editors: { currency: true } });
+    const { builder, tools } = fakeBuilder();
+    registerTools(builder, [Order]);
     const properties = tools[0].options.acme_order.options;
-    // One registered in the builder already: by its name, with the prop's label and options, the value as the builder keeps it.
-    expect(properties.price).toEqual({ label: "Price", defaultValue: "5", widget: "currency", data: { label: "Price", symbol: "€" } });
-    expect(editors).toEqual([]);
-    // The builder's own: its limits from the prop, and the prop's options beside them.
-    expect(properties.steps).toEqual({ label: "Steps", defaultValue: 10, widget: "counter", data: { minValue: 0, maxValue: 100, step: 5 } });
-    expect(properties.rating).toEqual({ label: "Rating", defaultValue: "4.5", widget: "text" });
-    expect(properties.side).toMatchObject({ widget: "alignment", defaultValue: "left" });
-    expect(properties.due.widget).toBe("datetime");
-    expect([properties.note.widget, properties.title.widget, properties.when.widget]).toEqual(["text", "text", "text"]);
+    // The counter's limits are the prop's, and nothing widens them.
+    expect(properties.steps).toEqual({ label: "Steps", defaultValue: 10, widget: "counter", data: { minValue: 0, maxValue: 100 } });
+    // A choice is the builder's dropdown, with its values, and a text its text field.
+    expect(properties.side).toEqual({ label: "Side", defaultValue: "left", widget: "dropdown", data: { options: ["left", "center", "right"].map((value) => ({ label: value, value })) } });
+    expect(properties.due).toEqual({ label: "Due", defaultValue: "", widget: "text" });
+    // The builder's own controls are its kinds': none is given in editors, which are for properties of your own.
+    expect(() => registerTools(builder, [Order], { editors: { counter: { render: () => "" } } })).toThrow(
+      "[Elements] registerTools: editors has counter, which is the property of no prop of the components given (none of their props is a property of your own)"
+    );
   });
 
-  it("registers an editor of the team's own given as it's written, for each prop that names it, with the prop's value as the prop has it", () => {
-    const Price = component({ type: "acme.Price", label: "Price", props: { price: prop.number({ label: "Price", min: 0, default: 7.5, editor: "currency", editorOptions: { symbol: "€" } }) }, render: (p) => <Text>{p.price.toFixed(2)}</Text> });
+  it("registers a property's control given as it's written, for each prop that's the property, with the prop's value as the prop has it", () => {
+    const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }) } });
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: currency({ label: "Price", min: 0, default: 7.5, symbol: "€" }) }, render: (p) => <Text>{p.price.toFixed(2)}</Text> });
     const { builder, tools, editors } = fakeBuilder();
     const given: unknown[] = [];
     registerTools(builder, [Price], {
       editors: {
-        currency: {
+        [currency.name]: {
           render: (value, _update, options) => `<label>${options.label}</label><input value="${given.push([value, options]) && value}">`,
           mount: (_node, _value, update) => update(9.25),
         },
       },
     });
-    expect(tools[0].options.acme_price.options.price).toEqual({ label: "Price", defaultValue: "7.5", widget: "currency__acme_price__price", data: { label: "Price", symbol: "€" } });
-    expect(editors.map((editor) => editor.name)).toEqual(["currency__acme_price__price"]);
+    expect(tools[0].options.acme_price.options.price).toEqual({ label: "Price", defaultValue: "7.5", widget: "acme_currency__acme_price__price", data: { label: "Price", symbol: "€" } });
+    expect(editors.map((editor) => editor.name)).toEqual(["acme_currency__acme_price__price"]);
     // The builder keeps a number that isn't whole as text: the editor is given the number, and what it gives back is kept as text again.
     const kept: unknown[] = [];
     expect(editors[0].Widget.render("7.5", (value: unknown) => kept.push(value))).toBe('<label>Price</label><input value="7.5">');
@@ -500,21 +494,22 @@ describe("registerTools", () => {
   });
 
   it("refuses an editor given as it's written in a builder that can't register one", () => {
-    const Price = component({ type: "acme.Price", label: "Price", props: { price: prop.number({ label: "Price", default: 1, editor: "currency" }) }, render: (p) => <Text>{p.price}</Text> });
+    const currency = defineProperty({ name: "acme.currency", base: prop.number });
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: currency({ label: "Price", default: 1 }) }, render: (p) => <Text>{p.price}</Text> });
     const bare: Builder = { registerTool: () => {}, createViewer: (viewer) => viewer };
-    expect(() => registerTools(bare, [Price], { editors: { currency: { render: () => "" } } })).toThrow("editors gives currency as it's written, which takes a builder with registerPropertyEditor() and createWidget()");
-    expect(() => registerTools(bare, [Price], { editors: { currency: true } })).not.toThrow();
+    expect(() => registerTools(bare, [Price], { editors: { "acme.currency": { render: () => "" } } })).toThrow("editors gives acme.currency as it's written, which takes a builder with registerPropertyEditor() and createWidget()");
+    expect(() => registerTools(bare, [Price], { editors: { "acme.currency": true } })).not.toThrow();
   });
 
   it("refuses an editor given for no prop of the components given: a name mistyped would leave its prop with its kind's editor, without a word", () => {
     const currency = defineProperty({ name: "acme.currency", base: prop.number });
-    const Price = component({ type: "acme.Price", label: "Price", props: { price: currency({ label: "Price", default: 1 }), due: prop.text({ label: "Due", editor: "datetime" }) }, render: (p) => <Text>{p.price}</Text> });
+    const Price = component({ type: "acme.Price", label: "Price", props: { price: currency({ label: "Price", default: 1 }), due: prop.text({ label: "Due" }) }, render: (p) => <Text>{p.price}</Text> });
     const { builder, tools } = fakeBuilder();
     expect(() => registerTools(builder, [Price], { editors: { "acme.curency": { render: () => "" } } })).toThrow(
-      "[Elements] registerTools: editors has acme.curency, which is the editor of no prop of the components given (their props name acme.currency, datetime)"
+      "[Elements] registerTools: editors has acme.curency, which is the property of no prop of the components given (their props are acme.currency)"
     );
     expect(() => registerTools(builder, [Price], { editors: { "acme.curency": true } })).toThrow("editors has acme.curency");
-    expect(() => registerTools(builder, [Footer], { editors: { "acme.currency": true } })).toThrow("editors has acme.currency, which is the editor of no prop of the components given (none of their props names one)");
+    expect(() => registerTools(builder, [Footer], { editors: { "acme.currency": true } })).toThrow("editors has acme.currency, which is the property of no prop of the components given (none of their props is a property of your own)");
     // Nothing is registered where one is refused.
     expect(tools).toEqual([]);
     expect(() => registerTools(builder, [Price, Footer], { editors: { "acme.currency": true } })).not.toThrow();

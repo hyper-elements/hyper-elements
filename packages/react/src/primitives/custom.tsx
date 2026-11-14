@@ -35,13 +35,12 @@ import type { Token } from "./theme";
 
 /**
  * What a prop's helper takes besides what its kind does: what the prop is called, whether it's required, its default.
- * A component's prop has a label; an option of a property of a team's own (`defineProperty()`) needs none.
+ * A component's prop has a label; an option of a property of a team's own (`defineProperty()`) needs none. There's no
+ * editor to name: a prop is edited with its kind's, or is a property of a team's own.
  */
 type PropOptions<K extends Kind<any, any>, R extends boolean, D, L extends string | undefined> = Omit<PropSpec<K, R>, "kind" | "default" | "label" | "editor"> & {
   label?: L;
   default?: D;
-  /** One of the editing app's own editors, by its name, where the kind's own isn't the one wanted (`"counter"`). */
-  editor?: string;
 };
 
 /**
@@ -70,7 +69,7 @@ interface Helpers<X = unknown> {
   text: <const V extends readonly string[] | undefined = undefined, const R extends boolean = false, const D extends OutputOf<TextKind<V>> | undefined = undefined, const L extends string | undefined = undefined>(
     options: PropOptions<TextKind<V>, R, D, L> & { /** The texts it may be, where it's one of a few. */ enum?: V } & X
   ) => Made<TextKind<V>, R, D, L>;
-  color: KindHelper<ReturnType<typeof color>, X, TakesToken>;
+  color: KindHelper<ReturnType<typeof color>, { /** Whether it may be see-through (default true): with false, an rgba, an 8-digit hex or "transparent" is refused. */ transparency?: boolean } & X, TakesToken>;
   image: KindHelper<ReturnType<typeof asset>, X>;
   link: KindHelper<ReturnType<typeof link>, X>;
   boolean: KindHelper<ReturnType<typeof boolean>, X>;
@@ -89,37 +88,64 @@ type Based<N> = { readonly [BASE]?: N };
 type Given = { readonly [option: string]: any };
 const made = (kind: Kind<any, any>, options: Given) => defineProp(kind, options as never);
 
+/** What every helper takes, and what some take besides: a property's own options are named otherwise. */
+const EVERY = ["label", "description", "required", "default", "roots", "editable", "support"];
+const BESIDES: { readonly [helper: string]: readonly string[] } = { text: ["enum"], color: ["transparency"], number: ["min", "max", "integer"], length: ["units", "min"] };
+
+/**
+ * What a helper is given, where it takes all of it. One it doesn't take is refused where it's written, as a type error
+ * is, for a caller with no types: a name mistyped would be dropped without a word. An editor named by its name is one
+ * of those: a prop is edited with its kind's editor, or is a property of a team's own.
+ */
+function takes(helper: string, given: Given | undefined): Given {
+  const taken = [...EVERY, ...(BESIDES[helper] ?? [])];
+  for (const key of Object.keys(given ?? {})) {
+    if (key === "editor" || key === "editorOptions") {
+      throw new Error(`[Elements] prop.${helper} takes no ${key}: a prop is edited with its kind's editor, or is a property of your own, made with defineProperty() (price: currency({ label: "Price", symbol: "€" }))`);
+    }
+    if (!taken.includes(key)) throw new Error(`[Elements] prop.${helper} has no option named ${key} (it takes ${taken.join(", ")})`);
+  }
+  return given ?? {};
+}
+
 const helpers = {
-  text: ({ enum: values, ...rest }: Given) => {
+  text: (given: Given) => {
+    const { enum: values, ...rest } = takes("text", given);
     if (values !== undefined && !(Array.isArray(values) && values.length > 0 && values.every((value) => typeof value === "string"))) {
       throw new Error(`[Elements] A text's enum lists the texts it may be (["$", "€"]), not ${JSON.stringify(values)}`);
     }
     return made(values ? enumOf(values as readonly string[]) : text(), rest);
   },
-  color: (options: Given) => made(color(), options),
-  image: (options: Given) => made(asset(), options),
-  link: (options: Given) => made(link(), options),
-  boolean: (options: Given) => made(boolean(), options),
-  fontFamily: (options: Given) => made(fontFamily(), options),
-  fontWeight: (options: Given) => made(fontWeight(), options),
-  number: ({ min, max, integer, ...rest }: Given) => made(number({ min, max, integer }), rest),
-  length: ({ units, min, ...rest }: Given) => made(length(units, { min }), rest),
+  color: (given: Given) => {
+    const { transparency, ...rest } = takes("color", given);
+    if (transparency !== undefined && typeof transparency !== "boolean") throw new Error(`[Elements] A color's transparency is true or false, not ${JSON.stringify(transparency)}`);
+    return made(color({ transparency }), rest);
+  },
+  image: (given: Given) => made(asset(), takes("image", given)),
+  link: (given: Given) => made(link(), takes("link", given)),
+  boolean: (given: Given) => made(boolean(), takes("boolean", given)),
+  fontFamily: (given: Given) => made(fontFamily(), takes("fontFamily", given)),
+  fontWeight: (given: Given) => made(fontWeight(), takes("fontWeight", given)),
+  number: (given: Given) => {
+    const { min, max, integer, ...rest } = takes("number", given);
+    return made(number({ min, max, integer }), rest);
+  },
+  length: (given: Given) => {
+    const { units, min, ...rest } = takes("length", given);
+    return made(length(units, { min }), rest);
+  },
 };
 
 /** Props of a custom component, by value kind. */
 export const prop = {
   ...helpers,
-  choice: (values: readonly (string | number)[], options: Given) => made(enumOf(values), options),
+  choice: (values: readonly (string | number)[], options: Given) => made(enumOf(values), takes("choice", options)),
 } as unknown as { [N in keyof Helpers]: Helpers[N] & Based<N> } & {
   choice: <const V extends readonly (string | number)[], const R extends boolean = false, const D extends V[number] | undefined = undefined, const L extends string | undefined = undefined>(
     values: V,
     options: PropOptions<Kind<V[number], V[number]>, R, D, L>
   ) => Made<Kind<V[number], V[number]>, R, D, L>;
 };
-
-/** What every helper takes, and what some take besides: a property's own options are named otherwise. */
-const EVERY = ["label", "description", "required", "default", "roots", "editable", "support"];
-const BESIDES: { readonly [base: string]: readonly string[] } = { text: ["enum"], number: ["min", "max", "integer"], length: ["units", "min"] };
 
 /** A property's own options, each made with one of `prop`'s helpers. */
 type OptionSpecs = { readonly [option: string]: { readonly kind: Kind<any, any>; readonly required?: boolean; readonly default?: unknown } };
@@ -171,7 +197,7 @@ export function defineProperty<const N extends keyof Helpers, const O extends Op
   }
   const taken = [...EVERY, ...(BESIDES[base] ?? [])];
   for (const [option, spec] of Object.entries(specs) as Array<[string, OptionSpecs[string] | undefined]>) {
-    if (taken.includes(option) || option === "editor" || option === "editorOptions") throw new Error(`[Elements] The property ${name} can't have an option named ${option}: that's its prop's`);
+    if (taken.includes(option) || option === "editor") throw new Error(`[Elements] The property ${name} can't have an option named ${option}: that's its prop's`);
     if (typeof spec?.kind?.parse !== "function") throw new Error(`[Elements] The property ${name}: its option ${option} is made with one of prop's helpers (prop.text({ default: "$" })), not ${JSON.stringify(spec)}`);
     if (spec.default !== undefined) {
       const parsed = spec.kind.parse(spec.default);

@@ -1,11 +1,11 @@
 /**
  * A template's own components in the builder. Each is a custom tool of the builder's, named by its type
  * (`acme.ProductCard`: `acme_product_card`), with a property for each prop: edited with the builder's editor for its
- * kind, with another of the builder's that it names, or with one of the team's own. toDesign() writes one as that
+ * kind, or with the control of the property of the team's own it is. toDesign() writes one as that
  * tool's block, its props the block's values (`customTools`); fromDesign() reads the block back as the component
  * (`components`); registerTools() gives a builder the tools, each drawn by Elements itself.
  */
-import { ElementsError, namedEditor, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@hyper-elements/core";
+import { ElementsError, propertyOf, renderTemplate, type CustomDefinition, type Json, type LinkValue, type Node } from "@hyper-elements/core";
 import type { PropertyDefinition } from "../primitives/custom";
 import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
@@ -73,8 +73,12 @@ const counter = (min?: number, max?: number): PropertyEditor => ({ widget: "coun
 const typed: PropertyEditor = { widget: "text", store: String, read: numeric };
 const WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
-/** The builder's editor for a prop's kind. None for a kind it has no way to keep: its value stays in the block, with no field. */
-function kindEditor(spec: Spec): PropertyEditor | undefined {
+/**
+ * The builder's editor for a prop, by its kind, and so how its value is kept in a block (a property of a team's own
+ * keeps its value as its kind's does, whatever edits it). None for a kind it has no way to keep: its value stays in
+ * the block, with no field.
+ */
+function editorOf(spec: Spec): PropertyEditor | undefined {
   const schema = spec.kind.jsonSchema() as Schema;
   switch (spec.kind.editor) {
     case "text":
@@ -104,22 +108,6 @@ function kindEditor(spec: Spec): PropertyEditor | undefined {
     default:
       return undefined;
   }
-}
-
-/**
- * The builder's own editors a prop can name besides its kind's, each for the kind (by its editor) whose value it keeps
- * as that kind's does. Another of its editors keeps what the prop isn't (markup, a border, a number's whole part).
- */
-const BUILT_IN: Record<string, string> = { datetime: "text", alignment: "choice" };
-
-/**
- * The builder's editor for a prop, and so how its value is kept in a block: its kind's, or the one of the builder's
- * own it names where that keeps its kind's value (an editor of a team's own keeps the value as its kind's does).
- */
-function editorOf(spec: Spec): PropertyEditor | undefined {
-  const own = kindEditor(spec);
-  const named = namedEditor(spec)?.name;
-  return own && named !== undefined && Object.hasOwn(BUILT_IN, named) && BUILT_IN[named] === spec.kind.editor ? { ...own, widget: named } : own;
 }
 
 /**
@@ -240,9 +228,9 @@ export interface RegisterToolsOptions {
   /**
    * The property editors of a team's own, by name (`{ [currency.name]: … }`, the name its property has): each as
    * it's written (`{ render, mount }`), which registerTools() registers in the builder; or `true` for one registered
-   * there already (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A prop whose
-   * editor is none of these is edited with its kind's. One given here for no prop of the components is refused: a
-   * name mistyped.
+   * there already (`unlayer.registerPropertyEditor`), which is given the value as the builder keeps it. A property
+   * with no control here is edited with its kind's editor, as any other prop is. A name here that's the property of
+   * no prop of the components is refused: a name mistyped, or one of the builder's own editors, which are its kinds'.
    */
   editors?: { readonly [name: string]: EditorWidget | true };
   /** The builder's own settings for a component's tool, by the component's type. */
@@ -308,8 +296,8 @@ function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinitio
 
 /**
  * Registers each component as a custom tool in a builder (in its custom JavaScript, where `unlayer.registerTool` is):
- * the tool's name is its type's (`toolName()`), its properties its props, each with the builder's editor for its kind,
- * another of the builder's that it names, or one of the team's own (`editors`), and it's drawn by Elements, in the
+ * the tool's name is its type's (`toolName()`), its properties its props, each with the builder's editor for its kind
+ * or the control of the property of the team's own it is (`editors`), and it's drawn by Elements, in the
  * canvas and in what the builder exports. A component placed where a Section goes is no tool (toDesign() writes it as
  * an HTML block). Returns the tools' names.
  */
@@ -320,10 +308,11 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
   for (const [name, definition] of tools) if (inSection(definition)) tools.delete(name);
   const canvas = options.displayMode === "web" ? "Page" : "Email";
   const editors = options.editors ?? {};
-  // An editor given for no prop is a name mistyped: its prop would be edited with its kind's, without a word.
-  const asked = new Set(all.flatMap((definition) => (Object.values(definition.props) as Spec[]).flatMap((spec) => namedEditor(spec)?.name ?? [])));
+  // An editor given for no prop is a name mistyped: its prop would be edited with its kind's, without a word. A name
+  // of the builder's own editors is none of these: those are its kinds'.
+  const asked = new Set(all.flatMap((definition) => (Object.values(definition.props) as Spec[]).flatMap((spec) => propertyOf(spec)?.name ?? [])));
   for (const name of Object.keys(editors)) {
-    if (!asked.has(name)) throw new Error(`[Elements] registerTools: editors has ${name}, which is the editor of no prop of the components given (${asked.size ? `their props name ${[...asked].join(", ")}` : "none of their props names one"})`);
+    if (!asked.has(name)) throw new Error(`[Elements] registerTools: editors has ${name}, which is the property of no prop of the components given (${asked.size ? `their props are ${[...asked].join(", ")}` : "none of their props is a property of your own"})`);
   }
   for (const type of Object.keys(options.tools ?? {})) {
     if (!all.some((definition) => definition.type === type)) throw new Error(`[Elements] registerTools: tools has settings for ${type}, which is none of the components given`);
@@ -340,8 +329,8 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
     const properties: Record<string, unknown> = { ...own };
     for (const [key, spec] of Object.entries(definition.props) as Array<[string, Spec]>) {
       const editor = editorOf(spec);
-      // An editor of the team's own, where the prop names one of those given; the builder's otherwise.
-      const named = namedEditor(spec);
+      // The control of the team's own, where the prop is a property of theirs given one; the builder's otherwise.
+      const named = propertyOf(spec);
       const theirs = named && Object.hasOwn(editors, named.name) ? editors[named.name] : undefined;
       let widget = theirs ? named?.name : editor?.widget;
       if (!widget || spec.editable === false) continue;
@@ -361,9 +350,9 @@ export function registerTools(builder: Builder, components: readonly WithDefinit
           }),
         });
       }
-      // The builder's own editor takes what a prop gives it by name (`editorOptions`); the options of a team's own
+      // The builder's own editor takes what the prop's kind gives it (a number's limits); the options of a team's own
       // editor that isn't given here are that editor's alone.
-      const data: Values = theirs ? theirOptions : { ...editor?.data, ...spec.editorOptions };
+      const data: Values = theirs ? theirOptions : { ...editor?.data };
       // What a block dragged in from the panel starts with: the prop's default, as the editor keeps it. With none, a
       // text is empty and a toggle is off; any other has no value, which each of the builder's editors shows as unset.
       const initial = spec.default !== undefined ? (editor?.store?.(spec.default as Json) ?? spec.default) : spec.kind.editor === "text" ? "" : spec.kind.editor === "toggle" ? false : undefined;

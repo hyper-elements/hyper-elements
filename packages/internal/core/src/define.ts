@@ -39,18 +39,11 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
   /** Editors may change it (default true). */
   editable?: boolean;
   /**
-   * The editor an editing app shows for it, where its kind's own isn't the one wanted: one of the app's own, by its
-   * name (a quantity's `"counter"`), or one of a team's own, as a property the team defines gives it (`defineProperty()`:
-   * `currency({ symbol: "$" })` is the prop, with this). The value is its kind's either way; an app with no editor of
-   * that name shows the kind's.
+   * The editor of a property of a team's own, where the prop is one (`defineProperty()`: `currency({ symbol: "$" })` is
+   * the prop, with this). Set by the property, not written: a prop of `prop`'s helpers is edited with its kind's
+   * editor. The value is its kind's either way; an app with no editor by the property's name shows the kind's.
    */
-  editor?: string | EditorUse<OutputOf<K>>;
-  /**
-   * What its editor takes besides the value (a counter's `step`), given to it as it is: the editor it names alone, or
-   * its kind's own where it names none (a property of a team's own has its options instead). It changes how the value
-   * is edited, never what the value may be: that's its kind's (a number's `min` and `max`).
-   */
-  editorOptions?: { readonly [name: string]: Json };
+  editor?: EditorUse<OutputOf<K>>;
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
 }
@@ -67,11 +60,10 @@ export interface EditorUse<V = any> {
   readonly _edits?: (value: V) => void;
 }
 
-/** A prop's editor where it names one, with what the prop gives it: named alone, or a team's own. */
-export function namedEditor(spec: PropSpec): { name: string; options?: { readonly [name: string]: Json } } | undefined {
+/** The property of a team's own a prop is, where it's one: its name, and its options as the prop has them. */
+export function propertyOf(spec: PropSpec): { name: string; options: { readonly [name: string]: Json } } | undefined {
   const { editor } = spec;
-  if (editor === undefined) return undefined;
-  return typeof editor === "string" ? { name: editor, options: spec.editorOptions } : { name: editor.name, options: editor.options };
+  return editor === undefined ? undefined : { name: editor.name, options: editor.options };
 }
 
 /** A style's or prop's support, by output. */

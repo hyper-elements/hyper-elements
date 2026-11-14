@@ -6,7 +6,7 @@
 import { CONDITIONS, type ConditionName } from "./conditions";
 import { registryOf, type ComponentsOption, type Registry } from "./registry";
 import { styleGroup } from "./styles";
-import { namedEditor, ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
+import { propertyOf, ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
 import type { EditorKind, JsonSchema } from "./kinds";
 import type { Json } from "./model";
 
@@ -18,13 +18,12 @@ export interface PropertyDescription {
   kind: string;
   accepts: string;
   editor: EditorKind;
-  /** The editor its prop names (`"counter"`, a team's own `"acme.currency"`), for an app that has one of that name; another shows `editor`. */
-  namedEditor?: string;
   /**
-   * What its prop gives its editor besides the value: the editor it names, or its kind's own where it names none. A
-   * counter's step, a currency's symbol (a team's own editor's options, each as the prop has it).
+   * The property of a team's own its prop is (`defineProperty()`), where it's one: its name (`"acme.currency"`), for an
+   * app with a control by that name, and its options as the prop has them, each its default where the prop gives none
+   * (a currency's `symbol`). An app with no control by the name shows `editor`, its kind's.
    */
-  editorOptions?: { readonly [name: string]: Json };
+  property?: { name: string; options: { readonly [name: string]: Json } };
   editable: boolean;
   required: boolean;
   default?: Json;
@@ -147,9 +146,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
   const within = (declared: readonly RootName[] | undefined) => (declared ? roots.filter((root) => declared.includes(root)) : roots);
   const properties: PropertyDescription[] = [];
   for (const [key, spec] of Object.entries(definition.props)) {
-    const named = namedEditor(spec);
-    // With no editor named, what the prop gives is for its kind's own.
-    const options = named?.options ?? spec.editorOptions;
+    const property = propertyOf(spec);
     properties.push({
       path: `props.${key}`,
       label: spec.label,
@@ -157,8 +154,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       kind: spec.kind.name,
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,
-      ...(named ? { namedEditor: named.name } : {}),
-      ...(options && Object.keys(options).length ? { editorOptions: options } : {}),
+      ...(property ? { property } : {}),
       editable: spec.editable !== false,
       required: !!spec.required,
       ...(spec.default !== undefined ? { default: spec.default } : {}),
