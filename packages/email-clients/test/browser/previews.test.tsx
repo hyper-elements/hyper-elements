@@ -377,8 +377,8 @@ describe("HTML given as a string", () => {
     for (const [name, words] of [["receipt.html", "Thanks for your order"], ["newsletter.html", "The weekly letter"]] as const) {
       const { previews } = await renderHtml(fixture(name), { emailClients: [...PREVIEW_CLIENTS], dark: true });
       // Webmail on a Mac too (4), Apple Mail's dark mode, Apple Mail on an iPhone, light and dark, the Gmail app on one,
-      // and Yahoo Mail's and AOL Mail's dark modes, on Windows and on a Mac (4).
-      expect(previews.length).toBe(PREVIEW_CLIENTS.length + 12);
+      // Yahoo Mail's and AOL Mail's dark modes, on Windows and on a Mac (4), and Outlook for Mac's.
+      expect(previews.length).toBe(PREVIEW_CLIENTS.length + 13);
       for (const preview of previews) {
         const { page, ready, errors, findings } = await open(`html-${name}-${preview.id}.html`, preview.html);
         try {
