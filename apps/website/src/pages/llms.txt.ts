@@ -33,6 +33,7 @@ export const GET: APIRoute = async () => {
     `- [Hyper Elements vs React Email](${site.url}/compare/react-email): when to pick each, feature by feature, and the agent benchmark`,
     `- [Hyper Elements vs MJML](${site.url}/compare/mjml): feature by feature, the same email in each, and the agent benchmark`,
     `- [React Email alternatives](${site.url}/alternatives/react-email): Hyper Elements, MJML, Maizzle and jsx-email, when to pick each, and the agent benchmark`,
+    `- [MJML alternatives](${site.url}/alternatives/mjml): Hyper Elements, React Email, Maizzle and jsx-email, when to pick each, and the agent benchmark`,
     `- [Litmus alternatives](${site.url}/alternatives/litmus): Hyper Elements, Parcel and Mailosaur for building reliable emails and seeing them in real email clients, when to pick each`,
     `- [Source](${site.github})`,
     "",
