@@ -24,11 +24,7 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   and never a non-breaking space, which is drawn and keeps its words on one line as it did. A Span or a Link that
   holds nothing draws nothing, so the space after it isn't an indent. A space between two runs hangs off the end
   of the first, so the line a wrap starts still begins at the margin; in a block aligned at the right it starts the
-  second instead, so the line a wrap ends still reaches the margin. (That space is part of its run's width, and
-  nothing but measuring the words says which line it's on: a centered line that wraps beside a Span can sit half a
-  space off, and a line can wrap a word sooner beside a Span than the same words written plainly, where they end
-  within a space of the edge. On a Canvas with no room to spare, its last line can then fall outside it.) A PDF, an
-  email and a page were never affected.
+  second instead, so the line a wrap ends still reaches the margin. A PDF, an email and a page were never affected.
 
 - **A LineBreak in an image, inside or beside a Span or a Link.** Each run of a block of text is a flex item, so a
   break didn't start the next line at the margin: beside a Span its line started beside the Span, and between two
