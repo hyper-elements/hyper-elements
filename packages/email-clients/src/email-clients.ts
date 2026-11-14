@@ -74,7 +74,7 @@ export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
   // Yahoo Mail and AOL Mail on the web (models 1.11.0): their message panes, 758px and 869px, in a 1440px window. AOL's
   // dark mode leaves the email as it is, so its dark preview is its light one.
   yahoo: { name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null },
-  aol: { name: "AOL Mail", widths: { desktop: 869 }, dark: true, approximate: false, measured: null },
+  aol: { name: "AOL Mail", widths: { desktop: 869 }, dark: true, approximate: true, measured: null },
   "samsung-email": tables("Samsung Email"),
   thunderbird: tables("Thunderbird"),
   protonmail: tables("Proton Mail"),

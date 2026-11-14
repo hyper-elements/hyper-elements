@@ -13,6 +13,8 @@ Each release records the models package it was tested with.
   - AOL Mail draws text the email doesn't style in its own web font: previews draw it with Roboto and Open Sans Italic,
     loaded whether or not the email names Open Sans.
   - AOL Mail's dark mode leaves the email as it is.
+  - AOL Mail's previews are `approximate`: AOL draws some text in its own web font, which the preview draws with a
+    stand-in of close widths, and lines can sit a pixel or so from where AOL puts them.
 - Requires `@hyper-elements/email-client-models` 1.11.0.
 - **The Gmail app on an iPhone:** `gmail-app` previews add `gmail-app.iphone`, the Gmail app on an iPhone 16 with
   iOS 26, in its 345px card: Gmail's version of the email as on Android, in iOS's fonts, line heights in whole pixels.
