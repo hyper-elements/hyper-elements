@@ -28,10 +28,8 @@ const words = { fontFamily: SANS, color: INK } as const;
 /** Small mono capitals: section labels, metadata, a figure's caption. */
 export const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSpacing: 1.2, textTransform: "uppercase", color: QUIET } as const;
 
-const SYMBOL = { EUR: "€", USD: "$", GBP: "£" } as const;
-/** A price as Oyen writes one: no decimals where there are none. */
-const money = (amount: number, currency: keyof typeof SYMBOL) => `${SYMBOL[currency]}${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
-const currencyCode = prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" });
+/** A price as Oyen writes one, in euros: no decimals where there are none. */
+const money = (amount: number) => `€${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
 
 /** The announcement: what's new, in one line, with the way to get it. */
 export const Announcement = component({
@@ -43,9 +41,8 @@ export const Announcement = component({
     lede: prop.text({ label: "Lede", default: "" }),
     button: prop.text({ label: "Button", default: "Pre-order" }),
     href: prop.link({ label: "Button link", default: SITE }),
-    // The example's own property (`../properties.ts`): a number, from 0, edited as money in steps of 1.
-    price: currency({ label: "Price", min: 0, default: 349, step: 1 }),
-    currency: currencyCode,
+    // The example's own property (`../properties.ts`): a number, from 0, edited as money, its field showing €.
+    price: currency({ label: "Price", min: 0, default: 349, symbol: "€" }),
     ships: prop.text({ label: "Ships", default: "Ships 2 December" }),
   },
   render: (p) => (
@@ -64,7 +61,7 @@ export const Announcement = component({
         >
           {p.button}
         </Button>
-        <Text style={label}>{`${money(p.price, p.currency)} · ${p.ships}`}</Text>
+        <Text style={label}>{`${money(p.price)} · ${p.ships}`}</Text>
       </Row>
     </Column>
   ),
@@ -75,7 +72,7 @@ export const Callout = component({
   type: "oyen.Callout",
   label: "Callout",
   props: {
-    number: prop.number({ label: "Number", min: 1, max: 99, integer: true, default: 1, editor: "counter" }),
+    number: prop.number({ label: "Number", min: 1, max: 99, integer: true, default: 1 }),
     title: prop.text({ label: "Title", required: true }),
     body: prop.text({ label: "Text", default: "" }),
     color: prop.color({ label: "Disc", default: SIGNAL }),
@@ -140,8 +137,7 @@ export const PriceBand = component({
   label: "Price band",
   props: {
     eyebrow: prop.text({ label: "Eyebrow", default: "First run" }),
-    price: currency({ label: "Price", min: 0, default: 349, step: 1 }),
-    currency: currencyCode,
+    price: currency({ label: "Price", min: 0, default: 349, symbol: "€" }),
     note: prop.text({ label: "Note", default: "" }),
     button: prop.text({ label: "Button", default: "Pre-order" }),
     href: prop.link({ label: "Button link", default: SITE }),
@@ -153,7 +149,7 @@ export const PriceBand = component({
         <Column style={{ gap: 14 }}>
           <Text style={{ ...label, color: INK }}>{p.eyebrow}</Text>
           <Heading level={2} style={{ ...words, fontSize: 96, lineHeight: 0.9, letterSpacing: -4.5, fontWeight: 500, mobile: { fontSize: 80, letterSpacing: -3.6 } }}>
-            {money(p.price, p.currency)}
+            {money(p.price)}
           </Heading>
           {p.note ? <Text style={{ ...words, fontSize: 15, lineHeight: 1.5 }}>{p.note}</Text> : null}
         </Column>

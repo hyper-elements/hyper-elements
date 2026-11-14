@@ -3,9 +3,10 @@
  * makes each tool from its component's definition: its name, its label, a field for each prop, and its drawing, in
  * the canvas and in what the editor exports.
  *
- * A prop says what its value is (`prop.number`); `editor` says what edits it. "counter" is one of the editor's own. The
- * price is a property of the example's (`../properties.ts` defines it), and its control (`../currency.ts`) is given
- * here under the property's name: without it, the price would be edited with a number's own field.
+ * A prop says what its value is (`prop.number`), and the editor picks its control from that: a whole number gets its
+ * counter. The price is a property of the example's (`../properties.ts` defines it), and its control
+ * (`../currency.ts`) is given here under the property's name: without it, the price would be edited with a number's
+ * own field.
  */
 import { registerTools } from "@hyper-elements/react/builder";
 import { currencyField } from "../currency";

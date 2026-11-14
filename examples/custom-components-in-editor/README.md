@@ -61,10 +61,10 @@ Each tool's block comes back as its component (`<shop.Ticket event="Lumen Conf 2
 
 ## Which editor a prop gets
 
-A prop says what its value is; the editor picks its control from that. A testimonial's stars are a `prop.number`, and it asks for the editor's counter by name:
+A prop says what its value is; the editor picks its control from that. A testimonial's stars are a whole number from 1 to 5, so the editor gives them its counter, which stops at 1 and 5:
 
 ```tsx
-rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5, editor: "counter" }),
+rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5 }),
 ```
 
 A price is a property of the example's own. `src/properties.ts` defines it, as data: its name, the helper of `prop` it's made on, and its options, each made with a helper too.
@@ -73,15 +73,19 @@ A price is a property of the example's own. `src/properties.ts` defines it, as d
 export const currency = defineProperty({
   name: "example.currency",
   base: prop.number,
-  options: { step: prop.number({ min: 0, default: 0.01 }) },
+  options: {
+    symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }),
+  },
 });
 ```
 
 Called, it's the prop. It takes what `prop.number` takes, and its own options:
 
 ```tsx
-price: currency({ label: "Price", min: 0, default: 49, step: 1 }),
+price: currency({ label: "Price", min: 0, default: 49, symbol: "€" }),
 ```
+
+A `symbol` that isn't one of the three, or an option the property doesn't have, is a type error, and refused where it's written.
 
 `src/currency.ts` writes its control as the editor takes one (its markup, and what it does once that's in the page), and `registerTools()` registers it under the property's name:
 

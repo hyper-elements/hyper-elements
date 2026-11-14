@@ -5,9 +5,11 @@
  */
 import { defineProperty, prop } from "@hyper-elements/react";
 
-/** A price, edited as money. It's a number still, with a number's own limits. `step` is what its field moves by. */
+/** A price, edited as money. It's a number still, with a number's own limits. `symbol` is what its field shows. */
 export const currency = defineProperty({
   name: "example.currency",
   base: prop.number,
-  options: { step: prop.number({ min: 0, default: 0.01 }) },
+  options: {
+    symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }),
+  },
 });

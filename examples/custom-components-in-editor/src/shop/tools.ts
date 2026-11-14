@@ -82,7 +82,6 @@ registerTools(unlayer, components, {
           name: product.name,
           description: product.description,
           price: String(product.price),
-          currency: "EUR",
           photo: product.photo,
           href: { name: "web", values: { href: `${SITE}/${product.id}`, target: "_blank" } },
         };

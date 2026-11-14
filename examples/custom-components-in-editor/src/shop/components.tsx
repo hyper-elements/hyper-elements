@@ -25,8 +25,8 @@ const MONO = "SFMono-Regular, Menlo, Consolas, 'Courier New', monospace";
 const eyebrow = { fontFamily: SANS, fontSize: 11, fontWeight: 700, lineHeight: 1.4, letterSpacing: 1.4, textTransform: "uppercase" } as const;
 const accent = prop.color({ label: "Accent", default: ACCENT });
 
-const SYMBOL = { EUR: "€", USD: "$", GBP: "£" } as const;
-const money = (amount: number, currency: keyof typeof SYMBOL) => `${SYMBOL[currency]}${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
+/** A price in euros: no decimals where there are none. */
+const money = (amount: number) => `€${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
 
 /** A product: its photo, what it is, its price and the way to buy it. In the editor it can be filled from the store. */
 export const ProductCard = component({
@@ -36,9 +36,8 @@ export const ProductCard = component({
     photo: prop.image({ label: "Photo" }),
     name: prop.text({ label: "Name", default: "Product name" }),
     description: prop.text({ label: "Description", default: "" }),
-    // The example's own property (`../properties.ts`): a number, from 0, edited as money in steps of 1.
-    price: currency({ label: "Price", min: 0, default: 49, step: 1 }),
-    currency: prop.choice(["EUR", "USD", "GBP"], { label: "Currency", default: "EUR" }),
+    // The example's own property (`../properties.ts`): a number, from 0, edited as money, its field showing €.
+    price: currency({ label: "Price", min: 0, default: 49, symbol: "€" }),
     badge: prop.choice(["none", "new", "sale", "low stock"], { label: "Badge", default: "none" }),
     button: prop.text({ label: "Button", default: "Add to cart" }),
     href: prop.link({ label: "Button link", default: "https://example.com" }),
@@ -57,7 +56,7 @@ export const ProductCard = component({
         </Column>
         <Row stackOnMobile={false} style={{ alignItems: "center", gap: 12 }}>
           <Column>
-            <Text style={{ fontFamily: SANS, color: INK, fontSize: 22, fontWeight: 700, lineHeight: 1.2, letterSpacing: -0.4 }}>{money(p.price, p.currency)}</Text>
+            <Text style={{ fontFamily: SANS, color: INK, fontSize: 22, fontWeight: 700, lineHeight: 1.2, letterSpacing: -0.4 }}>{money(p.price)}</Text>
           </Column>
           <Column style={{ width: 128 }}>
             <Button href={p.href} style={{ width: "100%", backgroundColor: p.accent, color: WHITE, fontFamily: SANS, fontSize: 14, fontWeight: 600, padding: [12, 0], borderRadius: 10 }}>
@@ -83,7 +82,7 @@ export const Testimonial = component({
   type: "shop.Testimonial",
   label: "Testimonial",
   props: {
-    rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5, editor: "counter" }),
+    rating: prop.number({ label: "Stars", min: 1, max: 5, integer: true, default: 5 }),
     quote: prop.text({ label: "Quote", required: true }),
     name: prop.text({ label: "Name", required: true }),
     role: prop.text({ label: "Role", default: "" }),
