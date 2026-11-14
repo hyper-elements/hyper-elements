@@ -3,7 +3,7 @@
  * an Elements from before templateAssets() (its HTML, as before), Bun (a Document's PDF isn't Node's byte for byte
  * there: exit 2), and the gallery's and stress set's Canvases whose fonts are WOFF2 only.
  */
-import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { answer, canvas, cli, copyElements, documentTemplate, ENGINES, fixture, lines, ON_BUN, pngSize, project, REPO, serve, withFixtures, type Server } from "./helpers";
@@ -33,16 +33,24 @@ describe("a Document", () => {
     expect(readFileSync(join(dir, "out2/docs/invoice.pdf")).equals(readFileSync(join(dir, "out/docs/invoice.pdf")))).toBe(true);
   });
 
-  // react-pdf's text engine imports a package that names an `import` condition alone. A template compiled to
-  // CommonJS is loaded through tsx's register, which compiled the dependency too and turned that import into a
-  // `require`: every Document failed with ERR_PACKAGE_PATH_NOT_EXPORTED, in any project whose
-  // package.json has no "type": "module" (what `npm init` writes). The dependency is left to Node, where Node can
-  // `require` an ES module (20.19 and 22.12 on): before those it's tsx's as it was, and the PDF isn't written.
-  it.skipIf(ON_BUN || !process.features.require_module)("writes its PDF in a CommonJS project, whose engine loads an ES module of its own", async () => {
+  // react-pdf's text engine imports a package that names an `import` condition alone. A template in a project whose
+  // package.json has no "type": "module" (what `npm init` writes) is loaded through tsx's CommonJS register, which
+  // compiles the dependency too and turns that import into a `require()`, which Node refuses
+  // (ERR_PACKAGE_PATH_NOT_EXPORTED, naming nothing to change). It's a `cli/commonjs-import` error, saying to load the
+  // template as an ES module, and done that way the PDF is written.
+  it.skipIf(ON_BUN)("in a CommonJS project, fails saying to add \"type\": \"module\", and then writes its PDF", async () => {
     const dir = withFixtures(project({ "docs/invoice.tsx": documentTemplate(FONTS) }, { packageJson: { name: "fixture", private: true } }));
     const ran = await cli(dir, ["render", "docs", "--json"]);
-    expect(ran.code, ran.stdout + ran.stderr).toBe(0);
-    expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.pdf"], diagnostics: [] });
+    expect(ran.code, ran.stdout + ran.stderr).toBe(2);
+    const [line] = lines(ran);
+    expect(line).toMatchObject({ status: "error", outputs: [], diagnostics: [{ code: "cli/commonjs-import", severity: "error" }] });
+    expect(line.diagnostics[0].message).toContain("@react-pdf/hyphenate can only be imported");
+    expect(line.diagnostics[0].fix).toContain(`add "type": "module" to package.json`);
+
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "fixture", private: true, type: "module" }));
+    const fixed = await cli(dir, ["render", "docs", "--json"]);
+    expect(fixed.code, fixed.stdout + fixed.stderr).toBe(0);
+    expect(lines(fixed)[0]).toMatchObject({ root: "Document", status: "ok", outputs: ["out/docs/invoice.pdf"], diagnostics: [] });
     expect(readFileSync(join(dir, "out/docs/invoice.pdf")).subarray(0, 5).toString()).toBe("%PDF-");
   });
 

@@ -54,6 +54,12 @@ A Document is drawn with the project's `@hyper-elements/react/pdf` and `@react-p
 `@hyper-elements/react/image`, `satori` and `@resvg/resvg-js` (Elements' optional peers): install them beside
 Elements. Without them, the template fails with an error naming what to install.
 
+A Document's template must load as an ES module: in a package.json with `"type": "module"`, or as an `.mts` file.
+react-pdf imports a package that only an `import` loads, and a template in a project without `"type": "module"`
+(what `npm init` writes) is compiled to CommonJS, its dependencies' imports with it. There the template fails with
+`cli/commonjs-import` (exit 2), saying to add `"type": "module"` to the package.json, or to put the templates in a
+folder with a package.json of `{"type": "module"}`. Any package that only an `import` loads gives the same error.
+
 Neither renderer loads a font or an image itself. The CLI loads what the template names (`templateAssets()` lists
 them) and gives them the files:
 

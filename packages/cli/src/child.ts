@@ -6,9 +6,9 @@
  * On Node, tsx is registered once, for the group's tsconfig (one tsconfig per process: tsx's registers share one
  * config). On Bun, which compiles TSX and reads the template's tsconfig itself, nothing is registered.
  */
-import { realpathSync, rmSync, writeFileSync } from "node:fs";
-import Module, { createRequire } from "node:module";
-import { dirname, relative, sep } from "node:path";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import { defaultExport, guard, projectTsconfig, templateComponent } from "@hyper-elements/template-loader";
@@ -54,96 +54,6 @@ if (!bun) {
 
 /** The files this child wrote beside the templates (loader modules, a tsconfig): removed when it's done. */
 const written = new Set<string>();
-
-const DEPENDENCY = `${sep}node_modules${sep}`;
-/** The loaders `require` reads, by extension. */
-type Loaders = Record<string, ((module: NodeJS.Module, file: string) => void) | undefined>;
-/** `Module._extensions` is `require.extensions`, which this file has no `require` to reach (it's an ES module). */
-const extensions = () => (Module as unknown as { _extensions: Loaders })._extensions;
-/** Node's own loaders, read as this module loads, before anything registers one of its own in their place. */
-const NODE_LOADERS: Loaders = { ...extensions() };
-/** The extensions Node has no loader of their own for, and reads through its `.js` one. */
-const READ_AS_JS = [".mjs", ".cjs"];
-
-/**
- * tsx's CommonJS register, with a dependency's own JavaScript left to Node.
- *
- * tsx compiles every file required, those under node_modules among them, so a dependency written as an ES module is
- * turned into CommonJS and each `import` in it into a `require` (an `import()` is left as it is). A package whose
- * "exports" names an `import` condition alone then can't be found: react-pdf's text engine imports one, so in a
- * project without `"type": "module"` every Document failed with `ERR_PACKAGE_PATH_NOT_EXPORTED` for
- * `@react-pdf/hyphenate/en-us`, and no PDF was written. A package's JavaScript is already the JavaScript its own
- * package.json says it is, so under node_modules it's loaded as Node loads it.
- *
- * Only JavaScript Node loads as it is written is given back: `.js`, and `.mjs` and `.cjs`, which Node has no loader
- * of their own for and reads through its `.js` one (`.ts`, `.tsx` and `.jsx` are tsx's to compile wherever they
- * are). tsx hooks `.mjs` under a key of its own, so that one is given Node's `.js` loader: left with tsx, a
- * dependency whose entry is an `.mjs` file failed the same way. Reading the loaders again after `register()` keeps
- * this true of whichever of them tsx hooks.
- *
- * And only where Node can `require` an ES module itself (20.19 and 22.12 on, `process.features.require_module`).
- * Before those, tsx compiling it is the one way a CommonJS project reaches a dependency written as one, so there
- * every file stays tsx's, as it was: a template importing such a dependency renders, and a Document's PDF is still
- * not written.
- *
- * `own` is the folders of the packages the templates are in (`ownPackages()`): their files stay tsx's wherever the
- * package is, as they were.
- *
- * A dependency Node can't load is tsx's too, as it was: one whose ES module imports its own TypeScript (a package
- * that ships its source). Node 22 on reads that through tsx's ES module hooks; on Node 20.19 a `require` of an ES
- * module doesn't go through them, and fails with `ERR_UNKNOWN_FILE_EXTENSION` for the `.tsx` file. Nothing of the
- * dependency has run by then (everything a module imports is loaded before any of it runs), so tsx compiles it.
- */
-async function registerCommonJs(own: string[]): Promise<void> {
-  (await import("tsx/cjs/api")).register();
-  if (!process.features.require_module) return;
-  const loaders = extensions();
-  for (const extension of new Set([...Object.keys(NODE_LOADERS), ...READ_AS_JS])) {
-    const compiled = loaders[extension];
-    const plain = NODE_LOADERS[extension] ?? NODE_LOADERS[".js"];
-    if (!compiled || !plain || compiled === plain) continue;
-    // (Assigned to the key as it is: tsx keeps `.mjs` off the list `require` tries on a name with no extension.)
-    loaders[extension] = function (module: NodeJS.Module, file: string) {
-      if (!isDependency(file, own)) return compiled.call(this, module, file);
-      try {
-        return plain.call(this, module, file);
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException | null)?.code !== "ERR_UNKNOWN_FILE_EXTENSION") throw error;
-        return compiled.call(this, module, file);
-      }
-    };
-  }
-}
-
-/**
- * The folders of the packages the templates are in, as given and as they really are (`require` names a file by its
- * real path). A template can be in an installed package itself (`render node_modules/@acme/emails/dist/welcome.js`),
- * or its project under a folder named node_modules: that package's files are still the template's own. One of them
- * is the loader module the CLI writes beside a template, ES syntax that calls `require`, which only tsx reads: a
- * template's own folder is among these too, for one with no package.json between it and that node_modules.
- */
-function ownPackages(inputs: ChildInput[]): string[] {
-  const folders = new Set<string>();
-  for (const input of inputs) {
-    const beside = dirname(input.file);
-    for (const folder of [packageFolder(beside), beside]) {
-      if (!folder) continue;
-      folders.add(folder);
-      try {
-        folders.add(realpathSync(folder));
-      } catch {
-        // (the folder as given)
-      }
-    }
-  }
-  return [...folders];
-}
-
-/** Whether a file is a dependency's: under a node_modules folder, other than one a template's own package is under. */
-function isDependency(file: string, own: string[]): boolean {
-  if (!file.includes(DEPENDENCY)) return false;
-  return !own.some((folder) => file.startsWith(folder + sep) && !file.slice(folder.length).includes(DEPENDENCY));
-}
 
 /**
  * The parent's gone without ending this child (it was killed, or on Windows ended by another process, which leaves its
@@ -196,7 +106,7 @@ async function start(message: StartMessage): Promise<void> {
       const previous = process.env.TSX_TSCONFIG_PATH;
       process.env.TSX_TSCONFIG_PATH = config.file;
       try {
-        await registerCommonJs(ownPackages(message.inputs));
+        (await import("tsx/cjs/api")).register();
       } finally {
         if (previous === undefined) delete process.env.TSX_TSCONFIG_PATH;
         else process.env.TSX_TSCONFIG_PATH = previous;
@@ -404,6 +314,8 @@ class Session {
     } catch (error) {
       const diagnostics = elementsErrorDiagnostics(error);
       if (diagnostics) return this.result(input, { status: "error", diagnostics }, loaded);
+      const refused = this.commonJsImport(input, error, loaded);
+      if (refused) return refused;
       return this.result(input, { status: "error", error: errorText(error, this.message.cwd), usage: exitCalled(error) || error instanceof UsageFailure || undefined, diagnostics: notes }, loaded);
     }
   }
@@ -523,9 +435,55 @@ class Session {
     });
   }
 
+  /**
+   * A package only an `import` loads, imported where the template loads as CommonJS. A template in a package without
+   * `"type": "module"` (what `npm init` writes) is loaded through tsx's CommonJS register, which compiles every file
+   * it loads to CommonJS, a dependency's ES modules among them, and each `import` in one into a `require()`. Node
+   * refuses a `require()` of a package whose "exports" names an `import` condition and no `require` one
+   * (ERR_PACKAGE_PATH_NOT_EXPORTED), with an error that names nothing to change. react-pdf's text engine imports one,
+   * so every Document's PDF failed this way. Loaded as an ES module, the template's imports are Node's own and the
+   * package is found.
+   */
+  private commonJsImport(input: ChildInput, error: unknown, loaded?: Loaded): ResultMessage | undefined {
+    if (bun || input.format !== "cjs" || (error as NodeJS.ErrnoException | null)?.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") return undefined;
+    // Node names the package.json: `No "exports" main defined in <file>`, `… is not defined by "exports" in <file>`.
+    const manifest = /\bin (.+?package\.json)(?: imported from |$)/m.exec(messageOf(error))?.[1];
+    let pkg: { name?: unknown; exports?: unknown };
+    try {
+      pkg = JSON.parse(readFileSync(manifest ?? "", "utf8"));
+    } catch {
+      return undefined;
+    }
+    const forImport = (value: unknown): boolean => typeof value === "object" && value !== null && Object.entries(value).some(([key, held]) => key === "import" || forImport(held));
+    if (!forImport(pkg.exports)) return undefined;
+    const name = typeof pkg.name === "string" ? pkg.name : "A package this template imports";
+    const cwd = this.message.cwd;
+    const extension = /\.c([jt])s$/.exec(input.file)?.[1];
+    const folder = packageFolder(dirname(input.file));
+    const fix = extension
+      ? `rename ${relative(cwd, input.file)} to .m${extension}s, so it loads as an ES module`
+      : folder
+        ? `add "type": "module" to ${relative(cwd, join(folder, "package.json")) || "package.json"}, so the template loads as an ES module (or put the templates in a folder with a package.json of {"type": "module"})`
+        : `add a package.json with {"type": "module"} beside the template, so it loads as an ES module`;
+    return this.result(input, {
+      status: "error",
+      usage: true,
+      diagnostics: [
+        cliDiagnostic(
+          "commonjs-import",
+          "error",
+          `${name} can only be imported, not required, and this template loads as CommonJS, where each import is compiled to a require(): ${errorLine(error)}`,
+          fix,
+        ),
+      ],
+    }, loaded);
+  }
+
   private loadFailure(input: ChildInput, error: unknown): ResultMessage {
     if (notFound(error, "@hyper-elements/react")) return this.elementsMissing(input);
     if (notFound(error, "react") || notFound(error, "react-dom")) return this.reactMissing(input);
+    const refused = this.commonJsImport(input, error);
+    if (refused) return refused;
     return this.result(input, { status: "error", error: errorText(error, this.message.cwd), ...(exitCalled(error) ? { usage: true } : {}) });
   }
 }
