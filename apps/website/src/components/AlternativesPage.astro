@@ -22,6 +22,8 @@ interface Props {
   description: string;
   /** The H1. */
   title: string;
+  /** The image shown when the page is shared (1280 × 640, in public/), and its alt text; the site's own if left out. */
+  image?: { src: string; alt: string };
   lede: string;
   /** Buttons under the lede, the first one primary (none if left out). */
   ctas?: Link[];
@@ -39,7 +41,7 @@ interface Props {
   faq: { q: string; a: string }[];
   final: { title: string; sub: string; cmd: string; ctas: Link[]; others: Link[] };
 }
-const { path, metaTitle, description, title, lede, ctas = [], tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
+const { path, metaTitle, description, title, image, lede, ctas = [], tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
 const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No", na: "Doesn't apply" };
 
 const url = new URL(path, site.url).href;
@@ -54,7 +56,7 @@ const jsonLd = [
   { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
 ];
 ---
-<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd}>
+<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd} image={image?.src} imageAlt={image?.alt}>
   <section class="a-hero">
     <div class="wrap a-hero-inner">
       <h1 class="h-page">{title}</h1>
