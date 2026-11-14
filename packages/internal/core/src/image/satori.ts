@@ -54,27 +54,35 @@ function atBreaks(item: Run): Run[] {
 }
 
 /**
- * A block's runs, each line break drawn as one in Yoga. Each run is a flex item, and a line of them a flex line: a
- * break in a run's text would break that run's own box, the run after it carrying on beside the box ("See our today"
- * with "site" under "our", for `See <Span>our<LineBreak />site</Span> today`), and a break between two Spans would
- * break nothing. So a break is an item of its own, as wide as the block, which the next items wrap below. A line
- * with nothing on it (a break at the block's start, or right after another) holds a space, so it's a line high, as
- * it is in the HTML outputs.
+ * A block's runs, line by line at its line breaks. Each run is a flex item, and a line of them a flex line: a break
+ * in a run's text would break that run's own box, the run after it carrying on beside the box ("See our today" with
+ * "site" under "our", for `See <Span>our<LineBreak />site</Span> today`), and a break between two Spans would break
+ * nothing. So each line the breaks make is drawn as a box of its own (`text()`). A break that ends the block starts
+ * no line, as in the HTML outputs.
  */
-function lines(runs: Run[]): ReactNode[] {
-  const drawn: ReactNode[] = [];
-  let empty = true;
+function lines(runs: Run[]): ReactNode[][] {
+  const drawn: ReactNode[][] = [[]];
   for (const [key, item] of runs.flatMap(atBreaks).entries()) {
-    if (item !== BREAK) {
-      drawn.push(run(item, key));
-      empty = false;
-      continue;
-    }
-    if (empty) drawn.push(" ");
-    drawn.push(createElement("div", { key, style: { flexBasis: "100%", height: 0 } }));
-    empty = true;
+    if (item === BREAK) drawn.push([]);
+    else drawn[drawn.length - 1]!.push(run(item, key));
   }
+  if (drawn.length > 1 && drawn[drawn.length - 1]!.length === 0) drawn.pop();
   return drawn;
+}
+
+/**
+ * A block of text. One with line breaks is a column of its lines, each a box its runs wrap in, aligned in it as the
+ * block's are: as wide as its widest line where the block is as wide as its words (a Button's), as in the HTML
+ * outputs. (A break drawn as an item as wide as the block, for the items after it to wrap below, made such a block
+ * as wide as it could grow.) A line with nothing on it (at the block's start, or between two breaks) holds a space,
+ * so it's a line high, as it is in the HTML outputs.
+ */
+function text(item: Extract<Block, { kind: "text" }>, key?: number): ReactElement {
+  const drawn = lines(item.runs);
+  if (drawn.length === 1) return createElement("div", { key, style: item.style }, ...drawn[0]!);
+  const { justifyContent, flexWrap: _, ...style } = item.style;
+  const line = (runs: ReactNode[], i: number) => createElement("div", { key: i, style: { display: "flex", flexWrap: "wrap", justifyContent } }, ...(runs.length > 0 ? runs : [" "]));
+  return createElement("div", { key, style: { ...style, flexDirection: "column" } }, ...drawn.map(line));
 }
 
 const block = (item: Block, key?: number): ReactElement => {
@@ -82,7 +90,7 @@ const block = (item: Block, key?: number): ReactElement => {
     case "box":
       return createElement("div", { key, style: item.style }, ...item.children.map(block));
     case "text":
-      return createElement("div", { key, style: item.style }, ...lines(item.runs));
+      return text(item, key);
     case "image":
       return picture(item, key);
     case "drawing":

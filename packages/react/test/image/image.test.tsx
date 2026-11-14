@@ -688,6 +688,26 @@ describe("renderImage", () => {
     const [plain] = await lines(<Text>See our</Text>);
     const [broken] = await lines(<Text><LineBreak />See our</Text>);
     expect(Math.abs(broken!.top - plain!.top - line)).toBeLessThan(2);
+
+    // A Button is as wide as its widest line, a break in it inside a Span too. Each break drawn as an item as wide as
+    // the block, in a box as wide as its words (a Button's), took all the width the box could grow to: the Button
+    // was drawn as wide as the Canvas.
+    const button = async (children: ReactNode) => {
+      const template = (
+        <Canvas width={400} height={300} style={{ padding: 20, fontFamily: "Liberation Sans" }}>
+          <Button href="https://x.test" style={{ backgroundColor: "#0879a1" }}>{children}</Button>
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+      const [, width, height] = /<path x="[\d.]+" y="[\d.]+" width="([\d.]+)" height="([\d.]+)" fill="#0879a1"/.exec(svg)!;
+      return { width: Number(width), height: Number(height) };
+    };
+    const [buy, now] = [await button("Buy"), await button("now")];
+    for (const [name, children] of [["in the Button", <>Buy<LineBreak />now</>], ["inside a Span", <Span style={red}>Buy<LineBreak />now</Span>]] as const) {
+      const both = await button(children);
+      expect(Math.abs(both.width - Math.max(buy.width, now.width)), name).toBeLessThan(1);
+      expect(both.height - buy.height, name).toBeGreaterThan(10);
+    }
   });
 
   it("writes a Canvas only", async () => {
