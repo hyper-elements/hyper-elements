@@ -2,6 +2,7 @@
 import AlternativesPage, { type MatrixRow, type Tool } from "../../components/AlternativesPage.astro";
 import { showcase } from "../../lib/examples";
 import { site } from "../../lib/site";
+import ClientShots from "../../components/ClientShots.astro";
 
 // "Litmus alternatives": tools that help you build reliable emails faster and see them in real email clients. Hyper
 // Elements first, then Parcel and Mailosaur, with Litmus as the table's baseline. Keep it evergreen: no versions,
@@ -84,14 +85,6 @@ const agentTools = [
   { t: "2.6× faster", code: "", d: "An agent reached a passing email 2.6× faster than with React Email, in our benchmark", href: "/docs/benchmark" },
 ];
 
-// The visual: the site's launch email as the emulator draws it (public/generated/email-clients/, from
-// scripts/email-client-previews.mjs), and how closely each client's preview matches the real one.
-const shots = [
-  { name: "Classic Outlook", acc: "97%", img: "/generated/email-clients/launch-outlook.png", w: 820, h: 989 },
-  { name: "Gmail", acc: "99%", img: "/generated/email-clients/launch-gmail.png", w: 820, h: 989 },
-  { name: "Apple Mail", acc: "98%", img: "/generated/email-clients/launch-apple-mail.png", w: 820, h: 985 },
-  { name: "Gmail app", acc: "98%", img: "/generated/email-clients/launch-gmail-app.png", w: 380, h: 997, phone: true },
-];
 
 // Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
 const faq = [
@@ -207,15 +200,7 @@ const faq = [
     </div>
   </section>
 
-  <a class="shots reveal" href="/email-testing" aria-label="Try the email client emulator">
-    {shots.map((s) => (
-      <figure class:list={["shot", { "shot-phone": s.phone }]}>
-        <div class="shot-frame"><img src={s.img} width={s.w} height={s.h} alt={`The launch email as the emulator draws it in ${s.name}`} loading="lazy" decoding="async" /></div>
-        <figcaption><span>{s.name}</span><b>{s.acc}</b></figcaption>
-      </figure>
-    ))}
-  </a>
-  <p class="shots-note">The percentage is how closely each preview matches the real client. Outlook.com, Yahoo Mail and AOL Mail are previewed too, and more clients are on the way.</p>
+  <ClientShots />
   <div class="lx-cta">
     <a class="btn btn-primary" href="/email-testing">Paste your email and preview it free <span class="arrow">→</span></a>
   </div>
@@ -263,24 +248,10 @@ const faq = [
   .lx-tools code { justify-self: start; font: 500 12.5px var(--mono); color: var(--ok); background: none; border: 0; padding: 0; overflow-wrap: anywhere; }
   .lx-tools span { font-size: 14px; line-height: 1.45; color: var(--text-2); }
 
-  /* A few of the clients: three windows and a phone, each the top of the launch email. */
-  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.5fr); gap: 16px; align-items: end; color: inherit; text-decoration: none; }
-  .shot { margin: 0; min-width: 0; }
-  .shot-frame { overflow: hidden; border: 1px solid var(--line-2); border-radius: 12px; background: #fff; box-shadow: 0 16px 36px -18px rgba(0, 0, 0, 0.35); transition: transform 0.25s; -webkit-mask-image: linear-gradient(#000 88%, transparent); mask-image: linear-gradient(#000 88%, transparent); }
-  /* The phone: its top, about as tall as the windows beside it. */
-  .shot.shot-phone .shot-frame { aspect-ratio: 380 / 720; border-radius: 18px; border: 4px solid #2a2a2a; }
-  .shots:hover .shot-frame, .shots:focus-visible .shot-frame { transform: translateY(-4px); }
-  .shot img { display: block; width: 100%; height: auto; }
-  .shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 4px 0; font-size: 14px; font-weight: 600; }
-  .shot figcaption b { font: 500 12.5px var(--mono); color: var(--ok); }
-  .shots-note { margin: 18px 0 0; text-align: center; font-size: 13.5px; color: var(--text-3); }
-  /* Narrower: classic Outlook beside the phone; the panels stack. */
+  /* Narrower: the panels stack. */
   @media (max-width: 1000px) {
     .lx-vs, .lx-agents { grid-template-columns: minmax(0, 1fr); }
     .lx-side.us { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
-    .shots { grid-template-columns: minmax(0, 1fr) minmax(0, 0.42fr); }
-    .shot:nth-child(2), .shot:nth-child(3) { display: none; }
-    .shot.shot-phone figcaption { display: grid; gap: 2px; font-size: 12.5px; }
   }
   @media (max-width: 640px) {
     .lx-cta .btn { width: 100%; }

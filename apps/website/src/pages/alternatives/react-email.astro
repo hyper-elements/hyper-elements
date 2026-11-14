@@ -1,6 +1,8 @@
 ---
 import AlternativesPage, { type MatrixRow, type Tool } from "../../components/AlternativesPage.astro";
 import { site } from "../../lib/site";
+import ClientShots from "../../components/ClientShots.astro";
+import ThemeShots from "../../components/ThemeShots.astro";
 
 // "React Email alternatives": a list page, the format searches for alternatives favor, linking to each comparison
 // page. Keep it evergreen: no versions or dates on it. Its facts were last checked on November 14, 2026 against
@@ -168,9 +170,42 @@ const faq = [
     </div>
     <p class="board-note">Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured. <span class="board-more">The benchmark →</span></p>
   </a>
+
+  {/* After the table: the one thing none of the others do. */}
+  <section class="section" slot="after-table">
+    <div class="wrap">
+      <div class="ra-head reveal">
+        <h2 class="h-section">Only Hyper Elements shows it in Outlook, Gmail and Apple Mail</h2>
+        <p>React Email, MJML, Maizzle and jsx-email preview your email in a browser. Hyper Elements draws it the way each email client does, free, on your machine.</p>
+      </div>
+      <ClientShots />
+      <div class="ra-cta reveal">
+        <a class="btn btn-primary" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  {/* After the tools, before the questions: themes. */}
+  <section class="section" slot="before-faq">
+    <div class="wrap">
+      <div class="ra-head reveal">
+        <h2 class="h-section">On brand, in every email</h2>
+        <p>Write your brand once with defineTheme(). The template names no colors or fonts: swap the theme and the same email is someone else's. React Email, Maizzle and jsx-email share a brand through a Tailwind config, and MJML through mj-attributes.</p>
+      </div>
+      <ThemeShots />
+      <div class="ra-cta reveal">
+        <a class="btn btn-ghost" href="/docs/themes">How themes work <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
 </AlternativesPage>
 
 <style>
+  /* This page's own sections: a heading over the previews or the themed emails, and a button under them. */
+  .ra-head { text-align: center; margin: 0 auto 44px; max-width: 720px; }
+  .ra-head .h-section { margin: 0; }
+  .ra-head p { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
+  .ra-cta { display: flex; justify-content: center; margin-top: 28px; }
   /* The benchmark: two bar charts. */
   .board { display: block; padding: 32px; border: 1px solid var(--line-2); border-radius: 18px; background: linear-gradient(180deg, var(--bg-2), var(--bg-1)); box-shadow: var(--shadow); color: inherit; text-decoration: none; transition: border-color 0.2s; }
   .board:hover, .board:focus-visible { border-color: var(--line-3); }

@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import CodeBlock from "./CodeBlock.astro";
+import ThemeShots from "./ThemeShots.astro";
 import Cmd from "./Cmd.astro";
 import { site } from "../lib/site";
 import { showcase, template } from "../lib/examples";
@@ -53,11 +54,7 @@ const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%
 
 const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No" };
 
-// On brand: one email (examples/brand/announcement.tsx) rendered with two themes (examples/showcase/brand-*.tsx).
-const brands = [
-  { name: "North", theme: "north", img: "/generated/compare/brand-north.jpg", w: 620, h: 470 },
-  { name: "Bloom", theme: "bloom", img: "/generated/compare/brand-bloom.jpg", w: 620, h: 470 },
-];
+// On brand: the themed emails are ThemeShots; the template beside them names no colors or fonts.
 const brandCode = `<Email theme={north}>
   <Column style={{ apply: ["card"] }}>
     <Heading level={1}>The winter collection…</Heading>
@@ -250,14 +247,7 @@ const jsonLd = [
         <h2 class="h-section">On brand, in every email</h2>
         <p class="sec-sub">Write your brand once as a theme. The template names no colors or fonts; swap the theme and the same email is someone else's.</p>
       </div>
-      <div class="brand-shots reveal">
-        {brands.map((b) => (
-          <figure class="brand-shot">
-            <img src={b.img} width={b.w} height={b.h} alt={`The same announcement email with the ${b.name} theme`} loading="lazy" decoding="async" />
-            <figcaption><code>theme=&#123;{b.theme}&#125;</code><span>{b.name}</span></figcaption>
-          </figure>
-        ))}
-      </div>
+      <ThemeShots />
       <div class="brand-row reveal">
         <div class="brand-code">
           <CodeBlock code={brandCode} file="emails/announcement.tsx" />
@@ -431,13 +421,6 @@ const jsonLd = [
   .emu-clients b { font: 500 12px var(--mono); color: var(--ok); }
 
   /* On brand: the template and the theme's parts, beside the same email in two themes. */
-  .brand-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-  .brand-shot { margin: 0; min-width: 0; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: var(--bg-1); box-shadow: var(--shadow); }
-  /* The frame keeps the email's own proportions (620 × 470), so the whole email shows at any width. */
-  .brand-shot img { display: block; width: 100%; height: auto; background: #fff; }
-  .brand-shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 16px; }
-  .brand-shot code { font: 500 12.5px var(--mono); color: var(--ok); background: none; border: 0; padding: 0; }
-  .brand-shot span { font-size: 15px; font-weight: 600; }
   .brand-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 20px; }
   .brand-code, .brand-side { min-width: 0; }
   .brand-side { display: flex; flex-direction: column; gap: 10px; }
@@ -542,7 +525,6 @@ const jsonLd = [
     .outs { grid-template-columns: minmax(0, 1fr); }
     .chk-points li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .diag-row { padding: 12px 14px; }
-    .brand-shots { grid-template-columns: minmax(0, 1fr); gap: 14px; }
     .faq-item summary { padding: 18px 48px 18px 18px; font-size: 15.5px; }
     .faq-item summary::after { right: 18px; }
     .faq-item p { padding: 0 18px 18px; }

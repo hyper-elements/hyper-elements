@@ -6,7 +6,7 @@ import { site } from "../lib/site";
 // An alternatives page, /alternatives/<slug>: one tool's alternatives as a list, the format searches for
 // alternatives favor. Hyper Elements is the first tool and the first column. Each page in src/pages/alternatives/
 // gives the tools, the table and the questions, its own visual in the default slot, and any sections of its own in
-// the "after-table" and "more" slots (each with its styles); keep it
+// the "after-table", "more" (before the tools) and "before-faq" slots (each with its styles); keep it
 // evergreen: no versions, dates or prices on it (put what it was checked against in a comment).
 
 export type Mark = "yes" | "part" | "no" | "na";
@@ -131,7 +131,7 @@ const jsonLd = [
     </div>
   </section>
 
-  {/* Sections of the page's own: "after-table" right after the table, "more" before the tools. */}
+  {/* Sections of the page's own: "after-table" right after the table, "more" before the tools, "before-faq" after them. */}
   <slot name="after-table" />
 
   {/* The page's own visual (a chart, screenshots), under its heading. */}
@@ -178,6 +178,8 @@ const jsonLd = [
       ))}
     </div>
   </section>
+
+  <slot name="before-faq" />
 
   <section class="section">
     <div class="wrap faq-wrap">

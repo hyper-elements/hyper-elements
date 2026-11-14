@@ -1,0 +1,28 @@
+---
+// One announcement email (examples/brand/announcement.tsx) rendered with two themes (examples/showcase/brand-*.tsx),
+// as images drawn by scripts/compare-previews.mjs. Shared by the pages that show themes.
+const brands = [
+  { name: "North", theme: "north", img: "/generated/compare/brand-north.jpg", w: 620, h: 470 },
+  { name: "Bloom", theme: "bloom", img: "/generated/compare/brand-bloom.jpg", w: 620, h: 470 },
+];
+---
+<div class="brand-shots reveal">
+  {brands.map((b) => (
+    <figure class="brand-shot">
+      <img src={b.img} width={b.w} height={b.h} alt={`The same announcement email with the ${b.name} theme`} loading="lazy" decoding="async" />
+      <figcaption><code>theme=&#123;{b.theme}&#125;</code><span>{b.name}</span></figcaption>
+    </figure>
+  ))}
+</div>
+
+<style>
+  .brand-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .brand-shot { margin: 0; min-width: 0; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: var(--bg-1); box-shadow: var(--shadow); }
+  .brand-shot img { display: block; width: 100%; height: auto; background: #fff; }
+  .brand-shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 16px; }
+  .brand-shot code { font: 500 12.5px var(--mono); color: var(--ok); background: none; border: 0; padding: 0; }
+  .brand-shot span { font-size: 15px; font-weight: 600; }
+  @media (max-width: 640px) {
+    .brand-shots { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  }
+</style>
