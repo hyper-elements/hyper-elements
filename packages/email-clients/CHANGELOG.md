@@ -8,6 +8,11 @@ Each release records the models package it was tested with.
   `yahoo.mac`, and so on), in their message panes, 758px and 869px wide, with a dark preview of each with `dark: true`.
   Drawn with the models' `yahoo` and `aol` (1.11.0).
   - On the models' benchmark: 99.3% of lines within 3px for Yahoo Mail (98.4% in dark mode), 99.0% for AOL Mail.
+  - **On emails they weren't tuned on**, the 60 Elements 0.3.0 held-out emails, in screenshots from Mailgun Inspect:
+    97.8% of lines within 3px for Yahoo Mail (97.1% in dark mode), 92.3% for AOL Mail. `EMAIL_CLIENTS` gives these as
+    `screenshots` (a new optional field, type `EmailClientScreenshots`): lines, not words, since a screenshot has no
+    word positions, so `measured` stays null for both. AOL Mail's preview is `approximate`: its own web font, drawn
+    with Roboto, sets lines a pixel or so from where AOL does.
   - For HTML not built with Hyper Elements, they're approximate (measured on two such emails), as
     `APPROXIMATE_FOR_HTML` lists.
   - AOL Mail draws text the email doesn't style in its own web font: previews draw it with Roboto and Open Sans Italic,

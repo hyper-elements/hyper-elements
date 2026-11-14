@@ -55,9 +55,33 @@ export interface EmailClientInfo {
   approximate: boolean;
   /** Its captures; null where what's known of it is caniemail's. */
   measured: EmailClientMeasurement | null;
+  /** Where its model was checked against screenshots of the client instead (Yahoo Mail, AOL Mail). */
+  screenshots?: EmailClientScreenshots;
+}
+
+/**
+ * A model checked against screenshots of the real client, on emails it wasn't tuned on. A screenshot has no word
+ * positions, so this counts lines of text: not the same measure as EmailClientMeasurement's words.
+ */
+export interface EmailClientScreenshots {
+  /** The Elements version whose emails were sent. */
+  elements: string;
+  /** How many emails. */
+  emails: number;
+  /** The client, and what took the screenshots. */
+  against: string;
+  /** When (an ISO date). */
+  captured: string;
+  /** Of the lines of text in the screenshots and the model's drawings, the share the model draws within 3px of the client, top to bottom. */
+  linesWithin3px: number;
+  /** The same in dark mode. */
+  darkLinesWithin3px?: number;
 }
 
 const captured = (against: string, wordsWithin4px: number, lineBreaks: number): EmailClientMeasurement => ({ elements: "0.3.0", against, captured: "2026-11-08", wordsWithin4px, lineBreaks });
+
+/** Screenshots from Mailgun Inspect of the Elements 0.3.0 held-out emails (models 1.11.0). */
+const screenshots = (against: string, linesWithin3px: number, darkLinesWithin3px: number): EmailClientScreenshots => ({ elements: "0.3.0", emails: 60, against: `${against} (Mailgun Inspect)`, captured: "2026-11-14", linesWithin3px, darkLinesWithin3px });
 
 /** A client known from caniemail's tables, not captured. */
 const tables = (name: string): EmailClientInfo => ({ name, widths: {}, dark: false, approximate: true, measured: null });
@@ -72,9 +96,10 @@ export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
   "gmail-app-other": { name: "Gmail app, another account", widths: { phone: 380 }, dark: false, approximate: true, measured: null },
   "apple-mail": { name: "Apple Mail", widths: { desktop: 820, phone: 393 }, dark: true, approximate: false, measured: captured("Mail 16 on macOS 26", 0.999, 0.999) },
   // Yahoo Mail and AOL Mail on the web (models 1.11.0): their message panes, 758px and 869px, in a 1440px window. AOL's
-  // dark mode leaves the email as it is, so its dark preview is its light one.
-  yahoo: { name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null },
-  aol: { name: "AOL Mail", widths: { desktop: 869 }, dark: true, approximate: false, measured: null },
+  // dark mode leaves the email as it is, so its dark preview is its light one. Measured on screenshots of 60 emails they
+  // weren't tuned on: AOL's own web font, drawn with Roboto, makes it the less close of the two.
+  yahoo: { name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null, screenshots: screenshots("Yahoo Mail in Chrome on Windows 10", 0.978, 0.971) },
+  aol: { name: "AOL Mail", widths: { desktop: 869 }, dark: true, approximate: true, measured: null, screenshots: screenshots("AOL Mail in Chrome on Windows 10", 0.923, 0.923) },
   "samsung-email": tables("Samsung Email"),
   thunderbird: tables("Thunderbird"),
   protonmail: tables("Proton Mail"),

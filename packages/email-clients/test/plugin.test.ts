@@ -34,8 +34,18 @@ describe("email clients", () => {
     expect(EMAIL_CLIENTS.outlook.approximate).toBe(true);
     expect(ALL.filter((client) => EMAIL_CLIENTS[client].measured)).toEqual(["outlook", "outlook-com", "gmail", "apple-mail"]);
     expect(EMAIL_CLIENTS["samsung-email"]).toEqual({ name: "Samsung Email", widths: {}, dark: false, approximate: true, measured: null });
-    // Yahoo Mail and AOL Mail have models (1.11.0), measured on the accuracy benchmark rather than the 0.3.0 captures.
-    expect(EMAIL_CLIENTS.yahoo).toEqual({ name: "Yahoo Mail", widths: { desktop: 758 }, dark: true, approximate: false, measured: null });
+    // Yahoo Mail and AOL Mail have models (1.11.0), measured on screenshots of the 0.3.0 held-out emails rather than on
+    // captures: lines within 3px, not words within 4px. AOL's, under 95%, is approximate.
+    expect(EMAIL_CLIENTS.yahoo).toEqual({
+      name: "Yahoo Mail",
+      widths: { desktop: 758 },
+      dark: true,
+      approximate: false,
+      measured: null,
+      screenshots: { elements: "0.3.0", emails: 60, against: "Yahoo Mail in Chrome on Windows 10 (Mailgun Inspect)", captured: "2026-11-14", linesWithin3px: 0.978, darkLinesWithin3px: 0.971 },
+    });
+    expect(EMAIL_CLIENTS.aol).toMatchObject({ approximate: true, measured: null, screenshots: { emails: 60, linesWithin3px: 0.923, darkLinesWithin3px: 0.923 } });
+    expect(ALL.filter((client) => EMAIL_CLIENTS[client].screenshots)).toEqual(["yahoo", "aol"]);
   });
 
   it("is a plugin named email-clients, for the api core reads", async () => {
