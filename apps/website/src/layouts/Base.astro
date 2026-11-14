@@ -6,6 +6,8 @@ import { site } from "../lib/site";
 
 interface Props {
   title?: string;
+  /** false for a title that already names the brand: it's used as it is, with no " · Hyper Elements" after it. */
+  titleSuffix?: boolean;
   description?: string;
   footer?: boolean;
   /** Kept out of search results, with no canonical URL (the 404 page). */
@@ -19,8 +21,8 @@ interface Props {
   imageWidth?: number;
   imageHeight?: number;
 }
-const { title, description = site.description, footer = true, noindex = false, ogType = "website", jsonLd, image = "/og.png", imageAlt = "Hyper Elements: the content engine for agents", imageWidth = 1280, imageHeight = 640 } = Astro.props;
-const fullTitle = title ? `${title} · Hyper Elements` : "Hyper Elements: the content engine for agents";
+const { title, titleSuffix = true, description = site.description, footer = true, noindex = false, ogType = "website", jsonLd, image = "/og.png", imageAlt = "Hyper Elements: the content engine for agents", imageWidth = 1280, imageHeight = 640 } = Astro.props;
+const fullTitle = title ? (titleSuffix ? `${title} · Hyper Elements` : title) : "Hyper Elements: the content engine for agents";
 const canonical = new URL(Astro.url.pathname, site.url).href;
 const ogImage = new URL(image, site.url).href;
 const ogImageAlt = imageAlt;

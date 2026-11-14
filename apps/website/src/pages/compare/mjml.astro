@@ -1,0 +1,98 @@
+---
+import ComparePage, { type Race, type Row } from "../../components/ComparePage.astro";
+import { site } from "../../lib/site";
+// The same welcome email in both, written by hand: examples/compare/welcome.mjml compiles with MJML in strict
+// validation, and examples/compare/welcome.tsx validates with Hyper Elements.
+import mjml from "../../../examples/compare/welcome.mjml?raw";
+import he from "../../../examples/compare/welcome.tsx?raw";
+
+// The page reads as evergreen: no versions or dates on it. Its facts were last checked against MJML 5.4.1 (its docs,
+// README and releases; v6 was in alpha) and Hyper Elements 0.4 on November 14, 2026.
+
+// Agent benchmark (/docs/benchmark, 2026-11-08): the same five emails, 16 runs each, the same checks. Lower is better.
+// Turns were the same (9 each), so they aren't shown; both passed the first check in 16 of 16 runs.
+const race: Race[] = [
+  { k: "Time to a passing email", x: "1.3× faster", he: 33, re: 43, fmt: (n: number) => `${n}s` },
+  { k: "Output tokens the agent wrote", x: "1.5× fewer", he: 1831, re: 2762, fmt: (n: number) => n.toLocaleString("en-US") },
+];
+
+// At a glance: Hyper Elements' wins first, then what both do.
+const matrix: Row[] = [
+  { k: "Accessibility lint", he: "yes", heNote: "18 rules", re: "no" },
+  { k: "Email client previews", he: "yes", heNote: "7 clients, free", re: "no", reNote: "Browser preview" },
+  { k: "Email client support checks", he: "yes", heNote: "render(), CLI, CI", re: "no" },
+  { k: "Brand theme with tokens", he: "yes", heNote: "defineTheme()", re: "part", reNote: "mj-attributes" },
+  { k: "Variants from the theme", he: "yes", heNote: "variant=\"secondary\"", re: "part", reNote: "mj-class" },
+  { k: "Typed props, loops and conditions", he: "yes", heNote: "TypeScript", re: "no", reNote: "Add a templating language" },
+  { k: "Your own components", he: "yes", heNote: "component()", re: "part", reNote: "mj-include" },
+  { k: "Template checked when it renders", he: "yes", heNote: "With the fix", re: "part", reNote: "Tags and attributes" },
+  { k: "Plain-text version", he: "yes", re: "no" },
+  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
+  { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "CLI" },
+  { k: "Local preview server", he: "yes", re: "part", reNote: "Editor extension" },
+  { k: "Visual editor", he: "yes", heNote: "Drag and drop (Unlayer)", re: "part", reNote: "Third-party builders" },
+  { k: "Responsive tables that work in Outlook", he: "yes", re: "yes" },
+  { k: "Any email provider", he: "yes", re: "yes" },
+  { k: "Open source, MIT", he: "yes", re: "yes" },
+];
+
+// Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
+const faq = [
+  {
+    q: "What are the alternatives to MJML?",
+    a: "The main ones are Hyper Elements, React Email and Maizzle. Hyper Elements and React Email write emails as React components; Hyper Elements also works out the layout, checks the email, previews it in email clients, keeps it on brand with a theme, and renders the same template as a page, a PDF or an image. Maizzle builds HTML emails with Tailwind CSS.",
+  },
+  {
+    q: "Which handles Outlook better, MJML or Hyper Elements?",
+    a: "Both write the tables and conditional comments classic Outlook needs, so you don't. Hyper Elements also works out every width in px before it writes anything, tells you what classic Outlook will show differently (square corners, say), and previews the email as classic Outlook draws it.",
+  },
+  {
+    q: "How do I put data in an email?",
+    a: "In Hyper Elements a template is a function: its props are typed, and loops and conditions are plain TypeScript. MJML has no variables, loops or conditions; its docs suggest adding a templating language such as Handlebars or Liquid.",
+  },
+  {
+    q: "Can I preview my MJML emails in Outlook and Gmail?",
+    a: "Yes, for free. Compile them to HTML and give it to Hyper Elements' email client emulator, @hyper-elements/email-clients, or paste it into the email testing playground. It previews classic Outlook, Outlook.com, Gmail, the Gmail app, Apple Mail, Yahoo Mail and AOL Mail on your machine, in light and dark mode, with no test sends or account.",
+  },
+  {
+    q: "Can I convert my MJML templates?",
+    a: "Not automatically yet: the migrate command converts React Email and Unlayer Elements templates. Your MJML emails' HTML works with the email client emulator as it is.",
+  },
+  {
+    q: "Do I need a React app to use Hyper Elements?",
+    a: "No. Templates are React components in TypeScript or JavaScript, but render() runs on your server and returns HTML and plain text, to send with any email provider. Nothing runs in the reader's browser.",
+  },
+  {
+    q: "Which is faster for a coding agent?",
+    a: "In our benchmark, Claude Code reached a passing email 1.3× faster with Hyper Elements than with MJML, writing 1.5× fewer output tokens, across five briefs and 16 runs each. Both passed the first check every time, and MJML was faster on one of the five emails. It's one agent and one model on short, fully specified emails. The harness is in the repository, so you can run it with your own agent.",
+  },
+];
+---
+<ComparePage
+  path="/compare/mjml"
+  name="MJML"
+  article="an"
+  metaTitle="MJML alternative: Hyper Elements vs MJML"
+  description="Looking for an MJML alternative? Compare Hyper Elements and MJML side by side: React and TypeScript, checks, email client previews, themes and agent speed."
+  lede="Both write responsive emails that work in Outlook. Hyper Elements does it in React and TypeScript, checks every email, shows it in every email client, and renders it on-brand."
+  ctas={[{ label: "Get started", href: "/docs/quickstart" }, { label: "Test your MJML emails free", href: "/email-testing" }]}
+  race={race}
+  raceNote="Medians of 16 runs each, with Claude Code. Both passed the first check in 16 of 16 runs; Hyper Elements was faster on four of the five emails."
+  matrix={matrix}
+  emuSub="MJML shows your email in a browser at different widths. Hyper Elements shows you what Outlook, Gmail and Apple Mail do with it."
+  brandNote="MJML: defaults per component with mj-attributes and named groups with mj-class, with no tokens."
+  outputsSub="MJML writes email HTML. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image."
+  code={{
+    sub: "MJML has no variables: {{name}} is left for a templating language. In Hyper Elements it's a typed prop.",
+    he: { code: he, file: "emails/welcome.tsx" },
+    other: { code: mjml, lang: "html", file: "emails/welcome.mjml" },
+  }}
+  faqTitle="Questions about switching from MJML"
+  faq={faq}
+  final={{
+    title: "Start with Hyper Elements",
+    sub: "Install the package and write your first email, or keep your MJML emails and preview their HTML in every client for free.",
+    cmd: site.install,
+    ctas: [{ label: "Quickstart", href: "/docs/quickstart" }, { label: "Test your MJML emails", href: "/email-testing" }],
+  }}
+/>

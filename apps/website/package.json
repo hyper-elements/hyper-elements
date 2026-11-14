@@ -14,6 +14,7 @@
     "generate": "node scripts/generate.mjs && node scripts/generate-email-testing.mjs",
     "generate:email-testing": "node scripts/generate-email-testing.mjs",
     "generate:email-clients": "node scripts/email-client-previews.mjs",
+    "generate:compare": "node scripts/compare-previews.mjs",
     "check:blog": "node scripts/check-blog.mjs",
     "check:playground": "node scripts/check-playground.mjs",
     "check:email-testing": "node scripts/check-email-testing.mjs"

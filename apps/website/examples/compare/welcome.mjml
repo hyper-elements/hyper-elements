@@ -1,0 +1,23 @@
+<mjml>
+  <mj-head>
+    <mj-preview>Welcome to Orbit</mj-preview>
+    <mj-attributes>
+      <mj-all font-family="Helvetica, Arial, sans-serif" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body width="520px" background-color="#f3f4f6">
+    <mj-section padding="40px 0">
+      <mj-column background-color="#ffffff" border-radius="8px" padding="32px">
+        <mj-text font-size="24px" font-weight="700" color="#101828" padding="0 0 16px">
+          Welcome, {{name}}
+        </mj-text>
+        <mj-text font-size="16px" color="#4a5565" padding="0 0 16px">
+          Your workspace is ready.
+        </mj-text>
+        <mj-button href="https://example.com/start" background-color="#4f39f6" border-radius="6px" align="left" padding="0">
+          Open your workspace
+        </mj-button>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

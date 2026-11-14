@@ -10,6 +10,8 @@ npx @hyper-elements/migrate emails           # converts and checks your template
 npx @hyper-elements/migrate emails --write   # then replaces them (committed in git first, so git can undo it)
 ```
 
+Still weighing a React Email alternative? [Hyper Elements vs React Email](/compare/react-email) compares the two side by side.
+
 Run it from your project folder, with Node.js 20.6 or later. It uses your project's React, React Email and `tsconfig` paths.
 
 ## What it converts

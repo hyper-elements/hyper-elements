@@ -1,0 +1,94 @@
+---
+import ComparePage, { type Race, type Row } from "../../components/ComparePage.astro";
+import { site } from "../../lib/site";
+// The same email in both: a React Email template, and what `npx @hyper-elements/migrate` wrote for it.
+import before from "../../generated/migrate/before.tsx?raw";
+import after from "../../generated/migrate/after.tsx?raw";
+
+// The page reads as evergreen: no versions or dates on it. Its facts were last checked against react-email 6.11.13
+// and Hyper Elements 0.4 on November 14, 2026. React Email ships often: check its docs and its preview server's
+// source (@react-email/ui: the toolbar's compatibility checker, linter and spam score) when either side changes.
+
+// Agent benchmark (/docs/benchmark, 2026-11-08): the same five emails, 16 runs each, the same checks. Lower is better.
+const race: Race[] = [
+  { k: "Time to a passing email", x: "2.6× faster", he: 33, re: 86, fmt: (n: number) => `${n}s` },
+  { k: "Output tokens the agent wrote", x: "3.4× fewer", he: 1831, re: 6215, fmt: (n: number) => n.toLocaleString("en-US") },
+  { k: "Turns", x: "Half as many", he: 9, re: 18, fmt: (n: number) => String(n) },
+];
+// At a glance: Hyper Elements' wins first.
+const matrix: Row[] = [
+  { k: "Accessibility lint", he: "yes", heNote: "18 rules", re: "part", reNote: "Alt text" },
+  { k: "Email client previews", he: "yes", heNote: "7 clients, free", re: "no" },
+  { k: "Email client support checks", he: "yes", heNote: "render(), CLI, CI", re: "part", reNote: "Preview window" },
+  { k: "Brand theme with tokens", he: "yes", heNote: "defineTheme()", re: "part", reNote: "Tailwind config" },
+  { k: "Variants from the theme", he: "yes", heNote: "variant=\"secondary\"", re: "no" },
+  { k: "Widths and Outlook tables worked out", he: "yes", re: "part", reNote: "You space blocks" },
+  { k: "Template checked when it renders", he: "yes", heNote: "With the fix", re: "no" },
+  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
+  { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "llms.txt" },
+  { k: "HTML and plain text", he: "yes", heNote: "One call", re: "yes", reNote: "Two calls" },
+  { k: "Local preview server", he: "yes", re: "yes" },
+  { k: "Visual editor", he: "yes", heNote: "Drag and drop (Unlayer)", re: "part", reNote: "Rich text (Tiptap)" },
+  { k: "Any email provider", he: "yes", re: "yes" },
+  { k: "Open source, MIT", he: "yes", re: "yes" },
+];
+// Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
+const faq = [
+  {
+    q: "What are the alternatives to React Email?",
+    a: "The main ones are Hyper Elements, MJML, Maizzle and jsx-email. Hyper Elements is React components too, and also works out the layout, checks the email, previews it in email clients, keeps it on brand with a theme, and renders the same template as a page, a PDF or an image. MJML is a markup language of its own that compiles to email HTML, and doesn't need React. Maizzle builds HTML emails with Tailwind CSS. jsx-email is JSX components close to React Email's.",
+  },
+  {
+    q: "Is Hyper Elements built on React Email?",
+    a: "No. Hyper Elements has its own components, layout engine and writers. It doesn't use React Email, and React Email isn't needed to run it.",
+  },
+  {
+    q: "Can I preview my emails in Outlook, Gmail and Apple Mail?",
+    a: "Yes, for free. Hyper Elements comes with an email client emulator, @hyper-elements/email-clients, that previews classic Outlook, Outlook.com, Gmail, the Gmail app, Apple Mail, Yahoo Mail and AOL Mail on your machine, in light and dark mode, with no test sends or account. React Email's preview server lists HTML and CSS a client doesn't support, but doesn't preview the email in each client. The emulator also takes any HTML email, so you can preview React Email templates with it too.",
+  },
+  {
+    q: "How do I keep every email on brand?",
+    a: "Write the brand once with defineTheme(): colors, fonts, sizes, spacing and corners as tokens, each component's defaults, its variants, and named styles. Give it to any root with theme, and every email, page, PDF and image that takes it is on brand. React Email shares a brand through a Tailwind config passed to each Tailwind wrapper, with no component variants.",
+  },
+  {
+    q: "Can I use Tailwind with Hyper Elements?",
+    a: "Not as classes, and that's on purpose. Tailwind was made in 2017, before coding agents, to help people write CSS faster: short class names, and no switching between files. An agent doesn't need shortcuts; it needs feedback. Hyper Elements' styles are typed objects, so a style that doesn't exist is a TypeScript error, and validate() says what's wrong and what to write instead, where a misspelled or unsupported Tailwind class does nothing and says nothing. Phone styles go in a mobile block and hover styles in a hover block. When you migrate, Tailwind classes in your React Email templates are resolved with your Tailwind config and become styles.",
+  },
+  {
+    q: "Can I keep my React Email templates?",
+    a: "Yes. npx @hyper-elements/migrate converts each template and checks it against the original before it writes anything. Or keep them as they are and test their HTML with @hyper-elements/email-clients, which takes HTML from React Email.",
+  },
+  {
+    q: "Does Hyper Elements work with Resend?",
+    a: "Yes. render() gives you the HTML and the plain text as two strings; pass them to Resend, or any other provider's SDK.",
+  },
+  {
+    q: "Which is faster for a coding agent?",
+    a: "In our benchmark, Claude Code reached a passing email 2.6× faster with Hyper Elements than with React Email, writing 3.4× fewer output tokens, across five briefs and 16 runs each. It's one agent and one model on short, fully specified emails. The harness is in the repository, so you can run it with your own agent.",
+  },
+];
+
+---
+<ComparePage
+  path="/compare/react-email"
+  name="React Email"
+  metaTitle="React Email alternative: Hyper Elements vs React Email"
+  description="Looking for a React Email alternative? Compare Hyper Elements and React Email side by side: layout, checks, email client previews, themes and agent speed."
+  lede="Both write emails in React. Hyper Elements also lays them out, checks them, shows them in every email client, and renders them on-brand."
+  ctas={[{ label: "Get started", href: "/docs/quickstart" }, { label: "Migrate from React Email", href: "/migrate" }]}
+  race={race}
+  raceNote="Medians of 16 runs each, with Claude Code. Every Hyper Elements run passed the first check; 12 of 16 React Email runs did."
+  matrix={matrix}
+  emuSub="React Email lists CSS a client doesn't support. Hyper Elements shows you what the client does with it."
+  brandNote="React Email: a Tailwind config on each <Tailwind> wrapper, with no component variants."
+  outputsSub="React Email writes emails. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image."
+  code={{ sub: "No margins to juggle: the parent's gap spaces the blocks.", he: { code: after, file: "emails/welcome.tsx" }, other: { code: before, file: "emails/welcome.tsx" } }}
+  faqTitle="Questions about switching from React Email"
+  faq={faq}
+  final={{
+    title: "Switch from React Email in one command",
+    sub: "Converts every template, checks each against the original, and writes nothing until you ask.",
+    cmd: `${site.migrate} src/emails`,
+    ctas: [{ label: "How migrating works", href: "/migrate" }, { label: "Start from scratch", href: "/docs/quickstart" }],
+  }}
+/>
