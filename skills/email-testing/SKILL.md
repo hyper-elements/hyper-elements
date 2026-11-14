@@ -79,7 +79,6 @@ React and `@hyper-elements/react` aren't needed for HTML.
 ## What to tell the person
 
 - Show the screenshots, or the files to open, client by client, and what each removed or changed, with the fixes `check` gives.
-- The previews are models of each client, measured against its real screenshots, not the clients themselves. They were measured mostly on emails built with Hyper Elements, which they draw most closely; for other HTML they're approximate, and a line can sit a few pixels from where the client puts it. Classic Outlook's are approximate for every email.
 - A preview isn't an email: what's sent is the HTML as it was.
 - Where `npx` can't reach npm (no network), say so: the previews need the packages from npm.
 
