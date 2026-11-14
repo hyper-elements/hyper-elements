@@ -26,8 +26,6 @@ Accuracy is how closely the emulator matches each real client for emails.
 | Yahoo Mail, light and dark | `yahoo`, `yahoo.mac`, `yahoo.dark`, `yahoo.mac.dark` | 99% |
 | AOL Mail | `aol`, `aol.mac` | 99% |
 
-On 60 Hyper Elements emails their models weren't tuned on, Yahoo Mail scores 98% (97% dark) and AOL Mail 92%, whose previews are marked approximate: AOL draws some text in its own web font, which the preview draws with a close stand-in.
-
 More email clients are on the way.
 
 Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide, and `gmail-app` on Android and on an iPhone, 345px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`. `yahoo` and `aol` are drawn in their message panes, 758px and 869px wide. AOL Mail's dark mode leaves the email as it is, so `aol.dark` matches `aol`.
