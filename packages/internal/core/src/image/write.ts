@@ -147,6 +147,12 @@ function withSpace(run: Run, side: Side): Run | undefined {
  *
  * An Image a Link holds goes in a box of its own with the background, filled as the Link's box was around it: as high
  * as the line and square at its corners. Given the background itself, it would be filled under its own box alone.
+ *
+ * A Span or a Link this one holds takes the background on its own box. One with a background of its own has that put
+ * on its runs the same way, drawn over this one's as it was inside this one's box: given this one's in place of its
+ * own, a background it can be seen through (transparent, or a color with alpha) showed the Canvas instead, and white
+ * letters on a white Canvas vanished. (Put in a box of its own with this one's, as an Image is, it was laid out
+ * another way: on a line too narrow for its words, that box didn't give way, and its last word went past the edge.)
  */
 function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: Run[] } {
   const { backgroundColor, ...style } = run.style;
@@ -165,7 +171,10 @@ function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: 
       continue;
     }
     box();
-    runs.push(held.kind === "span" ? { ...held, style: { backgroundColor, ...held.style } } : { kind: "span", style: { backgroundColor }, runs: [held] });
+    if (held.kind === "span") {
+      const own = held.style.backgroundColor === undefined ? held : { ...held, ...filledRuns(held) };
+      runs.push({ ...own, style: { backgroundColor, ...own.style } });
+    } else runs.push({ kind: "span", style: { backgroundColor }, runs: [held] });
   }
   box();
   return { style: run.runs.some((held) => typeof held === "string") ? { ...style, flexShrink: 1 } : style, runs };

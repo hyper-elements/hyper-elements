@@ -577,6 +577,13 @@ describe("renderImage", () => {
           See <Span style={style}>our<LineBreak />site</Span> today
         </Text>
       ),
+      // A Span with a background of its own, its words wrapping, at the highlighted one's end. (Given a box of its own
+      // with the highlight, it didn't give way where a line was too narrow for it, and its last word went past the edge.)
+      (style: Record<string, string>) => (
+        <Text style={{ textAlign: "center" }}>
+          See <Span style={style}>our <Span style={{ backgroundColor: "transparent" }}>our lovely site today</Span></Span> again
+        </Text>
+      ),
     ];
     for (const [shape, text] of shapes.entries()) {
       for (const canvas of [200, 260, 400]) {
@@ -585,7 +592,8 @@ describe("renderImage", () => {
         expect(marked, `shape ${shape}, ${canvas}px`).toHaveLength(unmarked.length);
         for (const [i, line] of marked.entries()) {
           for (const edge of ["from", "to", "top"] as const) expect(Math.abs(line[edge] - unmarked[i]![edge]), `shape ${shape}, ${canvas}px, line ${i}, ${edge}`).toBeLessThan(2);
-          expect(line.to, `shape ${shape}, ${canvas}px, line ${i}`).toBeLessThanOrEqual(canvas - 20);
+          // (A Span's words in a Span run into the padding on a narrow line with no highlight too, as they did before.)
+          if (shape !== 2) expect(line.to, `shape ${shape}, ${canvas}px, line ${i}`).toBeLessThanOrEqual(canvas - 20);
         }
       }
     }
@@ -631,6 +639,33 @@ describe("renderImage", () => {
     const [image, words] = await filled(<Text>{linked(" our site")} today</Text>);
     same(image, own[0]!, "beside words");
     expect(Math.abs(words!.height - image!.height)).toBeLessThan(1);
+
+    // A Span inside the highlighted one with a background of its own is drawn over the highlight, as it was inside the
+    // Span's box: given the highlight in place of its own, a background it can be seen through showed the Canvas
+    // instead (white letters on a transparent Span, over a white Canvas, were gone). The highlight runs on under it.
+    for (const inner of ["transparent", "rgba(255, 0, 0, 0.5)"]) {
+      for (const style of [{}, { textAlign: "right" } as const]) {
+        const template = (
+          <Canvas width={400} height={240} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+            <Text style={style}>
+              See <Span style={mark}>our <Span style={{ backgroundColor: inner }}>site</Span></Span> today
+            </Text>
+          </Canvas>
+        );
+        const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+        const boxes = [...svg.matchAll(/<rect\b[^>]*>/g)]
+          .map((rect) => rect[0])
+          .filter((rect) => /fill="#ffff00"/i.test(rect))
+          .map((rect) => {
+            const left = Number(/\bx="([\d.]+)"/.exec(rect)?.[1]);
+            return [left, left + Number(/\bwidth="([\d.]+)"/.exec(rect)?.[1])] as const;
+          })
+          .sort((a, b) => a[0] - b[0]);
+        const gaps = boxes.slice(1).filter((box, i) => box[0] - boxes[i]![1] > 0.5);
+        expect(gaps, `${inner}, ${JSON.stringify(style)}: ${JSON.stringify(boxes)}`).toEqual([]);
+        expect(Math.abs(boxes[boxes.length - 1]![1] - boxes[0]![0] - letters), `${inner}, ${JSON.stringify(style)}`).toBeLessThan(2);
+      }
+    }
   });
 
   it("starts the line after a LineBreak at the margin, a break inside a Span or a Link and beside one too", async () => {
