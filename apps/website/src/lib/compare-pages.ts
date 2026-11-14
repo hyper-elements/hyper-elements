@@ -38,6 +38,12 @@ export const alternatives: ComparePageLink[] = [
     summary: "Hyper Elements, MJML, Maizzle and jsx-email: when to pick each, and how fast a coding agent writes an email with it.",
   },
   {
+    name: "MJML",
+    path: "/alternatives/mjml",
+    title: "MJML alternatives",
+    summary: "Hyper Elements, React Email, Maizzle and jsx-email: when to pick each, and how fast a coding agent writes an email with it.",
+  },
+  {
     name: "Litmus",
     path: "/alternatives/litmus",
     title: "Litmus alternatives",

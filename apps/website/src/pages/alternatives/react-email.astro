@@ -3,6 +3,7 @@ import AlternativesPage, { type MatrixRow, type Tool } from "../../components/Al
 import { site } from "../../lib/site";
 import ClientShots from "../../components/ClientShots.astro";
 import ThemeShots from "../../components/ThemeShots.astro";
+import BenchmarkBoard from "../../components/BenchmarkBoard.astro";
 
 // "React Email alternatives": a list page, the format searches for alternatives favor, linking to each comparison
 // page. Keep it evergreen: no versions or dates on it. Its facts were last checked on November 14, 2026 against
@@ -61,17 +62,6 @@ const tools: Tool[] = [
   },
 ];
 
-// The agent benchmark (/docs/benchmark, 2026-11-08): medians of 16 runs each, the same five emails and checks.
-const bench = "/docs/benchmark";
-const race = [
-  { name: "Hyper Elements", s: 33, tokens: 1831, first: "16 of 16", he: true },
-  { name: "MJML", s: 43, tokens: 2762, first: "16 of 16" },
-  { name: "Hand-written HTML", s: 60, tokens: 4903, first: "6 of 16" },
-  { name: "React Email", s: 86, tokens: 6215, first: "12 of 16" },
-];
-const maxS = Math.max(...race.map((r) => r.s));
-const maxT = Math.max(...race.map((r) => r.tokens));
-const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%`;
 
 // Side by side.
 const cols = ["Hyper Elements", "React Email", "MJML", "Maizzle", "jsx-email"];
@@ -138,38 +128,10 @@ const faq = [
     sub: "Converts every template, checks each against the original, and writes nothing until you ask.",
     cmd: `${site.migrate} src/emails`,
     ctas: [{ label: "How migrating works", href: "/migrate" }, { label: "Hyper Elements vs React Email", href: "/compare/react-email" }],
-    others: [{ label: "Hyper Elements vs MJML", href: "/compare/mjml" }, { label: "Litmus alternatives", href: "/alternatives/litmus" }],
+    others: [{ label: "Hyper Elements vs MJML", href: "/compare/mjml" }, { label: "MJML alternatives", href: "/alternatives/mjml" }, { label: "Litmus alternatives", href: "/alternatives/litmus" }],
   }}
 >
-  <a class="board reveal" href={bench} aria-label="Agent benchmark: Hyper Elements, MJML, hand-written HTML and React Email">
-    <div class="board-cols">
-      <div>
-        <p class="board-k">Median time to a passing email</p>
-        <ul class="bars">
-          {race.map((r) => (
-            <li class:list={{ he: r.he }}>
-              <span class="bar-name">{r.name}</span>
-              <span class="bar"><i style={pct(r.s, maxS)}></i></span>
-              <span class="bar-n">{r.s}s</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <div>
-        <p class="board-k">Median output tokens</p>
-        <ul class="bars">
-          {race.map((r) => (
-            <li class:list={{ he: r.he }}>
-              <span class="bar-name">{r.name}</span>
-              <span class="bar"><i style={pct(r.tokens, maxT)}></i></span>
-              <span class="bar-n">{r.tokens.toLocaleString("en-US")}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-    <p class="board-note">Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured. <span class="board-more">The benchmark →</span></p>
-  </a>
+  <BenchmarkBoard note="Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured." />
 
   {/* After the table: the one thing none of the others do. */}
   <section class="section" slot="after-table">
@@ -206,29 +168,5 @@ const faq = [
   .ra-head .h-section { margin: 0; }
   .ra-head p { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
   .ra-cta { display: flex; justify-content: center; margin-top: 28px; }
-  /* The benchmark: two bar charts. */
-  .board { display: block; padding: 32px; border: 1px solid var(--line-2); border-radius: 18px; background: linear-gradient(180deg, var(--bg-2), var(--bg-1)); box-shadow: var(--shadow); color: inherit; text-decoration: none; transition: border-color 0.2s; }
-  .board:hover, .board:focus-visible { border-color: var(--line-3); }
-  .board-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
-  .board-k { margin: 0 0 18px; font-size: 15px; font-weight: 600; }
-  .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-  .bars li { display: grid; grid-template-columns: 140px minmax(0, 1fr) 56px; gap: 12px; align-items: center; }
-  .bar-name { font-size: 14px; color: var(--text-2); }
-  .bars li.he .bar-name { color: var(--text); font-weight: 600; }
-  .bar { display: flex; height: 14px; }
-  .bar i { display: block; height: 100%; border-radius: 0 7px 7px 0; background: var(--text-3); opacity: 0.45; }
-  .bars li.he .bar i { opacity: 1; background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 55%, transparent), var(--ok)); }
-  .bar-n { font: 500 13px var(--mono); font-variant-numeric: tabular-nums; color: var(--text-2); text-align: right; }
-  .bars li.he .bar-n { color: var(--text); }
-  .board-note { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.55; color: var(--text-3); }
-  .board-more { color: var(--text-2); white-space: nowrap; }
 
-  @media (max-width: 1000px) {
-    .board-cols { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  }
-  @media (max-width: 640px) {
-    .board { padding: 20px; }
-    .bars li { grid-template-columns: 112px minmax(0, 1fr) 46px; gap: 8px; }
-    .bar-name { font-size: 13px; }
-  }
 </style>
