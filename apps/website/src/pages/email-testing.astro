@@ -2,6 +2,7 @@
 import Base from "../layouts/Base.astro";
 import { emailTestingDescription, sampleEmail } from "../lib/email-testing";
 import { engineVersion } from "../lib/playground";
+import { site } from "../lib/site";
 import clientsPackage from "../../../../packages/email-clients/package.json";
 import "../styles/email-testing.css";
 ---
@@ -20,7 +21,10 @@ import "../styles/email-testing.css";
         <div class="et-heading"><h1 id="playground-title">Test HTML emails in Outlook, Gmail and more</h1></div>
         <p class="et-description">Paste HTML to check email compatibility and compare modeled previews across Outlook, Gmail, Apple Mail, Yahoo and AOL—free, locally in your browser.</p>
       </div>
-      <a class="et-api-link" href="/docs/email-client-emulator">Email client emulator API <span aria-hidden="true">→</span></a>
+      <div class="et-links">
+        <button class="et-agent btn btn-ghost btn-sm" type="button" data-copy={site.emailTestingPrompt} title={site.emailTestingPrompt}>Copy prompt for your agent</button>
+        <a class="et-api-link" href="/docs/email-client-emulator">Email client emulator API <span aria-hidden="true">→</span></a>
+      </div>
     </header>
 
     <div class="et-mobile-tabs" role="tablist" aria-label="Workspace panel">

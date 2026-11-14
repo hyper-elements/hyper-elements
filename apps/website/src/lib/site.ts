@@ -8,6 +8,10 @@ export const site = {
   install: "npm i @hyper-elements/react",
   migrate: "npx @hyper-elements/migrate",
   skill: "npx skills add hyper-elements/hyper-elements",
+  /** The email-testing skill alone, and a prompt that installs it and previews an email with it. */
+  emailTestingSkill: "npx skills add hyper-elements/hyper-elements --skill email-testing",
+  emailTestingPrompt:
+    "Install the email-testing skill (npx skills add hyper-elements/hyper-elements --skill email-testing -y, or read https://www.hyperelements.dev/skills/email-testing.md) and follow it to preview [my email: an HTML file or a template] in Outlook, Gmail, Yahoo Mail and Apple Mail, light and dark. Show me each client's screenshot and what it changed.",
   /** The engine's version line, shown in the header; links to the releases. */
   version: "0.4",
   releases: "https://github.com/hyper-elements/hyper-elements/releases",

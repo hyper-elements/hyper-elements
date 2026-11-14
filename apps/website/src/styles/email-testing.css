@@ -7,6 +7,8 @@
 .et-description { margin: 3px 0 0; color: var(--text-2); font-size: 12px; line-height: 1.4; }
 .et-api-link { flex: none; color: var(--text-2); font-size: 12px; line-height: 1.4; white-space: nowrap; text-decoration: none; }
 .et-api-link:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+.et-links { flex: none; display: flex; align-items: center; gap: 16px; }
+.et-agent { white-space: nowrap; }
 .et-subtle { appearance: none; background: none; border: 0; color: var(--text-2); font: 12px var(--sans); padding: 6px; cursor: pointer; white-space: nowrap; }
 .et-subtle:hover { color: var(--text); background: var(--hover); border-radius: 5px; }
 .et-workspace button:disabled { opacity: .4; cursor: not-allowed; }
@@ -78,6 +80,7 @@
   .et-topbar { flex-direction: column; align-items: flex-start; gap: 4px; padding: 10px 4px; }
   .et-heading h1 { font-size: 15px; }
   .et-description, .et-api-link { font-size: 11px; }
+  .et-agent { display: none; }
   .et-mobile-tabs { display: flex; gap: 2px; padding: 0 0 8px; }
   .et-mobile-tabs button { flex: 1; border: 0; padding: 6px 12px; border-radius: 6px; background: none; color: var(--text-2); font: 500 12px var(--sans); cursor: pointer; }
   .et-mobile-tabs [aria-selected="true"] { background: var(--hover-2); color: var(--text); }
