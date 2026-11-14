@@ -27,11 +27,11 @@ const matrix: Row[] = [
   { k: "Your own components", he: "yes", heNote: "component()", re: "part", reNote: "mj-include" },
   { k: "Template checked when it renders", he: "yes", heNote: "With the fix", re: "part", reNote: "Tags and attributes" },
   { k: "Plain-text version", he: "yes", re: "no" },
-  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
   { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "CLI" },
   { k: "Local preview server", he: "yes", re: "part", reNote: "Editor extension" },
   { k: "Visual editor", he: "yes", heNote: "Drag and drop (Unlayer)", re: "part", reNote: "Third-party builders" },
   { k: "Responsive tables that work in Outlook", he: "yes", re: "yes" },
+  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
   { k: "Any email provider", he: "yes", re: "yes" },
   { k: "Open source, MIT", he: "yes", re: "yes" },
 ];
@@ -81,7 +81,7 @@ const faq = [
   matrix={matrix}
   emuSub="MJML shows your email in a browser at different widths. Hyper Elements shows you what Outlook, Gmail and Apple Mail do with it."
   brandNote="MJML: defaults per component with mj-attributes and named groups with mj-class, with no tokens."
-  outputsSub="MJML writes email HTML. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image."
+  checksNote="MJML's validator checks its own tags and attributes, not what email clients will change."
   code={{
     sub: "MJML has no variables: {{name}} is left for a templating language. In Hyper Elements it's a typed prop.",
     he: { code: he, file: "emails/welcome.tsx" },

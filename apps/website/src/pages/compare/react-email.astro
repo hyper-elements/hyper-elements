@@ -24,11 +24,11 @@ const matrix: Row[] = [
   { k: "Variants from the theme", he: "yes", heNote: "variant=\"secondary\"", re: "no" },
   { k: "Widths and Outlook tables worked out", he: "yes", re: "part", reNote: "You space blocks" },
   { k: "Template checked when it renders", he: "yes", heNote: "With the fix", re: "no" },
-  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
-  { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "llms.txt" },
+  { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "Skill, no JSON CLI" },
   { k: "HTML and plain text", he: "yes", heNote: "One call", re: "yes", reNote: "Two calls" },
   { k: "Local preview server", he: "yes", re: "yes" },
   { k: "Visual editor", he: "yes", heNote: "Drag and drop (Unlayer)", re: "part", reNote: "Rich text (Tiptap)" },
+  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
   { k: "Any email provider", he: "yes", re: "yes" },
   { k: "Open source, MIT", he: "yes", re: "yes" },
 ];
@@ -81,7 +81,7 @@ const faq = [
   matrix={matrix}
   emuSub="React Email lists CSS a client doesn't support. Hyper Elements shows you what the client does with it."
   brandNote="React Email: a Tailwind config on each <Tailwind> wrapper, with no component variants."
-  outputsSub="React Email writes emails. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image."
+  checksNote="React Email's checks live in its preview window: render() returns the HTML, with nothing to say about it."
   code={{ sub: "No margins to juggle: the parent's gap spaces the blocks.", he: { code: after, file: "emails/welcome.tsx" }, other: { code: before, file: "emails/welcome.tsx" } }}
   faqTitle="Questions about switching from React Email"
   faq={faq}
