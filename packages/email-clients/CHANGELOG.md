@@ -9,7 +9,13 @@ Each release records the models package it was tested with.
   Mail draws it, set 8px in, its unstyled text in Aptos 16px (the Aptos stand-in the package already ships), and
   Outlook's own dark mode. Its previews are `approximate`.
   - The caniemail-based checks for Outlook for Mac are as before.
-- Requires `@hyper-elements/email-client-models` 1.12.0.
+- **From models 1.12.1:** classic Outlook (`outlook`) and the Gmail app on an iPhone (`gmail-app.iphone`) draw closer to
+  the real clients on emails the models weren't tuned on. Classic Outlook takes a paragraph's line height over a link's
+  or span's, sets large Trebuchet MS and Courier New at their fonts' own line height and Courier New at Word's widths,
+  and keeps a full-width table with a pixel `max-width` in its cell. The Gmail app on an iPhone draws text a device
+  pixel larger than its size, not 1.25% larger. On the models' second held-out set: the Gmail app on an iPhone 95.9% of
+  lines within 3px (91.3% with 1.12.0), classic Outlook 90.3% (89.8%).
+- Requires `@hyper-elements/email-client-models` 1.12.1.
 - A preview with its fonts inline is about 12 KB larger (the models' script).
 - **Yahoo Mail and AOL Mail:** `yahoo` and `aol` are previewed, as webmail read on Windows and on a Mac (`yahoo`,
   `yahoo.mac`, and so on), in their message panes, 758px and 869px wide, with a dark preview of each with `dark: true`.
