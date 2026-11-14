@@ -159,7 +159,7 @@ Three calls connect it, all from `@hyper-elements/react/builder`:
 
 2. **Write the design with them**: `toDesign(element, { customTools: true })` writes each of your components as its tool's block, its props the block's values, where it would otherwise be an HTML block.
 
-3. **Read it back with them**: `fromDesign(design, { components: [Callout] })` reads each of those blocks back as `<acme.Callout … />`, its values checked by its props' kinds. A value a prop doesn't take is left out and reported. So is a block with no value for a prop its component needs (one dragged in and not filled yet), as the builder leaves it out of what it exports. What the builder keeps on the block that a component has no place for (a display condition, an anchor, a prop's value on phones) isn't read, and the report says so, as it does for the builder's own blocks.
+3. **Read it back with them**: `fromDesign(design, { components: [Callout] })` reads each of those blocks back as the component, its values checked by its props' kinds. Its code writes the component by the name its type ends with (`<Callout … />`), and lists each one's type at the top, to import from where you define it. Two of your components with the same name, or one named as a component the code imports, are each written with their namespace (`AcmeCard`). A value a prop doesn't take is left out and reported. So is a block with no value for a prop its component needs (one dragged in and not filled yet), as the builder leaves it out of what it exports. What the builder keeps on the block that a component has no place for (a display condition, an anchor, a prop's value on phones) isn't read, and the report says so, as it does for the builder's own blocks.
 
 ### Which editor a prop gets
 

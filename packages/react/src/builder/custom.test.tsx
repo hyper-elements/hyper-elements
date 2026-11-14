@@ -1,5 +1,8 @@
 /** A template's own components in the builder: as custom tools' blocks in a design, read back, and registered in a builder. */
+import * as jsxRuntime from "react/jsx-runtime";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
+import * as primitives from "../primitives";
 import { Button, Column, component, defineProperty, defineTheme, Document, Email, Heading, Image, Page, prop, render, Row, Section, Text, token } from "../primitives/index";
 import { fromDesign, registerTools, toDesign, toolName, type Builder, type EditorWidget } from "./index";
 
@@ -126,14 +129,14 @@ describe("toDesign with customTools", () => {
 
   it("reads a default back as the prop not given, as a template wouldn't write it", () => {
     const { design } = toDesign(<Email><ProductCard name="Mug" buttonColor="#007bff" /></Email>, { customTools: true });
-    expect(fromDesign(design, { components: [ProductCard] }).code).toContain('<acme.ProductCard name="Mug" />');
+    expect(fromDesign(design, { components: [ProductCard] }).code).toContain('<ProductCard name="Mug" />');
   });
 
   it("keeps a prop its component needs where it's given its default: a template has to give it", async () => {
     const banner = <Email><Banner title="Welcome" /></Email>;
     const back = fromDesign(toDesign(banner, { customTools: true }).design, { components: [Banner] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain('<acme.Banner title="Welcome" />');
+    expect(back.code).toContain('<Banner title="Welcome" />');
     expect((await render(back.element)).html).toBe((await render(banner)).html);
   });
 
@@ -151,7 +154,7 @@ describe("toDesign with customTools", () => {
     // It comes back as the component still.
     const back = fromDesign(design, { displayMode: "document", components: [Footer] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain("<acme.LegalFooter />");
+    expect(back.code).toContain("<LegalFooter />");
     // An Email's or a Page's is drawn there: nothing to say.
     expect(toDesign(<Email><Footer /></Email>, { customTools: true }).report).toEqual([]);
   });
@@ -183,9 +186,41 @@ describe("fromDesign with components", () => {
     const { design } = toDesign(email, { customTools: true });
     const back = fromDesign(design, { components: [ProductCard, Footer] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain('<acme.ProductCard id="hero-product" name="Morning Mug" price={24} quantity={2}');
-    expect(back.code).toContain("<acme.LegalFooter />");
+    expect(back.code).toContain('<ProductCard id="hero-product" name="Morning Mug" price={24} quantity={2}');
+    expect(back.code).toContain("<LegalFooter />");
     expect((await render(back.element)).html).toBe((await render(email)).html);
+  });
+
+  it("writes each in the code by the name its type ends with, or with its namespace where that's another's: the code runs with them imported", async () => {
+    const card = (type: string) => component({ type, label: type, props: { title: prop.text({ label: "Title", default: "Hi" }) }, render: (p) => <Text>{`${type}: ${p.title}`}</Text> });
+    // Two named Card, one in a namespace JavaScript can't write and one in a word it keeps; one named as a built-in the
+    // code imports, and one as the template's own component.
+    const [MyShopCard, NewCard, Callout, AcmeText, AcmeTemplate] = ["my-shop.Card", "new.Card", "acme.Callout", "acme.Text", "acme.Template"].map(card);
+    const template = (
+      <Email>
+        <MyShopCard title="One" />
+        <NewCard title="Two" />
+        <Callout title="Three" />
+        <AcmeText title="Four" />
+        <AcmeTemplate title="Five" />
+        <Text>Plain</Text>
+      </Email>
+    );
+    const { design } = toDesign(template, { customTools: true });
+    const back = fromDesign(design, { components: [MyShopCard, NewCard, Callout, AcmeText, AcmeTemplate] });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain(
+      "// The template's own components, to import from where they're defined: Callout (acme.Callout), AcmeTemplate (acme.Template), AcmeText (acme.Text), MyShopCard (my-shop.Card), NewCard (new.Card)."
+    );
+    expect(back.code).toContain('<MyShopCard title="One" />');
+    expect(back.code).toContain('<Callout title="Three" />');
+    // Run as a module, with the components imported by those names: it's the template.
+    const code = `import { Callout, AcmeTemplate, AcmeText, MyShopCard, NewCard } from "./components";\n${back.code}`;
+    const js = ts.transpileModule(code, { compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 } }).outputText;
+    const modules: Record<string, unknown> = { "@hyper-elements/react": primitives, "react/jsx-runtime": jsxRuntime, "./components": { Callout, AcmeTemplate, AcmeText, MyShopCard, NewCard } };
+    const module = { exports: {} as { default: () => React.ReactElement } };
+    new Function("require", "module", "exports", js)((name: string) => modules[name], module, module.exports);
+    expect((await render(module.exports.default())).html).toBe((await render(template)).html);
   });
 
   it("reads a design made of the same blocks again as the same design", () => {
@@ -213,7 +248,7 @@ describe("fromDesign with components", () => {
     blocks(design)[0].values = { ...blocks(design)[0].values, size: "12", count: "3", href: { name: "web", values: { href: "https://example.com/p", target: "_self" } }, photo: { url: "https://example.com/p.png" } };
     const back = fromDesign(design, { components: [Pack] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain('<acme.Pack size={12} count={3} href="https://example.com/p" photo="https://example.com/p.png" />');
+    expect(back.code).toContain('<Pack size={12} count={3} href="https://example.com/p" photo="https://example.com/p.png" />');
     expect((await render(back.element)).text).toContain("3 × 12");
   });
 
@@ -241,7 +276,7 @@ describe("fromDesign with components", () => {
     });
     const back = fromDesign(design, { components: [Card] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain('<probe.Card photo={{ src: "https://hyperelements.dev/img/orbit-app.png", width: 1200, height: 700 }} font="georgia,palatino" size="large" packs={24} />');
+    expect(back.code).toContain('<Card photo={{ src: "https://hyperelements.dev/img/orbit-app.png", width: 1200, height: 700 }} font="georgia,palatino" size="large" packs={24} />');
     expect((await render(back.element)).text).toContain("Probe: pack of 24, size large");
   });
 
@@ -328,7 +363,7 @@ describe("fromDesign with components", () => {
     Object.assign(blocks(design)[0].values, { ratio: "0.25", offset: "-3", width: "120", gap: "16", weight: "700" });
     const back = fromDesign(design, { components: [Kinds] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain("<acme.Kinds ratio={0.25} offset={-3} width={120} gap={16} weight={700} />");
+    expect(back.code).toContain("<Kinds ratio={0.25} offset={-3} width={120} gap={16} weight={700} />");
     expect((await render(back.element)).text).toContain("0.25 -3 120 16");
   });
 
@@ -478,7 +513,7 @@ describe("registerTools", () => {
     // The design keeps the value as its kind's editor does, whatever edits it.
     const [block] = blocks(toDesign(<Email><Price price={12.5} /></Email>, { customTools: true }).design);
     expect(block.values).toMatchObject({ price: "12.5", was: "9" });
-    expect(fromDesign({ body: { rows: [{ cells: [1], columns: [{ contents: [block] }] }] } }, { components: [Price] }).code).toContain("<acme.Price price={12.5} />");
+    expect(fromDesign({ body: { rows: [{ cells: [1], columns: [{ contents: [block] }] }] } }, { components: [Price] }).code).toContain("<Price price={12.5} />");
   });
 
   it("edits a prop with its kind's editor where its property's control isn't given, with none of the property's options", () => {
@@ -745,7 +780,7 @@ describe("registerTools", () => {
     blocks(design)[0].values.product = { selected: { id: 2 } };
     const back = fromDesign(design, { components: [ProductCard] });
     expect(back.report).toEqual([]);
-    expect(back.code).toContain('<acme.ProductCard name="Mug" />');
+    expect(back.code).toContain('<ProductCard name="Mug" />');
   });
 
   it("refuses a tool's own property named as a prop, and settings for a component that isn't given", () => {

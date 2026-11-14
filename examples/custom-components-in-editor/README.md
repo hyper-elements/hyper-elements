@@ -57,7 +57,7 @@ import { components } from "./src/shop/components";
 const { element, code, report } = fromDesign(edited, { displayMode: "email", components });
 ```
 
-Each tool's block comes back as its component (`<shop.Ticket event="Lumen Conf 2027" … />`), its values checked by its props' kinds.
+Each tool's block comes back as its component (`<Ticket event="Lumen Conf 2027" … />`), its values checked by its props' kinds.
 
 ## Which editor a prop gets
 

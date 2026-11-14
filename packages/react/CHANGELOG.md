@@ -24,8 +24,9 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   counter between the prop's `min` and `max`, one that isn't whole as text, a length in px in the counter, a font
   weight in a dropdown. It's drawn in the canvas and in what the builder exports. `toDesign(element, { customTools:
   true })` writes each of a template's own components as its tool's block, where it was an HTML block of its markup;
-  `fromDesign(design, { components })` reads those blocks back as the components. Without the options, both do what
-  they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
+  `fromDesign(design, { components })` reads those blocks back as the components, its code writing each by the name its
+  type ends with (`<ProductCard />`), or with its namespace where that's another's too (`AcmeCard`), and listing their
+  types to import. Without the options, both do what they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
   component's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…).
 - **A property of your own, for an editor of your own.** `defineProperty()` defines a property once, as data: a name,
   the helper of `prop` it's made on, and the options its editor takes, each made with a helper too (`const currency =

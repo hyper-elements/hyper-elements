@@ -155,13 +155,15 @@ jobs:
       # 494,500 bytes for a template's own components as the builder's custom tools
       # (custom.ts: their blocks in a design both ways, and registerTools(), with a field
       # for every kind of prop and a team's own editors; and what the builder keeps on
-      # such a block that isn't read, said as a built-in block's is).
+      # such a block that isn't read, said as a built-in block's is); 495,500 bytes for
+      # fromDesign()'s code writing each such component by the name its type ends with,
+      # with its namespace where that's another's too.
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=494500
+          MAX_SIZE=495500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
