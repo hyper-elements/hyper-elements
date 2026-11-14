@@ -51,6 +51,49 @@ npx -p @hyper-elements/cli -p playwright-core hyper-elements preview --install-b
 
 `--findings` (with `--json`) reports what each preview found without writing PNGs. With a browser of your own: open a file, wait for `<html data-email-client-ready>`, and read `#email-client-findings`.
 
+## Show them in a gallery
+
+Show the person every client at once, as a gallery: a card per client with the email at the top of it, the client's name (and Mac, iPhone or dark), and what it changed. Each preview file holds the email in the first `iframe` of `#frames`, above it a note (`header.note`) to leave out of the cards, and its findings as JSON in `#email-client-findings` (`removed` and `missing`, each with its `what`), ready once `<html data-email-client-ready>` is set.
+
+**With a browser** (Chrome, Edge or Playwright's Chromium, as for `--screenshots`): `npm install playwright-core`, save this as `gallery.mjs`, and run `node gallery.mjs out/clients/email`. It writes each email as a PNG, a card per client in `gallery.html`, and the whole gallery as `gallery.png`: show that image, or `gallery.html` where the chat can show a page.
+
+```js
+import { readdirSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { chromium } from "playwright-core";
+
+const dir = resolve(process.argv[2]);
+const NAMES = { outlook: "Outlook", "outlook-com": "Outlook.com", "outlook-mac": "Outlook for Mac", gmail: "Gmail", "gmail-app": "Gmail app", "gmail-app-other": "Gmail app, other account", "apple-mail": "Apple Mail", yahoo: "Yahoo Mail", aol: "AOL Mail" };
+const order = (f) => Object.keys(NAMES).indexOf(f.split(".")[0]) * 100 + f.length;
+const browser = await chromium.launch({ channel: "chrome" }).catch(() => chromium.launch());
+const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+const cards = [];
+for (const file of readdirSync(dir).filter((f) => f.endsWith(".html") && f !== "gallery.html").sort((a, b) => order(a) - order(b))) {
+  await page.goto(pathToFileURL(join(dir, file)).href);
+  await page.waitForSelector("html[data-email-client-ready]");
+  const f = JSON.parse(await page.textContent("#email-client-findings"));
+  const id = file.slice(0, -5);
+  await page.locator("#frames iframe").first().screenshot({ path: join(dir, `${id}.email.png`) });
+  const where = [id.includes(".mac") && "Mac", id.includes(".iphone") && "iPhone", f.dark && "dark"].filter(Boolean).join(", ");
+  const all = [...f.removed.map((r) => r.what), ...f.missing.map((m) => m.what ?? m)];
+  const changed = all.length ? all.slice(0, 3).join(", ") + (all.length > 3 ? ` and ${all.length - 3} more` : "") : "nothing";
+  cards.push(`<figure><img src="${id}.email.png" alt=""><figcaption><b>${NAMES[f.client] ?? f.client}${where ? ` (${where})` : ""}</b><small>Changed: ${changed}</small></figcaption></figure>`);
+}
+writeFileSync(join(dir, "gallery.html"), `<!doctype html><meta charset="utf-8"><title>Email previews</title><style>
+body{margin:0;padding:24px;background:#f6f5f2;font:14px system-ui,sans-serif;color:#222}
+main{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+figure{margin:0;background:#fff;border:1px solid #e5e2dc;border-radius:12px;overflow:hidden}
+img{display:block;width:100%;height:300px;object-fit:cover;object-position:top}
+figcaption{padding:10px 12px;display:grid;gap:4px}small{color:#666}
+</style><main>${cards.join("")}</main>`);
+await page.goto(pathToFileURL(join(dir, "gallery.html")).href);
+await page.screenshot({ path: join(dir, "gallery.png"), fullPage: true });
+await browser.close();
+```
+
+**Without one** (a chat that shows a page it's given, such as a Claude artifact): build the same cards with each preview inside its card instead of its PNG, as `<iframe srcdoc="…">` holding the file's HTML (escape `&` and `"`) with `<style>header.note{display:none}</style>` added before its `</head>`, at the client's width (820px on a desktop, 393px on an iPhone) and scaled down to the card with `transform: scale(…)`. Each file is about 600 KB and loads its fonts from cdn.jsdelivr.net: show the clients asked for, and preview with `--fonts inline` where the page can't reach the fonts.
+
 ## Check, without previews
 
 ```bash
@@ -78,7 +121,7 @@ React and `@hyper-elements/react` aren't needed for HTML.
 
 ## What to tell the person
 
-- Show the screenshots, or the files to open, client by client, and what each removed or changed, with the fixes `check` gives.
+- Show the gallery (or the screenshots, or the files to open), and what each client removed or changed, with the fixes `check` gives.
 - A preview isn't an email: what's sent is the HTML as it was.
 - Where `npx` can't reach npm (no network), say so: the previews need the packages from npm.
 
