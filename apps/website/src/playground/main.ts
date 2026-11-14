@@ -807,7 +807,7 @@ const clientsHost = $("[data-clients-stage]");
 /** Where a preview is read: webmail on Windows or a Mac, an app on its own device or an iPhone. */
 const deviceOf = (preview: Preview): string => preview.computer ?? (/\.iphone(\.|$)/.test(preview.id) ? "iphone" : "own");
 /** The device an app's own preview is drawn for. */
-const OWN_DEVICE: Record<string, string> = { outlook: "Windows", "apple-mail": "Mac", "gmail-app": "Android", "gmail-app-other": "Android" };
+const OWN_DEVICE: Record<string, string> = { outlook: "Windows", "outlook-mac": "Mac", "apple-mail": "Mac", "gmail-app": "Android", "gmail-app-other": "Android" };
 const DEVICE_NAMES: Record<string, string> = { windows: "Windows", mac: "Mac", iphone: "iPhone" };
 const deviceName = (client: string, device: string) => DEVICE_NAMES[device] ?? OWN_DEVICE[client] ?? "Desktop";
 const clientOf = (preview: Preview) => clientName(preview.client, drawn?.names);
