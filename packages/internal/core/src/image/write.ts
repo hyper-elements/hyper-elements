@@ -57,6 +57,174 @@ export function writeCanvas(root: ResolvedNode, context: WriteContext): DrawnCan
 
 const gap = (node: ResolvedNode): Style => (typeof node.style.gap === "number" ? { gap: px(node.style.gap) } : {});
 
+/** A run with nothing to draw: no text, or a Span or a Link holding none. It would be a flex item of its own. */
+const blank = (run: Run): boolean => (typeof run === "string" ? run === "" : run.kind === "span" && run.runs.every(blank));
+
+/** An end of a run, or of a block's runs. */
+type Side = "start" | "end";
+
+/** Whether a run has a space at one end: inside a Span or a Link, whether the run at that end of it has. */
+const spaceAt = (run: Run, side: Side): boolean => {
+  if (typeof run === "string") return side === "start" ? run.startsWith(" ") : run.endsWith(" ");
+  const edge = run.kind === "span" ? run.runs[side === "start" ? 0 : run.runs.length - 1] : undefined;
+  return edge !== undefined && spaceAt(edge, side);
+};
+
+/** Whether a run is a line break at one end: is one, or is a Span or a Link whose run at that end is. */
+const breakAt = (run: Run, side: Side): boolean => {
+  if (typeof run === "string") return run === "\n";
+  const edge = run.kind === "span" ? run.runs[side === "start" ? 0 : run.runs.length - 1] : undefined;
+  return edge !== undefined && breakAt(edge, side);
+};
+
+/**
+ * The space at a block of text's own edges, taken off: `white-space: normal` drops it in the HTML outputs, and the
+ * `pre-wrap` a block of text is drawn under (`paragraph()`) would otherwise draw it as an indent. Each end is taken
+ * off the run that holds it, inside a Span or a Link at that end. A run left with nothing goes, and the edge is then
+ * the run beside it: the space after a Span that held only a space starts the block as much as that Span's own did.
+ * An Image at an end ends the walk, having no space.
+ */
+function trimEdges(runs: Run[]): Run[] {
+  const trim = (list: Run[], side: Side): Run[] => {
+    const rest = [...list];
+    while (rest.length > 0) {
+      const at = side === "start" ? 0 : rest.length - 1;
+      const run = rest[at]!;
+      let edge: Run;
+      if (typeof run === "string") edge = side === "start" ? run.replace(/^ +/, "") : run.replace(/ +$/, "");
+      else if (run.kind === "span") edge = { ...run, runs: trim(run.runs, side) };
+      else break;
+      if (!blank(edge)) {
+        rest[at] = edge;
+        break;
+      }
+      rest.splice(at, 1);
+    }
+    return rest;
+  };
+  return trim(trim(runs, "start"), "end");
+}
+
+/** A run without the space at one end of it (inside a Span or a Link, off the run at that end), or undefined where it has none. */
+function withoutSpace(run: Run, side: Side): Run | undefined {
+  if (typeof run === "string") {
+    if (!spaceAt(run, side)) return undefined;
+    return side === "start" ? run.slice(1) : run.slice(0, -1);
+  }
+  if (run.kind !== "span") return undefined;
+  const at = side === "start" ? 0 : run.runs.length - 1;
+  const edge = run.runs[at];
+  const taken = edge === undefined ? undefined : withoutSpace(edge, side);
+  if (taken === undefined) return undefined;
+  const runs = [...run.runs];
+  runs[at] = taken;
+  return { ...run, runs };
+}
+
+/**
+ * A space put at one end of a run. Inside a Span or a Link it goes in a run of its own, which the Span's underline
+ * and line-through don't reach: a Link drawn "our site " would be underlined under the space too.
+ */
+function withSpace(run: Run, side: Side): Run | undefined {
+  if (typeof run === "string") return side === "start" ? ` ${run}` : `${run} `;
+  if (run.kind !== "span") return undefined;
+  const space: Run = { kind: "span", style: { textDecoration: "none", backgroundColor: "transparent" }, runs: [" "] };
+  const { style, runs } = filledRuns(run);
+  return { ...run, style, runs: side === "start" ? [space, ...runs] : [...runs, space] };
+}
+
+/**
+ * A Span's style and runs, for a space to be put beside the runs: its background, where it has one, on each of its
+ * runs instead of on the Span. A background fills a Span's whole box, the runs inside it with theirs, whatever their
+ * own, so the space would be highlighted with the word beside it, on that one side.
+ *
+ * Words can only take a background in a box of their own, and the Span's runs must be laid out as they were. So the
+ * words between two of its Spans, Links or Images go in one box, the line breaks among them too (boxed apart, the
+ * words either side of a line break would no longer be one text for it to break). And where a line is too narrow
+ * for a Span's runs, a box that holds words gives way and the words themselves don't (the engine's rule, which a
+ * box around the words would change both ways): each box of words is told not to give way, and the Span, which held
+ * words and now holds their boxes, that it still does.
+ *
+ * An Image a Link holds goes in a box of its own with the background, filled as the Link's box was around it: as high
+ * as the line and square at its corners. Given the background itself, it would be filled under its own box alone.
+ */
+function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: Run[] } {
+  const { backgroundColor, ...style } = run.style;
+  if (backgroundColor === undefined) return { style: run.style, runs: run.runs };
+  const runs: Run[] = [];
+  let words: string[] = [];
+  const box = () => {
+    // (Line breaks with no words between two runs stay as they are.)
+    if (words.some((text) => text !== "\n")) runs.push({ kind: "span", style: { backgroundColor, flexShrink: 0 }, runs: words });
+    else runs.push(...words);
+    words = [];
+  };
+  for (const held of run.runs) {
+    if (typeof held === "string") {
+      words.push(held);
+      continue;
+    }
+    box();
+    runs.push(held.kind === "span" ? { ...held, style: { backgroundColor, ...held.style } } : { kind: "span", style: { backgroundColor }, runs: [held] });
+  }
+  box();
+  return { style: run.runs.some((held) => typeof held === "string") ? { ...style, flexShrink: 1 } : style, runs };
+}
+
+/**
+ * The space between two runs, moved onto one of them. Each run is a flex item, and `pre-wrap` keeps a space wherever
+ * it sits, so where the words wrap between the two it's drawn on one line or the other: at the start of the second
+ * run it indents the line that run begins, at the end of the first it's part of the width of the line that run ends.
+ *
+ * `onto` is the side of a run that holds it. "end" (the end of the first run) is right for a block aligned at the
+ * left, where a line's end is ragged: "Hello <Span>world</Span> and more" wrapping before "and" starts that line at
+ * the margin, and the space hangs off the line before as `white-space: normal` hangs it in the HTML outputs.
+ * "start" (the start of the second) is right for one aligned at the right, where it's a line's start that is ragged
+ * and its end that must reach the margin. Neither is right for a centered block, where the space moves that one line
+ * by half its width either way: only measuring the words could say which line has it, so it's held as at the left.
+ *
+ * A space beside a line break on the side it's moved from goes, as a browser drops it, a break at the edge of a Span
+ * or a Link beside it too ("<Span>Name<LineBreak /></Span> value" would start its second line with the space, and
+ * "Hello <Span><LineBreak />x</Span>" aligned at the right end its first a space short), and so does one beside a run
+ * that already has a space there: the two are one space in the HTML outputs, where white space collapses across a
+ * Span's edge ("Hello <Span> world</Span>"). The one kept is the first, as there: moved forward onto a Link that
+ * starts with a space of its own, it takes that space's place in a run the Link's underline doesn't reach. One
+ * beside an Image stays, there being nothing to move it onto.
+ *
+ * The runs inside a Span or a Link are gathered the same way (`runs()`), each list's own two ends left as they
+ * are: those are spaces between that Span and the runs either side of it.
+ */
+function gatherSpaces(runs: Run[], onto: Side): Run[] {
+  // Each run gives the space at the side nearest the run it follows here: read in order to move a space back onto
+  // the run before it, and from the last run to the first to move one forward onto the run after it.
+  const from: Side = onto === "end" ? "start" : "end";
+  const out: Run[] = [];
+  for (const run of onto === "end" ? runs : [...runs].reverse()) {
+    const beside = out[out.length - 1];
+    let next = run;
+    const taken = beside === undefined ? undefined : withoutSpace(run, from);
+    if (beside !== undefined && taken !== undefined) {
+      if (breakAt(beside, onto)) next = taken;
+      else if (spaceAt(beside, onto)) {
+        next = taken;
+        // Read from the last run to the first, the space kept is this run's, and the one it's beside is the later.
+        const kept = onto === "start" ? withoutSpace(beside, "start") : undefined;
+        if (kept !== undefined) out[out.length - 1] = withSpace(kept, "start") ?? beside;
+      } else {
+        const joined = withSpace(beside, onto);
+        if (joined !== undefined) {
+          out[out.length - 1] = joined;
+          next = taken;
+        }
+      }
+    }
+    // A run with nothing to draw isn't one: a Span that was only that space, or one that held nothing (a value that
+    // came empty), which would otherwise stand between the space after it and the space that one collapses into.
+    if (!blank(next)) out.push(next);
+  }
+  return onto === "end" ? out : out.reverse();
+}
+
 class Writer {
   constructor(private readonly context: WriteContext) {}
 
@@ -234,16 +402,26 @@ class Writer {
     };
   }
 
-  /** A block of text: its runs, a line break starting a new line. */
+  /**
+   * A block of text: its runs, a line break starting a new line. Each run is a flex item, and a flex item's text is
+   * trimmed, so the space before or after a Span or a Link would be lost ("Hello world" drawn "Helloworld"):
+   * `pre-wrap` keeps it. The writer collapses the runs itself (`runs()`) and trims the block's own edges, so the
+   * words are spaced as `white-space: normal` spaces them in the HTML outputs.
+   */
   paragraph(node: ResolvedNode, style: Style): Block {
-    const breaks = node.children.some((child) => typeof child !== "string" && child.type === "LineBreak");
-    return { kind: "text", style: aligned({ display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: breaks ? "pre-wrap" : undefined }), runs: this.runs(node) };
+    const drawn: Style = { display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: "pre-wrap" };
+    const onto: Side = drawn.textAlign === "right" ? "start" : "end";
+    return { kind: "text", style: aligned(drawn), runs: gatherSpaces(trimEdges(this.runs(node, onto)), onto) };
   }
 
-  runs(node: ResolvedNode): Run[] {
+  /** A node's runs. `onto` is the side of a run that holds the space between it and the next (`gatherSpaces()`). */
+  runs(node: ResolvedNode, onto: Side): Run[] {
     return present(
       node.children.map((child): Run | undefined => {
-        if (typeof child === "string") return child;
+        // As white space collapses in HTML: a run of spaces, tabs and line breaks is one space, so pre-wrap draws the
+        // words as the others do. A non-breaking space isn't among them (`\s` would take U+00A0 and U+202F too):
+        // each is kept and drawn, and keeps the words either side of it on one line.
+        if (typeof child === "string") return child.replace(/[ \t\n\r\f]+/g, " ");
         if (!shown(child)) return undefined;
         switch (child.type) {
           case "LineBreak":
@@ -256,7 +434,7 @@ class Writer {
             const style: Style = { ...this.text(child), textAlign: undefined };
             if (child.style.textDecoration !== undefined) style.textDecoration = String(child.style.textDecoration);
             if (typeof child.style.backgroundColor === "string") style.backgroundColor = child.style.backgroundColor;
-            return { kind: "span", style, runs: this.runs(child) };
+            return { kind: "span", style, runs: gatherSpaces(this.runs(child, onto), onto) };
           }
         }
       })

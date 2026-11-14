@@ -788,7 +788,7 @@ Holds: TableCell.
 
 Props:
 - `header`: true or false (default `false`). Its cells head the columns below them.
-- `footer`: true or false (default `false`). It ends the table (printed, on each page the table runs to).
+- `footer`: true or false (default `false`). It ends the table, as its totals row does.
 
 `style`:
 - `color`: *color* (inherited, Typography)

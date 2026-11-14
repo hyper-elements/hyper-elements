@@ -19,6 +19,7 @@ import {
   Html,
   Image,
   Layer,
+  LineBreak,
   Link,
   List,
   ListItem,
@@ -341,6 +342,352 @@ describe("renderImage", () => {
     expect(left).toBeLessThan(5);
     // Lines that wrap, centered as they were.
     centered(await across(canvas("center", <Text style={{ fontSize: 48 }}>{"Five days of new things, one a day, all week long. ".repeat(3)}</Text>)));
+  });
+
+  /** The lines of a Canvas's text, top to bottom: where each one's letters start and end across it, and its top. */
+  const lines = async (children: ReactNode, width = 900) => {
+    const template = (
+      <Canvas width={width} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+        {children}
+      </Canvas>
+    );
+    const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+    const points = [...svg.matchAll(/<path[^>]* d="([^"]+)"/g)].flatMap((path) => [...path[1].matchAll(/(-?[\d.]+) (-?[\d.]+)/g)].map((point) => [Number(point[1]), Number(point[2])] as const));
+    // Lines are 36px apart and a line's letters under 24px tall, so 10px with no point in it is the space between two.
+    const rows: Array<{ top: number; xs: number[] }> = [];
+    let last = -Infinity;
+    for (const [x, y] of points.sort((a, b) => a[1] - b[1])) {
+      if (y - last > 10) rows.push({ top: y, xs: [] });
+      rows[rows.length - 1]!.xs.push(x);
+      last = y;
+    }
+    return rows.map(({ top, xs }) => ({ from: Math.min(...xs), to: Math.max(...xs), top }));
+  };
+  /** How wide its text is drawn. */
+  const width = async (children: ReactNode) => {
+    const drawn = await lines(children);
+    return Math.max(...drawn.map((line) => line.to)) - Math.min(...drawn.map((line) => line.from));
+  };
+  type Run = string | { kind: string; runs?: Run[] };
+  /** What the writer gives the engine to draw: each block's runs. */
+  const drawn = (children: ReactNode) => {
+    const { root } = prepare(
+      <Canvas width={420} height={200} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+        {children}
+      </Canvas>
+    );
+    return writeCanvas(root!, { families: new Set(["liberation sans"]), fallback: "Liberation Sans", fonts: [], image: (src) => src }).children as Array<{ runs?: Run[] }>;
+  };
+  const said = (runs: Run[]): string => runs.map((run) => (typeof run === "string" ? run : (run.runs && said(run.runs)) ?? "")).join("");
+
+  it("keeps the space before and after a Span or a Link, and starts a wrapped line at the margin", async () => {
+    // Each run is a flex item, and a flex item's text is trimmed: the spaces around a Span would be lost, drawing
+    // "Helloworldand more" (about two spaces narrower than the same words written plainly).
+    const plain = await width(<Text>Hello world and more</Text>);
+    expect(Math.abs((await width(<Text>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</Text>)) - plain)).toBeLessThan(2);
+    expect(Math.abs((await width(<Text>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</Text>)) - plain)).toBeLessThan(2);
+    const linked = await width(
+      <Text>
+        Hello <Link href="https://x.test">world</Link> and more
+      </Text>
+    );
+    expect(Math.abs(linked - plain)).toBeLessThan(2);
+    // The space a block of text starts or ends with goes, as white-space: normal drops it in the HTML outputs.
+    expect(Math.abs((await width(<Text> Hello world and more </Text>)) - plain)).toBeLessThan(2);
+    expect(Math.abs((await width(<Text>Hello world and more</Text>)) - plain)).toBeLessThan(2);
+
+    // A space starting a run would be drawn as an indent where the words wrap before that run, so the writer hangs
+    // it off the end of the run before it instead. Every one of a block's runs but the first begins with a letter.
+    const begins = (run: Run): boolean => {
+      if (typeof run === "string") return run.startsWith(" ");
+      const first = run.runs?.[0];
+      return run.kind === "span" && first !== undefined && begins(first);
+    };
+    for (const block of drawn(
+      <>
+        <Text>
+          A line long enough that it wraps with a <Span style={{ color: "#ff0000" }}>run in it</Span> before the words that follow it here
+        </Text>
+        <Text>
+          See <Link href="https://x.test">our site</Link> today
+        </Text>
+      </>
+    )) {
+      expect(block.runs?.slice(1).filter(begins)).toEqual([]);
+    }
+    expect(said(drawn(<Text>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</Text>)[0]!.runs!)).toBe("Hello world and more");
+  });
+
+  it("keeps a non-breaking space: each one drawn, and the words either side of it on one line", async () => {
+    const NBSP = "\u00a0";
+    // Spaces collapse into one; non-breaking spaces don't (`\s` takes both, and would make the four of them one).
+    const one = await width(<Text>A B</Text>);
+    expect(Math.abs((await width(<Text>{"A    B"}</Text>)) - one)).toBeLessThan(1);
+    expect((await width(<Text>{`A${NBSP.repeat(4)}B`}</Text>)) - one).toBeGreaterThan(15);
+    // Only the space that collapses is taken off a block's start: two non-breaking ones indent it.
+    const [flush] = await lines(<Text>Hello</Text>);
+    const [indented] = await lines(<Text>{`${NBSP}${NBSP}Hello`}</Text>);
+    expect(indented!.from - flush!.from).toBeGreaterThan(10);
+    // A price too wide to share a line with the word either side of it isn't split: "Buy", "100 USD", "today".
+    const price = await lines(<Text>{`Buy 100${NBSP}USD today`}</Text>, 160);
+    const [whole] = await lines(<Text>{`100${NBSP}USD`}</Text>);
+    expect(price).toHaveLength(3);
+    expect(Math.abs(price[1]!.to - price[1]!.from - (whole!.to - whole!.from))).toBeLessThan(2);
+    // The narrow one (U+202F, in a French number as Intl writes it) reaches the engine as it was written too.
+    const amount = `1\u202f234,50${NBSP}\u20ac`;
+    expect(said(drawn(<Text>{amount}</Text>)[0]!.runs!)).toBe(amount);
+  });
+
+  it("draws nothing for a Span that holds nothing: the space after it is the block's edge, or the one space between two words", async () => {
+    // A value that came empty, as a template's data gives one.
+    const title = "";
+    // At the block's start the space after it goes, as at any block's start: the words are drawn where they are
+    // without it (left in, the space would be a run of its own, a line the words no longer fit beside, and they
+    // would be drawn on the line under it).
+    const fits = await lines(<Text>Hello world</Text>, 160);
+    const after = await lines(<Text><Span>{title}</Span> Hello world</Text>, 160);
+    expect(fits).toHaveLength(1);
+    expect(after).toHaveLength(1);
+    for (const edge of ["from", "to", "top"] as const) expect(Math.abs(after[0]![edge] - fits[0]![edge]), edge).toBeLessThan(1);
+    // A Span that holds only a space is the same edge.
+    expect(said(drawn(<Text><Span> </Span> Hello world</Text>)[0]!.runs!)).toBe("Hello world");
+    expect(said(drawn(<Text>Hello world <Span> </Span></Text>)[0]!.runs!)).toBe("Hello world");
+
+    // Between two words, the space before it and the space after it are one space, as white space collapses across
+    // a Span's edge in the HTML outputs: so are a space ending one run and a space starting the next.
+    const plain = await width(<Text>Hello world and more</Text>);
+    for (const children of [
+      <>Hello <Span>{title}</Span> world and more</>,
+      <>Hello <Span style={{ color: "#ff0000" }}> world</Span> and more</>,
+      <>Hello <Span style={{ color: "#ff0000" }}>world </Span> and more</>,
+      <>Hello <Link href="https://x.test"> world</Link> and more</>,
+    ]) {
+      expect(said(drawn(<Text>{children}</Text>)[0]!.runs!)).toBe("Hello world and more");
+      expect(Math.abs((await width(<Text>{children}</Text>)) - plain)).toBeLessThan(2);
+    }
+  });
+
+  it("ends a right-aligned line at the margin where the words wrap beside a Span or a Link", async () => {
+    // Each run is a flex item, and a space ending a run is part of the width of the line that run ends. At the left
+    // that end is ragged; at the right it would hold the line a space short of the margin, so there the space
+    // between two runs starts the second, where it's a line's start that is ragged.
+    const right = { textAlign: "right" } as const;
+    const margin = 280; // a 300px Canvas, 20px of padding
+    // (A letter's own side bearing leaves a line a pixel or two inside the margin; a space here is 6.7px.)
+    for (const line of await lines(<Text style={right}>A line that wraps with a red run and then more words</Text>, 300)) expect(margin - line.to).toBeLessThan(3.5);
+    for (const run of [<Span style={{ color: "#ff0000" }}>red run</Span>, <Link href="https://x.test">red run</Link>]) {
+      const wrapped = await lines(<Text style={right}>A line that wraps with a {run} and then more words</Text>, 300);
+      expect(wrapped.length).toBeGreaterThan(1);
+      for (const line of wrapped) expect(margin - line.to, JSON.stringify(wrapped)).toBeLessThan(3.5);
+    }
+
+    // What the writer gives the engine: no run but the last ends with a space, and the words are spaced the same.
+    const ends = (run: Run): boolean => {
+      if (typeof run === "string") return run.endsWith(" ");
+      const last = run.runs?.[run.runs.length - 1];
+      return run.kind === "span" && last !== undefined && ends(last);
+    };
+    for (const children of [
+      <>Hello <Span style={{ color: "#ff0000" }}>world</Span> and more</>,
+      <>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</>,
+      <>Hello <Link href="https://x.test"> world</Link> and more</>,
+    ]) {
+      const runs = drawn(<Text style={right}>{children}</Text>)[0]!.runs!;
+      expect(said(runs)).toBe("Hello world and more");
+      expect(runs.slice(0, -1).filter(ends)).toEqual([]);
+    }
+
+    // Of two spaces that collapse the first is the one kept, as in the HTML outputs: before a Link that starts with
+    // a space of its own, that's the space outside it. Whichever run holds it, the Link's underline is under its
+    // word alone (the space is in a run of its own inside the Link, which the underline doesn't reach).
+    for (const style of [{}, right]) {
+      const link = drawn(<Text style={style}>Hello <Link href="https://x.test"> world</Link> and more</Text>)[0]!.runs![1] as { runs: Run[] };
+      expect(link.runs.filter((run) => typeof run === "string"), JSON.stringify(link)).toEqual(["world"]);
+    }
+  });
+
+  it("spaces the words inside a Span or a Link that holds another as it spaces a block's own", async () => {
+    // The runs inside a Span are flex items too: a space on both sides of an edge inside one is one space, and the
+    // space between two of them is held by one of the two, as between a block's own runs.
+    const plain = await width(<Text>Hello world and more</Text>);
+    for (const children of [
+      <Span>Hello <Span style={{ color: "#ff0000" }}> world</Span> and more</Span>,
+      <Span>Hello<Span style={{ color: "#ff0000" }}> world </Span>and more</Span>,
+      <Link href="https://x.test">Hello <Span style={{ color: "#ff0000" }}>world </Span> and more</Link>,
+    ]) {
+      for (const style of [{}, { textAlign: "right" } as const]) {
+        const what = JSON.stringify(drawn(<Text style={style}>{children}</Text>)[0]!.runs);
+        expect(said(drawn(<Text style={style}>{children}</Text>)[0]!.runs!), what).toBe("Hello world and more");
+        expect(Math.abs((await width(<Text style={style}>{children}</Text>)) - plain), what).toBeLessThan(2);
+      }
+    }
+  });
+
+  it("highlights a Span under its letters alone, not under the space held with it", async () => {
+    // The space between a Span and the words after it is held with the Span (before it, in a block aligned at the
+    // right), and a background fills a Span's whole box: the highlight would run under that space too, on that one
+    // side. Each run the Span held is filled instead, and the space beside them isn't.
+    const mark = { backgroundColor: "#ffff00" };
+    /** Where the highlight is across the Canvas: the left of its first box and the right of its last. */
+    const highlighted = async (children: ReactNode, width = 400) => {
+      const template = (
+        <Canvas width={width} height={240} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg" })).image);
+      const boxes = [...svg.matchAll(/<rect\b[^>]*>/g)]
+        .map((rect) => rect[0])
+        .filter((rect) => /fill="#ffff00"/i.test(rect))
+        .map((rect) => {
+          const left = Number(/\bx="([\d.]+)"/.exec(rect)?.[1]);
+          return [left, left + Number(/\bwidth="([\d.]+)"/.exec(rect)?.[1])] as const;
+        });
+      expect(boxes.length).toBeGreaterThan(0);
+      return { from: Math.min(...boxes.map((box) => box[0])), to: Math.max(...boxes.map((box) => box[1])) };
+    };
+    const alone = await highlighted(<Text><Span style={mark}>our site</Span></Text>);
+    const letters = alone.to - alone.from;
+    expect(letters).toBeGreaterThan(50);
+    for (const style of [{}, { textAlign: "right" } as const]) {
+      const box = await highlighted(<Text style={style}>See <Span style={mark}>our site</Span> today</Text>);
+      // (A space here is 6.7px.)
+      expect(Math.abs(box.to - box.from - letters), JSON.stringify([style, box])).toBeLessThan(1);
+    }
+    // The words are spaced as they are with no highlight.
+    const plain = await width(<Text>See our site today</Text>);
+    expect(Math.abs((await width(<Text>See <Span style={mark}>our site</Span> today</Text>)) - plain)).toBeLessThan(2);
+    expect(said(drawn(<Text>See <Span style={{ ...mark, textDecoration: "underline" }}>our site</Span> today</Text>)[0]!.runs!)).toBe("See our site today");
+    // A space the Span itself holds between its words is the Span's, and highlighted with them.
+    const whole = await highlighted(<Text><Span style={mark}>See <Link href="https://x.test">our site</Link> today</Span> and more</Text>);
+    expect(Math.abs(whole.to - whole.from - plain)).toBeLessThan(4);
+
+    // A highlight moves no letter: a Span that holds several runs, on a line too narrow for them, is laid out as the
+    // same Span is without one (given to one run holding the rest, the background had them sized another way, and
+    // the last word pushed past the Canvas's edge), and a line break among its words still breaks the line (the
+    // words either side of it boxed apart, it broke nothing).
+    const shapes = [
+      (style: Record<string, string>) => (
+        <Text>
+          See <Span style={style}>our <Span style={{ color: "#ff0000" }}>lovely site</Span> today</Span> again
+        </Text>
+      ),
+      (style: Record<string, string>) => (
+        <Text>
+          See <Span style={style}>our<LineBreak />site</Span> today
+        </Text>
+      ),
+    ];
+    for (const [shape, text] of shapes.entries()) {
+      for (const canvas of [200, 260, 400]) {
+        const marked = await lines(text(mark), canvas);
+        const unmarked = await lines(text({ color: "#000000" }), canvas);
+        expect(marked, `shape ${shape}, ${canvas}px`).toHaveLength(unmarked.length);
+        for (const [i, line] of marked.entries()) {
+          for (const edge of ["from", "to", "top"] as const) expect(Math.abs(line[edge] - unmarked[i]![edge]), `shape ${shape}, ${canvas}px, line ${i}, ${edge}`).toBeLessThan(2);
+          expect(line.to, `shape ${shape}, ${canvas}px, line ${i}`).toBeLessThanOrEqual(canvas - 20);
+        }
+      }
+    }
+    expect(await lines(shapes[1]!(mark), 400)).toHaveLength(2);
+
+    // A Link can hold an Image, and the background taken off the Link is behind the Image still, as the Link's own box
+    // filled it: as high as the line, not the Image's own height (taken off the Link and given to its words alone, the
+    // Image was drawn with none behind it).
+    const icon = { src: "https://cdn.acme.test/icon.png", width: 16, height: 16 };
+    const filled = async (children: ReactNode) => {
+      const template = (
+        <Canvas width={400} height={240} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg", images: { [icon.src]: PNG } })).image);
+      return [...svg.matchAll(/<rect\b[^>]*>/g)]
+        .map((rect) => rect[0])
+        .filter((rect) => /fill="#ffff00"/i.test(rect))
+        .map((rect) => ({ width: Number(/\bwidth="([\d.]+)"/.exec(rect)?.[1]), height: Number(/\bheight="([\d.]+)"/.exec(rect)?.[1]) }));
+    };
+    const linked = (children?: ReactNode) => (
+      <Link href="https://x.test" style={mark}>
+        <Image src={icon} alt="Icon" />
+        {children}
+      </Link>
+    );
+    // With no space beside the Link, its own box, on a line the words make higher than the Image.
+    const own = await filled(<Text>See{linked()}today</Text>);
+    expect(own).toHaveLength(1);
+    expect(own[0]!.height).toBeGreaterThan(icon.height);
+    const same = (box: { width: number; height: number } | undefined, to: { width: number; height: number }, label: string) => {
+      expect(box, label).toBeDefined();
+      expect(Math.abs(box!.width - to.width), label).toBeLessThan(1);
+      expect(Math.abs(box!.height - to.height), label).toBeLessThan(1);
+    };
+    for (const style of [{}, { textAlign: "right" } as const]) {
+      const beside = await filled(<Text style={style}>See {linked()} today</Text>);
+      expect(beside, JSON.stringify(style)).toHaveLength(1);
+      same(beside[0], own[0]!, JSON.stringify(style));
+    }
+    // Beside words the Link holds, as high as theirs.
+    const [image, words] = await filled(<Text>{linked(" our site")} today</Text>);
+    same(image, own[0]!, "beside words");
+    expect(Math.abs(words!.height - image!.height)).toBeLessThan(1);
+  });
+
+  it("starts the line after a LineBreak at the margin, a break inside a Span or a Link and beside one too", async () => {
+    // Each run is a flex item: a break inside a Span broke the Span's own box, and the words after the Span carried
+    // on beside that box ("See our today", with "site" under "our"); a break beside a Span started its line beside
+    // the Span; one between two Spans broke nothing.
+    const red = { color: "#ff0000" };
+    const highlighted = { backgroundColor: "#fde68a" };
+    const expected = [(await lines(<Text>See our</Text>))[0]!, (await lines(<Text>site today</Text>))[0]!];
+    const shapes: Record<string, ReactNode> = {
+      "in the block": <Text>See our<LineBreak />site today</Text>,
+      "after a Span": <Text>See <Span style={red}>our</Span><LineBreak />site today</Text>,
+      "inside a Span": <Text>See <Span style={red}>our<LineBreak />site</Span> today</Text>,
+      "inside a Link": <Text>See <Link href="https://x.test">our<LineBreak />site</Link> today</Text>,
+      "inside a highlighted Span": <Text>See <Span style={highlighted}>our<LineBreak />site</Span> today</Text>,
+      "inside a Span in a Span": <Text>See <Span style={red}><Span style={{ textDecoration: "underline" }}>our<LineBreak />site</Span></Span> today</Text>,
+      "between two Spans": <Text>See <Span style={red}>our</Span><LineBreak /><Span style={red}>site</Span> today</Text>,
+    };
+    for (const [name, text] of Object.entries(shapes)) {
+      const drawn = await lines(text);
+      expect(drawn, name).toHaveLength(2);
+      for (const [i, line] of drawn.entries()) {
+        for (const edge of ["from", "to"] as const) expect(Math.abs(line[edge] - expected[i]![edge]), `${name}, line ${i}, ${edge}`).toBeLessThan(2);
+      }
+    }
+
+    // A break at the edge of a Span or a Link is a break beside the space outside it, which goes as it does beside a
+    // break of the block's own: kept, it started the next line a space in from the margin at the left, and at the
+    // right ended the line before a space short of it. (A space here is 6.7px.)
+    const right = { textAlign: "right" } as const;
+    const atRight = [(await lines(<Text style={right}>See our</Text>))[0]!, (await lines(<Text style={right}>site today</Text>))[0]!];
+    const edges: Array<[string, ReactNode, typeof expected]> = [
+      ["a break ending a Span, then a space", <Text>See <Span style={red}>our<LineBreak /></Span> site today</Text>, expected],
+      ["a break ending a Span in a Span, then a space", <Text>See <Span style={red}><Span style={{ textDecoration: "underline" }}>our<LineBreak /></Span></Span> site today</Text>, expected],
+      ["a break ending a Link, then a space", <Text>See <Link href="https://x.test">our<LineBreak /></Link> site today</Text>, expected],
+      ["a space, then a break starting a Span, at the right", <Text style={right}>See our <Span style={red}><LineBreak />site</Span> today</Text>, atRight],
+      ["a space, then a break starting a Link, at the right", <Text style={right}>See our <Link href="https://x.test"><LineBreak />site</Link> today</Text>, atRight],
+    ];
+    for (const [name, text, lined] of edges) {
+      const drawn = await lines(text);
+      expect(drawn, name).toHaveLength(2);
+      for (const [i, line] of drawn.entries()) {
+        for (const edge of ["from", "to"] as const) expect(Math.abs(line[edge] - lined[i]![edge]), `${name}, line ${i}, ${edge}`).toBeLessThan(2);
+      }
+    }
+
+    // A line with nothing on it is a line high, as in the HTML outputs: two breaks leave one between the words,
+    // beside Spans too, and a break that starts a block starts it with one.
+    const [first, second] = await lines(<Text>See our<LineBreak />site today</Text>);
+    const line = second!.top - first!.top;
+    for (const text of [<Text>See our<LineBreak /><LineBreak />site today</Text>, <Text>See <Span style={red}>our</Span><LineBreak /><LineBreak /><Span style={red}>site</Span> today</Text>]) {
+      const [above, below] = await lines(text);
+      expect(Math.abs(below!.top - above!.top - 2 * line)).toBeLessThan(2);
+    }
+    const [plain] = await lines(<Text>See our</Text>);
+    const [broken] = await lines(<Text><LineBreak />See our</Text>);
+    expect(Math.abs(broken!.top - plain!.top - line)).toBeLessThan(2);
   });
 
   it("writes a Canvas only", async () => {

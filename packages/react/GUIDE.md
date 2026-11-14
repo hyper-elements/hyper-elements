@@ -14,7 +14,7 @@ Everything needed to write a template, in short. Every prop's and style's detail
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
-- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).
+- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering, giving `{ valid, diagnostics }` and throwing no `ElementsError`; `outline(element)` prints the laid-out template (each block, its width, its text) and throws as `render()` does, so check `valid` first.
 - Email clients: `@hyper-elements/email-clients`. `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and others remove or change, naming its `clients`, with a `fix` (without it, one note: `email/more-checks`). To test an email in them, `await renderInEmailClients(email)` gives a preview per client: HTML that shows the email as that client does, in Chromium.
 
 ```tsx
@@ -57,7 +57,8 @@ A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, l
 - `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
 - `styles: { card: { … } }` are named styles: `style={{ apply: ["card"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.
 - `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
-- `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module "@hyper-elements/react" { interface Register { theme: typeof brand } }` types every name.
+- `formats: { email: { … } }` overrides it for one kind of root: `email`, `page`, `document`, `canvas`. A hover belongs in one, since a PDF and an image have nothing to point at them (`pdf/unsupported`, `image/unsupported`): `formats: { email: { components: { Button: { hover: { … } } } } }`.
+- `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module "@hyper-elements/react" { interface Register { theme: typeof brand } }` types every name.
 
 ## A whole template
 
@@ -117,9 +118,34 @@ export default function Receipt() {
 }
 ```
 
+## A Document as a PDF
+
+`renderPdf(element, options)` (`@hyper-elements/react/pdf`) writes a `Document` as a PDF: `{ pdf, diagnostics }`, errors throwing an `ElementsError`. `fonts` and `images` are given as `renderImage`'s are, below; a standard PDF font needs no file and draws Western European characters alone.
+
+**Nothing flows from one page to the next**: what doesn't fit a page is cut off, with a `document/overflow` warning. Split long content yourself, with a `PageBreak` or a `Document.Page` per page; a long `Table` becomes one `Table` a page, its header row repeated.
+
+```tsx
+import { readFile } from "node:fs/promises";
+import { Document, Heading, PageFooter, PageNumber, Text } from "@hyper-elements/react";
+import { renderPdf } from "@hyper-elements/react/pdf";
+
+const { pdf, diagnostics } = await renderPdf(
+  <Document size="A4" style={{ fontFamily: "Inter" }}>
+    <PageFooter><Text>Page <PageNumber /> of <PageNumber total /></Text></PageFooter>
+    <Heading level={1}>Invoice INV-2041</Heading>
+  </Document>,
+  {
+    fonts: [
+      { family: "Inter", src: await readFile("Inter.ttf"), weight: 400 },
+      { family: "Inter", src: await readFile("Inter-Bold.ttf"), weight: 700 },
+    ],
+  }
+);
+```
+
 ## A Canvas as an image
 
-`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`.
+`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`. What doesn't fit the Canvas is cut off at its edges, with a `canvas/overflow` warning.
 
 ```tsx
 import { readFile } from "node:fs/promises";

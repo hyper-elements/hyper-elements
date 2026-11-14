@@ -127,6 +127,62 @@ describe("exit 2", () => {
     expect(lines(ran)[0]).toMatchObject({ status: "error", diagnostics: [{ code: "cli/elements-missing", severity: "error" }] });
   });
 
+  // A project with the CLI alone fails on `react/jsx-runtime`, which the JSX compiles to: the first thing someone
+  // following the README hits, and it says nothing about what to install.
+  it("where the template's folder has no React", async () => {
+    const dir = project({ "emails/a.tsx": email() }, { modules: ["@hyper-elements/react"] });
+    const ran = await cli(dir, ["check", "emails", "--json"]);
+    expect(ran.code).toBe(2);
+    expect(lines(ran)[0]).toMatchObject({ status: "error", diagnostics: [{ code: "cli/react-missing", severity: "error", fix: "npm i @hyper-elements/react react react-dom" }] });
+  });
+
+  // A package whose "exports" names an `import` condition alone, which a dependency the template imports imports. In a
+  // project without "type": "module" tsx compiles that dependency to CommonJS, its import a `require()` Node refuses
+  // with an error that names nothing to change: it says to load the template as an ES module. A subpath a package
+  // doesn't export at all is the same error from Node, and stays the error it was (exit 1), since that wouldn't help:
+  // in a package whose other entries have `import` and `require` conditions too, as most that ship both builds do.
+  it.skipIf(ON_BUN)("where a CommonJS project's template reaches a package only an import loads", async () => {
+    const both = { import: "./index.mjs", require: "./index.cjs" };
+    const importOnly = {
+      "node_modules/import-only/package.json": JSON.stringify({ name: "import-only", version: "1.0.0", type: "module", exports: { ".": { import: "./index.js" } } }),
+      "node_modules/import-only/index.js": `export const word = "Imported";\n`,
+      "node_modules/uses-it/package.json": JSON.stringify({ name: "uses-it", version: "1.0.0", type: "module", exports: "./index.js" }),
+      "node_modules/uses-it/index.js": `export { word } from "import-only";\n`,
+      "node_modules/two-paths/package.json": JSON.stringify({ name: "two-paths", version: "1.0.0", exports: { "./one": "./one.js" } }),
+      "node_modules/two-paths/one.js": `exports.word = "One";\n`,
+      "node_modules/dual/package.json": JSON.stringify({ name: "dual", version: "1.0.0", exports: { ".": both, "./util": both } }),
+      "node_modules/dual/index.mjs": `export const word = "Dual";\n`,
+      "node_modules/dual/index.cjs": `exports.word = "Dual";\n`,
+    };
+    const dir = project(
+      {
+        "emails/a.tsx": email("{word}", `import { word } from "uses-it";`),
+        "emails/b.tsx": email("{word}", `import { word } from "two-paths/two";`),
+        "emails/c.tsx": email("{word}", `import { word } from "dual/utils";`),
+        ...importOnly,
+      },
+      { packageJson: { name: "fixture", private: true } },
+    );
+    const ran = await cli(dir, ["render", "emails/a.tsx", "--json"]);
+    expect(ran.code, ran.stdout + ran.stderr).toBe(2);
+    expect(lines(ran)[0]).toMatchObject({ status: "error", diagnostics: [{ code: "cli/commonjs-import", severity: "error" }] });
+    expect(lines(ran)[0].diagnostics[0].message).toContain("import-only can only be imported");
+    expect(lines(ran)[0].diagnostics[0].fix).toContain(`add "type": "module" to package.json`);
+
+    const other = await cli(dir, ["render", "emails/b.tsx", "--json"]);
+    expect(other.code, other.stdout + other.stderr).toBe(1);
+    expect(lines(other)[0]).toMatchObject({ status: "error", diagnostics: [] });
+    expect(lines(other)[0].error).toContain(`Package subpath './two' is not defined by "exports"`);
+    const mistyped = await cli(dir, ["render", "emails/c.tsx", "--json"]);
+    expect(mistyped.code, mistyped.stdout + mistyped.stderr).toBe(1);
+    expect(lines(mistyped)[0]).toMatchObject({ status: "error", diagnostics: [] });
+    expect(lines(mistyped)[0].error).toContain(`Package subpath './utils' is not defined by "exports"`);
+
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "fixture", private: true, type: "module" }));
+    const fixed = await cli(dir, ["render", "emails/a.tsx", "--json"]);
+    expect(fixed.code, fixed.stdout + fixed.stderr).toBe(0);
+  });
+
   it("where the template's Elements is outside the CLI's range", async () => {
     const dir = project({ "emails/a.tsx": `import { render } from "@hyper-elements/react";\nexport default function A() { return render; }\n` }, { modules: ["react", "react-dom"] });
     const fake = join(dir, "node_modules/@hyper-elements/react");

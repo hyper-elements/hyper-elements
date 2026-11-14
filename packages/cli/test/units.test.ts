@@ -1,13 +1,14 @@
 /**
  * The parts with no process of their own, in-process: who owns a leftover file, error lines, how destinations are
- * compared, and the arguments.
+ * compared, the arguments, and how the browser that draws the previews is started (with playwright-core's launch
+ * stood in for, so no browser is).
  */
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parseArgs, UsageError } from "../src/args";
 import { cacheFolder, decodeDataUri, osCache } from "../src/assets";
 import { foldPath } from "../src/destinations";
@@ -15,7 +16,13 @@ import { errorLine } from "../src/errors";
 import { hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
 import { orphansOf } from "../src/kill";
+import { importFinds } from "../src/packages";
+import { openBrowser } from "../src/preview/browser";
 import { cli, email, lines, project, WINDOWS } from "./helpers";
+
+/** playwright-core's launch, stood in for: each test says what a start gives. */
+const { launch } = vi.hoisted(() => ({ launch: vi.fn() }));
+vi.mock("playwright-core", () => ({ chromium: { launch } }));
 
 /** A process id that isn't running: one that just ended. */
 function deadPid(): number {
@@ -145,6 +152,37 @@ describe("errorLine", () => {
   });
 });
 
+// Whether `cli/commonjs-import` says to load the template as an ES module: only where an import would find the subpath
+// a require couldn't.
+describe("whether an import finds a package's subpath", () => {
+  it("finds an entry an import condition names, exactly or by a pattern", () => {
+    expect(importFinds({ ".": { import: "./index.js" } }, ".")).toBe(true);
+    expect(importFinds({ import: "./index.js" }, ".")).toBe(true);
+    expect(importFinds("./index.js", ".")).toBe(true);
+    // @react-pdf/hyphenate's, which react-pdf's text engine imports `./en-us` of.
+    const hyphenate = { ".": { types: "./lib/index.d.ts", import: "./lib/index.js" }, "./*": { types: "./lib/*.d.ts", import: "./lib/*.js" } };
+    expect(importFinds(hyphenate, "./en-us")).toBe(true);
+    expect(importFinds({ ".": { node: { import: "./a.mjs" } } }, ".")).toBe(true);
+    expect(importFinds({ ".": [{ import: "./a.mjs" }, "./a.cjs"] }, ".")).toBe(true);
+  });
+
+  it("finds none for a subpath the package doesn't export, whatever conditions its other entries have", () => {
+    const both = { import: "./index.mjs", require: "./index.cjs" };
+    expect(importFinds({ ".": both, "./util": both }, "./utils")).toBe(false);
+    expect(importFinds({ ".": both }, "./en-us")).toBe(false);
+    expect(importFinds({ import: "./index.js" }, "./x")).toBe(false);
+    expect(importFinds("./index.js", "./x")).toBe(false);
+    expect(importFinds(undefined, ".")).toBe(false);
+  });
+
+  it("finds none where no condition an import is resolved with applies, or the subpath is taken out", () => {
+    expect(importFinds({ ".": { require: "./index.cjs" } }, ".")).toBe(false);
+    expect(importFinds({ ".": { browser: "./index.js" } }, ".")).toBe(false);
+    expect(importFinds({ "./*": { import: "./lib/*.js" }, "./private/*": null }, "./private/x")).toBe(false);
+    expect(importFinds({ "./*": { import: "./lib/*.js" }, "./private/*": null }, "./public")).toBe(true);
+  });
+});
+
 describe("destinations and inputs", () => {
   it("folds paths as Windows and macOS compare them", () => {
     expect(foldPath("/Out/Welcome.HTML")).toBe(foldPath("/out/welcome.html"));
@@ -246,3 +284,65 @@ describe("the asset cache's folder", () => {
   });
 });
 
+describe("the browser the previews are drawn in", () => {
+  /** A failed start as playwright-core says it: what failed, then what the browser wrote as it ended. */
+  const failed = (...wrote: string[]) => new Error(["browserType.launch: Target page, context or browser has been closed", "Browser logs:", ...wrote].join("\n"));
+  // What Chromium writes as it ends: as root in a container, where the kernel gives it no user namespaces (a
+  // seccomp profile, or AppArmor on Ubuntu) and where its setuid helper isn't set up; and playwright-core's own
+  // heading over any of them.
+  const AS_ROOT = "  - [pid=76][err] [1113/125427.241481:ERROR:content/browser/zygote_host/zygote_host_impl_linux.cc:101] Running as root without --no-sandbox is not supported. See https://crbug.com/638180.";
+  const NO_NAMESPACES = "  - [pid=31][err] [1113/125456.540278:FATAL:content/browser/zygote_host/zygote_host_impl_linux.cc:128] No usable sandbox! If you are running on Ubuntu 23.10+ or another Linux distro that has disabled unprivileged user namespaces with AppArmor, see the documentation.";
+  const HELPER = "  - [pid=12][err] [1113/125501.000000:FATAL:content/browser/zygote_host/zygote_host_impl_linux.cc:147] The SUID sandbox helper binary was found, but is not configured correctly. Rather than run without sandboxing I'm aborting now.";
+  const HEADING = "Chromium sandboxing failed!";
+  // A start that fails with no word of the sandbox: its command line has "sandbox" in a flag's name, which isn't one.
+  const CRASHED = failed("", "Call log:", "  - <launching> /fixture/chromium --disable-features=IsolateSandboxedIframes --headless", "  - [pid=7][err] Received signal 11 SEGV_MAPERR 000000000000");
+  const browser = { version: () => "148.0.7778.96", close: async () => undefined };
+  /** Whether each start asked for the sandbox, in order. */
+  const sandboxes = () => launch.mock.calls.map(([options]) => options.chromiumSandbox);
+
+  beforeEach(() => {
+    launch.mockReset();
+    // One browser to start: Playwright's own Chromium.
+    vi.stubEnv("CHROME_PATH", "");
+    vi.stubEnv("HYPER_ELEMENTS_CLI_BROWSER_CHANNELS", "");
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("is started in Chromium's sandbox", async () => {
+    launch.mockResolvedValue(browser);
+    expect(await openBrowser()).toMatchObject({ name: "chromium 148.0.7778.96, playwright", sandboxed: true });
+    expect(sandboxes()).toEqual([true]);
+  });
+
+  it.each([
+    ["as root", failed(AS_ROOT)],
+    ["with no user namespaces", failed(NO_NAMESPACES)],
+    ["with a setuid helper that isn't set up", failed(HELPER)],
+    ["under playwright-core's heading alone", failed(HEADING)],
+  ])("is started without it at once where the failed start names the sandbox: %s", async (_, failure) => {
+    launch.mockRejectedValueOnce(failure).mockResolvedValue(browser);
+    expect(await openBrowser()).toMatchObject({ name: "chromium 148.0.7778.96, playwright, no sandbox", sandboxed: false });
+    expect(sandboxes()).toEqual([true, false]);
+  });
+
+  it("is tried in the sandbox once more after a start that failed for another reason, and stays in it", async () => {
+    launch.mockRejectedValueOnce(CRASHED).mockResolvedValue(browser);
+    expect(await openBrowser()).toMatchObject({ name: "chromium 148.0.7778.96, playwright", sandboxed: true });
+    expect(sandboxes()).toEqual([true, true]);
+  });
+
+  it("is started without it after two such starts: a sandbox that can't start and doesn't say so", async () => {
+    launch.mockRejectedValueOnce(CRASHED).mockRejectedValueOnce(CRASHED).mockResolvedValue(browser);
+    expect(await openBrowser()).toMatchObject({ name: "chromium 148.0.7778.96, playwright, no sandbox", sandboxed: false });
+    expect(sandboxes()).toEqual([true, true, false]);
+  });
+
+  it.each([
+    ["was too slow to start", new Error("browserType.launch: Timeout 30000ms exceeded.")],
+    ["isn't there", new Error("browserType.launch: Executable doesn't exist at /fixture/chromium")],
+  ])("is never started without it where it %s", async (_, failure) => {
+    launch.mockRejectedValue(failure);
+    expect(await openBrowser()).toMatchObject({ browser: null, tried: [expect.stringContaining("Playwright's Chromium: ")] });
+    expect(sandboxes()).toEqual([true]);
+  });
+});

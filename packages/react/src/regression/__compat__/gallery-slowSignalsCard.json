@@ -67,7 +67,8 @@
          "lineHeight": "27px",
          "letterSpacing": "2.5px",
          "textAlign": "left",
-         "textTransform": "uppercase"
+         "textTransform": "uppercase",
+         "whiteSpace": "pre-wrap"
         },
         "runs": [
          "Slow Signals · Episode 48"
@@ -93,7 +94,8 @@
            "fontStyle": "normal",
            "lineHeight": "82.32px",
            "letterSpacing": "-1.5px",
-           "textAlign": "left"
+           "textAlign": "left",
+           "whiteSpace": "pre-wrap"
           },
           "runs": [
            "The quiet economics of lighthouses"
@@ -110,7 +112,8 @@
            "fontWeight": 400,
            "fontStyle": "normal",
            "lineHeight": "30px",
-           "textAlign": "left"
+           "textAlign": "left",
+           "whiteSpace": "pre-wrap"
           },
           "runs": [
            "With Hannah Okoye, who kept the Fair Isle South light for twenty-three years."
@@ -142,7 +145,8 @@
            "textAlign": "left",
            "textTransform": "uppercase",
            "flexShrink": 0,
-           "flexGrow": 0
+           "flexGrow": 0,
+           "whiteSpace": "pre-wrap"
           },
           "runs": [
            "52 min"
@@ -164,7 +168,8 @@
            "textTransform": "uppercase",
            "width": "616px",
            "flexShrink": 0,
-           "flexGrow": 0
+           "flexGrow": 0,
+           "whiteSpace": "pre-wrap"
           },
           "runs": [
            "Wherever you listen"

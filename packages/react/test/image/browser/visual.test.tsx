@@ -12,7 +12,7 @@ import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { chromium } from "playwright";
 import type { ReactElement } from "react";
-import { Canvas, Circle, Column, Heading, Rect, render, Row, Svg, Text } from "@hyper-elements/react";
+import { Canvas, Circle, Column, Heading, LineBreak, Link, Rect, render, Row, Span, Svg, Text } from "@hyper-elements/react";
 import { renderImage } from "../../../src/image";
 
 const FONT = readFileSync(join(dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")), "standard_fonts", "LiberationSans-Regular.ttf"));
@@ -134,5 +134,38 @@ describe("an image and the Canvas's HTML in Chromium", () => {
     expect(image.length).toBe(4);
     expect(chromium.length).toBe(image.length);
     image.forEach(([left, right], i) => expect([left, right].map((edge, k) => Math.abs(edge - chromium[i][k]) <= 1), `line ${i}: ${[left, right]} in the image, ${chromium[i].slice(0, 2)} in Chromium`).toEqual([true, true]));
+  });
+
+  it("break lines as Chromium does: a LineBreak inside a Span, beside a Link, and two of them between Spans", async () => {
+    const red = { color: "#fca5a5" };
+    const result = await compare(
+      <Canvas width={480} height={320} fonts={fonts} style={{ backgroundColor: "#0f172a", padding: 24, gap: 12, color: "#ffffff", fontFamily: "Liberation" }}>
+        <Text style={{ fontSize: 18, lineHeight: 1.4 }}>
+          See <Span style={red}>our<LineBreak />site</Span> today
+        </Text>
+        <Text style={{ fontSize: 18, lineHeight: 1.4 }}>
+          Call <Link href="https://x.test" style={{ color: "#93c5fd", textDecoration: "none" }}>the desk</Link>
+          <LineBreak />
+          any time
+        </Text>
+        <Text style={{ fontSize: 18, lineHeight: 1.4 }}>
+          Two <Span style={red}>breaks</Span>
+          <LineBreak />
+          <LineBreak />
+          <Span style={red}>leave</Span> a line
+        </Text>
+      </Canvas>
+    );
+    // What a break decides: each line's letters start within a pixel of Chromium's (the words after a break at the
+    // margin), and each line is as far below the first as in Chromium (an empty line as high as Chromium's). Where
+    // the first line's letters sit is the two engines' own, a pixel or two apart, so each top is taken from the
+    // first's. (A line's end isn't compared: beside a Span the image's line ends two or three pixels past Chromium's
+    // with no break in it, the space held with the Span's run.)
+    const [chromium, image] = result.lines;
+    expect(image.length).toBe(6);
+    expect(chromium.length).toBe(image.length);
+    const placed = (lines: Line[]) => lines.map(([left, , top]) => [left, top - lines[0][2]]);
+    const [inChromium, inImage] = [placed(chromium), placed(image)];
+    inImage.forEach((line, i) => expect(line.map((edge, k) => Math.abs(edge - inChromium[i][k]) <= 1), `line ${i}: ${line} in the image, ${inChromium[i]} in Chromium`).toEqual([true, true]));
   });
 });

@@ -2,10 +2,14 @@
  * `preview --findings` against real browsers (needs Playwright's Chromium: `pnpm --filter @hyper-elements/react exec
  * playwright install chromium`): each of the ways the CLI finds one, what the drawn previews say (`ready`, the
  * findings), `--screenshots`, `--fonts inline` with nothing fetched, a preview that fails (exit 1) and one that's
- * incomplete (exit 0), and the same findings with the CLI started on Bun.
+ * incomplete (exit 0), Chromium's sandbox asked for first and done without where a browser can't start in it, and
+ * the same findings with the CLI started on Bun.
+ *
+ * A browser's name ends ", no sandbox" where Chromium can't start in one (GitHub's Ubuntu runners, root in a
+ * container), so the names here are matched with and without it; "Chromium's sandbox" below checks which it is.
  */
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
@@ -53,6 +57,8 @@ function expectDrawn(ran: Ran, browser: RegExp): any {
   expect(ran.code, ran.stderr).toBe(0);
   const [line, summary] = lines(ran);
   expect(line.browser).toMatch(browser);
+  // Started without Chromium's sandbox, it says so in its name and once on stderr; started in it, in neither.
+  expect(ran.stderr.includes("without Chromium's sandbox"), ran.stderr).toBe(line.browser.endsWith(", no sandbox"));
   expect(line.reason).toBeUndefined();
   expect(line.previews.length).toBeGreaterThan(0);
   for (const preview of line.previews) {
@@ -82,12 +88,12 @@ describe("preview --findings", () => {
   it("in Playwright's Chromium: findings for every preview, ready as the page says, the browser named", async () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--dark", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
-    const line = expectDrawn(ran, /^chromium \d+\.[\d.]+, playwright$/);
+    const line = expectDrawn(ran, /^chromium \d+\.[\d.]+, playwright(, no sandbox)?$/);
     expect(line.previews.map((p: any) => p.id)).toEqual(["outlook", "outlook-com", "outlook-com.mac", "gmail", "gmail.mac", "apple-mail", "apple-mail.iphone", "apple-mail.dark", "apple-mail.iphone.dark"]);
     // What the page wrote is what the CLI reports.
     const text = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--clients", "gmail"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
     expect(text.code, text.stderr).toBe(0);
-    expect(text.stdout).toMatch(/✓ emails\/order\.tsx \(Email\), drawn in chromium [\d.]+, playwright\n/);
+    expect(text.stdout).toMatch(/✓ emails\/order\.tsx \(Email\), drawn in chromium [\d.]+, playwright(, no sandbox)?\n/);
     expect(text.stdout).toMatch(/ {2}gmail: out\/clients\/emails\/order\/gmail\.html \((ok|incomplete)/);
   });
 
@@ -98,7 +104,7 @@ describe("preview --findings", () => {
       env: { CHROME_PATH: system, PLAYWRIGHT_BROWSERS_PATH: empty, HYPER_ELEMENTS_CLI_BROWSER_CHANNELS: "" },
       timeout: 120_000,
     });
-    expectDrawn(ran, /^chromium \d+\.[\d.]+, CHROME_PATH$/);
+    expectDrawn(ran, /^chromium \d+\.[\d.]+, CHROME_PATH(, no sandbox)?$/);
   });
 
   it("with only an installed Chrome, by its channel", async ({ skip }) => {
@@ -106,13 +112,13 @@ describe("preview --findings", () => {
     if (!hasChrome) skip();
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"], { env: { CHROME_PATH: "", PLAYWRIGHT_BROWSERS_PATH: empty, HYPER_ELEMENTS_CLI_BROWSER_CHANNELS: "chrome" }, timeout: 120_000 });
-    expectDrawn(ran, /^chrome \d+\.[\d.]+, channel$/);
+    expectDrawn(ran, /^chrome \d+\.[\d.]+, channel(, no sandbox)?$/);
   });
 
   it("--fonts inline draws with nothing from the network: no request leaves the machine", async () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--findings", "--fonts", "inline", "--json"], { env: { ...PLAYWRIGHT_ONLY, HYPER_ELEMENTS_CLI_PROBE: "1" }, timeout: 120_000 });
-    expectDrawn(ran, /, playwright$/);
+    expectDrawn(ran, /, playwright(, no sandbox)?$/);
     const requests = ran.stderr
       .split("\n")
       .filter((l) => l.startsWith("[probe] "))
@@ -127,7 +133,7 @@ describe("preview --findings", () => {
   it("--screenshots writes one PNG per preview, beside it", async () => {
     const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
     const ran = await cli(dir, ["preview", "emails", "--screenshots", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
-    const line = expectDrawn(ran, /, playwright$/);
+    const line = expectDrawn(ran, /, playwright(, no sandbox)?$/);
     expect(line.previews.map((p: any) => p.screenshot)).toEqual(["out/clients/emails/order/gmail.png", "out/clients/emails/order/gmail.mac.png", "out/clients/emails/order/apple-mail.png", "out/clients/emails/order/apple-mail.iphone.png"]);
     for (const preview of line.previews) {
       const png = readFileSync(join(dir, preview.screenshot));
@@ -180,14 +186,54 @@ export async function renderInEmailClients(element, options) {
     const html = `<!DOCTYPE html>\n<html>\n<body style="margin:0">\n<table role="presentation" width="600"><tr><td style="font-family: Arial, sans-serif; padding: 24px">Your order is on its way</td></tr></table>\n</body>\n</html>\n`;
     const dir = project({ "mail/order.html": html }, { modules: [] });
     const ran = await cli(dir, ["preview", "mail/order.html", "--findings", "--fonts", "inline", "--clients", "gmail,apple-mail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000 });
-    const line = expectDrawn(ran, /, playwright$/);
+    const line = expectDrawn(ran, /, playwright(, no sandbox)?$/);
     expect(line).toMatchObject({ file: "mail/order.html", input: "html", root: null, status: "ok" });
     // The email-clients npm installs here is the published one: Apple Mail's iPhone preview comes with it once it has one.
     const paths: string[] = line.previews.map((p: any) => p.path);
     expect(paths.filter((path) => !path.includes(".iphone."))).toEqual(["out/clients/mail/order/gmail.html", "out/clients/mail/order/gmail.mac.html", "out/clients/mail/order/apple-mail.html"]);
     expect(paths.filter((path) => path.includes(".iphone."))).toEqual(paths.length > 3 ? ["out/clients/mail/order/apple-mail.iphone.html"] : []);
     const stdin = await cli(dir, ["preview", "-", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"], { env: PLAYWRIGHT_ONLY, timeout: 120_000, input: html });
-    expect(expectDrawn(stdin, /, playwright$/).previews.map((p: any) => p.path)).toEqual(["out/clients/stdin/gmail.html", "out/clients/stdin/gmail.mac.html"]);
+    expect(expectDrawn(stdin, /, playwright(, no sandbox)?$/).previews.map((p: any) => p.path)).toEqual(["out/clients/stdin/gmail.html", "out/clients/stdin/gmail.mac.html"]);
+  });
+});
+
+/**
+ * A browser for CHROME_PATH: Playwright's Chromium behind a script that writes each start's arguments to a file.
+ * With `refuses`, it ends as a browser that can't start in the sandbox does, unless it's started without one.
+ */
+function behindScript(dir: string, options: { refuses?: boolean } = {}): { path: string; starts(): Array<"sandbox" | "no sandbox"> } {
+  const quoted = (text: string) => `'${text.replace(/'/g, `'\\''`)}'`;
+  const log = join(dir, "browser-starts.log");
+  const path = join(dir, "browser.sh");
+  const refuse = `case " $* " in *" --no-sandbox "*) ;; *) echo "No usable sandbox!" >&2; exit 1 ;; esac`;
+  writeFileSync(path, ["#!/bin/sh", `printf '%s\\n' "$*" >> ${quoted(log)}`, ...(options.refuses ? [refuse] : []), `exec ${quoted(chromePath)} "$@"`, ""].join("\n"));
+  chmodSync(path, 0o755);
+  // Playwright starts a browser with --no-sandbox unless it's asked for the sandbox.
+  const starts = () => (existsSync(log) ? readFileSync(log, "utf8").split("\n").filter(Boolean) : []).map((args) => (` ${args} `.includes(" --no-sandbox ") ? ("no sandbox" as const) : ("sandbox" as const)));
+  return { path, starts };
+}
+
+// (The script is a shell's; the browser gates run on Linux, and on a Mac.)
+describe.skipIf(process.platform === "win32")("Chromium's sandbox", () => {
+  const args = ["preview", "emails", "--findings", "--fonts", "inline", "--clients", "gmail", "--json"];
+  const only = (path: string) => ({ CHROME_PATH: path, PLAYWRIGHT_BROWSERS_PATH: empty, HYPER_ELEMENTS_CLI_BROWSER_CHANNELS: "" });
+
+  it("is asked for first: a preview holds an email from outside, and the browser drawing it starts without one only after it couldn't start with it", async () => {
+    const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
+    const browser = behindScript(dir);
+    const ran = await cli(dir, args, { env: only(browser.path), timeout: 120_000 });
+    const line = expectDrawn(ran, /^chromium \d+\.[\d.]+, CHROME_PATH(, no sandbox)?$/);
+    // Where this machine gives Chromium no sandbox, a second start follows, and the name says which one drew.
+    expect(browser.starts()).toEqual(line.browser.endsWith(", no sandbox") ? ["sandbox", "no sandbox"] : ["sandbox"]);
+  });
+
+  it("a browser that can't start in it is started without it, and says so in its name and once on stderr", async () => {
+    const dir = project({ "emails/order.tsx": OFFLINE }, { modules: WITH_CLIENTS });
+    const browser = behindScript(dir, { refuses: true });
+    const ran = await cli(dir, args, { env: only(browser.path), timeout: 120_000 });
+    expectDrawn(ran, /^chromium \d+\.[\d.]+, CHROME_PATH, no sandbox$/);
+    expect(browser.starts()).toEqual(["sandbox", "no sandbox"]);
+    expect(ran.stderr.split("hyper-elements: the previews are drawn in a browser without Chromium's sandbox")).toHaveLength(2);
   });
 });
 

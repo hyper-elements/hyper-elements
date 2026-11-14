@@ -6,9 +6,9 @@
  * On Node, tsx is registered once, for the group's tsconfig (one tsconfig per process: tsx's registers share one
  * config). On Bun, which compiles TSX and reads the template's tsconfig itself, nothing is registered.
  */
-import { rmSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
-import { dirname, relative } from "node:path";
+import { dirname, join, relative } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Worker } from "node:worker_threads";
 import { defaultExport, guard, projectTsconfig, templateComponent } from "@hyper-elements/template-loader";
@@ -22,11 +22,12 @@ import { cliDiagnostic, elementsErrorDiagnostics, hasErrors, UsageFailure, type 
 import { ELEMENTS_RANGE, exportsOf, packageVersion, resolvedPath, supported, type ElementsInspect, type ElementsMain, type EmailClientsModule, type ReactModule } from "./elements";
 import { errorLine, errorText, messageOf, notFound } from "./errors";
 import { formatDiagnostic } from "./format";
+import { packageFolder } from "./inputs";
 import { elementsLoaderText, loaderModulePath, loaderModuleText, parseToken } from "./loader-module";
 import type { ChildInput, ChildMessage, Diagnostic, ResultMessage, Root, StartMessage } from "./protocol";
 import { killTree } from "./kill";
 import { isOptionsError, LINT, lintUsage, ownLint, type LintCopy, type LintModule } from "./lint";
-import { installedAbove } from "./packages";
+import { importFinds, installedAbove } from "./packages";
 import { parentGone } from "./parent";
 import { reactCopies } from "./react-copies";
 
@@ -313,6 +314,8 @@ class Session {
     } catch (error) {
       const diagnostics = elementsErrorDiagnostics(error);
       if (diagnostics) return this.result(input, { status: "error", diagnostics }, loaded);
+      const refused = this.commonJsImport(input, error, loaded);
+      if (refused) return refused;
       return this.result(input, { status: "error", error: errorText(error, this.message.cwd), usage: exitCalled(error) || error instanceof UsageFailure || undefined, diagnostics: notes }, loaded);
     }
   }
@@ -418,8 +421,73 @@ class Session {
     });
   }
 
+  /**
+   * React isn't installed beside the template. A project with the CLI alone fails on the first template it loads,
+   * at `react/jsx-runtime` (what the JSX compiles to), which says nothing about what to install.
+   */
+  private reactMissing(input: ChildInput): ResultMessage {
+    return this.result(input, {
+      status: "error",
+      usage: true,
+      diagnostics: [
+        cliDiagnostic("react-missing", "error", "React isn't installed where this template is: a template is a React component, and the CLI renders it with the project's React", "npm i @hyper-elements/react react react-dom"),
+      ],
+    });
+  }
+
+  /**
+   * A package only an `import` loads, imported where the template loads as CommonJS. A template in a package without
+   * `"type": "module"` (what `npm init` writes) is loaded through tsx's CommonJS register, which compiles every file
+   * it loads to CommonJS, a dependency's ES modules among them, and each `import` in one into a `require()`. Node
+   * refuses a `require()` of a package whose "exports" names an `import` condition and no `require` one
+   * (ERR_PACKAGE_PATH_NOT_EXPORTED), with an error that names nothing to change. react-pdf's text engine imports one,
+   * so every Document's PDF failed this way. Loaded as an ES module, the template's imports are Node's own and the
+   * package is found.
+   */
+  private commonJsImport(input: ChildInput, error: unknown, loaded?: Loaded): ResultMessage | undefined {
+    if (bun || input.format !== "cjs" || (error as NodeJS.ErrnoException | null)?.code !== "ERR_PACKAGE_PATH_NOT_EXPORTED") return undefined;
+    // Node names the package.json and the subpath: `No "exports" main defined in <file>` (the package's own name),
+    // `Package subpath './x' is not defined by "exports" in <file>`.
+    const message = messageOf(error);
+    const manifest = /\bin (.+?package\.json)(?: imported from |$)/m.exec(message)?.[1];
+    const subpath = /\bPackage subpath '([^']+)'/.exec(message)?.[1] ?? (/\bNo "exports" main defined\b/.test(message) ? "." : undefined);
+    let pkg: { name?: unknown; exports?: unknown };
+    try {
+      pkg = JSON.parse(readFileSync(manifest ?? "", "utf8"));
+    } catch {
+      return undefined;
+    }
+    // Only where an import would find the subpath: one the package doesn't export at all (a name mistyped) is the same
+    // error from Node, and an ES module wouldn't help it, though the package's other entries have `import` conditions.
+    if (subpath === undefined || !importFinds(pkg.exports, subpath)) return undefined;
+    const name = typeof pkg.name === "string" ? pkg.name : "A package this template imports";
+    const cwd = this.message.cwd;
+    const extension = /\.c([jt])s$/.exec(input.file)?.[1];
+    const folder = packageFolder(dirname(input.file));
+    const fix = extension
+      ? `rename ${relative(cwd, input.file)} to .m${extension}s, so it loads as an ES module`
+      : folder
+        ? `add "type": "module" to ${relative(cwd, join(folder, "package.json")) || "package.json"}, so the template loads as an ES module (or put the templates in a folder with a package.json of {"type": "module"})`
+        : `add a package.json with {"type": "module"} beside the template, so it loads as an ES module`;
+    return this.result(input, {
+      status: "error",
+      usage: true,
+      diagnostics: [
+        cliDiagnostic(
+          "commonjs-import",
+          "error",
+          `${name} can only be imported, not required, and this template loads as CommonJS, where each import is compiled to a require(): ${errorLine(error)}`,
+          fix,
+        ),
+      ],
+    }, loaded);
+  }
+
   private loadFailure(input: ChildInput, error: unknown): ResultMessage {
     if (notFound(error, "@hyper-elements/react")) return this.elementsMissing(input);
+    if (notFound(error, "react") || notFound(error, "react-dom")) return this.reactMissing(input);
+    const refused = this.commonJsImport(input, error);
+    if (refused) return refused;
     return this.result(input, { status: "error", error: errorText(error, this.message.cwd), ...(exitCalled(error) ? { usage: true } : {}) });
   }
 }

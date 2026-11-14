@@ -454,7 +454,7 @@ export const TableRow = defineComponent({
   categories: [],
   props: {
     header: prop(boolean(), { support: WRITTEN, label: "Header", description: "Its cells head the columns below them.", default: false }),
-    footer: prop(boolean(), { support: WRITTEN, label: "Footer", description: "It ends the table (printed, on each page the table runs to).", default: false }),
+    footer: prop(boolean(), { support: WRITTEN, label: "Footer", description: "It ends the table, as its totals row does.", default: false }),
   },
   style: { ...pick(textStyle, "color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "textAlign", "textTransform"), backgroundColor: boxStyle.backgroundColor, height: boxStyle.height },
   defaultStyleBy: { prop: "header", values: { true: { fontWeight: 700 } } },

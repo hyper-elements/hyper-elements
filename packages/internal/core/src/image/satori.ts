@@ -26,12 +26,63 @@ const run = (item: Run, key: number): ReactNode => {
   return picture(item, key);
 };
 
+/** A line break, as the model writes one (a `LineBreak`): a run of its own, among a block's runs or a Span's. */
+const BREAK = "\n";
+
+/**
+ * A run split at the line breaks it holds: a Span or a Link with one is drawn once on each line, as a browser draws
+ * an inline box a `<br>` breaks (its color, underline and background on each part), and each break is one of the
+ * block's own runs.
+ */
+function atBreaks(item: Run): Run[] {
+  if (typeof item === "string" || item.kind !== "span") return [item];
+  const parts: Run[] = [];
+  let line: Run[] = [];
+  const end = () => {
+    if (line.length > 0) parts.push({ ...item, runs: line });
+    line = [];
+  };
+  for (const held of item.runs.flatMap(atBreaks)) {
+    if (held !== BREAK) line.push(held);
+    else {
+      end();
+      parts.push(BREAK);
+    }
+  }
+  end();
+  return parts;
+}
+
+/**
+ * A block's runs, each line break drawn as one in Yoga. Each run is a flex item, and a line of them a flex line: a
+ * break in a run's text would break that run's own box, the run after it carrying on beside the box ("See our today"
+ * with "site" under "our", for `See <Span>our<LineBreak />site</Span> today`), and a break between two Spans would
+ * break nothing. So a break is an item of its own, as wide as the block, which the next items wrap below. A line
+ * with nothing on it (a break at the block's start, or right after another) holds a space, so it's a line high, as
+ * it is in the HTML outputs.
+ */
+function lines(runs: Run[]): ReactNode[] {
+  const drawn: ReactNode[] = [];
+  let empty = true;
+  for (const [key, item] of runs.flatMap(atBreaks).entries()) {
+    if (item !== BREAK) {
+      drawn.push(run(item, key));
+      empty = false;
+      continue;
+    }
+    if (empty) drawn.push(" ");
+    drawn.push(createElement("div", { key, style: { flexBasis: "100%", height: 0 } }));
+    empty = true;
+  }
+  return drawn;
+}
+
 const block = (item: Block, key?: number): ReactElement => {
   switch (item.kind) {
     case "box":
       return createElement("div", { key, style: item.style }, ...item.children.map(block));
     case "text":
-      return createElement("div", { key, style: item.style }, ...item.runs.map(run));
+      return createElement("div", { key, style: item.style }, ...lines(item.runs));
     case "image":
       return picture(item, key);
     case "drawing":

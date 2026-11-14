@@ -68,6 +68,12 @@ A Document is drawn with the project's `@hyper-elements/react/pdf` and `@react-p
 `@hyper-elements/react/image`, `satori` and `@resvg/resvg-js` (Elements' optional peers): install them beside
 Elements. Without them, the template fails with an error naming what to install.
 
+A Document's template must load as an ES module: in a package.json with `"type": "module"`, or as an `.mts` file.
+react-pdf imports a package that only an `import` loads, and a template in a project without `"type": "module"`
+(what `npm init` writes) is compiled to CommonJS, its dependencies' imports with it. There the template fails with
+`cli/commonjs-import` (exit 2), saying to add `"type": "module"` to the package.json, or to put the templates in a
+folder with a package.json of `{"type": "module"}`. Any package that only an `import` loads gives the same error.
+
 Neither renderer loads a font or an image itself. The CLI loads what the template names (`templateAssets()` lists
 them) and gives them the files:
 
@@ -108,8 +114,10 @@ beside the CLI, `npm install -D playwright-core`), in the first of these that st
 3. an installed Chrome, then Edge.
 
 Each preview gets `ready` (`ok`, `incomplete` where a font or image was missing, `error` where the preview failed) and the
-`findings` the page wrote, and the input names the browser (`"browser": "chromium 148.0.7778.96, playwright"`). A
-preview whose page says `error` fails its template (`cli/preview-failed`, exit 1); one that's `incomplete` doesn't.
+`findings` the page wrote, and the input names the browser (`"browser": "chromium 148.0.7778.96, playwright"`). The
+browser is started in Chromium's sandbox; one that can't start in it (as root in a container, or on GitHub's Ubuntu
+runners) is started without, says so once on stderr, and has `, no sandbox` after its name. A preview whose page says
+`error` fails its template (`cli/preview-failed`, exit 1); one that's `incomplete` doesn't.
 Where no browser is found, the files are still written and the email client checks reported, each preview's `findings`
 is `null`, the input has `"browser": null, "reason": "no-browser"`, and the run exits 2. Where `playwright-core` isn't
 installed, the same, with `"reason": "no-playwright-core"` and stderr saying how to install it. Install both packages in
