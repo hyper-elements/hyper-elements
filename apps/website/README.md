@@ -44,6 +44,12 @@ Outlook, Gmail, Apple Mail and the Gmail app and captured in Chromium.
 Rebuild them after a release of the emulator, with the packages built and Playwright's Chromium installed:
 `pnpm --filter @hyper-elements/website generate:email-clients`.
 
+The comparison pages (`/compare/…`) show images of real output, not live previews, so the examples' own headings and copy
+aren't read as the page's text: `public/generated/compare/*.jpg`, drawn in Chromium from `src/generated/examples.json`
+by `scripts/compare-previews.mjs`. Its one email in two themes is `examples/brand/announcement.tsx`, rendered by
+`examples/showcase/brand-north.tsx` and `brand-bloom.tsx`. Redraw them after `generate` when one of those examples changes:
+`pnpm --filter @hyper-elements/website generate:compare`.
+
 Images the examples use live in `public/img/` and are referenced as `https://hyperelements.dev/img/…`, so a copied example works anywhere. Previews load them from the site itself.
 
 ## Pages
@@ -58,6 +64,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
+| `/compare/react-email` | `src/pages/compare/react-email.astro`: Hyper Elements and React Email, side by side |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page, component and blog tutorial, for AI agents |
 
