@@ -30,8 +30,6 @@ export const GET: APIRoute = async () => {
     // An agent with a browser can render a template there: by a link, by script, or by WebMCP tools.
     `- [Playground](${site.url}/playground): render a template in the browser with nothing to install, as an email, a page, a PDF or an image, with its outline and its diagnostics. A link carries the code (${site.url}/playground#code=<base64url of the UTF-8 code>); with script, window.hyperElementsPlayground.render(code); with WebMCP, the tool render_hyper_elements`,
     `- [Migrate from React Email](${site.url}/migrate): convert React Email templates in one command`,
-    `- [Compare Hyper Elements](${site.url}/compare): every comparison page`,
-    `- [Email tool alternatives](${site.url}/alternatives): every alternatives page`,
     `- [Hyper Elements vs React Email](${site.url}/compare/react-email): when to pick each, feature by feature, and the agent benchmark`,
     `- [Hyper Elements vs MJML](${site.url}/compare/mjml): feature by feature, the same email in each, and the agent benchmark`,
     `- [React Email alternatives](${site.url}/alternatives/react-email): Hyper Elements, MJML, Maizzle and jsx-email, when to pick each, and the agent benchmark`,

@@ -1,6 +1,7 @@
 /**
- * Every comparison and alternatives page, in one place: the hubs (/compare, /alternatives) list them, and each page
- * links to the others from here. Add a page here when you add one to src/pages/compare/ or src/pages/alternatives/.
+ * Every comparison and alternatives page, in one place: each page links to the others from here, and hub pages at
+ * /compare and /alternatives can list them from here once there are enough pages for them. Add a page here when you
+ * add one to src/pages/compare/ or src/pages/alternatives/.
  */
 export type ComparePageLink = {
   /** The other tool, as it names itself. */
@@ -8,7 +9,7 @@ export type ComparePageLink = {
   path: string;
   /** The page's H1. */
   title: string;
-  /** One line for the hub's card. */
+  /** One line about the page. */
   summary: string;
 };
 
@@ -44,8 +45,3 @@ export const alternatives: ComparePageLink[] = [
   },
 ];
 
-/** The hubs, for breadcrumbs. */
-export const hubs = {
-  compare: { name: "Compare", path: "/compare" },
-  alternatives: { name: "Alternatives", path: "/alternatives" },
-};

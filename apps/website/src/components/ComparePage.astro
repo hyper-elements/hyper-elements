@@ -4,7 +4,7 @@ import CodeBlock from "./CodeBlock.astro";
 import Cmd from "./Cmd.astro";
 import { site } from "../lib/site";
 import { showcase, template } from "../lib/examples";
-import { alternatives, comparisons, hubs } from "../lib/compare-pages";
+import { alternatives, comparisons } from "../lib/compare-pages";
 
 // A comparison page, /compare/<slug>: Hyper Elements against one other tool. Each page in src/pages/compare/ gives the
 // other tool's facts; the email client emulator, the themes and the four outputs are Hyper Elements' own, the same on
@@ -119,15 +119,6 @@ const title = `Hyper Elements vs ${name}`;
 const url = new URL(path, site.url).href;
 const jsonLd = [
   { "@context": "https://schema.org", "@type": "WebPage", name: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: site.name, item: site.url },
-      { "@type": "ListItem", position: 2, name: hubs.compare.name, item: new URL(hubs.compare.path, site.url).href },
-      { "@type": "ListItem", position: 3, name: title, item: url },
-    ],
-  },
   { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
 ];
 ---
