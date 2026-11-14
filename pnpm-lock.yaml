@@ -124,6 +124,34 @@ importers:
         specifier: ^5.6.3
         version: 5.9.3
 
+  examples/custom-components-in-editor:
+    dependencies:
+      '@hyper-elements/react':
+        specifier: workspace:*
+        version: link:../../packages/react
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+    devDependencies:
+      '@types/react':
+        specifier: ^18.3.3
+        version: 18.3.26
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.26)
+      esbuild:
+        specifier: 0.27.3
+        version: 0.27.3
+      http-server:
+        specifier: 14.1.1
+        version: 14.1.1
+      typescript:
+        specifier: ^5.6.3
+        version: 5.9.3
+
   examples/demo:
     dependencies:
       '@hyper-elements/react':

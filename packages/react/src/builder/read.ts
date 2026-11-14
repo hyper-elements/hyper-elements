@@ -3,7 +3,7 @@
  * builder's display mode), with its rows (rows.ts) in it, a Document's header and footer around them. Malformed JSON
  * never throws: what can't be read is left out and said.
  */
-import type { Child, Json, Node } from "@hyper-elements/core";
+import type { Child, CustomDefinition, Json, Node } from "@hyper-elements/core";
 import { BodyDefaults } from "./tool-defaults";
 import { color, fontWeight, font, px, serviceTag, type Sides, type Values } from "./read-values";
 import type { Context } from "./blocks";
@@ -23,7 +23,7 @@ const ROOTS: Record<DisplayMode, string> = { email: "Email", web: "Page", docume
 /** The page sizes a Document takes. */
 const SIZES = new Set(["A3", "A4", "A5", "Letter", "Legal", "Tabloid"]);
 
-export function readDesign(given: unknown, displayMode: DisplayMode | undefined, report: string[], toSafeHtml?: (html: string) => string): Node {
+export function readDesign(given: unknown, displayMode: DisplayMode | undefined, report: string[], toSafeHtml?: (html: string) => string, tools: Map<string, CustomDefinition<any>> = new Map()): Node {
   const design = withoutMalformed(given, report);
   const body = obj(obj(design).body);
   if (!Object.keys(body).length) report.push("the design has no body: an empty template");
@@ -50,7 +50,7 @@ export function readDesign(given: unknown, displayMode: DisplayMode | undefined,
     say: (message) => report.push(`${where}: ${message}`),
   });
   const children: Child[] = [];
-  const place = (list: unknown[], part: string) => list.flatMap((row, r) => readRow(obj(row), `${part}[${r}]`, { context, body: values, document: mode === "document", part: mode === "document" && part !== "rows" }));
+  const place = (list: unknown[], part: string) => list.flatMap((row, r) => readRow(obj(row), `${part}[${r}]`, { context, body: values, document: mode === "document", part: mode === "document" && part !== "rows", tools }));
   if (mode === "document") {
     const header = place(headers, "headers");
     if (header.length) children.push({ type: "PageHeader", children: header.filter((c) => c.type !== "PageBreak") });

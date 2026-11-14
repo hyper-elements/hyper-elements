@@ -14,8 +14,47 @@ Document a Video's thumbnail (its own, or a YouTube video's). It reads the templ
 so the two can't differ, and rejects a template as they do (with errors, or another root). `renderPdf()` and
 `renderImage()` are unchanged.
 
+### Added
+
+- **Your own components as tools of Unlayer's builder.** A `component()` can be a custom tool there, edited by its
+  props and drawn by Elements, with no tool written by hand. `registerTools(unlayer, components)`
+  (`@hyper-elements/react/builder`) registers each as a tool in the builder's custom JavaScript and returns their
+  names. A tool's name is from its type (`acme.ProductCard` is `acme_product_card`, as `toolName()` gives it for a
+  component or its type). It has a field for each prop, with the builder's editor for its kind: a whole number in its
+  counter between the prop's `min` and `max`, one that isn't whole as text, a length in px in the counter, a font
+  weight in a dropdown. It's drawn in the canvas and in what the builder exports. `toDesign(element, { customTools:
+  true })` writes each of a template's own components as its tool's block, where it was an HTML block of its markup;
+  `fromDesign(design, { components })` reads those blocks back as the components, its code writing each by the name its
+  type ends with (`<ProductCard />`), or with its namespace where that's another's too (`AcmeCard`), and listing their
+  types to import. Without the options, both do what they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
+  component's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…).
+- **A property of your own, for an editor of your own.** `defineProperty()` defines a property once, as data: a name,
+  the helper of `prop` it's made on, and the options its editor takes, each made with a helper too (`const currency =
+  defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"],
+  default: "$" }) } })`). Called, it's a prop, which takes what its base takes and its own options: `price: currency({
+  label: "Price", min: 0, symbol: "€" })`. The value is its base's, with the prop's own limits; an option the property
+  doesn't have, or a value that isn't the option's, is a type error, and refused where it's written. Any other prop is
+  edited with its kind's editor, from what the prop says (a number's `min` and `max`): there's no editor to name.
+  `describeComponents()` gives a property's prop as `property` (its name, and its options as the prop has them),
+  beside `editor` (its kind's), which an editor with no control by that name shows. In Unlayer's builder you give your
+  property's control to `registerTools()` in `editors`, under the property's name, as it's written
+  (`{ render, mount }`): `EditorWidget<typeof currency>` types its value and options from the property, and it's given
+  the prop's value as the prop has it.
+- **A text that's one of a few.** `prop.text({ label: "Tone", enum: ["calm", "loud"] })` takes one of the texts its
+  `enum` lists: typed as those in `render`'s props and in JSX, checked as a `prop.choice()` is, and edited in a
+  dropdown in Unlayer's builder.
+- **A color that's opaque alone.** `prop.color({ label: "Text", transparency: false })` refuses a color that lets what's
+  under it show (an rgba, an 8-digit hex, `transparent`). A color may be see-through by default, as before.
+- **A component's prop with no label is refused** where the component is defined, and is a type error. `label` was
+  already required by `prop`'s types.
+- **An option a prop's helper doesn't take is refused** where it's written (`prop.number({ label: "Stars", mn: 1 })`),
+  as it was a type error already: a JavaScript caller's mistyped option was dropped without a word.
+
 ### Fixed
 
+- **A font weight prop's type.** `render` got a `prop.fontWeight()`'s value typed as any number, which a style's
+  `fontWeight` doesn't take. It's typed as the weights it can be (100 to 900), so `style={{ fontWeight: weight }}`
+  compiles.
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

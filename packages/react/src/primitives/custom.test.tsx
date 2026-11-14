@@ -1,7 +1,7 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import React, { createContext, useContext } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button, Column, component, ElementsError, Email, Heading, Image, Page, prop, render, Row, Section, Text, validate } from "./index";
+import { Button, Column, component, defineProperty, ElementsError, Email, Heading, Image, Page, prop, render, Row, Section, Text, validate, type Token } from "./index";
 import { describeComponent, type ExpandProps } from "@hyper-elements/core";
 import { collectTemplate } from "./collect";
 
@@ -234,6 +234,233 @@ describe("component()", () => {
     ]);
   });
 
+  it("edits a prop with its kind's editor: there's no editor to name, and a prop is no property of a team's own", async () => {
+    const Order = component({
+      type: "acme.Order",
+      label: "Order",
+      props: {
+        quantity: prop.number({ label: "Quantity", min: 1, max: 10, integer: true, default: 1 }),
+        note: prop.text({ label: "Note", default: "" }),
+      },
+      render: (p) => <Text>{`${p.quantity} × ${p.note}`}</Text>,
+    });
+    const described = describeComponent("acme.Order", { components: [Order.definition] })!;
+    const props = described.properties.filter((property) => property.path.startsWith("props."));
+    expect(props.map((property) => [property.path, property.editor, property.property])).toEqual([
+      ["props.quantity", "number", undefined],
+      ["props.note", "text", undefined],
+    ]);
+    // A helper takes no editor by its name, nor options for one: refused where it's written, for a caller with no types too.
+    const removed = "a prop is edited with its kind's editor, or is a property of your own, made with defineProperty()";
+    // @ts-expect-error -- no editor by name.
+    expect(() => prop.number({ label: "Quantity", editor: "counter" })).toThrow(`prop.number takes no editor: ${removed}`);
+    // @ts-expect-error -- and no options for one.
+    expect(() => prop.number({ label: "Quantity", editorOptions: { step: 5 } })).toThrow(`prop.number takes no editorOptions: ${removed}`);
+    // @ts-expect-error -- on a choice too.
+    expect(() => prop.choice(["left", "right"], { label: "Side", editor: "alignment" })).toThrow(`prop.choice takes no editor: ${removed}`);
+    expect((await render(<Email><Order quantity={2} note="boxes" /></Email>)).text).toContain("2 × boxes");
+  });
+
+  it("refuses an option a helper doesn't take, for a caller with no types: a name mistyped is said, not dropped", () => {
+    const every = { label: "L", description: "d", required: false, editable: true, roots: ["Email"] as const };
+    const besides: Record<string, Record<string, unknown>> = { text: { enum: ["a", "b"] }, color: { transparency: false }, number: { min: 0, max: 5, integer: true }, length: { units: ["px", "%"], min: 0 } };
+    for (const helper of ["text", "color", "image", "link", "boolean", "fontFamily", "fontWeight", "number", "length"] as const) {
+      const make = prop[helper] as (options: Record<string, unknown>) => unknown;
+      expect(() => make({ ...every, ...besides[helper] })).not.toThrow();
+      const taken = ["label", "description", "required", "default", "roots", "editable", "support", ...Object.keys(besides[helper] ?? {})].join(", ");
+      expect(() => make({ label: "L", lable: "L" })).toThrow(`prop.${helper} has no option named lable (it takes ${taken})`);
+    }
+    // What another helper takes isn't this one's.
+    // @ts-expect-error -- a text has no min.
+    expect(() => prop.text({ label: "L", min: 1 })).toThrow("prop.text has no option named min");
+    // @ts-expect-error -- a choice's values are apart from its options.
+    expect(() => prop.choice(["a"], { label: "L", enum: ["a"] })).toThrow("prop.choice has no option named enum (it takes label, description, required, default, roots, editable, support)");
+  });
+
+  it("takes a color that lets what's under it show, unless its transparency is false", async () => {
+    const Tinted = component({
+      type: "acme.Tinted",
+      label: "Tinted",
+      props: { tint: prop.color({ label: "Tint", transparency: true, default: "rgba(0, 0, 0, 0.5)" }), solid: prop.color({ label: "Solid", transparency: false, default: "#0879a1" }), plain: prop.color({ label: "Plain" }) },
+      render: (p) => <Text style={{ color: p.solid, backgroundColor: p.tint }}>{p.plain ?? ""}</Text>,
+    });
+    const solid = Tinted.definition.props.solid.kind;
+    for (const color of ["#0879a1", "#fff", "rgb(8, 121, 161)", "rgba(8, 121, 161, 1)", "#0879a1ff", "red"]) expect(solid.parse(color).ok).toBe(true);
+    for (const color of ["rgba(8, 121, 161, 0.5)", "#0879a180", "#08a8", "transparent"]) expect(solid.parse(color)).toEqual({ ok: false, message: `expected an opaque color, not ${JSON.stringify(color)}, which is see-through` });
+    // By default, as before, a color may be see-through.
+    for (const kind of [Tinted.definition.props.tint.kind, Tinted.definition.props.plain.kind]) expect(["rgba(8, 121, 161, 0.5)", "transparent"].map((color) => kind.parse(color).ok)).toEqual([true, true]);
+    const described = describeComponent("acme.Tinted", { components: [Tinted.definition] })!;
+    expect(described.properties.filter((property) => property.path.startsWith("props.")).map((property) => [property.path, property.accepts])).toEqual([
+      ["props.tint", 'a color ("#0879a1", "rgb(…)", "rgba(…)" or a CSS name)'],
+      ["props.solid", 'an opaque color ("#0879a1", "rgb(…)" or a CSS name)'],
+      ["props.plain", 'a color ("#0879a1", "rgb(…)", "rgba(…)" or a CSS name)'],
+    ]);
+    expect(validate(<Email><Tinted solid="transparent" /></Email>).diagnostics.map((d) => d.code)).toEqual(["prop/invalid"]);
+    expect((await render(<Email><Tinted plain="red" /></Email>)).html).toContain("rgba(0, 0, 0, 0.5)");
+    // @ts-expect-error -- it's true or false.
+    expect(() => prop.color({ label: "Tint", transparency: "yes" })).toThrow('A color\'s transparency is true or false, not "yes"');
+  });
+
+  it("limits a text to the texts its enum lists", async () => {
+    const Tag = component({
+      type: "acme.Tag",
+      label: "Tag",
+      props: { tone: prop.text({ label: "Tone", enum: ["calm", "loud"], default: "calm" }), note: prop.text({ label: "Note" }) },
+      render: (p) => <Text>{`${p.tone}: ${p.note ?? ""}`}</Text>,
+    });
+    const described = describeComponent("acme.Tag", { components: [Tag.definition] })!;
+    // Edited as a choice is, and said as one.
+    expect(described.properties.filter((property) => property.path.startsWith("props.")).map((property) => [property.path, property.editor, property.accepts])).toEqual([
+      ["props.tone", "choice", 'one of "calm", "loud"'],
+      ["props.note", "text", "text"],
+    ]);
+    expect((await render(<Email><Tag tone="loud" note="now" /></Email>)).text).toContain("loud: now");
+    // @ts-expect-error -- a text that isn't one of its enum's: said where it's written, and where it's checked.
+    const shouted = <Tag tone="shout" />;
+    expect(validate(<Email>{shouted}</Email>).diagnostics.map((d) => [d.code, d.message])).toEqual([["prop/invalid", expect.stringContaining('tone: expected one of "calm", "loud", not "shout"')]]);
+    type Props = ExpandProps<typeof Tag.definition.props>;
+    expectTypeOf<Props["tone"]>().toEqualTypeOf<"calm" | "loud">();
+    expectTypeOf<Props["note"]>().toEqualTypeOf<string | undefined>();
+    // @ts-expect-error -- a default that isn't one of the enum's.
+    prop.text({ label: "Tone", enum: ["calm", "loud"], default: "shout" });
+    for (const values of [[], [1], "calm"]) expect(() => prop.text({ label: "Tone", enum: values as never })).toThrow(`A text's enum lists the texts it may be (["$", "€"]), not ${JSON.stringify(values)}`);
+  });
+
+  it("defines a property of a team's own on one of prop's helpers: called, it's that helper's prop, with the property's editor and options", async () => {
+    const currency = defineProperty({
+      name: "acme.currency",
+      base: prop.number,
+      options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }), decimals: prop.number({ integer: true, min: 0, default: 2 }), compact: prop.boolean({}) },
+    });
+    expect([currency.name, currency.base, Object.keys(currency.options)]).toEqual(["acme.currency", "number", ["symbol", "decimals", "compact"]]);
+    const price = currency({ label: "Price", min: 0, default: 19, symbol: "€" });
+    // The prop is its base's, as that helper makes it.
+    expect([price.label, price.default, price.kind.name, price.kind.accepts]).toEqual(["Price", 19, "number", "a number from 0"]);
+    // Its editor is the property's: its name, what it edits, its options whole (each its default where the prop doesn't
+    // say, and left out where there's none).
+    expect(price.editor).toEqual({ name: "acme.currency", edits: "number", options: { symbol: "€", decimals: 2 } });
+    // Data alone, with no control in it: what a description can hold, and a template renders with.
+    expect(JSON.parse(JSON.stringify(price.editor))).toEqual(price.editor);
+    // The helper's own names work as they're written apart, too (`const { number, text } = prop`).
+    const { number, text } = prop;
+    const stepped = defineProperty({ name: "acme.stepped", base: number, options: { unit: text({ required: true }) } });
+    expect(stepped({ label: "Weight", unit: "kg" }).editor).toEqual({ name: "acme.stepped", edits: "number", options: { unit: "kg" } });
+    const flip = defineProperty({ name: "acme.flip", base: prop.boolean });
+    const Order = component({
+      type: "acme.Order",
+      label: "Order",
+      props: {
+        price,
+        shipping: currency({ label: "Shipping", min: 0, required: true, compact: true }),
+        gift: flip({ label: "Gift" }),
+      },
+      render: (p) => <Text>{`${p.price} + ${p.shipping}`}</Text>,
+    });
+    const described = describeComponent("acme.Order", { components: [Order.definition] })!;
+    const props = described.properties.filter((property) => property.path.startsWith("props."));
+    // Its kind's editor is still said, for an app with no control by the name; and the property, with its options whole.
+    expect(props.map((property) => [property.path, property.editor, property.property])).toEqual([
+      ["props.price", "number", { name: "acme.currency", options: { symbol: "€", decimals: 2 } }],
+      ["props.shipping", "number", { name: "acme.currency", options: { symbol: "$", decimals: 2, compact: true } }],
+      ["props.gift", "toggle", { name: "acme.flip", options: {} }],
+    ]);
+    // The value is its base's whatever edits it: its limits, and what render is given.
+    expect((await render(<Email><Order price={24} shipping={5} /></Email>)).text).toContain("24 + 5");
+    expect(validate(<Email><Order price={-1} shipping={5} /></Email>).diagnostics.map((d) => d.code)).toEqual(["prop/invalid"]);
+    // @ts-expect-error -- a required prop is required in JSX, made by a property as by its helper.
+    const short = <Order price={24} />;
+    expect(validate(<Email>{short}</Email>).diagnostics.map((d) => d.code)).toEqual(["prop/required"]);
+    type Props = ExpandProps<typeof Order.definition.props>;
+    expectTypeOf<Props["price"]>().toEqualTypeOf<number>();
+    expectTypeOf<Props["shipping"]>().toEqualTypeOf<number>();
+    expectTypeOf<Props["gift"]>().toEqualTypeOf<boolean | undefined>();
+  });
+
+  it("makes a property on a text with an enum, a length or a color as on a number", () => {
+    const size = defineProperty({ name: "acme.size", base: prop.text, options: { columns: prop.number({ integer: true, min: 1, default: 3 }) } });
+    const picked = size({ label: "Size", enum: ["s", "m", "l"], default: "m" });
+    expect([picked.kind.accepts, picked.default, picked.editor]).toEqual(['one of "s", "m", "l"', "m", { name: "acme.size", edits: "choice", options: { columns: 3 } }]);
+    const gap = defineProperty({ name: "acme.gap", base: prop.length });
+    expect([gap({ label: "Gap", units: ["px", "%"], default: "50%" }).default, gap({ label: "Gap" }).editor]).toEqual(["50%", { name: "acme.gap", edits: "length", options: {} }]);
+    const swatch = defineProperty({ name: "acme.swatch", base: prop.color, options: { palette: prop.text({ default: "brand" }) } });
+    const Card = component({
+      type: "acme.Swatched",
+      label: "Swatched",
+      props: { size: picked, tint: swatch({ label: "Tint", default: "#0879a1" }) },
+      render: (p) => <Text style={{ color: p.tint }}>{p.size}</Text>,
+    });
+    type Props = ExpandProps<typeof Card.definition.props>;
+    expectTypeOf<Props["size"]>().toEqualTypeOf<"s" | "m" | "l">();
+    expectTypeOf<Props["tint"]>().toEqualTypeOf<string>();
+    // A color made by a property takes a theme's token in JSX, as prop.color's does.
+    expectTypeOf<Parameters<typeof Card>[0]["tint"]>().toEqualTypeOf<string | Token | undefined>();
+  });
+
+  it("refuses a property's definition that isn't one: its name, its base, an option", () => {
+    for (const name of ["currency", "Acme.currency", "acme.", "acme.two words"]) {
+      expect(() => defineProperty({ name, base: prop.number })).toThrow(`A property's name is a namespace, a dot and a word ("acme.currency"), not ${JSON.stringify(name)}`);
+    }
+    const helpers = "prop.text, prop.color, prop.image, prop.link, prop.boolean, prop.fontFamily, prop.fontWeight, prop.number, prop.length";
+    // @ts-expect-error -- a base is one of prop's helpers itself, not its name.
+    expect(() => defineProperty({ name: "acme.currency", base: "number" })).toThrow(`The property acme.currency is made on one of prop's helpers (${helpers})`);
+    // @ts-expect-error -- a choice takes its values apart from its options: a text with an enum is the base for one.
+    expect(() => defineProperty({ name: "acme.currency", base: prop.choice })).toThrow(`The property acme.currency is made on one of prop's helpers (${helpers}): for one of a few values, prop.text with an enum`);
+    // An option named as something its prop takes would hide it.
+    for (const option of ["label", "default", "required", "min", "integer", "editor"]) {
+      expect(() => defineProperty({ name: "acme.currency", base: prop.number, options: { [option]: prop.text({}) } })).toThrow(`The property acme.currency can't have an option named ${option}: that's its prop's`);
+    }
+    // (What another helper takes is free: a number has no enum, a text no min.)
+    expect(() => defineProperty({ name: "acme.currency", base: prop.number, options: { enum: prop.text({}), units: prop.text({}) } })).not.toThrow();
+    expect(() => defineProperty({ name: "acme.label", base: prop.text, options: { min: prop.number({}) } })).not.toThrow();
+    expect(() => defineProperty({ name: "acme.label", base: prop.text, options: { enum: prop.text({}) } })).toThrow("The property acme.label can't have an option named enum: that's its prop's");
+    // @ts-expect-error -- an option is made with one of prop's helpers, which says what it may be.
+    expect(() => defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: "€" } })).toThrow('The property acme.currency: its option symbol is made with one of prop\'s helpers (prop.text({ default: "$" })), not "€"');
+    // @ts-expect-error -- an option's default is one of its own values.
+    expect(() => defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€"], default: "¥" }) } })).toThrow(
+      'The property acme.currency: the default of its option symbol: expected one of "$", "€", not "¥"'
+    );
+  });
+
+  it("refuses what a property isn't given right where it's called: an option it doesn't have, a value that isn't the option's, another editor", () => {
+    const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }), locale: prop.text({ required: true }) } });
+    // @ts-expect-error -- no such option: a typo is said, not dropped.
+    expect(() => currency({ label: "Price", locale: "en", symbl: "€" })).toThrow("The property acme.currency has no option named symbl (it has symbol, locale, beside what prop.number takes)");
+    // @ts-expect-error -- not one of the option's values.
+    expect(() => currency({ label: "Price", locale: "en", symbol: "¥" })).toThrow('The property acme.currency: its symbol: expected one of "$", "€", "£", not "¥"');
+    // @ts-expect-error -- a required option is required.
+    expect(() => currency({ label: "Price" })).toThrow("The property acme.currency needs its locale");
+    // @ts-expect-error -- its editor is its own.
+    expect(() => currency({ label: "Price", locale: "en", editor: "counter" })).toThrow("The property acme.currency is edited with its own editor: it takes no editor");
+    // @ts-expect-error -- and so are that editor's options.
+    expect(() => currency({ label: "Price", locale: "en", editorOptions: { step: 5 } })).toThrow("The property acme.currency is edited with its own editor: it takes no editorOptions");
+    // @ts-expect-error -- what another helper takes isn't this one's.
+    expect(() => currency({ label: "Price", locale: "en", units: ["px"] })).toThrow("The property acme.currency has no option named units (it has symbol, locale, beside what prop.number takes)");
+    const plain = defineProperty({ name: "acme.plain", base: prop.boolean });
+    // @ts-expect-error -- with no options of its own, it takes what its helper does.
+    expect(() => plain({ label: "Plain", symbol: "€" })).toThrow("The property acme.plain has no option named symbol (it takes what prop.boolean takes)");
+  });
+
+  it("refuses a prop that isn't one: no label, a property that isn't called, an editor that isn't a property's", () => {
+    const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ default: "€" }) } });
+    const made = (props: Record<string, any>) => () => component({ type: "acme.Named", label: "Named", props, render: () => <Text>n</Text> });
+    // A component's prop has a label (an option of a property needs none): said where it's written, and where the component is made.
+    // @ts-expect-error -- no label.
+    expect(() => component({ type: "acme.Named", label: "Named", props: { n: prop.number({ min: 0 }) }, render: () => <Text>n</Text> })).toThrow("acme.Named: n needs a label: what an editor shows for it");
+    // @ts-expect-error -- no label, made by a property.
+    expect(() => component({ type: "acme.Named", label: "Named", props: { n: currency({ min: 0 }) }, render: () => <Text>n</Text> })).toThrow("acme.Named: n needs a label: what an editor shows for it");
+    expect(made({ n: currency })).toThrow('acme.Named: n is a property\'s definition: call it for the prop (n: currency({ label: "…" }))');
+    // @ts-expect-error -- a helper takes no editor: a property is the prop itself.
+    expect(() => prop.number({ label: "N", editor: currency })).toThrow("prop.number takes no editor");
+    expect(made({ n: { ...prop.number({ label: "N" }), editor: currency } })).toThrow('acme.Named: the editor of n is a property\'s definition: that\'s the prop itself (n: currency({ label: "…" }))');
+    // What a property gives a prop is checked as it's read, however it got there.
+    const { editor } = currency({ label: "Price" });
+    expect(made({ title: { ...prop.text({ label: "Title" }), editor } })).toThrow("acme.Named: the editor acme.currency edits a number, and title is a text");
+    // An editor by its name, or options for one, written into a prop by hand: there's one way to say a prop's editor.
+    expect(made({ n: { ...prop.number({ label: "N" }), editor: "counter" } })).toThrow('acme.Named: n names the editor "counter": a prop is edited with its kind\'s editor, or is a property of your own (defineProperty()): n: currency({ label: "…" })');
+    expect(made({ n: { ...currency({ label: "N" }), editorOptions: { symbol: "$" } } })).toThrow("acme.Named: n gives editorOptions: a prop is edited with its kind's editor, or is a property of your own (defineProperty()), whose options are the property's");
+    expect(made({ n: { ...prop.number({ label: "N" }), editor: { name: "currency", edits: "number", options: {} } } })).toThrow('acme.Named: the editor of n is one a property gives (defineProperty()), named like "acme.currency", not "currency"');
+  });
+
   it("types render's props: required and defaulted ones always there", () => {
     type Props = ExpandProps<typeof ProductCard.definition.props>;
     expectTypeOf<Props["accent"]>().toEqualTypeOf<string>();
@@ -244,5 +471,9 @@ describe("component()", () => {
     expectTypeOf<Sized["width"]>().not.toEqualTypeOf<undefined>();
     expectTypeOf<undefined>().not.toMatchTypeOf<Sized["width"]>();
     expectTypeOf<Sized["count"]>().toEqualTypeOf<number>();
+    // A font weight's value is one a style's fontWeight takes (100 to 900), not any number.
+    const weighted = { weight: prop.fontWeight({ label: "Weight", default: 700 }) };
+    expectTypeOf<ExpandProps<typeof weighted>["weight"]>().toEqualTypeOf<100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900>();
+    expectTypeOf(<Text style={{ fontWeight: 700 as ExpandProps<typeof weighted>["weight"] }}>bold</Text>).not.toBeNever();
   });
 });

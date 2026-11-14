@@ -5,11 +5,12 @@
  * column's space folded into them, or a `Column` where the column has a box. A page break among a column's blocks
  * splits the row there (in a Document).
  */
-import type { Json, Node } from "@hyper-elements/core";
+import type { CustomDefinition, Json, Node } from "@hyper-elements/core";
 import { ColumnDefaults, RowDefaults } from "./tool-defaults";
 import { color, givenId, hidden as hiddenOn, sides, some, type Sides, type Values } from "./read-values";
 import { readRadius } from "./reading";
 import { readBlock, type Context, type Slot } from "./blocks";
+import { readCustom } from "./custom";
 import { readHidden } from "./hide";
 import { sayUnread } from "./unread";
 import { readBorder } from "./values";
@@ -31,13 +32,16 @@ export interface Where {
   document: boolean;
   /** In a Document's header or footer, which hold no Section. */
   part: boolean;
+  /** The template's own components given, by their tools' names (custom.ts). */
+  tools: Map<string, CustomDefinition<any>>;
 }
 
 /** A column's blocks, page breaks among them where it's a Document's. */
 function blocksOf(column: Values, where: string, at: Where, slot: Omit<Slot, "column">): Node[] {
   return arr(column.contents).flatMap((content, i) => {
     const path = `${where}.contents[${i}]`;
-    const { type, values } = obj(content);
+    const { type, values, slug } = obj(content);
+    if (type === "custom") return readCustom(slug, obj(values), at.context(path), at.tools);
     if (type === "page_break") {
       if (at.document && !at.part) return [{ type: "PageBreak" }];
       at.context(path).say("a page break is a Document's, between its pages: left out");

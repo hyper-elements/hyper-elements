@@ -18,8 +18,11 @@ import {
   number,
   prop as defineProp,
   text,
+  OWN_EDITOR,
   type CustomDefinition,
   type ExpandProps,
+  type InputOf,
+  type Json,
   type Kind,
   type LengthUnit,
   type OutputOf,
@@ -30,48 +33,204 @@ import {
 import { collectingPrimitives, collectNodes, recordPrimitive, registerUsed } from "./collect";
 import type { Token } from "./theme";
 
-type PropOptions<K extends Kind<any, any>, R extends boolean, D> = Omit<PropSpec<K, R>, "kind" | "default"> & { default?: D };
+/**
+ * What a prop's helper takes besides what its kind does: what the prop is called, whether it's required, its default.
+ * A component's prop has a label; an option of a property of a team's own (`defineProperty()`) needs none. There's no
+ * editor to name: a prop is edited with its kind's, or is a property of a team's own.
+ */
+type PropOptions<K extends Kind<any, any>, R extends boolean, D, L extends string | undefined> = Omit<PropSpec<K, R>, "kind" | "default" | "label" | "editor"> & {
+  label?: L;
+  default?: D;
+};
 
-/** A prop helper for one value kind: `required` and `default` keep their literal types, for `render`'s props. */
-function kindProp<K extends Kind<any, any>>(make: () => K) {
-  return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options);
-}
+/**
+ * What a helper makes. `required`, `default` and `label` keep their literal types: the first two for `render`'s props,
+ * the last so a component's prop with no label is an error where it's written.
+ */
+type Made<K extends Kind<any, any>, R extends boolean, D, L> = Omit<PropSpec<K, R>, "default" | "label"> & { default: D; label: Said<L> };
+/** The label as it's given, and nothing else: where a prop is written in a component's `props`, that it's a prop there doesn't make it one with a label. */
+type Said<L> = [L][L extends any ? 0 : never];
 
 declare const TAKES_TOKEN: unique symbol;
 /** Type only: a prop whose kind takes a theme's token in JSX (a color, a length, a font), its value where the instance is. */
 type TakesToken = { readonly [TAKES_TOKEN]: true };
 
-/** A prop helper for a kind that takes a theme's token. */
-function tokenProp<K extends Kind<any, any>>(make: () => K) {
-  return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options) as ReturnType<typeof defineProp<K, R, D>> & TakesToken;
+/** A helper for one value kind. `X` is what it takes besides (a number's `min`; a property's own options). */
+type KindHelper<K extends Kind<any, any>, X = unknown, Mark = unknown> = <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined, const L extends string | undefined = undefined>(
+  options: PropOptions<K, R, D, L> & X
+) => Made<K, R, D, L> & Mark;
+
+/** A text's kind: any text, or one of the texts its `enum` lists. */
+type TextKind<V> = V extends readonly string[] ? Kind<V[number], V[number]> : Kind<string, string>;
+type LengthKind<U extends LengthUnit> = ReturnType<typeof length<U>>;
+
+/** `prop`'s helpers a property of a team's own can be made on (`defineProperty()`'s `base`), each taking `X` besides. */
+interface Helpers<X = unknown> {
+  text: <const V extends readonly string[] | undefined = undefined, const R extends boolean = false, const D extends OutputOf<TextKind<V>> | undefined = undefined, const L extends string | undefined = undefined>(
+    options: PropOptions<TextKind<V>, R, D, L> & { /** The texts it may be, where it's one of a few. */ enum?: V } & X
+  ) => Made<TextKind<V>, R, D, L>;
+  color: KindHelper<ReturnType<typeof color>, { /** Whether it may be see-through (default true): with false, an rgba, an 8-digit hex or "transparent" is refused. */ transparency?: boolean } & X, TakesToken>;
+  image: KindHelper<ReturnType<typeof asset>, X>;
+  link: KindHelper<ReturnType<typeof link>, X>;
+  boolean: KindHelper<ReturnType<typeof boolean>, X>;
+  fontFamily: KindHelper<ReturnType<typeof fontFamily>, X, TakesToken>;
+  fontWeight: KindHelper<ReturnType<typeof fontWeight>, X>;
+  number: KindHelper<Kind<number, number>, { min?: number; max?: number; integer?: boolean } & X>;
+  length: <const U extends LengthUnit = "px", const R extends boolean = false, const D extends OutputOf<LengthKind<U>> | undefined = undefined, const L extends string | undefined = undefined>(
+    options: PropOptions<LengthKind<U>, R, D, L> & { units?: readonly U[]; min?: number } & X
+  ) => Made<LengthKind<U>, R, D, L> & TakesToken;
 }
+
+declare const BASE: unique symbol;
+/** Type only: which of `prop`'s helpers one is, so `defineProperty()` knows what its `base` makes. */
+type Based<N> = { readonly [BASE]?: N };
+
+type Given = { readonly [option: string]: any };
+const made = (kind: Kind<any, any>, options: Given) => defineProp(kind, options as never);
+
+/** What every helper takes, and what some take besides: a property's own options are named otherwise. */
+const EVERY = ["label", "description", "required", "default", "roots", "editable", "support"];
+const BESIDES: { readonly [helper: string]: readonly string[] } = { text: ["enum"], color: ["transparency"], number: ["min", "max", "integer"], length: ["units", "min"] };
+
+/**
+ * What a helper is given, where it takes all of it. One it doesn't take is refused where it's written, as a type error
+ * is, for a caller with no types: a name mistyped would be dropped without a word. An editor named by its name is one
+ * of those: a prop is edited with its kind's editor, or is a property of a team's own.
+ */
+function takes(helper: string, given: Given | undefined): Given {
+  const taken = [...EVERY, ...(BESIDES[helper] ?? [])];
+  for (const key of Object.keys(given ?? {})) {
+    if (key === "editor" || key === "editorOptions") {
+      throw new Error(`[Elements] prop.${helper} takes no ${key}: a prop is edited with its kind's editor, or is a property of your own, made with defineProperty() (price: currency({ label: "Price", symbol: "€" }))`);
+    }
+    if (!taken.includes(key)) throw new Error(`[Elements] prop.${helper} has no option named ${key} (it takes ${taken.join(", ")})`);
+  }
+  return given ?? {};
+}
+
+const helpers = {
+  text: (given: Given) => {
+    const { enum: values, ...rest } = takes("text", given);
+    if (values !== undefined && !(Array.isArray(values) && values.length > 0 && values.every((value) => typeof value === "string"))) {
+      throw new Error(`[Elements] A text's enum lists the texts it may be (["$", "€"]), not ${JSON.stringify(values)}`);
+    }
+    return made(values ? enumOf(values as readonly string[]) : text(), rest);
+  },
+  color: (given: Given) => {
+    const { transparency, ...rest } = takes("color", given);
+    if (transparency !== undefined && typeof transparency !== "boolean") throw new Error(`[Elements] A color's transparency is true or false, not ${JSON.stringify(transparency)}`);
+    return made(color({ transparency }), rest);
+  },
+  image: (given: Given) => made(asset(), takes("image", given)),
+  link: (given: Given) => made(link(), takes("link", given)),
+  boolean: (given: Given) => made(boolean(), takes("boolean", given)),
+  fontFamily: (given: Given) => made(fontFamily(), takes("fontFamily", given)),
+  fontWeight: (given: Given) => made(fontWeight(), takes("fontWeight", given)),
+  number: (given: Given) => {
+    const { min, max, integer, ...rest } = takes("number", given);
+    return made(number({ min, max, integer }), rest);
+  },
+  length: (given: Given) => {
+    const { units, min, ...rest } = takes("length", given);
+    return made(length(units, { min }), rest);
+  },
+};
 
 /** Props of a custom component, by value kind. */
 export const prop = {
-  text: kindProp(() => text()),
-  color: tokenProp(() => color()),
-  image: kindProp(() => asset()),
-  link: kindProp(() => link()),
-  boolean: kindProp(() => boolean()),
-  fontFamily: tokenProp(() => fontFamily()),
-  fontWeight: kindProp(() => fontWeight()),
-  number: <const R extends boolean = false, const D extends number | undefined = undefined>(
-    options: PropOptions<Kind<number, number>, R, D> & { min?: number; max?: number; integer?: boolean }
-  ) => {
-    const { min, max, integer, ...rest } = options;
-    return defineProp(number({ min, max, integer }), rest);
-  },
-  length: <const U extends LengthUnit = "px", const R extends boolean = false, const D extends OutputOf<ReturnType<typeof length<U>>> | undefined = undefined>(
-    options: PropOptions<ReturnType<typeof length<U>>, R, D> & { units?: readonly U[]; min?: number }
-  ) => {
-    const { units, min, ...rest } = options;
-    return defineProp<ReturnType<typeof length<U>>, R, D>(length<U>(units, { min }), rest) as ReturnType<typeof defineProp<ReturnType<typeof length<U>>, R, D>> & TakesToken;
-  },
-  choice: <const V extends readonly (string | number)[], const R extends boolean = false, const D extends V[number] | undefined = undefined>(
+  ...helpers,
+  choice: (values: readonly (string | number)[], options: Given) => made(enumOf(values), takes("choice", options)),
+} as unknown as { [N in keyof Helpers]: Helpers[N] & Based<N> } & {
+  choice: <const V extends readonly (string | number)[], const R extends boolean = false, const D extends V[number] | undefined = undefined, const L extends string | undefined = undefined>(
     values: V,
-    options: PropOptions<Kind<V[number], V[number]>, R, D>
-  ) => defineProp(enumOf(values), options),
+    options: PropOptions<Kind<V[number], V[number]>, R, D, L>
+  ) => Made<Kind<V[number], V[number]>, R, D, L>;
 };
+
+/** A property's own options, each made with one of `prop`'s helpers. */
+type OptionSpecs = { readonly [option: string]: { readonly kind: Kind<any, any>; readonly required?: boolean; readonly default?: unknown } };
+type Needed<O extends OptionSpecs> = { [K in keyof O]: Exclude<O[K]["required"], undefined> extends true ? K : never }[keyof O];
+type Held<O extends OptionSpecs> = { [K in keyof O]: Exclude<O[K]["required"], undefined> extends true ? K : [O[K]["default"]] extends [undefined] ? never : K }[keyof O];
+/** A property's own options as a prop gives them: a required one must be given. A prop made of one names no other editor. */
+type OptionsInput<O extends OptionSpecs> = { [K in Needed<O>]: InputOf<O[K]["kind"]> } & { [K in Exclude<keyof O, Needed<O>>]?: InputOf<O[K]["kind"]> } & { editor?: never; editorOptions?: never };
+/** And as its editor is given them: one that's required or has a default is always there. */
+type OptionsOf<O extends OptionSpecs> = { [K in Held<O>]: OutputOf<O[K]["kind"]> } & { [K in Exclude<keyof O, Held<O>>]?: OutputOf<O[K]["kind"]> };
+/** The value a property made on a helper holds. */
+type Value<N extends keyof Helpers> = OutputOf<ReturnType<Helpers[N]>["kind"]>;
+
+/**
+ * A property of a team's own: one of `prop`'s helpers with an editor of the team's own, and what that editor takes. As
+ * a template knows it, it's data (its name, the helper it's made on, its options), with no control: that's each editing
+ * app's, registered under the name (in Unlayer's builder, `registerTools()`'s `editors`), so a template renders with
+ * none. Called, it's a prop: `price: currency({ label: "Price", min: 0, symbol: "$" })`.
+ */
+export interface PropertyDefinition<V = any, O = { [option: string]: Json }> {
+  /** A namespace, a dot, a word: "acme.currency". What an editing app registers its editor under. */
+  readonly name: string;
+  /** The helper of `prop` it's made on, by its name: "number". */
+  readonly base: keyof Helpers;
+  /** Its own options, each as it's defined. */
+  readonly options: OptionSpecs;
+  /** Type only: the value its editor is given, and its options as a prop has them. */
+  readonly _editor?: { value: V; options: O };
+}
+
+/**
+ * Defines a property of a team's own:
+ *
+ *     const currency = defineProperty({
+ *       name: "acme.currency",
+ *       base: prop.number,
+ *       options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }) },
+ *     });
+ *
+ * then `price: currency({ label: "Price", min: 0, symbol: "€" })`. The prop is its base's: a number, with a number's own
+ * limits, whoever writes it. Its own options say how it's edited, each checked by its kind as a prop is.
+ */
+export function defineProperty<const N extends keyof Helpers, const O extends OptionSpecs = {}>(definition: { name: string; base: Based<N>; options?: O }): Helpers<OptionsInput<O>>[N] & PropertyDefinition<Value<N>, OptionsOf<O>> {
+  const { name } = definition;
+  const specs: OptionSpecs = definition.options ?? {};
+  if (!OWN_EDITOR.test(String(name))) throw new Error(`[Elements] A property's name is a namespace, a dot and a word ("acme.currency"), not ${JSON.stringify(name)}`);
+  const base = (Object.keys(helpers) as Array<keyof typeof helpers>).find((helper) => helpers[helper] === (definition.base as unknown));
+  if (!base) {
+    throw new Error(`[Elements] The property ${name} is made on one of prop's helpers (${Object.keys(helpers).map((helper) => `prop.${helper}`).join(", ")})${(definition.base as unknown) === prop.choice ? ": for one of a few values, prop.text with an enum" : ""}`);
+  }
+  const taken = [...EVERY, ...(BESIDES[base] ?? [])];
+  for (const [option, spec] of Object.entries(specs) as Array<[string, OptionSpecs[string] | undefined]>) {
+    if (taken.includes(option) || option === "editor") throw new Error(`[Elements] The property ${name} can't have an option named ${option}: that's its prop's`);
+    if (typeof spec?.kind?.parse !== "function") throw new Error(`[Elements] The property ${name}: its option ${option} is made with one of prop's helpers (prop.text({ default: "$" })), not ${JSON.stringify(spec)}`);
+    if (spec.default !== undefined) {
+      const parsed = spec.kind.parse(spec.default);
+      if (!parsed.ok) throw new Error(`[Elements] The property ${name}: the default of its option ${option}: ${parsed.message}`);
+    }
+  }
+  const own = Object.keys(specs);
+  const use = (given: Given = {}) => {
+    const rest: { [option: string]: unknown } = {};
+    for (const [key, value] of Object.entries(given)) {
+      if (Object.prototype.hasOwnProperty.call(specs, key)) continue;
+      if (key === "editor" || key === "editorOptions") throw new Error(`[Elements] The property ${name} is edited with its own editor: it takes no ${key}`);
+      if (!taken.includes(key)) throw new Error(`[Elements] The property ${name} has no option named ${key} (it ${own.length ? `has ${own.join(", ")}, beside what` : "takes what"} prop.${base} takes)`);
+      rest[key] = value;
+    }
+    const options: { [option: string]: Json } = {};
+    for (const [option, spec] of Object.entries(specs)) {
+      const value: unknown = given[option] ?? spec.default;
+      if (value === undefined) {
+        if (spec.required) throw new Error(`[Elements] The property ${name} needs its ${option}`);
+        continue;
+      }
+      const parsed = spec.kind.parse(value);
+      if (!parsed.ok) throw new Error(`[Elements] The property ${name}: its ${option}: ${parsed.message}`);
+      options[option] = parsed.value;
+    }
+    const spec = helpers[base](rest);
+    // (Its editor is said by its kind's: what an app with no editor by this name shows.)
+    return { ...spec, editor: { name, edits: spec.kind.editor, options } };
+  };
+  // (A function's own name is its definition's.)
+  return Object.defineProperties(use, { name: { value: name }, base: { value: base }, options: { value: specs } }) as never;
+}
 
 /** A prop's value in JSX: a color's, a length's or a font's may be a theme's token, its value where the instance is. */
 type WithTokens<T, P> = { [K in keyof T]: K extends keyof P ? (P[K] extends TakesToken ? T[K] | Token : T[K]) : T[K] };

@@ -69,7 +69,8 @@ jobs:
       # ── Type contract ───────────────────────────────────────────
       # tsc gate over the components' prop types, render()'s and component()'s
       # (src/primitives/types.test-d.tsx and the other files in
-      # tsconfig.typecheck.json, which include /pdf and /image and their tests)
+      # tsconfig.typecheck.json, which include /builder, /pdf and /image and their
+      # tests: a test's expectTypeOf is checked here, not when vitest runs it)
       # and the core's sources. The build only type-checks each entry's import
       # graph, so this catches a relaxed or broken input type.
       - name: Type contract
@@ -119,14 +120,18 @@ jobs:
       # render that collects a template (about 5KB). Raise it on purpose, with what grew:
       # 322KB for plain text's one-pass scan of service tags in large headings and
       # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
-      # written for classic Outlook apart (its own col and first-row cell, without width: auto).
+      # written for classic Outlook apart (its own col and first-row cell, without width: auto);
+      # 322,000 bytes for defineProperty(): a team's own property as data (one of prop's
+      # helpers, its editor's name and its options, each checked by its kind), a text's enum,
+      # and what's refused of one; 323,300 bytes for prop's helpers refusing an option they
+      # don't take (an editor named by its name among them) and a color's transparency.
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=317000
+          MAX_SIZE=323300
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -147,13 +152,19 @@ jobs:
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
       # grew: 485.5KB for the same scan and encoding, in the writers it shares;
-      # 479,000 bytes for a Table's free column written for classic Outlook apart.
+      # 479,000 bytes for a Table's free column written for classic Outlook apart;
+      # 494,500 bytes for a template's own components as the builder's custom tools
+      # (custom.ts: their blocks in a design both ways, and registerTools(), with a field
+      # for every kind of prop and a team's own editors; and what the builder keeps on
+      # such a block that isn't read, said as a built-in block's is); 495,500 bytes for
+      # fromDesign()'s code writing each such component by the name its type ends with,
+      # with its namespace where that's another's too.
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=479000
+          MAX_SIZE=495500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

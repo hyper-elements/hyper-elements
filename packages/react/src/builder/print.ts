@@ -41,8 +41,33 @@ export function toElement(node: Node, components: Record<string, React.Component
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 /** A prop's name JSX can hold as one (`aria-label` too); a design could hold any other text where one goes. */
 const PROP_NAME = /^[A-Za-z_$][\w$]*(?:-[\w$]+)*$/;
-/** A component's name as JSX writes it: a built-in's, or a custom component's (`acme.ProductCard`). */
+/** A component's type JSX can be written for: a built-in's, or a custom component's (`acme.ProductCard`). */
 const TYPE_NAME = /^(?:[A-Z][\w$]*|[a-z][a-z0-9-]*\.[A-Z][\w$]*)$/;
+/** A custom component's type: its namespace, and the name it ends with. */
+const CUSTOM = /^([a-z][a-z0-9-]*)\.([A-Z][\w$]*)$/;
+
+/**
+ * The name the code writes each of the template's own components with: the one its type ends with (`acme.Callout` is
+ * `Callout`), as a template uses it. Where that name is another's too (another of them's, a built-in's the code imports,
+ * the template's own), it's written with its namespace (`AcmeCard`, `MyShopCard`), and numbered where that's taken too.
+ * A type's namespace may not be one JavaScript can write (`my-shop`, `new`): this name always is.
+ */
+function ownNames(types: readonly string[], taken: ReadonlySet<string>): Map<string, string> {
+  const sorted = [...types].sort();
+  const parts = (type: string) => CUSTOM.exec(type)?.slice(1) ?? ["", type];
+  const shared = (name: string) => sorted.filter((type) => parts(type)[1] === name).length > 1;
+  const names = new Map<string, string>();
+  const used = new Set(taken);
+  for (const type of sorted) {
+    const [space, name] = parts(type);
+    const wanted = shared(name) || taken.has(name) ? space.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("") + name : name;
+    let given = wanted;
+    for (let n = 2; used.has(given); n++) given = `${wanted}${n}`;
+    used.add(given);
+    names.set(type, given);
+  }
+  return names;
+}
 
 /** A value as JavaScript source: objects with bare keys where they can be. */
 /** Keys of `value` exactly `keys`, each a number (`top`, `right`, …). */
@@ -107,18 +132,18 @@ const inline = (node: Node) => (node.children ?? []).some((child) => typeof chil
  * A node as JSX. A name the design holds that isn't one JSX can write (a prop's, a component's) is left out and
  * said, never written as code: the design's data stays data.
  */
-function element(node: Node, indent: string, flat: boolean, path: string, report: string[]): string {
+function element(node: Node, indent: string, flat: boolean, path: string, report: string[], own: ReadonlyMap<string, string>): string {
   if (!TYPE_NAME.test(node.type)) {
     report.push(`${path}: ${JSON.stringify(node.type)} isn't a component's name: it's left out of the code`);
     return flat ? "" : "{/* left out: not a component's name */}";
   }
-  const name = tagName(node.type);
+  const name = own.get(node.type) ?? tagName(node.type);
   const attributes = Object.entries(propsOf(node))
     .filter(([key]) => PROP_NAME.test(key) || (report.push(`${path}: a prop named ${JSON.stringify(key)} isn't one JSX can write: it's left out of the code`), false))
     .map(([key, value]) => ` ${attribute(key, value)}`)
     .join("");
   const children: Child[] = node.children ?? [];
-  const child = (c: Child, i: number, inner: string, oneLine: boolean) => (typeof c === "string" ? text(c, oneLine) : element(c, inner, oneLine, `${path}.children[${i}]`, report));
+  const child = (c: Child, i: number, inner: string, oneLine: boolean) => (typeof c === "string" ? text(c, oneLine) : element(c, inner, oneLine, `${path}.children[${i}]`, report, own));
   if (!children.length) return `<${name}${attributes} />`;
   if (flat || inline(node)) return `<${name}${attributes}>${children.map((c, i) => child(c, i, indent, true)).join("")}</${name}>`;
   const inner = `${indent}  `;
@@ -139,7 +164,8 @@ export function printTemplate(root: Node, name = "Template", report: string[] = 
     for (const child of node.children ?? []) if (typeof child !== "string") visit(child);
   };
   visit(root);
+  const names = ownNames([...own], new Set([...used, name]));
   const imports = [`import { ${[...used].sort().join(", ")} } from "@hyper-elements/react";`];
-  if (own.size) imports.push(`// The template's own components: ${[...own].sort().join(", ")} (import them from where they're defined).`);
-  return `${imports.join("\n")}\n\nexport default function ${name}() {\n  return (\n    ${element(root, "    ", false, "root", report)}\n  );\n}\n`;
+  if (own.size) imports.push(`// The template's own components, to import from where they're defined: ${[...names].map(([type, as]) => `${as} (${type})`).join(", ")}.`);
+  return `${imports.join("\n")}\n\nexport default function ${name}() {\n  return (\n    ${element(root, "    ", false, "root", report, names)}\n  );\n}\n`;
 }

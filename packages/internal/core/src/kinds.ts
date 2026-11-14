@@ -457,12 +457,21 @@ export function parseColor(input: unknown): Parsed<string> {
   return fail(`expected a color ("#0879a1", "rgb(…)", "rgba(…)" or a CSS name), not ${show(input)}`);
 }
 
-export function color(): Kind<string, string> {
+/** Whether a color, as it's kept, lets what's under it show: "rgba(…)" with an alpha below 1, or "transparent". */
+const seeThrough = (kept: string) => kept.startsWith("rgba(") || kept === "transparent";
+
+/** A color. With `transparency: false`, an opaque one alone: one that lets what's under it show is refused. */
+export function color(options: { transparency?: boolean } = {}): Kind<string, string> {
+  const opaque = options.transparency === false;
   return kind({
     name: "color",
     editor: "color",
-    accepts: 'a color ("#0879a1", "rgb(…)", "rgba(…)" or a CSS name)',
-    parse: parseColor,
+    accepts: opaque ? 'an opaque color ("#0879a1", "rgb(…)" or a CSS name)' : 'a color ("#0879a1", "rgb(…)", "rgba(…)" or a CSS name)',
+    parse(input) {
+      const parsed = parseColor(input);
+      if (opaque && parsed.ok && seeThrough(parsed.value)) return fail(`expected an opaque color, not ${show(input)}, which is see-through`);
+      return parsed;
+    },
     jsonSchema: () => ({ type: "string" }),
   });
 }
@@ -620,15 +629,18 @@ export function fontFaces(): Kind<FontFaceInput[], FontFace[]> {
 
 export type FontWeightInput = 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | "normal" | "bold";
 
-export function fontWeight(): Kind<FontWeightInput, number> {
-  return kind({
+/** A font weight as it's kept: the number ("normal" is 400, "bold" 700). */
+export type FontWeight = Exclude<FontWeightInput, string>;
+
+export function fontWeight(): Kind<FontWeightInput, FontWeight> {
+  return kind<FontWeightInput, FontWeight>({
     name: "fontWeight",
     editor: "fontWeight",
     accepts: '100 to 900 in hundreds, "normal" or "bold"',
     parse(input) {
       if (input === "normal") return ok(400);
       if (input === "bold") return ok(700);
-      if (typeof input === "number" && input >= 100 && input <= 900 && input % 100 === 0) return ok(input);
+      if (typeof input === "number" && input >= 100 && input <= 900 && input % 100 === 0) return ok(input as FontWeight);
       return fail(`expected 100 to 900 in hundreds, "normal" or "bold", not ${show(input)}`);
     },
     jsonSchema: () => ({ anyOf: [{ enum: [100, 200, 300, 400, 500, 600, 700, 800, 900] }, { enum: ["normal", "bold"] }] }),

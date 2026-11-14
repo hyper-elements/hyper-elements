@@ -38,8 +38,32 @@ export interface PropSpec<K extends Kind<any, any> = Kind<any, any>, R extends b
   default?: OutputOf<K>;
   /** Editors may change it (default true). */
   editable?: boolean;
+  /**
+   * The editor of a property of a team's own, where the prop is one (`defineProperty()`: `currency({ symbol: "$" })` is
+   * the prop, with this). Set by the property, not written: a prop of `prop`'s helpers is edited with its kind's
+   * editor. The value is its kind's either way; an app with no editor by the property's name shows the kind's.
+   */
+  editor?: EditorUse<OutputOf<K>>;
   /** How each output shows it: required for every output its component renders to (a test checks). */
   support?: SupportByTarget;
+}
+
+/**
+ * The editor of a property of a team's own on one prop: its name, the kind of value it edits (by that kind's editor),
+ * and its options as this prop has them. It's data: the editor's control is each editing app's, by this name.
+ */
+export interface EditorUse<V = any> {
+  readonly name: string;
+  readonly edits: EditorKind;
+  readonly options: { readonly [name: string]: Json };
+  /** Type only: the value it edits, so a prop of another kind doesn't take it. */
+  readonly _edits?: (value: V) => void;
+}
+
+/** The property of a team's own a prop is, where it's one: its name, and its options as the prop has them. */
+export function propertyOf(spec: PropSpec): { name: string; options: { readonly [name: string]: Json } } | undefined {
+  const { editor } = spec;
+  return editor === undefined ? undefined : { name: editor.name, options: editor.options };
 }
 
 /** A style's or prop's support, by output. */

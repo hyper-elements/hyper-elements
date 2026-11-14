@@ -12,6 +12,8 @@ import { placementStyle } from "./styles";
 
 /** A namespace, a dot, a capitalized name: "acme.ProductCard". Built-in types never look like this. */
 export const CUSTOM_TYPE = /^[a-z][a-z0-9-]*\.[A-Z][A-Za-z0-9]*$/;
+/** The name of an editor of a team's own: a namespace, a dot, a word ("acme.currency"). No editing app's own looks like this. */
+export const OWN_EDITOR = /^[a-z][a-z0-9-]*\.[A-Za-z][\w-]*$/;
 
 /** Props that always have a value: required ones, and ones with a default (see `prop`). */
 type RequiredOrDefaulted<P extends PropSpecs> = {
@@ -59,6 +61,22 @@ export interface CustomComponentSpec<P extends PropSpecs> {
 export function defineCustomComponent<const P extends PropSpecs>(spec: CustomComponentSpec<P>): CustomDefinition<P> {
   if (!CUSTOM_TYPE.test(spec.type)) {
     throw new Error(`[Elements] A custom component's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
+  }
+  for (const [key, prop] of Object.entries(spec.props)) {
+    // A property of a team's own is a prop once it's called.
+    if (typeof prop === "function") throw new Error(`[Elements] ${spec.type}: ${key} is a property's definition: call it for the prop (${key}: currency({ label: "…" }))`);
+    if (typeof prop.label !== "string") throw new Error(`[Elements] ${spec.type}: ${key} needs a label: what an editor shows for it`);
+    // A prop's editor is its kind's, or the one of the property of a team's own it is: one way to say it.
+    if ("editorOptions" in prop) throw new Error(`[Elements] ${spec.type}: ${key} gives editorOptions: a prop is edited with its kind's editor, or is a property of your own (defineProperty()), whose options are the property's`);
+    const editor: unknown = prop.editor;
+    if (typeof editor === "function") throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a property's definition: that's the prop itself (${key}: currency({ label: "…" }))`);
+    if (typeof editor === "string") throw new Error(`[Elements] ${spec.type}: ${key} names the editor ${JSON.stringify(editor)}: a prop is edited with its kind's editor, or is a property of your own (defineProperty()): ${key}: currency({ label: "…" })`);
+    if (editor !== undefined) {
+      // One of a team's own, as a property a team defines gives it.
+      const { name, edits } = (editor ?? {}) as { name?: unknown; edits?: unknown };
+      if (!OWN_EDITOR.test(String(name))) throw new Error(`[Elements] ${spec.type}: the editor of ${key} is one a property gives (defineProperty()), named like "acme.currency", not ${JSON.stringify(name)}`);
+      if (edits !== prop.kind.editor) throw new Error(`[Elements] ${spec.type}: the editor ${String(name)} edits a ${String(edits)}, and ${key} is a ${prop.kind.editor}`);
+    }
   }
   const section = spec.placement === "section";
   const paths = Object.keys(spec.props).map((key) => `props.${key}`);

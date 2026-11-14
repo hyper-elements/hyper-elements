@@ -6,7 +6,7 @@
 import { CONDITIONS, type ConditionName } from "./conditions";
 import { registryOf, type ComponentsOption, type Registry } from "./registry";
 import { styleGroup } from "./styles";
-import { ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
+import { propertyOf, ROOT_NAMES, type Category, type ComponentDefinition, type RootName, type StyleGroup, type Support, type SupportByTarget, type Target } from "./define";
 import type { EditorKind, JsonSchema } from "./kinds";
 import type { Json } from "./model";
 
@@ -18,6 +18,12 @@ export interface PropertyDescription {
   kind: string;
   accepts: string;
   editor: EditorKind;
+  /**
+   * The property of a team's own its prop is (`defineProperty()`), where it's one: its name (`"acme.currency"`), for an
+   * app with a control by that name, and its options as the prop has them, each its default where the prop gives none
+   * (a currency's `symbol`). An app with no control by the name shows `editor`, its kind's.
+   */
+  property?: { name: string; options: { readonly [name: string]: Json } };
   editable: boolean;
   required: boolean;
   default?: Json;
@@ -140,6 +146,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
   const within = (declared: readonly RootName[] | undefined) => (declared ? roots.filter((root) => declared.includes(root)) : roots);
   const properties: PropertyDescription[] = [];
   for (const [key, spec] of Object.entries(definition.props)) {
+    const property = propertyOf(spec);
     properties.push({
       path: `props.${key}`,
       label: spec.label,
@@ -147,6 +154,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       kind: spec.kind.name,
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,
+      ...(property ? { property } : {}),
       editable: spec.editable !== false,
       required: !!spec.required,
       ...(spec.default !== undefined ? { default: spec.default } : {}),

@@ -42,6 +42,7 @@
   "Text",
   "Video",
   "component",
+  "defineProperty",
   "defineTheme",
   "extendTheme",
   "formatDiagnostics",
@@ -54,7 +55,9 @@
  ],
  "./builder": [
   "fromDesign",
-  "toDesign"
+  "registerTools",
+  "toDesign",
+  "toolName"
  ],
  "./pdf": [
   "renderPdf",
