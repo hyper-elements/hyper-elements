@@ -109,7 +109,7 @@ export async function preview(html: string): Promise<EmailClientsResult<EmailHtm
 `;
 
 const REACT = ['react@18.3.1', 'react-dom@18.3.1'];
-const all = ['outlook.html', 'outlook-com.html', 'outlook-com.mac.html', 'gmail.html', 'gmail.mac.html', 'gmail-app.html', 'gmail-app.iphone.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.iphone.html', 'apple-mail.dark.html', 'apple-mail.iphone.dark.html', 'yahoo.html', 'yahoo.mac.html', 'yahoo.dark.html', 'yahoo.mac.dark.html', 'aol.html', 'aol.mac.html', 'aol.dark.html', 'aol.mac.dark.html'];
+const all = ['outlook.html', 'outlook-com.html', 'outlook-com.mac.html', 'gmail.html', 'gmail.mac.html', 'gmail-app.html', 'gmail-app.iphone.html', 'gmail-app-other.html', 'apple-mail.html', 'apple-mail.iphone.html', 'apple-mail.dark.html', 'apple-mail.iphone.dark.html', 'yahoo.html', 'yahoo.mac.html', 'yahoo.dark.html', 'yahoo.mac.dark.html', 'aol.html', 'aol.mac.html', 'aol.dark.html', 'aol.mac.dark.html', 'outlook-mac.html', 'outlook-mac.dark.html'];
 
 // 1. Beside the core it's for.
 const matched = project([packedCore, extension, ...REACT]);
@@ -143,7 +143,7 @@ for (const peer of ['@hyper-elements/react', 'react', 'react-dom']) {
     if (error?.code !== 'ENOENT') throw error;
   }
 }
-const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gmail-app.iphone', 'gmail-app-other', 'apple-mail.iphone', 'apple-mail.dark', 'apple-mail.iphone.dark', 'yahoo', 'yahoo.mac', 'yahoo.dark', 'yahoo.mac.dark', 'aol', 'aol.mac', 'aol.dark', 'aol.mac.dark'];
+const approximate = ['outlook', 'outlook-com.mac', 'gmail.mac', 'gmail-app', 'gmail-app.iphone', 'gmail-app-other', 'apple-mail.iphone', 'apple-mail.dark', 'apple-mail.iphone.dark', 'yahoo', 'yahoo.mac', 'yahoo.dark', 'yahoo.mac.dark', 'aol', 'aol.mac', 'aol.dark', 'aol.mac.dark', 'outlook-mac', 'outlook-mac.dark'];
 for (const format of ['esm', 'cjs']) {
   const out = alone[format];
   if (out.error) fail(`${format}, installed alone: ${out.error}: ${out.message}`);

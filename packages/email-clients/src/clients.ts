@@ -6,7 +6,7 @@
 import type { EmailClient, EmailClientInfo } from "./email-clients";
 
 /** The email clients there's a model to preview with. */
-export const PREVIEW_CLIENTS = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol"] as const satisfies readonly EmailClient[];
+export const PREVIEW_CLIENTS = ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol", "outlook-mac"] as const satisfies readonly EmailClient[];
 
 export type PreviewClient = (typeof PREVIEW_CLIENTS)[number];
 

@@ -4,6 +4,13 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **Outlook for Mac:** `outlook-mac` is previewed, at 820px like the other desktop clients, with a dark preview with
+  `dark: true`. Drawn with the models' `outlook-mac` (1.12.0): the email in a WebKit view on a Mac with Office, as Apple
+  Mail draws it, set 8px in, its unstyled text in Aptos 16px (the Aptos stand-in the package already ships), and
+  Outlook's own dark mode. Its previews are `approximate`.
+  - The caniemail-based checks for Outlook for Mac are as before.
+- Requires `@hyper-elements/email-client-models` 1.12.0.
+- A preview with its fonts inline is about 12 KB larger (the models' script).
 - **Yahoo Mail and AOL Mail:** `yahoo` and `aol` are previewed, as webmail read on Windows and on a Mac (`yahoo`,
   `yahoo.mac`, and so on), in their message panes, 758px and 869px wide, with a dark preview of each with `dark: true`.
   Drawn with the models' `yahoo` and `aol` (1.11.0).

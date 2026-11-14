@@ -65,7 +65,7 @@ const tables = (name: string): EmailClientInfo => ({ name, widths: {}, dark: fal
 export const EMAIL_CLIENTS: Readonly<Record<EmailClient, EmailClientInfo>> = {
   outlook: { name: "Classic Outlook", widths: { desktop: 820 }, dark: false, approximate: true, measured: captured("Outlook 16.0.20527 for Windows, 96 DPI", 0.85, 0.983) },
   "outlook-com": { name: "Outlook.com and new Outlook", widths: { desktop: 820 }, dark: false, approximate: false, measured: captured("Outlook on the web", 1, 1) },
-  "outlook-mac": tables("Outlook for Mac"),
+  "outlook-mac": { name: "Outlook for Mac", widths: { desktop: 820 }, dark: true, approximate: true, measured: null },
   "outlook-app": tables("Outlook app (iOS and Android)"),
   gmail: { name: "Gmail", widths: { desktop: 820 }, dark: false, approximate: false, measured: captured("Gmail on the web", 1, 1) },
   "gmail-app": { name: "Gmail app", widths: { phone: 380 }, dark: false, approximate: true, measured: null },
@@ -103,10 +103,10 @@ export const DEFAULT_EMAIL_CLIENTS: readonly EmailClient[] = ["outlook", "outloo
  * The previews (by id) that are approximate for HTML not built with Hyper Elements: those under 95% on such emails in
  * the latest benchmark (classic Outlook, the Gmail app, Apple Mail's dark mode), and those not measured on them (the
  * Gmail app with another account, Gmail and Outlook.com read on a Mac, Apple Mail and the Gmail app on an iPhone, and
- * Yahoo Mail and AOL Mail, each measured on two).
+ * Yahoo Mail, AOL Mail and Outlook for Mac, each measured on two).
  * A release that moves one over the line changes this list and the docs' numbers together.
  */
-export const APPROXIMATE_FOR_HTML: readonly string[] = ["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone", "yahoo", "yahoo.mac", "yahoo.dark", "yahoo.mac.dark", "aol", "aol.mac", "aol.dark", "aol.mac.dark"];
+export const APPROXIMATE_FOR_HTML: readonly string[] = ["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone", "yahoo", "yahoo.mac", "yahoo.dark", "yahoo.mac.dark", "aol", "aol.mac", "aol.dark", "aol.mac.dark", "outlook-mac", "outlook-mac.dark"];
 
 /** caniemail's page about a feature (its slug, as in the page's address). */
 export const caniemail = (feature: string): string => `https://www.caniemail.com/features/${feature}/`;

@@ -37,9 +37,9 @@ describe("renderInEmailClients(html)", () => {
     for (const preview of previews) expect(embedded(preview.html, "email-client-config")).toMatchObject({ id: preview.id, approximate: preview.approximate });
   });
 
-  it("marks exactly the 17 previews APPROXIMATE_FOR_HTML lists, and Apple Mail light, Gmail and Outlook.com on Windows not", async () => {
-    expect(APPROXIMATE_FOR_HTML).toEqual(["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone", "yahoo", "yahoo.mac", "yahoo.dark", "yahoo.mac.dark", "aol", "aol.mac", "aol.dark", "aol.mac.dark"]);
-    const { previews } = await renderInEmailClients(receipt, { emailClients: ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol"], dark: true });
+  it("marks exactly the 19 previews APPROXIMATE_FOR_HTML lists, and Apple Mail light, Gmail and Outlook.com on Windows not", async () => {
+    expect(APPROXIMATE_FOR_HTML).toEqual(["outlook", "gmail-app", "apple-mail.dark", "gmail-app-other", "gmail.mac", "outlook-com.mac", "apple-mail.iphone", "apple-mail.iphone.dark", "gmail-app.iphone", "yahoo", "yahoo.mac", "yahoo.dark", "yahoo.mac.dark", "aol", "aol.mac", "aol.dark", "aol.mac.dark", "outlook-mac", "outlook-mac.dark"]);
+    const { previews } = await renderInEmailClients(receipt, { emailClients: ["outlook", "outlook-com", "gmail", "gmail-app", "gmail-app-other", "apple-mail", "yahoo", "aol", "outlook-mac"], dark: true });
     const flags = Object.fromEntries(previews.map((p) => [p.id, p.approximate]));
     expect(flags).toEqual({
       outlook: true,
@@ -62,6 +62,8 @@ describe("renderInEmailClients(html)", () => {
       "aol.mac": true,
       "aol.dark": true,
       "aol.mac.dark": true,
+      "outlook-mac": true,
+      "outlook-mac.dark": true,
     });
   });
 

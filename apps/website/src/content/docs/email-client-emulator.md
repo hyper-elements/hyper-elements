@@ -18,6 +18,7 @@ Accuracy is how closely the emulator matches each real client for emails.
 |--------|------|----------|
 | Classic Outlook for Windows | `outlook` | 97% |
 | Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
+| Outlook for Mac, light and dark | `outlook-mac`, `outlook-mac.dark` | 98% |
 | Gmail on the web | `gmail`, `gmail.mac` | 99% |
 | Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
 | Gmail app on an iPhone | `gmail-app.iphone` | 97% |
@@ -182,7 +183,7 @@ Use the emulator in the loop, on every change; use a screenshot service, or a re
 | Option | What it does |
 |--------|--------------|
 | `emailClients` | The clients to emulate (default: `outlook`, `outlook-com`, `gmail`, `apple-mail`) |
-| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail on a Mac and an iPhone, Yahoo Mail and AOL Mail, today) |
+| `dark` | Also a dark-mode preview, for the clients that have one (Apple Mail on a Mac and an iPhone, Outlook for Mac, Yahoo Mail and AOL Mail, today) |
 | `widths` | The width a client's preview draws the email at, where it isn't the client's own: `{ "outlook-com": 540 }` for Outlook.com's reading pane beside the message list. Webmail matches media queries at the browser window's width, not the pane's, so a narrow pane keeps the email's desktop styles, as it does for its readers |
 | `computers` | Webmail draws with the reader's computer's fonts. Outlook.com, Gmail, Yahoo Mail and AOL Mail on the web are each previewed on Windows (`outlook-com`, `gmail`, `yahoo`, `aol`) and on a Mac (`outlook-com.mac`, `gmail.mac`, `yahoo.mac`, `aol.mac`). `computers: ["windows"]` keeps one |
 | `fonts` | `"url"` (the default) loads the open fonts the previews draw with from a CDN; `"inline"` puts them in each preview, so it draws offline |
@@ -217,7 +218,7 @@ const { diagnostics } = validate(welcome, { plugins: [await emailClients()] });
 // info email/outlook-degraded … borderRadius on this Column in classic Outlook: square corners [outlook]
 ```
 
-The checks cover more clients than the emulator (Outlook for Mac, Samsung Email and others, from caniemail's tables).
+The checks cover more clients than the emulator (the Outlook app, Samsung Email and others, from caniemail's tables).
 
 ## Common questions
 
