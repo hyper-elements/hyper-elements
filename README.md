@@ -28,6 +28,12 @@
 
 Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed components. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
 
+> **AI agents:** to preview or test an email in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail (a template or any
+> HTML email), follow the [email-testing skill](./skills/email-testing/SKILL.md)
+> ([hyperelements.dev/skills/email-testing.md](https://www.hyperelements.dev/skills/email-testing.md)). To write
+> templates, follow the [hyper-elements skill](./skills/hyper-elements/SKILL.md). Install both with
+> `npx skills add hyper-elements/hyper-elements`.
+
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
 - **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
 - **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
@@ -146,6 +152,9 @@ The same loop runs from the shell, with no script, using [`@hyper-elements/cli`]
 ## Preview and test emails in Outlook and Gmail locally
 
 `@hyper-elements/email-clients` is a free JavaScript and TypeScript library for checking existing HTML emails and previewing Outlook, Gmail and Apple Mail locally. Give it the complete HTML from MJML, React Email, an email builder, or a hand-written email. No React is required, and the email is never sent or uploaded.
+
+An agent can do all of this from the [email-testing skill](./skills/email-testing/SKILL.md): the commands, each client's
+screenshot, and what it changed.
 
 ```bash
 npm install @hyper-elements/email-clients
