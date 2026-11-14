@@ -1,9 +1,6 @@
 ---
-import Base from "../../layouts/Base.astro";
-import CodeBlock from "../../components/CodeBlock.astro";
-import Cmd from "../../components/Cmd.astro";
+import ComparePage, { type Race, type Row } from "../../components/ComparePage.astro";
 import { site } from "../../lib/site";
-import { template } from "../../lib/examples";
 // The same email in both: a React Email template, and what `npx @hyper-elements/migrate` wrote for it.
 import before from "../../generated/migrate/before.tsx?raw";
 import after from "../../generated/migrate/after.tsx?raw";
@@ -12,25 +9,14 @@ import after from "../../generated/migrate/after.tsx?raw";
 // and Hyper Elements 0.4 on November 14, 2026. React Email ships often: check its docs and its preview server's
 // source (@react-email/ui: the toolbar's compatibility checker, linter and spam score) when either side changes.
 
-// For search: the page answers "react email alternative" and "react email vs". The title names the brand already, so
-// it goes out with no " · Hyper Elements" after it.
-const title = "Hyper Elements vs React Email";
-const metaTitle = "React Email alternative: Hyper Elements vs React Email";
-const description =
-  "Looking for a React Email alternative? Compare Hyper Elements and React Email side by side: layout, checks, email client previews, themes and agent speed.";
-
 // Agent benchmark (/docs/benchmark, 2026-11-08): the same five emails, 16 runs each, the same checks. Lower is better.
-const bench = "/docs/benchmark";
-const race = [
+const race: Race[] = [
   { k: "Time to a passing email", x: "2.6× faster", he: 33, re: 86, fmt: (n: number) => `${n}s` },
   { k: "Output tokens the agent wrote", x: "3.4× fewer", he: 1831, re: 6215, fmt: (n: number) => n.toLocaleString("en-US") },
   { k: "Turns", x: "Half as many", he: 9, re: 18, fmt: (n: number) => String(n) },
 ];
-const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%`;
-
-// At a glance: "yes", "part" (with a short note) or "no" for each side. Hyper Elements' wins first.
-type Mark = "yes" | "part" | "no";
-const matrix: { k: string; he: Mark; heNote?: string; re: Mark; reNote?: string }[] = [
+// At a glance: Hyper Elements' wins first.
+const matrix: Row[] = [
   { k: "Accessibility lint", he: "yes", heNote: "18 rules", re: "part", reNote: "Alt text" },
   { k: "Email client previews", he: "yes", heNote: "7 clients, free", re: "no" },
   { k: "Email client support checks", he: "yes", heNote: "render(), CLI, CI", re: "part", reNote: "Preview window" },
@@ -48,55 +34,6 @@ const matrix: { k: string; he: Mark; heNote?: string; re: Mark; reNote?: string 
   { k: "Any email provider", he: "yes", re: "yes" },
   { k: "Open source, MIT", he: "yes", re: "yes" },
 ];
-const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No" };
-
-// On brand: one email (examples/brand/announcement.tsx) rendered with two themes (examples/showcase/brand-*.tsx).
-const brands = [
-  { name: "North", theme: "north", img: "/generated/compare/brand-north.jpg", w: 620, h: 470 },
-  { name: "Bloom", theme: "bloom", img: "/generated/compare/brand-bloom.jpg", w: 620, h: 470 },
-];
-const brandCode = `<Email theme={north}>
-  <Column style={{ apply: ["card"] }}>
-    <Heading level={1}>The winter collection…</Heading>
-    <Text>Everything you asked for…</Text>
-    <Button href="…">Shop the drop</Button>
-    <Button href="…" variant="secondary">
-      See the lookbook
-    </Button>
-  </Column>
-</Email>`;
-const brandParts = [
-  { t: "Tokens", d: "Colors, fonts, sizes, spacing and corners, checked when the template is read" },
-  { t: "Defaults and variants", d: "Every Button, Heading and Divider styled once, with named versions" },
-  { t: "Everywhere", d: "The same theme brands emails, pages, PDFs and images" },
-];
-
-// One template, four outputs: real output of the site's templates, as images (scripts/compare-previews.mjs; the
-// Canvas is its own PNG from generate), so their copy isn't read as this page's text.
-const outputs = [
-  { kind: "Email", ex: template("oyen-launch"), img: "/generated/compare/oyen-launch.jpg", w: 620, h: 589, href: "/docs/outputs/email" },
-  { kind: "Web page", ex: template("casa-albero-page"), img: "/generated/compare/casa-albero-page.jpg", w: 900, h: 855, href: "/docs/outputs/page" },
-  { kind: "PDF", ex: template("pell-ashby-invoice"), img: "/generated/compare/pell-ashby-invoice.jpg", w: 860, h: 817, href: "/docs/outputs/pdf" },
-  { kind: "Image", ex: template("fernway-spring-sale"), img: "/generated/templates/fernway-spring-sale.png", w: 1080, h: 1080, href: "/docs/outputs/image" },
-];
-
-// The email client emulator: each client and how closely it matches the real one (/docs/email-client-emulator).
-const emulatorClients = [
-  { name: "Classic Outlook", acc: "97%" },
-  { name: "Outlook.com", acc: "99%" },
-  { name: "Gmail", acc: "99%" },
-  { name: "Gmail app", acc: "98%" },
-  { name: "Apple Mail", acc: "98%" },
-  { name: "Yahoo Mail", acc: "99%" },
-  { name: "AOL Mail", acc: "99%" },
-];
-const emulatorPoints = [
-  { t: "Free", d: "No account, key or limit" },
-  { t: "Local", d: "Nothing sent or uploaded" },
-  { t: "Light and dark", d: "Desktop and phones" },
-  { t: "Fast", d: "As long as a render" },
-];
-
 // Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
 const faq = [
   {
@@ -133,380 +70,27 @@ const faq = [
   },
 ];
 
-const url = new URL("/compare/react-email", site.url).href;
-const jsonLd = [
-  { "@context": "https://schema.org", "@type": "WebPage", name: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
-  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
-];
 ---
-<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd}>
-  <section class="c-hero">
-    <div class="wrap c-hero-inner">
-      <h1 class="h-page">Hyper Elements vs React&nbsp;Email</h1>
-      <p class="lede">Both write emails in React. Hyper Elements also lays them out, checks them, shows them in every email client, and renders them on-brand.</p>
-      <div class="c-cta">
-        <a class="btn btn-primary" href="/docs/quickstart">Get started <span class="arrow">→</span></a>
-        <a class="btn btn-ghost" href="/migrate">Migrate from React Email</a>
-      </div>
-    </div>
-
-    {/* The scoreboard: the agent benchmark as bars, Hyper Elements' bar lit. */}
-    <div class="wrap">
-      <a class="board reveal" href={bench} aria-label="Agent benchmark: Hyper Elements and React Email">
-        <div class="board-head">
-          <span class="board-title">Same five emails, built by a coding agent</span>
-          <span class="legend" aria-hidden="true"><span class="lg he"><i></i>Hyper Elements</span><span class="lg re"><i></i>React Email</span></span>
-        </div>
-        <div class="race">
-          {race.map((r) => {
-            const max = Math.max(r.he, r.re);
-            return (
-              <div class="race-row">
-                <div class="race-k"><span>{r.k}</span><b>{r.x}</b></div>
-                <div class="race-bars">
-                  <span class="rb he"><span class="rb-bar"><i style={pct(r.he, max)}></i></span><span class="rb-n"><span class="sr">Hyper Elements </span>{r.fmt(r.he)}</span></span>
-                  <span class="rb re"><span class="rb-bar"><i style={pct(r.re, max)}></i></span><span class="rb-n"><span class="sr">React Email </span>{r.fmt(r.re)}</span></span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <p class="board-note">Medians of 16 runs each, with Claude Code. Every Hyper Elements run passed the first check; 12 of 16 React Email runs did. <span class="board-more">The benchmark →</span></p>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">Hyper Elements vs React Email at a glance</h2>
-        <p class="sec-sub">What you get with each, side by side, if you’re weighing a React Email alternative.</p>
-      </div>
-      <div class="mx reveal" role="table" aria-label="Hyper Elements and React Email, feature by feature">
-        <div class="mx-row mx-head" role="row">
-          <span role="columnheader"><span class="sr">Feature</span></span>
-          <span class="mx-col he" role="columnheader"><span class="he-dot" aria-hidden="true"></span>Hyper Elements</span>
-          <span class="mx-col" role="columnheader">React Email</span>
-        </div>
-        {matrix.map((m) => (
-          <div class="mx-row" role="row">
-            <span class="mx-k" role="rowheader">{m.k}</span>
-            <span class="mx-c he" role="cell">
-              <span class:list={["mk", m.he]} title={label[m.he]}><span class="sr">{label[m.he]}</span></span>
-              {m.heNote && <span class="mx-note">{m.heNote}</span>}
-            </span>
-            <span class="mx-c" role="cell">
-              <span class:list={["mk", m.re]} title={label[m.re]}><span class="sr">{label[m.re]}</span></span>
-              {m.reNote && <span class="mx-note">{m.reNote}</span>}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="emu reveal">
-        <div class="emu-copy">
-          <p class="eyebrow ok">Included free</p>
-          <h2 class="emu-title">See it in Outlook, Gmail, Apple Mail and Yahoo Mail before you send</h2>
-          <p class="emu-sub">React Email lists CSS a client doesn't support. Hyper Elements shows you what the client does with it.</p>
-          <ul class="emu-points">
-            {emulatorPoints.map((p) => <li><b>{p.t}</b><span>{p.d}</span></li>)}
-          </ul>
-          <div class="c-cta left">
-            <a class="btn btn-primary btn-sm" href="/email-testing">Try it in your browser <span class="arrow">→</span></a>
-            <a class="btn btn-ghost btn-sm" href="/docs/email-client-emulator">Read the docs</a>
-          </div>
-        </div>
-        <div class="emu-side">
-          <a class="emu-stage" href="/email-testing" aria-label="Try the email client emulator: classic Outlook, Apple Mail, the Gmail app and more">
-            <figure class="emu-win emu-back"><img src="/generated/email-clients/launch-apple-mail.png" width="820" height="985" alt="" loading="lazy" decoding="async" /><figcaption>Apple Mail</figcaption></figure>
-            <figure class="emu-win emu-front"><img src="/generated/email-clients/launch-outlook.png" width="820" height="989" alt="" loading="lazy" decoding="async" /><figcaption>Classic Outlook</figcaption></figure>
-            <figure class="emu-phone"><img src="/generated/email-clients/launch-gmail-app.png" width="380" height="997" alt="" loading="lazy" decoding="async" /><figcaption>Gmail app</figcaption></figure>
-          </a>
-          <ul class="emu-clients" aria-label="Email clients and how closely each preview matches the real client">
-            {emulatorClients.map((c) => <li><span>{c.name}</span><b>{c.acc}</b></li>)}
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">On brand, in every email</h2>
-        <p class="sec-sub">Write your brand once as a theme. The template names no colors or fonts; swap the theme and the same email is someone else's.</p>
-      </div>
-      <div class="brand-shots reveal">
-        {brands.map((b) => (
-          <figure class="brand-shot">
-            <img src={b.img} width={b.w} height={b.h} alt={`The same announcement email with the ${b.name} theme`} loading="lazy" decoding="async" />
-            <figcaption><code>theme=&#123;{b.theme}&#125;</code><span>{b.name}</span></figcaption>
-          </figure>
-        ))}
-      </div>
-      <div class="brand-row reveal">
-        <div class="brand-code">
-          <CodeBlock code={brandCode} file="emails/announcement.tsx" />
-        </div>
-        <div class="brand-side">
-          <ul class="brand-parts">
-            {brandParts.map((p) => <li><b>{p.t}</b><span>{p.d}</span></li>)}
-          </ul>
-          <p class="brand-re"><span class="mk part" aria-hidden="true"></span><span>React Email: a Tailwind config on each &lt;Tailwind&gt; wrapper, with no component variants.</span></p>
-          <a class="brand-more" href="/docs/themes">How themes work →</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">One template, four outputs</h2>
-        <p class="sec-sub">React Email writes emails. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image.</p>
-      </div>
-      <div class="outs">
-        {outputs.map((o) => (
-          <a class="out reveal" href={o.href}>
-            <img class="out-img" src={o.img} width={o.w} height={o.h} alt={`${o.ex.title}, a Hyper Elements ${o.kind === "Image" ? "image" : o.kind === "PDF" ? "PDF" : o.kind.toLowerCase()}`} loading="lazy" decoding="async" />
-            <span class="out-label"><span class="out-root">&lt;{o.ex.root}&gt;</span><b>{o.kind}</b></span>
-          </a>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">The same email in React Email and Hyper Elements</h2>
-        <p class="sec-sub">No margins to juggle: the parent's gap spaces the blocks.</p>
-      </div>
-      <div class="ba reveal">
-        <div class="ba-side">
-          <p class="ba-label"><span class="ba-name"><span class="he-dot" aria-hidden="true"></span>Hyper Elements</span> <a class="ba-stats now" href={bench} title="Median time and output tokens for a coding agent to write a passing email with Hyper Elements"><span>{race[0].fmt(race[0].he)}</span><span>{race[1].fmt(race[1].he)} tokens</span></a></p>
-          <CodeBlock code={after.trim()} file="emails/welcome.tsx" />
-        </div>
-        <div class="ba-side">
-          <p class="ba-label"><span class="ba-name re">React Email</span> <a class="ba-stats was" href={bench} title="Median time and output tokens for a coding agent to write a passing email with React Email"><span>{race[0].fmt(race[0].re)}</span><span>{race[1].fmt(race[1].re)} tokens</span></a></p>
-          <CodeBlock code={before.trim()} file="emails/welcome.tsx" />
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap faq-wrap">
-      <h2 class="h-section reveal">Questions about switching from React Email</h2>
-      <div class="faq reveal">
-        {faq.map((f, i) => (
-          <details class="faq-item" open={i === 0}>
-            <summary>{f.q}</summary>
-            <p>{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section final">
-    <div class="wrap final-inner reveal">
-      <h2 class="h-section">Switch from React Email in one command</h2>
-      <p class="sec-sub">Converts every template, checks each against the original, and writes nothing until you ask.</p>
-      <Cmd text={`${site.migrate} src/emails`} />
-      <div class="c-cta">
-        <a class="btn btn-primary" href="/migrate">How migrating works <span class="arrow">→</span></a>
-        <a class="btn btn-ghost" href="/docs/quickstart">Start from scratch</a>
-      </div>
-    </div>
-  </section>
-</Base>
-
-<style>
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .he-dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); flex: none; }
-  .eyebrow { margin: 0; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
-  .eyebrow.ok { color: var(--ok); }
-  .sec-head { text-align: center; margin: 0 auto 48px; max-width: 680px; }
-  .sec-head .h-section { margin: 0; }
-  .sec-sub { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
-  .c-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; }
-  .c-cta.left { justify-content: flex-start; }
-
-  /* Hero, with a glow behind the scoreboard. */
-  .c-hero { position: relative; padding: clamp(40px, 6vh, 80px) 0 0; }
-  .c-hero::before { content: ""; position: absolute; inset: 160px 0 auto; height: 520px; pointer-events: none; background: radial-gradient(50% 60% at 50% 40%, color-mix(in srgb, var(--ok) 12%, transparent), transparent 70%); }
-  .c-hero-inner { position: relative; display: grid; justify-items: center; text-align: center; gap: 14px; grid-template-columns: minmax(0, 1fr); }
-  .c-hero .h-page { margin: 0; }
-  .c-hero .lede { margin: 0 auto; max-width: 56ch; }
-  .c-hero .c-cta { margin-top: 10px; }
-
-  /* The scoreboard. */
-  .board { position: relative; display: block; margin-top: 56px; padding: 32px; border: 1px solid var(--line-2); border-radius: 18px; background: linear-gradient(180deg, var(--bg-2), var(--bg-1)); box-shadow: var(--shadow); color: inherit; text-decoration: none; transition: border-color 0.2s; }
-  .board:hover, .board:focus-visible { border-color: var(--line-3); }
-  .board-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; margin-bottom: 28px; }
-  .board-title { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; }
-  .legend { display: flex; gap: 18px; font-size: 13px; color: var(--text-2); }
-  .lg { display: inline-flex; align-items: center; gap: 8px; }
-  .lg i { width: 14px; height: 8px; border-radius: 0 4px 4px 0; }
-  .lg.he i { background: var(--ok); }
-  .lg.re i { background: var(--text-3); opacity: 0.5; }
-  .race { display: grid; gap: 26px; }
-  .race-row { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 28px; align-items: center; }
-  .race-k { display: grid; gap: 2px; }
-  .race-k span { font-size: 14px; color: var(--text-2); }
-  .race-k b { font-size: 30px; font-weight: 600; letter-spacing: -0.04em; line-height: 1.1; color: var(--text); }
-  .race-bars { display: grid; gap: 8px; min-width: 0; }
-  .rb { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .rb-bar { flex: 1 1 auto; display: flex; height: 14px; }
-  .rb-bar i { display: block; height: 100%; border-radius: 0 7px 7px 0; }
-  .rb.he .rb-bar i { background: linear-gradient(90deg, color-mix(in srgb, var(--ok) 55%, transparent), var(--ok)); }
-  .rb.re .rb-bar i { background: var(--text-3); opacity: 0.45; }
-  .rb-n { flex: none; width: 52px; font: 500 13px var(--mono); font-variant-numeric: tabular-nums; color: var(--text-2); }
-  .rb.he .rb-n { color: var(--text); }
-  .board-note { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.55; color: var(--text-3); }
-  .board-more { color: var(--text-2); white-space: nowrap; }
-  .board:hover .board-more { color: var(--text); }
-
-  /* At a glance: a check matrix, the Hyper Elements column lit. */
-  .mx { max-width: 920px; margin: 0 auto; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); overflow: hidden; }
-  .mx-row { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr); border-top: 1px solid var(--line); }
-  .mx-row > * { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 13px 22px; }
-  .mx-head { border-top: 0; }
-  .mx-head > * { padding-top: 18px; padding-bottom: 18px; }
-  .mx-col { font-size: 14px; font-weight: 600; color: var(--text-2); }
-  .mx-col.he { color: var(--text); }
-  .mx-k { font-size: 15px; color: var(--text); }
-  .mx-c.he { background: color-mix(in srgb, var(--ok) 6%, transparent); border-left: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); border-right: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); }
-  .mx-head .mx-col.he { background: color-mix(in srgb, var(--ok) 10%, transparent); border-left: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); border-right: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); }
-  .mx-note { font-size: 13px; color: var(--text-3); }
-  .mx-c.he .mx-note { color: var(--text-2); }
-  /* The marks: a filled check, a half disc, a dash. */
-  .mk { position: relative; flex: none; width: 22px; height: 22px; border-radius: 999px; }
-  .mk.yes { background: color-mix(in srgb, var(--ok) 18%, transparent); }
-  .mk.yes::after { content: ""; position: absolute; left: 7px; top: 4px; width: 5px; height: 10px; border: solid var(--ok); border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  .mx-c:not(.he) .mk.yes { background: var(--hover-2); }
-  .mx-c:not(.he) .mk.yes::after { border-color: var(--text-2); }
-  .mk.part { border: 2px solid var(--text-3); background: linear-gradient(90deg, var(--text-3) 50%, transparent 50%); width: 18px; height: 18px; margin: 2px; }
-  .mk.no::after { content: ""; position: absolute; left: 6px; right: 6px; top: 10px; height: 2px; border-radius: 2px; background: var(--text-3); opacity: 0.6; }
-
-  /* The emulator. */
-  .emu { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 40px; padding: 40px; border: 1px solid var(--line-2); border-radius: 18px; background: radial-gradient(80% 90% at 100% 0%, color-mix(in srgb, var(--ok) 10%, transparent), transparent 60%), var(--bg-1); }
-  .emu-copy { display: flex; flex-direction: column; gap: 18px; min-width: 0; justify-content: center; }
-  .emu-title { margin: 0; font-size: clamp(28px, 3.2vw, 38px); line-height: 1.08; letter-spacing: -0.04em; font-weight: 600; }
-  .emu-sub { margin: 0; color: var(--text-2); font-size: 17px; line-height: 1.5; }
-  .emu-points { list-style: none; margin: 4px 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-  .emu-points li { display: grid; gap: 2px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
-  .emu-points b { font-size: 15px; font-weight: 600; }
-  .emu-points span { font-size: 13px; color: var(--text-2); }
-  .emu-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-  .emu-stage { position: relative; display: block; flex: 1 1 auto; min-height: 360px; border-radius: 12px; overflow: hidden; color: inherit; text-decoration: none; }
-  .emu-stage figure { position: absolute; margin: 0; overflow: hidden; background: #fff; border: 1px solid var(--line-2); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.6); }
-  .emu-stage img { display: block; width: 100%; height: auto; }
-  .emu-stage figcaption { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; background: rgba(10, 10, 10, 0.78); color: #ededed; font: 500 11px/1.4 var(--sans); letter-spacing: 0.01em; }
-  .emu-win { width: 66%; border-radius: 8px; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
-  .emu-back { right: 0; top: 0; height: 320px; opacity: 0.55; transform: scale(0.94); transform-origin: top right; }
-  .emu-front { left: 0; top: 34px; height: 330px; transition: transform 0.25s; }
-  .emu-phone { right: 4%; top: 56px; width: 27%; height: 300px; border-radius: 16px; border-width: 4px !important; border-color: #2a2a2a !important; transition: transform 0.25s; -webkit-mask-image: linear-gradient(#000 78%, transparent); mask-image: linear-gradient(#000 78%, transparent); }
-  .emu-stage:hover .emu-front, .emu-stage:focus-visible .emu-front { transform: translateY(-4px); }
-  .emu-stage:hover .emu-phone, .emu-stage:focus-visible .emu-phone { transform: translateY(-6px); }
-  .emu-stage:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-  .emu-clients { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
-  .emu-clients li { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg); font-size: 13px; color: var(--text); }
-  .emu-clients b { font: 500 12px var(--mono); color: var(--ok); }
-
-  /* On brand: the template and the theme's parts, beside the same email in two themes. */
-  .brand-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
-  .brand-shot { margin: 0; min-width: 0; border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: var(--bg-1); box-shadow: var(--shadow); }
-  /* The frame keeps the email's own proportions (620 × 470), so the whole email shows at any width. */
-  .brand-shot img { display: block; width: 100%; height: auto; background: #fff; }
-  .brand-shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 16px; }
-  .brand-shot code { font: 500 12.5px var(--mono); color: var(--ok); background: none; border: 0; padding: 0; }
-  .brand-shot span { font-size: 15px; font-weight: 600; }
-  .brand-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 20px; }
-  .brand-code, .brand-side { min-width: 0; }
-  .brand-side { display: flex; flex-direction: column; gap: 10px; }
-  .brand-parts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-  .brand-parts li { display: grid; gap: 2px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-1); }
-  .brand-parts b { font-size: 15px; font-weight: 600; }
-  .brand-parts span { font-size: 14px; line-height: 1.45; color: var(--text-2); }
-  .brand-re { display: flex; align-items: center; gap: 10px; margin: 6px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--text-3); }
-  .brand-more { font-size: 14px; color: var(--text-2); text-decoration: none; }
-  .brand-more:hover { color: var(--text); }
-
-  /* One template, four outputs. */
-  .outs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-  .out { display: block; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
-  .out:hover, .out:focus-visible { border-color: var(--line-3); transform: translateY(-3px); }
-  .out-img { display: block; width: 100%; height: 260px; object-fit: cover; object-position: top; border-bottom: 1px solid var(--line); background: #fff; }
-  .out-label { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 14px; }
-  .out-label b { font-size: 15px; font-weight: 600; }
-  .out-root { font: 500 12px var(--mono); color: var(--ok); }
-
-  /* The same email in both. */
-  .ba { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  .ba-side { min-width: 0; }
-  .ba-side :global(pre) { max-height: 440px; }
-  .ba-label { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin: 0 0 14px; }
-  .ba-name { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 650; letter-spacing: -0.025em; color: var(--text); }
-  .ba-name.re { color: var(--text-2); }
-  /* The agent benchmark's medians for each, as on /migrate: green for Hyper Elements, red for React Email. */
-  .ba-stats { display: inline-flex; gap: 6px; text-decoration: none; }
-  .ba-stats span { height: 28px; padding: 0 12px; display: inline-grid; place-items: center; border-radius: 999px; font: 600 13.5px var(--mono); font-variant-numeric: tabular-nums; border: 1px solid color-mix(in srgb, currentColor 35%, transparent); background: color-mix(in srgb, currentColor 10%, transparent); }
-  .ba-stats.now { color: var(--ok); }
-  .ba-stats.was { color: var(--err); }
-
-  /* Questions, folded. */
-  .faq-wrap { max-width: 860px; }
-  .faq-wrap > .h-section { text-align: center; margin: 0 0 36px; }
-  .faq { border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); overflow: hidden; }
-  .faq-item + .faq-item { border-top: 1px solid var(--line); }
-  .faq-item summary { position: relative; list-style: none; cursor: pointer; padding: 20px 56px 20px 24px; font-size: 16.5px; font-weight: 600; letter-spacing: -0.01em; }
-  .faq-item summary::-webkit-details-marker { display: none; }
-  .faq-item summary::after { content: "+"; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font: 400 22px var(--mono); color: var(--text-3); transition: transform 0.2s; }
-  .faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); }
-  .faq-item summary:hover { background: var(--hover); }
-  .faq-item p { margin: 0; padding: 0 24px 22px; color: var(--text-2); font-size: 15.5px; line-height: 1.6; }
-
-  .final { text-align: center; }
-  .final-inner { display: grid; justify-items: center; gap: 20px; grid-template-columns: minmax(0, 1fr); }
-  .final-inner .h-section, .final-inner .sec-sub { margin: 0; }
-  .final-inner :global(.cmd) { max-width: 100%; min-width: 0; }
-
-  @media (max-width: 1000px) {
-    .race-row { grid-template-columns: 200px minmax(0, 1fr); gap: 20px; }
-    .emu, .ba, .brand-row { grid-template-columns: minmax(0, 1fr); }
-    .emu { padding: 28px; gap: 28px; }
-    .outs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-  @media (max-width: 640px) {
-    .sec-head { margin-bottom: 32px; }
-    .board { padding: 20px; margin-top: 40px; }
-    .race-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-    .race-k b { font-size: 24px; }
-    .mx-row { grid-template-columns: minmax(0, 1fr) 92px 92px; }
-    .mx-row > * { padding: 12px 10px; }
-    .mx-row > .mx-k { padding-left: 14px; font-size: 14px; }
-    .mx-c { flex-direction: column; justify-content: center; gap: 4px; text-align: center; }
-    .mx-col { justify-content: center; font-size: 12px; text-align: center; }
-    .mx-col .he-dot { display: none; }
-    .mx-note { font-size: 11.5px; line-height: 1.3; }
-    .emu { padding: 22px; }
-    .emu-points { grid-template-columns: minmax(0, 1fr); }
-    .emu-stage { min-height: 280px; }
-    .emu-back { height: 240px; }
-    .emu-front { height: 250px; }
-    .emu-phone { height: 230px; width: 32%; }
-    .outs { grid-template-columns: minmax(0, 1fr); }
-    .brand-shots { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-    .faq-item summary { padding: 18px 48px 18px 18px; font-size: 15.5px; }
-    .faq-item summary::after { right: 18px; }
-    .faq-item p { padding: 0 18px 18px; }
-    .c-cta { width: 100%; }
-    .c-cta .btn { width: 100%; }
-  }
-</style>
+<ComparePage
+  path="/compare/react-email"
+  name="React Email"
+  metaTitle="React Email alternative: Hyper Elements vs React Email"
+  description="Looking for a React Email alternative? Compare Hyper Elements and React Email side by side: layout, checks, email client previews, themes and agent speed."
+  lede="Both write emails in React. Hyper Elements also lays them out, checks them, shows them in every email client, and renders them on-brand."
+  ctas={[{ label: "Get started", href: "/docs/quickstart" }, { label: "Migrate from React Email", href: "/migrate" }]}
+  race={race}
+  raceNote="Medians of 16 runs each, with Claude Code. Every Hyper Elements run passed the first check; 12 of 16 React Email runs did."
+  matrix={matrix}
+  emuSub="React Email lists CSS a client doesn't support. Hyper Elements shows you what the client does with it."
+  brandNote="React Email: a Tailwind config on each <Tailwind> wrapper, with no component variants."
+  outputsSub="React Email writes emails. Change a Hyper Elements template's root and the same content becomes a page, a PDF or an image."
+  code={{ sub: "No margins to juggle: the parent's gap spaces the blocks.", he: { code: after, file: "emails/welcome.tsx" }, other: { code: before, file: "emails/welcome.tsx" } }}
+  faqTitle="Questions about switching from React Email"
+  faq={faq}
+  final={{
+    title: "Switch from React Email in one command",
+    sub: "Converts every template, checks each against the original, and writes nothing until you ask.",
+    cmd: `${site.migrate} src/emails`,
+    ctas: [{ label: "How migrating works", href: "/migrate" }, { label: "Start from scratch", href: "/docs/quickstart" }],
+  }}
+/>
