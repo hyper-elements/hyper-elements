@@ -65,7 +65,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
 | `/compare/react-email`, `/compare/mjml` | `src/pages/compare/*.astro`: Hyper Elements and one other tool, side by side. Each page gives the other tool's facts to `src/components/ComparePage.astro`, which draws the page; add a new page to its `comparisons` list |
-| `/alternatives/react-email` | `src/pages/alternatives/react-email.astro`: React Email's alternatives as a list, linking to each comparison page |
+| `/alternatives/react-email`, `/alternatives/litmus` | `src/pages/alternatives/*.astro`: one tool's alternatives as a list. Each page gives the tools, the table, the questions and its own visual to `src/components/AlternativesPage.astro` |
 | `/blog`, `/blog/<slug>` | Developer articles from `src/content/blog/*.md` |
 | `/llms.txt`, `/llms-full.txt` | Every docs page, component and blog tutorial, for AI agents |
 

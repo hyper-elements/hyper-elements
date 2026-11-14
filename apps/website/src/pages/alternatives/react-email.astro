@@ -1,6 +1,5 @@
 ---
-import Base from "../../layouts/Base.astro";
-import Cmd from "../../components/Cmd.astro";
+import AlternativesPage, { type MatrixRow, type Tool } from "../../components/AlternativesPage.astro";
 import { site } from "../../lib/site";
 
 // "React Email alternatives": a list page, the format searches for alternatives favor, linking to each comparison
@@ -9,12 +8,7 @@ import { site } from "../../lib/site";
 // Elements 0.4. React Email's agent skill is resend/react-email (Resend's docs). Maizzle and jsx-email weren't in the
 // agent benchmark, so the chart doesn't show them.
 
-const title = "React Email alternatives";
-const metaTitle = "React Email alternatives: 4 options compared";
-const description =
-  "The best React Email alternatives, compared: Hyper Elements, MJML, Maizzle and jsx-email. What each one is, when to pick it, and how fast a coding agent writes an email with it.";
-
-const tools = [
+const tools: Tool[] = [
   {
     id: "hyper-elements",
     name: "Hyper Elements",
@@ -77,12 +71,11 @@ const maxS = Math.max(...race.map((r) => r.s));
 const maxT = Math.max(...race.map((r) => r.tokens));
 const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%`;
 
-// Side by side. "na" is a row that doesn't apply to that tool (React Email moving from itself).
-type Mark = "yes" | "part" | "no" | "na";
+// Side by side.
 const cols = ["Hyper Elements", "React Email", "MJML", "Maizzle", "jsx-email"];
 const writtenIn = ["React and TypeScript", "React", "MJML markup", "Vue and Tailwind", "React"];
-const matrix: { k: string; m: [Mark, string?][] }[] = [
-  { k: "Email client previews", m: [["yes", "7 clients"], ["no"], ["no"], ["no"], ["no"]] },
+const matrix: MatrixRow[] = [
+  { k: "Email client previews", m: [["yes", "Outlook, Gmail and more"], ["no"], ["no"], ["no"], ["no"]] },
   { k: "Client support checks in CI", m: [["yes"], ["part", "Preview window"], ["no"], ["part", "Dev server"], ["yes", "email check"]] },
   { k: "Accessibility lint", m: [["yes", "18 rules"], ["part", "Alt text"], ["no"], ["part", "Alt text"], ["no"]] },
   { k: "Brand theme with tokens", m: [["yes"], ["part", "Tailwind"], ["part", "mj-attributes"], ["part", "Tailwind"], ["part", "Tailwind"]] },
@@ -94,8 +87,6 @@ const matrix: { k: string; m: [Mark, string?][] }[] = [
   { k: "Web pages, PDFs and images", m: [["yes", "From one template"], ["no"], ["no"], ["no"], ["no"]] },
   { k: "Open source, MIT", m: [["yes"], ["yes"], ["yes"], ["yes"], ["yes"]] },
 ];
-const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No", na: "Doesn't apply" };
-
 // Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
 const faq = [
   {
@@ -104,7 +95,7 @@ const faq = [
   },
   {
     q: "Are the React Email alternatives free?",
-    a: "Yes. Hyper Elements, MJML, Maizzle and jsx-email are all open source under the MIT license, like React Email. Hyper Elements' email client emulator, which previews Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail, is free too.",
+    a: "Yes. Hyper Elements, MJML, Maizzle and jsx-email are all open source under the MIT license, like React Email. Hyper Elements' email client emulator, which previews Outlook, Gmail, Apple Mail, Yahoo Mail and more, is free too.",
   },
   {
     q: "Can I move my React Email templates automatically?",
@@ -120,193 +111,65 @@ const faq = [
   },
   {
     q: "Can any of them preview emails in Outlook and Gmail?",
-    a: "Hyper Elements comes with an email client emulator that previews classic Outlook, Outlook.com, Gmail, the Gmail app, Apple Mail, Yahoo Mail and AOL Mail on your machine. React Email, Maizzle and jsx-email check CSS support against caniemail's tables but don't preview the email in each client, and MJML does neither. The emulator also takes any HTML email, so you can preview emails built with the others too.",
+    a: "Hyper Elements comes with an email client emulator that previews classic Outlook, Outlook.com, Gmail, Apple Mail, Yahoo Mail and more on your machine. React Email, Maizzle and jsx-email check CSS support against caniemail's tables but don't preview the email in each client, and MJML does neither. The emulator also takes any HTML email, so you can preview emails built with the others too.",
   },
 ];
 
-const url = new URL("/alternatives/react-email", site.url).href;
-const jsonLd = [
-  { "@context": "https://schema.org", "@type": "WebPage", name: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
-  {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: title,
-    itemListElement: tools.map((t, i) => ({ "@type": "ListItem", position: i + 1, name: t.name, url: `${url}#${t.id}` })),
-  },
-  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
-];
 ---
-<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd}>
-  <section class="a-hero">
-    <div class="wrap a-hero-inner">
-      <h1 class="h-page">React Email alternatives</h1>
-      <p class="lede">Four other ways to write emails, what each one is best at, and how fast a coding agent writes an email with it.</p>
-    </div>
-
-    {/* The picks: each tool's one line, linking to the side-by-side table. */}
-    <div class="wrap">
-      <ol class="picks reveal">
-        {tools.map((t, i) => (
-          <li>
-            <a class:list={["pick", { he: i === 0 }]} href="#side-by-side">
-              <span class="pick-n">{i + 1}</span>
-              <span class="pick-name">{t.name}</span>
-              <span class="pick-best">{t.best}</span>
-            </a>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <h2 class="h-section">How fast a coding agent writes an email</h2>
-        <p class="sec-sub">Claude Code built the same five emails with each, 16 runs each. A run was done when its email passed the same checks in Chromium, on desktop and on a phone.</p>
-      </div>
-      <a class="board reveal" href={bench} aria-label="Agent benchmark: Hyper Elements, MJML, hand-written HTML and React Email">
-        <div class="board-cols">
-          <div>
-            <p class="board-k">Median time to a passing email</p>
-            <ul class="bars">
-              {race.map((r) => (
-                <li class:list={{ he: r.he }}>
-                  <span class="bar-name">{r.name}</span>
-                  <span class="bar"><i style={pct(r.s, maxS)}></i></span>
-                  <span class="bar-n">{r.s}s</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p class="board-k">Median output tokens</p>
-            <ul class="bars">
-              {race.map((r) => (
-                <li class:list={{ he: r.he }}>
-                  <span class="bar-name">{r.name}</span>
-                  <span class="bar"><i style={pct(r.tokens, maxT)}></i></span>
-                  <span class="bar-n">{r.tokens.toLocaleString("en-US")}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        <p class="board-note">Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured. <span class="board-more">The benchmark →</span></p>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="sec-head reveal" id="side-by-side">
-        <h2 class="h-section">React Email and its alternatives, side by side</h2>
-      </div>
-      <div class="mx-scroll reveal">
-        <div class="mx" role="table" aria-label="React Email and its alternatives, feature by feature">
-          <div class="mx-row mx-head" role="row">
-            <span role="columnheader"><span class="sr">Feature</span></span>
-            {cols.map((c, i) => <span class:list={["mx-col", { he: i === 0 }]} role="columnheader">{c}</span>)}
-          </div>
-          <div class="mx-row" role="row">
-            <span class="mx-k" role="rowheader">Write emails in</span>
-            {writtenIn.map((w, i) => <span class:list={["mx-c", "mx-text", { he: i === 0 }]} role="cell">{w}</span>)}
-          </div>
-          {matrix.map((row) => (
-            <div class="mx-row" role="row">
-              <span class="mx-k" role="rowheader">{row.k}</span>
-              {row.m.map(([mark, note], i) => (
-                <span class:list={["mx-c", { he: i === 0 }]} role="cell">
-                  <span class:list={["mk", mark]} title={label[mark]}><span class="sr">{label[mark]}</span></span>
-                  {note && <span class="mx-note">{note}</span>}
-                </span>
-              ))}
-            </div>
+<AlternativesPage
+  path="/alternatives/react-email"
+  metaTitle="React Email alternatives: 4 options compared"
+  description="The best React Email alternatives, compared: Hyper Elements, MJML, Maizzle and jsx-email. What each one is, when to pick it, and how fast a coding agent writes an email with it."
+  title="React Email alternatives"
+  lede="Four other ways to write emails, what each one is best at, and how fast a coding agent writes an email with it."
+  tools={tools}
+  feature={{ title: "How fast a coding agent writes an email", sub: "Claude Code built the same five emails with each, 16 runs each. A run was done when its email passed the same checks in Chromium, on desktop and on a phone." }}
+  tableTitle="React Email and its alternatives, side by side"
+  cols={cols}
+  textRows={[{ k: "Write emails in", values: writtenIn }]}
+  matrix={matrix}
+  faqTitle="Questions about React Email alternatives"
+  faq={faq}
+  final={{
+    title: "Move from React Email in one command",
+    sub: "Converts every template, checks each against the original, and writes nothing until you ask.",
+    cmd: `${site.migrate} src/emails`,
+    ctas: [{ label: "How migrating works", href: "/migrate" }, { label: "Hyper Elements vs React Email", href: "/compare/react-email" }],
+    others: [{ label: "Hyper Elements vs MJML", href: "/compare/mjml" }, { label: "Litmus alternatives", href: "/alternatives/litmus" }],
+  }}
+>
+  <a class="board reveal" href={bench} aria-label="Agent benchmark: Hyper Elements, MJML, hand-written HTML and React Email">
+    <div class="board-cols">
+      <div>
+        <p class="board-k">Median time to a passing email</p>
+        <ul class="bars">
+          {race.map((r) => (
+            <li class:list={{ he: r.he }}>
+              <span class="bar-name">{r.name}</span>
+              <span class="bar"><i style={pct(r.s, maxS)}></i></span>
+              <span class="bar-n">{r.s}s</span>
+            </li>
           ))}
-        </div>
+        </ul>
+      </div>
+      <div>
+        <p class="board-k">Median output tokens</p>
+        <ul class="bars">
+          {race.map((r) => (
+            <li class:list={{ he: r.he }}>
+              <span class="bar-name">{r.name}</span>
+              <span class="bar"><i style={pct(r.tokens, maxT)}></i></span>
+              <span class="bar-n">{r.tokens.toLocaleString("en-US")}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap tools">
-      {tools.map((t, i) => (
-        <article class:list={["tool", "reveal", { he: i === 0 }]} id={t.id}>
-          <div class="tool-head">
-            <span class="tool-n">{i + 1}</span>
-            <div>
-              <h2>{t.name}</h2>
-              <p class="tool-best">{t.best}</p>
-            </div>
-          </div>
-          <p class="tool-what">{t.what}</p>
-          <div class="tool-cols">
-            <div>
-              <h3>Pick it if</h3>
-              <ul class="ticks">{t.pick.map((p) => <li>{p}</li>)}</ul>
-            </div>
-            <div>
-              <h3>Keep in mind</h3>
-              <ul class="ticks mind">{t.mind.map((p) => <li>{p}</li>)}</ul>
-            </div>
-          </div>
-          <div class="tool-links">
-            {t.links.map((l, j) => <a class:list={["btn", "btn-sm", j === 0 && i === 0 ? "btn-primary" : "btn-ghost"]} href={l.href}>{l.label}{j === 0 && <span class="arrow"> →</span>}</a>)}
-          </div>
-        </article>
-      ))}
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap faq-wrap">
-      <h2 class="h-section reveal">Questions about React Email alternatives</h2>
-      <div class="faq reveal">
-        {faq.map((f, i) => (
-          <details class="faq-item" open={i === 0}>
-            <summary>{f.q}</summary>
-            <p>{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </div>
-  </section>
-
-  <section class="section final">
-    <div class="wrap final-inner reveal">
-      <h2 class="h-section">Move from React Email in one command</h2>
-      <p class="sec-sub">Converts every template, checks each against the original, and writes nothing until you ask.</p>
-      <Cmd text={`${site.migrate} src/emails`} />
-      <div class="a-cta">
-        <a class="btn btn-primary" href="/migrate">How migrating works <span class="arrow">→</span></a>
-        <a class="btn btn-ghost" href="/compare/react-email">Hyper Elements vs React Email</a>
-      </div>
-      <p class="others">Also compare: <a href="/compare/mjml">Hyper Elements vs MJML</a></p>
-    </div>
-  </section>
-</Base>
+    <p class="board-note">Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured. <span class="board-more">The benchmark →</span></p>
+  </a>
+</AlternativesPage>
 
 <style>
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .sec-head { text-align: center; margin: 0 auto 48px; max-width: 700px; }
-  .sec-head .h-section { margin: 0; }
-  .sec-sub { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
-
-  /* Hero and the picks. */
-  .a-hero { position: relative; padding: clamp(40px, 6vh, 80px) 0 0; }
-  .a-hero::before { content: ""; position: absolute; inset: 120px 0 auto; height: 480px; pointer-events: none; background: radial-gradient(50% 60% at 50% 40%, color-mix(in srgb, var(--ok) 10%, transparent), transparent 70%); }
-  .a-hero-inner { position: relative; display: grid; justify-items: center; text-align: center; gap: 14px; grid-template-columns: minmax(0, 1fr); }
-  .a-hero .h-page { margin: 0; }
-  .a-hero .lede { margin: 0 auto; max-width: 56ch; }
-  .picks { position: relative; list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
-  .pick { display: grid; gap: 6px; align-content: start; height: 100%; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
-  .pick:hover, .pick:focus-visible { border-color: var(--line-3); transform: translateY(-2px); }
-  .pick.he { border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: radial-gradient(90% 80% at 0% 0%, color-mix(in srgb, var(--ok) 12%, transparent), transparent 70%), var(--bg-1); }
-  .pick-n { font: 500 12px var(--mono); color: var(--text-3); }
-  .pick.he .pick-n { color: var(--ok); }
-  .pick-name { font-size: 20px; font-weight: 650; letter-spacing: -0.025em; }
-  .pick-best { font-size: 14px; line-height: 1.45; color: var(--text-2); }
-
   /* The benchmark: two bar charts. */
   .board { display: block; padding: 32px; border: 1px solid var(--line-2); border-radius: 18px; background: linear-gradient(180deg, var(--bg-2), var(--bg-1)); box-shadow: var(--shadow); color: inherit; text-decoration: none; transition: border-color 0.2s; }
   .board:hover, .board:focus-visible { border-color: var(--line-3); }
@@ -324,90 +187,12 @@ const jsonLd = [
   .board-note { margin: 28px 0 0; padding-top: 18px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.55; color: var(--text-3); }
   .board-more { color: var(--text-2); white-space: nowrap; }
 
-  /* Side by side: five columns, Hyper Elements' lit; it scrolls sideways inside its box on a phone. */
-  .mx-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); }
-  .mx { min-width: 860px; }
-  .mx-row { display: grid; grid-template-columns: minmax(170px, 1.3fr) repeat(5, minmax(120px, 1fr)); border-top: 1px solid var(--line); }
-  .mx-row > * { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 12px 14px; }
-  .mx-head { border-top: 0; }
-  .mx-head > * { padding-top: 16px; padding-bottom: 16px; }
-  .mx-col { font-size: 14px; font-weight: 600; color: var(--text-2); }
-  .mx-col.he { color: var(--text); }
-  .mx-k { position: sticky; left: 0; z-index: 1; background: var(--bg-1); font-size: 14.5px; color: var(--text); }
-  .mx-c { flex-wrap: wrap; }
-  .mx-c.he, .mx-col.he { background: color-mix(in srgb, var(--ok) 7%, var(--bg-1)); border-left: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); border-right: 1px solid color-mix(in srgb, var(--ok) 22%, transparent); }
-  .mx-text { font-size: 13.5px; color: var(--text-2); }
-  .mx-text.he { color: var(--text); }
-  .mx-note { font-size: 12.5px; line-height: 1.3; color: var(--text-3); }
-  .mx-c.he .mx-note { color: var(--text-2); }
-  .mk { position: relative; flex: none; width: 22px; height: 22px; border-radius: 999px; }
-  .mk.yes { background: var(--hover-2); }
-  .mk.yes::after { content: ""; position: absolute; left: 7px; top: 4px; width: 5px; height: 10px; border: solid var(--text-2); border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  .mx-c.he .mk.yes { background: color-mix(in srgb, var(--ok) 18%, transparent); }
-  .mx-c.he .mk.yes::after { border-color: var(--ok); }
-  .mk.part { border: 2px solid var(--text-3); background: linear-gradient(90deg, var(--text-3) 50%, transparent 50%); width: 18px; height: 18px; margin: 2px; }
-  .mk.no::after { content: ""; position: absolute; left: 6px; right: 6px; top: 10px; height: 2px; border-radius: 2px; background: var(--text-3); opacity: 0.6; }
-  .mk.na { width: auto; height: auto; }
-  .mk.na::after { content: "n/a"; font: 500 11.5px var(--mono); color: var(--text-3); }
-
-  /* Each tool. */
-  .tools { display: grid; gap: 20px; max-width: 980px; }
-  .tool { padding: 32px; border: 1px solid var(--line); border-radius: 18px; background: var(--bg-1); scroll-margin-top: calc(var(--header) + 20px); }
-  .tool.he { border-color: color-mix(in srgb, var(--ok) 40%, transparent); background: radial-gradient(70% 90% at 100% 0%, color-mix(in srgb, var(--ok) 9%, transparent), transparent 60%), var(--bg-1); }
-  .tool-head { display: flex; gap: 16px; align-items: flex-start; }
-  .tool-n { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line-2); font: 600 15px var(--mono); color: var(--text-2); }
-  .tool.he .tool-n { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: color-mix(in srgb, var(--ok) 10%, transparent); }
-  .tool h2 { margin: 0; font-size: 26px; font-weight: 650; letter-spacing: -0.03em; line-height: 1.15; }
-  .tool-best { margin: 4px 0 0; font-size: 15px; color: var(--text-2); }
-  .tool-what { margin: 18px 0 0; font-size: 16.5px; line-height: 1.55; color: var(--text); }
-  .tool-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; margin-top: 22px; }
-  .tool h3 { margin: 0 0 10px; font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
-  .ticks { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .ticks li { position: relative; padding-left: 22px; font-size: 15px; line-height: 1.5; color: var(--text); }
-  .ticks li::before { content: "✓"; position: absolute; left: 0; top: 0; font: 500 13px/1.7 var(--mono); color: var(--text-3); }
-  .tool.he .ticks:not(.mind) li::before { color: var(--ok); }
-  .ticks.mind li { color: var(--text-2); }
-  .ticks.mind li::before { content: "–"; }
-  .tool-links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-
-  /* Questions, folded. */
-  .faq-wrap { max-width: 860px; }
-  .faq-wrap > .h-section { text-align: center; margin: 0 0 36px; }
-  .faq { border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); overflow: hidden; }
-  .faq-item + .faq-item { border-top: 1px solid var(--line); }
-  .faq-item summary { position: relative; list-style: none; cursor: pointer; padding: 20px 56px 20px 24px; font-size: 16.5px; font-weight: 600; letter-spacing: -0.01em; }
-  .faq-item summary::-webkit-details-marker { display: none; }
-  .faq-item summary::after { content: "+"; position: absolute; right: 24px; top: 50%; transform: translateY(-50%); font: 400 22px var(--mono); color: var(--text-3); transition: transform 0.2s; }
-  .faq-item[open] summary::after { transform: translateY(-50%) rotate(45deg); }
-  .faq-item summary:hover { background: var(--hover); }
-  .faq-item p { margin: 0; padding: 0 24px 22px; color: var(--text-2); font-size: 15.5px; line-height: 1.6; }
-
-  .final { text-align: center; }
-  .final-inner { display: grid; justify-items: center; gap: 20px; grid-template-columns: minmax(0, 1fr); }
-  .final-inner .h-section, .final-inner .sec-sub { margin: 0; }
-  .final-inner :global(.cmd) { max-width: 100%; min-width: 0; }
-  .a-cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center; }
-  .others { margin: 8px 0 0; font-size: 14px; color: var(--text-3); }
-  .others a { color: var(--text-2); text-decoration: none; }
-  .others a:hover { color: var(--text); }
-
   @media (max-width: 1000px) {
-    .picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .board-cols { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   }
   @media (max-width: 640px) {
-    .sec-head { margin-bottom: 32px; }
-    .picks { grid-template-columns: minmax(0, 1fr); margin-top: 36px; }
     .board { padding: 20px; }
     .bars li { grid-template-columns: 112px minmax(0, 1fr) 46px; gap: 8px; }
     .bar-name { font-size: 13px; }
-    .mx-row > .mx-k { max-width: 150px; }
-    .tool { padding: 22px; }
-    .tool-cols { grid-template-columns: minmax(0, 1fr); gap: 18px; }
-    .faq-item summary { padding: 18px 48px 18px 18px; font-size: 15.5px; }
-    .faq-item summary::after { right: 18px; }
-    .faq-item p { padding: 0 18px 18px; }
-    .a-cta { width: 100%; }
-    .a-cta .btn { width: 100%; }
   }
 </style>

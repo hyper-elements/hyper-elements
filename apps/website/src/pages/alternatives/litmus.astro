@@ -1,0 +1,278 @@
+---
+import AlternativesPage, { type MatrixRow, type Tool } from "../../components/AlternativesPage.astro";
+import { showcase } from "../../lib/examples";
+import { site } from "../../lib/site";
+
+// "Litmus alternatives": tools that help you build reliable emails faster and see them in real email clients. Hyper
+// Elements first, then Parcel and Mailosaur, with Litmus as the table's baseline. Keep it evergreen: no versions,
+// dates, prices or client counts of ours on it. Its facts were last checked on November 14, 2026 on each tool's own
+// pages: Litmus (email testing, builder, collaboration and analytics pages, its API docs; its pricing page is a
+// contact form, and its banner says it's part of Validity Engage), Parcel (code editor, previews, pricing; no API or CI
+// documented) and Mailosaur (previews on real devices, pricing). Left out: Email on Acid (its own pages say its
+// customers move to another product from June 2026), Mailtrap (a test inbox, not a way to build or preview emails) and
+// Testi@ (its pages show nothing without JavaScript, so nothing about it could be checked).
+
+const tools: Tool[] = [
+  {
+    id: "hyper-elements",
+    name: "Hyper Elements",
+    best: "The Litmus alternative built for coding agents",
+    what: "Build emails as React components, check each one as it renders, and preview it in Outlook, Gmail, Apple Mail and more in milliseconds, free, on your machine, with findings your agent reads and fixes.",
+    pick: [
+      "A coding agent writes or edits your emails, and needs results it can read, not pictures",
+      "You want a preview on every change, in milliseconds, not a paid screenshot before each send",
+      "You want problems caught as each email renders, in tests and CI, with what to write instead",
+      "Your emails can't leave your machine: customer data, unreleased products, regulated content",
+    ],
+    mind: ["Modeled previews: for a pixel check on a rare client, keep a real inbox", "No spam tests or analytics"],
+    links: [
+      { label: "Get started", href: "/docs/quickstart" },
+      { label: "Try the free previews", href: "/email-testing" },
+    ],
+  },
+  {
+    id: "parcel",
+    name: "Parcel",
+    best: "Best for hand-coding emails, with real inbox screenshots",
+    what: "An email code editor with live preview, components, an HTML problem checker and an accessibility checker, plus screenshots from real inboxes and devices.",
+    pick: ["You hand-code email HTML and want an editor built for it", "You want screenshots from real inboxes, in light and dark"],
+    mind: ["Every screenshot is paid, on top of a paid plan", "No documented API, so no agent or CI loop"],
+    links: [{ label: "parcel.io", href: "https://parcel.io" }],
+  },
+  {
+    id: "mailosaur",
+    name: "Mailosaur",
+    best: "Best for real-device screenshots in automated tests",
+    what: "Email testing for QA teams: capture test emails over SMTP or an API, check them in CI, and screenshot them on real devices.",
+    pick: ["Your QA team tests emails end to end in CI", "You want screenshots made on real devices, in light and dark"],
+    mind: ["No tools for building emails", "Screenshots are made on its servers, on a paid plan"],
+    links: [{ label: "mailosaur.com", href: "https://mailosaur.com" }],
+  },
+];
+
+// Side by side: Litmus as the baseline, second. What agents and teams pay for first, then building and checking.
+const cols = ["Hyper Elements", "Litmus", "Parcel", "Mailosaur"];
+const kinds = ["Email engine, free previews", "Builder and testing", "Email code editor", "QA testing"];
+const matrix: MatrixRow[] = [
+  { k: "Results your agent can read", m: [["yes", "Findings as JSON"], ["part", "Images, API by request"], ["no", "Images"], ["part", "Images, API"]] },
+  { k: "Free previews on every change", m: [["yes", "Unlimited"], ["no", "Contact sales"], ["no", "Paid per preview"], ["no", "Paid plan"]] },
+  { k: "Previews of real email clients", m: [["yes", "Modeled, up to 99% match"], ["yes", "Screenshots"], ["yes", "Screenshots"], ["yes", "Screenshots"]] },
+  { k: "Your email stays on your machine", m: [["yes"], ["no"], ["no"], ["no"]] },
+  { k: "In your tests and CI", m: [["yes", "npm package, CLI"], ["part", "API by request"], ["no", "Not documented"], ["yes", "API, SMTP"]] },
+  { k: "Build emails", m: [["yes", "React components"], ["yes", "Builder"], ["yes", "Code editor"], ["no"]] },
+  { k: "Problems caught as you build", m: [["yes", "Each render, with the fix"], ["part", "Pre-send checklist"], ["yes", "Problem checker"], ["part", "Compatibility tests"]] },
+  { k: "Accessibility checks", m: [["yes", "Lint"], ["yes"], ["yes"], ["yes", "WCAG"]] },
+  { k: "Dark mode previews", m: [["part", "Apple Mail, Yahoo"], ["yes"], ["yes"], ["yes"]] },
+];
+
+// Screenshots against the previews, from the emulator docs' own comparison (/docs/email-client-emulator).
+const versus = {
+  them: ["Rendered on their servers, a test at a time", "Paid per preview or per seat", "Your email uploaded to them", "A picture for someone to look at", "Checked once, before you send"],
+  us: ["Milliseconds per preview, on your machine", "Free and unlimited", "Nothing leaves your machine", "What each client changed, as data your agent fixes", "Checked on every change, in CI"],
+};
+
+// For agents: what a render returned for the site's launch email (examples/showcase/email.tsx, from examples.json), one
+// line per kind, and the tools an agent uses.
+const seen = new Set<string>();
+const findings = showcase.email.diagnostics
+  .filter((d) => d.code !== "email/phone-styles" && !seen.has(d.message.split(" on this ")[0]) && seen.add(d.message.split(" on this ")[0]))
+  .slice(0, 4);
+const agentTools = [
+  { t: "An agent skill", code: site.skill, d: "Teaches your agent the components, the checks and how to fix what they find" },
+  { t: "A CLI made for loops", code: "npx hyper-elements check --json", d: "JSON lines and exit codes: it fixes each error until the run passes" },
+  { t: "WebMCP in the browser", code: "check_html_email", d: "Browser agents check any HTML email on the email testing page" },
+  { t: "2.6× faster", code: "", d: "An agent reached a passing email 2.6× faster than with React Email, in our benchmark", href: "/docs/benchmark" },
+];
+
+// The visual: the site's launch email as the emulator draws it (public/generated/email-clients/, from
+// scripts/email-client-previews.mjs), and how closely each client's preview matches the real one.
+const shots = [
+  { name: "Classic Outlook", acc: "97%", img: "/generated/email-clients/launch-outlook.png", w: 820, h: 989 },
+  { name: "Gmail", acc: "99%", img: "/generated/email-clients/launch-gmail.png", w: 820, h: 989 },
+  { name: "Apple Mail", acc: "98%", img: "/generated/email-clients/launch-apple-mail.png", w: 820, h: 985 },
+  { name: "Gmail app", acc: "98%", img: "/generated/email-clients/launch-gmail-app.png", w: 380, h: 997, phone: true },
+];
+
+// Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
+const faq = [
+  {
+    q: "What is the best Litmus alternative?",
+    a: "For teams that build emails in code, and for coding agents, Hyper Elements: it builds each email, checks it as it renders, and previews it in Outlook, Gmail, Apple Mail and more, free and in milliseconds, with results an agent can read. If you hand-code email HTML and want screenshots from real inboxes, Parcel. If your QA team wants screenshots from real devices in its tests, Mailosaur.",
+  },
+  {
+    q: "Which Litmus alternative works best with AI coding agents?",
+    a: "Hyper Elements. Its agent skill teaches an agent the components and the checks, its CLI returns JSON and exit codes an agent acts on, and its previews report what each email client changed as data, where a screenshot is a picture an agent has to interpret. Browser agents can call its WebMCP tool, check_html_email, on the email testing page. In our benchmark, an agent reached a passing email 2.6× faster with Hyper Elements than with React Email.",
+  },
+  {
+    q: "Is there a free Litmus alternative?",
+    a: "Hyper Elements is free, with no account and no limit: the engine, its checks, and previews of classic Outlook, Outlook.com, Gmail, Apple Mail, Yahoo Mail and more on your machine. Parcel's free plan has its code editor and checks, but its inbox screenshots are a paid add-on. Mailosaur has a free trial.",
+  },
+  {
+    q: "How accurate are Hyper Elements' previews?",
+    a: "Each preview is modeled on the real client, not a screenshot of it. How closely it matches the real client: 97% for classic Outlook, 99% for Outlook.com, Gmail, Yahoo Mail and AOL Mail, and 97 to 98% for the Gmail app and Apple Mail. Use them on every change, and real-device screenshots or a real inbox for a final check across many clients.",
+  },
+  {
+    q: "Can I preview emails I didn't build with Hyper Elements?",
+    a: "Yes. The previews take any complete HTML email: from MJML, React Email, an email builder's export or written by hand. Paste it into the email testing playground, or pass it to renderInEmailClients() from @hyper-elements/email-clients. React isn't needed.",
+  },
+  {
+    q: "Can I check emails in CI?",
+    a: "Yes. npx hyper-elements check fails the run on a template's errors, and npx hyper-elements preview email.html --findings writes a preview per client and reports what each one changed, so a test, a CI job or a coding agent can check every change.",
+  },
+  {
+    q: "Is my email uploaded anywhere?",
+    a: "Not with Hyper Elements. The engine, the previews and the CLI run on your machine, and the email testing playground runs in your browser. Only the images and fonts your email links to load from their own hosts.",
+  },
+  {
+    q: "When should I still use Litmus?",
+    a: "When you need screenshots of 100+ clients and devices, spam filter tests, team proofing or open analytics. Litmus doesn't publish prices: its pricing page asks you to contact sales, and Litmus is now part of Validity Engage.",
+  },
+];
+---
+<AlternativesPage
+  path="/alternatives/litmus"
+  metaTitle="Litmus alternatives: free email previews built for agents"
+  description="The best Litmus alternatives, led by Hyper Elements: build reliable emails, check every render, and preview Outlook, Gmail and Apple Mail free, with results AI agents can read. Plus Parcel and Mailosaur."
+  title="Litmus alternatives"
+  lede="Litmus sends back pictures of your email, for a price. Hyper Elements builds it right, checks it as it renders, and previews it in Outlook, Gmail, Apple Mail and more, free and in milliseconds, with results your agent can read."
+  tools={tools}
+  feature={{ after: true, title: "Your email in Outlook, Gmail and Apple Mail, previewed free", sub: "Drawn by Hyper Elements on your machine, from the email's HTML, on every change. No test send, no account, nothing uploaded." }}
+  tableTitle="Litmus and its alternatives, side by side"
+  cols={cols}
+  textRows={[{ k: "What it is", values: kinds }]}
+  matrix={matrix}
+  faqTitle="Questions about Litmus alternatives"
+  faq={faq}
+  final={{
+    title: "Stop paying for screenshots",
+    sub: "Build with Hyper Elements, check every render, and preview Outlook, Gmail and Apple Mail free, on every change.",
+    cmd: "npm i @hyper-elements/react @hyper-elements/email-clients",
+    ctas: [{ label: "Get started", href: "/docs/quickstart" }, { label: "Try the free previews", href: "/email-testing" }],
+    others: [{ label: "React Email alternatives", href: "/alternatives/react-email" }, { label: "Hyper Elements vs React Email", href: "/compare/react-email" }],
+  }}
+>
+  <section class="section" slot="after-table">
+    <div class="wrap">
+      <div class="lx-head reveal">
+        <h2 class="h-section">Why pay for screenshots?</h2>
+        <p>A screenshot service takes your email, renders it on its servers and sends back pictures. Hyper Elements draws each client on your machine and tells you, and your agent, what changed.</p>
+      </div>
+      <div class="lx-vs reveal">
+        <div class="lx-side them">
+          <p class="lx-who">Screenshot services</p>
+          <ul>{versus.them.map((t) => <li>{t}</li>)}</ul>
+        </div>
+        <div class="lx-side us">
+          <p class="lx-who"><span class="lx-dot" aria-hidden="true"></span>Hyper Elements</p>
+          <ul>{versus.us.map((t) => <li>{t}</li>)}</ul>
+          <p class="lx-acc">Its previews match the real clients up to 99%.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" slot="more">
+    <div class="wrap">
+      <div class="lx-head reveal">
+        <h2 class="h-section">The Litmus alternative built for coding agents</h2>
+        <p>An agent can't look at a screenshot and know what to fix. With Hyper Elements it writes the email, checks it and reads what each client changed, in one loop.</p>
+      </div>
+      <div class="lx-agents reveal">
+        <div class="lx-diag" aria-label="What a real render returned">
+          <div class="lx-diag-bar"><span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>What your agent reads</div>
+          <ul>
+            {findings.map((d) => (
+              <li><span class="lx-sev">{d.severity}</span><span class="lx-body"><code>{d.code}</code><span>{d.message}</span></span></li>
+            ))}
+          </ul>
+          <p class="lx-shot">What a screenshot gives it: <span>a PNG.</span></p>
+        </div>
+        <ul class="lx-tools">
+          {agentTools.map((a) => (
+            <li>
+              {a.href ? <a href={a.href}><b>{a.t}</b></a> : <b>{a.t}</b>}
+              {a.code && <code>{a.code}</code>}
+              <span>{a.d}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <a class="shots reveal" href="/email-testing" aria-label="Try the email client emulator">
+    {shots.map((s) => (
+      <figure class:list={["shot", { "shot-phone": s.phone }]}>
+        <div class="shot-frame"><img src={s.img} width={s.w} height={s.h} alt={`The launch email as the emulator draws it in ${s.name}`} loading="lazy" decoding="async" /></div>
+        <figcaption><span>{s.name}</span><b>{s.acc}</b></figcaption>
+      </figure>
+    ))}
+  </a>
+  <p class="shots-note">The percentage is how closely each preview matches the real client. Outlook.com, Yahoo Mail and AOL Mail are previewed too, and more clients are on the way.</p>
+</AlternativesPage>
+
+<style>
+  /* Sections of this page's own: a heading, then the screenshots-vs-previews panel, or the agents' loop. */
+  .lx-head { text-align: center; margin: 0 auto 44px; max-width: 720px; }
+  .lx-head .h-section { margin: 0; }
+  .lx-head p { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
+  .lx-vs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 0; border: 1px solid var(--line-2); border-radius: 18px; overflow: hidden; box-shadow: var(--shadow); }
+  .lx-side { padding: 32px; }
+  .lx-side.them { background: var(--bg-1); }
+  .lx-side.us { background: radial-gradient(90% 90% at 100% 0%, color-mix(in srgb, var(--ok) 13%, transparent), transparent 65%), var(--bg-2); border-left: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
+  .lx-who { display: flex; align-items: center; gap: 10px; margin: 0 0 18px; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-3); }
+  .us .lx-who { color: var(--text); }
+  .lx-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); }
+  .lx-side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .lx-side li { position: relative; padding-left: 28px; font-size: 16.5px; line-height: 1.45; }
+  .them li { color: var(--text-3); }
+  .them li::before { content: "✕"; position: absolute; left: 0; top: 0; font: 600 13px/1.75 var(--mono); color: var(--err); opacity: 0.75; }
+  .us li { color: var(--text); font-weight: 500; }
+  .us li::before { content: "✓"; position: absolute; left: 0; top: 0; font: 600 13px/1.75 var(--mono); color: var(--ok); }
+  .lx-acc { margin: 22px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-2); }
+
+  .lx-agents { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 28px; align-items: start; }
+  .lx-diag { border: 1px solid var(--line-2); border-radius: 16px; overflow: hidden; background: #0e0e0e; box-shadow: var(--shadow); }
+  .lx-diag-bar { display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.04); font: 500 12.5px var(--mono); color: #8a8a8a; }
+  .lx-diag ul { list-style: none; margin: 0; padding: 6px 0; }
+  .lx-diag li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 12px 18px; }
+  .lx-diag li + li { border-top: 1px solid rgba(255, 255, 255, 0.06); }
+  .lx-sev { align-self: start; height: 22px; display: inline-grid; place-items: center; border-radius: 999px; font: 600 11px var(--mono); color: #7ee2a8; background: rgba(126, 226, 168, 0.12); }
+  .lx-body { display: grid; gap: 4px; min-width: 0; }
+  .lx-body code { font: 500 12px var(--mono); color: #8a8a8a; background: none; border: 0; padding: 0; }
+  .lx-body span { font: 400 13.5px/1.5 var(--mono); color: #ededed; overflow-wrap: anywhere; }
+  .lx-shot { margin: 0; padding: 14px 18px; border-top: 1px solid rgba(255, 255, 255, 0.08); font: 400 13px var(--mono); color: #8a8a8a; }
+  .lx-shot span { color: #ff7b6e; }
+  .lx-tools { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .lx-tools li { display: grid; gap: 6px; padding: 18px 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg-1); }
+  .lx-tools b { font-size: 16px; font-weight: 600; color: var(--text); }
+  .lx-tools a { text-decoration: none; }
+  .lx-tools a b::after { content: " →"; color: var(--text-3); }
+  .lx-tools code { justify-self: start; font: 500 12.5px var(--mono); color: var(--ok); background: none; border: 0; padding: 0; overflow-wrap: anywhere; }
+  .lx-tools span { font-size: 14px; line-height: 1.45; color: var(--text-2); }
+
+  /* A few of the clients: three windows and a phone, each the top of the launch email. */
+  .shots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 0.5fr); gap: 16px; align-items: end; color: inherit; text-decoration: none; }
+  .shot { margin: 0; min-width: 0; }
+  .shot-frame { overflow: hidden; border: 1px solid var(--line-2); border-radius: 12px; background: #fff; box-shadow: 0 16px 36px -18px rgba(0, 0, 0, 0.35); transition: transform 0.25s; -webkit-mask-image: linear-gradient(#000 88%, transparent); mask-image: linear-gradient(#000 88%, transparent); }
+  /* The phone: its top, about as tall as the windows beside it. */
+  .shot.shot-phone .shot-frame { aspect-ratio: 380 / 720; border-radius: 18px; border: 4px solid #2a2a2a; }
+  .shots:hover .shot-frame, .shots:focus-visible .shot-frame { transform: translateY(-4px); }
+  .shot img { display: block; width: 100%; height: auto; }
+  .shot figcaption { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px 4px 0; font-size: 14px; font-weight: 600; }
+  .shot figcaption b { font: 500 12.5px var(--mono); color: var(--ok); }
+  .shots-note { margin: 18px 0 0; text-align: center; font-size: 13.5px; color: var(--text-3); }
+  /* Narrower: classic Outlook beside the phone; the panels stack. */
+  @media (max-width: 1000px) {
+    .lx-vs, .lx-agents { grid-template-columns: minmax(0, 1fr); }
+    .lx-side.us { border-left: 0; border-top: 1px solid color-mix(in srgb, var(--ok) 30%, transparent); }
+    .shots { grid-template-columns: minmax(0, 1fr) minmax(0, 0.42fr); }
+    .shot:nth-child(2), .shot:nth-child(3) { display: none; }
+    .shot.shot-phone figcaption { display: grid; gap: 2px; font-size: 12.5px; }
+  }
+  @media (max-width: 640px) {
+    .lx-side { padding: 22px; }
+    .lx-side li { font-size: 15.5px; }
+    .lx-diag li { padding: 12px 14px; }
+  }
+</style>
