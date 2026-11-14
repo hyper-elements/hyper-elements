@@ -1,0 +1,14 @@
+---
+import CompareHub from "../../components/CompareHub.astro";
+import { alternatives, comparisons, hubs } from "../../lib/compare-pages";
+---
+<CompareHub
+  path={hubs.alternatives.path}
+  metaTitle="Email tool alternatives: React Email, Litmus and more"
+  description="Alternatives to the email tools developers use most, compared: React Email and Litmus. What each alternative is, and when to pick it."
+  title="Email tool alternatives"
+  lede="Looking to replace an email tool? Each list compares the alternatives, and when to pick each."
+  kind="alternatives"
+  pages={alternatives}
+  more={{ title: "Compare Hyper Elements", path: hubs.compare.path, pages: comparisons }}
+/>

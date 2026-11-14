@@ -4,6 +4,7 @@ import CodeBlock from "./CodeBlock.astro";
 import Cmd from "./Cmd.astro";
 import { site } from "../lib/site";
 import { showcase, template } from "../lib/examples";
+import { alternatives, comparisons, hubs } from "../lib/compare-pages";
 
 // A comparison page, /compare/<slug>: Hyper Elements against one other tool. Each page in src/pages/compare/ gives the
 // other tool's facts; the email client emulator, the themes and the four outputs are Hyper Elements' own, the same on
@@ -46,11 +47,7 @@ interface Props {
 const { path, name, article = "a", metaTitle, description, lede, ctas, race, raceNote, matrix, emuSub, brandNote, checksNote, code, faqTitle, faq, final } = Astro.props;
 
 const bench = "/docs/benchmark";
-/** Every comparison page: each links to the others. Add a page here when you add one to src/pages/compare/. */
-const comparisons = [
-  { name: "React Email", path: "/compare/react-email" },
-  { name: "MJML", path: "/compare/mjml" },
-];
+// Every comparison and alternatives page (src/lib/compare-pages.ts): each links to the others.
 const others = comparisons.filter((c) => c.path !== path);
 const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%`;
 
@@ -122,6 +119,15 @@ const title = `Hyper Elements vs ${name}`;
 const url = new URL(path, site.url).href;
 const jsonLd = [
   { "@context": "https://schema.org", "@type": "WebPage", name: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: site.name, item: site.url },
+      { "@type": "ListItem", position: 2, name: hubs.compare.name, item: new URL(hubs.compare.path, site.url).href },
+      { "@type": "ListItem", position: 3, name: title, item: url },
+    ],
+  },
   { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
 ];
 ---
@@ -335,7 +341,7 @@ const jsonLd = [
       <div class="c-cta">
         {final.ctas.map((c, i) => i === 0 ? <a class="btn btn-primary" href={c.href}>{c.label} <span class="arrow">→</span></a> : <a class="btn btn-ghost" href={c.href}>{c.label}</a>)}
       </div>
-      <p class="others">Also compare: {others.map((c) => <><a href={c.path}>Hyper Elements vs {c.name}</a> · </>)}<a href="/alternatives/react-email">React Email alternatives</a> · <a href="/alternatives/litmus">Litmus alternatives</a></p>
+      <p class="others">Also compare: {[...others, ...alternatives].map((c, i) => <>{i > 0 && " · "}<a href={c.path}>{c.title}</a></>)}</p>
     </div>
   </section>
 </Base>

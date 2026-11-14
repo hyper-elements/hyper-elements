@@ -1,0 +1,140 @@
+---
+import Base from "../layouts/Base.astro";
+import { site } from "../lib/site";
+import type { ComparePageLink } from "../lib/compare-pages";
+
+// A hub, /compare or /alternatives: every page of its kind as a card, then the other kind's pages, so search engines and
+// readers find them all from one place. The pages come from src/lib/compare-pages.ts.
+
+interface Props {
+  path: string;
+  metaTitle: string;
+  description: string;
+  /** The H1. */
+  title: string;
+  lede: string;
+  /** This hub's pages, as big cards. */
+  pages: ComparePageLink[];
+  /** "vs" for comparisons ("Hyper Elements vs MJML"), "alternatives" for lists ("Litmus alternatives"). */
+  kind: "vs" | "alternatives";
+  /** The other hub's pages, listed under it. */
+  more: { title: string; path: string; pages: ComparePageLink[] };
+}
+const { path, metaTitle, description, title, lede, pages, kind, more } = Astro.props;
+
+const url = new URL(path, site.url).href;
+const jsonLd = [
+  { "@context": "https://schema.org", "@type": "CollectionPage", name: title, description, url, inLanguage: "en", isPartOf: { "@type": "WebSite", name: site.name, url: site.url } },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: title,
+    itemListElement: pages.map((p, i) => ({ "@type": "ListItem", position: i + 1, name: p.title, url: new URL(p.path, site.url).href })),
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: site.name, item: site.url },
+      { "@type": "ListItem", position: 2, name: title, item: url },
+    ],
+  },
+];
+---
+<Base title={metaTitle} titleSuffix={false} description={description} jsonLd={jsonLd}>
+  <section class="h-hero">
+    <div class="wrap h-hero-inner">
+      <h1 class="h-page">{title}</h1>
+      <p class="lede">{lede}</p>
+    </div>
+  </section>
+
+  <section class="section hub-section">
+    <div class="wrap">
+      <ul class="cards">
+        {pages.map((p) => (
+          <li>
+            <a class="card reveal" href={p.path}>
+              {kind === "vs" ? (
+                <span class="card-title"><span class="he"><span class="dot" aria-hidden="true"></span>Hyper Elements</span><span class="vs">vs</span><span>{p.name}</span></span>
+              ) : (
+                <span class="card-title"><span>{p.name}</span><span class="vs">alternatives</span></span>
+              )}
+              <span class="card-summary">{p.summary}</span>
+              <span class="card-more">{kind === "vs" ? "See the comparison" : "See the alternatives"} →</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="more reveal">
+        <h2><a href={more.path}>{more.title}</a></h2>
+        <ul>
+          {more.pages.map((p) => (
+            <li><a href={p.path}><b>{p.title}</b><span>{p.summary}</span></a></li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section final">
+    <div class="wrap final-inner reveal">
+      <h2 class="h-section">Try Hyper Elements</h2>
+      <p class="sub">Write emails as React components, check each one as it renders, and preview it in Outlook, Gmail and Apple Mail for free.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="/docs/quickstart">Get started <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="/email-testing">Try the free previews</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .h-hero { position: relative; padding: clamp(40px, 6vh, 80px) 0 0; }
+  .h-hero::before { content: ""; position: absolute; inset: 80px 0 auto; height: 420px; pointer-events: none; background: radial-gradient(50% 60% at 50% 40%, color-mix(in srgb, var(--ok) 10%, transparent), transparent 70%); }
+  .h-hero-inner { position: relative; display: grid; justify-items: center; text-align: center; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+  .h-hero .h-page { margin: 0; }
+  .h-hero .lede { margin: 0 auto; max-width: 58ch; }
+  .hub-section { padding-top: 56px; }
+
+  /* This hub's pages: big cards. */
+  .cards { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .card { display: grid; gap: 14px; align-content: start; height: 100%; padding: 32px; border: 1px solid var(--line-2); border-radius: 18px; background: radial-gradient(80% 90% at 0% 0%, color-mix(in srgb, var(--ok) 9%, transparent), transparent 65%), var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+  .card:hover, .card:focus-visible { border-color: var(--line-3); transform: translateY(-3px); }
+  .card-title { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; font-size: 28px; font-weight: 650; letter-spacing: -0.035em; line-height: 1.15; }
+  .card-title .he { display: inline-flex; align-items: center; gap: 10px; }
+  .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); }
+  .card-title .vs { font: 500 14px var(--mono); color: var(--text-3); letter-spacing: 0; }
+  .card-summary { font-size: 16px; line-height: 1.55; color: var(--text-2); }
+  .card-more { margin-top: 6px; font-size: 14.5px; font-weight: 600; color: var(--text); }
+
+  /* The other hub's pages: a list. */
+  .more { margin-top: 48px; }
+  .more h2 { margin: 0 0 16px; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }
+  .more h2 a { color: inherit; text-decoration: none; }
+  .more h2 a::after { content: " →"; color: var(--text-3); }
+  .more ul { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); overflow: hidden; }
+  .more li + li { border-top: 1px solid var(--line); }
+  .more li a { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 16px; align-items: baseline; padding: 18px 22px; color: inherit; text-decoration: none; }
+  .more li a:hover { background: var(--hover); }
+  .more b { font-size: 15.5px; font-weight: 600; }
+  .more li span { font-size: 14.5px; line-height: 1.5; color: var(--text-2); }
+
+  .final { text-align: center; }
+  .final-inner { display: grid; justify-items: center; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+  .final-inner .h-section { margin: 0; }
+  .sub { margin: 0; max-width: 56ch; color: var(--text-2); font-size: 17px; line-height: 1.55; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+  @media (max-width: 800px) {
+    .cards { grid-template-columns: minmax(0, 1fr); }
+    .more li a { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  }
+  @media (max-width: 640px) {
+    .card { padding: 22px; }
+    .card-title { font-size: 24px; }
+    .cta { width: 100%; }
+    .cta .btn { width: 100%; }
+  }
+</style>
