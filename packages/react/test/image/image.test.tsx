@@ -733,6 +733,22 @@ describe("renderImage", () => {
     const [, unspaced] = await lines(<><Text>See our</Text><Text>{" "}</Text><Text>site today</Text></>);
     expect(Math.abs(unspaced!.top - next!.top)).toBeLessThan(2);
 
+    // The space on the other side of a break goes too, as a browser drops it: kept at the start of a line aligned at
+    // the right, it made a narrow block's line too wide for its word, which wrapped onto a line of its own (past the
+    // Canvas's edge, in one no higher than the words); at the end of a centered line, it held the line half a space
+    // off center. (A space here is 6.7px.)
+    const [hi, after] = await lines(<Text style={right}>Hi <LineBreak /> NOW</Text>, 102);
+    expect(Math.abs(after!.top - hi!.top - line), JSON.stringify([hi, after])).toBeLessThan(2);
+    const center = { textAlign: "center" } as const;
+    const centered = [(await lines(<Text style={center}>See our</Text>))[0]!, (await lines(<Text style={center}>site today</Text>))[0]!];
+    for (const text of [<Text style={center}>See our <LineBreak />site today</Text>, <Text style={center}>See <Span style={red}>our <LineBreak /> site</Span> today</Text>]) {
+      const drawn = await lines(text);
+      expect(drawn).toHaveLength(2);
+      for (const [i, at] of drawn.entries()) {
+        for (const edge of ["from", "to"] as const) expect(Math.abs(at[edge] - centered[i]![edge]), `centered, line ${i}, ${edge}`).toBeLessThan(2);
+      }
+    }
+
     // A Button is as wide as its widest line, a break in it inside a Span too. Each break drawn as an item as wide as
     // the block, in a box as wide as its words (a Button's), took all the width the box could grow to: the Button
     // was drawn as wide as the Canvas.
@@ -747,7 +763,11 @@ describe("renderImage", () => {
       return { width: Number(width), height: Number(height) };
     };
     const [buy, now] = [await button("Buy"), await button("now")];
-    for (const [name, children] of [["in the Button", <>Buy<LineBreak />now</>], ["inside a Span", <Span style={red}>Buy<LineBreak />now</Span>]] as const) {
+    for (const [name, children] of [
+      ["in the Button", <>Buy<LineBreak />now</>],
+      ["inside a Span", <Span style={red}>Buy<LineBreak />now</Span>],
+      ["with a space either side", <>Buy <LineBreak /> now</>],
+    ] as const) {
       const both = await button(children);
       expect(Math.abs(both.width - Math.max(buy.width, now.width)), name).toBeLessThan(1);
       expect(both.height - buy.height, name).toBeGreaterThan(10);

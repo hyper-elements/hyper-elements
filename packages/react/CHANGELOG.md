@@ -35,7 +35,7 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
   Spans it broke nothing. Each break is a line of its own now, and the words after it start at the margin. A Span or
   a Link with a break inside is drawn on both lines, its color, underline and background on each part, as a browser
   draws it; and a line with nothing on it is a line high, so two breaks leave one empty line and a Text that holds a
-  break alone is a line of space, as in the HTML outputs.
+  break alone is a line of space, as in the HTML outputs. The space either side of a break goes, as a browser drops it.
 
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the

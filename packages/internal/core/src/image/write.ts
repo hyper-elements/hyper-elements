@@ -234,6 +234,22 @@ function gatherSpaces(runs: Run[], onto: Side): Run[] {
   return onto === "end" ? out : out.reverse();
 }
 
+/**
+ * The space either side of each line break taken off, inside a Span or a Link too: a line starts and ends at its
+ * words, as `white-space: normal` draws one in the HTML outputs. `gatherSpaces()` drops the one on the side a space
+ * is moved from; one already on the other side was kept: at the start of a line aligned at the right, it made a
+ * narrow block's line too wide for its words, which wrapped onto a line of their own past the Canvas's edge, and at
+ * the end of a centered one it held the line half a space off. A run left with nothing goes.
+ */
+function trimAtBreaks(runs: Run[]): Run[] {
+  const out = [...runs];
+  for (let i = 0; i + 1 < out.length; i++) {
+    if (breakAt(out[i + 1]!, "start")) out[i] = withoutSpace(out[i]!, "end") ?? out[i]!;
+    if (breakAt(out[i]!, "end")) out[i + 1] = withoutSpace(out[i + 1]!, "start") ?? out[i + 1]!;
+  }
+  return out.map((run) => (typeof run !== "string" && run.kind === "span" ? { ...run, runs: trimAtBreaks(run.runs) } : run)).filter((run) => !blank(run));
+}
+
 class Writer {
   constructor(private readonly context: WriteContext) {}
 
@@ -420,7 +436,7 @@ class Writer {
   paragraph(node: ResolvedNode, style: Style): Block {
     const drawn: Style = { display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: "pre-wrap" };
     const onto: Side = drawn.textAlign === "right" ? "start" : "end";
-    return { kind: "text", style: aligned(drawn), runs: gatherSpaces(trimEdges(this.runs(node, onto)), onto) };
+    return { kind: "text", style: aligned(drawn), runs: trimAtBreaks(gatherSpaces(trimEdges(this.runs(node, onto)), onto)) };
   }
 
   /** A node's runs. `onto` is the side of a run that holds the space between it and the next (`gatherSpaces()`). */
