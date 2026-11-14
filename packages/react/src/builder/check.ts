@@ -7,6 +7,7 @@
  * out.
  */
 import { definitionOf, type Child, type CustomDefinition, type Json, type Node } from "@hyper-elements/core";
+import { TEMPLATE_ID } from "./read-values";
 
 type Kind = { parse(value: unknown): { ok: true; value: Json } | { ok: false; message: string } };
 
@@ -34,7 +35,7 @@ function checkNode(node: Node, path: string, report: string[], inText = false, c
   }
   const out: Node = { ...node };
   // An id a template takes (the builder's can hold any text).
-  if (out.id !== undefined && !/^[A-Za-z][\w-]*$/.test(out.id)) {
+  if (out.id !== undefined && !TEMPLATE_ID.test(out.id)) {
     report.push(`${path}: its id ${JSON.stringify(out.id)} isn't one a template takes: left out`);
     delete out.id;
   }

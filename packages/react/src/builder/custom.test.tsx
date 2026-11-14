@@ -594,6 +594,13 @@ describe("registerTools", () => {
     // A block the builder numbered itself has no id of its author's, as fromDesign() reads it: none inside it either.
     const numbered = { ...block.values, _meta: { htmlID: "u_content_custom_acme_faq_2", htmlClassNames: "u_content_custom_acme_faq" } };
     expect(ids(exporters.email(numbered))).toEqual([]);
+    // One its author gave that a template doesn't take is left out, as fromDesign() leaves it out: the block is drawn.
+    const dotted = { ...block.values, _meta: { htmlID: "faq.answer", htmlClassNames: "u_content_custom_acme_faq" } };
+    expect(fromDesign({ body: { rows: [{ cells: [1], columns: [{ contents: [{ ...block, values: dotted }] }] }] } }, { components: [Faq] }).code).toContain("<Faq />");
+    for (const drawn of [exporters.email(dotted), exporters.web(dotted), Viewer.render(dotted)]) {
+      expect(drawn).toContain("How long is delivery?");
+      expect(ids(drawn)).toEqual([]);
+    }
   });
 
   it("draws a Page's markup in the canvas of a builder in web mode", () => {

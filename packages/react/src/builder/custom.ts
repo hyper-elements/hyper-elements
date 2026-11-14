@@ -9,7 +9,7 @@ import { ElementsError, propertyOf, renderTemplate, type CustomDefinition, type 
 import type { PropertyDefinition } from "../primitives/custom";
 import { link } from "./blocks";
 import { block, type Block, type Hiding } from "./design";
-import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, webLink, type Sides, type Values } from "./read-values";
+import { font, fontWeight, givenId, hidden as hiddenOn, px, sides, TEMPLATE_ID, webLink, type Sides, type Values } from "./read-values";
 import { make, obj, placed, type Context } from "./reading";
 import { sayUnread } from "./unread";
 import { builderFont, builderLink, cssSides, decode, encode } from "./values";
@@ -283,8 +283,10 @@ function draw(definition: CustomDefinition<any>, tools: readonly CustomDefinitio
   const room = roomOf(values, content, cells, index, column);
   // A root is 200px wide at least: in less room than that, the component is in a Column of the room's width.
   const width = Math.max(200, room);
-  // With the id its block keeps, as fromDesign() reads it: the ids inside it are that id's (a link to one finds it).
-  const own: Node = make(definition.type, { id: givenId(values), props: toolProps(definition, values) });
+  // With the id its block keeps, as fromDesign() reads it: the ids inside it are that id's (a link to one finds it). One
+  // a template doesn't take is left out, as fromDesign() leaves it out, and the component is drawn without it.
+  const given = givenId(values);
+  const own: Node = make(definition.type, { id: given && TEMPLATE_ID.test(given) ? given : undefined, props: toolProps(definition, values) });
   const node: Node = room < width ? { type: "Column", style: { width: room }, children: [own] } : own;
   const written = renderTemplate({ root: { type: root, props: { width }, children: [node] } }, { components: tools });
   const style = /<style>[\s\S]*?<\/style>/.exec(written.head)?.[0] ?? "";
