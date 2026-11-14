@@ -590,6 +590,47 @@ describe("renderImage", () => {
       }
     }
     expect(await lines(shapes[1]!(mark), 400)).toHaveLength(2);
+
+    // A Link can hold an Image, and the background taken off the Link is behind the Image still, as the Link's own box
+    // filled it: as high as the line, not the Image's own height (taken off the Link and given to its words alone, the
+    // Image was drawn with none behind it).
+    const icon = { src: "https://cdn.acme.test/icon.png", width: 16, height: 16 };
+    const filled = async (children: ReactNode) => {
+      const template = (
+        <Canvas width={400} height={240} style={{ padding: 20, fontFamily: "Liberation Sans", fontSize: 24 }}>
+          {children}
+        </Canvas>
+      );
+      const svg = new TextDecoder().decode((await renderImage(template, { fonts, format: "svg", images: { [icon.src]: PNG } })).image);
+      return [...svg.matchAll(/<rect\b[^>]*>/g)]
+        .map((rect) => rect[0])
+        .filter((rect) => /fill="#ffff00"/i.test(rect))
+        .map((rect) => ({ width: Number(/\bwidth="([\d.]+)"/.exec(rect)?.[1]), height: Number(/\bheight="([\d.]+)"/.exec(rect)?.[1]) }));
+    };
+    const linked = (children?: ReactNode) => (
+      <Link href="https://x.test" style={mark}>
+        <Image src={icon} alt="Icon" />
+        {children}
+      </Link>
+    );
+    // With no space beside the Link, its own box, on a line the words make higher than the Image.
+    const own = await filled(<Text>See{linked()}today</Text>);
+    expect(own).toHaveLength(1);
+    expect(own[0]!.height).toBeGreaterThan(icon.height);
+    const same = (box: { width: number; height: number } | undefined, to: { width: number; height: number }, label: string) => {
+      expect(box, label).toBeDefined();
+      expect(Math.abs(box!.width - to.width), label).toBeLessThan(1);
+      expect(Math.abs(box!.height - to.height), label).toBeLessThan(1);
+    };
+    for (const style of [{}, { textAlign: "right" } as const]) {
+      const beside = await filled(<Text style={style}>See {linked()} today</Text>);
+      expect(beside, JSON.stringify(style)).toHaveLength(1);
+      same(beside[0], own[0]!, JSON.stringify(style));
+    }
+    // Beside words the Link holds, as high as theirs.
+    const [image, words] = await filled(<Text>{linked(" our site")} today</Text>);
+    same(image, own[0]!, "beside words");
+    expect(Math.abs(words!.height - image!.height)).toBeLessThan(1);
   });
 
   it("starts the line after a LineBreak at the margin, a break inside a Span or a Link and beside one too", async () => {

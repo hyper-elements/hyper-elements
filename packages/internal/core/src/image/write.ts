@@ -144,6 +144,9 @@ function withSpace(run: Run, side: Side): Run | undefined {
  * for a Span's runs, a box that holds words gives way and the words themselves don't (the engine's rule, which a
  * box around the words would change both ways): each box of words is told not to give way, and the Span, which held
  * words and now holds their boxes, that it still does.
+ *
+ * An Image a Link holds goes in a box of its own with the background, filled as the Link's box was around it: as high
+ * as the line and square at its corners. Given the background itself, it would be filled under its own box alone.
  */
 function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: Run[] } {
   const { backgroundColor, ...style } = run.style;
@@ -162,7 +165,7 @@ function filledRuns(run: Extract<Run, { kind: "span" }>): { style: Style; runs: 
       continue;
     }
     box();
-    runs.push(held.kind === "span" ? { ...held, style: { backgroundColor, ...held.style } } : held);
+    runs.push(held.kind === "span" ? { ...held, style: { backgroundColor, ...held.style } } : { kind: "span", style: { backgroundColor }, runs: [held] });
   }
   box();
   return { style: run.runs.some((held) => typeof held === "string") ? { ...style, flexShrink: 1 } : style, runs };
