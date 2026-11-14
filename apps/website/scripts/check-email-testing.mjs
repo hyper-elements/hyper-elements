@@ -19,6 +19,11 @@ for (const name of ["llms.txt", "llms-full.txt", "sitemap-0.xml", "index.html"])
   assert((await readFile(join(dist, name), "utf8")).includes("/email-testing"), `${name} links the email testing page`);
 }
 assert(JSON.parse(await readFile(join(dist, "search.json"), "utf8")).some((item) => item.href === "/email-testing"));
+// The agent skills, served as they are in the repository (the copy-paste prompt points at the email-testing one).
+for (const name of ["email-testing", "hyper-elements"]) {
+  assert.equal(await readFile(join(dist, "skills", `${name}.md`), "utf8"), await readFile(join(site, "../../skills", name, "SKILL.md"), "utf8"), `/skills/${name}.md is the ${name} skill`);
+}
+assert(html.includes("/skills/email-testing.md"), "the email testing page's agent prompt reads the skill from the site");
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".txt": "text/plain", ".wasm": "application/wasm" };
 let attackRequests = 0;
 const server = createServer(async (request, response) => {
