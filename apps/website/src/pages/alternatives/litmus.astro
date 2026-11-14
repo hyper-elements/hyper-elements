@@ -135,6 +135,7 @@ const faq = [
   description="The best Litmus alternatives, led by Hyper Elements: build reliable emails, check every render, and preview Outlook, Gmail and Apple Mail free, with results AI agents can read. Plus Parcel and Mailosaur."
   title="Litmus alternatives"
   lede="Litmus sends back pictures of your email, for a price. Hyper Elements builds it right, checks it as it renders, and previews it in Outlook, Gmail, Apple Mail and more, free and in milliseconds, with results your agent can read."
+  ctas={[{ label: "Try the free previews", href: "/email-testing" }, { label: "Get started", href: "/docs/quickstart" }]}
   tools={tools}
   feature={{ after: true, title: "Your email in Outlook, Gmail and Apple Mail, previewed free", sub: "Drawn by Hyper Elements on your machine, from the email's HTML, on every change. No test send, no account, nothing uploaded." }}
   tableTitle="Litmus and its alternatives, side by side"
@@ -166,6 +167,7 @@ const faq = [
           <p class="lx-who"><span class="lx-dot" aria-hidden="true"></span>Hyper Elements</p>
           <ul>{versus.us.map((t) => <li>{t}</li>)}</ul>
           <p class="lx-acc">Its previews match the real clients up to 99%.</p>
+          <a class="btn btn-primary btn-sm lx-try" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
         </div>
       </div>
     </div>
@@ -197,6 +199,10 @@ const faq = [
           ))}
         </ul>
       </div>
+      <div class="lx-cta reveal">
+        <a class="btn btn-primary" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
+        <a class="btn btn-ghost" href="/docs/guides/ai-agents">Set up your agent</a>
+      </div>
     </div>
   </section>
 
@@ -209,6 +215,9 @@ const faq = [
     ))}
   </a>
   <p class="shots-note">The percentage is how closely each preview matches the real client. Outlook.com, Yahoo Mail and AOL Mail are previewed too, and more clients are on the way.</p>
+  <div class="lx-cta">
+    <a class="btn btn-primary" href="/email-testing">Paste your email and preview it free <span class="arrow">→</span></a>
+  </div>
 </AlternativesPage>
 
 <style>
@@ -229,6 +238,8 @@ const faq = [
   .them li::before { content: "✕"; position: absolute; left: 0; top: 0; font: 600 13px/1.75 var(--mono); color: var(--err); opacity: 0.75; }
   .us li { color: var(--text); font-weight: 500; }
   .us li::before { content: "✓"; position: absolute; left: 0; top: 0; font: 600 13px/1.75 var(--mono); color: var(--ok); }
+  .lx-try { margin-top: 18px; }
+  .lx-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 28px; }
   .lx-acc { margin: 22px 0 0; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-2); }
 
   .lx-agents { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 28px; align-items: start; }
@@ -271,6 +282,7 @@ const faq = [
     .shot.shot-phone figcaption { display: grid; gap: 2px; font-size: 12.5px; }
   }
   @media (max-width: 640px) {
+    .lx-cta .btn { width: 100%; }
     .lx-side { padding: 22px; }
     .lx-side li { font-size: 15.5px; }
     .lx-diag li { padding: 12px 14px; }

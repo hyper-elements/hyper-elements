@@ -23,6 +23,8 @@ interface Props {
   /** The H1. */
   title: string;
   lede: string;
+  /** Buttons under the lede, the first one primary (none if left out). */
+  ctas?: Link[];
   tools: Tool[];
   /** The visual's heading; the visual is the slot. `after: true` puts it after the table, else it comes before. */
   feature: { title: string; sub: string; after?: boolean };
@@ -37,7 +39,7 @@ interface Props {
   faq: { q: string; a: string }[];
   final: { title: string; sub: string; cmd: string; ctas: Link[]; others: Link[] };
 }
-const { path, metaTitle, description, title, lede, tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
+const { path, metaTitle, description, title, lede, ctas = [], tools, feature, tableTitle, cols, textRows = [], matrix, faqTitle, faq, final } = Astro.props;
 const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No", na: "Doesn't apply" };
 
 const url = new URL(path, site.url).href;
@@ -57,6 +59,11 @@ const jsonLd = [
     <div class="wrap a-hero-inner">
       <h1 class="h-page">{title}</h1>
       <p class="lede">{lede}</p>
+      {ctas.length > 0 && (
+        <div class="a-cta hero-cta">
+          {ctas.map((c, i) => i === 0 ? <a class="btn btn-primary" href={c.href}>{c.label} <span class="arrow">→</span></a> : <a class="btn btn-ghost" href={c.href}>{c.label}</a>)}
+        </div>
+      )}
     </div>
 
     {/* The picks: each tool's one line, linking to the side-by-side table. */}
@@ -209,6 +216,7 @@ const jsonLd = [
   .a-hero-inner { position: relative; display: grid; justify-items: center; text-align: center; gap: 14px; grid-template-columns: minmax(0, 1fr); }
   .a-hero .h-page { margin: 0; }
   .a-hero .lede { margin: 0 auto; max-width: 56ch; }
+  .hero-cta { margin-top: 10px; }
   .picks { position: relative; list-style: none; margin: 48px 0 0; padding: 0; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 14px; }
   .pick { display: grid; gap: 6px; align-content: start; height: 100%; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-1); color: inherit; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
   .pick:hover, .pick:focus-visible { border-color: var(--line-3); transform: translateY(-2px); }
