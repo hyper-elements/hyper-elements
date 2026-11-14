@@ -82,9 +82,8 @@ validate(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlo
   their fallbacks, phone styles where a client doesn't apply them, classic Outlook's layout (a box in a Row without a
   width, an Image without one, a Row kept side by side), styles a client draws otherwise (font weights, corners,
   letter spacing), hover styles, and Gmail's size limits (`render()` only: they're measured on the written email).
-- **Clients:** `EMAIL_CLIENTS` lists the 26 it knows, with what's measured of each (`measured`: words within 4px in
-  captures; `screenshots`, for Yahoo Mail and AOL Mail: lines within 3px in screenshots); `DEFAULT_EMAIL_CLIENTS` the
-  11 checked when none are named. A diagnostic for clients not asked for is left out, and one said of several clients is
+- **Clients:** `EMAIL_CLIENTS` lists the 26 it knows, with what's measured of each; `DEFAULT_EMAIL_CLIENTS` the 11
+  checked when none are named. A diagnostic for clients not asked for is left out, and one said of several clients is
   one diagnostic with all of them.
 - **Await it:** `emailClients()` compiles the models' WebAssembly module once, so it returns a Promise. Passed without
   `await`, core skips it and says so (`plugin/invalid`).

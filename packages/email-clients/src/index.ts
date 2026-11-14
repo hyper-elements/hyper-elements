@@ -28,7 +28,7 @@ import { previewsOf } from "./previews";
 
 export { BLOCK_MAP_VERSIONS, CORE_RANGE, MODEL_PROTOCOLS, PLUGIN_APIS } from "./core";
 export { COMPUTERS, DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS, WEBMAIL, type Computer, type EmailClientPreview, type PreviewClient, type PreviewVariant, type Skipped } from "./clients";
-export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement, type EmailClientScreenshots } from "./email-clients";
+export { DEFAULT_EMAIL_CLIENTS, EMAIL_CLIENTS, type EmailClient, type EmailClientInfo, type EmailClientMeasurement } from "./email-clients";
 export { emailClients, PLUGIN_NAME, type EmailClientsPluginOptions } from "./plugin";
 export type { EmailHtmlDiagnostic } from "./html";
 
