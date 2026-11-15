@@ -109,14 +109,15 @@ const COMPONENTS: Record<string, Component> = {
   Html: HtmlBlock,
 };
 
-/** What a node's component gets. `inRtl`: its parent's text runs right to left. */
-function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl = false): Props {
+/** What a node's component gets. `root`: the template's. `inRtl`: its parent's text runs right to left. */
+function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, root: ResolvedNode, inRtl = false): Props {
   const rtl = node.props.dir === "rtl" || (inRtl && node.props.dir !== "ltr");
-  const render: Props["render"] = (child, childPlacement) => write(child, node, childPlacement, options, rtl);
+  const render: Props["render"] = (child, childPlacement) => write(child, node, childPlacement, options, root, rtl);
   return {
     node,
     style: node.style,
     parent,
+    root,
     placement,
     classes: () => classesFor(node, parent),
     children: () => {
@@ -131,10 +132,10 @@ function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declaratio
   };
 }
 
-function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl: boolean): Html {
+function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, root: ResolvedNode, inRtl: boolean): Html {
   const component = COMPONENTS[node.type];
   if (!component) throw new Error(`[Elements] The page exporter can't render a ${node.type}`);
-  return component(propsOf(node, parent, placement, options, inRtl));
+  return component(propsOf(node, parent, placement, options, root, inRtl));
 }
 
 export function renderPage(resolved: ResolvedDocument, options: PageOptions = {}): PageHtml {
@@ -143,7 +144,7 @@ export function renderPage(resolved: ResolvedDocument, options: PageOptions = {}
   const fonts = fontFaces(root, { swap: true });
   const document = root.type === "Document";
   const writer = document ? Document : root.type === "Canvas" ? Canvas : Page;
-  const body = withStylesheet(sheet, () => String(writer(propsOf(root, root, [], options))));
+  const body = withStylesheet(sheet, () => String(writer(propsOf(root, root, [], options, root))));
 
   // A Canvas and a Document are of a fixed size, whatever the window: no phone layout.
   const fixed = !root.definition.responsive;

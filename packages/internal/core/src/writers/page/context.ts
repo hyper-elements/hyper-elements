@@ -20,6 +20,8 @@ export interface Props {
   /** Its styles, its component's defaults included. */
   style: Record<string, Json>;
   parent: ResolvedNode;
+  /** The template's root: a Page, a Document or a Canvas. */
+  root: ResolvedNode;
   /** What its parent's layout adds to its style: a Row's flex, a stack's `align-self`. */
   placement: Declarations;
   /** Its classes: its phone styles, hiding, hover, a Row's stacking on phones. */
