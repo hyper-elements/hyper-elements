@@ -4,6 +4,13 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **A font file the models name that this package doesn't ship no longer fails a preview.** With `fonts: "inline"`,
+  a models release newer than this package could name a file `fonts/` doesn't have (models 1.12.3's AOL faces did,
+  for 0.4.14), and the preview threw `email-clients/fonts-unreadable`, saying the package had been bundled away from its
+  files. Now the file is left out (`email-clients/font-missing`) and the preview draws with the faces it has; the
+  bundled-away error stays for when fonts/ itself isn't there.
+- **Cutive Mono** (SIL OFL) in `fonts/` (`CutiveMono-Regular.woff2`), ahead of models 1.12.4, whose Gmail app on Android
+  draws Courier New in it as Android does.
 - **From models 1.12.3:** AOL Mail (`aol`) draws text the email doesn't style in a stand-in with AOL's own web font's
   widths, character by character, less its kerning (Roboto, SIL OFL), shipped in `fonts/` (`AOLWidths-Regular.woff2`,
   `AOLWidths-SemiBold.woff2`, `AOLWidths-Bold.woff2`): before, Roboto's widths, up to 10% from AOL's for a letter. On

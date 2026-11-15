@@ -22,14 +22,22 @@ export type ReadFont = (file: string) => Promise<string>;
 
 /**
  * Reads the package's own font files (fonts/, beside dist/). Where a bundler has moved this package's code away from
- * its files (bundled into an app's server build), it says so: the files aren't there to read.
+ * its files (bundled into an app's server build), it says so: the files aren't there to read. Where fonts/ is there but
+ * not the file, a models release newer than this package names a file it doesn't ship: that's
+ * `email-clients/font-missing`, and fontSources leaves the file out (the preview draws with the faces it has).
  */
 export async function readPackageFont(file: string): Promise<string> {
-  const { readFile } = await import("node:fs/promises");
+  const { readFile, access } = await import("node:fs/promises");
   const url = new URL(`../fonts/${file}`, import.meta.url);
   try {
     return (await readFile(url)).toString("base64");
   } catch (cause) {
+    if (await access(new URL("../fonts/", import.meta.url)).then(() => true, () => false)) {
+      const missing: Error & { cause?: unknown } = new Error(`fonts/ has no ${file}: the installed @hyper-elements/email-client-models names a font file this version of @hyper-elements/email-clients doesn't ship`);
+      missing.name = "email-clients/font-missing";
+      missing.cause = cause;
+      throw missing;
+    }
     const error: Error & { cause?: unknown } = new Error(
       `fonts: "inline" reads @hyper-elements/email-clients' font files from its fonts/ folder, and ${url.href} isn't there to read: ` +
         `the package was bundled away from its files. Leave it out of the bundle (Next.js: serverExternalPackages: ["@hyper-elements/email-clients"]), or use fonts: "url"`
@@ -82,10 +90,24 @@ export function unnamed(html: string, known: Readonly<Record<string, readonly st
  */
 export const CLIENT_FILES: Partial<Record<ModelClient, readonly string[]>> = { aol: ["Roboto-Variable.woff2", "OpenSans-Italic-Variable.woff2"] };
 
-/** The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. */
+/**
+ * The source each of a client's files is given: its URL, or a data: URL. `skip`: files the email doesn't need. A file
+ * the models name that this package doesn't ship (`email-clients/font-missing`) is left out, so a newer models release
+ * changes a preview's faces at most, never fails it.
+ */
 export async function fontSources(client: ModelClient, how: "url" | "inline", read: ReadFont = readPackageFont, skip: ReadonlySet<string> = new Set(), computer?: Computer): Promise<Record<string, string>> {
   const own = CLIENT_FILES[client] ?? [];
   const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => own.includes(file) || !skip.has(file));
-  const sources = await Promise.all(files.map(async (file) => [file, how === "url" ? fontUrl(file) : `data:font/woff2;base64,${await read(file)}`] as const));
-  return Object.fromEntries(sources);
+  const sources = await Promise.all(
+    files.map(async (file) => {
+      if (how === "url") return [file, fontUrl(file)] as const;
+      try {
+        return [file, `data:font/woff2;base64,${await read(file)}`] as const;
+      } catch (error) {
+        if ((error as Error).name === "email-clients/font-missing") return null;
+        throw error;
+      }
+    })
+  );
+  return Object.fromEntries(sources.filter((s) => s !== null));
 }

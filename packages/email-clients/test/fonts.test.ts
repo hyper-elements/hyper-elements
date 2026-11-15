@@ -15,8 +15,11 @@ const fonts = resolve(__dirname, "../fonts");
 describe("the stand-in fonts", () => {
   it("are each in fonts/, as WOFF2, beside their licences", () => {
     const files = new Set(PREVIEW_CLIENTS.flatMap((client) => fontFiles(client)));
-    expect([...files].sort()).toEqual(readdirSync(fonts).filter((f) => f.endsWith(".woff2")).sort());
-    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt", "aptos-widths-LICENSE.txt", "lato-OFL.txt", "montserrat-OFL.txt", "open-sans-OFL.txt", "poppins-OFL.txt", "nunito-sans-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
+    const shipped = readdirSync(fonts).filter((f) => f.endsWith(".woff2"));
+    expect([...files].filter((f) => !shipped.includes(f))).toEqual([]);
+    // Shipped ahead of the models release that names it: Cutive Mono, the Gmail app on Android's Courier New (models 1.12.4).
+    expect(shipped.filter((f) => !files.has(f) && f !== "CutiveMono-Regular.woff2")).toEqual([]);
+    for (const licence of ["selawik-LICENSE.txt", "carlito-OFL.txt", "roboto-OFL.txt", "noto-serif-OFL.txt", "noto-sans-mono-OFL.txt", "aptos-widths-LICENSE.txt", "aol-widths-LICENSE.txt", "cutive-mono-OFL.txt", "lato-OFL.txt", "montserrat-OFL.txt", "open-sans-OFL.txt", "poppins-OFL.txt", "nunito-sans-OFL.txt"]) expect(existsSync(join(fonts, licence)), licence).toBe(true);
   });
 
   it("inline within the budget for each client: 2,000,000 base64 bytes at most", () => {
@@ -70,9 +73,17 @@ describe("the stand-in fonts", () => {
     expect(Object.keys(await fontSources("outlook", "url", undefined, skip)).sort()).toEqual(fontFiles("outlook").filter((f) => !skip.has(f)).sort());
   });
 
-  it("says why inlining fails where the font files aren't beside the code (a bundled package)", async () => {
+  it("says when the installed models name a font file this package doesn't ship", async () => {
     const error = await readPackageFont("not-a-font.woff2").catch((e: Error) => e);
-    expect(error).toMatchObject({ name: "email-clients/fonts-unreadable" });
-    expect((error as Error).message).toMatch(/serverExternalPackages.*fonts: "url"/);
+    expect(error).toMatchObject({ name: "email-clients/font-missing" });
+  });
+
+  it("leaves out a file the models name that this package doesn't ship, and still fails where none can be read", async () => {
+    const missing = Object.assign(new Error("no such file"), { name: "email-clients/font-missing" });
+    const read = async (file: string) => (file === "selawk.woff2" ? Promise.reject(missing) : readPackageFont(file));
+    const inline = await fontSources("outlook-com", "inline", read);
+    expect(Object.keys(inline).sort()).toEqual(fontFiles("outlook-com").filter((f) => f !== "selawk.woff2").sort());
+    const unreadable = Object.assign(new Error("bundled away"), { name: "email-clients/fonts-unreadable" });
+    await expect(fontSources("outlook-com", "inline", () => Promise.reject(unreadable))).rejects.toMatchObject({ name: "email-clients/fonts-unreadable" });
   });
 });

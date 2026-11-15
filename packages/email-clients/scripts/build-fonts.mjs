@@ -25,6 +25,8 @@ const FILES = {
   'aptos-widths': ['AptosWidths-Regular.woff2', 'AptosWidths-Bold.woff2'],
   // AOL Mail's web font (models 1.12.3): Roboto with AOL's advances, less its kerning on the average.
   'aol-widths': ['AOLWidths-Regular.woff2', 'AOLWidths-SemiBold.woff2', 'AOLWidths-Bold.woff2'],
+  // The Gmail app on Android's Courier New (models 1.12.4): Cutive Mono, Android's serif-monospace.
+  'cutive-mono': ['CutiveMono-Regular.woff2'],
   // Office's cloud fonts, which classic Outlook draws by name (models 1.9.0): Google Fonts' builds.
   lato: ['Lato-Regular.woff2', 'Lato-Bold.woff2', 'Lato-Italic.woff2', 'Lato-BoldItalic.woff2'],
   montserrat: ['Montserrat-Variable.woff2', 'Montserrat-Italic-Variable.woff2'],
@@ -32,7 +34,7 @@ const FILES = {
   poppins: ['Poppins-Regular.woff2', 'Poppins-SemiBold.woff2', 'Poppins-Bold.woff2', 'Poppins-Italic.woff2', 'Poppins-BoldItalic.woff2'],
   'nunito-sans': ['NunitoSans-Variable.woff2', 'NunitoSans-Italic-Variable.woff2'],
 };
-const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt', 'aptos-widths': 'LICENSE.txt', 'aol-widths': 'LICENSE.txt', lato: 'OFL.txt', montserrat: 'OFL.txt', 'open-sans': 'OFL.txt', poppins: 'OFL.txt', 'nunito-sans': 'OFL.txt' };
+const LICENCES = { selawik: 'LICENSE.txt', carlito: 'OFL.txt', roboto: 'OFL.txt', 'noto-serif': 'OFL.txt', 'noto-sans-mono': 'OFL.txt', 'aptos-widths': 'LICENSE.txt', 'aol-widths': 'LICENSE.txt', 'cutive-mono': 'OFL.txt', lato: 'OFL.txt', montserrat: 'OFL.txt', 'open-sans': 'OFL.txt', poppins: 'OFL.txt', 'nunito-sans': 'OFL.txt' };
 for (const [family, files] of Object.entries(FILES)) {
   for (const file of files) {
     const source = readFileSync(join(fonts, family, file));
