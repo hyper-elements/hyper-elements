@@ -1,6 +1,6 @@
 // The image checker's own test, before any agent runs (no API):
 //
-//   node suites/image/check/selftest.mjs [--only refs,perturb,negative] [--kits he,satori,vercel-og] [--briefs blog,quote]
+//   node suites/image/check/selftest.mjs [--only refs,perturb,negative] [--kits he,playwright,canvas] [--briefs blog,quote]
 //
 // 1. refs: each kit's reference solution of each brief (suites/image/reference) must pass every check.
 // 2. perturb: the references with font sizes and padding changed, words intact: OCR must read ≥ 99% of the texts.
@@ -83,7 +83,7 @@ if (only.includes("perturb")) {
   const pad = (d) => (s) => s.replace(/padding: (64|72|80)\b/g, (_, n) => `padding: ${Number(n) + d}`);
   const variants = { "size0.9": scale(0.9), "size0.95": scale(0.95), "size1.05": scale(1.05), "size1.1": scale(1.1), "pad-16": pad(-16), "pad+16": pad(16) };
   let read = 0, total = 0;
-  for (const brief of briefs) for (const kit of kits.filter((k) => k !== "vercel-og")) for (const [name, edit] of Object.entries(variants)) {
+  for (const brief of briefs) for (const kit of kits) for (const [name, edit] of Object.entries(variants)) {
     const { render, check } = await attempt(`p-${name}`, kit, brief, { card: edit });
     if (render.code !== 0) { console.log(`  · ${kit} ${brief} ${name}: didn't render (${render.err.split("\n")[0].slice(0, 120)})`); continue; }
     for (const [k, v] of Object.entries(check?.measures ?? {})) {

@@ -1,4 +1,4 @@
-// The skill suite's replay: a session's attempts recomputed, not read, over a verified prefix (decisions 2 and 3).
+// The skill suite's replay: a session's attempts recomputed, not read, over a verified prefix.
 //
 // The session is replayed in order in a pristine directory at the session's own path. Each event must be replayable
 // (a Write or Edit of a source, a Read, Glob or Grep inside the run, or a Bash call of the exact forms below whose

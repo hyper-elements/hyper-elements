@@ -20,7 +20,8 @@ const charts = [
   },
   {
     suite: "image",
-    // Excludes the pilot/first batch; uses the isolated rerun with identical kit instructions.
+    // The batch run after every kit was given the same instructions. The first batch's Hyper Elements kit alone was
+    // asked for two files, and was slower there (106 s against Playwright's 87 s); the README gives both batches.
     source: "2026-11-08b-image-sonnet.jsonl",
     destination: "hyper-elements-image-benchmark.svg",
     runsPerKit: 20,
