@@ -222,7 +222,7 @@ export function compareArms(a, b, all = []) {
 }
 
 /**
- * Decision 9: the negative arm (a guide without `mobile` and `hover`) against the candidate. It passes only if its
+ * The negative control: the negative arm (a guide without `mobile` and `hover`) against the candidate. It passes only if its
  * first-try validity is 30 points lower, half its runs made a mistake naming `mobile` or `hover`, the candidate
  * passed every run, and each arm has 80% of its planned runs with a verified first try (otherwise inconclusive).
  */

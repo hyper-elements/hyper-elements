@@ -3,9 +3,8 @@
 //
 //   node lib/bench.mjs --suite email --kits he,react-email,html --briefs reset,launch --reps 2 --model sonnet --concurrency 3
 //   node lib/bench.mjs --suite image --kits he,playwright,canvas --briefs all --reps 3 --model sonnet --concurrency 4
-//   node lib/bench.mjs --suite multi --kits he,stack --briefs all --reps 4 --model sonnet --concurrency 4
 //
-// A suite with a `changePrompt` (multi) runs in two phases: the build, then, in a new session on the finished
+// A suite with a `changePrompt` runs in two phases: the build, then, in a new session on the finished
 // project, the brief's change (CHANGES.md and the changed checks). The row has each phase's numbers and the totals.
 //
 // Each run gets a fresh directory (runs/<stamp>/<kit>__<brief>__<rep>/) and the suite's prompt. The agent's
@@ -49,7 +48,7 @@ const planFile = resultsFile.replace(/\.jsonl$/, ".plan.json");
 await mkdir(dirname(resultsFile), { recursive: true });
 const plan = resuming ? JSON.parse(await readFile(planFile, "utf8")) : null;
 const before = resuming ? resumeOf(plan, existsSync(resultsFile) ? await readFile(resultsFile, "utf8") : "") : null;
-const kits = plan?.kits ?? arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", multi: "he,stack", skill: "candidate,release" }[suiteName]).split(",");
+const kits = plan?.kits ?? arg("kits", { email: "he,react-email,mjml,html", image: "he,playwright,canvas", skill: "candidate,release" }[suiteName]).split(",");
 const briefs = plan?.briefs ?? await briefsOf(suiteName, arg("briefs", suite.groups ? "core" : "all"));
 const reps = plan?.reps ?? Number(arg("reps", "1"));
 

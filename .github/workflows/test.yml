@@ -168,13 +168,13 @@ jobs:
       # preview shell, and the runtime each preview file carries (the frames, fonts, images
       # and findings around the models, minified, about 8KB). The models are their own
       # package (a dependency, not bundled), and so is core (external). Set from that plus
-      # 2,000 bytes. Raise it on purpose, with what grew.
+      # 2,000 bytes. Raise it on purpose, with what grew. Raised 400 bytes with Outlook for Mac's previews (about 125).
       - name: Check email client previews bundle size
         run: |
           BUNDLE="packages/email-clients/dist/index.js"
           test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=62400
+          MAX_SIZE=62800
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

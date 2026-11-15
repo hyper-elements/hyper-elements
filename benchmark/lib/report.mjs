@@ -142,7 +142,7 @@ for (const suite of [...new Set(rows.map((r) => r.suite))]) {
     out[suite] = { ...out[suite], clients };
   }
 
-  // Two-phase suites (multi): each phase on its own. The change runs only after a passing build.
+  // Two-phase suites (a `changePrompt`): each phase on its own. The change runs only after a passing build.
   if (rs.some((r) => r.build)) {
     console.log("Per phase (medians; the change phase only where the build passed):");
     console.table(kits.flatMap((kit) => ["build", "change"].map((phase) => {

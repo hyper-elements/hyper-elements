@@ -8,7 +8,7 @@ import { defaultStarter, engineVersion, starterList } from "../lib/playground";
 import { site } from "../lib/site";
 
 const description =
-  "Write a Hyper Elements template and see it rendered live, in your browser, as an email, a web page, a PDF and an image, with every diagnostic and its fix. For AI agents: WebMCP tools, a window.hyperElementsPlayground API and #code= links.";
+  "Write a Hyper Elements template in JSX and see it rendered live as an email, web page, PDF and image, with every diagnostic and its fix.";
 
 const icon = (d: string, size = 15) =>
   `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -69,7 +69,7 @@ show_hyper_elements_preview({ code, root?, view?, device? })
 get_hyper_elements_reference()
 get_playground_code()`;
 ---
-<Base title="Playground" description={description}>
+<Base title="Email, web page, PDF and image playground" description={description}>
   <div class="pg" data-playground data-status="loading" data-layout="split" data-pane="output">
     <!--
       For AI agents and automation (browser agents, page-text extractors, accessibility trees): how to drive this
@@ -160,7 +160,18 @@ get_playground_code()`;
             <div class="pg-device" data-device-frame><div class="pg-device-screen" data-preview></div></div>
           </div>
           <div class="pg-view pg-view-clients" data-view-pane="clients" hidden>
-            <div class="pg-clients-tabs" role="tablist" aria-label="Email client" data-clients-tabs></div>
+            <div class="pg-clients-bar" data-clients-bar hidden>
+              <div class="pg-menu pg-clients-menu" data-menu="clients">
+                <button class="pg-clients-open" type="button" data-clients-open aria-haspopup="menu" aria-expanded="false">
+                  <span class="pg-clients-name" data-clients-name></span>
+                  <span class="pg-caret" set:html={icons.caret} />
+                </button>
+                <div class="pg-menu-list pg-clients-list" role="menu" aria-label="Email client" data-clients-list hidden></div>
+              </div>
+              <div class="pg-seg pg-seg-text" role="radiogroup" aria-label="Device" data-clients-device></div>
+              <div class="pg-seg pg-seg-text" role="radiogroup" aria-label="Light or dark mode" data-clients-scheme></div>
+              <span class="pg-clients-width" data-clients-width></span>
+            </div>
             <div class="pg-clients-stage" data-clients-stage></div>
           </div>
           <div class="pg-view pg-view-source" data-view-pane="html" hidden><pre class="pg-source" data-source="html" tabindex="0"></pre></div>

@@ -1,6 +1,6 @@
 ---
 import Logo from "./Logo.astro";
-import { mainNav, site } from "../lib/site";
+import { mainNav, resourcesNav, site } from "../lib/site";
 import { stars as starCount } from "../lib/stars";
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const current = (href: string) => path === href || path.startsWith(href + "/");
@@ -16,6 +16,17 @@ const stars = await starCount;
       {mainNav.map((item) => (
         <a href={item.href} aria-current={current(item.href) ? "page" : undefined}>{item.label}</a>
       ))}
+      <details class="nav-resources">
+        <summary class:list={{ "is-current": resourcesNav.some((item) => current(item.href)) }}>
+          Resources
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </summary>
+        <div class="resources-links">
+          {resourcesNav.map((item) => (
+            <a href={item.href} aria-current={current(item.href) ? "page" : undefined}>{item.label}</a>
+          ))}
+        </div>
+      </details>
     </nav>
     <div class="header-actions">
       <button class="search-btn" type="button" data-search-open aria-label="Search the docs">

@@ -26,6 +26,8 @@ The email comparison uses Hyper Elements, MJML, React Email and hand-written HTM
 - **Fewest output tokens.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short template; the engine writes the tables.
 - **Right the first time.** Every Hyper Elements and MJML email passed the first time the agent ran the checks, against 6 of 16 hand-written HTML emails and 12 of 16 React Email ones.
 
+How Hyper Elements differs from React Email and MJML beyond speed (layout, checks, email client previews, themes) is on [Hyper Elements vs React Email](/compare/react-email) and [Hyper Elements vs MJML](/compare/mjml).
+
 ## The emails
 
 Five briefs, each with the exact copy, links and images, and its layout:

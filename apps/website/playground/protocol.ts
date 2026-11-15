@@ -23,6 +23,8 @@ interface Common {
 }
 
 export type Request =
+  /** Existing HTML is data, never compiled or evaluated as template code. */
+  | { kind: "html-previews"; html: string; clients?: string[]; dark?: boolean }
   | (Common & { kind: "render" })
   | (Common & { kind: "pdf"; fonts: FontFile[]; images: Record<string, Uint8Array> })
   | (Common & { kind: "image"; format: "png" | "svg"; scale: number; fonts: FontFile[]; images: Record<string, Uint8Array> })
@@ -69,7 +71,7 @@ export interface PlaygroundError {
 export interface Preview {
   id: string;
   client: string;
-  /** For webmail (Outlook.com, Gmail on the web), the computer it's read on: each is previewed on both. */
+  /** For webmail (Outlook.com, Gmail, Yahoo Mail and AOL Mail on the web), the computer it's read on: each is previewed on both. */
   computer?: "windows" | "mac";
   dark: boolean;
   width: number;

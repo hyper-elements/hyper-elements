@@ -86,6 +86,21 @@ node_modules/@hyper-elements/react/GUIDE.md.`} />
 
   <section class="section" style="padding-top:0">
     <div class="wrap">
+      <div class="prompt-card panel reveal">
+        <p class="eyebrow">Test an email in the clients</p>
+        <h2 class="h-section">Outlook, Gmail, Yahoo and Apple Mail, in the chat.</h2>
+        <p class="lede prompt-lede">The email-testing skill has your agent preview any email, a template or HTML from anywhere, and show you each client's screenshot with what it changed. Free, on your computer.</p>
+        <p class="prompt-text">{site.emailTestingPrompt}</p>
+        <div class="prompt-actions">
+          <button class="btn btn-primary" type="button" data-copy={site.emailTestingPrompt}>Copy prompt</button>
+          <Cmd text={site.emailTestingSkill} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
       <div class="prompt-card panel panel-glow reveal">
         <p class="eyebrow">Try it</p>
         <p class="prompt-text">{prompt}</p>
@@ -107,6 +122,11 @@ node_modules/@hyper-elements/react/GUIDE.md.`} />
   .outlines .view-text { color: #d4d4d4; font-size: 12.5px; }
   .prompt-card { padding: 40px; text-align: center; display: grid; justify-items: center; gap: 8px; background: #0e0e0e; }
   .prompt-text { font: 400 17px/1.6 var(--mono); color: var(--text); max-width: 70ch; margin: 0 0 16px; }
+  .prompt-lede { max-width: 60ch; margin: 0 0 20px; }
+  .prompt-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; width: 100%; }
+  .prompt-actions :global(.cmd) { max-width: 100%; min-width: 0; }
+  .prompt-card .prompt-text { overflow-wrap: anywhere; }
+  .prompt-card { min-width: 0; grid-template-columns: minmax(0, 1fr); }
   @media (max-width: 1000px) {
     .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .split { grid-template-columns: minmax(0, 1fr); gap: 32px; }

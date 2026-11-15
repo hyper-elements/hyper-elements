@@ -4,6 +4,46 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **A font file the models name that this package doesn't ship no longer fails a preview.** With `fonts: "inline"`,
+  a models release newer than this package could name a file `fonts/` doesn't have (models 1.12.3's AOL faces did,
+  for 0.4.14), and the preview threw `email-clients/fonts-unreadable`, saying the package had been bundled away from its
+  files. Now the file is left out (`email-clients/font-missing`) and the preview draws with the faces it has; the
+  bundled-away error stays for when fonts/ itself isn't there.
+- **Cutive Mono** (SIL OFL) in `fonts/` (`CutiveMono-Regular.woff2`), ahead of models 1.12.4, whose Gmail app on Android
+  draws Courier New in it as Android does.
+- **From models 1.12.3:** AOL Mail (`aol`) draws text the email doesn't style in a stand-in with AOL's own web font's
+  widths, character by character, less its kerning (Roboto, SIL OFL), shipped in `fonts/` (`AOLWidths-Regular.woff2`,
+  `AOLWidths-SemiBold.woff2`, `AOLWidths-Bold.woff2`): before, Roboto's widths, up to 10% from AOL's for a letter. On
+  the models' second held-out set, 94.7% of lines within 3px, from 92.5%. Classic Outlook (`outlook`) draws text at
+  its size in half points, Courier New at Word's widths, and keeps a slightly long monospaced line whole as Word does:
+  94.8%, from 93.1%.
+- A preview of AOL Mail with its fonts inline is about 50 KB larger (the AOLWidths faces).
+- Requires `@hyper-elements/email-client-models` 1.12.3.
+- **Outlook for Mac:** `outlook-mac` is previewed, at 820px like the other desktop clients, with a dark preview with
+  `dark: true`. Drawn with the models' `outlook-mac` (1.12.0): the email in a WebKit view on a Mac with Office, as Apple
+  Mail draws it, set 8px in, its unstyled text in Aptos 16px (the Aptos stand-in the package already ships), and
+  Outlook's own dark mode. Its previews are `approximate`.
+  - The caniemail-based checks for Outlook for Mac are as before.
+- **From models 1.12.1:** classic Outlook (`outlook`) and the Gmail app on an iPhone (`gmail-app.iphone`) draw closer to
+  the real clients on emails the models weren't tuned on. Classic Outlook takes a paragraph's line height over a link's
+  or span's, sets large Trebuchet MS and Courier New at their fonts' own line height and Courier New at Word's widths,
+  and keeps a full-width table with a pixel `max-width` in its cell. The Gmail app on an iPhone draws text a device
+  pixel larger than its size, not 1.25% larger. On the models' second held-out set: the Gmail app on an iPhone 95.9% of
+  lines within 3px (91.3% with 1.12.0), classic Outlook 90.3% (89.8%).
+- Requires `@hyper-elements/email-client-models` 1.12.1.
+- A preview with its fonts inline is about 12 KB larger (the models' script).
+- **Yahoo Mail and AOL Mail:** `yahoo` and `aol` are previewed, as webmail read on Windows and on a Mac (`yahoo`,
+  `yahoo.mac`, and so on), in their message panes, 758px and 869px wide, with a dark preview of each with `dark: true`.
+  Drawn with the models' `yahoo` and `aol` (1.11.0).
+  - On the models' benchmark: 99.3% of lines within 3px for Yahoo Mail (98.4% in dark mode), 99.0% for AOL Mail.
+  - For HTML not built with Hyper Elements, they're approximate (measured on two such emails), as
+    `APPROXIMATE_FOR_HTML` lists.
+  - AOL Mail draws text the email doesn't style in its own web font: previews draw it with Roboto and Open Sans Italic,
+    loaded whether or not the email names Open Sans.
+  - AOL Mail's dark mode leaves the email as it is.
+  - AOL Mail's previews are `approximate`: AOL draws some text in its own web font, which the preview draws with a
+    stand-in of close widths, and lines can sit a pixel or so from where AOL puts them.
+- Requires `@hyper-elements/email-client-models` 1.11.0.
 - **The Gmail app on an iPhone:** `gmail-app` previews add `gmail-app.iphone`, the Gmail app on an iPhone 16 with
   iOS 26, in its 345px card: Gmail's version of the email as on Android, in iOS's fonts, line heights in whole pixels.
   Drawn with the models' `gmail-app-ios` (1.10.0), 97.1% of the benchmark's lines within 3px. Its dark mode isn't

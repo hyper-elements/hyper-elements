@@ -35,5 +35,6 @@ templates.sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
 export const thumbWidth = (t: Example, widths: { page: number; document: number; email: number }) =>
   t.root === "Canvas" ? Number(t.outline.match(/^Canvas (\d+)px/)?.[1] ?? 1200) : t.root === "Page" ? widths.page : t.root === "Document" ? widths.document : widths.email;
 
-/** The home page's own examples (examples/showcase/): the template strip's page and document, the feature tiles' email, and the phone demo. */
-export const showcase = (data as any).showcase as Record<"email" | "page" | "document" | "responsive", Example>;
+/** The site's own examples (examples/showcase/): the home page's template strip page and document, feature tiles' email and
+ * phone demo, and the React Email comparison's one email in two themes (brand-north, brand-bloom). */
+export const showcase = (data as any).showcase as Record<"email" | "page" | "document" | "responsive" | "brand-north" | "brand-bloom", Example>;

@@ -36,9 +36,25 @@ document.addEventListener("click", (e) => {
 // Mobile menu.
 const toggle = document.querySelector<HTMLButtonElement>(".menu-toggle");
 const nav = document.getElementById("main-nav");
+const resources = document.querySelector<HTMLDetailsElement>(".nav-resources");
 toggle?.addEventListener("click", () => {
   const open = nav?.classList.toggle("open") ?? false;
   toggle.setAttribute("aria-expanded", String(open));
+  if (!open && resources) resources.open = false;
+});
+
+// Native disclosure keeps the resource links available without JavaScript too.
+document.addEventListener("click", (event) => {
+  if (resources?.open && !resources.contains(event.target as Node)) resources.open = false;
+});
+resources?.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape" || !resources.open) return;
+  event.preventDefault();
+  resources.open = false;
+  resources.querySelector("summary")?.focus();
+});
+resources?.addEventListener("focusout", (event) => {
+  if (!resources.contains(event.relatedTarget as Node | null)) resources.open = false;
 });
 
 // A desktop view is drawn at its own width and scaled to fit its panel, so it's the desktop layout at any size.
@@ -175,7 +191,7 @@ function results(q: string) {
       const score = (t.startsWith(terms[0]) ? 0 : t.includes(terms[0]) ? 1 : 2) + (i.href.includes("#") ? 0.5 : 0);
       return { i, score };
     })
-    .filter((x): x is { i: (typeof index)[number]; score: number } => x !== null)
+    .filter((x): x is { i: NonNullable<typeof index>[number]; score: number } => x !== null)
     .sort((a, b) => a.score - b.score)
     .slice(0, 12)
     .map((x) => x.i);

@@ -38,6 +38,15 @@ Install the same guide as an agent skill:
 npx skills add hyper-elements/hyper-elements
 ```
 
+It offers two skills: `hyper-elements`, the guide, and `email-testing`, which tells an agent how to preview and check any email (a template, or HTML from MJML, React Email or a builder) in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail. `npx skills add hyper-elements/hyper-elements --skill email-testing` installs that one alone.
+
+In Claude Code, both are plugins as well, in the repository's plugin marketplace:
+
+```text
+/plugin marketplace add hyper-elements/hyper-elements
+/plugin install email-testing@hyper-elements
+```
+
 ### For any model, from the web
 
 The site serves the docs in plain text for language models:
@@ -136,6 +145,17 @@ A template with errors rejects with an `ElementsError` whose `diagnostics` hold 
 ### 5. Check it in the email client emulator
 
 An agent with a browser can see the email as each email client shows it, free and locally, with no screenshot service account or API, in the email client emulator that comes with Hyper Elements: `renderInEmailClients()` from `@hyper-elements/email-clients` returns an HTML preview per client, which the agent can open, screenshot or save, and each lists what that client changed, as JSON the agent reads.
+
+The `email-testing` skill gives an agent these steps for any email. To have an agent install it and test an email, give it this prompt:
+
+```text
+Install the email-testing skill
+(npx skills add hyper-elements/hyper-elements --skill email-testing -y,
+or read https://www.hyperelements.dev/skills/email-testing.md)
+and follow it to preview [my email: an HTML file or a template]
+in Outlook, Gmail, Yahoo Mail and Apple Mail, light and dark.
+Show me each client's screenshot and what it changed.
+```
 
 ```tsx
 import { mkdir, writeFile } from "node:fs/promises";

@@ -1,0 +1,200 @@
+---
+import AlternativesPage, { type MatrixRow, type Tool } from "../../components/AlternativesPage.astro";
+import BenchmarkBoard from "../../components/BenchmarkBoard.astro";
+import ClientShots from "../../components/ClientShots.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import ThemeShots from "../../components/ThemeShots.astro";
+import { site } from "../../lib/site";
+// The same welcome email in both, written by hand (as on /compare/mjml): welcome.mjml compiles with MJML in strict
+// validation, and welcome.tsx validates with Hyper Elements.
+import mjml from "../../../examples/compare/welcome.mjml?raw";
+import he from "../../../examples/compare/welcome.tsx?raw";
+
+// "MJML alternatives": a list page, linking to /compare/mjml. Keep it evergreen: no versions, dates or prices on it.
+// Its facts were last checked on November 14, 2026 against MJML 5.4.1, react-email 6.11.13, Maizzle 6.3.2 and
+// jsx-email 3.2.1 (each one's docs and README), and Hyper Elements 0.4. Maizzle and jsx-email weren't in the agent
+// benchmark, so the chart doesn't show them. There's no converter from MJML, so the page doesn't offer one.
+
+const tools: Tool[] = [
+  {
+    id: "hyper-elements",
+    name: "Hyper Elements",
+    best: "Best for coding agents, and for emails checked in every client",
+    what: "React components your agent writes, rendered to email HTML that works in Outlook, checked as it renders, previewed in every email client, and kept on brand with a theme.",
+    pick: [
+      "You want typed props, loops and conditions in TypeScript, with no templating language on top",
+      "You want a preview in Outlook, Gmail and Apple Mail on every change, free and on your machine",
+      "You want problems caught as each email renders, in your tests and CI, with what to write instead",
+      "An agent writes your emails: 1.3× faster, with 1.5× fewer output tokens, than with MJML in our benchmark",
+    ],
+    mind: ["Templates are React components, in TypeScript or JavaScript", "No converter from MJML yet"],
+    links: [
+      { label: "Compare with MJML", href: "/compare/mjml" },
+      { label: "Get started", href: "/docs/quickstart" },
+    ],
+  },
+  {
+    id: "react-email",
+    name: "React Email",
+    best: "Best for React teams who want Tailwind classes",
+    what: "React components for email from Resend, with Tailwind support and a preview server that checks CSS support, links and images.",
+    pick: ["You write React and want Tailwind classes in your emails", "You send with Resend"],
+    mind: ["Its checks run in its preview window, not in render() or CI", "Email HTML only"],
+    links: [
+      { label: "Compare with Hyper Elements", href: "/compare/react-email" },
+      { label: "react.email", href: "https://react.email" },
+    ],
+  },
+  {
+    id: "maizzle",
+    name: "Maizzle",
+    best: "Best for teams who know Vue and Tailwind",
+    what: "A framework for HTML emails with Vue components and Tailwind CSS, with a dev server that flags CSS email clients don't support.",
+    pick: ["Your team writes Vue and Tailwind", "You want unsupported CSS flagged while you work"],
+    mind: ["Moving from MJML means rewriting your markup as Vue", "Its checks run in the dev server, not in the build"],
+    links: [{ label: "maizzle.com", href: "https://maizzle.com" }],
+  },
+  {
+    id: "jsx-email",
+    name: "jsx-email",
+    best: "Best for React components from an independent maintainer",
+    what: "React components and helpers for email from an independent maintainer, with a CLI that checks client support.",
+    pick: ["You want React components with familiar names (Html, Section, Button)", "You want client support checked from the command line"],
+    mind: ["Community-driven, with one maintainer", "Needs React 19.1 and Node.js 22"],
+    links: [{ label: "jsx.email", href: "https://jsx.email" }],
+  },
+];
+
+// Side by side: MJML as the baseline, second. Email first, Hyper Elements' wins first.
+const cols = ["Hyper Elements", "MJML", "React Email", "Maizzle", "jsx-email"];
+const writtenIn = ["React and TypeScript", "MJML markup", "React", "Vue and Tailwind", "React"];
+const matrix: MatrixRow[] = [
+  { k: "Email client previews", m: [["yes", "Outlook, Gmail and more"], ["no", "Browser preview"], ["no"], ["no"], ["no"]] },
+  { k: "Client support checks in CI", m: [["yes"], ["no"], ["part", "Preview window"], ["part", "Dev server"], ["yes", "email check"]] },
+  { k: "Accessibility lint", m: [["yes", "18 rules"], ["no"], ["part", "Alt text"], ["part", "Alt text"], ["no"]] },
+  { k: "Data, loops and conditions", m: [["yes", "TypeScript"], ["no", "Add a templating language"], ["yes"], ["yes"], ["yes"]] },
+  { k: "Brand theme with tokens", m: [["yes"], ["part", "mj-attributes"], ["part", "Tailwind"], ["part", "Tailwind"], ["part", "Tailwind"]] },
+  { k: "Outlook tables worked out", m: [["yes"], ["yes"], ["part"], ["part", "Outlook helpers"], ["part", "Conditional"]] },
+  { k: "Plain-text version", m: [["yes"], ["no"], ["yes"], ["yes"], ["yes"]] },
+  { k: "Agent skill", m: [["yes"], ["no"], ["yes"], ["yes"], ["no"]] },
+  { k: "Web pages, PDFs and images", m: [["yes", "From one template"], ["no"], ["no"], ["no"], ["no"]] },
+  { k: "Open source, MIT", m: [["yes"], ["yes"], ["yes"], ["yes"], ["yes"]] },
+];
+
+// Each question here is also the page's FAQPage for search engines, so keep the answers plain text.
+const faq = [
+  {
+    q: "What is the best MJML alternative?",
+    a: "It depends on how you work. If you want typed data and logic in TypeScript, every email checked and previewed in Outlook, Gmail and Apple Mail before you send, or a coding agent writes your emails, Hyper Elements. If you write React and want Tailwind classes, React Email. If your team writes Vue and Tailwind, Maizzle. If you want React components from an independent maintainer, jsx-email.",
+  },
+  {
+    q: "Can I keep my MJML templates?",
+    a: "Yes. There's no converter from MJML yet, so keep them as they are and preview their HTML in classic Outlook, Outlook.com, Gmail, Apple Mail, Yahoo Mail and more with Hyper Elements' email client emulator, free and on your machine. Write your next emails in Hyper Elements.",
+  },
+  {
+    q: "How do I put data in an email without a templating language?",
+    a: "Write the email as a component. In Hyper Elements, React Email and jsx-email a template is a function: its props are its data, and loops and conditions are plain TypeScript or JavaScript. In Maizzle they're Vue. MJML has no variables, loops or conditions; its docs suggest adding a templating language such as Handlebars or Liquid.",
+  },
+  {
+    q: "Do the alternatives handle Outlook like MJML does?",
+    a: "Hyper Elements writes the tables and conditional comments classic Outlook needs, as MJML does, and also works out every width in px, tells you what classic Outlook will show differently, and previews the email as classic Outlook draws it. React Email's components are tested in Outlook, Maizzle has Outlook components, and jsx-email has a Conditional component for Outlook's comments.",
+  },
+  {
+    q: "Which MJML alternative works best with AI coding agents?",
+    a: "In our benchmark, Claude Code built the same five emails with each approach. Its median time to a passing email was 33 seconds with Hyper Elements, 43 with MJML, 60 with hand-written HTML and 86 with React Email, and Hyper Elements and MJML both passed the first check every time. Maizzle and jsx-email weren't measured. Hyper Elements, React Email and Maizzle each publish an agent skill.",
+  },
+  {
+    q: "Are the MJML alternatives free?",
+    a: "Yes. Hyper Elements, React Email, Maizzle and jsx-email are all open source under the MIT license, like MJML. Hyper Elements' email client emulator is free too.",
+  },
+];
+---
+<AlternativesPage
+  path="/alternatives/mjml"
+  metaTitle="MJML alternatives: 4 options compared"
+  description="The best MJML alternatives compared: Hyper Elements, React Email, Maizzle and jsx-email. When to pick each, and how fast a coding agent writes an email with it."
+  title="MJML alternatives"
+  lede="Four ways to write responsive emails without MJML, what each one is best at, and how fast a coding agent writes an email with it."
+  tools={tools}
+  feature={{ title: "How fast a coding agent writes an email", sub: "Claude Code built the same five emails with each, 16 runs each. A run was done when its email passed the same checks in Chromium, on desktop and on a phone." }}
+  tableTitle="MJML and its alternatives, side by side"
+  cols={cols}
+  textRows={[{ k: "Write emails in", values: writtenIn }]}
+  matrix={matrix}
+  faqTitle="Questions about MJML alternatives"
+  faq={faq}
+  final={{
+    title: "Start your next email with Hyper Elements",
+    sub: "Keep your MJML emails and preview their HTML free, or write the next one as React components.",
+    cmd: site.install,
+    ctas: [{ label: "Get started", href: "/docs/quickstart" }, { label: "Try the free previews", href: "/email-testing" }],
+    others: [{ label: "Hyper Elements vs MJML", href: "/compare/mjml" }, { label: "React Email alternatives", href: "/alternatives/react-email" }, { label: "Litmus alternatives", href: "/alternatives/litmus" }],
+  }}
+>
+  <BenchmarkBoard note="Passed the first check: Hyper Elements and MJML 16 of 16, React Email 12 of 16, hand-written HTML 6 of 16. Maizzle and jsx-email weren't measured." />
+
+  {/* After the table: the one thing none of the others do. */}
+  <section class="section" slot="after-table">
+    <div class="wrap">
+      <div class="mj-head reveal">
+        <h2 class="h-section">Only Hyper Elements shows it in Outlook, Gmail and Apple Mail</h2>
+        <p>MJML, React Email, Maizzle and jsx-email preview your email in a browser. Hyper Elements draws it the way each email client does, free, on your machine.</p>
+      </div>
+      <ClientShots />
+      <div class="mj-cta reveal">
+        <a class="btn btn-primary" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  {/* Before the tools: the same email in MJML and in Hyper Elements. */}
+  <section class="section" slot="more">
+    <div class="wrap">
+      <div class="mj-head reveal">
+        <h2 class="h-section">The same email in MJML and Hyper Elements</h2>
+        <p>MJML has no variables: {"{{name}}"} is left for a templating language. In Hyper Elements it's a typed prop.</p>
+      </div>
+      <div class="mj-code reveal">
+        <div>
+          <p class="mj-name"><span class="mj-dot" aria-hidden="true"></span>Hyper Elements</p>
+          <CodeBlock code={he.trim()} file="emails/welcome.tsx" />
+        </div>
+        <div>
+          <p class="mj-name re">MJML</p>
+          <CodeBlock code={mjml.trim()} lang="html" file="emails/welcome.mjml" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* After the tools, before the questions: themes. */}
+  <section class="section" slot="before-faq">
+    <div class="wrap">
+      <div class="mj-head reveal">
+        <h2 class="h-section">On brand, in every email</h2>
+        <p>Write your brand once with defineTheme(). The template names no colors or fonts: swap the theme and the same email is someone else's. MJML sets defaults with mj-attributes, and React Email, Maizzle and jsx-email share a brand through a Tailwind config.</p>
+      </div>
+      <ThemeShots />
+      <div class="mj-cta reveal">
+        <a class="btn btn-ghost" href="/docs/themes">How themes work <span class="arrow">→</span></a>
+      </div>
+    </div>
+  </section>
+</AlternativesPage>
+
+<style>
+  /* This page's own sections: a heading, the visual, and a button under it. */
+  .mj-head { text-align: center; margin: 0 auto 44px; max-width: 720px; }
+  .mj-head .h-section { margin: 0; }
+  .mj-head p { margin: 12px 0 0; color: var(--text-2); font-size: 17px; line-height: 1.55; }
+  .mj-cta { display: flex; justify-content: center; margin-top: 28px; }
+  .mj-code { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; }
+  .mj-code > div { min-width: 0; }
+  .mj-code :global(pre) { max-height: 460px; }
+  .mj-name { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; font-size: 20px; font-weight: 650; letter-spacing: -0.025em; color: var(--text); }
+  .mj-name.re { color: var(--text-2); }
+  .mj-dot { width: 8px; height: 8px; border-radius: 999px; background: var(--ok); box-shadow: 0 0 0 4px color-mix(in srgb, var(--ok) 18%, transparent); }
+  @media (max-width: 1000px) {
+    .mj-code { grid-template-columns: minmax(0, 1fr); }
+  }
+</style>
