@@ -4,6 +4,14 @@ Each release records the models package it was tested with.
 
 ## Unreleased
 
+- **From models 1.12.3:** AOL Mail (`aol`) draws text the email doesn't style in a stand-in with AOL's own web font's
+  widths, character by character, less its kerning (Roboto, SIL OFL), shipped in `fonts/` (`AOLWidths-Regular.woff2`,
+  `AOLWidths-SemiBold.woff2`, `AOLWidths-Bold.woff2`): before, Roboto's widths, up to 10% from AOL's for a letter. On
+  the models' second held-out set, 94.7% of lines within 3px, from 92.5%. Classic Outlook (`outlook`) draws text at
+  its size in half points, Courier New at Word's widths, and keeps a slightly long monospaced line whole as Word does:
+  94.8%, from 93.1%.
+- A preview of AOL Mail with its fonts inline is about 50 KB larger (the AOLWidths faces).
+- Requires `@hyper-elements/email-client-models` 1.12.3.
 - **Outlook for Mac:** `outlook-mac` is previewed, at 820px like the other desktop clients, with a dark preview with
   `dark: true`. Drawn with the models' `outlook-mac` (1.12.0): the email in a WebKit view on a Mac with Office, as Apple
   Mail draws it, set 8px in, its unstyled text in Aptos 16px (the Aptos stand-in the package already ships), and

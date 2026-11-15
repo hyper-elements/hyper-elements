@@ -76,8 +76,9 @@ export function unnamed(html: string, known: Readonly<Record<string, readonly st
 }
 
 /**
- * Files a client draws its own text with, though a NAMED_ONLY family shares them: AOL Mail's web font, drawn with Roboto
- * and Open Sans Italic at its widths (models 1.11.0), whether or not the email names Open Sans.
+ * Files a client draws its own text with, though a NAMED_ONLY family shares them: AOL Mail's web font, its italic drawn
+ * with Open Sans Italic at its widths (models 1.11.0), whether or not the email names Open Sans. (Its upright is the
+ * AOLWidths faces since models 1.12.3, Roboto where they're missing.)
  */
 export const CLIENT_FILES: Partial<Record<ModelClient, readonly string[]>> = { aol: ["Roboto-Variable.woff2", "OpenSans-Italic-Variable.woff2"] };
 
