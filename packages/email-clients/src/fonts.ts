@@ -33,10 +33,7 @@ export async function readPackageFont(file: string): Promise<string> {
     return (await readFile(url)).toString("base64");
   } catch (cause) {
     if (await access(new URL("../fonts/", import.meta.url)).then(() => true, () => false)) {
-      const missing: Error & { cause?: unknown } = new Error(`fonts/ has no ${file}: the installed @hyper-elements/email-client-models names a font file this version of @hyper-elements/email-clients doesn't ship`);
-      missing.name = "email-clients/font-missing";
-      missing.cause = cause;
-      throw missing;
+      throw Object.assign(new Error(`fonts/ has no ${file}`), { name: "email-clients/font-missing", cause });
     }
     const error: Error & { cause?: unknown } = new Error(
       `fonts: "inline" reads @hyper-elements/email-clients' font files from its fonts/ folder, and ${url.href} isn't there to read: ` +
@@ -99,15 +96,16 @@ export async function fontSources(client: ModelClient, how: "url" | "inline", re
   const own = CLIENT_FILES[client] ?? [];
   const files = (await loadModelsPackage()).fontFiles(client, computer).filter((file) => own.includes(file) || !skip.has(file));
   const sources = await Promise.all(
-    files.map(async (file) => {
-      if (how === "url") return [file, fontUrl(file)] as const;
-      try {
-        return [file, `data:font/woff2;base64,${await read(file)}`] as const;
-      } catch (error) {
-        if ((error as Error).name === "email-clients/font-missing") return null;
-        throw error;
-      }
-    })
+    files.map((file) =>
+      how === "url"
+        ? [file, fontUrl(file)]
+        : read(file).then(
+            (b) => [file, `data:font/woff2;base64,${b}`],
+            (e: Error) => {
+              if (e.name !== "email-clients/font-missing") throw e;
+            }
+          )
+    )
   );
-  return Object.fromEntries(sources.filter((s) => s !== null));
+  return Object.fromEntries(sources.filter((s) => s !== undefined) as string[][]);
 }
