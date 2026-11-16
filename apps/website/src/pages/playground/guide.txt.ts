@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import guide from "../../../../../packages/react/GUIDE.md?raw";
 import { site } from "../../lib/site";
 
-// The package's own guide (written from the component definitions), for the playground's reference() and its
+// The package's own guide (written from the element definitions), for the playground's reference() and its
 // WebMCP tool: what an agent reads before it writes a template.
 const text = guide
   .replace(/<!--[\s\S]*?-->\n*/g, "")

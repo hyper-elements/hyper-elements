@@ -183,12 +183,12 @@ function conditionHint(definition: ComponentDefinition, key: string): string | u
   const own = CUSTOM_TYPE.test(definition.type);
   const hoverStyles = definition.hover ?? [];
   const toHover = own
-    ? `a template's own component takes only its place in a Row in its style: set hover styles in what it renders`
+    ? `a template's own element takes only its place in a Row in its style: set hover styles in what it renders`
     : hoverStyles.length
       ? `hover styles go in its style's hover block, style={{ hover: { … } }} (it takes ${hoverStyles.join(", ")})`
       : `${a(definition.type).replace(/^A/, "a")} takes no hover styles (a Button's and a Link's colors do)`;
   const toPhone = own
-    ? `a template's own component takes only its place in a Row in its style: set phone styles in what it renders`
+    ? `a template's own element takes only its place in a Row in its style: set phone styles in what it renders`
     : `phone styles go in its style's mobile block, style={{ mobile: { … } }}`;
   if (name === "hover") return toHover;
   if (name === "mobile" || name === "phone" || name === "phones" || key.trim().startsWith("@media")) return toPhone;
@@ -226,18 +226,18 @@ function unknownProp(definition: ComponentDefinition, key: string, environment?:
 function placementMessage(parent: ComponentDefinition, child: ComponentDefinition): string {
   if (child.categories.includes("section")) return `A ${child.type} goes directly in an Email or Page, not in a ${parent.type}`;
   if (child.categories.includes("root")) return `A ${child.type} is a root: it can't be inside a ${parent.type}`;
-  const takes = [...(parent.children.text ? ["text"] : []), ...(parent.children.categories ?? []).map((c) => `${c} components`), ...(parent.children.types ?? [])];
+  const takes = [...(parent.children.text ? ["text"] : []), ...(parent.children.categories ?? []).map((c) => `${c} elements`), ...(parent.children.types ?? [])];
   return takes.length ? seeing(`A ${parent.type} takes ${takes.join(", ")}; a ${child.type} can't go in it`, parent.type) : `A ${parent.type} has no children`;
 }
 
 function readNode(input: unknown, path: string, parent: ComponentDefinition | null, context: Context): Node | null {
   const { d } = context;
   if (!isObject(input)) {
-    d.error("node/invalid", `Expected a component ({ "type": … }), not ${JSON.stringify(input) ?? String(input)}`, path);
+    d.error("node/invalid", `Expected an element ({ "type": … }), not ${JSON.stringify(input) ?? String(input)}`, path);
     return null;
   }
   if (typeof input.type !== "string") {
-    d.error("node/type", 'A component has a "type" ("Row", "Heading", …)', `${path}.type`);
+    d.error("node/type", 'An element has a "type" ("Row", "Heading", …)', `${path}.type`);
     return null;
   }
   const definition = context.registry.get(input.type);
@@ -245,7 +245,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     const custom = CUSTOM_TYPE.test(input.type);
     d.error(
       "node/unknown-type",
-      custom ? `"${input.type}" is a custom component this document wasn't given: pass it in the components option` : `"${input.type}" isn't a component Elements knows`,
+      custom ? `"${input.type}" is a template's own element this document wasn't given: pass it in the components option` : `"${input.type}" isn't an element Elements knows`,
       `${path}.type`
     );
     return null;
@@ -274,10 +274,10 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (typeof input.id !== "string" || !ID.test(input.id)) {
       d.error("id/invalid", `An id starts with a letter and holds letters, digits, "_" and "-", not ${JSON.stringify(input.id)}`, `${path}.id`);
     } else if (context.idPrefix === null) {
-      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a custom component, ids are kept only when the component is given one (a block used many times can't own an id)`, `${path}.id`);
+      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a template's own element, ids are kept only when the element is given one (a block used many times can't own an id)`, `${path}.id`);
     } else {
       const full = context.idPrefix ? `${context.idPrefix}-${input.id}` : input.id;
-      if (context.used.has(full)) d.error("id/duplicate", `The id "${full}" is already used by another component`, `${path}.id`);
+      if (context.used.has(full)) d.error("id/duplicate", `The id "${full}" is already used by another element`, `${path}.id`);
       else {
         id = full;
         context.used.add(full);
@@ -286,7 +286,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   }
 
   for (const key of Object.keys(input)) {
-    if (!NODE_KEYS.includes(key)) d.error("node/unknown-key", `"${key}" isn't part of a component (${NODE_KEYS.join(", ")})`, `${path}.${key}`, id);
+    if (!NODE_KEYS.includes(key)) d.error("node/unknown-key", `"${key}" isn't part of an element (${NODE_KEYS.join(", ")})`, `${path}.${key}`, id);
   }
 
   const node: Node = id === undefined ? { type: definition.type } : { id, type: definition.type };
@@ -360,7 +360,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     origins = themed.origins;
     from = themed.from;
   } else if (custom && isObject(input.style) && "apply" in input.style) {
-    d.error("style/apply-place", `A template's own component takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
+    d.error("style/apply-place", `A template's own element takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
     const { apply: _, ...rest } = input.style;
     themedInput = rest;
   }
@@ -495,7 +495,7 @@ const UNSUPPORTED_CSS: Record<string, string> = {
   marginBottom: "use the parent's gap, or padding",
   marginLeft: "use padding",
   marginRight: "use padding",
-  display: "the component sets it",
+  display: "the element sets it",
   position: "use a Layer for content placed over other content",
   backgroundImage: "put a Layer around it, its first child an Image (the Layer's height crops it to cover), the rest over it",
   background: "backgroundColor for a color; for an image, a Layer: its first child an Image, the rest over it",
@@ -586,7 +586,7 @@ function readChildren(input: unknown, definition: ComponentDefinition, path: str
   const { d } = context;
   if (input === undefined) return [];
   if (!Array.isArray(input)) {
-    d.error("children/invalid", "children is an array of components and text", path, id);
+    d.error("children/invalid", "children is an array of elements and text", path, id);
     return [];
   }
   const out: Child[] = [];

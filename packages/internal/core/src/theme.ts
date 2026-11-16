@@ -28,7 +28,8 @@ const NOT_YET: Record<string, string> = {
   keyframes: "keyframes aren't a token group yet: they come with animations",
 };
 
-const THEME_KEYS = [...TOKEN_GROUPS, "components", "styles", "formats"];
+/** `components` is `elements`' name before, still read: the same defaults (`unifyDefaults()`). */
+const THEME_KEYS = [...TOKEN_GROUPS, "elements", "components", "styles", "formats"];
 
 /** A token's or a group's name: letters and digits, so its path is also a CSS custom property's name. */
 const NAME = /^(?:[A-Za-z][A-Za-z0-9]*|[0-9]+)$/;
@@ -105,6 +106,39 @@ function isToken(group: TokenGroup, value: unknown, aliases: boolean): boolean {
   if (typeof value === "string" || typeof value === "number" || Array.isArray(value)) return true;
   if (referenceOf(value, aliases) !== undefined) return true;
   return group === "radii" && isObject(value) && Object.keys(value).length > 0 && Object.keys(value).every((key) => CORNERS.includes(key));
+}
+
+/**
+ * The parts of a theme a root reads (the theme, and its format for the root), with each element given under both
+ * names under one: an element written under `elements` in any of them gets what `components` (its name before) gives
+ * it there merged in, key by key, `elements`' winning, so the format merges over the theme as under one name. Every
+ * other element stays under the key it's written under, so what's said of it names that key; parts that write only
+ * one name come back as they are.
+ */
+function unifyDefaults(parts: readonly Json[]): Json[] {
+  const mixed = new Set<string>();
+  for (const part of parts) if (isObject(part) && isObject(part.elements)) for (const type of Object.keys(part.elements)) mixed.add(type);
+  return parts.map((part) => {
+    if (!isObject(part) || !isObject(part.components) || !Object.keys(part.components).some((type) => mixed.has(type))) return part;
+    const moved: Record<string, Json> = {};
+    const kept: Record<string, Json> = {};
+    for (const [type, value] of Object.entries(part.components)) put(mixed.has(type) ? moved : kept, type, value as Json);
+    const { components: _, ...rest } = part as Record<string, Json>;
+    return { ...rest, ...(Object.keys(kept).length ? { components: kept } : {}), elements: mergeTheme(moved as Json, isObject(part.elements) ? (part.elements as Json) : {}) };
+  });
+}
+
+/**
+ * An element's defaults in a read theme, and the key they're under: `elements`, or `components`, its name before. A
+ * read theme gives each element under one of them (`unifyDefaults()`).
+ */
+function defaultsFor(theme: ThemeData | undefined, type: string): { key: string; defaults?: Record<string, Json> } {
+  for (const key of ["elements", "components"]) {
+    const group = theme?.[key];
+    const own = isObject(group) ? ownValue(group as Record<string, Json>, type) : undefined;
+    if (isObject(own)) return { key, defaults: own as Record<string, Json> };
+  }
+  return { key: "elements" };
 }
 
 /** One object merged over another: objects key by key at every depth, anything else replaced. */
@@ -305,14 +339,17 @@ export interface ThemeReadContext {
 export function readTheme(input: unknown, at: string, rootType: string, context: ThemeReadContext): ThemeData | null {
   const { d } = context;
   if (!isObject(input)) {
-    d.error("theme/schema", `A theme is an object (defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })), not ${show(input)}`, at);
+    d.error("theme/schema", `A theme is an object (defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, elements, styles, formats })), not ${show(input)}`, at);
     return null;
   }
   const checked = checkThemeShape(input, at, context, true);
   const family = THEME_FAMILIES[rootType as keyof typeof THEME_FAMILIES] as ThemeFamily | undefined;
   const formats = isObject(checked.formats) ? checked.formats : undefined;
   const { formats: _, ...rest } = checked;
-  const merged = family && formats?.[family] !== undefined ? mergeTheme(rest as Json, formats[family]) : (rest as Json);
+  const format = family ? formats?.[family] : undefined;
+  // An element given under both names (`elements`, `components`) is put under one first, so the format merges over it.
+  const [base, over] = unifyDefaults([rest as Json, format as Json]);
+  const merged = format !== undefined ? mergeTheme(base, over) : base;
   const theme = merged as ThemeData;
   // References between tokens: each resolves, with no loop, to a token of its kind; under this root, and under every
   // other root its formats are for (a shared theme is checked wherever it's read).
@@ -360,7 +397,7 @@ function checkThemeShape(input: Record<string, unknown>, at: string, context: Th
     if ((TOKEN_GROUPS as readonly string[]).includes(key)) {
       const group = readGroup(key as TokenGroup, value, where, d);
       if (group) out[key] = group;
-    } else if (key === "components") out.components = readComponents(value, where, context);
+    } else if (key === "elements" || key === "components") out[key] = readComponents(value, where, context);
     else if (key === "styles") out.styles = readNamedStyles(value, where, d);
     else {
       const formats: Record<string, Json> = {};
@@ -487,7 +524,7 @@ function readComponents(value: Record<string, unknown>, at: string, context: The
     const definition = context.definition(type);
     if (!definition || type.includes(".")) {
       const meant = nearest(type, context.types());
-      d.error("theme/schema", `${show(type)} isn't a built-in component${meant ? `: did you mean "${meant}"?` : ""} (a template's own component is styled in its render)`, where);
+      d.error("theme/schema", `${show(type)} isn't a built-in element${meant ? `: did you mean "${meant}"?` : ""} (a template's own element is styled in its render)`, where);
       continue;
     }
     const isRoot = definition.categories.includes("root");
@@ -613,8 +650,7 @@ export interface ThemeNodeContext {
 export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeContext): ThemedStyle {
   const { d, environment, definition, path, id } = context;
   const theme = environment?.theme;
-  const components = isObject(theme?.components) ? theme.components : {};
-  const defaults = isObject(ownValue(components, definition.type)) ? (ownValue(components, definition.type) as Record<string, Json>) : undefined;
+  const { key: defaultsKey, defaults } = defaultsFor(theme, definition.type);
   const themeAt = environment?.at ?? "root.theme";
   const sources: Source[] = [];
 
@@ -645,11 +681,11 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
   // The component's defaults, and those for its prop's value.
   if (defaults) {
     const { by, variants: _, ...base } = defaults;
-    fromTheme(base as Json, `${themeAt}.components.${definition.type}`, "default");
+    fromTheme(base as Json, `${themeAt}.${defaultsKey}.${definition.type}`, "default");
     if (isObject(by)) {
       const [prop, values] = Object.entries(by)[0] ?? [];
       const value = context.props[prop as string];
-      if (prop && isObject(values) && value !== undefined && isObject(ownValue(values, String(value)))) fromTheme(ownValue(values, String(value)) as Json, `${themeAt}.components.${definition.type}.by.${prop}.${String(value)}`, "default");
+      if (prop && isObject(values) && value !== undefined && isObject(ownValue(values, String(value)))) fromTheme(ownValue(values, String(value)) as Json, `${themeAt}.${defaultsKey}.${definition.type}.by.${prop}.${String(value)}`, "default");
     }
   }
 
@@ -664,7 +700,7 @@ export function themedStyle(own: unknown, variant: unknown, context: ThemeNodeCo
       d.error("variant/unknown", `${a(definition.type)} has no variant "${name}"${meant ? `: did you mean "${meant}"?` : has}`, where, id);
       continue;
     }
-    fromTheme(ownValue(variants, name) as Json, `${themeAt}.components.${definition.type}.variants.${name}`, "variant");
+    fromTheme(ownValue(variants, name) as Json, `${themeAt}.${defaultsKey}.${definition.type}.variants.${name}`, "variant");
   }
 
   // Its own style, and the named styles it applies.
@@ -797,7 +833,7 @@ function expandApply(block: Json, at: string, theme: ThemeData | undefined, d: D
 
 /** "root.theme" from a path inside it. */
 function themeRoot(at: string): string {
-  const index = at.search(/\.(components|styles)\./);
+  const index = at.search(/\.(elements|components|styles)\./);
   return index < 0 ? at : at.slice(0, index);
 }
 
@@ -906,8 +942,7 @@ export function scopePaths(scope: Record<string, Json>): Set<string> {
 
 /** Each named style's and variant's name in a theme, for hints. */
 export function themeNames(theme: ThemeData | undefined, type: string): { variants: string[]; styles: string[] } {
-  const components = isObject(theme?.components) ? theme.components : {};
-  const own = isObject(components[type]) ? (components[type] as Record<string, Json>) : {};
+  const own = defaultsFor(theme, type).defaults ?? {};
   return { variants: isObject(own.variants) ? Object.keys(own.variants) : [], styles: isObject(theme?.styles) ? Object.keys(theme.styles) : [] };
 }
 

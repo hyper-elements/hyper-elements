@@ -26,18 +26,18 @@ const componentNav = componentGroups
   }))
   .filter((g) => g.items.length);
 
-// Previous and next follow the guide's order, then the components'.
-const flat = [...docsNav.flatMap((g) => g.items), { slug: "components", label: "Components" }, ...componentNav.flatMap((g) => g.items)];
+// Previous and next follow the guide's order, then the elements'.
+const flat = [...docsNav.flatMap((g) => g.items), { slug: "components", label: "Elements" }, ...componentNav.flatMap((g) => g.items)];
 const at = flat.findIndex((i) => i.slug === slug);
 const prev = at > 0 ? flat[at - 1] : null;
 const next = at >= 0 && at < flat.length - 1 ? flat[at + 1] : null;
-const group = eyebrow ?? [...docsNav, ...componentNav].find((g) => g.items.some((i) => i.slug === slug))?.title ?? (slug === "components" ? "Components" : "");
+const group = eyebrow ?? [...docsNav, ...componentNav].find((g) => g.items.some((i) => i.slug === slug))?.title ?? (slug === "components" ? "Elements" : "");
 // For search engines: what the page is, and where it sits in the docs.
 const url = new URL(docHref(slug), site.url).href;
-// Every crumb is a page: Docs, the component index for a component's page, then the page itself.
+// Every crumb is a page: Docs, the element index for an element's page, then the page itself.
 const crumbs = [
   { name: "Docs", url: new URL("/docs", site.url).href },
-  ...(slug.startsWith("components/") ? [{ name: "Components", url: new URL("/docs/components", site.url).href }] : []),
+  ...(slug.startsWith("components/") ? [{ name: "Elements", url: new URL("/docs/components", site.url).href }] : []),
   ...(slug ? [{ name: title, url }] : []),
 ];
 // A page's "## Common questions" section (each question a ### heading, its answer the text under it), as an FAQPage.
@@ -73,7 +73,7 @@ const isCurrent = (s: string) => s === slug;
           </div>
         ))}
         <div class="side-group">
-          <p class="side-title"><a href="/docs/components" aria-current={isCurrent("components") ? "page" : undefined}>Components</a></p>
+          <p class="side-title"><a href="/docs/components" aria-current={isCurrent("components") ? "page" : undefined}>Elements</a></p>
           {componentNav.map((g) => (
             <details class="side-sub" open={g.items.some((i) => isCurrent(i.slug)) || undefined}>
               <summary>{g.title}</summary>

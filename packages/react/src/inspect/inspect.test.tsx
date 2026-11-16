@@ -1,13 +1,13 @@
 import React from "react";
-import { Button, Canvas, Column, component, Document, Email, Heading, Page, PageNumber, prop, Row, Section, Span, Svg, Text, validate } from "../primitives/index";
-import { describeComponent, describeComponents, inspect, INSPECT_VERSION } from "./index";
+import { Button, Canvas, Column, component, defineElement, Document, Email, Heading, Page, PageNumber, prop, Row, Section, Span, Svg, Text, validate } from "../primitives/index";
+import { describeComponent, describeComponents, describeElement, describeElements, inspect, INSPECT_VERSION } from "./index";
 
-describe("describeComponents()", () => {
-  it("lists every component with its roots, and each prop and style with its kind, group and roots", () => {
-    const all = describeComponents();
+describe("describeElements()", () => {
+  it("lists every element with its roots, and each prop and style with its kind, group and roots", () => {
+    const all = describeElements();
     expect(all.version).toBe(INSPECT_VERSION);
     expect(all.roots).toEqual(["Email", "Page", "Document", "Canvas"]);
-    const text = all.components.find((c) => c.type === "Text")!;
+    const text = all.elements.find((c) => c.type === "Text")!;
     expect(text.roots).toEqual(["Email", "Page", "Document", "Canvas"]);
     expect(text.properties.find((p) => p.path === "style.fontSize")).toMatchObject({ kind: "length", group: "Typography", roots: ["Email", "Page", "Document", "Canvas"], mobile: true });
     expect(text.properties.find((p) => p.path === "style.padding")).toMatchObject({ group: "Spacing" });
@@ -18,32 +18,54 @@ describe("describeComponents()", () => {
   });
 
   it("narrows to what one root takes", () => {
-    const email = describeComponents({ root: "Email" });
+    const email = describeElements({ root: "Email" });
     expect(email.root).toBe("Email");
-    const types = email.components.map((c) => c.type);
+    const types = email.elements.map((c) => c.type);
     expect(types).toContain("Row");
     expect(types).not.toContain("Svg");
     expect(types).not.toContain("PageHeader");
     expect(types).not.toContain("Page");
-    const document = describeComponents({ root: "Document" });
-    expect(document.components.map((c) => c.type)).toContain("PageHeader");
+    const document = describeElements({ root: "Document" });
+    expect(document.elements.map((c) => c.type)).toContain("PageHeader");
     // A Document has no phones: no phone styles, and no phone condition.
-    expect(document.components.flatMap((c) => c.properties).some((p) => p.mobile)).toBe(false);
+    expect(document.elements.flatMap((c) => c.properties).some((p) => p.mobile)).toBe(false);
     expect(document.conditions.map((c) => c.name)).toEqual(["hover"]);
   });
 
-  it("describes one component, and a template's own with the built-in ones", () => {
-    expect(describeComponent("Svg", { root: "Email" })).toBeUndefined();
-    expect(describeComponent("Svg", { root: "Canvas" })).toMatchObject({ version: INSPECT_VERSION, type: "Svg", roots: ["Canvas"] });
-    expect(describeComponent("Nope")).toBeUndefined();
-    const Card = component({ type: "acme.Card", label: "Card", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Column><Heading>{title}</Heading></Column> });
-    expect(describeComponents({ components: [Card] }).components.map((c) => c.type)).toContain("acme.Card");
-    expect(describeComponent("acme.Card", { components: [Card], root: "Page" })!.properties.map((p) => p.path)).toEqual(["props.title", "style.flex"]);
+  it("describes one element, and a template's own with the built-in ones", () => {
+    expect(describeElement("Svg", { root: "Email" })).toBeUndefined();
+    expect(describeElement("Svg", { root: "Canvas" })).toMatchObject({ version: INSPECT_VERSION, type: "Svg", roots: ["Canvas"] });
+    expect(describeElement("Nope")).toBeUndefined();
+    const Card = defineElement({ type: "acme.Card", label: "Card", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Column><Heading>{title}</Heading></Column> });
+    expect(describeElements({ elements: [Card] }).elements.map((c) => c.type)).toContain("acme.Card");
+    expect(describeElement("acme.Card", { elements: [Card], root: "Page" })!.properties.map((p) => p.path)).toEqual(["props.title", "style.flex"]);
   });
 
-  it("agrees with validation: a component a root doesn't take is an error there", () => {
+  it("keeps the names before: describeComponents() gives the same list as `components`, and takes `components`", () => {
+    const Card = component({ type: "acme.Card", label: "Card", props: { title: prop.text({ label: "Title" }) }, render: ({ title }) => <Text>{title}</Text> });
+    const { components, ...rest } = describeComponents({ root: "Email", components: [Card] });
+    const { elements, ...now } = describeElements({ root: "Email", elements: [Card] });
+    expect(components).toEqual(elements);
+    expect(rest).toEqual(now);
+    expect(Object.keys(describeComponents())).toEqual(["version", "roots", "components", "conditions"]);
+    expect(Object.keys(describeElements())).toEqual(["version", "roots", "elements", "conditions"]);
+    expect(describeComponent).toBe(describeElement);
+    expect(describeElements({ components: [Card] }).elements.map((c) => c.type)).toContain("acme.Card");
+  });
+
+  it("takes an element in both options once, the one in `elements` winning", () => {
+    const before = defineElement({ type: "acme.Card", label: "Before", props: {}, render: () => <Text>a</Text> });
+    const now = defineElement({ type: "acme.Card", label: "Now", props: {}, render: () => <Text>b</Text> });
+    const cards = describeElements({ components: [before], elements: [now] }).elements.filter((c) => c.type === "acme.Card");
+    expect(cards.map((c) => c.label)).toEqual(["Now"]);
+    // Two different ones of a type in one option are refused, as they were.
+    expect(() => describeElements({ elements: [before, now] })).toThrow("Two elements made with defineElement() are named acme.Card");
+    expect(() => describeComponents({ components: [before, now] })).toThrow("Two elements made with defineElement() are named acme.Card");
+  });
+
+  it("agrees with validation: an element a root doesn't take is an error there", () => {
     for (const root of ["Email", "Page", "Document", "Canvas"] as const) {
-      const types = new Set(describeComponents({ root }).components.map((c) => c.type));
+      const types = new Set(describeElements({ root }).elements.map((c) => c.type));
       expect(types.has("PageNumber"), root).toBe(root === "Document");
     }
     const page = validate(<Page><Text>Page <PageNumber /></Text></Page>);

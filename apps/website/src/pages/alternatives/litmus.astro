@@ -79,7 +79,7 @@ const findings = showcase.email.diagnostics
   .filter((d) => d.code !== "email/phone-styles" && !seen.has(d.message.split(" on this ")[0]) && seen.add(d.message.split(" on this ")[0]))
   .slice(0, 4);
 const agentTools = [
-  { t: "An agent skill", code: site.skill, d: "Teaches your agent the components, the checks and how to fix what they find" },
+  { t: "An agent skill", code: site.skill, d: "Teaches your agent the elements, the checks and how to fix what they find" },
   { t: "A CLI made for loops", code: "npx hyper-elements check --json", d: "JSON lines and exit codes: it fixes each error until the run passes" },
   { t: "WebMCP in the browser", code: "check_html_email", d: "Browser agents check any HTML email on the email testing page" },
   { t: "2.6× faster", code: "", d: "An agent reached a passing email 2.6× faster than with React Email, in our benchmark", href: "/docs/benchmark" },
@@ -94,7 +94,7 @@ const faq = [
   },
   {
     q: "Which Litmus alternative works best with AI coding agents?",
-    a: "Hyper Elements. Its agent skill teaches an agent the components and the checks, its CLI returns JSON and exit codes an agent acts on, and its previews report what each email client changed as data, where a screenshot is a picture an agent has to interpret. Browser agents can call its WebMCP tool, check_html_email, on the email testing page. In our benchmark, an agent reached a passing email 2.6× faster with Hyper Elements than with React Email.",
+    a: "Hyper Elements. Its agent skill teaches an agent the elements and the checks, its CLI returns JSON and exit codes an agent acts on, and its previews report what each email client changed as data, where a screenshot is a picture an agent has to interpret. Browser agents can call its WebMCP tool, check_html_email, on the email testing page. In our benchmark, an agent reached a passing email 2.6× faster with Hyper Elements than with React Email.",
   },
   {
     q: "Is there a free Litmus alternative?",

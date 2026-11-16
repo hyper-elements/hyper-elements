@@ -1,5 +1,5 @@
 /**
- * The Elements API: the components, component(), render() and validate(). JSX is the only way to
+ * The Elements API: the elements, defineElement(), render() and validate(). JSX is the only way to
  * write a template; the tree it becomes is internal.
  */
 export {
@@ -85,9 +85,11 @@ export type {
   VideoProps,
   HtmlProps,
 } from "./components";
-export { component, prop, type ComponentSpec, type CustomComponent, type CustomProps, type RenderContext, type ThemeValues } from "./custom";
+export { defineElement, prop, type CustomElement, type CustomProps, type ElementSpec, type RenderContext, type ThemeValues } from "./custom";
+// The earlier names, deprecated and kept so templates written with them still work.
+export { component, type ComponentSpec, type CustomComponent } from "./custom";
 export { defineTheme, extendTheme, token } from "./theme";
-export type { Alias, ComponentTheme, Register, StyleName, Theme, ThemeInput, ThemeStyle, Token, TokenPath, TokenPaths, TokenRefs, Tokenized, VariantName, VariantProp } from "./theme";
+export type { Alias, ComponentTheme, ElementTheme, Register, StyleName, Theme, ThemeInput, ThemeStyle, Token, TokenPath, TokenPaths, TokenRefs, Tokenized, VariantName, VariantProp } from "./theme";
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type ValidateOptions, type ValidationResult } from "./render";
 export { BLOCK_MAP_VERSION, ElementsError, formatDiagnostics, PLUGIN_API } from "@hyper-elements/core";
 export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, Severity } from "@hyper-elements/core";

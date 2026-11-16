@@ -7,7 +7,7 @@
 import * as Elements from "@hyper-elements/react";
 import { lint } from "@hyper-elements/lint";
 import { lintHtml } from "@hyper-elements/lint/html";
-import { describeComponents, inspect } from "@hyper-elements/react/inspect";
+import { describeElements, inspect } from "@hyper-elements/react/inspect";
 import { shownAnywhere } from "@hyper-elements/core";
 import * as React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
@@ -111,8 +111,9 @@ for (const [name, value] of Object.entries(Elements)) {
   }
   elementsModule[name] = stand;
 }
-// A template's own component (component()) notes its line too.
-elementsModule.component = (spec: { type?: string }) => locate(String(spec?.type ?? "component"), Elements.component(spec as never) as object);
+// A template's own element (defineElement(), or component(), its name before) notes its line too.
+elementsModule.defineElement = (spec: { type?: string }) => locate(String(spec?.type ?? "element"), Elements.defineElement(spec as never) as object);
+elementsModule.component = elementsModule.defineElement;
 
 type Source = { lineNumber?: number } | undefined;
 const withLine = (type: unknown, props: Record<string, unknown>, source: Source) =>
@@ -482,7 +483,7 @@ async function handle(request: Request): Promise<Result> {
   if (request.kind === "describe") {
     // What each component takes, from the definitions: no code runs for it.
     const named = (properties: ReadonlyArray<{ path: string; accepts: string }>, group: string) => properties.filter((p) => p.path.startsWith(`${group}.`)).map((p) => ({ name: p.path.slice(group.length + 1), detail: p.accepts }));
-    result.components = describeComponents().components.map((component) => ({
+    result.components = describeElements().elements.map((component) => ({
       name: component.type === "DocumentPage" ? "Document.Page" : component.type,
       summary: component.description,
       props: named(component.properties, "props"),
@@ -501,7 +502,7 @@ async function handle(request: Request): Promise<Result> {
     const rendered = trace;
     result.root = inspection.root as RootName | null;
     result.nodes = sourceNodes(inspection.nodes, rendered);
-    if (inspection.theme) result.theme = { tokens: inspection.theme.tokens.length, styles: inspection.theme.styles, variants: inspection.theme.components.flatMap((c) => c.variants.map((v) => `${c.type}.${v}`)) };
+    if (inspection.theme) result.theme = { tokens: inspection.theme.tokens.length, styles: inspection.theme.styles, variants: inspection.theme.elements.flatMap((c) => c.variants.map((v) => `${c.type}.${v}`)) };
     const isEmail = result.root === "Email";
     if (isEmail && sandbox.extras.clients) result.clientNames = sandbox.extras.clients.names;
     // An Email's client checks, where their bundle is loaded and they're on (`checks`, the "Email clients" switch), and

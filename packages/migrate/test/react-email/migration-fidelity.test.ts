@@ -69,7 +69,7 @@ describe("migration fidelity", () => {
     expect(result.check.added).toEqual([]);
     expect(result.conversion.intermediate).toContain("function escapeHtml(text)");
     expect(result.conversion.intermediate).toContain("function htmlText(value)");
-    // In the new components, the markup is JSX: the helpers go, and no TypeScript is written into JavaScript.
+    // In the new elements, the markup is JSX: the helpers go, and no TypeScript is written into JavaScript.
     expect(result.conversion.code).not.toMatch(/function (escapeHtml|htmlText)\b|: string\b|: unknown\b| as [A-Z"]/);
     expect(result.conversion.code).toContain("<Link href={url}>");
   });

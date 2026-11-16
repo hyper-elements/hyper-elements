@@ -1,5 +1,5 @@
 /**
- * The React Email converter (@hyper-elements/migrate/react-email): React Email templates in Hyper Elements' new components.
+ * The React Email converter (@hyper-elements/migrate/react-email): React Email templates in Hyper Elements' new elements.
  *
  * Both modes write a template in Elements 0.2's components first, as source text, and move it to the new ones at once
  * (`toNewComponents`, in ../convert); what's checked, rendered and opened in the editor is the template in the new
@@ -36,7 +36,7 @@ type Template = React.ComponentType<any> & { PreviewProps?: Record<string, unkno
 /** A migrated template as its file exports it: a function, or one wrapped in `memo` or `forwardRef`. */
 type MigratedTemplate = ((props: any) => React.ReactElement) | React.ExoticComponent<any>;
 
-/** What a template the converter writes from a tree imports: the new components, and React. */
+/** What a template the converter writes from a tree imports: the new elements, and React. */
 const MODULES = { "@hyper-elements/react": Elements as unknown as Record<string, unknown>, react: React as unknown as Record<string, unknown> };
 
 /** Whether a template's output is nothing: not an element (`null`), or an empty fragment (`<></>`). */
@@ -90,7 +90,7 @@ const CODE_UNREAD = "text props kept as their sample values: the template's code
 /** What was thrown, in a line: all of it, as Elements' first line ("The template has 2 errors:") alone says nothing. */
 const inALine = (error: unknown) => (error instanceof Error ? error.message : String(error)).trim().replace(/\s*\n\s*/g, "; ").slice(0, 400);
 
-/** The HTML the new components render a template's root element to. */
+/** The HTML the new elements render a template's root element to. */
 async function htmlOf(element: React.ReactElement): Promise<string> {
   return (await Elements.render(element)).html;
 }
@@ -132,7 +132,7 @@ export interface RuntimeOptions {
 }
 
 export interface Conversion {
-  /** The template in the new components, as a module (TSX): what it renders with the props given, flattened. */
+  /** The template in the new elements, as a module (TSX): what it renders with the props given, flattened. */
   code: string;
   /** Its root element: render it with `render()` from @hyper-elements/react. */
   element: React.ReactElement;
@@ -147,7 +147,7 @@ export interface Conversion {
   html(): Promise<string>;
 }
 
-/** A tree in the new components: its module and its element (a `NewComponentsError` where it can't be). */
+/** A tree in the new elements: its module and its element (a `NewComponentsError` where it can't be). */
 async function inNewComponents(tree: ElementNode, print: PrintOptions): Promise<{ code: string; element: React.ReactElement; notes: string[]; stacked: string[] }> {
   const intermediate = await treeToTsx(tree, print);
   const moved = await toNewComponents(intermediate);
@@ -159,15 +159,15 @@ async function inNewComponents(tree: ElementNode, print: PrintOptions): Promise<
 }
 
 /**
- * Runtime mode: render `Template` with sample props and convert what it renders, in the new components. Logic (loops,
+ * Runtime mode: render `Template` with sample props and convert what it renders, in the new elements. Logic (loops,
  * conditions) is flattened into content.
  *
- * The result is checked against the original, rendered with the new components: `report.missingText` lists any words
+ * The result is checked against the original, rendered with the new elements: `report.missingText` lists any words
  * the original shows that the conversion doesn't (empty when nothing was lost), `report.styleDifferences` the words it
  * shows in another style, `report.unverified` what the check couldn't read, `report.phoneDifferences` and
  * `report.layoutDifferences` what shows or sits elsewhere on phones and across the page, and `report.designWarnings`
  * what the visual editor wouldn't get. Throws a `NewComponentsError` (why, and the template in Elements 0.2's
- * components, as it was written first) where it can't be written in the new components.
+ * components, as it was written first) where it can't be written in the new elements.
  */
 export async function convertReactEmail(Template: Template, options: RuntimeOptions = {}): Promise<Conversion> {
   const props = options.props ?? Template.PreviewProps ?? {};
@@ -205,7 +205,7 @@ export async function convertReactEmail(Template: Template, options: RuntimeOpti
   }
   for (const line of written.notes) {
     if (written.stacked.includes(line)) report.notes.push({ reason: "columns written one under another", detail: line });
-    else report.info.push({ reason: "in the new components", detail: line });
+    else report.info.push({ reason: "in the new elements", detail: line });
   }
   const designed = designOf(written.element);
   if (designed.warnings.length) report.designWarnings = designed.warnings;
@@ -277,7 +277,7 @@ function variant(change: string, check: TextCheck): Verification["variants"][num
 }
 
 /**
- * Check a migrated template, written with the new components, against the original: render both with the same props
+ * Check a migrated template, written with the new elements, against the original: render both with the same props
  * and compare the words, links and images they show, their styles, on desktop and phones, and check the design JSON
  * the visual editor would open (toDesign). Each boolean prop is also flipped once, to cover branches the preview props
  * don't take, and values the preview props may not hold are tried (an element, text with markup). Run it before
@@ -353,7 +353,7 @@ export async function verifyNewComponents(
   };
 }
 
-/** A Button with no link has "#" in the new components, which require one: nothing a reader would follow. */
+/** A Button with no link has "#" in the new elements, which require one: nothing a reader would follow. */
 const PLACEHOLDER_LINK = /^href #(\s|$)/;
 const withoutPlaceholderLinks = <Check extends { addedAttributes: string[] }>(check: Check): Check => ({ ...check, addedAttributes: check.addedAttributes.filter((attribute) => !PLACEHOLDER_LINK.test(attribute)) });
 
@@ -403,7 +403,7 @@ async function valueVariants(Original: Template, Converted: MigratedTemplate, pr
         const check = compareText(original, rendersNothing(migrated) ? "" : await draw(migrated));
         if (check.missing.length || check.added.length || check.missingAttributes.length || check.addedAttributes.length) variants.push({ change, missing: check.missing, added: [...check.added, ...check.addedAttributes], missingAttributes: check.missingAttributes });
       } catch (error) {
-        // The new components refuse a value with markup where no text goes (a link's target, a color from a prop): the
+        // The new elements refuse a value with markup where no text goes (a link's target, a color from a prop): the
         // original writes it in an attribute or a style no one reads as text. Text with markup in it, they show as text.
         const why = error instanceof Error ? error.message : "";
         const refused = /^\[Elements\][\s\S]*(prop|style)\/invalid/.test(why) && why.includes(MARKUP.slice(0, -1));

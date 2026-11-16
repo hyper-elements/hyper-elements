@@ -12,7 +12,7 @@ npm install @hyper-elements/react @react-pdf/renderer react
 
 | Package | Version | Why |
 |---------|---------|-----|
-| `@hyper-elements/react` | `^0.3.0` | The components, and this entry |
+| `@hyper-elements/react` | `^0.3.0` | The elements, and this entry |
 | `@react-pdf/renderer` | `^4.9.0` | Draws the pages (optional: only for `/pdf`) |
 | `react` | `>=18` | |
 
@@ -79,7 +79,7 @@ Text whose `fontFamily` has no file given is drawn in a standard PDF font: Helve
 ## Known limits
 
 - **WOFF2 isn't drawn**: react-pdf would embed its letters blank. Give TTF, OTF or WOFF.
-- **SVG images aren't drawn**: give a PNG or JPEG. An `Svg` (the component) is drawn as vectors.
+- **SVG images aren't drawn**: give a PNG or JPEG. An `Svg` (the element) is drawn as vectors.
 - **The standard PDF fonts draw Western European characters only.** For any other script, give a font file that has it. Whether a file given has every character isn't checked.
 - **Nothing flows from one page to the next**: content taller than its page is cut off. Split it with a `PageBreak` or into `Document.Page`s.
 - **No hover, no video player**: a Button shows its own colors, a Video its thumbnail or title.

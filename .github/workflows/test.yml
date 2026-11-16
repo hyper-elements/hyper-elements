@@ -119,14 +119,16 @@ jobs:
       # render that collects a template (about 5KB). Raise it on purpose, with what grew:
       # 322KB for plain text's one-pass scan of service tags in large headings and
       # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
-      # written for classic Outlook apart (its own col and first-row cell, without width: auto).
+      # written for classic Outlook apart (its own col and first-row cell, without width: auto);
+      # 318,100 bytes for a theme's `elements` read beside `components`, its name before (1,021
+      # bytes measured, with the messages that say "element").
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=317000
+          MAX_SIZE=318100
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -148,14 +150,15 @@ jobs:
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
       # grew: 485.5KB for the same scan and encoding, in the writers it shares;
       # 479,000 bytes for a Table's free column written for classic Outlook apart;
-      # 505,000 for a Document's Table as the builder's table and back (about 11KB
+      # 480,000 bytes for a theme's `elements` beside `components` (984 bytes measured);
+      # 506,000 for a Document's Table as the builder's table and back (about 11KB
       # to write it, 9.5KB to read it, 2.5KB of the table's defaults, 2KB beside them).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=505000
+          MAX_SIZE=506000
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

@@ -125,7 +125,7 @@ describe("custom components", () => {
   it("have namespaced names that never clash", () => {
     expect(() => defineCustomComponent({ type: "Card", label: "Card", props: {}, expand: () => ({}) })).toThrow(/namespace/);
     const Other = defineCustomComponent({ type: "acme.Card", label: "Other", props: {}, expand: () => ({}) });
-    expect(() => new Registry([Card, Other])).toThrow(/Two custom components/);
+    expect(() => new Registry([Card, Other])).toThrow(/Two elements made with defineElement\(\) are named acme\.Card/);
   });
 
   it("are described like built-in components", () => {

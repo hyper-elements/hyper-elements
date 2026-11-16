@@ -1,5 +1,5 @@
 // Recreated from https://examples.unlayer.com/examples/elements-playground/.
-// The original copy and six images are retained; every block is a Hyper Elements component.
+// The original copy and six images are retained; every block is one of Hyper Elements' elements.
 import { Button, Column, Divider, Email, Heading, Image, LineBreak, Link, Menu, Section, Span, Text } from "@hyper-elements/react";
 
 const ASSETS = "https://www.hyperelements.dev/img/email-testing/macbook-pro";

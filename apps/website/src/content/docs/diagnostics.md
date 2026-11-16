@@ -19,7 +19,7 @@ const { valid, diagnostics } = validate(
 // diagnostics[0].message: "\"marginBottom\" isn't a style a Text takes: use the parent's gap, or padding. …"
 ```
 
-Props and styles are typed from each component's definition, so in TypeScript a margin like this one is a type error before it's a diagnostic. `validate()` catches it at runtime too, with the path and the fix, for JavaScript, generated templates and agents.
+Props and styles are typed from each element's definition, so in TypeScript a margin like this one is a type error before it's a diagnostic. `validate()` catches it at runtime too, with the path and the fix, for JavaScript, generated templates and agents.
 
 ## A diagnostic
 
@@ -113,37 +113,37 @@ try {
 | `jsx/root` | Something beside the root, such as two roots |
 | `jsx/async` | A component that's async or suspends. Load its data first and pass it in as props |
 | `jsx/error` | A component that threw inside a `<Suspense>` |
-| `prop/unknown` | A prop the component doesn't take, often a style written as a prop: `<Email backgroundColor="#fff">` |
+| `prop/unknown` | A prop the element doesn't take, often a style written as a prop: `<Email backgroundColor="#fff">` |
 | `prop/required` | A required prop is missing: a Button's `href`, an Image's `src` |
 | `prop/invalid` | A prop's value isn't one it takes, such as a `javascript:` link |
-| `style/unknown` | A style the component doesn't take: a margin, a root's `padding`, an old name like `align` (the message names the new one) |
+| `style/unknown` | A style the element doesn't take: a margin, a root's `padding`, an old name like `align` (the message names the new one) |
 | `style/invalid` | A style's value isn't one it takes: `justifyContent: "around"`, `fontWeight: 650` |
-| `mobile/not-allowed` | A phone style the component doesn't take on phones |
+| `mobile/not-allowed` | A phone style the element doesn't take on phones |
 | `mobile/not-supported` | Phone styles in a Document or a Canvas, which have no phone width |
 | `hidden/not-supported` | `hidden` in a Document or a Canvas |
-| `hover/not-allowed` | A hover style the component doesn't take |
-| `children/not-allowed` | A child the component can't hold: a Heading in a Text, a root inside a root |
+| `hover/not-allowed` | A hover style the element doesn't take |
+| `children/not-allowed` | A child the element can't hold: a Heading in a Text, a root inside a root |
 | `children/text-not-allowed` | Loose text where it can't go, such as straight in a Row. Put it in a Text or Heading |
 | `children/one-only` | A second `PageHeader` or `PageFooter` in a Document |
-| `id/duplicate` | Two components with one `id` |
+| `id/duplicate` | Two elements with one `id` |
 | `id/invalid` | An `id` that doesn't start with a letter |
 | `mobile/invalid`, `hover/invalid`, `hidden/invalid` | A `mobile`, `hover` or `hidden` value that isn't one they take |
-| `target/unsupported` | A component the output can't draw: an `Svg` or a `PageNumber` in an email (Gmail and classic Outlook drop inline SVG) |
+| `target/unsupported` | An element the output can't draw: an `Svg` or a `PageNumber` in an email (Gmail and classic Outlook drop inline SVG) |
 | `document/page-number` | A `PageNumber` in a Page or a Canvas, which have no pages |
-| `component/not-supported` | A component under a root that doesn't take it. The message names the roots that do |
-| `prop/not-supported` | A prop for some roots only (a `component()`'s, made with `roots`), under another |
+| `component/not-supported` | An element under a root that doesn't take it. The message names the roots that do |
+| `prop/not-supported` | A prop for some roots only (a `defineElement()`'s, made with `roots`), under another |
 | `style/not-supported` | A style for some roots only, under another, in `style` or in its `mobile` or `hover` block |
 | `theme/schema` | A theme that isn't one: a token name that isn't letters and digits (`gray-900`: nest it as `gray.900`) or is `__proto__`, `constructor` or `prototype`, a value its group doesn't take, a `{ base, dark }` value (modes come later), a second `by` prop or a `by` value its prop never has, `variants` on a root, a group that isn't one yet (`shadows`), or a theme given both at a document's top level and on its root |
 | `theme/missing-token` | A token that doesn't exist (the message suggests the one meant), or a token in a template with no theme |
 | `theme/value` | A token from another group than the place takes: a `spacing` token as a color |
 | `theme/cycle` | Tokens, or named styles, that refer to each other in a loop |
-| `variant/unknown` | A `variant` the theme doesn't give that component (the message lists those it does) |
+| `variant/unknown` | A `variant` the theme doesn't give that element (the message lists those it does) |
 | `style/unknown-name` | A named style in `apply` the theme doesn't have |
-| `style/apply-place` | `apply` inside `mobile` or `hover`, or on a template's own component |
+| `style/apply-place` | `apply` inside `mobile` or `hover`, or on a template's own element |
 | `email/layer` | A Layer email can't draw: in an email it's an Image as wide as the Layer with one child over it |
-| `custom/render` | A custom component's `render` throws, or returns something other than one component |
-| `custom/depth` | Custom components expanding into each other too deep, as when one contains itself |
-| `custom/duplicate` | Two different `component()` definitions with one `type` |
+| `custom/render` | Your own element's `render` throws, or returns something other than one element |
+| `custom/depth` | Your own elements expanding into each other too deep, as when one contains itself |
+| `custom/duplicate` | Two different `defineElement()` definitions with one `type` |
 
 ### Warnings and notes: what an output can't show
 
@@ -164,9 +164,9 @@ try {
 | `style/ignored` | warning | A style that does nothing where it is, such as `flex` on a child that isn't in a Row |
 | `email/layer-phone` | info | On phones, an email keeps a Layer's height and cuts its image at the sides |
 | `hidden/everywhere` | warning | Hidden on phones and on desktop, so it never shows |
-| `theme/inherited` | warning | A theme's default for a component (`components.Text.color`) replaces the body text's color, font, size or line height a box sets for what it holds. Set them with the roles `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` |
-| `id/dropped` | info | An `id` inside a custom component used without one of its own is left out |
-| `mobile/not-shown` | warning | A custom component's `mobile` style that nothing it renders has a phone version of |
+| `theme/inherited` | warning | A theme's default for an element (`elements.Text.color`) replaces the body text's color, font, size or line height a box sets for what it holds. Set them with the roles `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` |
+| `id/dropped` | info | An `id` inside one of your own elements used without one of its own is left out |
+| `mobile/not-shown` | warning | Your own element's `mobile` style that nothing it renders has a phone version of |
 | `jsx/compat` | warning | A `compat` prop on a root, which is left out |
 | `document/overflow` | warning | A page's content looks taller than the page (an estimate) |
 | `canvas/overflow` | warning | A Canvas's content looks taller than the Canvas (an estimate) |
@@ -175,7 +175,7 @@ try {
 
 ## Where support data comes from
 
-Each style and prop of each component declares how each output shows it: `full`, `partial`, or `none` (with what it shows instead). One pass reads those declarations for the styles and props you set, and turns each into a diagnostic. A test keeps the declarations true: every style and prop, at every value, either changes the output or gives a diagnostic. Nothing is dropped silently.
+Each style and prop of each element declares how each output shows it: `full`, `partial`, or `none` (with what it shows instead). One pass reads those declarations for the styles and props you set, and turns each into a diagnostic. A test keeps the declarations true: every style and prop, at every value, either changes the output or gives a diagnostic. Nothing is dropped silently.
 
 Each declaration names its evidence: the writer's own output checked in Chromium, or plain CSS. Some are marked as not checked yet: those are only ever notes, and say so. What email clients do with the HTML isn't declared here: it's `@hyper-elements/email-clients`' to check.
 
@@ -199,13 +199,13 @@ Match on `code`, which is stable for tools to match on, and show people the `mes
 
 For an agent, `validate()` is the feedback loop. Each message says what to use instead and where, so an agent that writes a template, validates it and reads the messages can fix its own mistakes: a margin becomes the parent's `gap`, a style written as a prop goes into `style`. Pair it with [`outline()`](/docs/rendering#outline) to check the layout as text, without reading HTML.
 
-Before it writes, an agent can ask what a root takes. `@hyper-elements/react/inspect` says it as data: `describeComponents({ root: "Email" })` lists the components an Email takes, each prop and style with its kind and the roots that take it, and `inspect(element)` lists each component of a template with whether its root takes it (`allowed`), what it's given and the diagnostics on it.
+Before it writes, an agent can ask what a root takes. `@hyper-elements/react/inspect` says it as data: `describeElements({ root: "Email" })` lists the elements an Email takes, each prop and style with its kind and the roots that take it, and `inspect(element)` lists each element of a template with whether its root takes it (`allowed`), what it's given and the diagnostics on it.
 
 ```tsx
-import { describeComponent, inspect } from "@hyper-elements/react/inspect";
+import { describeElement, inspect } from "@hyper-elements/react/inspect";
 
-describeComponent("Svg", { root: "Email" });   // undefined: an Email doesn't take one
+describeElement("Svg", { root: "Email" });   // undefined: an Email doesn't take one
 inspect(<Welcome />).nodes.filter((node) => !node.allowed || node.problems.length);   // what's wrong, and where
 ```
 
-> **Tip:** Point your agent at the package's guide, `node_modules/@hyper-elements/react/GUIDE.md`, before it writes a template. It lists every component on a line, and the mistakes that most often fail a first try.
+> **Tip:** Point your agent at the package's guide, `node_modules/@hyper-elements/react/GUIDE.md`, before it writes a template. It lists every element on a line, and the mistakes that most often fail a first try.

@@ -1,9 +1,9 @@
 ---
 title: "Themes"
-description: "Write a brand once with defineTheme(): tokens referred to with token(), roles the built-in components read, defaults for each component, variants, named styles, scopes that change tokens for a band, overrides for one kind of root, and typed names."
+description: "Write a brand once with defineTheme(): tokens referred to with token(), roles the built-in elements read, defaults for each element, variants, named styles, scopes that change tokens for a band, overrides for one kind of root, and typed names."
 ---
 
-A theme is the brand, written once. Give it to any root, and every Email, Page, Document and Canvas that takes it is on brand: its colors, fonts, sizes, each component's defaults, its variants and its named styles.
+A theme is the brand, written once. Give it to any root, and every Email, Page, Document and Canvas that takes it is on brand: its colors, fonts, sizes, each element's defaults, its variants and its named styles.
 
 ```tsx
 import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hyper-elements/react";
@@ -14,7 +14,7 @@ const brand = defineTheme({
   fontSizes: { body: 16, small: 13 },
   lineHeights: { body: 1.6 },
   spacing: { md: 16, lg: 32 },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 36, mobile: { fontSize: 28 } }, 2: { fontSize: 24 } } } },
     Button: { borderRadius: 8, variants: { secondary: { backgroundColor: "{colors.muted}", color: "{colors.foreground}" } } },
   },
@@ -52,7 +52,7 @@ Templates without a theme render as they always did. A theme only changes what i
 | `lineHeights` | Line heights: `body: 1.6` |
 | `fonts` | Font stacks: `body: "Inter, Arial, sans-serif"` |
 | `radii` | Corner radii: `card: 8`, or `card: { topLeft: 8, topRight: 8 }` |
-| `components` | Each built-in component's defaults, by one prop's value (`by`), and its `variants` |
+| `elements` | Each built-in element's defaults, by one prop's value (`by`), and its `variants` |
 | `styles` | Named styles, applied with `style={{ apply: [...] }}` |
 | `formats` | Overrides for one kind of root: `email`, `page`, `document`, `canvas` |
 
@@ -89,7 +89,7 @@ A token from another group is an error (`theme/value`), and so is one that doesn
 
 ## Roles
 
-Some tokens are roles: where the theme defines them, the built-in components read them without the template naming them.
+Some tokens are roles: where the theme defines them, the built-in elements read them without the template naming them.
 
 | Token | Is |
 |-------|----|
@@ -103,23 +103,23 @@ Some tokens are roles: where the theme defines them, the built-in components rea
 | `colors.primaryForeground` | A Button's text color |
 | `colors.border` | A Divider's color |
 
-Body text's styles are set on the root, and Text, table cells and list items inherit them. Set body text with these roles, not with a default for `Text`: a style on `Text` misses table cells and list items. Where a theme's default for a component replaces the color, font, size or line height a box sets for what it holds, `validate()` warns (`theme/inherited`).
+Body text's styles are set on the root, and Text, table cells and list items inherit them. Set body text with these roles, not with a default for `Text`: a style on `Text` misses table cells and list items. Where a theme's default for an element replaces the color, font, size or line height a box sets for what it holds, `validate()` warns (`theme/inherited`).
 
-## Component defaults
+## Element defaults
 
-`components.Button: { … }` is every Button's default style. Styles inside it are written as in `style`, with `mobile` and `hover` blocks, and may refer to tokens.
+`elements.Button: { … }` is every Button's default style. Styles inside it are written as in `style`, with `mobile` and `hover` blocks, and may refer to tokens.
 
 ```ts
-components: {
+elements: {
   Button: { borderRadius: 8, padding: [12, 24], hover: { backgroundColor: "#115e59" } },
   Divider: { borderTop: { width: 2, style: "solid", color: "{colors.border}" } },
 }
 ```
 
-`by` sets a default by one of the component's props, a choice or a boolean. A type scale is a Heading's style by its level:
+`by` sets a default by one of the element's props, a choice or a boolean. A type scale is a Heading's style by its level:
 
 ```ts
-components: {
+elements: {
   Heading: { by: { level: { 1: { fontSize: 36, mobile: { fontSize: 28 } }, 2: { fontSize: 24 }, 3: { fontSize: 20 } } } },
 }
 ```
@@ -128,11 +128,11 @@ A value the prop never has (a level 7) is an error. Other differences are varian
 
 ## Variants
 
-`variants` are a component's named versions, picked with its `variant` prop. A list merges in order:
+`variants` are an element's named versions, picked with its `variant` prop. A list merges in order:
 
 ```tsx
 const brand = defineTheme({
-  components: {
+  elements: {
     Button: {
       variants: {
         secondary: { backgroundColor: "#f3f4f6", color: "#111827" },
@@ -146,11 +146,11 @@ const brand = defineTheme({
 <Button href="https://example.com" variant={["secondary", "small"]}>Later</Button>
 ```
 
-Every built-in component but the roots takes `variant`. A variant the theme doesn't give that component is an error that lists the ones it has.
+Every built-in element but the roots takes `variant`. A variant the theme doesn't give that element is an error that lists the ones it has.
 
 ## Named styles
 
-`styles` are named styles any component can apply, in order, with `apply` at the top of its `style`:
+`styles` are named styles any element can apply, in order, with `apply` at the top of its `style`:
 
 ```tsx
 const brand = defineTheme({
@@ -165,19 +165,19 @@ const brand = defineTheme({
 </Column>
 ```
 
-A named style, a variant or a component default may apply named styles too. Named styles that apply each other in a loop are an error. A template's own component takes no named styles: apply them in what it renders.
+A named style, a variant or an element default may apply named styles too. Named styles that apply each other in a loop are an error. A template's own element takes no named styles: apply them in what it renders.
 
 ## Which wins
 
-A component's style is merged from, lowest first:
+An element's style is merged from, lowest first:
 
 1. Its roles
-2. Its component's defaults, then its defaults by its prop's value (`by`)
+2. Its element's defaults, then its defaults by its prop's value (`by`)
 3. Its variants, in order
 4. Its named styles, in order
 5. Its own `style`
 
-Each `mobile` and `hover` block merges key by key the same way. A style the component sets itself, outside a block, also replaces the theme's phone and hover values for it: `style={{ padding: 8 }}` stays 8 on phones, whatever the theme's `mobile` says.
+Each `mobile` and `hover` block merges key by key the same way. A style the element sets itself, outside a block, also replaces the theme's phone and hover values for it: `style={{ padding: 8 }}` stays 8 on phones, whatever the theme's `mobile` says.
 
 ## Scopes
 
@@ -201,7 +201,7 @@ const brand = defineTheme({
   fontSizes: { body: 16 },
   formats: {
     document: { fontSizes: { body: 11 }, fonts: { body: "Georgia, serif" } },
-    email: { components: { Button: { borderRadius: 4 } } },
+    email: { elements: { Button: { borderRadius: 4 } } },
   },
 });
 ```
@@ -216,12 +216,12 @@ What a root can't show is left out of the theme there: a theme's phone and hover
 const customer = extendTheme(brand, { colors: { primary: "#b91c1c" }, fonts: { body: "Helvetica, Arial, sans-serif" } });
 ```
 
-## Your own components
+## Your own elements
 
-A [component()](/docs/custom-components)'s color, length and font props take a token like a style does. Its `render` gets the theme's tokens where the instance is, scopes included, as values in its second argument:
+A [defineElement()](/docs/defining-elements)'s color, length and font props take a token like a style does. Its `render` gets the theme's tokens where the instance is, scopes included, as values in its second argument:
 
 ```tsx
-const Badge = component({
+const Badge = defineElement({
   type: "acme.Badge",
   label: "Badge",
   props: { tint: prop.color({ label: "Tint" }) },
@@ -253,6 +253,6 @@ A theme's values are written into each output as values, as if the template had 
 
 - **A Page** also writes its tokens as CSS custom properties (`--colors-primary`, `--fontSizes-body`) on its root, and a scope's where they differ, for your own CSS and `Html` blocks.
 - **The visual editor** gets the values each block has. `toDesign()` says it keeps no theme.
-- **`inspect()`** lists the theme: its tokens and their values, the roles it defines, its named styles and each component's variants.
+- **`inspect()`** lists the theme: its tokens and their values, the roles it defines, its named styles and each element's variants.
 
-Every theme problem is a [diagnostic](/docs/diagnostics) with the path to the token, style or variant it's about: `root.theme.components.Button.variants.ghost`.
+Every theme problem is a [diagnostic](/docs/diagnostics) with the path to the token, style or variant it's about: `root.theme.elements.Button.variants.ghost`.

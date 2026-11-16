@@ -10,7 +10,7 @@ const meta: Meta<Args> = {
   parameters: {
     docs: {
       description: {
-        component: "Markup written as it is, for what no component says: nothing in it is checked or escaped, so only markup you trust. Each story is drawn as an Email and as a Page, from one template; \"Show code\" has it.",
+        component: "Markup written as it is, for what no element says: nothing in it is checked or escaped, so only markup you trust. Each story is drawn as an Email and as a Page, from one template; \"Show code\" has it.",
       },
     },
   },
@@ -53,7 +53,7 @@ const label = { fontSize: 12, fontWeight: 600, letterSpacing: 1.4, textTransform
 const SERIF_TYPE = `font-family:Newsreader,Georgia,'Times New Roman',serif;color:${INK}`;
 const SANS_TYPE = `font-family:'Hanken Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;color:${INK}`;
 
-/** `Html` is markup written as it is, for what no component says. */
+/** `Html` is markup written as it is, for what no element says. */
 export const YourOwnHtml = story((Root) => (
   <Root {...root}>
     <Section style={{ padding: [44, 32, 48], gap: 18, mobile: { padding: [32, 24, 36], gap: 16 } }}>
@@ -96,7 +96,7 @@ const bar = (title: string, percent: number, color: string) => `<div style="marg
   <div style="height:4px;background:${RULE};font-size:0;line-height:0"><div style="width:${percent}%;height:4px;background:${color}"></div></div>
 </div>`;
 
-/** Progress bars, next to a heading that's a component: `Html` is one block among others. */
+/** Progress bars, next to a heading that's an element: `Html` is one block among others. */
 export const ProgressBars = story((Root) => (
   <Root {...root}>
     <Section style={{ padding: [40, 24, 44], mobile: { padding: [20, 12, 28] } }}>

@@ -13,18 +13,18 @@ export async function getStaticPaths() {
 const { entry } = Astro.props;
 const { Content, headings } = await render(entry);
 const example = components[entry.id];
-// The search result's title and description: "Email component", not the Email output's "Email";
+// The search result's title and description: "Email element", not the Email output's "Email";
 // a summary too short or too long for a result is filled out or cut at a word.
 const isReference = entry.data.group === "Reference";
-const metaTitle = isReference ? entry.data.title : `${entry.data.title} component`;
+const metaTitle = isReference ? entry.data.title : `${entry.data.title} element`;
 const summary = entry.data.summary as string;
 const metaDescription =
   summary.length > 160
     ? `${summary.slice(0, 157).replace(/[\s,;:(]+\S*$/, "")}…`
     : summary.length < 70 && !isReference
-      ? `${summary} The ${entry.data.title} component's props, styles and an example, in Hyper Elements.`
+      ? `${summary} The ${entry.data.title} element's props, styles and an example, in Hyper Elements.`
       : summary.length < 70
-        ? `${summary} The kinds of values Hyper Elements components take, in one reference.`
+        ? `${summary} The kinds of values elements take in Hyper Elements, in one reference.`
         : summary;
 const import_ = `import { ${entry.data.title.split(".")[0]} } from "@hyper-elements/react";`;
 ---

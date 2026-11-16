@@ -22,7 +22,7 @@ export const site = {
 
 export const mainNav = [
   { href: "/docs", label: "Docs" },
-  { href: "/components", label: "Components" },
+  { href: "/components", label: "Elements" },
   { href: "/templates", label: "Templates" },
   { href: "/ai", label: "AI" },
 ];
@@ -36,7 +36,7 @@ export const resourcesNav = [
 export type DocLink = { slug: string; label: string };
 export type DocGroup = { title: string; items: DocLink[] };
 
-/** The docs sidebar. A slug is the path after /docs/ ("" is /docs). Component pages are added from the reference. */
+/** The docs sidebar. A slug is the path after /docs/ ("" is /docs). Element pages are added from the reference. */
 export const docsNav: DocGroup[] = [
   {
     title: "Get started",
@@ -54,7 +54,7 @@ export const docsNav: DocGroup[] = [
       { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
       { slug: "cli", label: "Command line" },
-      { slug: "custom-components", label: "Your own components" },
+      { slug: "defining-elements", label: "Defining elements" },
     ],
   },
   {
@@ -93,7 +93,7 @@ export const docsNav: DocGroup[] = [
   },
 ];
 
-/** Order of component groups in the sidebar and on /components. */
+/** Order of element groups in the sidebar and on /components. */
 export const componentGroups = ["Roots", "Sections and layout", "Blocks", "Inline", "Parts", "Shapes", "Reference"];
 
 export const docHref = (slug: string) => (slug ? `/docs/${slug}` : "/docs");

@@ -5,9 +5,9 @@ description: Write emails, web pages, printed documents, PDFs and images in code
 
 # Hyper Elements
 
-<!-- Written from the component definitions by packages/react/src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
+<!-- Written from the element definitions by packages/react/src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
 
-Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements (`npm install @hyper-elements/react`). This is the package's own guide to its components at `@hyper-elements/react` (GUIDE.md in the package), written from their definitions: everything needed to write a template, in short. Every prop's and style's details, with its default: `node_modules/@hyper-elements/react/REFERENCE.md`.
+Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements (`npm install @hyper-elements/react`). This is the package's own guide to its elements at `@hyper-elements/react` (GUIDE.md in the package), written from their definitions: everything needed to write a template, in short. Every prop's and style's details, with its default: `node_modules/@hyper-elements/react/REFERENCE.md`.
 
 To test an email in Outlook, Gmail and other clients, a template or any HTML: the `email-testing` skill has the steps, or run `npx @hyper-elements/cli preview emails/welcome.tsx`.
 
@@ -15,10 +15,10 @@ To test an email in Outlook, Gmail and other clients, a template or any HTML: th
 
 A project may have templates written with Unlayer Elements: they import `Body`, `ColumnLayouts` or `renderToHtml()` from `@unlayer/react-elements`, and use `values`, `layout`, `html` and style props such as `backgroundColor="#fff"`. Those components aren't in Hyper Elements, a new package: these are its components.
 
-- Move them with the codemod: `npx @hyper-elements/migrate src/emails --from unlayer-elements` lists what it would change, `--write` replaces the files (only those git can restore) and `--report notes.md` writes what it noted. It rewrites the imports and the JSX, and keeps props, loops and conditions. The new components render with `await render(element)`, which is async, in place of `renderToHtml()`. More: `npx @hyper-elements/migrate --help`.
-- What the codemod can't move is listed, and the file is left as it was: rewrite that part by hand with these components.
+- Move them with the codemod: `npx @hyper-elements/migrate src/emails --from unlayer-elements` lists what it would change, `--write` replaces the files (only those git can restore) and `--report notes.md` writes what it noted. It rewrites the imports and the JSX, and keeps props, loops and conditions. The new elements render with `await render(element)`, which is async, in place of `renderToHtml()`. More: `npx @hyper-elements/migrate --help`.
+- What the codemod can't move is listed, and the file is left as it was: rewrite that part by hand with these elements.
 - Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.
-- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these components and checks each against its original.
+- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these elements and checks each against its original.
 
 ## How a template is written
 
@@ -26,7 +26,7 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - Styles go in `style={{ … }}`, never as props: `<Heading style={{ fontSize: 24, color: "#111827" }}>`. A number is px; `padding` takes `16`, `[12, 24]` or `"12px 24px"`. A box's text styles are inherited by what it holds.
 - There are no margins: space between blocks is their parent's `gap` (`<Column style={{ gap: 16 }}>`), space inside a box its `padding`.
 - A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.
-- Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
+- Text is elements, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
@@ -66,11 +66,11 @@ Each of these made an agent's first try fail:
 
 ## Themes
 
-A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, given to a root as `theme`.
+A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, elements, styles, formats })`, given to a root as `theme`.
 
 - In a template `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme, and only there, a token is `"{colors.primary}"`: everywhere in a template (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.
 - Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.
-- `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
+- `elements.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
 - `styles: { card: { … } }` are named styles: `style={{ apply: ["card"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.
 - `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
 - `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module "@hyper-elements/react" { interface Register { theme: typeof brand } }` types every name.
@@ -84,7 +84,7 @@ import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListIte
 const acme = defineTheme({
   colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
   fonts: { body: "Inter, Arial, sans-serif" },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
     Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
   },
@@ -154,7 +154,7 @@ const { image, diagnostics } = await renderImage(
 );
 ```
 
-## Components
+## Elements
 
 \* required. *text* styles: color, fontFamily, fontSize, fontWeight, fontStyle, lineHeight, letterSpacing, textAlign, textTransform. *box* styles: width, maxWidth, padding, backgroundColor, border, borderRadius.
 
@@ -186,7 +186,7 @@ const { image, diagnostics } = await renderImage(
 - **Video**: A YouTube or Vimeo video: its player on a page; in an email (which can't play one), its thumbnail, linked to it. Props: src* (video), thumbnail (asset), title (text). Style: width, maxWidth, flex. Phones: width, maxWidth.
 - **Social**: Links to social profiles: a line of the networks' icons, each linked to its profile. Props: icons* (a list of icons, each { name, href }), iconType (circle|rounded|squared), size (an integer from 1). Style: gap, justifyContent (start|center|end), flex. Phones: gap.
 - **Menu**: A line of links (a site's sections, a footer's), onto more lines where they don't fit, with a separator between them on desktop; or links down a column. Props: items* (a list of items, each { text, href }), separator (text), layout (horizontal|vertical). Style: color, fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, textTransform (none|uppercase|lowercase|capitalize), separatorColor, padding, justifyContent (start|center|end), flex. Phones: fontSize, lineHeight, letterSpacing.
-- **Html**: Markup written as it is, for what no component says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text. Props: html* (text), text (text).
+- **Html**: Markup written as it is, for what no element says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text. Props: html* (text), text (text).
 
 ### Inline
 

@@ -10,7 +10,7 @@ const groups = componentGroups
   .map((g) => ({ title: g, items: entries.filter((e) => e.data.group === g) }))
   .filter((g) => g.items.length);
 ---
-<Docs title="Components" description="Every component, what it holds, and every prop and style it takes, written from the components' own definitions." slug="components" headings={[...groups.map((g) => ({ depth: 2, slug: g.title.toLowerCase().replace(/\W+/g, "-"), text: g.title })), ...headings]} markdown={overview.body}>
+<Docs title="Elements" description="Every element, what it holds, and every prop and style it takes, written from the elements' own definitions." slug="components" headings={[...groups.map((g) => ({ depth: 2, slug: g.title.toLowerCase().replace(/\W+/g, "-"), text: g.title })), ...headings]} markdown={overview.body}>
   {groups.map((g) => (
     <section>
       <h2 id={g.title.toLowerCase().replace(/\W+/g, "-")}>{g.title}</h2>
@@ -24,7 +24,7 @@ const groups = componentGroups
       </div>
     </section>
   ))}
-  <h2 id="every-component-takes">Every component takes</h2>
+  <h2 id="every-element-takes">Every element takes</h2>
   <Content />
 </Docs>
 

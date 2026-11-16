@@ -59,7 +59,7 @@ The root's `style` takes the text styles every block inherits (`color`, `fontFam
 
 ## What goes inside
 
-| Kind | Components |
+| Kind | Elements |
 |------|------------|
 | Layout | [`Section`](/docs/components/section), [`Row`](/docs/components/row), [`Column`](/docs/components/column), [`Grid`](/docs/components/grid), [`Layer`](/docs/components/layer) |
 | Text | [`Heading`](/docs/components/heading) (`level` 1 to 6), [`Text`](/docs/components/text) |
@@ -69,7 +69,7 @@ The root's `style` takes the text styles every block inherits (`color`, `fontFam
 | Shapes, in an `Svg` | [`Rect`](/docs/components/rect), [`Circle`](/docs/components/circle), [`Ellipse`](/docs/components/ellipse), [`Line`](/docs/components/line), [`Polygon`](/docs/components/polygon), [`Path`](/docs/components/path) |
 | Document parts | [`Document.Page`](/docs/components/document-page), [`PageBreak`](/docs/components/pagebreak), [`PageHeader`](/docs/components/pageheader), [`PageFooter`](/docs/components/pagefooter), [`PageNumber`](/docs/components/pagenumber) |
 
-Text is components, not HTML. Inside a `Text`, a `Span` styles a run, a `Link` links one, a `LineBreak` breaks the line and a `MergeTag` writes a merge tag:
+Text is elements, not HTML. Inside a `Text`, a `Span` styles a run, a `Link` links one, a `LineBreak` breaks the line and a `MergeTag` writes a merge tag:
 
 ```tsx
 <Text>
@@ -78,11 +78,11 @@ Text is components, not HTML. Inside a `Text`, a `Span` styles a run, a `Link` l
 </Text>
 ```
 
-`<b>`, `<br>`, `<div>` and other HTML elements in a template are errors (`jsx/markup`). For markup no component says, there's [`<Html>`](/docs/custom-components#html-markup-as-it-is).
+`<b>`, `<br>`, `<div>` and other HTML elements in a template are errors (`jsx/markup`). For markup no element says, there's [`<Html>`](/docs/defining-elements#html-markup-as-it-is).
 
 ## Your own components
 
-A function that returns components is a component of your own. Write templates the way you write the rest of your React app:
+A function that returns elements is a component of your own. Write templates the way you write the rest of your React app:
 
 ```tsx
 import { Column, Email, Heading, Text } from "@hyper-elements/react";
@@ -152,4 +152,4 @@ Shared content doesn't mean identical pixels. Email is written as tables, a page
 ## Next
 
 - [Layout](/docs/layout): arrange blocks with Section, Row, Column, Grid and Layer.
-- [Custom components](/docs/custom-components): named blocks with typed props.
+- [Defining elements](/docs/defining-elements): named blocks with typed props.

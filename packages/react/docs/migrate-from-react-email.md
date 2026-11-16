@@ -7,11 +7,11 @@ npx @hyper-elements/migrate emails --write --report migration.md
 npm install @hyper-elements/react@^0.3.0
 ```
 
-Run it from your project folder (it uses your project's React, React Email and `tsconfig` paths). Each template becomes the components from `@hyper-elements/react`, with its styles in `style={{ }}`, and keeps its props, loops and conditions. Components it uses from the same file or other files of yours (a shared `Layout`, a `Footer`) are inlined, so their markup converts too.
+Run it from your project folder (it uses your project's React, React Email and `tsconfig` paths). Each template becomes the elements from `@hyper-elements/react`, with its styles in `style={{ }}`, and keeps its props, loops and conditions. Components it uses from the same file or other files of yours (a shared `Layout`, a `Footer`) are inlined, so their markup converts too.
 
 JavaScript templates keep JavaScript helpers. The document's `dir` becomes `Email`'s `dir` prop. Its `lang` isn't carried over yet: the report notes it, and you set `lang` on `Email` yourself.
 
-Anything the components can't express (content with `display: none`, markup the converter can't map) is kept as an `Html` block marked `TODO(convert)`, and the template is still written. A template that can't be written in the components at all fails: nothing is written for it, the report says why, and the run exits with code `2`. See [what to do about one](#a-template-that-fails).
+Anything the elements can't express (content with `display: none`, markup the converter can't map) is kept as an `Html` block marked `TODO(convert)`, and the template is still written. A template that can't be written in the elements at all fails: nothing is written for it, the report says why, and the run exits with code `2`. See [what to do about one](#a-template-that-fails).
 
 ## What the check guarantees
 
@@ -54,7 +54,7 @@ const { design } = toDesign(element); // open in the visual editor with loadDesi
 
 ## A template that fails
 
-Rewrite the part the report names by hand with the components ([GUIDE.md](../GUIDE.md)), then check it against the React Email original (from git, if `--write` replaced it) with `npx @hyper-elements/migrate compare <original> <migrated>`.
+Rewrite the part the report names by hand with the elements ([GUIDE.md](../GUIDE.md)), then check it against the React Email original (from git, if `--write` replaced it) with `npx @hyper-elements/migrate compare <original> <migrated>`.
 
 ## Open React Email templates in the Unlayer editor
 
@@ -86,7 +86,7 @@ For a right-to-left design, call `unlayer.setTextDirection("rtl")` when loading 
 
 - To move React Email templates to Elements, run `npx @hyper-elements/migrate <folder> --report migration.md` first, read the report, then run it again with `--write`. Don't rewrite templates by hand when the command can do it: it keeps their logic and checks the result.
 - Exit code `2` means a template failed to convert or lost content: report that to the user with the file and the reason from the report. Don't pass `--force` to hide it.
-- Blocks marked `TODO(convert)` in a migrated template are kept as HTML. Converting one by hand: replace it with the new components ([GUIDE.md](../GUIDE.md)), then check it with `npx @hyper-elements/migrate compare <original> <migrated>`. Exit code `2` lists missing or extra content.
+- Blocks marked `TODO(convert)` in a migrated template are kept as HTML. Converting one by hand: replace it with the new elements ([GUIDE.md](../GUIDE.md)), then check it with `npx @hyper-elements/migrate compare <original> <migrated>`. Exit code `2` lists missing or extra content.
 - After converting any template by hand, run the same `compare` before reporting it done.
 - React Email → Elements, when writing by hand: `Text`, `Section`, `Row` and `Column` keep their names; `Container` width → `Email` `width`; `Img` → `Image`, with its file's size in `src={{ src, width, height }}`; `Hr` → `Divider`; `Preview` → `Email` `previewText`; margins → the parent's `gap`; Tailwind classes and inline styles → `style={{ }}`.
 

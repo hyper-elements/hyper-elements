@@ -1,5 +1,5 @@
 /**
- * The converters' intermediate source in the new components. A converter writes a template in Elements 0.2's
+ * The converters' intermediate source in the new elements. A converter writes a template in Elements 0.2's
  * components ("today's") as source text first; `migrateElements` rewrites it in the new ones at once, and what it can't
  * rewrite fails here, saying why. Today's components are never run: 0.3.0 doesn't have them.
  */
@@ -10,23 +10,23 @@ import { migrateElements } from "./elements/codemod";
 import { TODAYS_COMPONENTS, treeToTsx, type PrintOptions } from "./print";
 import type { ElementNode } from "./tree";
 
-/** A template the converter couldn't write in the new components: why, and its source in today's components. */
+/** A template the converter couldn't write in the new elements: why, and its source in today's components. */
 export class NewComponentsError extends Error {
   override readonly name = "NewComponentsError";
-  /** Why it can't be written in the new components. */
+  /** Why it can't be written in the new elements. */
   readonly reason: string;
   /** The template as the converter wrote it before, in today's components: what couldn't be moved. */
   readonly intermediate: string;
 
   constructor(reason: string, intermediate: string) {
-    super(`it can't be written in the new components: ${reason}`);
+    super(`it can't be written in the new elements: ${reason}`);
     this.reason = reason;
     this.intermediate = intermediate;
   }
 }
 
 export interface NewComponents {
-  /** The module in the new components, formatted. */
+  /** The module in the new elements, formatted. */
   code: string;
   /** What the codemod said it may change, or left out: one line each, with where. */
   notes: string[];

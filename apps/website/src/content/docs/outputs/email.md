@@ -3,7 +3,7 @@ title: "Email"
 description: "What the email writer produces from an Email root. Tables with px widths, Outlook's markup in conditional comments, phone styles, preview text and known limits."
 ---
 
-An `<Email>` root renders to email-safe HTML: tables with px widths, inline styles, and Outlook's markup in conditional comments. You write the layout once in components, and the writer handles the client quirks.
+An `<Email>` root renders to email-safe HTML: tables with px widths, inline styles, and Outlook's markup in conditional comments. You write the layout once in elements, and the writer handles the client quirks.
 
 ```tsx
 import { Column, Email, Text, Row, render } from "@hyper-elements/react";
@@ -29,9 +29,9 @@ const { html, text } = await render(
 
 The document is the Unlayer editor's email shell: an XHTML doctype, Office settings for Outlook, `x-apple-disable-message-reformatting`, `X-UA-Compatible`, `-webkit-text-size-adjust`, `color-scheme`, a `border-collapse` reset, and the preview text. The content sits in a full-width table with the window's background, inside a centered table of the content's width. The language, direction and background are also on a `role="article"` wrapper, since Gmail drops `<html>` and `<body>`.
 
-How each component is written:
+How each element is written:
 
-| Component | In the email |
+| Element | In the email |
 |-----------|--------------|
 | `Section` | A full-width row with its background, its content at the content width inside it |
 | `Row` | Each child an inline-block `div`, with an Outlook-only table of the same widths in conditional comments. With `stackOnMobile={false}`, a table row |
@@ -88,7 +88,7 @@ There are no dark-mode styles yet. The head declares `color-scheme` as light.
 
 ## How it's checked
 
-- Unit tests of each component's markup.
+- Unit tests of each element's markup.
 - A hostile-input test: user text, links and font URLs with markup in them add no element or attribute, including inside Outlook's comments.
 - Chromium tests that every box is as wide as the layout says on desktop, with and without the stylesheet, that Rows stack on phones either way, that hover, fonts and superscripts work, and that Row widths match the page in every min, max and gap case.
 - Checks against a model of classic Outlook's layout, built from captures of real Outlook, at 96 and 192 DPI.

@@ -1,6 +1,6 @@
 # Migrating from Unlayer Elements
 
-Hyper Elements (`@hyper-elements/react`) is a new package, with new components: typed `style` props, new outputs and
+Hyper Elements (`@hyper-elements/react`) is a new package, with new elements: typed `style` props, new outputs and
 checks. Unlayer Elements' components (`Body`, `ColumnLayouts`, `renderToHtml()` and the rest, from
 `@unlayer/react-elements`) aren't in it, so templates written with them move to the new ones.
 
@@ -21,7 +21,7 @@ fails, naming the file. A `.js`, `.jsx`, `.mjs` or `.cjs` template gets JavaScri
 TypeScript. `--report notes.md` (or `.json`) writes what it noted for each template.
 
 A template whose root is chosen at run time (`const Root = web ? Page : Email`) is left as it was, with a note:
-write it with one root, or by hand in the new components. Hyper Elements doesn't have those components, so a file left as it
+write it with one root, or by hand in the new elements. Hyper Elements doesn't have those components, so a file left as it
 was needs that before it builds.
 
 Then install the new package, and remove the old one once nothing imports it. What the codemod keeps of the old
@@ -70,7 +70,7 @@ The codemod never drops anything quietly. It lists, with the line:
 - a value it can't read from the source (an expression) where Unlayer Elements draws something other than it says: an
   image's width, a `Row`'s padding, phone settings;
 - `html` from an expression: it's written as text, so markup in it would show;
-- markup the new components don't write, each named: an image (its `src` and `alt`), a list's bullets, a style
+- markup the new elements don't write, each named: an image (its `src` and `alt`), a list's bullets, a style
   declaration and the tag it was on, a tag they have no run for; the text in it is kept;
 - a text block's source Unlayer Elements doesn't draw (a `Paragraph`'s `html` beside its children);
 - `Column`s whose borders or backgrounds Unlayer Elements stretches to their `Row`'s height;
@@ -79,7 +79,7 @@ The codemod never drops anything quietly. It lists, with the line:
   time, or a vertical one, stays a `Menu`);
 - custom tools, which it doesn't rewrite yet: a comment where each was, for you to rewrite;
 - a Table's or a text's values from code, which are written as text where Unlayer Elements draws them as HTML, so markup in them would show;
-- Unlayer Elements' functions it leaves imported (`renderToHtml`): render the new components with `render()`, which is
+- Unlayer Elements' functions it leaves imported (`renderToHtml`): render the new elements with `render()`, which is
   async.
 
 ## How it's checked

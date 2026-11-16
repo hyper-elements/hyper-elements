@@ -211,7 +211,7 @@ Likewise, the six-item guard is an editorially chosen input bound, not a measure
 
 The logo URL is an identifier used to match the template’s image to bytes in `images`. The renderer does not download that URL. The [Node.js file API](https://nodejs.org/api/fs.html#fspromisesreadfilepath-options) supplies those bytes from disk, and `writeFile()` saves the PDF bytes. Deploy the asset files with your application and resolve their locations deliberately.
 
-Supply each font weight you use. Here, regular text uses Inter Regular and the total uses Inter Bold. Hyper Elements accepts TTF, OTF or WOFF for PDF fonts, not WOFF2. Raster images must be PNG or JPEG; an external SVG image is not drawn as an image. An `Svg` component is a separate vector option.
+Supply each font weight you use. Here, regular text uses Inter Regular and the total uses Inter Bold. Hyper Elements accepts TTF, OTF or WOFF for PDF fonts, not WOFF2. Raster images must be PNG or JPEG; an external SVG image is not drawn as an image. An `Svg` element is a separate vector option.
 
 For text outside Western European characters, provide a font with the necessary glyphs. Standard PDF fallback fonts are limited, and the renderer does not check that your supplied file contains every character. Inspect the actual customer names and symbols you support. A font’s presence alone is not a text-correctness test.
 
@@ -225,7 +225,7 @@ The `document/overflow` diagnostic is an estimate, not a text measurement or a p
 
 ## When is a browser-based PDF still the better choice?
 
-Choose this workflow when you can express a bounded document using the supported components and want assets supplied explicitly. It is not an HTML-to-PDF compatibility layer. Reusing an existing application screen may be a different problem from building an invoice template.
+Choose this workflow when you can express a bounded document using the supported elements and want assets supplied explicitly. It is not an HTML-to-PDF compatibility layer. Reusing an existing application screen may be a different problem from building an invoice template.
 
 For example, [RisingStack’s Puppeteer tutorial](https://blog.risingstack.com/pdf-from-html-node-js-puppeteer/) uses headless Chrome to print an existing, heavily styled React report with SVG visualizations. That approach preserves a browser-rendered page, but introduces browser setup and deployment concerns. Neither approach is universally better: decide whether you need a browser page printed or a document assembled from a constrained template.
 
@@ -253,7 +253,7 @@ For an application integration, keep the PDF bytes until your review/export poli
 
 ### Does this turn arbitrary HTML into a PDF?
 
-No. It renders the supported Hyper Elements component model under a Document root. For an existing browser page that depends on full browser CSS or JavaScript, a browser-based print workflow may be more appropriate. This tutorial does not replace that workflow.
+No. It renders the supported Hyper Elements element model under a Document root. For an existing browser page that depends on full browser CSS or JavaScript, a browser-based print workflow may be more appropriate. This tutorial does not replace that workflow.
 
 ### Can I preview the document as HTML?
 

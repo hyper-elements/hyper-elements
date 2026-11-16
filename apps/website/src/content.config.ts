@@ -12,7 +12,7 @@ const docs = defineCollection({
   }),
 });
 
-/** One page per component, split from the package's own REFERENCE.md by scripts/generate.mjs. */
+/** One page per element, split from the package's own REFERENCE.md by scripts/generate.mjs. */
 const reference = defineCollection({
   loader: glob({ pattern: "*.md", base: "./src/generated/reference" }),
   schema: z.object({

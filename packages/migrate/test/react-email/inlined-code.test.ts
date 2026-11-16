@@ -1016,7 +1016,7 @@ Note.PreviewProps = { name: "Ana", note: <em>your trial ends soon</em> };
     } finally {
       console.error = error;
     }
-    // A component that throws: the new components don't leave its block out, the template doesn't render.
+    // A component that throws: the new elements don't leave its block out, the template doesn't render.
     const Broken = () => {
       throw new Error("no data");
     };
@@ -1032,7 +1032,7 @@ Note.PreviewProps = { name: "Ana", note: <em>your trial ends soon</em> };
 });
 
 describe("a box's background image with a computed URL", () => {
-  it.each([undefined, "shop.example.com"])("is written with the template's code for the URL (VERCEL_URL %s), and left out of the new components with what only it read: a lost image", async (host) => {
+  it.each([undefined, "shop.example.com"])("is written with the template's code for the URL (VERCEL_URL %s), and left out of the new elements with what only it read: a lost image", async (host) => {
     const before = process.env.VERCEL_URL;
     if (host === undefined) delete process.env.VERCEL_URL;
     else process.env.VERCEL_URL = host;
@@ -1053,7 +1053,7 @@ Hero.PreviewProps = { code: "SPRING15" };
       expect(added).toEqual([]);
       expect(conversion.intermediate).toContain("url: `${assets}/static/hero-art.png`");
       expect(conversion.report.lostStyles ?? []).toEqual([]);
-      // The new components have no background image: it's left out, said so, with what only it read; the color under it
+      // The new elements have no background image: it's left out, said so, with what only it read; the color under it
       // keeps the text readable.
       // (Not on a line of the intermediate source, which no one reads.)
       expect(conversion.notes).toContainEqual(expect.stringMatching(/^<Row>'s backgroundImage isn't migrated: it's left out/));

@@ -10,7 +10,7 @@ const bloom = defineTheme({
   lineHeights: { body: 1.65 },
   spacing: { sm: 12, md: 22, lg: 40 },
   radii: { card: 24, button: 999 },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 36, fontWeight: 400, fontStyle: "italic", mobile: { fontSize: 30 } } } } },
     Button: { borderRadius: "{radii.button}", padding: [13, 26], variants: { secondary: { backgroundColor: "{colors.background}", color: "{colors.foreground}" } } },
   },

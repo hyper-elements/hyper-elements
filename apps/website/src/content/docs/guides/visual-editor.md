@@ -48,7 +48,7 @@ Read the report before you promise an editor user that a block is editable.
 The builder holds what its tools can. Two things happen to the rest:
 
 - **Hidden properties.** A style or prop a tool has no field for is a hidden property of that tool. It's kept in the design under its own name and drawn by Elements, but the builder shows no control for it yet.
-- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a `Table` in an `Email` or a `Page`, a box nested in a column, your own `component()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
+- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a `Table` in an `Email` or a `Page`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
 - **Tables in a Document.** A `Table` in a `Document` is the builder's table, a tool of its document mode: its header and footer rows, each cell's words and each column's share, what its rows share (text styles, background, padding) and each cell's own. The builder draws one border around every cell, so a line between rows is drawn above the first row and below the last too, and a cell spanning columns is a cell for each column. A table with an image in a cell stays an HTML block. The report says each. `fromDesign()` reads a table back as a `Table`, one made in the builder too.
 
 Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet, so a `PageNumber` goes in as its token, which the editor's PDF prints as it is. The report says so.
@@ -95,7 +95,7 @@ const { html, text } = await render(element);
 ```
 
 - `element` renders the design. `render(element)` gives HTML and a plain-text body that match the edits, ready to [send](/docs/guides/sending).
-- `code` is the same template as JSX in the new components.
+- `code` is the same template as JSX in the new elements.
 - `report` lists what the template can't hold.
 
 Pass the `displayMode` the design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. Without one, a design with a header, a footer or a page break becomes a `Document`, any other an `Email`. `name` sets the component's name in `code`. `fromDesign()` reads designs made by `toDesign()`, edited in the builder, or made there from scratch. The builder's own HTML blocks come back as `Html` blocks.
@@ -130,5 +130,5 @@ const { element } = fromDesign(saved, { displayMode: "email", toSafeHtml });
 ## Limits
 
 - A component that is async or suspends makes `toDesign()` throw, as it makes `render()` reject. Fetch data before you build the tree.
-- Plain markup among the components (a `<div>`, a `<b>`) makes `toDesign()` throw too. Use the components, or an `Html` block for raw HTML, which the editor edits as HTML.
+- Plain markup among the elements (a `<div>`, a `<b>`) makes `toDesign()` throw too. Use the elements, or an `Html` block for raw HTML, which the editor edits as HTML.
 - Don't construct or guess design JSON by hand. Generate it with `toDesign()`.

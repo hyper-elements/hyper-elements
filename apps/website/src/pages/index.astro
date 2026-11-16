@@ -47,7 +47,7 @@ const strip = [...items, ...items];
       <h1 class="h-display"><span class="grad">The content engine</span><br /><span class="grad-accent">for agents.</span></h1>
       <p class="lede">Your agent writes React. Hyper Elements turns it into emails, pages, PDFs and images, checks it in every client, and tells the agent how to fix what's wrong.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/components">Explore components <span class="arrow">→</span></a>
+        <a class="btn btn-primary" href="/components">Explore elements <span class="arrow">→</span></a>
         <Cmd text={site.install} />
       </div>
     </div>
@@ -182,9 +182,9 @@ Safe to cache and prerender.</span></pre>
           <p class="tile-note">Every value escaped. No eval: runs under a strict CSP.</p>
         </article>
         <article class="tile t-wide reveal">
-          <h3>Custom components</h3>
+          <h3>Your own elements</h3>
           <div class="comp">
-            <pre class="mini nowrap"><span class="d">const</span> ProductCard = component({"{"}
+            <pre class="mini nowrap"><span class="d">const</span> ProductCard = defineElement({"{"}
   type: "acme.ProductCard",
   props: {"{"} name: prop.text({"{"} required: true {"}"}),
            photo: prop.image({"{"} required: true {"}"}) {"}"},

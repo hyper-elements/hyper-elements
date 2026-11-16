@@ -83,7 +83,7 @@ function io(cwd: string): Io & { out: string; err: string } {
   return sink;
 }
 
-describe("the new components", () => {
+describe("the new elements", () => {
   const template = `import { Html, Body, Text, Button } from "@react-email/components";
 export default function Welcome({ name }: { name?: string }) { return <Html><Body><Text style={{ color: "#333333", fontSize: "16px" }}>Hello {name}</Text><Button href="https://example.com" style={{ backgroundColor: "#111111", color: "#ffffff" }}>Start</Button></Body></Html>; }
 Welcome.PreviewProps = { name: "Alex" };`;
@@ -230,7 +230,7 @@ export default function Welcome() { return <Html><Body><Button>Go</Button></Body
     } } as typeof lib;
     const out = io(dir);
     expect(await run(["emails", "--out", "migrated"], out, refused)).toBe(2);
-    expect(out.out).toContain("✗ emails/welcome.tsx: it can't be written in the new components: line 3: its root is chosen at run time");
+    expect(out.out).toContain("✗ emails/welcome.tsx: it can't be written in the new elements: line 3: its root is chosen at run time");
     expect(fs.existsSync(path.join(dir, "migrated"))).toBe(false);
     // Nor in place.
     const write = io(dir);
@@ -261,7 +261,7 @@ export default function Welcome() { return <Html><Body><Button>Go</Button></Body
     } } as typeof lib;
     const out = io(dir);
     expect(await run(["emails", "--out", "migrated"], out, noDefault)).toBe(2);
-    expect(out.out).toContain("✗ emails/welcome.tsx: the template written in the new components has no default export");
+    expect(out.out).toContain("✗ emails/welcome.tsx: the template written in the new elements has no default export");
     expect(fs.existsSync(path.join(dir, "migrated/welcome.tsx"))).toBe(false);
     const failing = { ...lib, verifyNewComponents: async () => { throw new Error("The template has 1 error:\n  it can't be drawn"); } } as typeof lib;
     const broken = io(dir);
@@ -1073,7 +1073,7 @@ export default function Hi() { return <Email><Row><Column><Paragraph>Hi</Paragra
     expect(await main(["compare", "emails/hi.tsx", "migrated/old hi.tsx"], out, lib)).toBe(1);
     expect(out.out).toBe("");
     expect(out.err).toBe(
-      `migrated/old hi.tsx is written in Unlayer Elements' components (it imports Column, ColumnLayouts, Email, Paragraph, Row from @unlayer/react-elements), which Hyper Elements doesn't have. Move it to the new components, then compare:\n` +
+      `migrated/old hi.tsx is written in Unlayer Elements' components (it imports Column, ColumnLayouts, Email, Paragraph, Row from @unlayer/react-elements), which Hyper Elements doesn't have. Move it to the new elements, then compare:\n` +
         `  npx @hyper-elements/migrate --from unlayer-elements "migrated/old hi.tsx" --write\n` +
         `  npx @hyper-elements/migrate compare emails/hi.tsx "migrated/old hi.tsx"\n`
     );

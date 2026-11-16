@@ -1,7 +1,7 @@
 /**
  * Templates in today's components put together at random, with every kind of value each of their props takes
  * today (a number, a size in px, a string of digits, a keyword, a shorthand, a phone setting), migrated by the
- * codemod: the template it writes must be valid as the new components check it. A value the new components take
+ * codemod: the template it writes must be valid as the new elements check it. A value the new elements take
  * otherwise is converted, or left out and said; it's never written as something render() rejects.
  *
  *   MIGRATE_SEEDS=2000 pnpm vitest run test/legacy-generated.test.ts
@@ -154,7 +154,7 @@ function template(seed: number): string {
   const rootAttributes = attributes({ contentWidth: ["600", '"600px"'], backgroundColor: color.slice(0, 2), textColor: color.slice(0, 2), fontFamily }, 2);
   const rows = Array.from({ length: r.int(1, 3) }, row).join("\n    ");
   // From the converter's entry for today's components, which has the Text and Spacer the package never exported (the
-  // package's import would have those, only the new components', beside ColumnLayouts, only today's: it's refused).
+  // package's import would have those, only the new elements', beside ColumnLayouts, only today's: it's refused).
   return `import { ${root}, Row, Column, ColumnLayouts, ${Object.keys(BLOCKS).join(", ")} } from "${TODAYS_COMPONENTS}";
 export const T = () => (
   <${root} ${rootAttributes.join(" ")}>
@@ -164,7 +164,7 @@ export const T = () => (
 }
 
 describe("templates in today's components, migrated", () => {
-  it(`are valid in the new components, and come back as they are from a second run (${SEEDS} templates)`, async () => {
+  it(`are valid in the new elements, and come back as they are from a second run (${SEEDS} templates)`, async () => {
     const failures: string[] = [];
     for (let seed = 1; seed <= SEEDS; seed++) {
       const source = template(seed);

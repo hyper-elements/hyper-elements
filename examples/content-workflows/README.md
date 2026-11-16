@@ -1,6 +1,6 @@
 # React transactional email, web, PDF, and visual editing example
 
-One invoice template, written with the components from `@hyper-elements/react`, demonstrates rendering and delivery. Use this example for receipts, order confirmations, invoices, or AI-generated templates that need visual editing. All commands below run from the repository root with Node.js 20+ and pnpm 9.
+One invoice template, written with the elements from `@hyper-elements/react`, demonstrates rendering and delivery. Use this example for receipts, order confirmations, invoices, or AI-generated templates that need visual editing. All commands below run from the repository root with Node.js 20+ and pnpm 9.
 
 ## Install and run
 

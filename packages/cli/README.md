@@ -54,8 +54,8 @@ Welcome.PreviewProps = { name: "Ada" };
 | `check <files or folders…>` | Validates each template and writes nothing. Where the project has `@hyper-elements/email-clients`, its email client checks run too (`--clients gmail,outlook` picks the clients); [lint](#lint)'s checks run on an Email and a Page (`--no-lint` leaves them out). `--rendered` also renders, for the checks only the written HTML has (Gmail's size limit). `--max-warnings N` fails the run past N warnings. An HTML email is checked too: see [Any HTML email](#any-html-email). |
 | `outline <file>` | Prints the template laid out: each block with its width. |
 | `preview <files or folders…>` | Writes each Email as the email clients draw it, with the project's `@hyper-elements/email-clients` (`renderInEmailClients()`): one self-contained HTML file per client and variant, in `<out>/clients/<its path>/<name>/` (its path from the current folder, or `--base`), named by the preview (`outlook.html`, `gmail.mac.html`, `apple-mail.dark.html`). `--clients`, `--dark` and `--fonts inline` are `renderInEmailClients()`'s options. `--findings` draws each file in Chromium and reports what it found; `--screenshots` also writes a PNG of each; `--serve` serves them on `127.0.0.1`. See [Previews](#previews); an HTML email is previewed too ([Any HTML email](#any-html-email)). |
-| `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each component at its path, what it's given, whether its root takes it, and the problems found on it. |
-| `describe [Component]` | Lists every component a template can use (or one), with its props and styles, from `describeComponents()` (or `describeComponent()`); `--root Email` narrows it to what that root takes. No template is loaded: it reads the `@hyper-elements/react` the current folder resolves. |
+| `inspect <files or folders…>` | Lists what each template holds, as `inspect()` gives it: each element at its path, what it's given, whether its root takes it, and the problems found on it. |
+| `describe [Element]` | Lists every element a template can use (or one), with its props and styles, from `describeElements()` (or `describeElement()`); `--root Email` narrows it to what that root takes. No template is loaded: it reads the `@hyper-elements/react` the current folder resolves. |
 | `dev <files or folders…>` | Serves a page on `127.0.0.1` that shows each template, and renders them again when the project changes, until Ctrl-C. See [dev](#dev). |
 | `migrate …` | Runs [`@hyper-elements/migrate`](https://www.npmjs.com/package/@hyper-elements/migrate) with the arguments given, unchanged: the project's, else `npx @hyper-elements/migrate`. Its output and exit codes are migrate's. |
 
@@ -250,7 +250,7 @@ opening "Email" tag`; on Bun, in Bun's words), with "(and N more errors)" where 
 An HTML email's line has `"input": "html"` and `"root": null` ([Any HTML email](#any-html-email)).
 `inspect --json` writes `{"version":1,"command":"inspect","file","status","inspection"}` per template, `inspection`
 being `inspect()`'s result as it is (`null`, with `diagnostics` and `error`, where the template didn't load), then the
-summary line. `describe --json` writes one line, `describeComponents()`'s or `describeComponent()`'s result as it is,
+summary line. `describe --json` writes one line, `describeElements()`'s or `describeElement()`'s result as it is,
 with its own `version`. `outline` is text only.
 
 - **0**: every template rendered, checked or previewed without errors.
@@ -262,7 +262,7 @@ with its own `version`. `outline` is text only.
   folders given, or no input, folder or file, that turned out to be one: each is still listed, as skipped), Elements
   missing or outside the supported range, outputs that would collide, a template that called `process.exit`, template
   code that threw outside a render, or a Document's PDF on Bun; `preview` without email-clients, or `--findings` with
-  no browser found; `describe` for a component or root there isn't. A run with at least one template skips the inputs
+  no browser found; `describe` for an element or root there isn't. A run with at least one template skips the inputs
   that aren't templates and exits as its templates do.
 
 ## How it runs templates

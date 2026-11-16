@@ -109,7 +109,7 @@ npx @hyper-elements/cli check email.html
 npx @hyper-elements/cli check emails/welcome.tsx
 ```
 
-Lists what each client removes or changes (CSS it drops, image formats it doesn't show, web fonts it doesn't load, Gmail's clipping past 102 KB), and accessibility gaps such as a missing `lang`, each with a fix, and writes nothing. For HTML each names its line in the file; for a template, the component and prop to change. `--json` for JSON, `--clients` as above. It exits 1 on errors, so it can run in CI.
+Lists what each client removes or changes (CSS it drops, image formats it doesn't show, web fonts it doesn't load, Gmail's clipping past 102 KB), and accessibility gaps such as a missing `lang`, each with a fix, and writes nothing. For HTML each names its line in the file; for a template, the element and prop to change. `--json` for JSON, `--clients` as above. It exits 1 on errors, so it can run in CI.
 
 ## In code
 

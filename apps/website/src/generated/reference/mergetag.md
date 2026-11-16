@@ -7,7 +7,7 @@
 
 A value the sending service fills in (a name, a link), written in the service's own syntax.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `name`: text (required)

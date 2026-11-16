@@ -133,7 +133,7 @@ Put this import on its own line in a project-root `CLAUDE.md`:
 
 Use the bare line, not a fenced code block inside the actual file. Claude Code's [memory documentation](https://code.claude.com/docs/en/memory) says imports resolve relative to the file containing them; imports inside code spans or fences are skipped. If your `CLAUDE.md` lives elsewhere, adjust the relative path.
 
-The guide is generated from the component definitions and matches the package you installed. That's more useful than asking an agent to reconstruct an API from remembered examples. After an upgrade, use the new package's guide rather than an old copy pasted into your instructions.
+The guide is generated from the element definitions and matches the package you installed. That's more useful than asking an agent to reconstruct an API from remembered examples. After an upgrade, use the new package's guide rather than an old copy pasted into your instructions.
 
 ## What should you ask Claude Code to do?
 
@@ -144,7 +144,7 @@ Read the installed Hyper Elements GUIDE.md before changing the template.
 Build a receipt email using emails/receipt.tsx and its Order type.
 Keep order data outside the template. Use a two-column item table,
 a clear total, a real customer name and one View your order button.
-Use the components from @hyper-elements/react, not raw HTML tags.
+Use the elements from @hyper-elements/react, not raw HTML tags.
 Run validate(), report errors and warnings, and fix template errors.
 Then show outline(), render HTML and plain text, and inspect both.
 Don't send anything or use credentials until I ask.

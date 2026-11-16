@@ -1,9 +1,9 @@
 /**
- * `describe [Component]`, in the parent: what every component (or one) takes, from describeComponents() or
- * describeComponent(), with `--root` narrowing it to what a root takes. No template is loaded: a child loads Elements
+ * `describe [Element]`, in the parent: what every element (or one) takes, from describeElements() or
+ * describeElement(), with `--root` narrowing it to what a root takes. No template is loaded: a child loads Elements
  * through a loader module in the current folder, as a template there would, so the project's Elements answers. With
  * `--json`, one line: the result as it is, with its own `version`. Exit 2 where no Elements resolves, or for a
- * component or root there isn't.
+ * element or root there isn't.
  */
 import { join } from "node:path";
 import type { Args } from "../args";
@@ -20,7 +20,7 @@ interface Property {
   roots?: string[];
 }
 
-interface Component {
+interface Element {
   type: string;
   description?: string;
   roots?: string[];
@@ -36,7 +36,7 @@ export async function runDescribe(args: Args, io: Io, state: RunState): Promise<
   const token = ownToken();
   state.token = token;
   state.folders.add(cwd);
-  const report = await runChild("describe", [input], true, args, undefined, token, io, { component: args.positional[0], root: args.root });
+  const report = await runChild("describe", [input], true, args, undefined, token, io, { element: args.positional[0], root: args.root });
   const own = parseToken(`// ${token}`)!;
   cleanFiles(state.folders, (owner) => !!owner && owner.host === own.host && owner.pid === own.pid && owner.random === own.random);
   const result = report.results.get(0);
@@ -49,15 +49,15 @@ export async function runDescribe(args: Args, io: Io, state: RunState): Promise<
     await io.stdout(`${JSON.stringify(result.described)}\n`);
     return 0;
   }
-  const described = result.described as { roots?: string[]; components?: Component[]; conditions?: Array<{ name: string; on: string; roots: string[] }> } & Component;
-  await io.stdout(described.components ? describeAllText(described as Required<typeof described>) : componentText(described));
+  const described = result.described as { roots?: string[]; elements?: Element[]; conditions?: Array<{ name: string; on: string; roots: string[] }> } & Element;
+  await io.stdout(described.elements ? describeAllText(described as Required<typeof described>) : elementText(described));
   return 0;
 }
 
-function componentText(component: Component): string {
-  const lines = [`${component.type}${component.roots?.length ? ` (${component.roots.join(", ")})` : ""}${component.description ? `: ${component.description}` : ""}`];
+function elementText(element: Element): string {
+  const lines = [`${element.type}${element.roots?.length ? ` (${element.roots.join(", ")})` : ""}${element.description ? `: ${element.description}` : ""}`];
   const groups = new Map<string, string[]>();
-  for (const property of component.properties ?? []) {
+  for (const property of element.properties ?? []) {
     const dot = property.path.indexOf(".");
     const group = dot < 0 ? "" : property.path.slice(0, dot);
     const name = dot < 0 ? property.path : property.path.slice(dot + 1);
@@ -65,7 +65,7 @@ function componentText(component: Component): string {
     groups.set(group, [...(groups.get(group) ?? []), `${name} (${notes.join(", ")})`]);
   }
   for (const [group, names] of groups) lines.push(`    ${group || "props"}: ${names.join(", ")}`);
-  const children = component.children;
+  const children = element.children;
   if (children) {
     const takes = [...(children.text ? ["text"] : []), ...(children.types ?? [])];
     lines.push(`    children: ${takes.length ? takes.join(", ") : "none"}`);
@@ -73,9 +73,9 @@ function componentText(component: Component): string {
   return `${lines.join("\n")}\n`;
 }
 
-function describeAllText(described: { roots: string[]; components: Component[]; conditions: Array<{ name: string; on: string; roots: string[] }> }): string {
+function describeAllText(described: { roots: string[]; elements: Element[]; conditions: Array<{ name: string; on: string; roots: string[] }> }): string {
   let text = `Roots: ${described.roots.join(", ")}\n\n`;
-  text += described.components.map(componentText).join("\n");
+  text += described.elements.map(elementText).join("\n");
   if (described.conditions.length) text += `\nStyle blocks: ${described.conditions.map((c) => `${c.name} (${c.on}; ${c.roots.join(", ")})`).join(", ")}\n`;
   return text;
 }

@@ -1,23 +1,23 @@
 /**
- * The docs the package ships for writing templates, from the components' definitions (`describeComponents()`), so
+ * The docs the package ships for writing templates, from the elements' definitions (`describeComponents()`), so
  * they can't fall behind (a test checks the files are what this writes):
  *
- * - GUIDE.md, the guide: how a template is written, a whole one, and each component on a line (what it holds,
+ * - GUIDE.md, the guide: how a template is written, a whole one, and each element on a line (what it holds,
  *   its props and styles), short enough to read whole before writing one. It's what an agent needs.
  * - REFERENCE.md: every prop and style, with the values it takes, its default and what it does.
  * - skills/hyper-elements/SKILL.md, at the repository's root: the guide as an agent skill.
  */
 import { describeComponents, describeConditions, ROOT_NAMES, type ComponentDescription, type PropertyDescription } from "@hyper-elements/core";
 
-/** How a template writes a component whose definition is named otherwise. */
+/** How a template writes an element whose definition is named otherwise. */
 const JSX: Record<string, string> = { DocumentPage: "Document.Page" };
 const name = (type: string) => JSX[type] ?? type;
 
-/** The roots with phones: a component only under others has no phone styles (they're mobile/not-supported there). */
+/** The roots with phones: an element only under others has no phone styles (they're mobile/not-supported there). */
 const PHONE_ROOTS = describeConditions().find((condition) => condition.name === "mobile")!.roots;
 const hasPhones = (c: ComponentDescription) => c.roots.some((root) => PHONE_ROOTS.includes(root));
 const article = (type: string) => `${/^[AEIOU]/.test(type) ? "an" : "a"} ${type}`;
-/** The roots a component goes in, said where it isn't every root: "Not in an Email.", "Only in a Document." */
+/** The roots an element goes in, said where it isn't every root: "Not in an Email.", "Only in a Document." */
 function rootsNote(c: ComponentDescription): string {
   if (c.categories.includes("root") || c.roots.length === ROOT_NAMES.length) return "";
   const missing = ROOT_NAMES.filter((root) => !c.roots.includes(root));
@@ -44,7 +44,7 @@ const GROUPS: Array<{ title: string; about: string; has: (c: ComponentDescriptio
   { title: "Sections and layout", about: "Bands and boxes that arrange blocks. None is required: a root stacks its children.", has: (c) => c.categories.includes("section") || c.categories.includes("layout") },
   { title: "Blocks", about: "Content, stacked down whatever holds it.", has: (c) => c.categories.includes("block") && !c.categories.includes("layout") && !c.categories.includes("inline") },
   { title: "Inline", about: "Inside text: a styled run, a link, a line break, a merge tag.", has: (c) => c.categories.includes("inline") },
-  { title: "Parts", about: "Only inside the component named: a list's items, a table's rows and cells, a document's pages, header and footer.", has: (c) => c.categories.length === 0 },
+  { title: "Parts", about: "Only inside the element named: a list's items, a table's rows and cells, a document's pages, header and footer.", has: (c) => c.categories.length === 0 },
   { title: "Shapes", about: "Only inside an Svg, in its viewBox's units.", has: (c) => c.categories.includes("shape") },
 ];
 
@@ -58,7 +58,7 @@ function glossary(all: ComponentDescription[]): Map<string, string> {
 const code = (value: unknown) => `\`${JSON.stringify(value)}\``;
 
 /** The note at the top of each file this writes, naming this file as `from` the file's own folder. */
-const generated = (from: string) => `<!-- Written from the component definitions by ${from}: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->`;
+const generated = (from: string) => `<!-- Written from the element definitions by ${from}: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->`;
 const GENERATED = generated("src/primitives/reference.ts");
 
 function property(p: PropertyDescription, named: Map<string, string>, c: ComponentDescription): string {
@@ -107,13 +107,13 @@ export function primitivesReference(): string {
   const missing = all.filter((c) => !placed.has(c.type)).map((c) => c.type);
   if (missing.length) throw new Error(`[Elements] The reference has no section for ${missing.join(", ")}`);
   return [
-    "# Components reference (`@hyper-elements/react`)",
+    "# Elements reference (`@hyper-elements/react`)",
     "",
     GENERATED,
     "",
-    "Every component, what it holds, and every prop and style it takes, with its default and what it does. [GUIDE.md](./GUIDE.md) shows how a template is written; `validate()` checks one against what's here.",
+    "Every element, what it holds, and every prop and style it takes, with its default and what it does. [GUIDE.md](./GUIDE.md) shows how a template is written; `validate()` checks one against what's here.",
     "",
-    "Every component also takes:",
+    "Every element also takes:",
     "",
     "- `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).",
     "- `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under \"`style.mobile`\".",
@@ -140,7 +140,7 @@ const BLOCK_MAP = [
   "",
   "`await render(email, { blockMap: true })` also gives `blocks`, for a tool that previews an Email and needs to know which block of the template it's looking at: `{ version, unit: \"utf8\", entries: [{ path, nodeId?, type, offset }] }`.",
   "",
-  "- Each block written as an element has an entry: its place in the template (`root.children[2]`, as diagnostics give it), its `id` where it has one, its component (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.",
+  "- Each block written as an element has an entry: its place in the template (`root.children[2]`, as diagnostics give it), its `id` where it has one, its element (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.",
   "- Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak` and a `MergeTag` have none, nor a `Layer`'s `Image` (drawn as the Layer's background).",
   "- The HTML is the same bytes as without the option. Merge tags are written before the offsets are taken, and the offsets count the whole document, `<head>` included.",
   "- `version` is `BLOCK_MAP_VERSION`, which changes only when this format does.",
@@ -149,10 +149,10 @@ const BLOCK_MAP = [
 
 // ─── The guide ─────────────────────────────────────────────────────────────
 
-/** Styles most components share, named as a group on a component's line. */
+/** Styles most elements share, named as a group on an element's line. */
 const TEXT = ["color", "fontFamily", "fontSize", "fontWeight", "fontStyle", "lineHeight", "letterSpacing", "textAlign", "textTransform"];
 const BOX = ["width", "maxWidth", "padding", "backgroundColor", "border", "borderRadius"];
-/** The text styles that may be set on phones, named `text` among a component's phone styles. */
+/** The text styles that may be set on phones, named `text` among an element's phone styles. */
 const PHONE_TEXT = ["fontSize", "lineHeight", "letterSpacing", "textAlign"];
 const CATEGORY: Record<string, string> = { section: "sections", layout: "layout", block: "blocks", inline: "inline", shape: "shapes" };
 
@@ -203,10 +203,10 @@ function line(c: ComponentDescription, named: Map<string, string>): string {
   return `- **${name(c.type)}**: ${parts.join(" ")}`;
 }
 
-/** GUIDE.md: how a template is written, the README's template (`example`, as an author imports it), and each component on a line. */
+/** GUIDE.md: how a template is written, the README's template (`example`, as an author imports it), and each element on a line. */
 export function primitivesGuide(example: string): string {
   return [
-    "# Writing templates with the new components (`@hyper-elements/react`)",
+    "# Writing templates with the new elements (`@hyper-elements/react`)",
     "",
     GENERATED,
     "",
@@ -236,7 +236,7 @@ export function primitivesSkill(example: string): string {
     "",
     generated("packages/react/src/primitives/reference.ts"),
     "",
-    "Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements (`npm install @hyper-elements/react`). This is the package's own guide to its components at `@hyper-elements/react` (GUIDE.md in the package), written from their definitions: everything needed to write a template, in short. Every prop's and style's details, with its default: `node_modules/@hyper-elements/react/REFERENCE.md`.",
+    "Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements (`npm install @hyper-elements/react`). This is the package's own guide to its elements at `@hyper-elements/react` (GUIDE.md in the package), written from their definitions: everything needed to write a template, in short. Every prop's and style's details, with its default: `node_modules/@hyper-elements/react/REFERENCE.md`.",
     "",
     "To test an email in Outlook, Gmail and other clients, a template or any HTML: the `email-testing` skill has the steps, or run `npx @hyper-elements/cli preview emails/welcome.tsx`.",
     "",
@@ -244,10 +244,10 @@ export function primitivesSkill(example: string): string {
     "",
     "A project may have templates written with Unlayer Elements: they import `Body`, `ColumnLayouts` or `renderToHtml()` from `@unlayer/react-elements`, and use `values`, `layout`, `html` and style props such as `backgroundColor=\"#fff\"`. Those components aren't in Hyper Elements, a new package: these are its components.",
     "",
-    "- Move them with the codemod: `npx @hyper-elements/migrate src/emails --from unlayer-elements` lists what it would change, `--write` replaces the files (only those git can restore) and `--report notes.md` writes what it noted. It rewrites the imports and the JSX, and keeps props, loops and conditions. The new components render with `await render(element)`, which is async, in place of `renderToHtml()`. More: `npx @hyper-elements/migrate --help`.",
-    "- What the codemod can't move is listed, and the file is left as it was: rewrite that part by hand with these components.",
+    "- Move them with the codemod: `npx @hyper-elements/migrate src/emails --from unlayer-elements` lists what it would change, `--write` replaces the files (only those git can restore) and `--report notes.md` writes what it noted. It rewrites the imports and the JSX, and keeps props, loops and conditions. The new elements render with `await render(element)`, which is async, in place of `renderToHtml()`. More: `npx @hyper-elements/migrate --help`.",
+    "- What the codemod can't move is listed, and the file is left as it was: rewrite that part by hand with these elements.",
     "- Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.",
-    "- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these components and checks each against its original.",
+    "- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these elements and checks each against its original.",
     "",
     guide(example),
   ].join("\n");
@@ -301,7 +301,7 @@ function guide(example: string): string {
     "- Styles go in `style={{ … }}`, never as props: `<Heading style={{ fontSize: 24, color: \"#111827\" }}>`. A number is px; `padding` takes `16`, `[12, 24]` or `\"12px 24px\"`. A box's text styles are inherited by what it holds.",
     "- There are no margins: space between blocks is their parent's `gap` (`<Column style={{ gap: 16 }}>`), space inside a box its `padding`.",
     "- A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.",
-    "- Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.",
+    "- Text is elements, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.",
     "- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.",
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
     "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
@@ -329,11 +329,11 @@ function guide(example: string): string {
     "",
     "## Themes",
     "",
-    "A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, given to a root as `theme`.",
+    "A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, elements, styles, formats })`, given to a root as `theme`.",
     "",
     "- In a template `token(\"colors.primary\")` is a token's value, or part of one (`border: { width: 1, style: \"solid\", color: token(\"colors.border\") }`); inside a theme, and only there, a token is `\"{colors.primary}\"`: everywhere in a template (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.",
     "- Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.",
-    "- `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant=\"secondary\"` (a list merges in order).",
+    "- `elements.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant=\"secondary\"` (a list merges in order).",
     "- `styles: { card: { … } }` are named styles: `style={{ apply: [\"card\"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.",
     "- `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: \"#111827\", foreground: \"#ffffff\" } }}>`.",
     "- `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module \"@hyper-elements/react\" { interface Register { theme: typeof brand } }` types every name.",
@@ -352,7 +352,7 @@ function guide(example: string): string {
     CANVAS_EXAMPLE,
     "```",
     "",
-    "## Components",
+    "## Elements",
     "",
     `\\* required. *text* styles: ${TEXT.join(", ")}. *box* styles: ${BOX.join(", ")}.`,
     "",

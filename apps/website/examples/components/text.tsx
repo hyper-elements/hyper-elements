@@ -2,7 +2,7 @@ import { Column, Email, LineBreak, Link, MergeTag, Text, Span } from "@hyper-ele
 
 export const meta = {
   title: "Text",
-  description: "Text is components: Span styles a run, Link links one, MergeTag leaves a value for your sending service.",
+  description: "Text is elements: Span styles a run, Link links one, MergeTag leaves a value for your sending service.",
   group: "Text",
 };
 

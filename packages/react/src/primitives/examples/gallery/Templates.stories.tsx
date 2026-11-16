@@ -11,7 +11,7 @@ const meta: Meta<Args> = {
     docs: {
       description: {
         component:
-          "Templates for fictional brands, each written with the new components and nothing else: emails, a web page, a printed document and an image. Each is drawn as Elements draws it, beside the template `fromDesign()` brings back from its `toDesign()` JSON without its hidden properties, which the builder keeps but doesn't draw. Below them, the real Unlayer editor holding that JSON, live and editable. It loads from editor.unlayer.com as you reach it. \"Show code\" has each template.",
+          "Templates for fictional brands, each written with the new elements and nothing else: emails, a web page, a printed document and an image. Each is drawn as Elements draws it, beside the template `fromDesign()` brings back from its `toDesign()` JSON without its hidden properties, which the builder keeps but doesn't draw. Below them, the real Unlayer editor holding that JSON, live and editable. It loads from editor.unlayer.com as you reach it. \"Show code\" has each template.",
       },
     },
   },

@@ -1,5 +1,5 @@
 /**
- * Custom components: a named block made of primitives, with its own typed
+ * A template's own elements: a named block made of primitives, with its own typed
  * props and editors, kept as one node in the document and expanded when it's
  * rendered.
  */
@@ -46,7 +46,7 @@ function tokenProp<K extends Kind<any, any>>(make: () => K) {
   return <const R extends boolean = false, const D extends OutputOf<K> | undefined = undefined>(options: PropOptions<K, R, D>) => defineProp(make(), options) as ReturnType<typeof defineProp<K, R, D>> & TakesToken;
 }
 
-/** Props of a custom component, by value kind. */
+/** Props of a template's own element, by value kind. */
 export const prop = {
   text: kindProp(() => text()),
   color: tokenProp(() => color()),
@@ -76,16 +76,18 @@ export const prop = {
 /** A prop's value in JSX: a color's, a length's or a font's may be a theme's token, its value where the instance is. */
 type WithTokens<T, P> = { [K in keyof T]: K extends keyof P ? (P[K] extends TakesToken ? T[K] | Token : T[K]) : T[K] };
 
-/** What a custom component takes in JSX: its props, and its place in a Row and its visibility. */
+/** What a template's own element takes in JSX: its props, and its place in a Row and its visibility. */
 export type CustomProps<P extends PropSpecs> = WithTokens<PropsInput<P>, P> & {
   id?: string;
   style?: { flex?: number | "none" };
   hidden?: { mobile?: boolean; desktop?: boolean };
 };
 
-export type CustomComponent<P extends PropSpecs> = React.FC<CustomProps<P>> & { definition: CustomDefinition<P> };
+/** An element of your own, made with `defineElement()`: in JSX, `<PriceBand price={24} />`. */
+export type CustomElement<P extends PropSpecs> = React.FC<CustomProps<P>> & { definition: CustomDefinition<P> };
 
-export interface ComponentSpec<P extends PropSpecs> {
+/** What `defineElement()` takes. */
+export interface ElementSpec<P extends PropSpecs> {
   /** A namespace, a dot, a capitalized name: "acme.ProductCard". */
   type: string;
   label: string;
@@ -94,14 +96,14 @@ export interface ComponentSpec<P extends PropSpecs> {
   /** Where it goes: where a block goes (default), or where a Section goes (and it renders a Section). */
   placement?: "block" | "section";
   /**
-   * The component as primitives, from its props (normalized, defaults applied), and the theme's tokens where the
+   * The element as primitives, from its props (normalized, defaults applied), and the theme's tokens where the
    * instance is (its scopes' over the theme's, as values), for values a render derives. Pure: no hooks or data, so it
-   * can be rendered anywhere. Returns one component.
+   * can be rendered anywhere. Returns one element.
    */
   render(props: ExpandProps<P>, context: RenderContext): React.ReactElement;
 }
 
-/** What a template's own component's render gets besides its props. */
+/** What a template's own element's render gets besides its props. */
 export interface RenderContext {
   /** The theme's tokens where the instance is, as values: `theme.colors.primary`. Empty without a theme. */
   readonly theme: ThemeValues;
@@ -117,7 +119,17 @@ export interface ThemeValues {
   readonly radii?: { readonly [name: string]: unknown };
 }
 
-export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): CustomComponent<P> {
+/**
+ * Defines an element of your own: a named block made of other elements, with its own typed props.
+ *
+ *     const PriceBand = defineElement({
+ *       type: "acme.PriceBand",
+ *       label: "Price band",
+ *       props: { price: prop.number({ label: "Price", min: 0 }) },
+ *       render: ({ price }) => <Text>{`$${price}`}</Text>,
+ *     });
+ */
+export function defineElement<const P extends PropSpecs>(spec: ElementSpec<P>): CustomElement<P> {
   const definition = defineCustomComponent({
     type: spec.type,
     label: spec.label,
@@ -136,7 +148,7 @@ export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): Cu
   const Custom = (props: CustomProps<P>): React.ReactElement => {
     const collection = collectingPrimitives();
     if (!collection) {
-      throw new Error(`[Elements] <${spec.type}> is part of a template: render the template with render(), not this component on its own`);
+      throw new Error(`[Elements] <${spec.type}> is part of a template: render the template with render(), not this element on its own`);
     }
     registerUsed(collection, definition);
     return recordPrimitive(collection, spec.type, props as Record<string, unknown>);
@@ -144,3 +156,10 @@ export function component<const P extends PropSpecs>(spec: ComponentSpec<P>): Cu
   Custom.displayName = spec.type;
   return Object.assign(Custom, { definition });
 }
+
+/** @deprecated Renamed `defineElement()`: the same function. */
+export const component = defineElement;
+/** @deprecated Renamed `CustomElement`. */
+export type CustomComponent<P extends PropSpecs> = CustomElement<P>;
+/** @deprecated Renamed `ElementSpec`. */
+export type ComponentSpec<P extends PropSpecs> = ElementSpec<P>;

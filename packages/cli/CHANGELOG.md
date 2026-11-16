@@ -1,5 +1,12 @@
 # @hyper-elements/cli
 
+## Unreleased
+
+- **`describe` lists elements.** ⚠️ With `--json` its list is `elements`, not `components`, whichever Elements the
+  project has: a script that reads `components` from it reads `elements` now. An Elements from before
+  `describeElements()` is asked with `describeComponents()`, and its list given under the new name in its place. The
+  usage and messages say "element" (`hyper-elements describe [Element]`).
+
 ## 0.2.0
 
 - **Lint**: `check`, `render` and `dev` run `@hyper-elements/lint` on each Email and Page, and `check` runs its HTML

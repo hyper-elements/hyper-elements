@@ -7,16 +7,16 @@ If an agent writes your templates, Hyper Elements is built so its first try work
 
 ## Why the API suits agents
 
-- **One way to write each thing.** Styles go in `style={{ }}`, never as props. Space between blocks is the parent's `gap`; there are no margins. Text is components, not HTML. An agent doesn't have to guess which of three equivalent forms you meant.
+- **One way to write each thing.** Styles go in `style={{ }}`, never as props. Space between blocks is the parent's `gap`; there are no margins. Text is elements, not HTML. An agent doesn't have to guess which of three equivalent forms you meant.
 - **Errors say where and what to do.** Every problem comes back with a `code`, a `path` into the template and a `message` that names the fix.
 - **Layout without HTML.** `outline()` prints the laid-out template as text: each block, its width, its words. An agent checks that two columns sit side by side by reading a few lines, not nested email tables.
-- **The guide ships with the package.** `GUIDE.md` is written from the components' own definitions, so it matches the version you installed.
+- **The guide ships with the package.** `GUIDE.md` is written from the elements' own definitions, so it matches the version you installed.
 
 ## Give your agent the guide
 
 ### Claude Code
 
-Add this line to your project's `CLAUDE.md`, and every session starts out knowing the components:
+Add this line to your project's `CLAUDE.md`, and every session starts out knowing the elements:
 
 ```text
 @node_modules/@hyper-elements/react/GUIDE.md
@@ -56,7 +56,7 @@ The site serves the docs in plain text for language models:
 
 Every docs page also has a **Copy page** button that copies it as Markdown, ready to paste into a chat.
 
-> **Tip:** `GUIDE.md` is the short guide: how a template is written, the common mistakes, every component on a line. `REFERENCE.md`, next to it in the package, has every prop and style in full, with defaults.
+> **Tip:** `GUIDE.md` is the short guide: how a template is written, the common mistakes, every element on a line. `REFERENCE.md`, next to it in the package, has every prop and style in full, with defaults.
 
 ### In a browser, with nothing installed
 
@@ -74,7 +74,7 @@ Point your agent at this loop. Each step is cheap, and only the last two write H
 
 ### 1. Write
 
-The agent writes a template with the components from `@hyper-elements/react`.
+The agent writes a template with the elements from `@hyper-elements/react`.
 
 ### 2. Validate
 
@@ -176,7 +176,7 @@ An agent that can run commands can do the same loop without writing a script, wi
 npx hyper-elements check emails/welcome.tsx --json     # 2. validate, with the email client checks
 npx hyper-elements outline emails/welcome.tsx          # 3. the layout as text
 npx hyper-elements render emails/welcome.tsx           # 4. out/emails/welcome.html and out/emails/welcome.txt
-npx hyper-elements describe Button --root Email        # what a component takes, before writing it
+npx hyper-elements describe Button --root Email        # what an element takes, before writing it
 ```
 
 With `--json`, stdout holds one line per template, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every template is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error; no templates, such as a file whose default export isn't a component). A template that doesn't load has an `error` instead: for a syntax error, its file, line, column and reason.
@@ -204,7 +204,7 @@ Each of these made an agent's first try fail:
 - Read `GUIDE.md` before writing a template.
 - Check each template you write with `npx hyper-elements check <file> --json` (or `validate()`), and fix every error before you render it.
 - A template has one root: `Email`, `Page`, `Document` or `Canvas`. The root decides the output.
-- Raw tags such as `<b>`, `<br>` or `<div>` are errors. Use `Span`, `LineBreak` and the layout components.
+- Raw tags such as `<b>`, `<br>` or `<div>` are errors. Use `Span`, `LineBreak` and the layout elements.
 - Build reusable trees with a plain synchronous function that returns the root. Fetch data first: a component that is async or suspends is an error.
 - Pass dynamic values as children or props, which Hyper Elements escapes. Only put markup you trust in an `Html` block.
 - To move React Email templates, run `npx @hyper-elements/migrate` instead of rewriting them by hand. It keeps their logic and checks the result. Exit code `2` means a template failed to convert or lost content: report it, with the file and the reason. Don't pass `--force` to hide it. See [From React Email](/docs/migrate/react-email).

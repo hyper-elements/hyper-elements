@@ -180,7 +180,7 @@ const inspector = (token: string, inspect: boolean) => `(() => {
 export interface PreviewOptions {
   /** An Email's block map: each block's path at its place in the HTML. */
   blocks?: Result["blocks"];
-  /** Each path's component, for the label over a block. */
+  /** Each path's element, for the label over a block. */
   types?: Map<string, string>;
   inspect: boolean;
 }
@@ -255,7 +255,7 @@ export class PreviewFrame {
     let marked = options.blocks?.length ? mark(html, options.blocks) : html;
     marked = marked.replaceAll("https://hyperelements.dev/img/", `${location.origin}/img/`).replaceAll("https://www.hyperelements.dev/img/", `${location.origin}/img/`);
     const doc = documentOf(marked, policy(token), { nonce: token, code: inspector(token, options.inspect) }, (parsed) => {
-      // Each block's component beside its path, for the inspector's label.
+      // Each block's element beside its path, for the inspector's label.
       for (const element of parsed.querySelectorAll(`[${PATH}]`)) {
         const type = options.types?.get(element.getAttribute(PATH) ?? "");
         if (type) element.setAttribute("data-he-type", type);

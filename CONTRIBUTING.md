@@ -30,7 +30,7 @@ pnpm test
 packages/
   react/       → Published package (@hyper-elements/react), with a Document written as a PDF (/pdf) and a
                  Canvas as PNG or SVG (/image) as entries of their own
-  core/        → Component definitions, validation, layout, and the writers (src/writers/: email, page and print
+  core/        → Element definitions, validation, layout, and the writers (src/writers/: email, page and print
                  HTML, plain text; src/pdf/ and src/image/: the PDF and image writers, with their own entries);
                  bundled into react, not published
   migrate/     → The migration CLI (@hyper-elements/migrate), with the React Email converter (src/react-email/) and what
@@ -75,11 +75,11 @@ pnpm storybook:hub
 
 ## Architecture Overview
 
-### Components
+### Elements
 
-The components are made from their definitions in `packages/internal/core/src/components.ts` (props, styles, children, support
+The elements are made from their definitions in `packages/internal/core/src/components.ts` (props, styles, children, support
 per output, editors): `packages/react/src/primitives/components.tsx` turns each into a React component whose props'
-types come from the same definition that validates them. To add a component, define it in core and give each output
+types come from the same definition that validates them. To add an element, define it in core and give each output
 a writer (`packages/internal/core/src/writers/{email,page}/`); see `packages/internal/core/README.md`.
 
 ### Rendering Pipeline
@@ -102,7 +102,7 @@ and each builder tool's default values are in `packages/react/src/builder/tool-d
 ## Pull Request Guidelines
 
 - Keep PRs focused — one feature or fix per PR
-- Add tests for new components or behavior changes
+- Add tests for new elements or behavior changes
 - Ensure `pnpm build && pnpm test` passes
 - The CI pipeline checks:
   - TypeScript compilation

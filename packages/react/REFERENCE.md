@@ -1,10 +1,10 @@
-# Components reference (`@hyper-elements/react`)
+# Elements reference (`@hyper-elements/react`)
 
-<!-- Written from the component definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
+<!-- Written from the element definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
 
-Every component, what it holds, and every prop and style it takes, with its default and what it does. [GUIDE.md](./GUIDE.md) shows how a template is written; `validate()` checks one against what's here.
+Every element, what it holds, and every prop and style it takes, with its default and what it does. [GUIDE.md](./GUIDE.md) shows how a template is written; `validate()` checks one against what's here.
 
-Every component also takes:
+Every element also takes:
 
 - `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).
 - `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`style.mobile`".
@@ -599,7 +599,7 @@ Props:
 
 ### Html
 
-Markup written as it is, for what no component says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text.
+Markup written as it is, for what no element says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text.
 
 Holds: nothing.
 
@@ -685,7 +685,7 @@ Props:
 
 ## Parts
 
-Only inside the component named: a list's items, a table's rows and cells, a document's pages, header and footer.
+Only inside the element named: a list's items, a table's rows and cells, a document's pages, header and footer.
 
 ### Document.Page
 
@@ -944,7 +944,7 @@ Props:
 
 `await render(email, { blockMap: true })` also gives `blocks`, for a tool that previews an Email and needs to know which block of the template it's looking at: `{ version, unit: "utf8", entries: [{ path, nodeId?, type, offset }] }`.
 
-- Each block written as an element has an entry: its place in the template (`root.children[2]`, as diagnostics give it), its `id` where it has one, its component (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.
+- Each block written as an element has an entry: its place in the template (`root.children[2]`, as diagnostics give it), its `id` where it has one, its element (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.
 - Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak` and a `MergeTag` have none, nor a `Layer`'s `Image` (drawn as the Layer's background).
 - The HTML is the same bytes as without the option. Merge tags are written before the offsets are taken, and the offsets count the whole document, `<head>` included.
 - `version` is `BLOCK_MAP_VERSION`, which changes only when this format does.

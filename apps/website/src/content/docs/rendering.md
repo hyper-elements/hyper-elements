@@ -172,7 +172,7 @@ import { validate } from "@hyper-elements/react";
 const { valid, diagnostics } = validate(<Receipt />);
 ```
 
-`valid` is `false` when there's an error. Warnings and notes leave it `true`. It checks props, styles, children and ids, expands your custom components, runs the output's checks and the layout, and reports what the output can't show as asked. Only what needs the written HTML is left to `render()`: an email's size against Gmail's limits. It's synchronous. See [Diagnostics](/docs/diagnostics).
+`valid` is `false` when there's an error. Warnings and notes leave it `true`. It checks props, styles, children and ids, expands your own elements, runs the output's checks and the layout, and reports what the output can't show as asked. Only what needs the written HTML is left to `render()`: an email's size against Gmail's limits. It's synchronous. See [Diagnostics](/docs/diagnostics).
 
 ## outline()
 

@@ -1,4 +1,4 @@
-// Renders the site's examples with Hyper Elements itself, and splits the package's own component
+// Renders the site's examples with Hyper Elements itself, and splits the package's own element
 // reference into pages, into src/generated/. The site shows only what the engine really writes.
 //
 //   pnpm --filter @hyper-elements/website generate
@@ -6,7 +6,7 @@
 // Writes:
 //   src/generated/examples.json      every example (templates, components, showcase): source, HTML,
 //                                    plain text, outline and diagnostics
-//   src/generated/reference/*.md     the package's REFERENCE.md, one page per component
+//   src/generated/reference/*.md     the package's REFERENCE.md, one page per element
 //   public/generated/templates/      each Document template as a real PDF, each Canvas template as a PNG
 //
 // The PDFs and PNGs need the templates' fonts as TTF files (react-pdf and Satori don't read WOFF2):
@@ -204,7 +204,7 @@ const examples = {
 await rm(cacheDir, { recursive: true, force: true });
 await writeFile(join(outDir, "examples.json"), JSON.stringify(examples, null, 2) + "\n");
 
-// One Markdown file per component, from the reference, for /docs/components/<slug>.
+// One Markdown file per element, from the reference, for /docs/components/<slug>.
 function splitReference(md) {
   const pages = [];
   let group = null;
@@ -249,6 +249,6 @@ for (const [i, page] of pages.entries()) {
 }
 await writeFile(
   join(refDir, "overview.md"),
-  `---\ntitle: "Components"\ngroup: "Overview"\norder: -1\nsummary: "Every component, what it holds, and every prop and style it takes."\n---\n\n${intro.replace("[GUIDE.md](./GUIDE.md)", "[Templates and roots](/docs/templates)")}\n`,
+  `---\ntitle: "Elements"\ngroup: "Overview"\norder: -1\nsummary: "Every element, what it holds, and every prop and style it takes."\n---\n\n${intro.replace("[GUIDE.md](./GUIDE.md)", "[Templates and roots](/docs/templates)")}\n`,
 );
 console.log(`wrote src/generated/`);

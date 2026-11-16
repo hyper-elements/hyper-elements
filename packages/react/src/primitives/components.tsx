@@ -110,7 +110,7 @@ function createPrimitive<D extends ComponentDefinition<any, any>>(definition: D)
     const collection = collectingPrimitives();
     if (!collection) {
       throw new Error(
-        `[Elements] <${definition.type}> is part of a template: render the template with render(), not this component on its own`
+        `[Elements] <${definition.type}> is part of a template: render the template with render(), not this element on its own`
       );
     }
     return recordPrimitive(collection, definition.type, props as Record<string, unknown>);

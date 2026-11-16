@@ -777,7 +777,7 @@ export default <Canvas width={400} height={120}><Text>A Canvas</Text></Canvas>;
     const showing = await tool("show_hyper_elements_preview", { code: "<Email><Text>Shown by a tool</Text></Email>", device: "phone" });
     assert.match(showing.shareUrl, /#(z|code)=.*device=phone/);
     await shown(page).getByText("Shown by a tool").waitFor();
-    assert.match((await tool("get_hyper_elements_reference", {})).guide, /## Components/);
+    assert.match((await tool("get_hyper_elements_reference", {})).guide, /## Elements/);
     assert.equal((await tool("get_playground_code", {})).code, "<Email><Text>Shown by a tool</Text></Email>");
     assert.match(await page.evaluate(() => window.hyperElementsPlayground.help()), /hyperElementsPlayground\.render\(code, options\)/);
     await page.close();

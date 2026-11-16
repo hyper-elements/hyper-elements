@@ -1,7 +1,7 @@
 /**
  * `@hyper-elements/react/inspect`: what each root takes, and what a template holds, as data, without rendering
  * anything. For an agent's tool call or an editor: "can I use this here?" before writing, and "is each part of this
- * template allowed in its root?" after. Read from the components' definitions, the same ones validation and the
+ * template allowed in its root?" after. Read from the elements' definitions, the same ones validation and the
  * generated guide read, so the three agree. Synchronous; it loads no engine, browser or network.
  *
  * Every result carries `version`: its shape changes only with a new version.
@@ -18,7 +18,7 @@ import {
   CONDITION_NAMES,
   CUSTOM_TYPE,
   ROOT_NAMES,
-  type ComponentDescription,
+  type ComponentDescription as Described,
   type ConditionName,
   type CustomDefinition,
   type Diagnostic,
@@ -29,12 +29,17 @@ import {
 } from "@hyper-elements/core";
 import { collectTemplate, type JsonNode } from "../primitives/collect";
 
-export type { ComponentDescription, ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
+export type { ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
+
+/** An element (a built-in one, or a template's own), with its props and styles, as `describeElements()` gives it. */
+export type ElementDescription = Described;
+/** @deprecated Renamed `ElementDescription`. */
+export type ComponentDescription = Described;
 
 /** The shape of what this entry returns: a new version is a new shape. */
 export const INSPECT_VERSION = 2;
 
-/** A template's own component (made with `component()`), described alongside the built-in ones. */
+/** A template's own element (made with `defineElement()`), described alongside the built-in ones. */
 interface WithDefinition {
   definition: CustomDefinition<any>;
 }
@@ -42,7 +47,9 @@ interface WithDefinition {
 export interface DescribeOptions {
   /** Only what this root takes, with phone styles only under a root that has phones. */
   root?: RootName;
-  /** A template's own components (made with `component()`), described with the built-in ones. */
+  /** A template's own elements (made with `defineElement()`), described with the built-in ones. */
+  elements?: readonly WithDefinition[];
+  /** @deprecated Renamed `elements`. Given with it, an element in `elements` wins over one of the same type here. */
   components?: readonly WithDefinition[];
 }
 
@@ -55,48 +62,68 @@ export interface ConditionDescription {
   roots: RootName[];
 }
 
-export interface ComponentsDescription {
+export interface ElementsDescription {
   version: typeof INSPECT_VERSION;
   /** The root it's narrowed to, if one was given. */
   root?: RootName;
   /** The roots a template can have. */
   roots: RootName[];
-  /** Each component, with its props and styles: their kinds, groups, defaults and the roots that take them. */
-  components: ComponentDescription[];
-  /** The style blocks a component may have besides its own style, and the roots that take each. */
+  /** Each element, with its props and styles: their kinds, groups, defaults and the roots that take them. */
+  elements: ElementDescription[];
+  /** The style blocks an element may have besides its own style, and the roots that take each. */
   conditions: ConditionDescription[];
 }
 
-/** The core's options: the definitions of the components given, and the root. */
-const coreOptions = (options: DescribeOptions) => ({ components: (options.components ?? []).map((component) => component.definition), ...(options.root ? { root: options.root } : {}) });
+/** @deprecated Renamed `ElementsDescription`, whose list is `elements`: what `describeComponents()` returns. */
+export type ComponentsDescription = Omit<ElementsDescription, "elements"> & { components: ElementDescription[] };
 
 /**
- * Every component a template can use (the built-in ones and those given), each with its props and styles: what
+ * The core's options: the definitions of the elements given, and the root. One of a type given in `elements` is
+ * taken over one of that type in `components`; two different ones of a type in the same option are refused, as before.
+ */
+const coreOptions = (options: DescribeOptions) => {
+  const elements = (options.elements ?? []).map((element) => element.definition);
+  const types = new Set(elements.map((definition) => definition.type));
+  const components = (options.components ?? []).map((element) => element.definition).filter((definition) => !types.has(definition.type));
+  return { components: [...elements, ...components], ...(options.root ? { root: options.root } : {}) };
+};
+
+/**
+ * Every element a template can use (the built-in ones and those given), each with its props and styles: what
  * each takes, its group, its default, and the roots that take it. With `root`, only what that root takes.
  */
-export function describeComponents(options: DescribeOptions = {}): ComponentsDescription {
+export function describeElements(options: DescribeOptions = {}): ElementsDescription {
   const conditions = describeConditions(coreOptions(options));
   return {
     version: INSPECT_VERSION,
     ...(options.root ? { root: options.root } : {}),
     roots: options.root ? [options.root] : [...ROOT_NAMES],
-    components: describeAll(coreOptions(options)),
+    elements: describeAll(coreOptions(options)),
     conditions: options.root ? conditions.filter((condition) => condition.roots.includes(options.root!)).map((condition) => ({ ...condition, roots: [options.root!] })) : conditions,
   };
 }
 
-/** One component, as `describeComponents()` describes it; undefined where there's no such component, or `root` doesn't take it. */
-export function describeComponent(type: string, options: DescribeOptions = {}): (ComponentDescription & { version: typeof INSPECT_VERSION }) | undefined {
+/** One element, as `describeElements()` describes it; undefined where there's no such element, or `root` doesn't take it. */
+export function describeElement(type: string, options: DescribeOptions = {}): (ElementDescription & { version: typeof INSPECT_VERSION }) | undefined {
   const described = describeOne(type, coreOptions(options));
   return described && { version: INSPECT_VERSION, ...described };
 }
+
+/** @deprecated Renamed `describeElements()`, which gives the list as `elements`: this gives it as `components`, as before. */
+export function describeComponents(options: DescribeOptions = {}): ComponentsDescription {
+  // The list renamed in its place, so its keys come in the order they did.
+  return Object.fromEntries(Object.entries(describeElements(options)).map(([key, value]) => [key === "elements" ? "components" : key, value])) as unknown as ComponentsDescription;
+}
+
+/** @deprecated Renamed `describeElement()`: the same function. */
+export const describeComponent = describeElement;
 
 export interface InspectedNode {
   /** Where it is, as diagnostics say it: "root", "root.children[2]". */
   path: string;
   type: string;
   id?: string;
-  /** The roots its component may go in. */
+  /** The roots its element may go in. */
   roots: RootName[];
   /** Whether the template's root takes it. */
   allowed: boolean;
@@ -110,11 +137,13 @@ export interface InspectedNode {
 export interface ThemeDescription {
   /** Each token, its group, and its value at the root (null where it doesn't resolve). */
   tokens: Array<{ path: string; group: string; value: Json | null }>;
-  /** The roles it defines: the tokens built-in components read ("colors.primary" for a Button). */
+  /** The roles it defines: the tokens built-in elements read ("colors.primary" for a Button). */
   roles: string[];
   /** Its named styles' names, for `style={{ apply: [...] }}`. */
   styles: string[];
-  /** Each component it gives defaults: its variants' names, and the prop its `by` styles go by. */
+  /** Each element it gives defaults: its variants' names, and the prop its `by` styles go by. */
+  elements: Array<{ type: string; variants: string[]; by?: string }>;
+  /** @deprecated Renamed `elements`: the same list, kept for readers of this version. */
   components: Array<{ type: string; variants: string[]; by?: string }>;
 }
 
@@ -127,7 +156,7 @@ export interface Inspection {
   /** No errors (there may be warnings and notes), as `validate()` says. */
   valid: boolean;
   /**
-   * Each component in the template, in document order, as written: one its root doesn't take is here too, with
+   * Each element in the template, in document order, as written: one its root doesn't take is here too, with
    * `allowed: false` and its error in `problems`. Each `path` is the one diagnostics give.
    */
   nodes: InspectedNode[];
@@ -136,7 +165,7 @@ export interface Inspection {
 }
 
 /**
- * What a template holds, as data: each component, what it's given, whether its root takes it, and the problems
+ * What a template holds, as data: each element, what it's given, whether its root takes it, and the problems
  * found on it. It checks what `validate()` checks, without rendering.
  */
 export function inspect(element: React.ReactElement): Inspection {
@@ -166,8 +195,8 @@ export function inspect(element: React.ReactElement): Inspection {
       if (child && typeof child === "object") visit(child, `${path}.children[${index}]`);
     });
   };
-  // The tree as collected, not as read: reading leaves out a component its root doesn't take (and merges text), and
-  // what's listed here is every component written, at the paths diagnostics name.
+  // The tree as collected, not as read: reading leaves out an element its root doesn't take (and merges text), and
+  // what's listed here is every element written, at the paths diagnostics name.
   if (document && collected) visit(collected, "root");
   return { version: INSPECT_VERSION, root, theme: describeTheme(document?.theme, registry), valid: !diagnostics.some((d) => d.severity === "error"), nodes, diagnostics };
 }
@@ -182,17 +211,19 @@ function describeTheme(theme: { [key: string]: Json } | undefined, registry: Reg
   });
   const roles = [...new Set(registry.all().flatMap((definition) => Object.values(definition.roles ?? {})))].filter((path) => environment.has(path));
   const isObject = (value: unknown): value is Record<string, Json> => typeof value === "object" && value !== null && !Array.isArray(value);
-  const components = Object.entries(isObject(theme.components) ? theme.components : {}).map(([type, defaults]) => {
-    const own = isObject(defaults) ? defaults : {};
+  // A read theme gives each element under one of its two names: `elements`, or `components`, its name before.
+  const defaults = { ...(isObject(theme.components) ? theme.components : {}), ...(isObject(theme.elements) ? theme.elements : {}) };
+  const elements = Object.entries(defaults).map(([type, given]) => {
+    const own = isObject(given) ? given : {};
     const by = isObject(own.by) ? Object.keys(own.by)[0] : undefined;
     return { type, variants: isObject(own.variants) ? Object.keys(own.variants) : [], ...(by ? { by } : {}) };
   });
-  return { tokens, roles, styles: isObject(theme.styles) ? Object.keys(theme.styles) : [], components };
+  return { tokens, roles, styles: isObject(theme.styles) ? Object.keys(theme.styles) : [], elements, components: elements };
 }
 
 /**
  * The keys a node was given, by where they're written. A condition's block written in `style` (`style={{ mobile: { … } }}`)
- * is the condition's, as reading takes it; a template's own component takes no condition, so in its style it's a style.
+ * is the condition's, as reading takes it; a template's own element takes no condition, so in its style it's a style.
  */
 function given(node: JsonNode): string[] {
   const keys = (prefix: string, values: unknown) => (values && typeof values === "object" && !Array.isArray(values) ? Object.keys(values).map((key) => `${prefix}.${key}`) : []);

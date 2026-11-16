@@ -120,7 +120,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
   /** A custom node at `path` expanded; what it renders is at `self` (its own path, or the custom node's that rendered it). */
   const expandOne = (node: Node, definition: CustomDefinition, parent: ComponentDefinition, path: string, depth: number, self = path, environment = themed): Node | undefined => {
     if (depth >= MAX_DEPTH) {
-      d.error("custom/depth", `${node.type} expands into custom components ${MAX_DEPTH} deep: does it contain itself?`, path, node.id);
+      d.error("custom/depth", `${node.type} expands into a template's own elements ${MAX_DEPTH} deep: does it contain itself?`, path, node.id);
       return undefined;
     }
     let raw: unknown;
@@ -142,7 +142,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     const at = `${path}(${node.type})`;
     for (const diagnostic of reported) d.list.push({ ...diagnostic, path: diagnostic.path === "root" || diagnostic.path.startsWith("root.") ? at + diagnostic.path.slice(4) : at });
     if (Array.isArray(raw) || typeof raw !== "object" || raw === null) {
-      d.error("custom/render", `${node.type} renders one component (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
+      d.error("custom/render", `${node.type} renders one element (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
       return undefined;
     }
     const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: rootDefinition, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})`, environment });

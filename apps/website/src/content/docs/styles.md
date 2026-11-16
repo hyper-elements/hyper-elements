@@ -1,9 +1,9 @@
 ---
 title: "Styles, phones and hover"
-description: "Style components with style={{ }} using CSS names, set phone and hover styles in its mobile and hover blocks, set where a Page's phones start, show blocks on one size with hidden, and load fonts."
+description: "Style elements with style={{ }} using CSS names, set phone and hover styles in its mobile and hover blocks, set where a Page's phones start, show blocks on one size with hidden, and load fonts."
 ---
 
-Every component takes its styles in `style={{ }}`, with CSS's property names and values. Inside it, the `mobile` block holds its styles on phones and the `hover` block its styles under the pointer. `hidden` shows a block on one size only.
+Every element takes its styles in `style={{ }}`, with CSS's property names and values. Inside it, the `mobile` block holds its styles on phones and the `hover` block its styles under the pointer. `hidden` shows a block on one size only.
 
 ```tsx
 <Heading level={1} style={{ fontSize: 32, color: "#111827", mobile: { fontSize: 24, textAlign: "center" } }}>
@@ -17,7 +17,7 @@ Styles go in `style`, never as props. `<Email backgroundColor="#fff">` is an err
 
 - **A number is px.** `padding: 16` is 16px, `fontSize: 15` is 15px.
 - **Names are CSS's** where the meaning is the same: `alignItems`, `justifyContent: "space-between"`, `textTransform`, `borderRadius`. Where a behavior isn't CSS, it's a prop (`<Row stackOnMobile={false}>`).
-- **Each component takes its own list.** A style a component doesn't take is an error (`style/unknown`), which names what to use instead where there's an equivalent. Each component's page lists its styles, with their defaults.
+- **Each element takes its own list.** A style an element doesn't take is an error (`style/unknown`), which names what to use instead where there's an equivalent. Each element's page lists its styles, with their defaults.
 - **A value may be a theme's token**, `color: token("colors.primary")`, and `apply` merges a theme's named styles under the rest: `style={{ apply: ["card"], gap: 16 }}`. See [Themes](/docs/themes).
 
 ### Values
@@ -61,7 +61,7 @@ Styles go in `style`, never as props. `<Email backgroundColor="#fff">` is an err
 </Email>
 ```
 
-The root's defaults are `color: "#000000"`, `fontFamily: "Arial, Helvetica, sans-serif"`, `fontSize: 16`, `fontWeight: 400`, `lineHeight: 1.5` and `textAlign: "left"`. Some components have their own: a Heading is bold at a line height of 1.25, a Button is white 14px text on `#0879a1`, a Link is `#0000ee` and underlined.
+The root's defaults are `color: "#000000"`, `fontFamily: "Arial, Helvetica, sans-serif"`, `fontSize: 16`, `fontWeight: 400`, `lineHeight: 1.5` and `textAlign: "left"`. Some elements have their own: a Heading is bold at a line height of 1.25, a Button is white 14px text on `#0879a1`, a Link is `#0000ee` and underlined.
 
 In an email, every text style is written on the text itself, since Outlook doesn't pass styles down through tables. You don't have to think about it.
 
@@ -75,7 +75,7 @@ There are no margins. Space between blocks is their parent's `gap`, and space in
 
 ## mobile
 
-The `mobile` block of a component's `style` holds its styles on phones, in an Email or a Page:
+The `mobile` block of an element's `style` holds its styles on phones, in an Email or a Page:
 
 ```tsx
 <Column style={{ padding: 32, mobile: { padding: 16 } }}>
@@ -83,7 +83,7 @@ The `mobile` block of a component's `style` holds its styles on phones, in an Em
 </Column>
 ```
 
-Each component takes a short list of phone styles, mostly sizes, spacing and alignment: `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`, `alignSelf`. The block is typed to the component's list, so TypeScript flags a style that isn't on it; `validate()` says so too (`mobile/not-allowed`). Phone styles in a Document or a Canvas, which have no phone width, are an error (`mobile/not-supported`).
+Each element takes a short list of phone styles, mostly sizes, spacing and alignment: `fontSize`, `lineHeight`, `letterSpacing`, `textAlign`, `width`, `maxWidth`, `padding`, `border`, `gap`, `rowGap`, `alignSelf`. The block is typed to the element's list, so TypeScript flags a style that isn't on it; `validate()` says so too (`mobile/not-allowed`). Phone styles in a Document or a Canvas, which have no phone width, are an error (`mobile/not-supported`).
 
 Where an output takes a phone style but doesn't show it, `validate()` warns: a Page's own phone text styles (set them on its Sections or Columns), a stacking Grid's `rowGap` (its children are its phone `gap` apart), and in an email an Image's or a TableCell's phone `border`, and a phone `lineHeight` of `"normal"`.
 
@@ -128,7 +128,7 @@ The `hover` block holds a link's or a button's styles under the pointer:
 </Text>
 ```
 
-A Button takes `color` and `backgroundColor` on hover. A Link takes `color`, `textDecoration` and `backgroundColor`. Other components take no `hover` block. Keyboard focus gets the same styles, so a link or button reached with Tab shows its hover colors.
+A Button takes `color` and `backgroundColor` on hover. A Link takes `color`, `textDecoration` and `backgroundColor`. Other elements take no `hover` block. Keyboard focus gets the same styles, so a link or button reached with Tab shows its hover colors.
 
 In an email, `validate()` notes that hover doesn't show everywhere: classic Outlook for Windows and some apps and webmail leave the colors as they are. A PDF and an image can't show hover, and say so.
 

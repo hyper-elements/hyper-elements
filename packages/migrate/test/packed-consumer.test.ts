@@ -64,7 +64,7 @@ async function main() {
   const h = React.createElement;
   const Template = () => h(Html, null, h(Body, null, h(Text, null, "Hello")));
   const conversion = await api.convertReactEmail(Template);
-  // A link the new components don't write: a typed error, with the template as it was written first.
+  // A link the new elements don't write: a typed error, with the template as it was written first.
   const Refused = () => h(Html, null, h(Body, null, h(Button, { href: "javascript:void(0)" }, "Go")));
   const error = await api.convertReactEmail(Refused).catch((e) => e);
   // A template on the old package: nothing in it is only the old components', and its import says it's theirs.

@@ -58,7 +58,7 @@ export interface CustomComponentSpec<P extends PropSpecs> {
 
 export function defineCustomComponent<const P extends PropSpecs>(spec: CustomComponentSpec<P>): CustomDefinition<P> {
   if (!CUSTOM_TYPE.test(spec.type)) {
-    throw new Error(`[Elements] A custom component's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
+    throw new Error(`[Elements] An element's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
   }
   const section = spec.placement === "section";
   const paths = Object.keys(spec.props).map((key) => `props.${key}`);
@@ -92,10 +92,10 @@ export class Registry {
 
   add(definition: CustomDefinition<any>): void {
     if (!isCustom(definition) || !CUSTOM_TYPE.test(definition.type)) {
-      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a custom component (make one with component())`);
+      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a template's own element (make one with defineElement())`);
     }
     const known = this.custom.get(definition.type);
-    if (known && known !== definition) throw new Error(`[Elements] Two custom components are named ${definition.type}`);
+    if (known && known !== definition) throw new Error(`[Elements] Two elements made with defineElement() are named ${definition.type}`);
     this.custom.set(definition.type, definition as CustomDefinition);
   }
 

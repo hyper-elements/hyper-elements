@@ -14,7 +14,7 @@ Give satori's range as above: pnpm and yarn otherwise add satori's newest versio
 
 | Package | Version | Why |
 |---------|---------|-----|
-| `@hyper-elements/react` | `^0.3.0` | The components, and this entry |
+| `@hyper-elements/react` | `^0.3.0` | The elements, and this entry |
 | `satori` | `^0.33.5` | Lays out the Canvas and draws its text as paths, as SVG (optional: only for `/image`) |
 | `@resvg/resvg-js` | `^2.6.2` | Draws that SVG as a PNG (optional: only for `/image`) |
 | `react` | `>=18` | |

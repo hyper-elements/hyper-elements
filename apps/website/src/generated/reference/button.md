@@ -7,7 +7,7 @@
 
 A link drawn as a button.
 
-Holds: text; Span, MergeTag, LineBreak. Drawn in: email, page.
+Holds: text; Span, MergeTag, LineBreak.
 
 Props:
 - `href`: *link* (required)
@@ -16,25 +16,25 @@ Props:
 - `attrs`: *attributes*. More attributes for its link: a class, a `data-` attribute.
 
 `style`:
-- `color`: *color* (default `"#ffffff"`, inherited)
-- `fontFamily`: *fontFamily* (inherited)
-- `fontSize`: a length (a number of px) (default `14`, inherited)
-- `fontWeight`: *fontWeight* (inherited)
-- `fontStyle`: one of "normal", "italic" (inherited)
-- `lineHeight`: *lineHeight* (default `1.2`, inherited)
-- `letterSpacing`: a length (a number of px) (inherited)
-- `textAlign`: one of "left", "center", "right", "justify" (default `"center"`, inherited)
-- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited)
-- `textDecoration`: one of "none", "underline", "line-through"
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `padding`: *insets* (default `{"top":10,"right":20,"bottom":10,"left":20}`)
-- `backgroundColor`: *color* (default `"#0879a1"`)
-- `border`: *border*
-- `borderRadius`: *radius* (default `4`)
-- `boxSizing`: one of "border-box", "content-box". Whether its width holds its padding and border (border-box), or they go on top of it (content-box).
-- `alignSelf`: one of "start", "center", "end". Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `color`: *color* (default `"#ffffff"`, inherited, Typography)
+- `fontFamily`: *fontFamily* (inherited, Typography)
+- `fontSize`: a length (a number of px) (default `14`, inherited, Typography)
+- `fontWeight`: *fontWeight* (inherited, Typography)
+- `fontStyle`: one of "normal", "italic" (inherited, Typography)
+- `lineHeight`: *lineHeight* (default `1.2`, inherited, Typography)
+- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `textAlign`: one of "left", "center", "right", "justify" (default `"center"`, inherited, Typography)
+- `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
+- `textDecoration`: one of "none", "underline", "line-through" (Typography)
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `padding`: *insets* (default `{"top":10,"right":20,"bottom":10,"left":20}`, Spacing)
+- `backgroundColor`: *color* (default `"#0879a1"`, Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (default `4`, Border)
+- `boxSizing`: one of "border-box", "content-box" (Size). Whether its width holds its padding and border (border-box), or they go on top of it (content-box).
+- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack, whatever the stack's alignItems: on phones too, another place than on desktop.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.hover`: `color`, `backgroundColor`.
 

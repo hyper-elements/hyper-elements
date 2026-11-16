@@ -393,19 +393,24 @@ class Session {
     });
   }
 
-  /** `describe`: describeComponents() or describeComponent(), from Elements as the current folder loads it. */
+  /**
+   * `describe`: describeElements() or describeElement(), from Elements as the current folder loads it. An Elements
+   * from before those names has describeComponents() and describeComponent() alone: its list is given as `elements`
+   * too, so what's printed is the same shape whichever Elements answers.
+   */
   private async describe(input: ChildInput, load: (specifier: string) => unknown): Promise<ResultMessage> {
     const inspect = exportsOf<ElementsInspect>(await load("@hyper-elements/react/inspect"), "describeComponents");
-    const { component, root } = this.message.options;
+    const { element, root } = this.message.options;
     const usage = (message: string) => this.result(input, { status: "error", usage: true, diagnostics: [cliDiagnostic("describe", "error", message)] });
-    const all = inspect.describeComponents();
+    const describeAll = (options: { root?: string }) => (inspect.describeElements ? inspect.describeElements(options) : asElements(inspect.describeComponents(options)));
+    const all = describeAll({});
     if (root !== undefined && !all.roots.includes(root)) return usage(`--root takes ${all.roots.join(", ")}, not ${JSON.stringify(root)}`);
     const options = root ? { root } : {};
-    if (component === undefined) return this.result(input, { status: "ok", described: inspect.describeComponents(options) });
-    const described = inspect.describeComponent(component, options);
+    if (element === undefined) return this.result(input, { status: "ok", described: describeAll(options) });
+    const described = (inspect.describeElement ?? inspect.describeComponent)(element, options);
     if (described) return this.result(input, { status: "ok", described });
-    const types = all.components.map((c) => c.type);
-    return usage(types.includes(component) ? `${root} doesn't take ${component}` : `There's no component ${JSON.stringify(component)}: the components are ${types.join(", ")}`);
+    const types = all.elements.map((c) => c.type);
+    return usage(types.includes(element) ? `${root} doesn't take ${element}` : `There's no element ${JSON.stringify(element)}: the elements are ${types.join(", ")}`);
   }
 
   private elementsMissing(input: ChildInput): ResultMessage {
@@ -424,6 +429,10 @@ class Session {
   }
 }
 
+/** describeComponents()'s result as describeElements() gives it: its list named `elements`, in its place. */
+function asElements<T extends { components: Array<{ type: string }> }>(described: T): Omit<T, "components"> & { elements: T["components"] } {
+  return Object.fromEntries(Object.entries(described).map(([key, value]) => [key === "components" ? "elements" : key, value])) as Omit<T, "components"> & { elements: T["components"] };
+}
 
 function exitCalled(error: unknown): boolean {
   return /^a template called process\.exit\(/.test(messageOf(error));

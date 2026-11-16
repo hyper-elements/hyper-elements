@@ -40,7 +40,7 @@ The root decides the output. Change the root and the same content renders somewh
 - **Writing Outlook conditional comments.** Outlook-only markup goes inside `<!--[if mso]>`, and nothing other clients need goes in one.
 - **Inlining styles.** Layout, colors, fonts, sizes and spacing are written inline, so the email holds its desktop layout where a client drops `<style>`.
 - **Keeping a plain-text version in sync.** Every `render()` returns `text` beside `html`.
-- **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds a component's phone styles.
+- **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds an element's phone styles.
 - **Running headless Chrome for a PDF.** `@hyper-elements/react/pdf` writes a `Document` as a PDF with no browser.
 - **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value. With `@hyper-elements/email-clients`, it names the clients each problem is about, and its email client emulator, `renderInEmailClients()`, shows the email as each email client shows it, on your machine. See [Email client emulator](/docs/email-client-emulator).
 
@@ -66,7 +66,7 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 
 | Package | What it does |
 |---------|--------------|
-| `@hyper-elements/react` | The components, `render()`, `validate()`, `outline()`, `formatDiagnostics()`, `component()` and `prop`, and `ElementsError` |
+| `@hyper-elements/react` | The elements, `render()`, `validate()`, `outline()`, `formatDiagnostics()`, `defineElement()` and `prop`, and `ElementsError` |
 | `@hyper-elements/react/builder` | `toDesign()` and `fromDesign()`: a template as the Unlayer builder's design JSON, and a design back as a template |
 | `@hyper-elements/react/pdf` | `renderPdf()`: a `Document` as a PDF, with react-pdf, no browser |
 | `@hyper-elements/react/image` | `renderImage()`: a `Canvas` as PNG or SVG, with Satori and resvg |
@@ -89,5 +89,5 @@ The source is on GitHub at [hyper-elements/hyper-elements](https://github.com/hy
 - [Styles, phones and hover](/docs/styles): `style`, `mobile`, `hidden`, `hover` and fonts.
 - [Rendering](/docs/rendering): `render()`, `validate()`, `outline()` and merge tags.
 - [Diagnostics](/docs/diagnostics): what the checks report, and how to use them in CI.
-- [Custom components](/docs/custom-components): `component()` and `<Html>`.
+- [Defining elements](/docs/defining-elements): `defineElement()` and `<Html>`.
 - Outputs: [Email](/docs/outputs/email), [Page](/docs/outputs/page), [PDF](/docs/outputs/pdf), [Image](/docs/outputs/image).

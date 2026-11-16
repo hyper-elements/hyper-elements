@@ -1,6 +1,6 @@
 # Build and send transactional email in React
 
-Use `@hyper-elements/react` for React receipts, order confirmations, welcome emails, and password reset emails. Write the template with the components from `@hyper-elements/react`, `await render()` it into HTML and plain text in your server or job worker, then pass both strings to an email provider. Elements does not deliver messages.
+Use `@hyper-elements/react` for React receipts, order confirmations, welcome emails, and password reset emails. Write the template with the elements from `@hyper-elements/react`, `await render()` it into HTML and plain text in your server or job worker, then pass both strings to an email provider. Elements does not deliver messages.
 
 ## Install and choose a template
 

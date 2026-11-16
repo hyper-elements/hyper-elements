@@ -227,7 +227,7 @@ const { html, text } = await render(<Welcome plan="Pro" />, {
 
 What the function returns goes into the HTML as it is, with the name in it escaped.
 
-A link's target can be a merge tag too. Write it in your provider's syntax: `mergeTag` changes `MergeTag` components, not the `href` strings you write.
+A link's target can be a merge tag too. Write it in your provider's syntax: `mergeTag` changes `MergeTag` elements, not the `href` strings you write.
 
 ```tsx
 <Link href="*|UNSUB|*">Unsubscribe</Link>

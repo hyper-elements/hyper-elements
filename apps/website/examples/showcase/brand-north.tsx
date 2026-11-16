@@ -10,7 +10,7 @@ const north = defineTheme({
   lineHeights: { body: 1.6 },
   spacing: { sm: 12, md: 20, lg: 36 },
   radii: { card: 6, button: 6 },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 32, fontWeight: 700, letterSpacing: -0.5, mobile: { fontSize: 26 } } } } },
     Button: { borderRadius: "{radii.button}", padding: [13, 22], fontWeight: 700, variants: { secondary: { backgroundColor: "{colors.surface}", color: "{colors.primary}", border: { width: 1, style: "solid", color: "{colors.line}" } } } },
   },

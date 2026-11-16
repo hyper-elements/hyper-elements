@@ -3,7 +3,7 @@
  * same tree always gives the same file. The tree is in Elements 0.2's
  * components ("today's"), which 0.3.0 doesn't have: the module is the
  * converters' intermediate source, which `migrateElements` rewrites in the
- * new components at once (see new-components.ts). It's never run.
+ * new elements at once (see new-components.ts). It's never run.
  */
 
 import * as prettier from "prettier";

@@ -597,6 +597,62 @@ describe("extendTheme() and formats", () => {
   });
 });
 
+describe("elements, and components, its name before", () => {
+  const sides = (n: number) => ({ top: n, right: n, bottom: n, left: n });
+  const button = (theme: unknown, variant?: string, Root: typeof Email | typeof Page = Email) =>
+    child(laid(<Root theme={theme as never}><Button href="https://example.com" variant={variant as never}>a</Button></Root>).root, 0).style;
+
+  it("give each element its defaults and variants under either name", () => {
+    const now = defineTheme({ elements: { Button: { borderRadius: 3, variants: { red: { backgroundColor: "#ff0000" } } } } });
+    const before = defineTheme({ components: { Button: { borderRadius: 3, variants: { red: { backgroundColor: "#ff0000" } } } } });
+    for (const theme of [now, before]) {
+      expect(button(theme).borderRadius).toBe(3);
+      expect(button(theme, "red").backgroundColor).toBe("#ff0000");
+    }
+  });
+
+  it("take both in one theme, an element given under both merged key by key with elements winning", () => {
+    const theme = defineTheme({ components: { Button: { borderRadius: 1, padding: 9 }, Heading: { color: "#000001" } }, elements: { Button: { borderRadius: 2 } } });
+    const { root } = laid(
+      <Email theme={theme}>
+        <Button href="https://example.com">a</Button>
+        <Heading>b</Heading>
+      </Email>
+    );
+    expect([child(root, 0).style.borderRadius, child(root, 0).style.padding]).toEqual([2, sides(9)]);
+    expect(child(root, 1).style.color).toBe("#000001");
+  });
+
+  it("say each problem under the name it's written under, and an element given under both under elements", () => {
+    const paths = (theme: unknown) => errors(<Email theme={theme as never}><Button href="https://example.com">a</Button><Text>b</Text></Email>).map((d) => [d.code, d.path]);
+    const wrong = { borderRadius: "{colors.primary}" };
+    expect(paths({ colors: { primary: "#000000" }, components: { Buton: {} }, elements: { Button: wrong } })).toEqual([
+      ["theme/schema", "root.theme.components.Buton"],
+      ["theme/value", "root.theme.elements.Button.borderRadius"],
+    ]);
+    // Another element under elements, or the same one in another root's format, leaves it where it's written.
+    expect(paths({ colors: { primary: "#000000" }, components: { Button: wrong }, elements: { Text: {} } })).toEqual([["theme/value", "root.theme.components.Button.borderRadius"]]);
+    expect(paths({ colors: { primary: "#000000" }, components: { Button: wrong }, formats: { canvas: { elements: { Button: {} } } } })).toEqual([["theme/value", "root.theme.components.Button.borderRadius"]]);
+    expect(paths({ colors: { primary: "#000000" }, components: { Button: wrong }, elements: { Button: { padding: 4 } } })).toEqual([["theme/value", "root.theme.elements.Button.borderRadius"]]);
+  });
+
+  it("merge key by key across the two names, in formats and with extendTheme()", () => {
+    const formatted = defineTheme({ components: { Button: { borderRadius: 4, padding: 9 } }, formats: { email: { elements: { Button: { borderRadius: 0 } } } } });
+    expect([button(formatted).borderRadius, button(formatted).padding]).toEqual([0, sides(9)]);
+    expect(button(formatted, undefined, Page).borderRadius).toBe(4);
+    // A format written with the name before, over a theme written with the new one, still wins.
+    const older = defineTheme({ elements: { Button: { borderRadius: 4, padding: 9 } }, formats: { email: { components: { Button: { borderRadius: 0 } } } } });
+    expect([button(older).borderRadius, button(older).padding]).toEqual([0, sides(9)]);
+    // extendTheme() keeps each name as it's written, as its type says; the theme merges them where it's read.
+    const base = defineTheme({ components: { Button: { borderRadius: 4, padding: 9 } } });
+    const extended = extendTheme(base, { elements: { Button: { borderRadius: 0 } } });
+    expect([extended.components.Button, extended.elements.Button]).toEqual([{ borderRadius: 4, padding: 9 }, { borderRadius: 0 }]);
+    expect([button(extended).borderRadius, button(extended).padding]).toEqual([0, sides(9)]);
+    // A theme written with one name stays as it's written.
+    expect(extendTheme(base, { components: { Button: { borderRadius: 0 } } }).components.Button).toEqual({ borderRadius: 0, padding: 9 });
+  });
+});
+
 describe("reading", () => {
   it("merges once: a document read again is the same, with no new diagnostics", () => {
     const { document, components } = collectTemplate(
@@ -723,14 +779,18 @@ describe("hostile themes", () => {
 });
 
 describe("inspect()", () => {
-  it("lists the theme: its tokens, the roles it defines, its named styles and each component's variants", () => {
+  it("lists the theme: its tokens, the roles it defines, its named styles and each element's variants", () => {
     const inspected = inspect(<Email theme={brand}><Button href="https://example.com" variant="secondary">a</Button></Email>);
     expect(inspected.version).toBe(INSPECT_VERSION);
     expect(INSPECT_VERSION).toBe(2);
     expect(inspected.theme!.tokens).toContainEqual({ path: "colors.link", group: "colors", value: "#0f766e" });
     expect(inspected.theme!.roles).toEqual(expect.arrayContaining(["colors.background", "colors.foreground", "fonts.body", "colors.primary", "colors.primaryForeground", "fonts.heading", "colors.border"]));
     expect(inspected.theme!.styles).toEqual(["card", "outlined", "h1", "quiet"]);
-    expect(inspected.theme!.components).toEqual([{ type: "Heading", variants: [], by: "level" }, { type: "Button", variants: ["secondary", "outline", "small", "loud"] }]);
+    expect(inspected.theme!.elements).toEqual([{ type: "Heading", variants: [], by: "level" }, { type: "Button", variants: ["secondary", "outline", "small", "loud"] }]);
+    // The same list under its name before, for readers of this version; a theme written with `elements` gives both too.
+    expect(inspected.theme!.components).toEqual(inspected.theme!.elements);
+    const now = inspect(<Email theme={defineTheme({ elements: { Button: { variants: { red: { color: "#ff0000" } } } } })}><Text>a</Text></Email>).theme!;
+    expect([now.elements, now.components]).toEqual([[{ type: "Button", variants: ["red"] }], [{ type: "Button", variants: ["red"] }]]);
     expect(inspected.nodes[1].given).toEqual(["props.href", "variant"]);
     expect(inspect(<Email><Text>a</Text></Email>).theme).toBeNull();
   });

@@ -3,7 +3,7 @@ title: "Page"
 description: "What a Page root renders to: semantic HTML and flexbox with inline styles, a small stylesheet for phones and hover, no client JavaScript, ready to embed."
 ---
 
-A `<Page>` root renders to a responsive web page: one element per component, semantic tags, inline styles and flexbox. Use it for the web version of an email, a receipt behind a login, or a landing page you generate on the server.
+A `<Page>` root renders to a responsive web page: one HTML element per element, semantic tags, inline styles and flexbox. Use it for the web version of an email, a receipt behind a login, or a landing page you generate on the server.
 
 ```tsx
 import { Button, Column, Heading, Page, Text, Row, render } from "@hyper-elements/react";

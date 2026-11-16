@@ -912,7 +912,7 @@ async function migrateFile(input: Input, options: Options, lib: Library, io: Io,
     try {
       converted = await lib.convertSource(source, { fileName: file, tailwindConfig: tailwind?.config, tailwind: tailwind?.component, loadModule: await moduleLoader(file) });
     } catch (error) {
-      // Converted, but what it's written as can't be moved to the new components (the codemod's own reason).
+      // Converted, but what it's written as can't be moved to the new elements (the codemod's own reason).
       if ((error as Error | undefined)?.name === "NewComponentsError") return { file: name, status: "failed", reason: message(error) };
       return { file: name, status: "failed", reason: convertFailure(message(error)) };
     }
@@ -951,7 +951,7 @@ async function migrateFile(input: Input, options: Options, lib: Library, io: Io,
       const migrated = templateComponent(defaultExport(await importFile(probe, io, release, file)));
       // Checked as exported (memo and forwardRef included), the way users render it.
       const Migrated = migrated?.exported;
-      if (!Migrated) return { file: name, status: "failed", reason: "the template written in the new components has no default export" };
+      if (!Migrated) return { file: name, status: "failed", reason: "the template written in the new elements has no default export" };
       // The migrated preview props are the original's with their JSX converted (classes become styles): the design uses them.
       const designProps = Object.keys(migrated.props).length ? migrated.props : props;
       verification = writtenWords(await lib.verifyNewComponents(Original, Migrated as (props: unknown) => ReturnType<typeof Original>, { props, designProps, fonts: converted.fonts }));
@@ -983,7 +983,7 @@ async function migrateFile(input: Input, options: Options, lib: Library, io: Io,
 
     const report = converted.report;
     // Content the migration lost or added (or the editor wouldn't get) fails it: that's a converter bug, or something the
-    // new components can't hold. How it looks only differs: written and listed, to fix in the editor (not with --strict).
+    // new elements can't hold. How it looks only differs: written and listed, to fix in the editor (not with --strict).
     const lostShown = report.lostShown ?? [];
     const failsContent = contentProblems({ ...verification, lostShown }).length || verification.designWarnings.length || verification.variants.some((v) => v.error || contentProblems(v).length);
     const lostLooks = (report.lostStyles ?? []).filter((style) => !lostShown.includes(style));
@@ -991,7 +991,7 @@ async function migrateFile(input: Input, options: Options, lib: Library, io: Io,
       ...lookProblems(verification),
       ...phoneWidths(verification.originalHtml),
       ...(lostLooks.length ? [`lost styles: ${lostLooks.join("; ")}`] : []),
-      // Columns the new components write one under another (their layout comes from code): they move.
+      // Columns the new elements write one under another (their layout comes from code): they move.
       ...converted.stacked.map((line) => `columns written one under another: ${line}`),
       ...verification.variants.filter((v) => !v.error && !contentProblems(v).length).map((v) => `with ${v.change}: ${lookProblems(v).join("; ")}`),
     ];
@@ -1008,7 +1008,7 @@ async function migrateFile(input: Input, options: Options, lib: Library, io: Io,
       changes: group([
         ...(report.info ?? []),
         ...(mergeTags?.used.length ? [{ reason: "text props became merge tags in the design JSON", detail: mergeTags.used.join(", ") }] : []),
-        ...converted.notes.filter((line) => !converted.stacked.includes(line)).map((detail) => ({ reason: "in the new components", detail })),
+        ...converted.notes.filter((line) => !converted.stacked.includes(line)).map((detail) => ({ reason: "in the new elements", detail })),
         ...verification.designNotes.map((detail) => ({ reason: "in the visual editor", detail })),
         ...(mergeTags?.kept ?? []).map((path) => ({ reason: "text prop kept as its sample value in the design JSON (the template changes or tests it, or an image shows it)", detail: path })),
       ]),
@@ -1071,7 +1071,7 @@ async function compare(paths: string[], args: Args, io: Io, library?: Library): 
     const names = old.filter((name) => !name.startsWith("@"));
     const what = [...(names.length ? [`${names.join(", ")} from ${OLD_ELEMENTS}`] : []), ...old.filter((name) => name.startsWith("@"))];
     io.stderr(
-      `${relative(io.cwd, migratedPath)} is written in Unlayer Elements' components (it imports ${what.join(", and ")}), which Hyper Elements doesn't have. Move it to the new components, then compare:\n` +
+      `${relative(io.cwd, migratedPath)} is written in Unlayer Elements' components (it imports ${what.join(", and ")}), which Hyper Elements doesn't have. Move it to the new elements, then compare:\n` +
         `  npx @hyper-elements/migrate --from unlayer-elements ${migrated} --write\n` +
         `  npx @hyper-elements/migrate compare ${original} ${migrated}\n`
     );

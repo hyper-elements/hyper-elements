@@ -11,7 +11,7 @@ Usage:
   hyper-elements outline <file> [options]
   hyper-elements preview <files or folders...> [options]
   hyper-elements inspect <files or folders...> [options]
-  hyper-elements describe [Component] [--root Email] [--json]
+  hyper-elements describe [Element] [--root Email] [--json]
   hyper-elements dev <files or folders...> [options]
   hyper-elements migrate [migrate's arguments...]
 
@@ -40,9 +40,9 @@ preview  writes each Email as the email clients draw it, one file per client
          folder (or --base). --findings opens each in Chromium and reports
          what it found. An HTML email (a .html or .htm file, or - for stdin,
          under out/clients/stdin/) is previewed as it is.
-inspect  lists what a template holds: each component, what it's given,
+inspect  lists what a template holds: each element, what it's given,
          whether its root takes it, and the problems found on it.
-describe lists the components a template can use (or one), with their props
+describe lists the elements a template can use (or one), with their props
          and styles; --root narrows it to what a root takes.
 migrate  runs @hyper-elements/migrate (the project's, else npx's) with the
          arguments given.
@@ -111,7 +111,7 @@ Runs on Node.js 20.6 or later (npx hyper-elements), or Bun 1.3 or later
 
 export interface Args {
   command: Command;
-  /** The files and folders given; `describe`'s component; every argument after `migrate`, unchanged. */
+  /** The files and folders given; `describe`'s element; every argument after `migrate`, unchanged. */
   positional: string[];
   out: string;
   /** render, preview: the folder outputs keep their path relative to (the current folder where it isn't given). */
@@ -296,7 +296,7 @@ export function parseArgs(argv: string[]): Args {
     return args;
   }
   if (args.command === "describe") {
-    if (positional.length > 1) throw new UsageError("describe takes one component, or none for all of them.");
+    if (positional.length > 1) throw new UsageError("describe takes one element, or none for all of them.");
     return args;
   }
   if (!positional.length) throw new UsageError(`Give ${command} the templates: files or folders.`);

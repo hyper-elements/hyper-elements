@@ -3,9 +3,9 @@ title: "From Unlayer Elements"
 description: "Move templates written with Unlayer Elements to Hyper Elements with a codemod that keeps your props, loops and helpers."
 ---
 
-Hyper Elements is a new package. It doesn't include the components of Unlayer Elements, `@unlayer/react-elements` (`ColumnLayouts`, `html` props, `renderToHtml()`), so templates written with them have to move, and nothing changes until they do. A codemod rewrites them with the new components. It rewrites the imports and the JSX, and nothing else: your props, loops, conditions, helpers and constants stay as they are.
+Hyper Elements is a new package. It doesn't include the components of Unlayer Elements, `@unlayer/react-elements` (`ColumnLayouts`, `html` props, `renderToHtml()`), so templates written with them have to move, and nothing changes until they do. A codemod rewrites them with the new elements. It rewrites the imports and the JSX, and nothing else: your props, loops, conditions, helpers and constants stay as they are.
 
-A template uses one set of components or the other, never both. Move a template whole.
+A template uses the old components or the new elements, never both. Move a template whole.
 
 ## Run the codemod
 
@@ -42,7 +42,7 @@ import { migrateElements } from "@hyper-elements/migrate/elements";
 const { code, report } = await migrateElements(source);
 ```
 
-A module that comes back as it was because it's already on the new components has `current: true`.
+A module that comes back as it was because it's already on the new elements has `current: true`.
 
 ## Before and after
 
@@ -89,7 +89,7 @@ The new template draws what the old one drew. Unlayer Elements' components fille
 
 ## What it writes
 
-| Older components | New components |
+| Older components | New elements |
 |---|---|
 | `Email`'s 500px, black text, Arial | `width={500}`, and the color and font in `style` |
 | A block's 10px of padding (`containerPadding`) | `padding: 10` on the block, or on a `Column` around an `Image`, `Button`, `Social`, `Menu` or `Video` |
@@ -119,7 +119,7 @@ The codemod never drops anything quietly. It lists, with the line:
 
 - a value it can't read from the source (an expression) where the old components drew something other than it says: an image's width, a `Row`'s padding, phone settings;
 - `html` from an expression: it's written as text, so markup in it would show;
-- markup the new components don't write, each named (an image with its `src` and `alt`, a list's bullets, a style declaration and the tag it was on, a tag they have no run for), with the text in it kept;
+- markup the new elements don't write, each named (an image with its `src` and `alt`, a list's bullets, a style declaration and the tag it was on, a tag they have no run for), with the text in it kept;
 - a text block's source the old one didn't draw (a `Paragraph`'s `html` beside its children);
 - `Column`s whose borders or backgrounds the old components stretched to their `Row`'s height;
 - a horizontal `Menu` of links written out, which becomes a wrapping `Row` of its links and separators so it draws the same (a `Menu` worked out at run time, or a vertical one, stays a `Menu`);
@@ -129,9 +129,9 @@ The codemod never drops anything quietly. It lists, with the line:
 
 ## What to check by hand
 
-- **Rendering.** The new components render with `await render(element)`, which is async, in place of `renderToHtml()`. Update every caller.
+- **Rendering.** The new elements render with `await render(element)`, which is async, in place of `renderToHtml()`. Update every caller.
 - **Notes.** Read every line of the report. Each one names a place where the output may differ or where you have work to do.
-- **Custom tools.** Rewrite each one marked with a comment, with the new components or `component()`.
+- **Custom tools.** Rewrite each one marked with a comment, with the new elements or `defineElement()`.
 - **Values from expressions.** Image widths, `Row` padding and phone settings from code weren't read. Check them.
 - **Markup in values.** `html` and table values from code are now text. If they held markup, rewrite them as `Span`s and `Link`s.
 - **Runtime roots.** A template with `const Root = web ? Page : Email` wasn't changed. Write it with one root.

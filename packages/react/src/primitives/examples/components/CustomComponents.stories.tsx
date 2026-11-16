@@ -1,12 +1,12 @@
 /**
- * Custom components for Long Shelf (a fictional independent bookshop): a countdown to a sale, a
+ * Elements made with defineElement() for Long Shelf (a fictional independent bookshop): a countdown to a sale, a
  * book's card, a reader's rating and a whole band. Warm paper, near-black ink and a bookcloth green.
  * Cormorant Garamond for the voice, Instrument Sans for the facts, DM Mono for the quiet notes.
  */
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { ReactElement } from "react";
 import { args, argTypes, asEmailAndPage, type Args } from "../../../stories/SideBySide";
-import { Button, Column, component, Divider, Email, Heading, Image, Text, prop, Row, Section, type EmailProps } from "../../index";
+import { Button, Column, defineElement, Divider, Email, Heading, Image, Text, prop, Row, Section, type EmailProps } from "../../index";
 
 const PAPER = "#F7F3EA";
 const CARD = "#FFFDF8";
@@ -36,7 +36,7 @@ const root: Pick<EmailProps, "fonts" | "style"> = {
 
 /** Small mono capitals: labels. */
 const label = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, letterSpacing: 1, textTransform: "uppercase", color: QUIET } as const;
-/** A quiet mono note on what a component does. */
+/** A quiet mono note on what an element does. */
 const note = { fontFamily: MONO, fontSize: 12, lineHeight: 1.5, color: QUIET } as const;
 const serif = (fontSize: number) => ({ fontFamily: SERIF, fontWeight: 500, fontSize, lineHeight: 1.08, letterSpacing: -0.3 }) as const;
 
@@ -60,20 +60,20 @@ const meta: Meta<Args> = {
     docs: {
       description: {
         component:
-          "`component()` names a block made of other components, with typed props: `prop.text`, `prop.color`, `prop.image`, `prop.link`, `prop.number`, `prop.choice`, `prop.boolean`. It's kept as one node in the document, and drawn from its `render` as an Email and as a Page. \"Show code\" has its definition and how it's used.",
+          "`defineElement()` names a block made of other elements, with typed props: `prop.text`, `prop.color`, `prop.image`, `prop.link`, `prop.number`, `prop.choice`, `prop.boolean`. It's kept as one node in the document, and drawn from its `render` as an Email and as a Page. \"Show code\" has its definition and how it's used.",
       },
     },
   },
 };
 export default meta;
 
-/** A story of a template with a custom component: "Show code" has the definition, which a template alone doesn't. */
+/** A story of a template with an element of its own: "Show code" has the definition, which a template alone doesn't. */
 const story = (code: string, template: (Root: typeof Email) => ReactElement): StoryObj<Args> => ({
   ...asEmailAndPage(template),
   parameters: { docs: { source: { code, language: "tsx" } } },
 });
 
-const Countdown = component({
+const Countdown = defineElement({
   type: "longshelf.Countdown",
   label: "Countdown",
   props: {
@@ -106,9 +106,9 @@ const Countdown = component({
 
 /** A countdown from its props: with their defaults, and with its own. */
 export const CountdownTimer = story(
-  `import { Column, component, Email, Heading, prop, Row, Section, Text } from "@hyper-elements/react";
+  `import { Column, defineElement, Email, Heading, prop, Row, Section, Text } from "@hyper-elements/react";
 
-const Countdown = component({
+const Countdown = defineElement({
   type: "longshelf.Countdown",
   label: "Countdown",
   props: {
@@ -159,7 +159,7 @@ const jacket = (table: string, cloth: string, ink: string, title: string, motif:
 const LOW_WATER = jacket("#E7DFCF", "#254653", "#F3E9D2", "Low Water", `<circle cx="300" cy="124" r="52" fill="#E2B04A"/><path d="M196 196q26-20 52 0t52 0 52 0 52 0v172H196Z" fill="#17323D"/><path d="M196 234q26-20 52 0t52 0 52 0 52 0" fill="none" stroke="#F3E9D2" stroke-width="2"/>`);
 const ORCHARD_YEAR = jacket("#E4E2D2", "#E9DFC6", "#2E3B24", "The Orchard Year", `<circle cx="300" cy="136" r="78" fill="#5C6B3C"/><rect x="294" y="196" width="12" height="84" fill="#3E2E20"/><circle cx="272" cy="118" r="10" fill="#B54A33"/><circle cx="322" cy="104" r="10" fill="#B54A33"/><circle cx="332" cy="154" r="10" fill="#B54A33"/><circle cx="284" cy="160" r="10" fill="#B54A33"/>`);
 
-const BookCard = component({
+const BookCard = defineElement({
   type: "longshelf.BookCard",
   label: "Book card",
   props: {
@@ -190,9 +190,9 @@ const BookCard = component({
 
 /** A book card: a required jacket and link, and a color and a button's words with defaults. Two sit in a `Row`, one with a larger `flex`. */
 export const ProductCards = story(
-  `import { Button, Column, component, Email, Heading, Image, Text, prop, Row, Section } from "@hyper-elements/react";
+  `import { Button, Column, defineElement, Email, Heading, Image, Text, prop, Row, Section } from "@hyper-elements/react";
 
-const BookCard = component({
+const BookCard = defineElement({
   type: "longshelf.BookCard",
   label: "Book card",
   props: {
@@ -247,7 +247,7 @@ const template = (
   )
 );
 
-const Rating = component({
+const Rating = defineElement({
   type: "longshelf.Rating",
   label: "Rating",
   props: {
@@ -273,9 +273,9 @@ const review = (rating: ReactElement, words: string, from: string) => (
 
 /** A rating worked out from its props in `render`: a number, a choice of sizes, and a switch. */
 export const WorkedOutFromProps = story(
-  `import { component, Email, prop, Section, Text } from "@hyper-elements/react";
+  `import { defineElement, Email, prop, Section, Text } from "@hyper-elements/react";
 
-const Rating = component({
+const Rating = defineElement({
   type: "longshelf.Rating",
   label: "Rating",
   props: {
@@ -319,7 +319,7 @@ const template = (
   )
 );
 
-const Hero = component({
+const Hero = defineElement({
   type: "longshelf.Hero",
   label: "Hero",
   placement: "section",
@@ -338,11 +338,11 @@ const Hero = component({
   ),
 });
 
-/** `placement: "section"` makes a custom component a band of its own: it goes where a `Section` goes, and renders one. */
+/** `placement: "section"` makes an element a band of its own: it goes where a `Section` goes, and renders one. */
 export const AWholeSection = story(
-  `import { component, Email, Heading, Text, prop, Section } from "@hyper-elements/react";
+  `import { defineElement, Email, Heading, Text, prop, Section } from "@hyper-elements/react";
 
-const Hero = component({
+const Hero = defineElement({
   type: "longshelf.Hero",
   label: "Hero",
   placement: "section",

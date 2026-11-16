@@ -6,7 +6,7 @@ import { components } from "../lib/examples";
 const order = ["Layout", "Text", "Blocks", "Data", "Drawing"];
 const all = Object.values(components);
 const groups = order.map((g) => ({ title: g, id: g.toLowerCase(), items: all.filter((c) => c.group === g) })).filter((g) => g.items.length);
-// The components without a gallery preview of their own, by what they're for.
+// The elements without a gallery preview of their own, by what they're for.
 const rest = [
   { label: "Roots", items: ["Email", "Page", "Document", "Canvas"] },
   { label: "Inline text", items: ["Span", "Link", "LineBreak", "MergeTag"] },
@@ -14,16 +14,16 @@ const rest = [
   { label: "Drawing and markup", items: ["Rect", "Circle", "Path", "Html"] },
 ];
 ---
-<Base title="Component gallery" description="Every Hyper Elements component, rendered live by the engine: layout, text, blocks, data and drawing.">
+<Base title="Element gallery" description="Every element in Hyper Elements, rendered live by the engine: layout, text, blocks, data and drawing.">
   <section class="c-hero">
     <div class="wrap c-hero-inner">
-      <h1 class="h-page"><span class="grad">Components</span></h1>
-      <p class="lede">The components for emails, web pages, PDFs and images. Each preview is rendered by Hyper Elements.</p>
+      <h1 class="h-page"><span class="grad">Elements</span></h1>
+      <p class="lede">The elements for emails, web pages, PDFs and images. Each preview is rendered by Hyper Elements.</p>
     </div>
   </section>
 
   <div class="wrap" data-gallery>
-    <div class="c-tabs" role="tablist" aria-label="Filter components">
+    <div class="c-tabs" role="tablist" aria-label="Filter elements">
       <button type="button" role="tab" aria-selected="true" data-filter="all">All <span>{all.length}</span></button>
       {groups.map((g) => <button type="button" role="tab" aria-selected="false" data-filter={g.id}>{g.title} <span>{g.items.length}</span></button>)}
     </div>

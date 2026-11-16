@@ -81,9 +81,9 @@ export default function ComponentGallery() {
 
       <div className="relative">
         <SectionHeader
-          badge="Components"
-          title="14+ components, infinite possibilities"
-          description="Everything you need to build emails, landing pages, and documents. Each component renders clean, semantic output across all modes."
+          badge="Elements"
+          title="14+ elements, infinite possibilities"
+          description="Everything you need to build emails, landing pages, and documents. Each element renders clean, semantic output across all modes."
         />
 
         <div className="max-w-6xl mx-auto">
@@ -105,7 +105,7 @@ export default function ComponentGallery() {
                   </div>
                   <h3 className="text-lg font-semibold text-text-primary">{group}</h3>
                   <span className="text-xs text-text-tertiary glass-card px-2.5 py-1 rounded-md">
-                    {items.length} component{items.length !== 1 ? "s" : ""}
+                    {items.length} element{items.length !== 1 ? "s" : ""}
                   </span>
                 </div>
 

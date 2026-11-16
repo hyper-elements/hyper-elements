@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
     for (const d of docs.filter((x) => x.group === g)) lines.push(`- [${d.entry!.data.title}](${abs(d.slug)}): ${d.entry!.data.description}`);
     lines.push("");
   }
-  lines.push("## Components\n", `- [Components](${abs("components")}): how every component takes its props and its style, and the full list`);
+  lines.push("## Elements\n", `- [Elements](${abs("components")}): how every element takes its props and its style, and the full list`);
   for (const r of reference) lines.push(`- [${r.data.title}](${abs(`components/${r.id}`)}): ${r.data.summary}`);
   // Each template's page has its full source, rendered output and diagnostics.
   lines.push("", "## Templates\n");
@@ -25,7 +25,7 @@ export const GET: APIRoute = async () => {
   lines.push(
     "",
     "## Optional\n",
-    `- [Everything in one file](${site.url}/llms-full.txt): every docs page, developer tutorial and the full component reference`,
+    `- [Everything in one file](${site.url}/llms-full.txt): every docs page, developer tutorial and the full element reference`,
     `- [For AI agents](${site.url}/ai): how Hyper Elements is built for coding agents`,
     `- [email-testing skill](${site.url}/skills/email-testing.md): the agent skill to preview and check any email in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail, with each client's screenshot`,
     `- [hyper-elements skill](${site.url}/skills/hyper-elements.md): the agent skill to write Hyper Elements templates`,

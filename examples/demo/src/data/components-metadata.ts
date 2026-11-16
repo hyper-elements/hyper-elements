@@ -68,7 +68,7 @@ export const componentsMeta: ComponentMeta[] = [
   },
   {
     name: "Html",
-    description: "Markup written as it is, for what no component says",
+    description: "Markup written as it is, for what no element says",
     code: `<Html html="<div class='custom'>Custom HTML</div>" />`,
     group: "Content",
   },

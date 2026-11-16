@@ -1,6 +1,6 @@
 # One React invoice template to email, web, and PDF
 
-Use `@hyper-elements/react` when a receipt or invoice needs an email, a browser view, and a downloadable PDF with the same content. Write the content once with the components from `@hyper-elements/react`, and select `Email`, `Page`, or `Document` as its root. `await render(element)` writes the HTML that root asks for. Playwright prints the document HTML to a PDF, or [`@hyper-elements/react/pdf`](./react-to-pdf.md#without-a-browser) writes one without a browser.
+Use `@hyper-elements/react` when a receipt or invoice needs an email, a browser view, and a downloadable PDF with the same content. Write the content once with the elements from `@hyper-elements/react`, and select `Email`, `Page`, or `Document` as its root. `await render(element)` writes the HTML that root asks for. Playwright prints the document HTML to a PDF, or [`@hyper-elements/react/pdf`](./react-to-pdf.md#without-a-browser) writes one without a browser.
 
 ## Install and run
 

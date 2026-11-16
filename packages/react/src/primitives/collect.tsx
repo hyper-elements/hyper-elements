@@ -151,7 +151,7 @@ function read(html: string, collection: PrimitiveCollection, diagnostics: Diagno
       diagnostics.push({
         code: "jsx/markup",
         severity: "error",
-        message: `HTML ${where} isn't part of an Elements document: use the primitives (Text, Link, Image, …) instead of ${JSON.stringify(between.slice(0, 60))}. Every component: @hyper-elements/react/GUIDE.md`,
+        message: `HTML ${where} isn't part of an Elements document: use the primitives (Text, Link, Image, …) instead of ${JSON.stringify(between.slice(0, 60))}. Every element: @hyper-elements/react/GUIDE.md`,
         path: "jsx",
       });
       return;
@@ -258,7 +258,7 @@ export function collectNodes(element: React.ReactElement): {
     diagnostics.push({
       code: "custom/duplicate",
       severity: "error",
-      message: `Two different custom components are named ${type}. If component() ran more than once (inside a function or a component, or in a module loaded twice), call it once, at the top of a module; if they're different components, give each its own type`,
+      message: `Two different elements made with defineElement() are named ${type}. If defineElement() ran more than once (inside a function or a component, or in a module loaded twice), call it once, at the top of a module; if they're different elements, give each its own type`,
       path: "jsx",
     });
   }

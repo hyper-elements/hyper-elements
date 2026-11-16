@@ -12,14 +12,16 @@ import ts from "typescript";
 const PACKAGE = resolve(__dirname, "../..");
 const BUILT = existsSync(join(PACKAGE, "dist/primitives.d.ts"));
 
+// Written with the names after the rename (`elements`, `defineElement()`); UNREGISTERED and EXTENDED keep the names
+// before (`components`, `component()`), which are still typed.
 const REGISTERED = `
-import { component, defineTheme, prop, token, Button, Email, Heading, Text } from "@hyper-elements/react";
+import { defineElement, defineTheme, prop, token, Button, Email, Heading, Text, type VariantName } from "@hyper-elements/react";
 
 export const brand = defineTheme({
   colors: { primary: "#000000", link: "{colors.primary}", gray: { 900: "#111111" } },
   radii: { card: { topLeft: 4, topRight: 4 } },
   styles: { card: { padding: 8 } },
-  components: { Button: { variants: { secondary: { color: "{colors.primary}" } } }, Heading: { by: { level: { 1: { fontSize: 40 } } } } },
+  elements: { Button: { variants: { secondary: { color: "{colors.primary}" } } }, Heading: { by: { level: { 1: { fontSize: 40 } } } } },
 });
 
 declare module "@hyper-elements/react" {
@@ -43,10 +45,12 @@ export const ok = (
 );
 // @ts-expect-error Not one of the Button's variants.
 export const variant = <Button href="https://example.com" variant="tertiary">a</Button>;
+// For each element named: the Button's, and the Heading has none.
+export const either: VariantName<"Button" | "Heading"> = "secondary";
 // @ts-expect-error Not one of the theme's named styles.
 export const named = <Text style={{ apply: ["crad"] }}>a</Text>;
 
-export const Card = component({
+export const Card = defineElement({
   type: "acme.Card",
   label: "Card",
   props: { tint: prop.color({ label: "Tint" }) },
@@ -91,7 +95,8 @@ export const brand = extendTheme(base, {
   colors: { primary: "#ffffff", gray: { 900: "#000000" }, accent: "#ff0000" },
   fonts: { body: ["Inter", "Arial"] },
   radii: { card: { topLeft: 8 } },
-  components: { Button: { variants: { ghost: { color: "{colors.accent}" } } } },
+  // The new name over a theme written with the one before: the Button has both sets of variants.
+  elements: { Button: { variants: { ghost: { color: "{colors.accent}" } } } },
 });
 
 declare module "@hyper-elements/react" {

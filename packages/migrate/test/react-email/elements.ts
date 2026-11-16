@@ -1,5 +1,5 @@
 /**
- * A migrated template rendered as users render it: its HTML with the new components' render(), and the design JSON the
+ * A migrated template rendered as users render it: its HTML with the new elements' render(), and the design JSON the
  * visual editor opens, with toDesign().
  */
 import type React from "react";

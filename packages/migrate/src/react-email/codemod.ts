@@ -8,7 +8,7 @@
  * classes); what can't be read is reported.
  *
  * The template is written in Elements 0.2's components first, as source
- * text, and moved to the new components at once (`toNewComponents`, in
+ * text, and moved to the new elements at once (`toNewComponents`, in
  * ../convert): today's components are never run.
  */
 
@@ -164,11 +164,11 @@ const MARKS = [
 ];
 
 export interface CodemodResult {
-  /** The template in the new components. */
+  /** The template in the new elements. */
   code: string;
   /**
    * The template as the converter wrote it first, in Elements 0.2's components (source text, never run): what the
-   * codemod moved to the new components.
+   * codemod moved to the new elements.
    */
   intermediate: string;
   report: ConversionReport;
@@ -176,7 +176,7 @@ export interface CodemodResult {
   helpers: string[];
   /** The web fonts' stylesheets the template loads (its head's links and imports, its `<Font>`s), for the editor. */
   fonts: Array<{ url: string }>;
-  /** What moving it to the new components may change, or left out: one line each, with where. */
+  /** What moving it to the new elements may change, or left out: one line each, with where. */
   notes: string[];
   /** Of those, the Rows whose Columns are written one under another (their layout comes from code): they move. */
   stacked: string[];
@@ -277,8 +277,8 @@ export async function convertSource(source: string, options: CodemodOptions = {}
     }
     for (const at of failed) unwritten.add(at);
   }
-  // In the new components (a NewComponentsError where it can't be), without the helpers only today's markup needed,
-  // and without what only a prop the new components don't take read (a constant for a background image), so a build
+  // In the new elements (a NewComponentsError where it can't be), without the helpers only today's markup needed,
+  // and without what only a prop the new elements don't take read (a constant for a background image), so a build
   // with noUnusedLocals still passes.
   const moved = await toNewComponents(todays.code, { typescript: !javascript });
   let code = await withoutUnusedHelpers(moved.code);
@@ -1435,7 +1435,7 @@ class Converter {
 
   /**
    * An attribute that's text (an image's alt): code whose value may not be text (an element, a number, untyped) as the
-   * text React writes for it (`plainText`), as the new components take only text there.
+   * text React writes for it (`plainText`), as the new elements take only text there.
    */
   private textAttr(jsx: Jsx, name: string): unknown {
     const value = this.attr(jsx, name);

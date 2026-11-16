@@ -7,8 +7,11 @@ export default defineConfig({
   site: "https://www.hyperelements.dev",
   trailingSlash: "never",
   build: { format: "directory" },
-  // The guide's old address, already on the live site.
-  redirects: { "/docs/migrate/elements": "/docs/migrate/unlayer-elements" },
+  // Old addresses, already on the live site.
+  redirects: {
+    "/docs/migrate/elements": "/docs/migrate/unlayer-elements",
+    "/docs/custom-components": "/docs/defining-elements",
+  },
   // The playground's sandbox runtime, served beside its page (scripts/playground-integration.mjs).
   integrations: [sitemap(), playground()],
   markdown: {

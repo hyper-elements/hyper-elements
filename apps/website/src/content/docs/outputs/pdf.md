@@ -154,6 +154,6 @@ A `Video` shows its thumbnail where its file is given (its own, or a YouTube vid
 
 - **Nothing flows from one page to the next.** Content taller than its page is cut off, and you get `document/overflow`. Split it with a `PageBreak` or into `Document.Page`s, and test with your longest real data.
 - **WOFF2 isn't drawn.** react-pdf would embed its letters blank. Give TTF, OTF or WOFF.
-- **SVG images aren't drawn.** Give a PNG or JPEG. An `Svg` component is drawn as vectors.
+- **SVG images aren't drawn.** Give a PNG or JPEG. An `Svg` element is drawn as vectors.
 - **The standard PDF fonts draw Western European characters only.** Whether a font file you give has every character isn't checked.
 - **No hover and no video player.** A Button shows its own colors, a Video its thumbnail or title.

@@ -164,7 +164,7 @@ export class Checks {
     const paths = this.result?.outlinePaths;
     host.replaceChildren(
       ...outline.split("\n").map((line, index) => {
-        // "  Heading h1 536px "Words"": the indent, the component, the rest.
+        // "  Heading h1 536px "Words"": the indent, the element, the rest.
         const [, indent, type, rest] = /^(\s*)([\w.]+)(.*)$/.exec(line) ?? [null, "", line, ""];
         const pick: Pick = { path: paths?.[index], tone: "info" };
         return h(

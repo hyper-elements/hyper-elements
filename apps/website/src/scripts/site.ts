@@ -172,7 +172,7 @@ matchMedia("(prefers-color-scheme: light)").addEventListener("change", (e) => {
   if (!picked) root.dataset.theme = e.matches ? "light" : "dark";
 });
 
-// ⌘K search over the docs and components (/search.json, loaded on first open).
+// ⌘K search over the docs and elements (/search.json, loaded on first open).
 const dialog = document.querySelector<HTMLDialogElement>("[data-search]");
 const input = document.querySelector<HTMLInputElement>("[data-search-input]");
 const list = document.querySelector<HTMLUListElement>("[data-search-results]");

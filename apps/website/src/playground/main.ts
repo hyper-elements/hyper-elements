@@ -163,7 +163,7 @@ const editor = new Editor({
 
 // ─── Where things are in the code ──────────────────────────────────────────
 
-/** The line of the component at `path`, or of the nearest one that holds it. */
+/** The line of the element at `path`, or of the nearest one that holds it. */
 function lineOf(path: string | undefined, result = state.result): number | undefined {
   if (!path || !result) return undefined;
   const lines = new Map(result.nodes.map((node) => [node.path, node.line]));
@@ -171,7 +171,7 @@ function lineOf(path: string | undefined, result = state.result): number | undef
   return undefined;
 }
 
-/** The component the code's `line` is in: the last one that starts at or before it. */
+/** The element the code's `line` is in: the last one that starts at or before it. */
 function nodeAt(line: number): string | undefined {
   if (editor.code !== state.goodCode) return undefined;
   let found: string | undefined;
@@ -379,7 +379,7 @@ function setStatus(status: "loading" | "rendering" | "ok" | "error") {
     const counts = checks.counts();
     const notes = [counts.warning && plural(counts.warning, "warning"), counts.info && plural(counts.info, "note")].filter(Boolean).join(", ");
     text.textContent = `Rendered in ${result.ms} ms${notes ? ` · ${notes}` : ""}`;
-    meta.textContent = [result.html && `${bytes(new Blob([result.html]).size)} HTML`, plural(result.nodes.length, "component")].filter(Boolean).join(" · ");
+    meta.textContent = [result.html && `${bytes(new Blob([result.html]).size)} HTML`, plural(result.nodes.length, "element")].filter(Boolean).join(" · ");
   } else {
     const errors = result.diagnostics.filter((d) => d.severity === "error").length;
     text.textContent = result.error?.kind === "template" ? `${plural(errors || 1, "error")} to fix: each says what to write instead` : result.error?.kind === "syntax" ? `Syntax error${result.error.line ? ` on line ${result.error.line}` : ""}` : (result.error?.message ?? "Didn't render");
@@ -1151,7 +1151,7 @@ void document.fonts?.ready.then(drawRoots);
 addEventListener("resize", drawRoots);
 
 const started = start();
-// Once it's up, what the editor completes: each component, its props and its styles, as the engine's definitions say.
+// Once it's up, what the editor completes: each element, its props and its styles, as the engine's definitions say.
 void started.then(async () => {
   const described = await sandbox.run({ kind: "describe", code: "" }, [], "describe");
   if (described.components) editor.setVocabulary({ components: described.components });

@@ -7,4 +7,4 @@
 
 In a Document, where a page ends: what follows starts the next page.
 
-Holds: nothing. Drawn in: page.
+Holds: nothing. Only in a Document.

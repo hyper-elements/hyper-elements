@@ -1,5 +1,5 @@
 /**
- * A legacy Paragraph's or Heading's `html`, the markup today's components draw as it is, as the new components'
+ * A legacy Paragraph's or Heading's `html`, the markup today's components draw as it is, as the new elements'
  * children (JSX source): <b>/<strong>, <i>/<em>, <u>, <s>, <sup>, <sub>, <span style> and <a href style> become Span
  * and Link, <br> a LineBreak, and paragraphs (<p>) and other blocks (<div>, <li>, ...) lines of their own; entities
  * are decoded. What a run of text can't hold (an image, a list's bullets, a style such as line-height) is left out,
@@ -15,7 +15,7 @@ const ATTRIBUTE = /([a-zA-Z][a-zA-Z0-9:-]*)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\
 const COMMENT = /<!--[\s\S]*?-->/g;
 const NOT_TEXT = /<\s*(style|script|title|head)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi;
 
-/** A CSS length as the new components read it: rem and em (at 16px, or `em`) in px; a width that follows the window at a phone's (375px, never below 0). */
+/** A CSS length as the new elements read it: rem and em (at 16px, or `em`) in px; a width that follows the window at a phone's (375px, never below 0). */
 export function inPx(value: string, em = 16): string {
   return value
     .replace(/calc\(\s*(-?[\d.]+)px\s*([-+])\s*([\d.]+)vw\s*\)/g, (_, base: string, sign: string, share: string) => `${Math.max(0, Math.round(Number(base) + (sign === "-" ? -1 : 1) * Number(share) * 3.75))}px`)
@@ -37,7 +37,7 @@ const RUN_STYLES: Record<string, string> = {
   "text-transform": "textTransform",
 };
 
-/** Font weights by name, as the new components take them. */
+/** Font weights by name, as the new elements take them. */
 const WEIGHTS: Record<string, number | string> = { normal: "normal", bold: "bold", bolder: 700, lighter: 100 };
 
 /** Tags whose content is a run of text, with the style each gives it. */
@@ -87,7 +87,7 @@ function runStyle(css: string | undefined, expression: (value: string) => string
       continue;
     }
     if (key === "fontWeight" && !HOLE.test(value)) {
-      // 100 to 900 in hundreds, normal or bold, as the new components take it (bolder and lighter as beside normal text).
+      // 100 to 900 in hundreds, normal or bold, as the new elements take it (bolder and lighter as beside normal text).
       const weight = WEIGHTS[value.toLowerCase()] ?? (/^\d+$/.test(value) ? Math.min(900, Math.max(100, Math.round(Number(value) / 100) * 100)) : undefined);
       if (weight === undefined) dropped.push(`${property.trim()}: ${value}`);
       else entries.push(`${key}: ${JSON.stringify(weight)}`);
