@@ -154,7 +154,7 @@ jobs:
       # 506,000 for a Document's Table as the builder's table and back (about 11KB
       # to write it, 9.5KB to read it, 2.5KB of the table's defaults, 2KB beside them);
       # 509,500 for an Email's and a Page's Table as the builder's table where it draws
-      # it as it is, an HTML block with the reason said where it doesn't (3,367 bytes measured).
+      # it as it is, an HTML block with the reason said where it doesn't (3,431 bytes measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"

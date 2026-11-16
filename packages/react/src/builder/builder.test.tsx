@@ -50,6 +50,30 @@ describe("toDesign", () => {
     expect(report.filter((line) => line.includes("it's an HTML block")).map((line) => line.split(":")[0])).toEqual(["root.children[1]", "root.children[2]", "root.children[3].children[0].children[0]", "root.children[4]"]);
   });
 
+  it("writes an HTML block of the new engine's markup without the root's background, which the builder draws behind it", () => {
+    for (const Root of [Email, Page]) {
+      const { design } = toDesign(
+        <Root style={{ backgroundColor: "#f3f4f6" }}>
+          <Section style={{ backgroundColor: "#ffffff" }}>
+            <Table style={{ rowBorder: "1px solid #e5e7eb" }}>
+              <TableRow>
+                <TableCell>Ships</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell>Carrier</TableCell>
+              </TableRow>
+            </Table>
+          </Section>
+        </Root>
+      );
+      const [html] = blocks(design).filter((content) => content.type === "html");
+      expect(String(html.values.html)).toContain("Carrier");
+      // The block's own markup paints none of it: the builder draws the body's and the Section's color behind it.
+      expect(String(html.values.html)).not.toMatch(/f3f4f6/i);
+      expect(design.body.values.backgroundColor).toBe("#f3f4f6");
+    }
+  });
+
   it("writes an Html block as the builder's own HTML block, its plain text hidden", () => {
     const [html] = blocks(toDesign(<Email><Html html="<b>Sale</b>" text="Sale now" /></Email>).design);
     expect(html).toMatchObject({ type: "html", values: { html: '<div style="line-height:1.5"><b>Sale</b></div>', text: "Sale now", containerPadding: "0px" } });

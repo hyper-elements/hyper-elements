@@ -39,7 +39,10 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
   // The theme it sees where it is: the template's, with each scope around it in a Column of its tokens, read as they
   // are in place, so what a template's own component in it renders is themed as it was there.
   const placed = scopes.reduceRight<Node>((inner, tokens) => ({ type: "Column", tokens, children: [inner] }), Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own);
-  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [placed] };
+  // The root's text styles, not its background: the builder draws the body's color, and its rows' and columns', behind
+  // the block, so the block painting the body's over them would hide a Section's own.
+  const { backgroundColor: _, ...rootStyle } = root.style ?? {};
+  const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: rootStyle, children: [placed] };
   const { head, body } = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never });
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
   // A page's <main> is centered by its margins: in a flex box, which the builder may draw a block in, those shrink it to its words. It fills its block.
