@@ -100,7 +100,7 @@ describe.each(Object.entries(ROOTS))("%s", (_, Root) => {
 });
 
 describe("the builder's design", () => {
-  /** The values the builder takes as HTML: a text's, a heading's and a button's text, and an HTML block's markup. */
+  /** The values the builder takes as HTML: a text's, a heading's, a button's and a table cell's text, and an HTML block's markup. */
   const markupIn = (design: unknown): string[] => {
     const out: string[] = [];
     const visit = (value: unknown) => {
@@ -109,6 +109,10 @@ describe("the builder's design", () => {
         const { type, values } = value as { type?: string; values?: Record<string, unknown> };
         if (values && (type === "heading" || type === "button") && typeof values.text === "string") out.push(values.text);
         if (values && type === "paragraph" && typeof values.textJson === "string") out.push(textJsonHtml(values.textJson).html);
+        if (values && type === "table") {
+          const { headers = [], rows = [], footers = [] } = values.table as Record<string, Array<{ cells: Array<{ textJson?: unknown }> }>>;
+          for (const row of [...headers, ...rows, ...footers]) for (const cell of row.cells) if (typeof cell.textJson === "string") out.push(textJsonHtml(cell.textJson).html);
+        }
         if (values && type === "html" && typeof values.html === "string") out.push(values.html);
         Object.values(value).forEach(visit);
       }
