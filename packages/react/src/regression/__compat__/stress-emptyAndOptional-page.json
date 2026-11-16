@@ -21,10 +21,11 @@
     "u_content_paragraph": 7,
     "u_content_divider": 1,
     "u_content_button": 1,
-    "u_content_html": 2,
+    "u_content_table": 1,
     "u_content_menu": 1,
     "u_content_social": 1,
     "u_content_video": 1,
+    "u_content_html": 1,
     "u_content_image": 1
    },
    "body": {
@@ -291,19 +292,97 @@
           }
          },
          {
-          "type": "html",
+          "type": "table",
           "values": {
            "containerPadding": "14px 28px 0px",
-           "html": "<main style=\"width:100%;max-width:1144px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#000;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;flex-direction:column;color:#12242e;font-family:&#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif\"><table style=\"border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%\"><colgroup><col style=\"width:100%\"></colgroup><tbody><tr><td style=\"box-sizing:border-box;padding:0;vertical-align:top\">Oban to Stornoway, 08:30</td></tr></tbody></table></div></main>",
+           "table": {
+            "headers": [],
+            "rows": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Oban to Stornoway, 08:30\"}]}]}}",
+                "width": 100
+               }
+              ],
+              "height": 24
+             }
+            ],
+            "footers": []
+           },
+           "columns": 1,
+           "rows": 1,
+           "border": {
+            "borderTopWidth": "0px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "transparent",
+            "borderLeftWidth": "0px",
+            "borderLeftStyle": "solid",
+            "borderLeftColor": "transparent",
+            "borderRightWidth": "0px",
+            "borderRightStyle": "solid",
+            "borderRightColor": "transparent",
+            "borderBottomWidth": "0px",
+            "borderBottomStyle": "solid",
+            "borderBottomColor": "transparent"
+           },
+           "stripedRows": false,
+           "stripedRowsBackgroundColor": "#CCC",
+           "enableHeader": false,
+           "repeatHeaderOnEachPage": true,
+           "headerBackgroundColor": "",
+           "headerFontWeight": 400,
+           "headerFontSize": "16px",
+           "headerTextAlign": "left",
+           "headerVerticalAlign": "top",
+           "headerPadding": "0px",
+           "contentBackgroundColor": "",
+           "contentFontSize": "16px",
+           "contentTextAlign": "left",
+           "contentVerticalAlign": "top",
+           "contentLineHeight": "150%",
+           "contentPadding": "0px",
+           "enableFooter": false,
+           "repeatFooterOnEachPage": true,
+           "footerBackgroundColor": "",
+           "footerFontWeight": 400,
+           "footerFontSize": "16px",
+           "footerTextAlign": "left",
+           "footerVerticalAlign": "top",
+           "footerPadding": "0px",
+           "linkStyle": {
+            "body": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
            "_meta": {
-            "htmlID": "u_content_html_1",
-            "htmlClassNames": "u_content_html"
+            "htmlID": "u_content_table_1",
+            "htmlClassNames": "u_content_table"
            },
            "selectable": true,
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "headerFontFamily": {
+            "label": "Helvetica Neue",
+            "value": "'Helvetica Neue', Helvetica, Arial, sans-serif"
+           },
+           "headerColor": "#12242e",
+           "contentFontFamily": {
+            "label": "Helvetica Neue",
+            "value": "'Helvetica Neue', Helvetica, Arial, sans-serif"
+           },
+           "contentFontWeight": 400,
+           "contentColor": "#12242e",
+           "contentLetterSpacing": "0px",
+           "footerFontFamily": {
+            "label": "Helvetica Neue",
+            "value": "'Helvetica Neue', Helvetica, Arial, sans-serif"
+           },
+           "footerColor": "#12242e"
           }
          },
          {
@@ -404,7 +483,7 @@
            "containerPadding": "14px 28px 0px",
            "html": "<div style=\"color:#12242e;font-family:'Helvetica Neue', Helvetica, Arial, sans-serif;line-height:1.5\"><p style='margin:0'>Markup, written as it is.</p></div>",
            "_meta": {
-            "htmlID": "u_content_html_2",
+            "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -852,7 +931,6 @@
   },
   "report": [
    "root.children[1]: the builder's row has no place for mobile.padding: left out",
-   "root.children[1].children[6]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)",
    "root.children[1].children[11]: an image without its size (its src's width and height) takes its own size, and in the builder its column's width"
   ]
  }

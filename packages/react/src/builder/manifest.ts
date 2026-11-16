@@ -49,7 +49,7 @@ export const HIDDEN: Readonly<Record<string, readonly Hidden[]>> = {
   video: own("props.thumbnail", "props.title", "style.width", "style.maxWidth"),
   html: own("props.text"),
   page_break: [],
-  // A Table in a Document: its width (the builder's fills its column), how its cells' borders meet, and its line between
+  // A Table: its width (the builder's fills its column), how its cells' borders meet, and its line between
   // rows, which the builder's border draws around every row (it's read back as that line only while the border is it).
   table: [
     { path: "style.border", key: "tableBorder", prefixed: "the builder's table border is around every cell; a Table's is around the table" },

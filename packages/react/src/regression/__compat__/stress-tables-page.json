@@ -414,7 +414,7 @@
   },
   "report": [
    "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
-   "root.children[0].children[2]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)"
+   "root.children[0].children[2]: the builder's table doesn't draw it as it is (a line between rows only; a cell spanning columns; a border around it; a column of a fixed width): it's an HTML block of its own markup in the builder (it can be moved, not edited)"
   ]
  }
 }

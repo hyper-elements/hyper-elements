@@ -11,7 +11,7 @@ import type { Json, Node } from "@hyper-elements/core";
 import { readHidden } from "./hide";
 import { border as readBorderSides, color, font, fontWeight, givenId, hidden as hiddenOn, px, sides, type Sides, type Values } from "./read-values";
 import { defined, lineHeight, make, obj, placed, same, str, textStyle, unless, ZERO, type Context } from "./reading";
-import { opaque } from "./table";
+import { holdsWords, opaque } from "./table";
 import { readText } from "./text";
 import { textJsonHtml } from "./text-json";
 
@@ -33,6 +33,15 @@ const lineHeightPx = (value: Json, fontSize: number): number => {
 };
 /** A design's list as its items (a copy: a hand-edited one's own methods may be anything). */
 const rows = (value: unknown): Values[] => (Array.isArray(value) ? Array.from(value).map(obj) : []);
+/** Whether rich text is one paragraph with nothing in it: the builder's empty cell (a line break is something). */
+const emptyParagraph = (json: string): boolean => {
+  try {
+    const paragraphs = (JSON.parse(json) as { root?: { children?: Array<{ children?: unknown[] }> } }).root?.children ?? [];
+    return paragraphs.length === 1 && Array.isArray(paragraphs[0].children) && paragraphs[0].children.length === 0;
+  } catch {
+    return false;
+  }
+};
 /** A text color: any given one, transparent too (words drawn invisible are still words drawn so). */
 const textColor = (value: unknown) => (typeof value === "string" && value.trim() ? value : undefined);
 
@@ -42,9 +51,10 @@ export function readTable(values: Values, context: Context): Node[] {
   const headers = values.enableHeader === false ? [] : rows(data.headers);
   const body = rows(data.rows);
   const footers = values.enableFooter === true ? rows(data.footers) : [];
-  // Elements prints a header and a footer on every page a table runs to.
-  if (headers.length && values.repeatHeaderOnEachPage === false) context.say("its header not repeated on each page isn't something a Table holds: it's printed on every page the table runs to");
-  if (footers.length && values.repeatFooterOnEachPage === false) context.say("its footer not repeated on each page isn't something a Table holds: it's printed on every page the table runs to");
+  // Elements prints a Document's header and footer on every page a table runs to. (Only a document has pages: the
+  // builder's email and web modes have no such field, and keep it on, so one left off in a document is no matter there.)
+  if (context.document && headers.length && values.repeatHeaderOnEachPage === false) context.say("its header not repeated on each page isn't something a Table holds: it's printed on every page the table runs to");
+  if (context.document && footers.length && values.repeatFooterOnEachPage === false) context.say("its footer not repeated on each page isn't something a Table holds: it's printed on every page the table runs to");
 
   // The content's fields are the Table's text styles: what its cells take, unless their row or they say otherwise.
   const own = {
@@ -107,13 +117,15 @@ export function readTable(values: Values, context: Context): Node[] {
     });
     const rowLine = lineHeightPx(table.lineHeight, part.text.fontSize);
     const cells = rows(row.cells).map((cell) => cellOf(cell, part, rowLine));
-    // Its height where it's taller than its cells' one line of words: what it is in the builder, the least it is.
-    const least = Math.max(0, ...rows(row.cells).map((cell, i) => {
+    const pads = rows(row.cells).map((cell) => {
       const pad = sides(cell.padding) ?? part.padding;
-      return cells[i].line + pad.top + pad.bottom;
-    }));
+      return pad.top + pad.bottom;
+    });
+    // The least the Table's row is: a line where a cell has words, its padding where it has none. toDesign() gives a row of
+    // no height of its own that (1px at least), so a height above it is the row's own: one no taller is no matter.
+    const least = Math.max(0, ...cells.map((cell, i) => (holdsWords(cell.node) ? cell.line : 0) + pads[i]));
     const height = px(row.height);
-    if (height !== undefined && height > Math.ceil(least)) style.height = height;
+    if (height !== undefined && height > Math.max(1, Math.ceil(least))) style.height = height;
     return make("TableRow", { props: defined({ header: kind === "header" || undefined, footer: kind === "footer" || undefined }), style, children: cells.map((cell) => cell.node) });
   };
 
@@ -135,8 +147,11 @@ export function readTable(values: Values, context: Context): Node[] {
     if (dirs.length > 1) context.say("a table cell's paragraphs in directions of their own are lines of the cell, in the first's direction");
     const dir = dirs[0];
     // An empty cell's paragraph (`<p><br></p>`, as the builder writes one) holds nothing: its line height and direction
-    // are still the cell's.
-    const shown = parts.length === 1 && same(parts[0].node.children, ["​"]) ? [] : parts;
+    // are still the cell's. Its rich text, where it has one, says which: an empty paragraph, or a line break alone, which
+    // is the LineBreak it was.
+    const placeholder = parts.length === 1 && same(parts[0].node.children, ["​"]);
+    const shown = placeholder ? [] : parts;
+    if (placeholder && json !== undefined && !emptyParagraph(json)) children.push({ type: "LineBreak" });
     shown.forEach((piece, i) => {
       if (i) children.push({ type: "LineBreak" });
       if (piece.node.type !== "Text") context.say(`a ${piece.node.type === "List" ? "list" : "heading"} in a table cell, which a TableCell doesn't hold: its words are lines of the cell`);

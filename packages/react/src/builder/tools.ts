@@ -8,7 +8,7 @@ import { block, type Block } from "./design";
 import { hiddenOf, merge } from "./hide";
 import { listJson, paragraphJson, runsHtml } from "./runs";
 import { intoMarkup } from "./paint";
-import { tableValues } from "./table";
+import { TABLE_FIELDS, tableValues } from "./table";
 import { withParagraphMargin } from "./text";
 import { builderBorder, builderFont, builderLink, cssLineHeight, cssPx, cssSides, encode, fieldLineHeight, type Values } from "./values";
 
@@ -259,11 +259,9 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
     case "PageBreak":
       return place.put(block("page_break"));
     case "Table": {
-      // The builder's table is a tool of its document mode only.
-      if (place.at("root").type !== "Document") return place.locked(node, path, "a Table isn't a tool of the builder's", around);
       const values = tableValues(node, path, place);
       if (typeof values === "string") return place.locked(node, path, values, around);
-      place.sayLeftOut("table", node, path, [...TEXT_STYLES.map((key) => `style.${key}`), "style.backgroundColor", "style.cellPadding", "style.rowBorder"]);
+      place.sayLeftOut("table", node, path, TABLE_FIELDS);
       return place.put(block("table", hiding), merge({ ...values, containerPadding: cssSides(around), ...id }, hiddenOf("table", node)));
     }
     default:

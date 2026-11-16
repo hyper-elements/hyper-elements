@@ -311,6 +311,16 @@ describe("what the builder draws around a design's rows", () => {
     ]);
   });
 
+  it("says nothing of a header or a footer not repeated in an email or a web design, which has no pages", () => {
+    const cell = { text: "<p>Words</p>", width: 100 };
+    for (const displayMode of ["email", "web"] as const) {
+      const { code, report } = fromDesign(oneTable({ enableFooter: true, repeatHeaderOnEachPage: false, repeatFooterOnEachPage: false, table: { headers: [{ cells: [cell], height: 30 }], rows: [{ cells: [cell], height: 30 }], footers: [{ cells: [cell], height: 30 }] } }), { displayMode });
+      expect(code).toContain("<TableRow header");
+      expect(code).toContain("<TableRow footer");
+      expect(report).toEqual([]);
+    }
+  });
+
   it("says a cell's paragraphs, which are its lines, lose their own spacing and alignment", () => {
     const { code, report } = fromDesign(oneTable({ enableHeader: false, table: { headers: [], rows: [{ cells: [{ text: '<p style="text-align:left">Left</p><p style="text-align:right;margin-top:20px">Right</p>', width: 100 }], height: 30 }], footers: [] } }), { displayMode: "document" });
     expect(code).toContain("Left<LineBreak />Right");

@@ -213,7 +213,7 @@ const cellText = (words: string) =>
   `{"root":{"children":[{"children":[${words ? `{"detail":0,"format":0,"mode":"normal","style":"","text":"${words}","type":"extended-text","version":1}` : ""}],"format":"","indent":0,"type":"extended-paragraph","version":1,"textFormat":0}],"format":"","indent":0,"type":"root","version":1}}`;
 const emptyCell = { textJson: cellText(""), text: "", width: 50 };
 
-/** The table: a tool of the builder's document mode only. */
+/** The table. */
 export const TableDefaults: Record<string, any> = {
   table: {
     headers: [{ cells: [{ textJson: cellText("Add header text"), text: "<p>Add header text</p>", width: 50 }, emptyCell], height: 50 }],

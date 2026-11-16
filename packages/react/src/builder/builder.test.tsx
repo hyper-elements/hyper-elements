@@ -32,11 +32,6 @@ describe("toDesign", () => {
         <Svg width={20} height={20}>
           <Rect width={20} height={20} />
         </Svg>
-        <Table>
-          <TableRow>
-            <TableCell>Cell</TableCell>
-          </TableRow>
-        </Table>
         <Row>
           <Column>
             <Column style={{ backgroundColor: "#eeeeee" }}>
@@ -48,11 +43,11 @@ describe("toDesign", () => {
       </Page>
     );
     const contents = blocks(design);
-    expect(contents.map((content) => content.type)).toEqual(["heading", "html", "html", "html", "html", "html"]);
+    expect(contents.map((content) => content.type)).toEqual(["heading", "html", "html", "html", "html"]);
     expect(String(contents[1].values.html)).toContain("https://example.com/hero.png");
     expect(String(contents[2].values.html)).toContain("<svg");
-    expect(String(contents[5].values.html)).toContain("Mine");
-    expect(report.filter((line) => line.includes("it's an HTML block")).map((line) => line.split(":")[0])).toEqual(["root.children[1]", "root.children[2]", "root.children[3]", "root.children[4].children[0].children[0]", "root.children[5]"]);
+    expect(String(contents[4].values.html)).toContain("Mine");
+    expect(report.filter((line) => line.includes("it's an HTML block")).map((line) => line.split(":")[0])).toEqual(["root.children[1]", "root.children[2]", "root.children[3].children[0].children[0]", "root.children[4]"]);
   });
 
   it("writes an Html block as the builder's own HTML block, its plain text hidden", () => {
@@ -309,7 +304,7 @@ function PageFooterless() {
   return <Text>Three</Text>;
 }
 
-describe("a Document's Table", () => {
+describe("a Table", () => {
   const tables = (design: any) => blocks(design).filter((content) => content.type === "table");
   /** A cell's words, as the builder's editor writes its rich text out. */
   const words = (cell: Values) => textJsonHtml(cell.textJson).html.replace(/<[^>]+>/g, "");
@@ -321,14 +316,220 @@ describe("a Document's Table", () => {
     </Table>
   );
 
-  it("is the builder's table, a tool of its document mode; in an Email or a Page, an HTML block as before", () => {
-    const { design, report } = toDesign(<Document>{table}</Document>);
-    expect(blocks(design).map((content) => content.type)).toEqual(["table"]);
-    expect(report).toEqual([]);
-    for (const root of [<Email key="e">{table}</Email>, <Page key="p">{table}</Page>]) {
+  it("is the builder's table in an Email, a Page and a Document", () => {
+    for (const root of [<Email key="e">{table}</Email>, <Page key="p">{table}</Page>, <Document key="d">{table}</Document>]) {
       const { design, report } = toDesign(root);
-      expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
-      expect(report.join("\n")).toContain("a Table isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)");
+      const [only] = tables(design);
+      expect(blocks(design).map((content) => content.type)).toEqual(["table"]);
+      expect(only.values.table.rows[0].cells.map(words)).toEqual(["Words"]);
+      expect(report).toEqual([]);
+    }
+  });
+
+  it("is the builder's table in an Email or a Page where it draws it as it is: lines all round collapsed, a full width, a column's share, cells' own styles", () => {
+    const line = "1px solid #d1d5db";
+    const exact = (
+      <Table style={{ width: "100%", borderCollapse: "collapse", backgroundColor: "#ffffff", cellPadding: 6 }}>
+        <TableRow header>
+          <TableCell style={{ border: line, width: "60%" }}>Item</TableCell>
+          <TableCell style={{ border: line, textAlign: "right" }}>Amount</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{ border: line, color: "#6b7280" }}>Hosting</TableCell>
+          <TableCell style={{ border: line, textAlign: "right", backgroundColor: "#fef3c7", padding: 8 }}>$49.00</TableCell>
+        </TableRow>
+        <TableRow footer>
+          <TableCell style={{ border: line }}>Total</TableCell>
+          <TableCell style={{ border: line, textAlign: "right" }}>$49.00</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const root of [<Email key="e">{exact}</Email>, <Page key="p">{exact}</Page>]) {
+      const { design, report } = toDesign(root);
+      const [only] = tables(design);
+      expect(report).toEqual([]);
+      expect(blocks(design).map((content) => content.type)).toEqual(["table"]);
+      expect(only.values.table.rows[0].cells).toMatchObject([{ color: "#6b7280", width: 60 }, { textAlign: "right", backgroundColor: "#fef3c7", padding: "8px", width: 40 }]);
+    }
+  });
+
+  it("is the builder's table where every column has a width, which Elements draws as shares of the table", () => {
+    const sized = (
+      <Table>
+        <TableRow>
+          <TableCell style={{ width: 100 }}>A</TableCell>
+          <TableCell style={{ width: 300 }}>B</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const root of [<Email key="e" width={600}>{sized}</Email>, <Page key="p" width={600}>{sized}</Page>]) {
+      const { design, report } = toDesign(root);
+      expect(report).toEqual([]);
+      expect(tables(design)[0].values.table.rows[0].cells.map((cell: Values) => cell.width)).toEqual([25, 75]);
+    }
+  });
+
+  it("writes a column with no width beside wider ones as the least share the builder keeps, which takes a share of 0 for its default", () => {
+    const narrow = (
+      <Table>
+        <TableRow>
+          <TableCell style={{ width: "0%" }}>A</TableCell>
+          <TableCell style={{ width: "100%" }}>B</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const root of [<Email key="e">{narrow}</Email>, <Page key="p">{narrow}</Page>, <Document key="d">{narrow}</Document>]) {
+      const { design, report } = toDesign(root);
+      expect(report).toEqual([]);
+      expect(tables(design)[0].values.table.rows[0].cells.map((cell: Values) => cell.width)).toEqual([0.01, 100]);
+    }
+  });
+
+  it("writes a row's height of 0, which the builder takes for its default, as the least its words need", () => {
+    const zero = (
+      <Table>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+        <TableRow style={{ height: 0 }}>
+          <TableCell>B</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const root of [<Email key="e">{zero}</Email>, <Page key="p">{zero}</Page>, <Document key="d">{zero}</Document>]) {
+      const { design, report } = toDesign(root);
+      const [first, second] = tables(design)[0].values.table.rows;
+      expect(report).toEqual([]);
+      expect(second.height).toBeGreaterThan(0);
+      expect(second.height).toBe(first.height);
+    }
+  });
+
+  it("says a Document's empty cell is a line tall in the builder's table where that's taller than its row; one as tall as a line of its own isn't", () => {
+    const blank = (
+      <Table>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell />
+        </TableRow>
+        <TableRow style={{ height: 40 }}>
+          <TableCell />
+        </TableRow>
+      </Table>
+    );
+    const { design, report } = toDesign(<Document>{blank}</Document>);
+    expect(tables(design)).toHaveLength(1);
+    // The empty row's height is the Table's (none, 1px: the builder takes 0 for its default), its own the other's.
+    expect(tables(design)[0].values.table.rows.map((row: Values) => row.height)).toEqual([24, 1, 40]);
+    // Read back, the row's own height comes back and the 1px given to the empty row doesn't.
+    const { code } = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "document" });
+    expect(code).toContain("height: 40");
+    expect(code).not.toMatch(/height: 1\b/);
+    expect(report).toEqual(["root.children[0].children[1]: an empty cell is a line tall in the builder's table and as tall as its padding in the Table, so the row is taller in the builder's"]);
+    // In an Email, the row as tall as a line of its own is drawn as it is: the one with no height is the HTML block's reason.
+    expect(toDesign(<Email>{blank}</Email>).report).toEqual(["root.children[0]: the builder's table doesn't draw it as it is (an empty cell, a line tall in the builder's): it's an HTML block of its own markup in the builder (it can be moved, not edited)"]);
+    // An empty cell of a larger size beside words is taller than they are in the builder.
+    const beside = (
+      <Table>
+        <TableRow>
+          <TableCell style={{ fontSize: 80, padding: 10 }} />
+          <TableCell>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    expect(toDesign(<Document>{beside}</Document>).report).toEqual(["root.children[0].children[0]: an empty cell is a line tall in the builder's table and as tall as its padding in the Table, so the row is taller in the builder's"]);
+    const tall = (
+      <Table>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+        <TableRow style={{ height: 40 }}>
+          <TableCell />
+        </TableRow>
+      </Table>
+    );
+    expect(toDesign(<Email>{tall}</Email>).report).toEqual([]);
+  });
+
+  it("stays an HTML block in an Email or a Page where the builder's table doesn't draw it as it is, and says why", () => {
+    const line = "1px solid #e5e7eb";
+    const row = (a: string, b: string, props: Record<string, unknown> = {}) => (
+      <TableRow {...props}>
+        <TableCell>{a}</TableCell>
+        <TableCell>{b}</TableCell>
+      </TableRow>
+    );
+    const lined = (border: Record<string, unknown> | string) => (
+      <TableRow>
+        <TableCell style={{ border }}>A</TableCell>
+        <TableCell style={{ border }}>1</TableCell>
+      </TableRow>
+    );
+    const cases: Array<[string, React.ReactElement]> = [
+      ["a line between rows only", <Table style={{ rowBorder: line }}>{row("A", "1")}{row("B", "2")}</Table>],
+      ["lines on some sides of its cells only", <Table>{lined({ bottom: line })}{row("B", "2")}</Table>],
+      ["two lines between cells side by side", <Table>{lined(line)}</Table>],
+      ["a border around it", <Table style={{ border: line }}>{row("A", "1")}</Table>],
+      ["its width", <Table style={{ width: 300 }}>{row("A", "1")}</Table>],
+      ["its maxWidth", <Table style={{ maxWidth: 300 }}>{row("A", "1")}</Table>],
+      ["its mobile.width", <Table style={{ mobile: { width: 300 } }}>{row("A", "1")}</Table>],
+      ["its mobile.maxWidth", <Table style={{ mobile: { maxWidth: 300 } }}>{row("A", "1")}</Table>],
+      ["its mobile.border", <Table style={{ mobile: { border: line } }}>{row("A", "1")}</Table>],
+      ["a column of a fixed width", <Table><TableRow><TableCell style={{ width: 100 }}>A</TableCell><TableCell>1</TableCell></TableRow></Table>],
+      ["a cell spanning columns", <Table>{row("A", "1")}<TableRow><TableCell colSpan={2}>Both</TableCell></TableRow></Table>],
+      ["a row with fewer cells than its columns", <Table>{row("A", "1")}<TableRow><TableCell>One</TableCell></TableRow></Table>],
+      ["a header row below its first rows", <Table>{row("A", "1")}{row("Sub", "head", { header: true })}</Table>],
+      ["a cell's mobile.padding", <Table><TableRow><TableCell style={{ mobile: { padding: 4 } }}>A</TableCell></TableRow></Table>],
+      ["its mobile.fontSize", <Table style={{ mobile: { fontSize: 12 } }}>{row("A", "1")}</Table>],
+      ["a link's hover", <Table><TableRow><TableCell><Link href="https://example.com" style={{ hover: { color: "#ff0000" } }}>Link</Link></TableCell></TableRow></Table>],
+      ["a row's id", <Table><TableRow id="first">{[<TableCell key="a">A</TableCell>]}</TableRow></Table>],
+      ["an empty cell, a line tall in the builder's", <Table>{row("A", "1")}<TableRow><TableCell /><TableCell> </TableCell></TableRow></Table>],
+      ["an empty cell, a line tall in the builder's", <Table><TableRow><TableCell style={{ fontSize: 80, padding: 10 }} /><TableCell>A</TableCell></TableRow></Table>],
+      ["a half-transparent background", <Table style={{ backgroundColor: "#ffffff" }}>{row("A", "1", { style: { backgroundColor: "rgba(0, 0, 0, 0.05)" } })}</Table>],
+      ["a half-transparent background", <Table style={{ backgroundColor: "#00000080" }}>{row("A", "1")}</Table>],
+      ["a half-transparent background", <Table><TableRow><TableCell style={{ backgroundColor: "rgba(255, 0, 0, 0.5)" }}>A</TableCell></TableRow></Table>],
+    ];
+    for (const [why, table] of cases) {
+      for (const root of [<Email key="e">{table}</Email>, <Page key="p">{table}</Page>]) {
+        const { design, report } = toDesign(root);
+        expect(blocks(design).map((content) => content.type), why).toEqual(["html"]);
+        expect(report, why).toEqual([`root.children[0]: the builder's table doesn't draw it as it is (${why}): it's an HTML block of its own markup in the builder (it can be moved, not edited)`]);
+      }
+    }
+  });
+
+  it("stays an HTML block where a row, a cell or words in a cell are hidden on phones or on desktops, which the builder's table can't do", () => {
+    const hiding = [
+      <Table key="row">
+        <TableRow>
+          <TableCell>Shown</TableCell>
+        </TableRow>
+        <TableRow hidden={{ mobile: true }}>
+          <TableCell>Desktops only</TableCell>
+        </TableRow>
+      </Table>,
+      <Table key="cell">
+        <TableRow>
+          <TableCell>Shown</TableCell>
+          <TableCell hidden={{ desktop: true }}>Phones only</TableCell>
+        </TableRow>
+      </Table>,
+      <Table key="words">
+        <TableRow>
+          <TableCell>
+            Shown <Span hidden={{ mobile: true }}>on desktops only</Span>
+          </TableCell>
+        </TableRow>
+      </Table>,
+    ];
+    for (const hidden of hiding) {
+      for (const root of [<Email key="e">{hidden}</Email>, <Page key="p">{hidden}</Page>]) {
+        const { design, report } = toDesign(root);
+        expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
+        expect(report).toEqual(["root.children[0]: a table row, cell or words in a cell hidden on phones or on desktops isn't something the builder's table holds: it's an HTML block of its own markup in the builder (it can be moved, not edited)"]);
+      }
     }
   });
 

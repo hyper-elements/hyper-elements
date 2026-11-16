@@ -300,6 +300,14 @@ export const tableEdges = (
           Second
         </TableCell>
       </TableRow>
+      <TableRow>
+        <TableCell />
+        <TableCell> </TableCell>
+      </TableRow>
+      <TableRow style={{ height: 10 }}>
+        <TableCell />
+        <TableCell> </TableCell>
+      </TableRow>
     </Table>
     <Table>
       <TableRow header>

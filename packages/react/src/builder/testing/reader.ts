@@ -130,6 +130,8 @@ function tableRows(table: ResolvedNode): Json {
     }
     return out;
   };
+  /** Whether a cell has a line in it: words (a line break is one) or an image. */
+  const worded = (cell: ResolvedNode) => images(cell).length > 0 || (runs(cell) ?? []).some((run) => run.text.trim() !== "" || run.text === "\n");
   const rows = table.children.filter((c): c is ResolvedNode => typeof c !== "string" && !c.hidden?.desktop);
   const lined = rows.some((row) => cells(row).some((cell) => cell.style.border !== undefined));
   return {
@@ -138,8 +140,8 @@ function tableRows(table: ResolvedNode): Json {
     rows: rows.map((row) => ({
       header: !!row.props.header,
       footer: !!row.props.footer,
-      // (A cell's line is its tallest run's.)
-      height: round(Math.max(typeof row.style.height === "number" ? row.style.height : 0, ...cells(row).map((cell) => Math.max(cell.text.lineHeightPx, ...(runs(cell) ?? []).map((run) => Number(run.style.lineHeight ?? 0))) + pad(cell).top + pad(cell).bottom))),
+      // (A cell's line is its tallest run's; a cell with no words, nor an image, has none: it's as tall as its padding.)
+      height: round(Math.max(typeof row.style.height === "number" ? row.style.height : 0, ...cells(row).map((cell) => (worded(cell) ? Math.max(cell.text.lineHeightPx, ...(runs(cell) ?? []).map((run) => Number(run.style.lineHeight ?? 0))) : 0) + pad(cell).top + pad(cell).bottom))),
       cells: cells(row).map((cell) => ({
         runs: decorated(cell) as Json,
         // Its own size, which sets how far apart its lines are, whatever its runs' sizes.
@@ -182,7 +184,7 @@ export function seen(element: React.ReactElement, { markup = new Set<string>() }
     // What the builder holds as an HTML block of its markup (`markup`, the paths toDesign() said) is read as one.
     const locked = markup.has(node.path);
     const linkOfWords = node.type === "Link" && !node.children.some((c) => typeof c !== "string" && c.type === "Image");
-    // A Table the builder holds as its table (in a Document): read cell by cell.
+    // A Table the builder holds as its table: read cell by cell.
     if (node.type === "Table" && !locked) {
       out.push({ kind: "Table", x: round(x), width: node.width === null ? null : round(node.width), above: round(pending), own: { rows: tableRows(node) }, behind, ...visible });
       pending = 0;

@@ -152,13 +152,15 @@ jobs:
       # 479,000 bytes for a Table's free column written for classic Outlook apart;
       # 480,000 bytes for a theme's `elements` beside `components` (984 bytes measured);
       # 506,000 for a Document's Table as the builder's table and back (about 11KB
-      # to write it, 9.5KB to read it, 2.5KB of the table's defaults, 2KB beside them).
+      # to write it, 9.5KB to read it, 2.5KB of the table's defaults, 2KB beside them);
+      # 509,500 for an Email's and a Page's Table as the builder's table where it draws
+      # it as it is, an HTML block with the reason said where it doesn't (3,367 bytes measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=506000
+          MAX_SIZE=509500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
