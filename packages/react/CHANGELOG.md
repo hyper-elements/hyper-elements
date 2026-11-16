@@ -4,6 +4,18 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A Document's Table is the builder's table
+
+`toDesign()` writes a `Table` in a `Document` as the Unlayer builder's table, a tool of its document mode, instead of
+an HTML block, which the builder's document mode keeps but doesn't draw or export: a Document's tables were missing
+from the builder's page and its PDF. The table's header and footer rows, each cell's words and each column's share go
+in, with what its rows share (text styles, background, padding) as the table's fields and each cell's own styles. The
+builder draws one border around every cell: a line between rows is drawn above the first row and below the last too,
+a cell spanning columns is a cell for each column, a header row below the table's first rows is a row in bold, and
+other borders are left out; a table with an image in a cell is still an HTML block. `report` says each.
+`fromDesign()` reads the builder's table back as a `Table`, one made in the builder too, where it was left out before;
+a cell's paragraphs are its lines. A `Table` in an `Email` or a `Page` is an HTML block as before.
+
 ### What a PDF or an image looks for
 
 `@hyper-elements/react/pdf` and `@hyper-elements/react/image` export `templateAssets(element)`: the fonts and images
