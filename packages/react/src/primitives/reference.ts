@@ -61,6 +61,20 @@ const code = (value: unknown) => `\`${JSON.stringify(value)}\``;
 const generated = (from: string) => `<!-- Written from the element definitions by ${from}: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->`;
 const GENERATED = generated("src/primitives/reference.ts");
 
+/**
+ * The guide's id: eight hex digits of an FNV-1a hash of its text, the same in GUIDE.md and the skill. An agent with
+ * the skill compares it with the installed package's GUIDE.md, one line, to know whether the skill is that guide
+ * (a skill installed once falls behind the package, or runs ahead of it). Not a version: the release sets those at
+ * publish time, after these files are written, and the id changes only when the guide does.
+ */
+function guideId(text: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193) >>> 0;
+  return hash.toString(16).padStart(8, "0");
+}
+/** The line that names it, in GUIDE.md's first lines and in the skill, where `grep "hyper-elements guide"` finds it. */
+const guideLine = (id: string) => `hyper-elements guide ${id}`;
+
 function property(p: PropertyDescription, named: Map<string, string>, c: ComponentDescription): string {
   const key = p.path.slice(p.path.indexOf(".") + 1);
   const takes = named.has(p.kind) ? `*${p.kind}*` : p.accepts;
@@ -209,6 +223,7 @@ export function primitivesGuide(example: string): string {
     "# Writing templates with the new elements (`@hyper-elements/react`)",
     "",
     GENERATED,
+    `<!-- ${guideLine(guideId(guide(example)))} -->`,
     "",
     "Everything needed to write a template, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).",
     "",
@@ -226,6 +241,7 @@ const SKILL_DESCRIPTION =
  * components. An agent given the guide before writing a template gets it right on the first try far more often.
  */
 export function primitivesSkill(example: string): string {
+  const body = guide(example);
   return [
     "---",
     "name: hyper-elements",
@@ -240,6 +256,11 @@ export function primitivesSkill(example: string): string {
     "",
     "To test an email in Outlook, Gmail and other clients, a template or any HTML: the `email-testing` skill has the steps, or run `npx @hyper-elements/cli preview emails/welcome.tsx`.",
     "",
+    "## Before you write a template",
+    "",
+    "- If the project's package.json doesn't list `@hyper-elements/react`, install it: `npm install @hyper-elements/react react react-dom`, or the same with the project's package manager (`pnpm add`, `yarn add`, `bun add`).",
+    `- Once it's installed, its own guide is \`node_modules/@hyper-elements/react/GUIDE.md\`, written for the version installed. \`grep "hyper-elements guide" node_modules/@hyper-elements/react/GUIDE.md\` gives its id; this skill's is \`${guideLine(guideId(body))}\`. The same id: this skill is that guide, so read on. Another id, or none: read GUIDE.md and follow it where it differs from this skill.`,
+    "",
     "## Templates from Unlayer Elements",
     "",
     "A project may have templates written with Unlayer Elements: they import `Body`, `ColumnLayouts` or `renderToHtml()` from `@unlayer/react-elements`, and use `values`, `layout`, `html` and style props such as `backgroundColor=\"#fff\"`. Those components aren't in Hyper Elements, a new package: these are its components.",
@@ -249,7 +270,7 @@ export function primitivesSkill(example: string): string {
     "- Then `npm install @hyper-elements/react`, and remove `@unlayer/react-elements` once nothing imports it.",
     "- Templates in React Email: `npx @hyper-elements/migrate src/emails` writes them in these elements and checks each against its original.",
     "",
-    guide(example),
+    body,
   ].join("\n");
 }
 
@@ -303,6 +324,7 @@ function guide(example: string): string {
     "- A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.",
     "- Text is elements, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.",
     "- `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.",
+    "- An image's `src` is a public `https` URL the reader's email client can fetch: the project's own (its CDN, its other templates, its site) or one the person gives you. Never make one up: `example.com`, a guessed path or a file on this computer shows as a broken image. Where the template needs an image that doesn't exist yet, use a placeholder that loads, at the image's size: `https://placehold.co/1200x600/png?text=Product+screenshot` (width x height in px). Then tell the person which images to replace. A `data:` URI works in a Page, Document or Canvas, but Gmail doesn't show one in an Email.",
     "- Lists: `<List type=\"number\">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.",
     "- Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under \"Phones\", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: \"#374151\" } }}` (those under \"Hover\").",
     "- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).",

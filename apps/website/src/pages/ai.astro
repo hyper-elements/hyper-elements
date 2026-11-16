@@ -19,7 +19,7 @@ const outlines = [
   { id: "image", label: "Image", t: template("gridline-workshop-banner") },
 ];
 const name = (src: string) => src.match(/export default function (\w+)/)?.[1] ?? "Template";
-const prompt = `Read ${site.url}/llms.txt. Then write a Hyper Elements template for [an email, a page, a PDF or an image]. Run validate() and fix every error, then show me outline().`;
+const prompt = `${site.skillPromptStart} write a Hyper Elements template for [an email, a page, a PDF or an image]. Run validate() and fix every error, then show me outline().`;
 ---
 <Base title="For AI agents" description="Hyper Elements for coding agents: one way to write each thing, validate() with the fix for each problem, outline() to check a layout, and the docs as llms.txt.">
   <section class="a-hero">
@@ -50,14 +50,14 @@ const prompt = `Read ${site.url}/llms.txt. Then write a Hyper Elements template 
   <section class="section">
     <div class="wrap split">
       <div class="reveal">
-        <p class="eyebrow">Give it the guide</p>
-        <h2 class="h-section">The docs ship in the package.</h2>
-        <p class="lede">GUIDE.md is written from the elements' own definitions, so it matches the version you installed.</p>
+        <p class="eyebrow">Give it the skill</p>
+        <h2 class="h-section">One command, before anything is installed.</h2>
+        <p class="lede">The skill has your agent install {site.pkg}, then checks it against GUIDE.md, the guide the package ships, written from the elements' own definitions for the version you installed.</p>
       </div>
       <div class="stack reveal">
-        <CodeBlock lang="markdown" file="CLAUDE.md" code={`@node_modules/@hyper-elements/react/GUIDE.md`} />
-        <CodeBlock lang="markdown" file="AGENTS.md (Codex, Cursor and others)" code={`Before writing a Hyper Elements template, read
-node_modules/@hyper-elements/react/GUIDE.md.`} />
+        <CodeBlock lang="bash" file="terminal (Claude Code, Codex, Cursor and others)" code={site.skill} />
+        <p class="stack-or">Or, without the skill, a rule:</p>
+        <CodeBlock lang="markdown" file="CLAUDE.md or AGENTS.md" code={site.agentRule} />
       </div>
     </div>
   </section>
@@ -117,6 +117,7 @@ node_modules/@hyper-elements/react/GUIDE.md.`} />
   .loop .n { font: 500 12px var(--mono); color: var(--text-3); display: block; margin-bottom: 18px; }
   .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; }
   .stack { display: grid; gap: 14px; min-width: 0; }
+  .stack-or { margin: 6px 0 0; font-size: 14px; color: var(--text-3); }
   .outlines { overflow: hidden; background: #0e0e0e; min-width: 0; }
   .outlines .views { flex: none; height: 420px; }
   .outlines .view-text { color: #d4d4d4; font-size: 12.5px; }

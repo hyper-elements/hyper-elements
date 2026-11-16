@@ -106,7 +106,8 @@ In Claude Code they're plugins too: `/plugin marketplace add hyper-elements/hype
 Or add this to your project's `AGENTS.md` or agent rules:
 
 ```text
-Before writing a Hyper Elements template, read
+Templates use Hyper Elements (@hyper-elements/react). If it isn't installed, install it
+with react and react-dom. Before writing a template, read
 node_modules/@hyper-elements/react/GUIDE.md.
 Validate the template, fix errors, review warnings, and inspect outline() before rendering.
 ```

@@ -4,6 +4,16 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### GUIDE.md: where an image comes from, and an id to compare
+
+- The guide says an image's `src` is a public URL the reader's email client can fetch, never a made-up one
+  (`example.com`, a guessed path, a local file), and where there's no image yet, to use a placeholder that loads at
+  the image's size and say which images to replace.
+- Its first lines carry `hyper-elements guide <id>`, an id made from the guide's text. The `hyper-elements` agent skill
+  carries the same id, so an agent compares the two to know whether the skill it has is the guide for the version
+  installed, and reads `GUIDE.md` where they differ. The skill also has the agent install `@hyper-elements/react`
+  where the project doesn't have it.
+
 ### Elements, not components
 
 What a template is made of is called an element now, as the library's name says: the built-in ones (`Button`,

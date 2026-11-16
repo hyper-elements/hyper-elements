@@ -11,6 +11,11 @@ Write emails, web pages, printed documents, PDFs and images in code with Hyper E
 
 To test an email in Outlook, Gmail and other clients, a template or any HTML: the `email-testing` skill has the steps, or run `npx @hyper-elements/cli preview emails/welcome.tsx`.
 
+## Before you write a template
+
+- If the project's package.json doesn't list `@hyper-elements/react`, install it: `npm install @hyper-elements/react react react-dom`, or the same with the project's package manager (`pnpm add`, `yarn add`, `bun add`).
+- Once it's installed, its own guide is `node_modules/@hyper-elements/react/GUIDE.md`, written for the version installed. `grep "hyper-elements guide" node_modules/@hyper-elements/react/GUIDE.md` gives its id; this skill's is `hyper-elements guide 7a571fdc`. The same id: this skill is that guide, so read on. Another id, or none: read GUIDE.md and follow it where it differs from this skill.
+
 ## Templates from Unlayer Elements
 
 A project may have templates written with Unlayer Elements: they import `Body`, `ColumnLayouts` or `renderToHtml()` from `@unlayer/react-elements`, and use `values`, `layout`, `html` and style props such as `backgroundColor="#fff"`. Those components aren't in Hyper Elements, a new package: these are its components.
@@ -28,6 +33,7 @@ A project may have templates written with Unlayer Elements: they import `Body`, 
 - A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.
 - Text is elements, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
+- An image's `src` is a public `https` URL the reader's email client can fetch: the project's own (its CDN, its other templates, its site) or one the person gives you. Never make one up: `example.com`, a guessed path or a file on this computer shows as a broken image. Where the template needs an image that doesn't exist yet, use a placeholder that loads, at the image's size: `https://placehold.co/1200x600/png?text=Product+screenshot` (width x height in px). Then tell the person which images to replace. A `data:` URI works in a Page, Document or Canvas, but Gmail doesn't show one in an Email.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
 - `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).

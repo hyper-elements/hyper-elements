@@ -14,29 +14,15 @@ If an agent writes your templates, Hyper Elements is built so its first try work
 
 ## Give your agent the guide
 
-### Claude Code
-
-Add this line to your project's `CLAUDE.md`, and every session starts out knowing the elements:
-
-```text
-@node_modules/@hyper-elements/react/GUIDE.md
-```
-
-### Codex, Cursor and other agents
-
-Add this to `AGENTS.md`, or to a rule:
-
-```text
-Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md.
-```
-
 ### As a skill
 
-Install the same guide as an agent skill:
+Install the guide as an agent skill. It works in Claude Code, Codex, Cursor, Copilot and other agents, and before Hyper Elements is installed:
 
 ```bash
 npx skills add hyper-elements/hyper-elements
 ```
+
+The skill tells the agent to install `@hyper-elements/react` where the project doesn't have it. Once the package is installed, the agent checks the skill against the package's own `GUIDE.md`, which is written for the version you installed: both carry an id made from the guide's text, and where the ids differ the agent reads `GUIDE.md` and follows it. A skill installed months ago can't steer the agent wrong after an upgrade.
 
 It offers two skills: `hyper-elements`, the guide, and `email-testing`, which tells an agent how to preview and check any email (a template, or HTML from MJML, React Email or a builder) in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail. `npx skills add hyper-elements/hyper-elements --skill email-testing` installs that one alone.
 
@@ -44,8 +30,20 @@ In Claude Code, both are plugins as well, in the repository's plugin marketplace
 
 ```text
 /plugin marketplace add hyper-elements/hyper-elements
+/plugin install hyper-elements@hyper-elements
 /plugin install email-testing@hyper-elements
 ```
+
+### As a rule, in CLAUDE.md or AGENTS.md
+
+Without the skill, add this to `CLAUDE.md` (Claude Code), `AGENTS.md` (Codex, Cursor and others) or a rule:
+
+```text
+Templates use Hyper Elements (@hyper-elements/react). If it isn't installed, install it with react and react-dom.
+Before writing a template, read node_modules/@hyper-elements/react/GUIDE.md.
+```
+
+In a project that already has the package, Claude Code can load the guide into every session with an import in `CLAUDE.md`: `@node_modules/@hyper-elements/react/GUIDE.md`. Claude Code skips an import of a file that doesn't exist without a word, so before the package is installed, the agent gets nothing from that line: use the skill or the rule above until it is.
 
 ### For any model, from the web
 

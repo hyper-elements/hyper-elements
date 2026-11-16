@@ -8,6 +8,12 @@ export const site = {
   install: "npm i @hyper-elements/react",
   migrate: "npx @hyper-elements/migrate",
   skill: "npx skills add hyper-elements/hyper-elements",
+  /** The start of a prompt that installs the hyper-elements skill (or reads it from the site), as the email-testing prompt does. */
+  skillPromptStart:
+    "Install the hyper-elements skill (npx skills add hyper-elements/hyper-elements --skill hyper-elements -y, or read https://www.hyperelements.dev/skills/hyper-elements.md) and follow it to",
+  /** The skill's job as a rule in CLAUDE.md or AGENTS.md, for an agent without it: true before the package is installed too. */
+  agentRule:
+    "Templates use Hyper Elements (@hyper-elements/react).\nIf it isn't installed, install it with react and react-dom.\nBefore writing a template, read\nnode_modules/@hyper-elements/react/GUIDE.md.",
   /** The email-testing skill alone, and a prompt that installs it and previews an email with it. */
   emailTestingSkill: "npx skills add hyper-elements/hyper-elements --skill email-testing",
   emailTestingPrompt:
