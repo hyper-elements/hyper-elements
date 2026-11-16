@@ -143,7 +143,7 @@ describe("custom components", () => {
 });
 
 describe("roots", () => {
-  /** A component of a template's own with a prop only a Page takes, and one that renders it. */
+  /** A custom element with a prop only a Page takes, and one that renders it. */
   const Banner = defineCustomComponent({
     type: "acme.Banner",
     label: "Banner",

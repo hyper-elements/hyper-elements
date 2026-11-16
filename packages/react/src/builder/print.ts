@@ -30,10 +30,10 @@ function propsOf(node: Node): Record<string, unknown> {
   };
 }
 
-/** The tree as an element. A component of the template's own needs passing in `components`, by its name. */
+/** The tree as an element. A custom element needs passing in `components`, by its name. */
 export function toElement(node: Node, components: Record<string, React.ComponentType<any>> = {}, key?: number): React.ReactElement {
   const component = COMPONENTS.get(node.type) ?? components[node.type];
-  if (!component) throw new Error(`[Elements] fromDesign: <${node.type}> is a component of the template's own: pass it in the components option`);
+  if (!component) throw new Error(`[Elements] fromDesign: <${node.type}> is a custom element: pass it in the components option`);
   const children = (node.children ?? []).map((child, i) => (typeof child === "string" ? child : toElement(child, components, i)));
   return React.createElement(component, { ...propsOf(node), key }, ...children);
 }
@@ -140,6 +140,6 @@ export function printTemplate(root: Node, name = "Template", report: string[] = 
   };
   visit(root);
   const imports = [`import { ${[...used].sort().join(", ")} } from "@hyper-elements/react";`];
-  if (own.size) imports.push(`// The template's own components: ${[...own].sort().join(", ")} (import them from where they're defined).`);
+  if (own.size) imports.push(`// Custom elements: ${[...own].sort().join(", ")} (import them from where they're defined).`);
   return `${imports.join("\n")}\n\nexport default function ${name}() {\n  return (\n    ${element(root, "    ", false, "root", report)}\n  );\n}\n`;
 }

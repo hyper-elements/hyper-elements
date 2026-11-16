@@ -139,7 +139,7 @@ try {
 | `theme/cycle` | Tokens, or named styles, that refer to each other in a loop |
 | `variant/unknown` | A `variant` the theme doesn't give that element (the message lists those it does) |
 | `style/unknown-name` | A named style in `apply` the theme doesn't have |
-| `style/apply-place` | `apply` inside `mobile` or `hover`, or on a design's own element |
+| `style/apply-place` | `apply` inside `mobile` or `hover`, or on a custom element |
 | `email/layer` | A Layer email can't draw: in an email it's an Image as wide as the Layer with one child over it |
 | `custom/render` | Your own element's `render` throws, or returns something other than one element |
 | `custom/depth` | Your own elements expanding into each other too deep, as when one contains itself |

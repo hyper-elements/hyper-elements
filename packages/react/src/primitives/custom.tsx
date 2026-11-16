@@ -1,5 +1,5 @@
 /**
- * A template's own elements: a named block made of primitives, with its own typed
+ * Custom elements: a named block made of primitives, with its own typed
  * props and editors, kept as one node in the document and expanded when it's
  * rendered.
  */
@@ -85,7 +85,7 @@ export type FieldInputs<F extends PropSpecs> = { [K in keyof F as Given<F[K]> ex
 
 type ComposedOptions<R extends boolean> = Omit<PropSpec<Kind<any, any>, R>, "kind" | "default">;
 
-/** Props of a design's own element, and a template's fields, by value kind. */
+/** Props of a custom element, and a template's fields, by value kind. */
 export const prop = {
   /** Text: at most `maxLength` characters, and with `pattern` (a regular expression's source, matched with `u`), text it finds something in. */
   text: <const R extends boolean = false, const D extends string | undefined = undefined>(options: PropOptions<Kind<string, string>, R, D> & { maxLength?: number; pattern?: string }) => {
@@ -145,7 +145,7 @@ export const prop = {
 /** A prop's value in JSX: a color's, a length's or a font's may be a theme's token, its value where the instance is. */
 type WithTokens<T, P> = { [K in keyof T]: K extends keyof P ? (P[K] extends TakesToken ? T[K] | Token : T[K]) : T[K] };
 
-/** What a template's own element takes in JSX: its props, and its place in a Row and its visibility. */
+/** What a custom element takes in JSX: its props, and its place in a Row and its visibility. */
 export type CustomProps<P extends PropSpecs> = WithTokens<PropsInput<P>, P> & {
   id?: string;
   style?: { flex?: number | "none" };
@@ -172,7 +172,7 @@ export interface ElementSpec<P extends PropSpecs> {
   render(props: ExpandProps<P>, context: RenderContext): React.ReactElement;
 }
 
-/** What a template's own element's render gets besides its props. */
+/** What a custom element's render gets besides its props. */
 export interface RenderContext {
   /** The theme's tokens where the instance is, as values: `theme.colors.primary`. Empty without a theme. */
   readonly theme: ThemeValues;
@@ -219,7 +219,7 @@ export function defineElement<const P extends PropSpecs>(spec: ElementSpec<P>): 
   const Custom = (props: CustomProps<P>): React.ReactElement => {
     const collection = collectingPrimitives();
     if (!collection) {
-      throw new Error(`[Elements] <${definition.type}> is part of a template: render the template with render(), not this element on its own`);
+      throw new Error(`[Elements] <${definition.type}> is part of a design: render the design with render(), not this element on its own`);
     }
     registerUsed(collection, definition);
     return recordPrimitive(collection, definition.type, props as Record<string, unknown>);

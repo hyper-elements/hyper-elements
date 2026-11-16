@@ -112,7 +112,7 @@ export class Registry {
 
   add(definition: CustomDefinition<any>): void {
     if (!isCustom(definition) || !CUSTOM_TYPE.test(definition.type)) {
-      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a template's own element (make one with defineElement())`);
+      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a custom element (make one with defineElement())`);
     }
     const known = this.custom.get(definition.type);
     if (known && known !== definition) throw new Error(`[Elements] Two elements made with defineElement() are named ${definition.type}`);

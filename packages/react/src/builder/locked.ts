@@ -1,5 +1,5 @@
 /**
- * What no tool shows (a Layer, an Svg, a Table, a box in a column, a template's own component): the new engine's own
+ * What no tool shows (a Layer, an Svg, a Table, a box in a column, a custom element): the new engine's own
  * markup for it, in an HTML block of the builder's. It can be moved, duplicated or deleted there, not edited; it
  * comes back as an `Html` block.
  */
@@ -37,7 +37,7 @@ function renderSubtree(node: Node, width: number, root: Node, components: unknow
   // A Page's own phone width, so the block's phone styles switch where the page's do.
   const breakpoints: Record<string, Json> = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
   // The theme it sees where it is: the template's, with each scope around it in a Column of its tokens, read as they
-  // are in place, so what a template's own component in it renders is themed as it was there.
+  // are in place, so what a custom element in it renders is themed as it was there.
   const placed = scopes.reduceRight<Node>((inner, tokens) => ({ type: "Column", tokens, children: [inner] }), Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own);
   const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: root.style, children: [placed] };
   const { head, body } = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never });

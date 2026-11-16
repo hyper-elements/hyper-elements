@@ -168,7 +168,7 @@ const unescape = (text: string) => text.replace(/&amp;|&lt;|&gt;|&quot;|&#x27;/g
 const NODE_KEYS = new Set(["id", "style", "hidden"]);
 /**
  * A built-in's theme props (its variants, a scope's tokens, a root's theme) and the template field it shows. A
- * template's own component keeps props of these names: a `field` it declares is its own.
+ * custom element keeps props of these names: a `field` it declares is its own.
  */
 const THEME_KEYS = new Set(["variant", "tokens", "theme", "field"]);
 

@@ -32,7 +32,7 @@ import { collectTemplate, snapshotData, withFields, type JsonNode } from "../pri
 
 export type { ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
 
-/** An element (a built-in one, or a template's own), with its props and styles, as `describeElements()` gives it. */
+/** An element (a built-in one, or a custom one), with its props and styles, as `describeElements()` gives it. */
 export type ElementDescription = Described;
 /** @deprecated Renamed `ElementDescription`. */
 export type ComponentDescription = Described;
@@ -40,7 +40,7 @@ export type ComponentDescription = Described;
 /** The shape of what this entry returns: a new version is a new shape. */
 export const INSPECT_VERSION = 2;
 
-/** A template's own element (made with `defineElement()`), described alongside the built-in ones. */
+/** A custom element (made with `defineElement()`), described alongside the built-in ones. */
 interface WithDefinition {
   definition: CustomDefinition<any>;
 }
@@ -48,7 +48,7 @@ interface WithDefinition {
 export interface DescribeOptions {
   /** Only what this root takes, with phone styles only under a root that has phones. */
   root?: RootName;
-  /** A template's own elements (made with `defineElement()`), described with the built-in ones. */
+  /** Custom elements (made with `defineElement()`), described with the built-in ones. */
   elements?: readonly WithDefinition[];
   /** @deprecated Renamed `elements`. Given with it, an element in `elements` wins over one of the same type here. */
   components?: readonly WithDefinition[];
@@ -229,7 +229,7 @@ function describeTheme(theme: { [key: string]: Json } | undefined, registry: Reg
 
 /**
  * The keys a node was given, by where they're written. A condition's block written in `style` (`style={{ mobile: { … } }}`)
- * is the condition's, as reading takes it; a template's own element takes no condition, so in its style it's a style.
+ * is the condition's, as reading takes it; a custom element takes no condition, so in its style it's a style.
  */
 function given(node: JsonNode): string[] {
   const keys = (prefix: string, values: unknown) => (values && typeof values === "object" && !Array.isArray(values) ? Object.keys(values).map((key) => `${prefix}.${key}`) : []);

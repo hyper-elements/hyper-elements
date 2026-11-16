@@ -52,7 +52,7 @@ describe.runIf(hasBun || (process.env.CI && process.platform !== "win32"))("pari
     sources["lib/stress.tsx"] = toPackage(readFileSync(join(EXAMPLES, "stress/index.tsx"), "utf8"));
     // The template with a component of its own, as the baseline writes it.
     const compat = readFileSync(COMPAT, "utf8");
-    const start = compat.indexOf("/** A component of a template's own");
+    const start = compat.indexOf("/** A custom element, as");
     const end = compat.indexOf("\n);\n", compat.indexOf("const products = ")) + 4;
     sources["lib/products.tsx"] = `import { Button, Column, component, Email, Heading, Image, Page, prop, Row, Section, Text } from "@hyper-elements/react";\n${compat.slice(start, end)}export { products };\n`;
 

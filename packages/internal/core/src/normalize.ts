@@ -185,12 +185,12 @@ function conditionHint(definition: ComponentDefinition, key: string): string | u
   const own = CUSTOM_TYPE.test(definition.type);
   const hoverStyles = definition.hover ?? [];
   const toHover = own
-    ? `a template's own element takes only its place in a Row in its style: set hover styles in what it renders`
+    ? `a custom element takes only its place in a Row in its style: set hover styles in what it renders`
     : hoverStyles.length
       ? `hover styles go in its style's hover block, style={{ hover: { … } }} (it takes ${hoverStyles.join(", ")})`
       : `${a(definition.type).replace(/^A/, "a")} takes no hover styles (a Button's and a Link's colors do)`;
   const toPhone = own
-    ? `a template's own element takes only its place in a Row in its style: set phone styles in what it renders`
+    ? `a custom element takes only its place in a Row in its style: set phone styles in what it renders`
     : `phone styles go in its style's mobile block, style={{ mobile: { … } }}`;
   if (name === "hover") return toHover;
   if (name === "mobile" || name === "phone" || name === "phones" || key.trim().startsWith("@media")) return toPhone;
@@ -247,7 +247,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     const custom = CUSTOM_TYPE.test(input.type);
     d.error(
       "node/unknown-type",
-      custom ? `"${input.type}" is a template's own element this document wasn't given: pass it in the components option` : `"${input.type}" isn't an element Elements knows`,
+      custom ? `"${input.type}" is a custom element this document wasn't given: pass it in the components option` : `"${input.type}" isn't an element Elements knows`,
       `${path}.type`
     );
     return null;
@@ -276,7 +276,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (typeof input.id !== "string" || !ID.test(input.id)) {
       d.error("id/invalid", `An id starts with a letter and holds letters, digits, "_" and "-", not ${JSON.stringify(input.id)}`, `${path}.id`);
     } else if (context.idPrefix === null) {
-      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a template's own element, ids are kept only when the element is given one (a block used many times can't own an id)`, `${path}.id`);
+      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a custom element, ids are kept only when the element is given one (a block used many times can't own an id)`, `${path}.id`);
     } else {
       const full = context.idPrefix ? `${context.idPrefix}-${input.id}` : input.id;
       if (context.used.has(full)) d.error("id/duplicate", `The id "${full}" is already used by another element`, `${path}.id`);
@@ -300,7 +300,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (typeof input.field !== "string" || !FIELD_PATH.test(input.field)) {
       d.error("template/field-path", `A field is a template field's path (headline, features[1], stories[1].image), not ${show(input.field)}`, `${path}.field`, id);
     } else if (context.idPrefix !== undefined) {
-      d.add("field/dropped", "info", `The field "${input.field}" is left out: a binding is read only on a built-in in the template's own render, not in what a custom component renders`, `${path}.field`, id);
+      d.add("field/dropped", "info", `The field "${input.field}" is left out: a binding is read only on a built-in in the template's own render, not in what a custom element renders`, `${path}.field`, id);
     } else node.field = input.field;
   }
 
@@ -378,7 +378,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     origins = themed.origins;
     from = themed.from;
   } else if (custom && isObject(input.style) && "apply" in input.style) {
-    d.error("style/apply-place", `A template's own element takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
+    d.error("style/apply-place", `A custom element takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
     const { apply: _, ...rest } = input.style;
     themedInput = rest;
   }
@@ -486,7 +486,7 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
       d.error("prop/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
       continue;
     }
-    // A token in a template's prop (a template's own component's color): its value where the node is.
+    // A token in a template's prop (a custom element's color): its value where the node is.
     let given: unknown = value;
     if (context?.mode === "authored" && holdsToken(value)) {
       const problems: Problem[] = [];

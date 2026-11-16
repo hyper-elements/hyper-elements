@@ -113,7 +113,7 @@ for (const [name, value] of Object.entries(Elements)) {
   }
   elementsModule[name] = stand;
 }
-// A template's own element (defineElement(), or component(), its name before) notes its line too.
+// A custom element (defineElement(), or component(), its name before) notes its line too.
 elementsModule.defineElement = (spec: { type?: string }) => locate(String(spec?.type ?? "element"), Elements.defineElement(spec as never) as object);
 elementsModule.component = elementsModule.defineElement;
 

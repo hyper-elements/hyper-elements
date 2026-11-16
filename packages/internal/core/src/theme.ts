@@ -214,7 +214,7 @@ export class ThemeEnvironment {
     return { ok: true, value: target.value, group: entry.group };
   }
 
-  /** Every token's value here, as nested groups: what a template's own component's render reads. */
+  /** Every token's value here, as nested groups: what a custom element's render reads. */
   view(): Record<string, Json> {
     const out: Record<string, Json> = {};
     for (const path of this.tokens.keys()) {
@@ -524,7 +524,7 @@ function readComponents(value: Record<string, unknown>, at: string, context: The
     const definition = context.definition(type);
     if (!definition || type.includes(".")) {
       const meant = nearest(type, context.types());
-      d.error("theme/schema", `${show(type)} isn't a built-in element${meant ? `: did you mean "${meant}"?` : ""} (a template's own element is styled in its render)`, where);
+      d.error("theme/schema", `${show(type)} isn't a built-in element${meant ? `: did you mean "${meant}"?` : ""} (a custom element is styled in its render)`, where);
       continue;
     }
     const isRoot = definition.categories.includes("root");

@@ -102,7 +102,7 @@ describe("reading condition blocks inside style", () => {
     expect(diagnostics).toContainEqual(expect.objectContaining({ code: "mobile/not-supported", severity: "error", path: "root.children[0].style.mobile" }));
   });
 
-  it("takes no block on a template's own component, whose style is its place in a Row", () => {
+  it("takes no block on a custom element, whose style is its place in a Row", () => {
     const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Column><Text>Card</Text></Column> });
     const { diagnostics } = validate(
       <Page>
@@ -112,7 +112,7 @@ describe("reading condition blocks inside style", () => {
     expect(diagnostics).toContainEqual(expect.objectContaining({ code: "style/unknown", path: "root.children[0].style.mobile" }));
   });
 
-  it("lets a template's own component use blocks in what it renders", () => {
+  it("lets a custom element use blocks in what it renders", () => {
     const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Column><Text style={{ mobile: { fontSize: 12 } }}>Card</Text></Column> });
     const { valid, diagnostics } = validate(
       <Page>
@@ -139,7 +139,7 @@ describe("mobile and hover as props", () => {
     expect(unknown[0]!.message).toContain("style={{ mobile: { … } }}");
   });
 
-  it("aren't props inside a template's own component either", () => {
+  it("aren't props inside a custom element either", () => {
     const Card = component({ type: "acme.Card", label: "Card", props: {}, render: () => <Text {...({ mobile: { fontSize: 12 } } as object)}>Card</Text> });
     const { valid, diagnostics } = validate(
       <Page>

@@ -165,7 +165,7 @@ const brand = defineTheme({
 </Column>
 ```
 
-A named style, a variant or an element default may apply named styles too. Named styles that apply each other in a loop are an error. A design's own element takes no named styles: apply them in what it renders.
+A named style, a variant or an element default may apply named styles too. Named styles that apply each other in a loop are an error. A custom element takes no named styles: apply them in what it renders.
 
 ## Which wins
 

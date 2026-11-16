@@ -17,7 +17,7 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 ### Elements, not components
 
 What a design is made of is called an element now, as the library's name says: the built-in ones (`Button`,
-`Text`, `Row`…) and a design's own. The names before keep working, deprecated, so nothing has to change:
+`Text`, `Row`…) and custom ones. The names before keep working, deprecated, so nothing has to change:
 
 | Now | Before (deprecated) |
 |-----|---------------------|

@@ -382,7 +382,7 @@ describe("scopes", () => {
   });
 });
 
-describe("a template's own components", () => {
+describe("custom elements", () => {
   const Card = component({
     type: "acme.Card",
     label: "Card",
@@ -741,7 +741,7 @@ describe("hostile themes", () => {
     it.each([
       ["an Email", Email],
       ["a Page", Page],
-    ])("in %s with a template's own component: refused, and nothing added to every object", async (_, Root) => {
+    ])("in %s with a custom element: refused, and nothing added to every object", async (_, Root) => {
       const theme = defineTheme({ colors: { constructor: { prototype: { polluted: "#123456" } }, primary: "#000000" } });
       expect(errors(<Root theme={theme}><Card /></Root>).map((d) => [d.code, d.path])).toEqual([["theme/schema", "root.theme.colors.constructor"]]);
       await expect(render(<Root theme={theme}><Card /></Root>)).rejects.toThrow(/JavaScript keeps for its own objects/);
@@ -807,7 +807,7 @@ describe("the builder", () => {
     expect(JSON.stringify(design)).toContain("#f3f4f6");
   });
 
-  it("draws a template's own component in a locked block with the theme and the scopes around it", () => {
+  it("draws a custom element in a locked block with the theme and the scopes around it", () => {
     const Tinted = component({ type: "acme.Tinted", label: "Tinted", props: {}, render: () => <Column><Button href="https://example.com">a</Button></Column> });
     const { design } = toDesign(
       <Email theme={brand}>
