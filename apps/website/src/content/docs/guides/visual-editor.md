@@ -35,10 +35,10 @@ await writeFile("output/design.json", JSON.stringify(design, null, 2));
 
 ## The report
 
-`report` lists what the builder can't hold as it is, one line each, with the path to the block. It's empty when everything maps to a builder tool. A `Table` in an `Email`, for example:
+`report` lists what the builder can't hold as it is, one line each, with the path to the block. It's empty when everything maps to a builder tool. A `Table` in an `Email` with a line between its rows (`rowBorder`), which the builder's table can't draw, for example:
 
 ```text
-root.children[1]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)
+root.children[1]: the builder's table doesn't draw it as it is (a line between rows only): it's an HTML block of its own markup in the builder (it can be moved, not edited)
 ```
 
 Read the report before you promise an editor user that a block is editable.
@@ -48,8 +48,8 @@ Read the report before you promise an editor user that a block is editable.
 The builder holds what its tools can. Two things happen to the rest:
 
 - **Hidden properties.** A style or prop a tool has no field for is a hidden property of that tool. It's kept in the design under its own name and drawn by Elements, but the builder shows no control for it yet.
-- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a `Table` in an `Email` or a `Page`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
-- **Tables in a Document.** A `Table` in a `Document` is the builder's table, a tool of its document mode: its header and footer rows, each cell's words and each column's share, what its rows share (text styles, background, padding) and each cell's own. The builder draws one border around every cell, so a line between rows is drawn above the first row and below the last too, and a cell spanning columns is a cell for each column. A table with an image in a cell stays an HTML block. The report says each. `fromDesign()` reads a table back as a `Table`, one made in the builder too.
+- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
+- **Tables.** A `Table` is the builder's table: its header and footer rows, each cell's words and each column's share, what its rows share (text styles, background, padding) and each cell's own. The builder draws one border around every cell and has no cells across columns, no table width and no phone values. In an `Email` or a `Page`, a table the builder would draw otherwise (a line between rows only, a cell spanning columns, a border around the table, a width, a column of a fixed width) stays an HTML block, which draws it exactly. In a `Document`, where the builder doesn't draw an HTML block, it's the builder's table all the same: a line between rows is drawn above the first row and below the last too, and a cell spanning columns is a cell for each column. A table with an image in a cell, or a row, a cell or words in a cell hidden on phones or desktops, stays an HTML block. The report says each. `fromDesign()` reads a table back as a `Table`, one made in the builder too.
 
 Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet, so a `PageNumber` goes in as its token, which the editor's PDF prints as it is. The report says so.
 

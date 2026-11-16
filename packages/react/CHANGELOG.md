@@ -29,17 +29,25 @@ What a template is made of is called an element now, as the library's name says:
 - `inspect()`'s theme lists each element's variants as `elements`, and as `components` too, the same list.
 - Messages say "element". Diagnostic codes are unchanged (`component/not-supported` among them).
 
-### A Document's Table is the builder's table
+### A Table is the builder's table
 
-`toDesign()` writes a `Table` in a `Document` as the Unlayer builder's table, a tool of its document mode, instead of
-an HTML block, which the builder's document mode keeps but doesn't draw or export: a Document's tables were missing
-from the builder's page and its PDF. The table's header and footer rows, each cell's words and each column's share go
-in, with what its rows share (text styles, background, padding) as the table's fields and each cell's own styles. The
-builder draws one border around every cell: a line between rows is drawn above the first row and below the last too,
-a cell spanning columns is a cell for each column, a header row below the table's first rows is a row in bold, and
-other borders are left out; a table with an image in a cell is still an HTML block. `report` says each.
+`toDesign()` writes a `Table` as the Unlayer builder's table instead of an HTML block. The table's header and footer
+rows, each cell's words and each column's share go in, with what its rows share (text styles, background, padding) as
+the table's fields and each cell's own styles. A table with an image in a cell, or a row, a cell or words in a cell
+hidden on phones or desktops, is still an HTML block.
+
+- In a `Document`, the builder's document mode keeps an HTML block but doesn't draw or export it, so a Document's
+  tables were missing from the builder's page and its PDF. A Document's `Table` is the builder's table all the same,
+  and `report` says what it draws otherwise: the builder draws one border around every cell, so a line between rows
+  is drawn above the first row and below the last too, a cell spanning columns is a cell for each column, a header
+  row below the table's first rows is a row in bold, and other borders are left out.
+- In an `Email` or a `Page`, an HTML block draws a table exactly, so a `Table` is the builder's table only where the
+  builder draws it as it is. One it would draw otherwise (a line between rows only, a cell spanning columns, a border
+  around the table, a width, a column of a fixed width, phone values, a half-transparent background) stays an HTML
+  block, as before, and `report` says why.
+
 `fromDesign()` reads the builder's table back as a `Table`, one made in the builder too, where it was left out before;
-a cell's paragraphs are its lines. A `Table` in an `Email` or a `Page` is an HTML block as before.
+a cell's paragraphs are its lines.
 
 ### What a PDF or an image looks for
 
