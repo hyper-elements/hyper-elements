@@ -316,6 +316,12 @@ describe("what the builder draws around a design's rows", () => {
     expect(code).toContain("Left<LineBreak />Right");
     expect(report).toEqual(["rows[0].columns[0].contents[0]: a table cell's paragraphs are lines of the cell: their own spacing, indent, alignment and line height are left out"]);
   });
+
+  it("says a cell's paragraph font size in other units than px, which it doesn't read, and keeps its words", () => {
+    const { code, report } = fromDesign(oneTable({ enableHeader: false, table: { headers: [], rows: [{ cells: [{ text: '<p style="font-size:1.2em">Bigger</p>', width: 100 }], height: 30 }], footers: [] } }), { displayMode: "document" });
+    expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc" }}>Bigger</TableCell>');
+    expect(report).toEqual(["rows[0].columns[0].contents[0]: a table cell's text has what a TableCell doesn't hold (a paragraph's font size 1.2em): left out"]);
+  });
 });
 
 describe("malformed design JSON", () => {

@@ -406,6 +406,25 @@ describe("a Document's Table", () => {
     expect(due.values.table.rows[0].cells).toMatchObject([{ padding: "4px" }, { padding: "4px", backgroundColor: "#fef3c7" }]);
   });
 
+  it("says cells' lines side by side are one line in the builder's table, two in a Table that doesn't collapse them, and keeps them two read back", () => {
+    const line = "1px solid #9ca3af";
+    const { design, report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow>
+            <TableCell style={{ border: line }}>A</TableCell>
+            <TableCell style={{ border: line }}>B</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    const [grid] = tables(design);
+    expect(grid.values.border).toMatchObject({ borderTopWidth: "1px", borderLeftWidth: "1px", borderRightWidth: "1px", borderBottomWidth: "1px" });
+    expect(grid.values.borderCollapse).toBe("separate");
+    expect(report).toEqual(["root.children[0]: the lines of cells side by side are one line in the builder's table, two in the Table (its borderCollapse isn't collapse)"]);
+    expect(fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "document" }).code).toContain('borderCollapse: "separate"');
+  });
+
   it("keeps a table of header rows only as the builder's header, with no rows of its own", () => {
     const { design, report } = toDesign(
       <Document>
