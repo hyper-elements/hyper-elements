@@ -19,7 +19,7 @@
     "u_column": 8,
     "u_content_heading": 3,
     "u_content_paragraph": 7,
-    "u_content_html": 1,
+    "u_content_table": 1,
     "u_content_page_break": 2,
     "u_content_image": 1,
     "u_header": 1,
@@ -104,19 +104,168 @@
           }
          },
          {
-          "type": "html",
+          "type": "table",
           "values": {
            "containerPadding": "14px 0px 0px",
-           "html": "<main style=\"width:100%;max-width:479px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:13px;font-weight:400;font-style:normal;line-height:1.55;letter-spacing:0;text-align:left;text-transform:none\"><table style=\"border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%\"><colgroup><col style=\"width:50.1%\"><col style=\"width:49.9%\"></colgroup><thead><tr style=\"font-weight:600\"><th scope=\"col\" style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top;font-weight:600;text-align:left\">Day</th><th scope=\"col\" style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top;font-weight:600;text-align:right\">Nautical miles</th></tr></thead><tbody><tr><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top\">Monday, Oban to Stornoway</td><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:20px;text-align:right\">112</td></tr><tr><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top\">Tuesday, Stornoway to Ullapool</td><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:20px;text-align:right\">44</td></tr><tr><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top\">Wednesday, Ullapool to Oban</td><td style=\"box-sizing:border-box;padding:7px 0;border-bottom:1px solid #d2cfc3;vertical-align:top;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:20px;text-align:right\">118</td></tr></tbody><tfoot><tr><td style=\"box-sizing:border-box;padding:7px 0;vertical-align:top;font-weight:600\">Total</td><td style=\"box-sizing:border-box;padding:7px 0;vertical-align:top;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:20px;text-align:right\">274</td></tr></tfoot></table></main>",
+           "table": {
+            "headers": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.55\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Day\"}]}]}}",
+                "width": 50
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.55\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Nautical miles\"}]}]}}",
+                "width": 50,
+                "textAlign": "right"
+               }
+              ],
+              "height": 35
+             }
+            ],
+            "rows": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Monday, Oban to Stornoway\"}]}]}}",
+                "width": 50
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:12px;line-height:20px\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'DM Mono', SFMono-Regular, Menlo, Consolas, monospace\",\"text\":\"112\"}]}]}}",
+                "width": 50,
+                "textAlign": "right"
+               }
+              ],
+              "height": 35
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Tuesday, Stornoway to Ullapool\"}]}]}}",
+                "width": 50
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:12px;line-height:20px\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'DM Mono', SFMono-Regular, Menlo, Consolas, monospace\",\"text\":\"44\"}]}]}}",
+                "width": 50,
+                "textAlign": "right"
+               }
+              ],
+              "height": 35
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Wednesday, Ullapool to Oban\"}]}]}}",
+                "width": 50
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:12px;line-height:20px\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'DM Mono', SFMono-Regular, Menlo, Consolas, monospace\",\"text\":\"118\"}]}]}}",
+                "width": 50,
+                "textAlign": "right"
+               }
+              ],
+              "height": 35
+             }
+            ],
+            "footers": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.55\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:600\",\"text\":\"Total\"}]}]}}",
+                "width": 50
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:12px;line-height:20px\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'DM Mono', SFMono-Regular, Menlo, Consolas, monospace\",\"text\":\"274\"}]}]}}",
+                "width": 50,
+                "textAlign": "right"
+               }
+              ],
+              "height": 35
+             }
+            ]
+           },
+           "columns": 2,
+           "rows": 3,
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#d2cfc3",
+            "borderLeftWidth": "0px",
+            "borderLeftStyle": "solid",
+            "borderLeftColor": "transparent",
+            "borderRightWidth": "0px",
+            "borderRightStyle": "solid",
+            "borderRightColor": "transparent",
+            "borderBottomWidth": "1px",
+            "borderBottomStyle": "solid",
+            "borderBottomColor": "#d2cfc3"
+           },
+           "stripedRows": false,
+           "stripedRowsBackgroundColor": "#CCC",
+           "enableHeader": true,
+           "repeatHeaderOnEachPage": true,
+           "headerBackgroundColor": "",
+           "headerFontWeight": 600,
+           "headerFontSize": "13px",
+           "headerTextAlign": "left",
+           "headerVerticalAlign": "top",
+           "headerPadding": "7px 0px",
+           "contentBackgroundColor": "",
+           "contentFontSize": "13px",
+           "contentTextAlign": "left",
+           "contentVerticalAlign": "top",
+           "contentLineHeight": "155%",
+           "contentPadding": "7px 0px",
+           "enableFooter": true,
+           "repeatFooterOnEachPage": true,
+           "footerBackgroundColor": "",
+           "footerFontWeight": 400,
+           "footerFontSize": "13px",
+           "footerTextAlign": "left",
+           "footerVerticalAlign": "top",
+           "footerPadding": "7px 0px",
+           "linkStyle": {
+            "body": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
            "_meta": {
-            "htmlID": "u_content_html_1",
-            "htmlClassNames": "u_content_html"
+            "htmlID": "u_content_table_1",
+            "htmlClassNames": "u_content_table"
            },
            "selectable": true,
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "headerFontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "headerColor": "#12242e",
+           "contentFontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "contentFontWeight": 400,
+           "contentColor": "#12242e",
+           "contentLetterSpacing": "0px",
+           "footerFontFamily": {
+            "label": "Familjen Grotesk",
+            "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+           },
+           "footerColor": "#12242e",
+           "rowBorder": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#d2cfc3"
+           }
           }
          }
         ],
@@ -914,7 +1063,7 @@
   },
   "report": [
    "root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet",
-   "root.children[1].children[2]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
+   "root.children[1].children[2]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row",
    "root.children[4]: the builder's row has no place for style.backgroundColor: left out"
   ]
  },

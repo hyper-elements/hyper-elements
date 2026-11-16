@@ -8,6 +8,7 @@ import { block, type Block } from "./design";
 import { hiddenOf, merge } from "./hide";
 import { listJson, paragraphJson, runsHtml } from "./runs";
 import { intoMarkup } from "./paint";
+import { tableValues } from "./table";
 import { withParagraphMargin } from "./text";
 import { builderBorder, builderFont, builderLink, cssLineHeight, cssPx, cssSides, encode, fieldLineHeight, type Values } from "./values";
 
@@ -257,6 +258,14 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
       return place.put(block("html", hiding), merge({ html: inText(withParagraphMargin(String(node.props?.html ?? ""), "margin-top:1em;margin-bottom:1em"), place.textAround(path)), containerPadding: cssSides(around), ...id }, hiddenOf("html", node)));
     case "PageBreak":
       return place.put(block("page_break"));
+    case "Table": {
+      // The builder's table is a tool of its document mode only.
+      if (place.at("root").type !== "Document") return place.locked(node, path, "a Table isn't a tool of the builder's", around);
+      const values = tableValues(node, path, place);
+      if (typeof values === "string") return place.locked(node, path, values, around);
+      place.sayLeftOut("table", node, path, [...TEXT_STYLES.map((key) => `style.${key}`), "style.backgroundColor", "style.cellPadding", "style.rowBorder"]);
+      return place.put(block("table", hiding), merge({ ...values, containerPadding: cssSides(around), ...id }, hiddenOf("table", node)));
+    }
     default:
       // A plain stack (a Column without a box of its own) is its blocks, in the same column.
       if ((node.type === "Column" || node.type === "Section") && !Object.keys(node.style ?? {}).some((key) => !["padding", "gap", "alignItems", ...TEXT_STYLES].includes(key)) && !node.hidden) {
@@ -281,7 +290,7 @@ function inText(html: string, text: Record<string, Json>): string {
   return css.length ? `<div style="${css.join(";")}">${html}</div>` : html;
 }
 
-const TOOLS: Record<string, string> = { Heading: "heading", Text: "paragraph", List: "paragraph", Button: "button", Image: "image", Link: "image", Divider: "divider", Menu: "menu", Social: "social", Video: "video", Html: "html" };
+const TOOLS: Record<string, string> = { Heading: "heading", Text: "paragraph", List: "paragraph", Button: "button", Image: "image", Link: "image", Divider: "divider", Menu: "menu", Social: "social", Video: "video", Html: "html", Table: "table" };
 
 /** An id the template gives a block, as the builder's (its element's id). */
 const meta = (id: string | undefined, tool = "html"): Values => (id ? { _meta: { htmlID: id, htmlClassNames: `u_content_${tool}` } } : {});

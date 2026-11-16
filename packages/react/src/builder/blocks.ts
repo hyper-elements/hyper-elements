@@ -6,8 +6,9 @@
  * they, and so the builder, draw), and a tool that isn't one of Elements' is left out, and said.
  */
 import { Button as ButtonDefinition, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type Node } from "@hyper-elements/core";
-import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
+import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TableDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
 import { parseRuns } from "./read-runs";
+import { readTable } from "./read-table";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, letterSpacing, px, serviceTag, sides, some, webLink, type Values } from "./read-values";
 import { contentSlotWidth } from "./image-sizing";
 import { readHidden } from "./hide";
@@ -244,6 +245,7 @@ const READERS = new Map<string, (values: Values, context: Context, slot?: Slot) 
   ["social", social],
   ["video", video],
   ["html", html],
+  ["table", readTable],
 ]);
 
 /** Each tool's defaults, which the builder gives a value its item doesn't have. */
@@ -258,13 +260,14 @@ const DEFAULTS = new Map<string, Values>([
   ["social", SocialDefaults],
   ["video", VideoDefaults],
   ["html", HtmlDefaults],
+  ["table", TableDefaults],
 ]);
 
 /** A builder block as nodes: its component, in a Column for its place where it needs one; none for a tool Elements has no component for. */
 export function readBlock(type: unknown, values: Values, context: Context, slot?: Slot): Node[] {
   const read = typeof type === "string" ? READERS.get(type) : undefined;
   if (!read) {
-    context.say(type === "table" ? "a table of the builder's isn't read into a Table yet: left out" : `a ${typeof type === "string" ? type : "block"} of the builder's has no component in Elements: left out`);
+    context.say(`a ${typeof type === "string" ? type : "block"} of the builder's has no component in Elements: left out`);
     return [];
   }
   sayUnread(type as string, values, DEFAULTS.get(type as string), context.say);

@@ -68,7 +68,9 @@ export function readDesign(given: unknown, displayMode: DisplayMode | undefined,
   // A web font the builder loads from a stylesheet (a Google Fonts URL); a root's fonts are font files, and a stylesheet
   // toDesign wrote for one of them comes back as that font.
   const ownFonts = new Set(arr(root.props?.fonts).map((face) => obj(face).family));
-  const webFonts = [...new Set([values, ...items].map((held) => obj(held.fontFamily)).filter((family) => typeof family.url === "string" && family.url && !ownFonts.has(family.label)).map((family) => String(family.label ?? family.value)))];
+  // (A table's header, content and footer each have a font of their own.)
+  const fontsOf = (held: Values) => [held.fontFamily, held.headerFontFamily, held.contentFontFamily, held.footerFontFamily].map(obj);
+  const webFonts = [...new Set([values, ...items].flatMap(fontsOf).filter((family) => typeof family.url === "string" && family.url && !ownFonts.has(family.label)).map((family) => String(family.label ?? family.value)))];
   if (webFonts.length) report.push(`body: ${webFonts.join(", ")}: web fonts the builder loads from a stylesheet, which a root doesn't take (its fonts are font files): left out, so text shows in the next font of its stack`);
   const tags = [...new Set(wordsIn(all, 12).flatMap((text) => [...text.matchAll(/\[\[\s*[\w.-]+\s*\]\]/g)].map((match) => match[0])))];
   if (tags.length) report.push(`body: ${tags.join(", ")}: design tags are filled in by the builder, from what it's given: written as they are`);

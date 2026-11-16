@@ -137,6 +137,21 @@ export function paragraphJson(node: Node, lost: string[], style: string): string
   return richText(children.length ? [{ type: "extended-paragraph", version: 1, format: "", indent: 0, direction: null, textFormat: 0, textStyle: "", isInlineTool: false, style: style || undefined, children: children as Json[] }] : []);
 }
 
+/**
+ * A table cell's runs as its rich text (`textJson`): one paragraph, empty in an empty cell as the builder's own are,
+ * its words in `around` (the cell's text styles its table has no field for), and where they're given its font size
+ * `fontSize` (the paragraph's own, so its lines are its size's), line height `lineHeight` (CSS: a multiple without a
+ * unit, which each run's size multiplies as Elements' does, or px) and direction `dir` (ltr or rtl).
+ */
+export function cellJson(node: Node, lost: string[], around: Record<string, Json>, { fontSize, lineHeight, dir }: { fontSize?: number; lineHeight?: string; dir?: string } = {}): string {
+  const declared = [fontSize === undefined ? "" : `font-size:${cssPx(fontSize)}`, lineHeight === undefined ? "" : `line-height:${lineHeight}`].filter(Boolean);
+  const style = declared.length ? declared.join(";") : undefined;
+  const direction = dir === "ltr" || dir === "rtl" ? dir : null;
+  if (dir !== undefined && !direction) lost.push(`direction "${dir}" in a cell`);
+  const children = runItems(node, lost, runCss(around, unescaped));
+  return richText([{ type: "extended-paragraph", version: 1, format: "", indent: 0, direction, textFormat: 0, textStyle: "", isInlineTool: false, style, children: children as Json[] }]);
+}
+
 /** A list's rich text: an item for its words, and one for each list in it, as the builder's editor nests a list. */
 function listItem(node: Node, lost: string[]): Item {
   const numbered = node.props?.type === "number";

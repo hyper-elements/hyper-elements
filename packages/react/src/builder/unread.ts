@@ -33,6 +33,16 @@ const READ: Record<string, { values: string[]; phone: string[] }> = {
   social: { values: ["icons", "spacing", "align", "iconSize", "containerPadding"], phone: ["containerPadding", "hideMobile"] },
   video: { values: ["video", "textAlign", "containerPadding"], phone: ["containerPadding", "hideMobile"] },
   html: { values: ["html", "containerPadding"], phone: ["containerPadding", "hideMobile"] },
+  // Its columns and rows are counts of its table's; a header and a footer are printed on every page in Elements, so
+  // `repeat…OnEachPage` turned off isn't read.
+  table: {
+    values: [
+      "table", "columns", "rows", "border", "stripedRows", "stripedRowsBackgroundColor", "enableHeader", "enableFooter", "containerPadding",
+      ...["header", "content", "footer"].flatMap((part) => ["FontFamily", "BackgroundColor", "FontWeight", "FontSize", "Color", "TextAlign", "VerticalAlign", "Padding"].map((field) => `${part}${field}`)),
+      "contentLineHeight", "contentLetterSpacing",
+    ],
+    phone: ["containerPadding", "hideMobile"],
+  },
 };
 
 /** The builder's defaults for a frame (a tool's are merged in before it's read). */

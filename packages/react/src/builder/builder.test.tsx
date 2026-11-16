@@ -6,7 +6,7 @@ import { collectTemplate } from "../primitives/collect";
 import { withParagraphMargin } from "./text";
 import { fromDesign, toDesign } from "./index";
 import { textJsonHtml } from "./text-json";
-import { invoice } from "./testing/templates";
+import { invoice, lineItems } from "./testing/templates";
 
 type Values = Record<string, any>;
 const blocks = (design: any): Array<{ type: string; values: Values }> => design.body.rows.flatMap((row: any) => row.columns.flatMap((column: any) => column.contents));
@@ -183,10 +183,15 @@ describe("toDesign", () => {
 
   it("says what a Document's HTML blocks lose, which the builder's document mode doesn't draw", () => {
     const missing = "the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF";
-    const table = <Table><TableRow><TableCell>Words</TableCell></TableRow></Table>;
-    expect(toDesign(<Document>{table}</Document>).report.join("\n")).toContain(missing);
+    const layer = (
+      <Layer>
+        <Image src={{ src: "https://x.test/a.png", width: 600, height: 200 }} alt="" />
+        <Text>Over</Text>
+      </Layer>
+    );
+    expect(toDesign(<Document>{layer}</Document>).report.join("\n")).toContain(missing);
     expect(toDesign(<Document><Html html="<p>Words</p>" /></Document>).report.join("\n")).toContain(missing);
-    expect(toDesign(<Email>{table}</Email>).report.join("\n")).toContain("it can be moved, not edited");
+    expect(toDesign(<Email>{layer}</Email>).report.join("\n")).toContain("it can be moved, not edited");
     expect(toDesign(<Email><Html html="<p>Words</p>" /></Email>).report).toEqual([]);
   });
 
@@ -303,6 +308,228 @@ describe("toDesign", () => {
 function PageFooterless() {
   return <Text>Three</Text>;
 }
+
+describe("a Document's Table", () => {
+  const tables = (design: any) => blocks(design).filter((content) => content.type === "table");
+  /** A cell's words, as the builder's editor writes its rich text out. */
+  const words = (cell: Values) => textJsonHtml(cell.textJson).html.replace(/<[^>]+>/g, "");
+  const table = (
+    <Table>
+      <TableRow>
+        <TableCell>Words</TableCell>
+      </TableRow>
+    </Table>
+  );
+
+  it("is the builder's table, a tool of its document mode; in an Email or a Page, an HTML block as before", () => {
+    const { design, report } = toDesign(<Document>{table}</Document>);
+    expect(blocks(design).map((content) => content.type)).toEqual(["table"]);
+    expect(report).toEqual([]);
+    for (const root of [<Email key="e">{table}</Email>, <Page key="p">{table}</Page>]) {
+      const { design, report } = toDesign(root);
+      expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
+      expect(report.join("\n")).toContain("a Table isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)");
+    }
+  });
+
+  it("writes its header, rows and footer, each cell's words, and each column's share of its width", () => {
+    const [items] = tables(toDesign(lineItems).design);
+    const { headers, rows, footers } = items.values.table;
+    expect([headers.length, rows.length, footers.length]).toEqual([1, 2, 1]);
+    expect(items.values).toMatchObject({ enableHeader: true, enableFooter: true, repeatHeaderOnEachPage: true, repeatFooterOnEachPage: true, columns: 3, rows: 2 });
+    expect([...headers, ...rows, ...footers].map((row: Values) => row.cells.map(words))).toEqual([
+      ["Item", "Qty", "Amount"],
+      ["Design review", "2", "$200.00"],
+      ["HostingMonthly", "1", "$49.00"],
+      ["Total", "", "$249.00"],
+    ]);
+    // The first column is 60% of the table; the others share the rest.
+    expect(headers[0].cells.map((cell: Values) => cell.width)).toEqual([60, 20, 20]);
+  });
+
+  it("writes what a part's rows share as the table's fields, and a cell's own styles where they differ", () => {
+    const [items] = tables(toDesign(lineItems).design);
+    const values = items.values;
+    expect(values).toMatchObject({
+      headerBackgroundColor: "#f3f4f6",
+      headerColor: "#374151",
+      headerFontWeight: 700,
+      contentBackgroundColor: "#ffffff",
+      contentColor: "#111827",
+      contentFontSize: "13px",
+      contentLineHeight: "150%",
+      contentPadding: "6px 8px",
+      contentVerticalAlign: "top",
+      footerFontWeight: 700,
+    });
+    const [, hosting] = values.table.rows;
+    expect(hosting.cells[1]).toMatchObject({ verticalAlign: "middle" });
+    expect(hosting.cells[2]).toMatchObject({ textAlign: "right", color: "#b91c1c" });
+    // A size its footer's field doesn't say is its paragraph's own (so its lines are its size's); a header's or footer's
+    // line height is its own, a multiple as it's given, which each run's size multiplies.
+    const total = values.table.footers[0].cells[2];
+    expect(JSON.parse(total.textJson).root.children[0].style).toBe("font-size:15px;line-height:1.5");
+    // Each row at least as tall as its words' line and padding: 19.5px and 12px.
+    expect(values.table.rows.map((row: Values) => row.height)).toEqual([32, 32]);
+  });
+
+  it("gives a cell with a run of its own size its line height as a multiple, which the builder multiplies by each run's size as Elements does", () => {
+    const { design } = toDesign(
+      <Document>
+        <Table>
+          <TableRow>
+            <TableCell>
+              <Span style={{ fontSize: 24 }}>Large</Span> amount
+            </TableCell>
+            <TableCell>Plain</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    const [large, plain] = tables(design)[0].values.table.rows[0].cells;
+    // The content's 150% is a length its words inherit in the builder: 24px lines for 24px words, 36px in Elements.
+    expect(JSON.parse(large.textJson).root.children[0].style).toBe("line-height:1.5");
+    expect(JSON.parse(plain.textJson).root.children[0].style).toBeUndefined();
+  });
+
+  it("writes the line between rows as the builder's border, which it says the builder draws above and below the table too", () => {
+    const { design, report } = toDesign(lineItems);
+    const [items] = tables(design);
+    expect(items.values.border).toMatchObject({ borderTopWidth: "1px", borderTopColor: "#e5e7eb", borderBottomWidth: "1px", borderLeftWidth: "0px", borderRightWidth: "0px" });
+    expect(report).toContain("root.children[1]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row");
+  });
+
+  it("writes cells with the same lines all round as the builder's border, their padding and background each cell's", () => {
+    const [, due] = tables(toDesign(lineItems).design);
+    expect(due.values.border).toEqual({ borderTopWidth: "1px", borderTopStyle: "solid", borderTopColor: "#9ca3af", borderRightWidth: "1px", borderRightStyle: "solid", borderRightColor: "#9ca3af", borderBottomWidth: "1px", borderBottomStyle: "solid", borderBottomColor: "#9ca3af", borderLeftWidth: "1px", borderLeftStyle: "solid", borderLeftColor: "#9ca3af" });
+    expect(due.values.contentPadding).toBe("0px");
+    expect(due.values.table.rows[0].cells).toMatchObject([{ padding: "4px" }, { padding: "4px", backgroundColor: "#fef3c7" }]);
+  });
+
+  it("keeps a table of header rows only as the builder's header, with no rows of its own", () => {
+    const { design, report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow header>
+            <TableCell>Words</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    const [only] = tables(design);
+    expect(only.values).toMatchObject({ enableHeader: true, rows: 0, headerFontWeight: 700 });
+    expect(only.values.table.headers[0].cells.map(words)).toEqual(["Words"]);
+    expect(only.values.table.rows).toEqual([]);
+    expect(report).toEqual([]);
+  });
+
+  it("says what the builder's table can't hold: a cell across columns, a row short of cells, lines on some cells only", () => {
+    const { design, report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow>
+            <TableCell colSpan={2} style={{ border: "1px solid #000000" }}>
+              Wide
+            </TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>A</TableCell>
+            <TableCell>B</TableCell>
+            <TableCell>C</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    const [wide] = tables(design);
+    expect(wide.values.table.rows.map((row: Values) => row.cells.map(words))).toEqual([
+      ["Wide", "", ""],
+      ["A", "B", "C"],
+    ]);
+    expect(report).toEqual([
+      "root.children[0]: its cells' borders aren't one border around every cell, the only one the builder's table draws: left out",
+      "root.children[0]: a cell spanning columns is a cell for each column in the builder's table, its words in the first: the builder's table has no cells across columns",
+      "root.children[0]: a row with fewer cells than the table's columns has empty cells in the builder's table, to make up its columns",
+    ]);
+  });
+
+  it("keeps a table with an image in a cell, linked or not, as an HTML block, and says why", () => {
+    const image = <Image src={{ src: "https://x.test/a.png", width: 20, height: 20 }} alt="A" />;
+    for (const inCell of [image, <Link key="l" href="https://x.test">{image}</Link>]) {
+      const { design, report } = toDesign(
+        <Document>
+          <Table>
+            <TableRow>
+              <TableCell>{inCell}</TableCell>
+            </TableRow>
+          </Table>
+        </Document>
+      );
+      expect(blocks(design).map((content) => content.type)).toEqual(["html"]);
+      expect(report[0]).toMatch(/^root\.children\[0\]: an Image in a table cell isn't something the builder's table holds: it's an HTML block/);
+    }
+  });
+
+  it("says a header row below the table's first rows, in its rows or its footer, is a row of the builder's table, which has its header at its top", () => {
+    const { design, report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow>
+            <TableCell>Body</TableCell>
+          </TableRow>
+          <TableRow header>
+            <TableCell>Subheading</TableCell>
+          </TableRow>
+          <TableRow header footer>
+            <TableCell>Closing heading</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    const [grouped] = tables(design);
+    expect(grouped.values.table.rows.map((row: Values) => row.cells.map(words))).toEqual([["Body"], ["Subheading"]]);
+    expect(report).toEqual([1, 2].map((row) => `root.children[0].children[${row}]: a header row below the table's first rows is a row of the builder's table, its words in bold: the builder's table has its header at its top only`));
+  });
+
+  it("says a row's and a cell's id, which the builder's table has no place for, are left out", () => {
+    const { report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow id="details">
+            <TableCell id="first">Words</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    expect(report).toEqual([
+      "root.children[0].children[0]: the builder's table has no place for a row's id: left out",
+      "root.children[0].children[0].children[0]: the builder's table has no place for a cell's id: left out",
+    ]);
+  });
+
+  it("gives a table's fonts the root has their stylesheet, as the builder loads one, and says one it hasn't", () => {
+    const face = { family: "Geist", src: "https://fonts.example/geist.woff2", format: "woff2", weight: "100 900" } as const;
+    const { design } = toDesign(<Document fonts={[face]}>{<Table style={{ fontFamily: "Geist, Arial, sans-serif" }}><TableRow><TableCell>Words</TableCell></TableRow></Table>}</Document>);
+    const [held] = tables(design);
+    expect(decodeURIComponent(held.values.contentFontFamily.url)).toContain("src:url(https://fonts.example/geist.woff2)");
+    expect(fromDesign(design, { displayMode: "document" }).report.join("\n")).not.toContain("web fonts");
+    const other = JSON.parse(JSON.stringify(design));
+    tables(other)[0].values.headerFontFamily = { label: "Lora", value: "Lora, serif", url: "https://fonts.example/lora.css" };
+    expect(fromDesign(other, { displayMode: "document" }).report.join("\n")).toContain("Lora: web fonts the builder loads from a stylesheet");
+  });
+
+  it("comes back from the builder as the Table it was", () => {
+    const { design } = toDesign(lineItems);
+    const { code, report } = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "document" });
+    expect(report).toEqual([]);
+    expect(code).toContain("<TableRow header");
+    expect(code).toContain("<TableRow footer");
+    expect(code).toContain("cellPadding: [6, 8, 6, 8]");
+    expect(code).toContain('width: "60%"');
+    // Its background is the table's again, under the header's own.
+    expect(code).toMatch(/<Table style=\{\{[^}]*backgroundColor: "#ffffff"/);
+    expect(code).not.toContain("height:");
+  });
+});
 
 describe("a link's window", () => {
   it("stays where a template gives no target, where the builder's default is a new one, and comes back with none", () => {

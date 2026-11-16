@@ -25,7 +25,8 @@ export function withFontStylesheets(design: Design): Design {
     if (Array.isArray(value)) return value.map((item) => walk(item));
     if (!value || typeof value !== "object") return value;
     const copy = Object.fromEntries(Object.entries(value).map(([k, v]) => [k, walk(v, k)]));
-    const url = key === "fontFamily" ? urls.get(String((value as { label?: unknown }).label)) : undefined;
+    // A text tool's font, and a table's header, content and footer fonts.
+    const url = key === "fontFamily" || /^(header|content|footer)FontFamily$/.test(key ?? "") ? urls.get(String((value as { label?: unknown }).label)) : undefined;
     return url ? { ...copy, url } : copy;
   };
   return walk(design) as Design;

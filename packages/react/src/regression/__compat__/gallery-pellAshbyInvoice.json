@@ -19,9 +19,10 @@
     "u_column": 48,
     "u_content_paragraph": 50,
     "u_content_heading": 2,
-    "u_content_html": 8,
+    "u_content_table": 2,
     "u_content_page_break": 1,
     "u_content_divider": 1,
+    "u_content_html": 6,
     "u_footer": 1
    },
    "body": {
@@ -835,19 +836,379 @@
        {
         "contents": [
          {
-          "type": "html",
+          "type": "table",
           "values": {
            "containerPadding": "40px 0px 0px",
-           "html": "<main style=\"width:100%;max-width:666px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><table style=\"border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%\"><colgroup><col style=\"width:auto\"><col style=\"width:64px\"><col style=\"width:72px\"><col style=\"width:136px\"></colgroup><thead><tr style=\"font-weight:700\"><th scope=\"col\" style=\"box-sizing:border-box;padding:0 0 8px 0;border-bottom:1px solid #1c1b19;vertical-align:top;color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:9.5px;font-weight:600;line-height:1.4;letter-spacing:1.1px;text-align:left;text-transform:uppercase\">Work</th><th scope=\"col\" style=\"box-sizing:border-box;padding:0 0 8px 0;border-bottom:1px solid #1c1b19;vertical-align:top;color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:9.5px;font-weight:600;line-height:1.4;letter-spacing:1.1px;text-align:right;text-transform:uppercase\">Hours</th><th scope=\"col\" style=\"box-sizing:border-box;padding:0 0 8px 0;border-bottom:1px solid #1c1b19;vertical-align:top;color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:9.5px;font-weight:600;line-height:1.4;letter-spacing:1.1px;text-align:right;text-transform:uppercase\">Rate</th><th scope=\"col\" style=\"box-sizing:border-box;padding:0 0 8px 0;border-bottom:1px solid #1c1b19;vertical-align:top;color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:9.5px;font-weight:600;line-height:1.4;letter-spacing:1.1px;text-align:right;text-transform:uppercase\">Amount</th></tr></thead><tbody><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Technical design drawings<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">Plans, sections and elevations at 1:50; key details at 1:5</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">64</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">£95</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">6,080.00</td></tr><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Specification and schedules<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">Doors, windows, finishes and ironmongery</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">36</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">£85</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">3,060.00</td></tr><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Structural coordination<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">With Hale Engineering: steel frame and foundations</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">22</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">£95</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">2,090.00</td></tr><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Planning conditions<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">Materials, landscaping and drainage: conditions 3, 5 and 9</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">18</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">£95</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">1,710.00</td></tr><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Site visits and minutes<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">Four visits, 2 September to 28 October</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">16</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">£95</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">1,520.00</td></tr><tr><td style=\"box-sizing:border-box;padding:10px 16px 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Expenses, at cost<br><span style=\"color:#6b675f;font-family:&#39;Hanken Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:10.5px\">Printing and rail travel; receipts attached</span></td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">—</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">—</td><td style=\"box-sizing:border-box;padding:10px 0 11px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">316.00</td></tr><tr><td style=\"box-sizing:border-box;padding:0;vertical-align:top\"></td><td colspan=\"2\" style=\"box-sizing:border-box;padding:8px 0;vertical-align:bottom;color:#6b675f;font-size:13.5px\">Subtotal</td><td style=\"box-sizing:border-box;padding:8px 0;vertical-align:bottom;text-align:right\">14,776.00</td></tr><tr><td style=\"box-sizing:border-box;padding:0;vertical-align:top\"></td><td colspan=\"2\" style=\"box-sizing:border-box;padding:8px 0;vertical-align:bottom;color:#6b675f;font-size:13.5px\">VAT at 20%</td><td style=\"box-sizing:border-box;padding:8px 0;vertical-align:bottom;text-align:right\">2,955.20</td></tr><tr><td style=\"box-sizing:border-box;padding:0;vertical-align:top\"></td><td colspan=\"2\" style=\"box-sizing:border-box;padding:12px 0 1px 0;border-top:1px solid #1c1b19;vertical-align:bottom\">Total due</td><td style=\"box-sizing:border-box;padding:10px 0 0 0;border-top:1px solid #1c1b19;vertical-align:bottom;color:#24513d;font-size:26px;line-height:1.1;letter-spacing:-0.3px;text-align:right\">£17,731.20</td></tr></tbody></table></main>",
+           "table": {
+            "headers": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:9.5px;line-height:1.4\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:600;font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;text-transform:uppercase;letter-spacing:1.1px\",\"text\":\"Work\"}]}]}}",
+                "width": 59.16,
+                "padding": "0px 0px 8px",
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:9.5px;line-height:1.4\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:600;font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;text-transform:uppercase;letter-spacing:1.1px\",\"text\":\"Hours\"}]}]}}",
+                "width": 9.61,
+                "padding": "0px 0px 8px",
+                "color": "#6b675f",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:9.5px;line-height:1.4\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:600;font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;text-transform:uppercase;letter-spacing:1.1px\",\"text\":\"Rate\"}]}]}}",
+                "width": 10.81,
+                "padding": "0px 0px 8px",
+                "color": "#6b675f",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:9.5px;line-height:1.4\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:600;font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;text-transform:uppercase;letter-spacing:1.1px\",\"text\":\"Amount\"}]}]}}",
+                "width": 20.42,
+                "padding": "0px 0px 8px",
+                "color": "#6b675f",
+                "textAlign": "right"
+               }
+              ],
+              "height": 22
+             }
+            ],
+            "rows": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Technical design drawings\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"Plans, sections and elevations at 1:50; key details at 1:5\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"64\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"£95\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"6,080.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Specification and schedules\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"Doors, windows, finishes and ironmongery\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"36\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"£85\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"3,060.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Structural coordination\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"With Hale Engineering: steel frame and foundations\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"22\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"£95\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"2,090.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Planning conditions\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"Materials, landscaping and drainage: conditions 3, 5 and 9\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"18\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"£95\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"1,710.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Site visits and minutes\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"Four visits, 2 September to 28 October\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"16\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"£95\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"1,520.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Expenses, at cost\"},{\"type\":\"linebreak\",\"version\":1},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-family:'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:10.5px;color:#6b675f\",\"text\":\"Printing and rail travel; receipts attached\"}]}]}}",
+                "width": 59.16,
+                "padding": "10px 16px 11px 0px"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"—\"}]}]}}",
+                "width": 9.61,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"—\"}]}]}}",
+                "width": 10.81,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"316.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 11px",
+                "textAlign": "right"
+               }
+              ],
+              "height": 42
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 59.16
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:13.5px;line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Subtotal\"}]}]}}",
+                "width": 9.61,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom",
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 10.81,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"14,776.00\"}]}]}}",
+                "width": 20.42,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom",
+                "textAlign": "right"
+               }
+              ],
+              "height": 37
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 59.16
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:13.5px;line-height:1.45\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"VAT at 20%\"}]}]}}",
+                "width": 9.61,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom",
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 10.81,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"2,955.20\"}]}]}}",
+                "width": 20.42,
+                "padding": "8px 0px",
+                "verticalAlign": "bottom",
+                "textAlign": "right"
+               }
+              ],
+              "height": 37
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 59.16
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Total due\"}]}]}}",
+                "width": 9.61,
+                "padding": "12px 0px 1px",
+                "verticalAlign": "bottom"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[]}]}}",
+                "width": 10.81,
+                "padding": "12px 0px 1px",
+                "verticalAlign": "bottom"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"font-size:26px;line-height:1.1\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"letter-spacing:-0.3px\",\"text\":\"£17,731.20\"}]}]}}",
+                "width": 20.42,
+                "padding": "10px 0px 0px",
+                "verticalAlign": "bottom",
+                "color": "#24513d",
+                "textAlign": "right"
+               }
+              ],
+              "height": 39
+             }
+            ],
+            "footers": []
+           },
+           "columns": 4,
+           "rows": 9,
+           "border": {
+            "borderTopWidth": "0px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "transparent",
+            "borderLeftWidth": "0px",
+            "borderLeftStyle": "solid",
+            "borderLeftColor": "transparent",
+            "borderRightWidth": "0px",
+            "borderRightStyle": "solid",
+            "borderRightColor": "transparent",
+            "borderBottomWidth": "0px",
+            "borderBottomStyle": "solid",
+            "borderBottomColor": "transparent"
+           },
+           "stripedRows": false,
+           "stripedRowsBackgroundColor": "#CCC",
+           "enableHeader": true,
+           "repeatHeaderOnEachPage": true,
+           "headerBackgroundColor": "",
+           "headerFontWeight": 700,
+           "headerFontSize": "14px",
+           "headerTextAlign": "left",
+           "headerVerticalAlign": "top",
+           "headerPadding": "0px",
+           "contentBackgroundColor": "",
+           "contentFontSize": "14px",
+           "contentTextAlign": "left",
+           "contentVerticalAlign": "top",
+           "contentLineHeight": "145%",
+           "contentPadding": "0px",
+           "enableFooter": false,
+           "repeatFooterOnEachPage": true,
+           "footerBackgroundColor": "",
+           "footerFontWeight": 400,
+           "footerFontSize": "14px",
+           "footerTextAlign": "left",
+           "footerVerticalAlign": "top",
+           "footerPadding": "0px",
+           "linkStyle": {
+            "body": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
            "_meta": {
-            "htmlID": "u_content_html_1",
-            "htmlClassNames": "u_content_html"
+            "htmlID": "u_content_table_1",
+            "htmlClassNames": "u_content_table"
            },
            "selectable": true,
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "headerFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "headerColor": "#1c1b19",
+           "contentFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "contentFontWeight": 400,
+           "contentColor": "#1c1b19",
+           "contentLetterSpacing": "0px",
+           "footerFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "footerColor": "#1c1b19"
           }
          }
         ],
@@ -1868,7 +2229,7 @@
            "containerPadding": "0px",
            "html": "<main style=\"width:100%;max-width:325px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"325\" height=\"10\" viewBox=\"0 0 325 10\" role=\"img\" aria-label=\"64 hours\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"325\" height=\"10\" fill=\"#24513d\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_2",
+            "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -2057,7 +2418,7 @@
            "containerPadding": "0px",
            "html": "<main style=\"width:100%;max-width:325px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"325\" height=\"10\" viewBox=\"0 0 325 10\" role=\"img\" aria-label=\"36 hours\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"183\" height=\"10\" fill=\"#b9c7bc\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_3",
+            "htmlID": "u_content_html_2",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -2246,7 +2607,7 @@
            "containerPadding": "0px",
            "html": "<main style=\"width:100%;max-width:325px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"325\" height=\"10\" viewBox=\"0 0 325 10\" role=\"img\" aria-label=\"22 hours\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"112\" height=\"10\" fill=\"#b9c7bc\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_4",
+            "htmlID": "u_content_html_3",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -2435,7 +2796,7 @@
            "containerPadding": "0px",
            "html": "<main style=\"width:100%;max-width:325px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"325\" height=\"10\" viewBox=\"0 0 325 10\" role=\"img\" aria-label=\"18 hours\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"91\" height=\"10\" fill=\"#b9c7bc\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_5",
+            "htmlID": "u_content_html_4",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -2624,7 +2985,7 @@
            "containerPadding": "0px",
            "html": "<main style=\"width:100%;max-width:325px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"325\" height=\"10\" viewBox=\"0 0 325 10\" role=\"img\" aria-label=\"16 hours\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"81\" height=\"10\" fill=\"#b9c7bc\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_6",
+            "htmlID": "u_content_html_5",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -2843,7 +3204,7 @@
            "containerPadding": "16px 0px 0px",
            "html": "<main style=\"width:100%;max-width:665px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"665\" height=\"121\" viewBox=\"0 0 665 121\" role=\"img\" aria-label=\"Hours by week, from 14 to 22\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"19\" y=\"49\" width=\"36\" height=\"71\" fill=\"#b9c7bc\"></rect><rect x=\"93\" y=\"28\" width=\"36\" height=\"92\" fill=\"#b9c7bc\"></rect><rect x=\"167\" y=\"8\" width=\"36\" height=\"112\" fill=\"#24513d\"></rect><rect x=\"241\" y=\"18\" width=\"36\" height=\"102\" fill=\"#b9c7bc\"></rect><rect x=\"315\" y=\"39\" width=\"36\" height=\"81\" fill=\"#b9c7bc\"></rect><rect x=\"388\" y=\"59\" width=\"36\" height=\"61\" fill=\"#b9c7bc\"></rect><rect x=\"462\" y=\"23\" width=\"36\" height=\"97\" fill=\"#b9c7bc\"></rect><rect x=\"536\" y=\"13\" width=\"36\" height=\"107\" fill=\"#b9c7bc\"></rect><rect x=\"610\" y=\"49\" width=\"36\" height=\"71\" fill=\"#b9c7bc\"></rect><rect x=\"0\" y=\"120\" width=\"665\" height=\"1\" fill=\"#1c1b19\"></rect></svg></main>",
            "_meta": {
-            "htmlID": "u_content_html_7",
+            "htmlID": "u_content_html_6",
             "htmlClassNames": "u_content_html"
            },
            "selectable": true,
@@ -3444,19 +3805,196 @@
           }
          },
          {
-          "type": "html",
+          "type": "table",
           "values": {
            "containerPadding": "16px 0px 0px",
-           "html": "<main style=\"width:100%;max-width:666px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#1c1b19;font-family:Newsreader, Georgia, &#39;Times New Roman&#39;, serif;font-size:14px;font-weight:400;font-style:normal;line-height:1.45;letter-spacing:0;text-align:left;text-transform:none\"><table style=\"border-collapse:separate;border-spacing:0;table-layout:fixed;width:100%\"><colgroup><col style=\"width:345px\"><col style=\"width:auto\"><col style=\"width:64px\"><col style=\"width:64px\"></colgroup><tbody><tr><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Ines Morrow</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f\">Project architect</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">74 h</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f;text-align:right\">47%</td></tr><tr><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Sam Okafor</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f\">Architectural assistant</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">34 h</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f;text-align:right\">22%</td></tr><tr><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top\">Hannah Pell</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f\">Director</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;text-align:right\">28 h</td><td style=\"box-sizing:border-box;padding:9px 0;border-bottom:1px solid #dad6cd;vertical-align:top;color:#6b675f;text-align:right\">18%</td></tr><tr><td style=\"box-sizing:border-box;padding:9px 0;vertical-align:top\">Oliver Ashby</td><td style=\"box-sizing:border-box;padding:9px 0;vertical-align:top;color:#6b675f\">Director</td><td style=\"box-sizing:border-box;padding:9px 0;vertical-align:top;text-align:right\">20 h</td><td style=\"box-sizing:border-box;padding:9px 0;vertical-align:top;color:#6b675f;text-align:right\">13%</td></tr></tbody></table></main>",
+           "table": {
+            "headers": [],
+            "rows": [
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Ines Morrow\"}]}]}}",
+                "width": 51.8
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Project architect\"}]}]}}",
+                "width": 28.98,
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"74 h\"}]}]}}",
+                "width": 9.61,
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"47%\"}]}]}}",
+                "width": 9.61,
+                "color": "#6b675f",
+                "textAlign": "right"
+               }
+              ],
+              "height": 39
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Sam Okafor\"}]}]}}",
+                "width": 51.8
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Architectural assistant\"}]}]}}",
+                "width": 28.98,
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"34 h\"}]}]}}",
+                "width": 9.61,
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"22%\"}]}]}}",
+                "width": 9.61,
+                "color": "#6b675f",
+                "textAlign": "right"
+               }
+              ],
+              "height": 39
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Hannah Pell\"}]}]}}",
+                "width": 51.8
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Director\"}]}]}}",
+                "width": 28.98,
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"28 h\"}]}]}}",
+                "width": 9.61,
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"18%\"}]}]}}",
+                "width": 9.61,
+                "color": "#6b675f",
+                "textAlign": "right"
+               }
+              ],
+              "height": 39
+             },
+             {
+              "cells": [
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Oliver Ashby\"}]}]}}",
+                "width": 51.8
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Director\"}]}]}}",
+                "width": 28.98,
+                "color": "#6b675f"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"20 h\"}]}]}}",
+                "width": 9.61,
+                "textAlign": "right"
+               },
+               {
+                "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"13%\"}]}]}}",
+                "width": 9.61,
+                "color": "#6b675f",
+                "textAlign": "right"
+               }
+              ],
+              "height": 39
+             }
+            ],
+            "footers": []
+           },
+           "columns": 4,
+           "rows": 4,
+           "border": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#dad6cd",
+            "borderLeftWidth": "0px",
+            "borderLeftStyle": "solid",
+            "borderLeftColor": "transparent",
+            "borderRightWidth": "0px",
+            "borderRightStyle": "solid",
+            "borderRightColor": "transparent",
+            "borderBottomWidth": "1px",
+            "borderBottomStyle": "solid",
+            "borderBottomColor": "#dad6cd"
+           },
+           "stripedRows": false,
+           "stripedRowsBackgroundColor": "#CCC",
+           "enableHeader": false,
+           "repeatHeaderOnEachPage": true,
+           "headerBackgroundColor": "",
+           "headerFontWeight": 400,
+           "headerFontSize": "14px",
+           "headerTextAlign": "left",
+           "headerVerticalAlign": "top",
+           "headerPadding": "9px 0px",
+           "contentBackgroundColor": "",
+           "contentFontSize": "14px",
+           "contentTextAlign": "left",
+           "contentVerticalAlign": "top",
+           "contentLineHeight": "145%",
+           "contentPadding": "9px 0px",
+           "enableFooter": false,
+           "repeatFooterOnEachPage": true,
+           "footerBackgroundColor": "",
+           "footerFontWeight": 400,
+           "footerFontSize": "14px",
+           "footerTextAlign": "left",
+           "footerVerticalAlign": "top",
+           "footerPadding": "9px 0px",
+           "linkStyle": {
+            "body": true,
+            "linkColor": "#0000ee",
+            "linkHoverColor": "#0000ee",
+            "linkUnderline": true,
+            "linkHoverUnderline": true
+           },
            "_meta": {
-            "htmlID": "u_content_html_8",
-            "htmlClassNames": "u_content_html"
+            "htmlID": "u_content_table_2",
+            "htmlClassNames": "u_content_table"
            },
            "selectable": true,
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "headerFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "headerColor": "#1c1b19",
+           "contentFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "contentFontWeight": 400,
+           "contentColor": "#1c1b19",
+           "contentLetterSpacing": "0px",
+           "footerFontFamily": {
+            "label": "Newsreader",
+            "value": "Newsreader, Georgia, 'Times New Roman', serif",
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9AfjOCX1hbuyalUrK4397yjIJFJpc.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Newsreader'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fnewsreader%2Fv26%2FcY9CfjOCX1hbuyalUrK439vCjohCBJWxZA.woff2)%20format('woff2')%3Bfont-weight%3A200%20800%3Bfont-style%3Aitalic%7D"
+           },
+           "footerColor": "#1c1b19",
+           "rowBorder": {
+            "borderTopWidth": "1px",
+            "borderTopStyle": "solid",
+            "borderTopColor": "#dad6cd"
+           }
           }
          },
          {
@@ -3773,7 +4311,8 @@
   "report": [
    "root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet",
    "root.children[0].children[2]: the builder's row has no place for style.padding: left out",
-   "root.children[0].children[3]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
+   "root.children[0].children[3]: its cells' borders aren't one border around every cell, the only one the builder's table draws: left out",
+   "root.children[0].children[3]: a cell spanning columns is a cell for each column in the builder's table, its words in the first: the builder's table has no cells across columns",
    "root.children[0].children[4]: the builder's row has no place for style.padding: left out",
    "root.children[1].children[2].children[1].children[0].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
    "root.children[1].children[2].children[1].children[1].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
@@ -3781,7 +4320,7 @@
    "root.children[1].children[2].children[1].children[3].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
    "root.children[1].children[2].children[1].children[4].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
    "root.children[1].children[3].children[1].children[0]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
-   "root.children[1].children[4].children[1]: a Table isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF"
+   "root.children[1].children[4].children[1]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row"
   ]
  },
  "pdf": {
