@@ -8,6 +8,7 @@ const dist = resolve(fileURLToPath(new URL("../dist/", import.meta.url)));
 const index = readFileSync(join(dist, "blog/index.html"), "utf8");
 const sitemap = readFileSync(join(dist, "sitemap-0.xml"), "utf8");
 const articles = [
+  { slug: "html-email-checks-github-actions", description: "Check existing HTML emails in GitHub Actions", hero: "html-email-ci-workflow.webp" },
   { slug: "node-open-graph-images-local-fonts", description: "Generate branded Open Graph PNGs", hero: "node-open-graph-images-workflow.webp" },
   { slug: "react-emails-claude-code", description: "Build a receipt email", hero: "claude-code-email-loop.webp" },
   { slug: "node-pdf-invoices-without-chrome", description: "Build a React invoice PDF", hero: "node-pdf-invoices-workflow.webp" },
@@ -82,5 +83,15 @@ assert.match(cardHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/node-open-
 assert.match(card, /The template rendered as a PNG/);
 assert(cardHtml.includes("renderImage"), "Image rendering instructions must be in static HTML");
 assert(llmsFull.includes("scripts/render-card.tsx"), "Card script must be readable in full text");
+const ciHtml = pages.get("html-email-checks-github-actions");
+assert.match(ciHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/html-email-ci-reporting\.png"/, "CI diagram must follow the complete workflow");
+assert(ciHtml.includes('width="1600" height="1008"'), "CI diagram dimensions must be explicit");
+assert(ciHtml.includes("Saving a report must not hide a failed email check."), "CI diagram caption must be readable");
+const ciDiagram = readFileSync(join(dist, "img/blog/html-email-ci-reporting.png"));
+assert.equal(ciDiagram.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+assert.equal(ciDiagram.readUInt32BE(16), 1600);
+assert.equal(ciDiagram.readUInt32BE(20), 1008);
+assert(llmsFull.includes("name: Check email HTML"), "Complete CI workflow must be readable in full text");
+assert(llmsFull.includes("exit \"$status\""), "Full-text workflow must preserve CLI failure status");
 console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, two images per post, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
 console.log("Static checks only: this does not replace browser layout inspection or execute the tutorial examples.");
