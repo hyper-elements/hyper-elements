@@ -49,6 +49,13 @@ hidden on phones or desktops, is still an HTML block.
 `fromDesign()` reads the builder's table back as a `Table`, one made in the builder too, where it was left out before;
 a cell's paragraphs are its lines.
 
+### An HTML block shows what's behind it
+
+An HTML block `toDesign()` writes for what no tool shows (a `Layer`, a `Table` the builder doesn't draw as it is, your
+own `defineElement()`…) no longer paints the root's background in an `Email`. The builder draws the email's color,
+and a `Section`'s own, behind the block, so a block in a white `Section` of a grey email was a grey band there. Its
+markup is otherwise the same.
+
 ### What a PDF or an image looks for
 
 `@hyper-elements/react/pdf` and `@hyper-elements/react/image` export `templateAssets(element)`: the fonts and images
