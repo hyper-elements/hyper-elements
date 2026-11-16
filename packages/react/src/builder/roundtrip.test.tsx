@@ -208,7 +208,8 @@ describe("to the builder and back", () => {
           }
         }
         expect(failed).toEqual([]);
-      });
+        // (A longer run, ROUNDTRIP_SEEDS=1000, takes its time: about 5ms a template.)
+      }, Math.max(5000, SEEDS * 20));
     }
   });
 });
