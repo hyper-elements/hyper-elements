@@ -60,8 +60,11 @@ const holdsImage = (node: Node): boolean => (node.children ?? []).some((child) =
 /** Whether a node, or anything in it, is hidden on phones or on desktops. */
 const hides = (node: Node): boolean => Boolean(node.hidden?.mobile || node.hidden?.desktop) || (node.children ?? []).some((child) => typeof child !== "string" && hides(child));
 
-/** Whether a node holds words: text that isn't only spaces, a line break or a merge tag, anywhere in it. */
-export const holdsWords = (node: Node): boolean => (node.children ?? []).some((child) => (typeof child === "string" ? child.trim() !== "" : child.type === "LineBreak" || child.type === "MergeTag" || holdsWords(child)));
+/**
+ * Whether a node holds words: text that isn't only spaces that collapse (a non-breaking space doesn't: it's a word), a
+ * line break or a merge tag, anywhere in it.
+ */
+export const holdsWords = (node: Node): boolean => (node.children ?? []).some((child) => (typeof child === "string" ? /[^ \t\n\r\f]/.test(child) : child.type === "LineBreak" || child.type === "MergeTag" || holdsWords(child)));
 
 /** Whether a node holds a run with a font size of its own anywhere in it. */
 const holdsSize = (node: Node): boolean => (node.children ?? []).some((child) => typeof child !== "string" && (child.style?.fontSize !== undefined || holdsSize(child)));

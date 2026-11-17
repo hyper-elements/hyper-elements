@@ -130,8 +130,8 @@ function tableRows(table: ResolvedNode): Json {
     }
     return out;
   };
-  /** Whether a cell has a line in it: words (a line break is one) or an image. */
-  const worded = (cell: ResolvedNode) => images(cell).length > 0 || (runs(cell) ?? []).some((run) => run.text.trim() !== "" || run.text === "\n");
+  /** Whether a cell has a line in it: words (a line break is one, and a non-breaking space, which doesn't collapse) or an image. */
+  const worded = (cell: ResolvedNode) => images(cell).length > 0 || (runs(cell) ?? []).some((run) => run.text.replace(/[ \t\n\r\f]/g, "") !== "" || run.text === "\n");
   const rows = table.children.filter((c): c is ResolvedNode => typeof c !== "string" && !c.hidden?.desktop);
   const lined = rows.some((row) => cells(row).some((cell) => cell.style.border !== undefined));
   return {

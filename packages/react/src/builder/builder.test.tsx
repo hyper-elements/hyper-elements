@@ -475,6 +475,21 @@ describe("a Table", () => {
       </Table>
     );
     expect(toDesign(<Email>{tall}</Email>).report).toEqual([]);
+    // A non-breaking space is a word: it doesn't collapse, so its cell is a line tall in the Table too, as in the
+    // builder's (a space alone collapses to none).
+    const nbsp = (
+      <Table>
+        <TableRow>
+          <TableCell>{" "}</TableCell>
+        </TableRow>
+      </Table>
+    );
+    const spaced = toDesign(<Document>{nbsp}</Document>);
+    expect(spaced.report).toEqual([]);
+    expect(tables(spaced.design)[0].values.table.rows.map((row: Values) => row.height)).toEqual([24]);
+    expect(toDesign(<Email>{nbsp}</Email>).report).toEqual([]);
+    // Read back, a row a line tall is no taller than its words: it has no height of its own.
+    expect(fromDesign(JSON.parse(JSON.stringify(spaced.design)), { displayMode: "document" }).code).not.toContain("height:");
   });
 
   it("stays an HTML block in an Email or a Page where the builder's table doesn't draw it as it is, and says why", () => {
