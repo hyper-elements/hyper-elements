@@ -136,6 +136,8 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
   for (const row of rest.filter((row) => row.own.props.header)) {
     say(row.path, "a header row below the table's first rows is a row of the builder's table, its words in bold: the builder's table has its header at its top only", "a header row below its first rows");
   }
+  // A row below a footer row is drawn in the footer by Elements too, so it's drawn as it is: it only comes back a footer row.
+  const noted = footer.filter((row) => !row.own.props.footer).map((row) => `${row.path}: a row below a footer row is a row of the builder's footer, which runs from the first footer row on as Elements' does: it comes back a footer row`);
 
   const count = Math.max(1, ...rows.map((row) => cellsOf(row).reduce((sum, cell) => sum + spanOf(cell.own), 0)));
   const laidOut = own.columns && own.columns.length === count ? own.columns : new Array<number>(count).fill(1);
@@ -272,7 +274,7 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
     if ([own, ...rows.map((row) => row.own), ...rows.flatMap(cellsOf).map((cell) => cell.own)].some((part) => halfClear(part.style.backgroundColor))) why.push("a half-transparent background");
     if (why.length) return `the builder's table doesn't draw it as it is (${[...new Set(why)].join("; ")})`;
   }
-  place.report.push(...said.map(({ at, what }) => `${at}: ${what}`));
+  place.report.push(...said.map(({ at, what }) => `${at}: ${what}`), ...noted);
 
   return {
     table,

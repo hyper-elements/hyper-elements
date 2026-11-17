@@ -786,6 +786,30 @@ describe("a Table", () => {
     expect(report).toEqual([1, 2].map((row) => `root.children[0].children[${row}]: a header row below the table's first rows is a row of the builder's table, its words in bold: the builder's table has its header at its top only`));
   });
 
+  it("says a row below a footer row is in the builder's footer, as it's in Elements', and comes back a footer row", () => {
+    const ending = (
+      <Table>
+        <TableRow>
+          <TableCell>Body</TableCell>
+        </TableRow>
+        <TableRow footer>
+          <TableCell>Total</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Note</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const [root, mode] of [[<Email key="e">{ending}</Email>, "email"], [<Page key="p">{ending}</Page>, "web"], [<Document key="d">{ending}</Document>, "document"]] as const) {
+      const { design, report } = toDesign(root);
+      // Drawn as it is (Elements' footer runs from its first footer row on too), so it's the builder's table everywhere.
+      const [ended] = tables(design);
+      expect(ended.values.table.footers.map((row: Values) => row.cells.map(words))).toEqual([["Total"], ["Note"]]);
+      expect(report).toEqual(["root.children[0].children[2]: a row below a footer row is a row of the builder's footer, which runs from the first footer row on as Elements' does: it comes back a footer row"]);
+      expect(fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: mode }).code.match(/<TableRow footer/g)).toHaveLength(2);
+    }
+  });
+
   it("says a row's and a cell's id, which the builder's table has no place for, are left out", () => {
     const { report } = toDesign(
       <Document>
