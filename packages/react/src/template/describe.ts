@@ -90,6 +90,8 @@ export function schemaOf(spec: PropSpec): JsonSchema {
   if (imageRules(spec)) {
     return { type: "object", required: ["src", "width", "height"], properties: { src: { type: "string", minLength: 1 }, width: { type: "number", exclusiveMinimum: 0 }, height: { type: "number", exclusiveMinimum: 0 } }, additionalProperties: false };
   }
+  // Required text isn't empty: check() refuses a blank one as it refuses one that's missing.
+  if (spec.required && spec.kind.name === "text") return { ...(spec.kind.jsonSchema() as object), minLength: 1 };
   return spec.kind.jsonSchema();
 }
 

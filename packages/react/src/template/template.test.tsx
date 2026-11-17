@@ -63,8 +63,13 @@ describe("values", () => {
 
   it("reads each kind, and refuses each with its code and path", () => {
     expect(values(read({ title: "Hello", tags: ["a"] }))).toEqual({ title: "Hello", tone: "calm", tags: ["a"] });
+    // Text that isn't required may be empty.
+    expect(read({ title: "Hello", tags: [""] }).valid).toBe(true);
     const cases: Array<[unknown, string, string]> = [
       [{ tags: ["a"] }, "template/required", "values.title"],
+      // Blank is missing: an empty string, and one that's only spaces.
+      [{ title: "", tags: ["a"] }, "template/required", "values.title"],
+      [{ title: "  \n ", tags: ["a"] }, "template/required", "values.title"],
       [{ title: "hello", tags: ["a"] }, "template/value", "values.title"],
       [{ title: "Hello world, again", tags: ["a"] }, "template/value", "values.title"],
       [{ title: "Hello", tags: ["a"], when: "2026-02-30" }, "template/value", "values.when"],

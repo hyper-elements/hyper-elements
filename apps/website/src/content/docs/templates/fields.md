@@ -45,7 +45,7 @@ Every field takes these:
 | Option | What it does |
 |--------|--------------|
 | `label` | Its name, for people: in messages and in `describe()` |
-| `required` | A field is required only with `required: true` |
+| `required` | A field is required only with `required: true`. Required text that's empty, or only spaces, counts as not given (`template/required`) |
 | `default` | Filled in where the value isn't given |
 | `guidance` | Plain English for whoever fills it. Never enforced: listed by `describe()`, and returned by `check()` as `review` items for a person to judge |
 

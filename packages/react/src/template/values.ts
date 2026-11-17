@@ -121,6 +121,10 @@ export function readValue(spec: PropSpec, input: unknown, at: string, reading: R
     return input.map((item, index) => readValue(spec.item, item, `${at}[${index}]`, reading));
   }
   if (isObjectSpec(spec)) return readValues(spec.fields, input, at, reading);
+  // Required text given blank is required text not given: an empty cell of a spreadsheet, a field left as spaces.
+  if (spec.required && spec.kind.name === "text" && typeof input === "string" && input.trim() === "") {
+    return void reading.diagnostics.push(error("template/required", `${spec.label} is required: it's empty`, at));
+  }
   const parsed = spec.kind.parse(input);
   if (!parsed.ok) return void reading.diagnostics.push(error("template/value", `${spec.label}: ${parsed.message}`, at));
   const rules = imageRules(spec);

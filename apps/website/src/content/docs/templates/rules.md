@@ -179,7 +179,7 @@ on a bound node also names its `field`. Errors make a design invalid; warnings a
 | Code | What triggers it |
 |------|------------------|
 | `template/unknown-field` | A value for a field the template doesn't have. The message names the fields it has |
-| `template/required` | A required field isn't given |
+| `template/required` | A required field isn't given, or required text is empty or only spaces |
 | `template/value` | A value its field refuses: the wrong type, text over its `maxLength` or outside its `pattern`, a block of an unknown type |
 | `template/count` | A list or blocks outside its `min` and `max` |
 | `template/format` | A format the template doesn't have; none named where it has several; or a design built at another size than its format's |

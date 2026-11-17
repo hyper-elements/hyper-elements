@@ -321,6 +321,20 @@ describe("a measured rule its template requires, in a Canvas the CLI measures", 
   });
 });
 
+describe("required text given blank", () => {
+  it("is refused as missing: by design set, which leaves the file as it was, and by check of a file that has it", async () => {
+    const file = valuesFile("../templates/note.tsx", { title: "Hi", body: "Body" }, { id: "acme.Note", formats: null });
+    const dir = project({ "templates/note.tsx": noteTemplate(), "designs/a.values.json": file, "designs/blank.values.json": valuesFile("../templates/note.tsx", { title: "   ", body: "Body" }, { id: "acme.Note", formats: null }) });
+    const set = await cli(dir, ["design", "set", "designs/a.values.json", "title=", "--json"]);
+    expect(set.code, set.stdout + set.stderr).toBe(1);
+    expect(set.stdout).toContain("template/required");
+    expect(readFileSync(join(dir, "designs/a.values.json"), "utf8")).toBe(file);
+    const checked = await cli(dir, ["check", "designs/blank.values.json", "--no-lint", "--json"]);
+    expect(checked.code, checked.stdout + checked.stderr).toBe(1);
+    expect(lines(checked)[0].diagnostics.filter((d: { severity: string }) => d.severity === "error").map((d: { code: string; path: string }) => `${d.code} ${d.path}`)).toEqual(["template/required values.title"]);
+  });
+});
+
 describe("a template's design, where the CLI makes the email client checks", () => {
   it("isn't told to install them: the template's own note about where they come from is dropped", async () => {
     const files = { "templates/note.tsx": noteTemplate(), "designs/a.values.json": valuesFile("../templates/note.tsx", { title: "Hi", body: "Body" }, { id: "acme.Note", formats: null }) };
