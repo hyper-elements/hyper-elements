@@ -104,7 +104,8 @@ export default () => <Newsletter subject="What's new in June" body={<Column><Hea
 ```
 
 The command line runs the design file only far enough to read which template it uses and the props it gives it. Then
-it checks and renders those as it does a values file, one output per format.
+it checks and renders those as it does a values file, one output per format. Running it is running code:
+[a TSX design is reviewed as code](#what-that-guarantees-and-what-it-doesnt).
 
 - It's rendered with the props any design gets: `--props file.json`, else the sample props its file gives
   ([`PreviewProps`](/docs/cli)).
@@ -121,7 +122,8 @@ npx hyper-elements design set designs/june.values.json body=@designs/_slots/june
 ```
 
 [A slot module](/docs/templates/slots#a-slot-stored-as-data) is a component that renders the content. It runs
-in a process of its own, which can reply only with what it rendered. One that throws, sends anything
+in a process of its own, which can reply only with what it rendered. It's still code, with that process's access to
+the machine: [review it as code](#what-that-guarantees-and-what-it-doesnt). One that throws, sends anything
 else, sends more than 8 MB or exits first is `cli/slot-module` (exit `1`), and nothing is written. Its hash is kept
 in `assets`, as an image's is.
 
@@ -156,8 +158,25 @@ In CI, `--require-template` on `check` and `render` fails anything a template di
 npx hyper-elements check designs/ --require-template acme.Newsletter
 ```
 
+### What that guarantees, and what it doesn't
+
+`--require-template` checks what a design gives its template. It doesn't check what a design's code does.
+
+| A design that is | Is | Take it from an agent, or unreviewed? |
+|------------------|----|----------------------------------------|
+| A values file with no slot module | Data. Nothing in it runs | Yes. `--require-template` then means the design is what the template checked |
+| A TSX design | Code. The command line runs it to read its props, before the template checks anything | No: review it as you review any code |
+| A values file with a slot module | Data that names code. The module runs to render the slot's content | No: review the module |
+
+Code that runs can do what its process can: read and write files, the template's among them. A TSX design could
+change a trusted template for the length of a run and put it back, and the run would pass. The list and the guard
+stop a template from loading code outside the list; they don't stop a design's own code.
+
+So for agents, and for designs nobody reviews, use templates whose open parts are data (fields and blocks), filled as
+values files. Review TSX designs and slot modules like the rest of your code.
+
 A template guarantees what it checks, not who may edit it. Commit templates and review changes to them (with
-CODEOWNERS, for example), and give the agents that fill them the designs folder, not the templates folder.
+CODEOWNERS, for example), and don't give whatever fills them write access to the templates folder.
 
 ## A template from an existing design
 

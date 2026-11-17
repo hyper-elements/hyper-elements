@@ -138,6 +138,13 @@ A simple template can instead be written as the design itself, with its open par
 ## Keeping templates trusted
 
 A template guarantees what it checks, not who may edit it: a process that can write the template's file can change
-it. Commit templates and review changes to them (with CODEOWNERS, for example), and give the agents that fill them the
-designs folder, not the templates folder. [Templates in the command line](/docs/templates/cli#trusted-templates)
-shows how to list the templates a project trusts.
+it. Two things follow.
+
+- **Protect the templates.** Commit them, review changes to them (with CODEOWNERS, for example), and don't give
+  whatever fills them write access to the templates folder.
+- **Know which designs are code.** A values file is data: nothing in it runs, so it's the form to take from an agent
+  or anyone unreviewed. A TSX design, and a slot stored as a module, are code that runs before the template checks
+  anything. Review those as you review any code.
+
+[Templates in the command line](/docs/templates/cli#trusted-templates) shows how to list the templates a project
+trusts, and what `--require-template` does and doesn't guarantee.

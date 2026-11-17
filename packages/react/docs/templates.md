@@ -671,5 +671,7 @@ For a `cover` image it adds the smallest size that fills every region without up
 ## Keeping templates trusted
 
 A template guarantees what it checks, not who may edit it: a process that can write the template's file can change
-it. Commit templates and review changes to them (with CODEOWNERS, for example), and give the agents that fill them the
-designs folder, not the templates folder.
+it. Commit templates and review changes to them (with CODEOWNERS, for example), and don't give whatever fills them
+write access to the templates folder. A values file is data: nothing in it runs, so it's the form to take from an
+agent or anyone unreviewed. A TSX design, and a slot stored as a module, are code that runs before the template
+checks anything, and `--require-template` checks a design's content, not its code: review those as code.

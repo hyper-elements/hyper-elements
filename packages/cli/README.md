@@ -190,7 +190,9 @@ npx hyper-elements design set designs/orbit.values.json launchDate=2026-12-10   
   of the file stays as written. The template renders its example to the design's bytes; add its rules and formats,
   set its `version`, and `check` it.
 - **`--require-template [id]`** on `check` and `render` fails every input (exit 1, nothing written) that isn't a
-  design a template checked, or one of another template.
+  design a template checked, or one of another template. It checks a design's content, not its code: a TSX design
+  and a slot module are code, run before the template checks anything, so review them as code. A values file with no
+  slot module runs nothing, and is the input to take from agents and unreviewed sources.
 
 Templates need `@hyper-elements/react` 0.5 (its `/template` entry); with 0.4, a template module or a values file is
 `cli/elements-version` (exit 2). Without a trusted list, loading a values file or a template design runs its template's

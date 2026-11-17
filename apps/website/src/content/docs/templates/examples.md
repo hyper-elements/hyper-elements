@@ -632,9 +632,13 @@ npx hyper-elements check designs/off-site.tsx
 1 design: 1 error, 0 warnings, 0 skipped
 ```
 
-So an agent can be given the designs folder and asked for any email. What it writes is the body; the header, the footer
-and the rules are in the template, which it doesn't edit. In CI, `--require-template acme.BrandEmail` fails any
-email that wasn't made from it. See [trusted templates](/docs/templates/cli#trusted-templates).
+So whoever writes an email writes only its body: the header, the footer and the rules are the template's. In CI,
+`--require-template acme.BrandEmail` fails any email that wasn't made from it.
+
+A body written as JSX is code, though, and the command line runs it. Review these designs as you review any code.
+For an agent whose work nobody reviews, use a template whose open parts are data, such as the
+[invoice](#an-invoice-filled-from-data) below or a [digest of blocks](/docs/templates/slots#blocks): a values file
+runs nothing. See [what trusted templates guarantee](/docs/templates/cli#what-that-guarantees-and-what-it-doesnt).
 
 To open less, list the elements a slot takes and keep its styles to the brand's, as the next example does.
 

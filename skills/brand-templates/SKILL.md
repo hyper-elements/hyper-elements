@@ -12,7 +12,7 @@ A template (`template()` from `@hyper-elements/react/template`) is a design with
 You fill a template; you never change it.
 
 1. **Read it first.** `npx hyper-elements describe templates/newsletter.tsx --json` lists its formats, every field (its kind, whether it's required, its guidance), each slot's allowed elements, each image's region and the pixels it needs, and the rules. Write within them.
-2. **Write the design as TSX**, the template as its root, its fields as props. Slots are JSX written only with the elements their `allow` lists (and, with `styles: "theme"`, the theme's tokens and named styles):
+2. **Write the design as TSX**, the template as its root, its fields as props. A TSX design is code a person reviews; where what you write is rendered unreviewed, make a values file instead (`npx hyper-elements design new <template> -o designs/<name>.values.json --values <values>.json`), which runs nothing. Slots are JSX written only with the elements their `allow` lists (and, with `styles: "theme"`, the theme's tokens and named styles):
 
    ```tsx
    // designs/june.tsx
