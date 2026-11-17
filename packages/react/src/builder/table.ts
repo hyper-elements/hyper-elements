@@ -141,9 +141,27 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
 
   const count = Math.max(1, ...rows.map((row) => cellsOf(row).reduce((sum, cell) => sum + spanOf(cell.own), 0)));
   const laidOut = own.columns && own.columns.length === count ? own.columns : new Array<number>(count).fill(1);
-  // Columns sharing the width equally are laid out a px apart at most (whole px): they're equal shares here, so any
+  // Each column's width as it's given, on its first cell of one column, as Elements lays it out. Where each is a
+  // percentage or none, they're the shares as given (those with none share what's left equally): laid out, they're whole
+  // px, which would be a fraction of a percent off, and again on each trip.
+  const given = new Array<number | null | undefined>(count).fill(undefined);
+  for (const row of rows) {
+    let column = 0;
+    for (const { own: cell } of cellsOf(row)) {
+      const width = cell.style.width;
+      if (spanOf(cell) === 1 && given[column] == null) given[column] = width === undefined ? null : typeof width === "string" && /^\d+(\.\d+)?%$/.test(width.trim()) ? parseFloat(width) : NaN;
+      column += spanOf(cell);
+    }
+  }
+  const free = given.filter((width) => width == null).length;
+  const left = Math.max(0, 100 - given.reduce<number>((all, width) => all + (width ?? 0), 0)) / (free || 1);
+  // Laid out, columns sharing the width equally are a px apart at most (whole px): they're equal shares here, so any
   // other difference, however small, is the template's own.
-  const widths = Math.max(...laidOut) > 1 && Math.max(...laidOut) - Math.min(...laidOut) <= 1 ? new Array<number>(count).fill(1) : laidOut;
+  const widths = given.every((width) => !Number.isNaN(width))
+    ? given.map((width) => width ?? left)
+    : Math.max(...laidOut) > 1 && Math.max(...laidOut) - Math.min(...laidOut) <= 1
+      ? new Array<number>(count).fill(1)
+      : laidOut;
   const sum = widths.reduce((all, width) => all + width, 0);
   const total = sum || 1;
   // The builder takes a share of 0 for none and draws its default there: a column with no width beside wider ones is the

@@ -393,6 +393,29 @@ describe("a Table", () => {
     }
   });
 
+  it("writes columns' percentages as their shares, as they're given, not as the whole pixels Elements lays them out in", () => {
+    const shares = (template: React.ReactElement) => tables(toDesign(template).design)[0].values.table.rows[0].cells.map((cell: Values) => cell.width);
+    const given = (...widths: Array<string | undefined>) => (
+      <Table>
+        <TableRow>
+          {widths.map((width, i) => (
+            <TableCell key={i} style={width ? { width } : {}}>
+              {i}
+            </TableCell>
+          ))}
+        </TableRow>
+      </Table>
+    );
+    for (const [Root, mode] of [[Email, "email"], [Page, "web"], [Document, "document"]] as const) {
+      for (const [widths, expected] of [[["60%", "20%", "20%"], [60, 20, 20]], [["30%", undefined, undefined], [30, 35, 35]], [["49.8%", undefined], [49.8, 50.2]], [["30%", "30%"], [50, 50]]] as const) {
+        const template = <Root>{given(...widths)}</Root>;
+        expect(shares(template)).toEqual(expected);
+        // And again after a trip: a share comes back as its percentage, which is written as it is.
+        expect(shares(fromDesign(toDesign(template).design, { displayMode: mode }).element)).toEqual(expected);
+      }
+    }
+  });
+
   it("writes a column with no width beside wider ones as the least share the builder keeps, which takes a share of 0 for its default", () => {
     const narrow = (
       <Table>
