@@ -14,8 +14,8 @@ export const GET: APIRoute = async () => {
     for (const d of docs.filter((x) => x.group === g)) lines.push(`- [${d.entry!.data.title}](${abs(d.slug)}): ${d.entry!.data.description}`);
     lines.push("");
   }
-  lines.push("## Elements\n", `- [Elements](${abs("components")}): how every element takes its props and its style, and the full list`);
-  for (const r of reference) lines.push(`- [${r.data.title}](${abs(`components/${r.id}`)}): ${r.data.summary}`);
+  lines.push("## Elements\n", `- [Elements](${abs("elements")}): how every element takes its props and its style, and the full list`);
+  for (const r of reference) lines.push(`- [${r.data.title}](${abs(`elements/${r.id}`)}): ${r.data.summary}`);
   // Each design's page has its full source, rendered output and diagnostics.
   lines.push("", "## Designs\n");
   for (const t of templates) lines.push(`- [${t.title}](${site.url}/templates/${t.slug}): <${t.root}>. ${t.description}`);

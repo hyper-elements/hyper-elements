@@ -218,7 +218,7 @@ const customer = extendTheme(brand, { colors: { primary: "#b91c1c" }, fonts: { b
 
 ## Your own elements
 
-A [defineElement()](/docs/defining-elements)'s color, length and font props take a token like a style does. Its `render` gets the theme's tokens where the instance is, scopes included, as values in its second argument:
+A [defineElement()](/docs/custom-elements)'s color, length and font props take a token like a style does. Its `render` gets the theme's tokens where the instance is, scopes included, as values in its second argument:
 
 ```tsx
 const Badge = defineElement({

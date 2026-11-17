@@ -78,7 +78,7 @@ Text is elements, not HTML. Inside a `Text`, a `Span` styles a run, a `Link` lin
 </Text>
 ```
 
-`<b>`, `<br>`, `<div>` and other HTML elements in a design are errors (`jsx/markup`). For markup no element says, there's [`<Html>`](/docs/defining-elements#html-markup-as-it-is).
+`<b>`, `<br>`, `<div>` and other HTML elements in a design are errors (`jsx/markup`). For markup no element says, there's [`<Html>`](/docs/custom-elements#html-markup-as-it-is).
 
 ## Your own functions
 
@@ -153,4 +153,4 @@ Shared content doesn't mean identical pixels. Email is written as tables, a page
 ## Next
 
 - [Layout](/docs/layout): arrange blocks with Section, Row, Column, Grid and Layer.
-- [Custom elements](/docs/defining-elements): named blocks with typed props.
+- [Custom elements](/docs/custom-elements): named blocks with typed props.

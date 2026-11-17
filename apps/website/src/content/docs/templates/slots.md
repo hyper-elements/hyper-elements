@@ -201,7 +201,7 @@ import { token } from "@hyper-elements/react";
 - **A brand value** is a color, a font, a spacing (`padding`, `gap`, `rowGap`), a radius, a border's color, and
   `fontSize`, `lineHeight` and `letterSpacing`, in `style` and in its `mobile` and `hover` blocks. Alignment, widths
   and the rest aren't.
-- **A built-in is allowed by its type, a [custom element](/docs/defining-elements) by its definition.** Content that
+- **A built-in is allowed by its type, a [custom element](/docs/custom-elements) by its definition.** Content that
   defines its own `acme.ProductCard` is refused ("not the template's"), and its render never runs. A root and `Html`
   are never allowed.
 - **`allow: "all"` widens with Elements:** a later release that adds a built-in adds it to the slot. A template that

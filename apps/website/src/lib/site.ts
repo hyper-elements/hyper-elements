@@ -59,7 +59,7 @@ export const docsNav: DocGroup[] = [
       { slug: "styles", label: "Styles" },
       { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
-      { slug: "defining-elements", label: "Custom elements" },
+      { slug: "custom-elements", label: "Custom elements" },
       { slug: "cli", label: "Command line" },
     ],
   },

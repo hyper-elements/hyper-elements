@@ -38,7 +38,7 @@ from `@hyper-elements/react` or with `field.image()` from `@hyper-elements/react
 | `field.slot(options)` | JSX someone writes | See [slots](/docs/templates/slots#slots) |
 
 The other `prop` helpers (a color, a boolean and the rest) are fields too: they're the ones a
-[custom element](/docs/defining-elements#props) declares its props with.
+[custom element](/docs/custom-elements#props) declares its props with.
 
 Every field takes these:
 
