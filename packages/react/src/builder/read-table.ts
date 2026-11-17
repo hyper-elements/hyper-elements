@@ -23,13 +23,15 @@ interface Part {
   background: string | undefined;
   padding: Sides;
   verticalAlign: string;
+  /** The line height words with none of their own are drawn at, where it isn't the table's: a header's and a footer's. */
+  unset?: Json;
 }
 
-/** A line height in px at a font size: a multiple of it, px, or a percentage of it. */
+/** A line height in px at a font size: a multiple of it, px, a percentage of it, or normal (Elements' 1.2). */
 const lineHeightPx = (value: Json, fontSize: number): number => {
   if (typeof value === "number") return value * fontSize;
   const text = String(value).trim();
-  return text.endsWith("%") ? (parseFloat(text) / 100) * fontSize : px(text) ?? 1.5 * fontSize;
+  return text.endsWith("%") ? (parseFloat(text) / 100) * fontSize : text === "normal" ? 1.2 * fontSize : (px(text) ?? 1.5 * fontSize);
 };
 /** A design's list as its items (a copy: a hand-edited one's own methods may be anything). */
 const rows = (value: unknown): Values[] => (Array.isArray(value) ? Array.from(value).map(obj) : []);
@@ -90,7 +92,11 @@ export function readTable(values: Values, context: Context): Node[] {
             lineHeight: table.lineHeight,
             letterSpacing: 0,
           };
-    return { text, background: opaque(values[`${prefix}BackgroundColor`]), padding: sides(values[`${prefix}Padding`]) ?? ZERO, verticalAlign: str(values[`${prefix}VerticalAlign`]) ?? "middle" };
+    // Only the content has a line height field: a header's or a footer's words with none of their own are at the page's,
+    // the builder's HTML's body's (1.5 on a page, the browser's normal in an email and a document).
+    const page = context.mode === "web" ? 1.5 : "normal";
+    const unset = prefix === "content" || same(page, table.lineHeight) ? undefined : page;
+    return { text, background: opaque(values[`${prefix}BackgroundColor`]), padding: sides(values[`${prefix}Padding`]) ?? ZERO, verticalAlign: str(values[`${prefix}VerticalAlign`]) ?? "middle", unset };
   };
   const content = partOf("content");
   const header = partOf("header");
@@ -116,7 +122,12 @@ export function readTable(values: Values, context: Context): Node[] {
       backgroundColor: unless(paint, background),
     });
     const rowLine = lineHeightPx(table.lineHeight, part.text.fontSize);
-    const cells = rows(row.cells).map((cell) => cellOf(cell, part, rowLine));
+    const read = rows(row.cells).map((cell) => cellOf(cell, part, rowLine));
+    // Words at the page's line height (`unset`): the row's, where it's all its worded cells', else each one's.
+    const worded = read.filter((cell) => holdsWords(cell.node));
+    const unset = worded.length > 0 && worded.every((cell) => cell.unset);
+    if (unset) style.lineHeight = part.unset!;
+    const cells = unset ? read : read.map((cell) => (cell.unset ? { ...cell, node: { ...cell.node, style: { ...cell.node.style, lineHeight: part.unset! } } } : cell));
     const pads = rows(row.cells).map((cell) => {
       const pad = sides(cell.padding) ?? part.padding;
       return pad.top + pad.bottom;
@@ -130,7 +141,7 @@ export function readTable(values: Values, context: Context): Node[] {
   };
 
   /** A cell as a TableCell (its words, and its own fields and line height where they aren't its row's), and its line's height. */
-  const cellOf = (cell: Values, part: Part, rowLine: number): { node: Node; line: number } => {
+  const cellOf = (cell: Values, part: Part, rowLine: number): { node: Node; line: number; unset: boolean } => {
     const json = str(cell.textJson);
     const read = json === undefined ? { html: str(cell.text) ?? "", unread: [] as string[] } : textJsonHtml(json);
     if (read.unread.length) context.say(`a table cell's rich text has nodes Elements doesn't read (${read.unread.join(", ")}): left out`);
@@ -158,9 +169,12 @@ export function readTable(values: Values, context: Context): Node[] {
       children.push(...words(piece.node));
     });
     const line = first.lineHeight;
+    // Words with no line height of their own in a header or a footer: at the page's (the row's or the cell's, as its row says).
+    const unset = part.unset !== undefined && line === undefined && holdsWords({ type: "TableCell", children });
+    const drawn = unset ? part.unset : line;
     // Its own size, its paragraph's; its line at its largest words' size (a multiple is each run's size's).
     const size = typeof first.fontSize === "number" ? first.fontSize : part.text.fontSize;
-    const linePx = Math.max(line === undefined && size === part.text.fontSize ? rowLine : lineHeightPx(line ?? table.lineHeight, size), lineHeightPx(line ?? table.lineHeight, largest(children, size)));
+    const linePx = Math.max(drawn === undefined && size === part.text.fontSize ? rowLine : lineHeightPx(drawn ?? table.lineHeight, size), lineHeightPx(drawn ?? table.lineHeight, largest(children, size)));
     const style = defined({
       fontSize: unless(size, part.text.fontSize),
       color: unless(textColor(cell.color), part.text.color),
@@ -172,7 +186,7 @@ export function readTable(values: Values, context: Context): Node[] {
       backgroundColor: opaque(cell.backgroundColor),
       border: cellBorder,
     });
-    return { node: make("TableCell", { props: defined({ dir }), style, children }), line: linePx };
+    return { node: make("TableCell", { props: defined({ dir }), style, children }), line: linePx, unset };
   };
 
   // The builder's border is each cell's, collapsed, as it draws it; the line between rows of a Table toDesign() wrote

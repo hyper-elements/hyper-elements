@@ -7,6 +7,7 @@ import { withParagraphMargin } from "./text";
 import { fromDesign, toDesign } from "./index";
 import { textJsonHtml } from "./text-json";
 import { invoice, lineItems } from "./testing/templates";
+import { TableDefaults } from "./tool-defaults";
 
 type Values = Record<string, any>;
 const blocks = (design: any): Array<{ type: string; values: Values }> => design.body.rows.flatMap((row: any) => row.columns.flatMap((column: any) => column.contents));
@@ -871,6 +872,34 @@ describe("a Table", () => {
     // Its background is the table's again, under the header's own.
     expect(code).toMatch(/<Table style=\{\{[^}]*backgroundColor: "#ffffff"/);
     expect(code).not.toContain("height:");
+  });
+
+  it("reads a header's or a footer's words with no line height of their own at the page's, as the builder draws them, not the content's", () => {
+    // The builder's own table, from its palette: its header's and footer's cells have none (only its content has a field).
+    const palette = (edit: (values: Values) => void = () => {}) => {
+      const design = JSON.parse(JSON.stringify(toDesign(<Email>{table}</Email>).design));
+      const content = blocks(design)[0];
+      content.values = { ...JSON.parse(JSON.stringify(TableDefaults)), _meta: content.values._meta, enableFooter: true };
+      content.values.table.footers[0].cells[0] = { ...content.values.table.rows[0].cells[0] };
+      edit(content.values);
+      return design;
+    };
+    // The builder's HTML draws them at its body's: 1.5 on a page, the browser's normal in an email and a document.
+    for (const [mode, page] of [["email", '"normal"'], ["web", "1.5"], ["document", '"normal"']] as const) {
+      const { code, report } = fromDesign(palette(), { displayMode: mode });
+      expect(report).toEqual([]);
+      expect(code.match(/<TableRow (header|footer) style=\{\{[^}]*lineHeight: ([^,}]+)/g)?.map((row) => row.replace(/.*lineHeight: /, ""))).toEqual([page, page]);
+      expect(code).toContain("lineHeight: 1.4");
+      expect(code.match(/lineHeight/g)).toHaveLength(3);
+    }
+    // A cell with one of its own beside one with none: each its own.
+    const mixed = palette((values) => {
+      const [first] = values.table.headers[0].cells;
+      values.table.headers[0].cells[1] = { ...first, textJson: first.textJson.replace('"type":"extended-paragraph"', '"type":"extended-paragraph","style":"line-height:1.4"') };
+    });
+    expect(JSON.stringify(mixed)).toContain("line-height:1.4");
+    const read = fromDesign(mixed, { displayMode: "email" }).code;
+    expect(read).toMatch(/<TableRow header style=\{\{ backgroundColor: "#dddddd", height: 50 \}\}>\s*<TableCell style=\{\{[^}]*lineHeight: "normal" \}\}>Add header text<\/TableCell>\s*<TableCell style=\{\{ verticalAlign: "middle", border: "1px solid #cccccc" \}\}>Add header text/);
   });
 });
 

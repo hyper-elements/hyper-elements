@@ -280,7 +280,8 @@ describe("what the builder draws around a design's rows", () => {
     const { element, code, report } = fromDesign({ schemaVersion: 28, body: { rows: [{ cells: [1], columns: [{ contents: [table], values: {} }], values: {} }], values: {} } }, { displayMode: "document" });
     expect(report).toEqual([]);
     expect(code).toContain('<Table style={{ fontSize: 14, lineHeight: 1.4, backgroundColor: "#ffffff", cellPadding: 10, borderCollapse: "collapse" }}>');
-    expect(code).toContain('<TableRow header style={{ backgroundColor: "#dddddd", height: 50 }}>');
+    // Its header's words at the page's line height, as the builder draws a header (only its content has a field for one).
+    expect(code).toContain('<TableRow header style={{ backgroundColor: "#dddddd", lineHeight: "normal", height: 50 }}>');
     expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc", width: "70%" }}>Name</TableCell>');
     expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc" }}>$3</TableCell>');
     // Its footer is off, as a new table's is: not drawn, not read.
