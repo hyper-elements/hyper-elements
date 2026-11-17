@@ -70,6 +70,11 @@ const WHAT: Record<string, string> = {
   language: "translations aren't read: only its own text is",
 };
 
+/** What a value of these is called where it's a tool's own: a table's link style is its cells' links', not the body's. */
+const WHAT_IN: Record<string, Record<string, string>> = {
+  table: { linkStyle: "link style isn't read: the links in its cells keep their own style, Elements' blue and underlined where they have none" },
+};
+
 /** Says each value of the item (by its tool, `paragraph` a text's) that isn't read, and draws something. */
 export function sayUnread(tool: string, values: Values, defaults: Values | undefined, say: (message: string) => void): void {
   const read = READ[tool === "paragraph" ? "text" : tool];
@@ -79,7 +84,8 @@ export function sayUnread(tool: string, values: Values, defaults: Values | undef
   const known = new Set([...NOTHING, ...read.values, ...hidden]);
   for (const [key, value] of Object.entries(values)) {
     if (known.has(key) || (tool === "body" && key.startsWith("popup")) || empty(value) || (Object.hasOwn(given, key) && same(value, given[key]))) continue;
-    say(Object.hasOwn(WHAT, key) ? `its ${WHAT[key]}` : `its ${key} ${JSON.stringify(value) ?? ""} isn't read: left out`);
+    const what = WHAT_IN[tool]?.[key] ?? (Object.hasOwn(WHAT, key) ? WHAT[key] : undefined);
+    say(what ? `its ${what}` : `its ${key} ${JSON.stringify(value) ?? ""} isn't read: left out`);
   }
   const override = values._override && typeof values._override === "object" ? (values._override as Values) : {};
   const phone = override.mobile && typeof override.mobile === "object" ? (override.mobile as Values) : {};

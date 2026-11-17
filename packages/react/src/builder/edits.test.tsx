@@ -7,7 +7,7 @@
 import type { Node } from "@hyper-elements/core";
 import React from "react";
 import { describe, expect, it } from "vitest";
-import { Button, Column, Divider, Document, Email, Heading, Html, Image, Link, Menu, PageBreak, Text, render, Row, Section, Social, Video } from "../primitives";
+import { Button, Column, Divider, Document, Email, Heading, Html, Image, Link, Menu, PageBreak, Text, render, Row, Section, Social, Table, TableCell, TableRow, Video } from "../primitives";
 import { collectTemplate } from "../primitives/collect";
 import { fromDesign, toDesign, type DisplayMode } from "./index";
 import { textJsonHtml } from "./text-json";
@@ -554,6 +554,20 @@ describe("an edit this adapter's review found lost", () => {
     expect(said((d) => (d.body.values.contentAlign = "left"))).toEqual(["body: its content alignment isn't one Elements' root takes: its content is centered"]);
     expect(said((d) => (d.body.values.backgroundImage = { url: "https://x.test/bg.png" }), "web")).toEqual(["body: its background image isn't one Elements draws: left out"]);
     expect(said((d) => (d.body.values.linkStyle = { body: true, linkColor: "#ff0000", linkHoverColor: "#ff0000", linkUnderline: false, linkHoverUnderline: false }))).toEqual(["body: its link style, the body's own, isn't one Elements draws for every link: left out"]);
+    // A table's link style is its own, for the links in its cells, not the body's.
+    const linked = designOf(
+      <Email>
+        <Table>
+          <TableRow>
+            <TableCell>
+              <Link href="https://x.test">help</Link>
+            </TableCell>
+          </TableRow>
+        </Table>
+      </Email>
+    );
+    block(linked).linkStyle = { body: true, linkColor: "#ff0000", linkHoverColor: "#ff0000", linkUnderline: false, linkHoverUnderline: false };
+    expect(fromDesign(linked).report).toEqual(["rows[0].columns[0].contents[0]: its link style isn't read: the links in its cells keep their own style, Elements' blue and underlined where they have none"]);
     expect(said((d) => (block(d).icons.iconType = "circle-black"))).toEqual(['rows[0].columns[0].contents[0]: its icon set "circle-black" isn\'t one a Social has: its circle icons']);
     expect(said((d) => (block(d)._override = { tablet: { iconSize: 20 } }))).toEqual(["rows[0].columns[0].contents[0]: its settings for tablets aren't read: left out"]);
     expect(said((d) => (block(d)._override = { mobile: { iconSize: 20 } }))).toEqual(['rows[0].columns[0].contents[0]: its iconSize on phones 20 isn\'t read: left out']);
