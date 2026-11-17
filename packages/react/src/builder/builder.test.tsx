@@ -598,6 +598,43 @@ describe("a Table", () => {
     expect(values.table.rows.map((row: Values) => row.height)).toEqual([32, 32]);
   });
 
+  it("shares a header's or a footer's background only where all its rows have it: a painted row's is its cells' own, and a clear one shows the table's", () => {
+    const painted = (behind?: string) => (
+      <Table style={behind ? { backgroundColor: behind } : {}}>
+        <TableRow header style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+          <TableCell>Title</TableCell>
+        </TableRow>
+        <TableRow header style={{ color: "#111111" }}>
+          <TableCell>Labels</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>Body</TableCell>
+        </TableRow>
+        <TableRow footer style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+          <TableCell>Total</TableCell>
+        </TableRow>
+        <TableRow footer style={{ color: "#111111" }}>
+          <TableCell>Note</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const behind of [undefined, "#eeeeee"]) {
+      for (const [root, mode] of [[<Email key="e">{painted(behind)}</Email>, "email"], [<Page key="p">{painted(behind)}</Page>, "web"], [<Document key="d">{painted(behind)}</Document>, "document"]] as const) {
+        const { design, report } = toDesign(root);
+        expect(report).toEqual([]);
+        const { values } = tables(design)[0];
+        // The builder paints a part's field behind all its rows (its canvas on the <thead>, its HTML on each cell): the
+        // table's, so the clear row shows it, the painted row its own on its cells.
+        expect([values.headerBackgroundColor, values.footerBackgroundColor]).toEqual([behind ?? "", behind ?? ""]);
+        for (const part of [values.table.headers, values.table.footers]) expect(part.map((row: Values) => row.cells[0].backgroundColor)).toEqual(["#111111", undefined]);
+        // Read back, the clear rows are clear again: their words are on the table's background, not the dark one.
+        const back = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: mode }).code;
+        expect(back.match(/#111111/g)).toHaveLength(4);
+        expect(back).not.toMatch(/<TableRow header style=\{\{ color: "#111111"[^}]*backgroundColor/);
+      }
+    }
+  });
+
   it("gives a cell with a run of its own size its line height as a multiple, which the builder multiplies by each run's size as Elements does", () => {
     const { design } = toDesign(
       <Document>

@@ -356,6 +356,23 @@ export const tableEdges = (
         <TableCell>Half</TableCell>
       </TableRow>
     </Table>
+    <Table>
+      <TableRow header style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+        <TableCell>Title</TableCell>
+      </TableRow>
+      <TableRow header style={{ color: "#111111" }}>
+        <TableCell>Labels</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Body</TableCell>
+      </TableRow>
+      <TableRow footer style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+        <TableCell>Total</TableCell>
+      </TableRow>
+      <TableRow footer style={{ color: "#111111" }}>
+        <TableCell>Note</TableCell>
+      </TableRow>
+    </Table>
   </Document>
 );
 

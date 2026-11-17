@@ -149,10 +149,14 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
 
   // What's behind a row or a cell: its own color, else what shows through it (a transparent one's too).
   const paintOf = (row: Part) => opaque(row.own.style.backgroundColor) ?? tableBackground;
-  const sharedBy = (part: Part[], fallback: ResolvedNode): Shared => ({ text: (part[0]?.own ?? fallback).text, background: part[0] ? paintOf(part[0]) : tableBackground });
-  // The content's background is its rows', where they all have the same one.
-  const painted = body.map(paintOf);
-  const content: Shared = { text: own.text, background: painted.every((color) => color === painted[0]) ? painted[0] : tableBackground };
+  // A part's background is its rows', where they all have the same one; else the table's, each row's own on its cells. (The
+  // builder paints a part's field behind all its rows: its canvas on the <thead>, under a cell that's clear.)
+  const backgroundOf = (part: Part[]) => {
+    const painted = part.map(paintOf);
+    return painted.every((color) => color === painted[0]) ? painted[0] : tableBackground;
+  };
+  const sharedBy = (part: Part[], fallback: ResolvedNode): Shared => ({ text: (part[0]?.own ?? fallback).text, background: part[0] ? backgroundOf(part) : tableBackground });
+  const content: Shared = { text: own.text, background: backgroundOf(body) };
   const heading = sharedBy(header, own);
   const ending = sharedBy(footer, own);
 
