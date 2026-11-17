@@ -6,6 +6,7 @@ import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { deflateRawSync } from "node:zlib";
 
 const site = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const dist = join(site, "dist");
@@ -378,6 +379,27 @@ try {
   assert(await page.locator("#email-viewport").isVisible());
   await page.getByRole("button", { name: "All clients", exact: false }).click();
   assert(await page.locator("#email-gallery").isVisible());
+  // A link carries an email the way the playground's links carry code, `#z=` deflated or `#code=` as is, and the page
+  // tests that email instead of the example. A link it can't read shows the example and says so.
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const linked = "<!doctype html><html><body><p>Hello from a link.</p></body></html>";
+  const openLink = async (hash) => {
+    await page.goto("about:blank");
+    await page.goto(`${origin}/email-testing#${hash}`);
+    await updated();
+  };
+  await openLink(`z=${deflateRawSync(linked).toString("base64url")}`);
+  assert.equal(await page.locator("#email-html").inputValue(), linked);
+  assert.equal(await page.locator(".et-thumbnail").count(), 15);
+  const firstPreview = await page.locator(".et-thumbnail button").first().getAttribute("data-preview");
+  const linkedThumbnail = await readyPreview(`.et-thumbnail:has(button[data-preview="${firstPreview}"]) iframe`);
+  assert((await linkedThumbnail.childFrames()[0].locator("body").innerText()).includes("Hello from a link."), "The previews draw the linked email");
+  await openLink(`code=${Buffer.from(linked).toString("base64url")}`);
+  assert.equal(await page.locator("#email-html").inputValue(), linked);
+  await openLink("z=not-deflated");
+  assert.equal(await page.locator("#email-html").inputValue(), sample);
+  await page.waitForFunction(() => !document.getElementById("email-error").hidden);
+  assert.match(await page.locator("#email-error").innerText(), /This link's email couldn't be opened/);
   assert.deepEqual(errors, []);
   console.log("Email testing: HTML editor, 15 client/device thumbnails without side gutters, full preview navigation, panel-only scrolling, live updates, client variants, reports, agents, isolation and responsive layout passed.");
 } finally {

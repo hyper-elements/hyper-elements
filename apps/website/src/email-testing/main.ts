@@ -2,6 +2,7 @@ import { defaultEmailClients, emailTestingClients, MAX_EMAIL_BYTES, sampleEmail 
 import type { Preview, Result } from "../../playground/protocol";
 import { previewDevice, previewFile, type PreviewScripts } from "../playground/preview";
 import { Sandbox } from "../playground/sandbox";
+import { readHash } from "../playground/share";
 import { HtmlEditor } from "./editor";
 
 const root = document.querySelector<HTMLElement>("[data-email-testing]")!;
@@ -368,4 +369,22 @@ if (modelContext?.registerTool) {
   } catch { /* The browser API is optional; the window API remains available. */ }
 }
 for (const id of ["email-run", "email-example"]) get<HTMLButtonElement>(id).disabled = false;
-void runUI();
+
+/**
+ * A link can carry the email to test, encoded as the playground's links carry code: `#z=` is the HTML deflated
+ * (deflate-raw) in base64url, `#code=` the HTML in base64url. The fragment never reaches a server, so the email stays
+ * in this browser. Without one, the page tests its example.
+ */
+async function start() {
+  const link = location.hash.length > 1 ? await readHash(location.hash) : undefined;
+  if (link?.code !== undefined) {
+    await check({ html: link.code });
+    return;
+  }
+  await runUI();
+  if (link?.problem) {
+    error.textContent = "This link's email couldn't be opened, so the example is shown.";
+    error.hidden = false;
+  }
+}
+void start();
