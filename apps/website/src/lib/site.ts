@@ -29,7 +29,7 @@ export const site = {
 export const mainNav = [
   { href: "/docs", label: "Docs" },
   { href: "/elements", label: "Elements" },
-  { href: "/templates", label: "Designs" },
+  { href: "/templates", label: "Templates" },
   { href: "/ai", label: "AI" },
 ];
 
