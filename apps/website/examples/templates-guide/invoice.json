@@ -1,0 +1,12 @@
+{
+  "number": "INV-0412",
+  "issued": "2026-12-01",
+  "due": "2026-12-31",
+  "customer": { "name": "Northwind Traders", "address": ["48 Harbor Road", "Portland, OR 97209"] },
+  "lines": [
+    { "description": "Orbit Team plan, December", "quantity": 12, "price": 29 },
+    { "description": "Extra workspaces", "quantity": 2, "price": 15 },
+    { "description": "Onboarding session", "quantity": 1, "price": 250 }
+  ],
+  "note": "Thank you for a year with Orbit."
+}

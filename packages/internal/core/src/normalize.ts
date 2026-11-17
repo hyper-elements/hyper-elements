@@ -263,7 +263,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const root = context.root;
   if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
     const { code, message } = definition.notAllowed ?? {
-      code: "component/not-supported",
+      code: "element/not-supported",
       message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
     };
     d.error(code, message(root.type), path);

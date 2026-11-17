@@ -11,6 +11,10 @@ export default defineConfig({
   redirects: {
     "/docs/migrate/elements": "/docs/migrate/unlayer-elements",
     "/docs/custom-components": "/docs/defining-elements",
+    // The elements gallery was /components, and the element pages were under /docs/components.
+    "/components": "/elements",
+    "/docs/components": "/docs/elements",
+    "/docs/components/[name]": "/docs/elements/[name]",
   },
   // The playground's sandbox runtime, served beside its page (scripts/playground-integration.mjs).
   integrations: [sitemap(), playground()],

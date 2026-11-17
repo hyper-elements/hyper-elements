@@ -79,8 +79,8 @@ A Document's width comes from its size and margin: an A4 page with 48px margins 
 
 The content goes on pages in one of two ways:
 
-- **Runs split by [`PageBreak`](/docs/components/pagebreak).** What follows a `PageBreak` starts the next page.
-- **[`Document.Page`](/docs/components/document-page)s.** Each one is a page, its children stacked inside the Document's margins.
+- **Runs split by [`PageBreak`](/docs/elements/pagebreak).** What follows a `PageBreak` starts the next page.
+- **[`Document.Page`](/docs/elements/document-page)s.** Each one is a page, its children stacked inside the Document's margins.
 
 ```tsx
 <Document size="Letter" orientation="landscape">
@@ -96,7 +96,7 @@ The content goes on pages in one of two ways:
 
 ### Header, footer and page numbers
 
-One [`PageHeader`](/docs/components/pageheader) and one [`PageFooter`](/docs/components/pagefooter) are drawn on every page, inside its margins. A second of either is an error. A [`PageNumber`](/docs/components/pagenumber) in their text, or anywhere in the Document's text, is the number of the page it's on, and `<PageNumber total />` is how many pages there are.
+One [`PageHeader`](/docs/elements/pageheader) and one [`PageFooter`](/docs/elements/pagefooter) are drawn on every page, inside its margins. A second of either is an error. A [`PageNumber`](/docs/elements/pagenumber) in their text, or anywhere in the Document's text, is the number of the page it's on, and `<PageNumber total />` is how many pages there are.
 
 A table row with `footer` ends the table.
 

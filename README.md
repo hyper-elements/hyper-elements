@@ -230,7 +230,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 
 ## Keep building
 
-- **Start from an example:** [Designs](https://hyperelements.dev/templates) · [Element gallery](https://hyperelements.dev/components)
+- **Start from an example:** [Designs](https://hyperelements.dev/templates) · [Element gallery](https://hyperelements.dev/elements)
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
 - **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)

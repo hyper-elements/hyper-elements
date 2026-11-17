@@ -1,5 +1,5 @@
 ---
-title: "Defining elements"
+title: "Custom elements"
 description: "Build designs from your own function components, make named blocks with typed props using defineElement() and prop, and write raw markup with Html."
 ---
 

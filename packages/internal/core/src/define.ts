@@ -180,7 +180,7 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
   targets: Partial<Record<Target, TargetSupport>>;
   /**
    * The roots it may go in, of those whose output it renders to (default: every one whose children reach it). Under
-   * another such root it's the `notAllowed` error, by default `component/not-supported` naming these; under a root
+   * another such root it's the `notAllowed` error, by default `element/not-supported` naming these; under a root
    * whose output it doesn't render to, it's `target/unsupported`, as for any component.
    */
   roots?: readonly RootName[];

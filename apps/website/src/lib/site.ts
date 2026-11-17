@@ -28,7 +28,7 @@ export const site = {
 
 export const mainNav = [
   { href: "/docs", label: "Docs" },
-  { href: "/components", label: "Elements" },
+  { href: "/elements", label: "Elements" },
   { href: "/templates", label: "Designs" },
   { href: "/ai", label: "AI" },
 ];
@@ -54,23 +54,13 @@ export const docsNav: DocGroup[] = [
   {
     title: "Core concepts",
     items: [
-      { slug: "templates", label: "Designs and roots" },
+      { slug: "designs", label: "Designs" },
       { slug: "layout", label: "Layout" },
-      { slug: "styles", label: "Styles, phones and hover" },
+      { slug: "styles", label: "Styles" },
       { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
+      { slug: "defining-elements", label: "Custom elements" },
       { slug: "cli", label: "Command line" },
-      { slug: "defining-elements", label: "Defining elements" },
-    ],
-  },
-  {
-    title: "Templates",
-    items: [
-      { slug: "guides/templates", label: "Templates" },
-      { slug: "guides/templates-fields", label: "Fields, images and formats" },
-      { slug: "guides/templates-slots", label: "Slots, blocks and rules" },
-      { slug: "guides/templates-checks", label: "Checks and diagnostics" },
-      { slug: "guides/templates-cli", label: "In the command line" },
     ],
   },
   {
@@ -80,6 +70,17 @@ export const docsNav: DocGroup[] = [
       { slug: "outputs/page", label: "Web pages" },
       { slug: "outputs/pdf", label: "Documents and PDF" },
       { slug: "outputs/image", label: "Images" },
+    ],
+  },
+  {
+    title: "Templates",
+    items: [
+      { slug: "templates", label: "Templates" },
+      { slug: "templates/examples", label: "Examples" },
+      { slug: "templates/fields", label: "Values: fields and images" },
+      { slug: "templates/slots", label: "Content: slots and blocks" },
+      { slug: "templates/rules", label: "Rules and checks" },
+      { slug: "templates/cli", label: "In the command line" },
     ],
   },
   {

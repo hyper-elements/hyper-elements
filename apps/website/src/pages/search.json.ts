@@ -19,6 +19,6 @@ export const GET: APIRoute = async () => {
       items.push({ title: h, sub: e.data.title, href: `${docHref(d.slug)}#${slugify(h)}` });
     }
   }
-  for (const r of reference) items.push({ title: r.data.title, sub: `Element · ${r.data.summary}`, href: `/docs/components/${r.id}` });
+  for (const r of reference) items.push({ title: r.data.title, sub: `Element · ${r.data.summary}`, href: `/docs/elements/${r.id}` });
   return new Response(JSON.stringify(items), { headers: { "content-type": "application/json" } });
 };

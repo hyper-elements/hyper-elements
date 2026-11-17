@@ -213,6 +213,6 @@ For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writ
 
 ## Next
 
-- [Designs and roots](/docs/templates)
+- [Designs](/docs/designs)
 - [Layout](/docs/layout)
 - [Rendering](/docs/rendering)

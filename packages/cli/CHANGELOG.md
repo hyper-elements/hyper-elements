@@ -6,6 +6,9 @@
   project has: a script that reads `components` from it reads `elements` now. An Elements from before
   `describeElements()` is asked with `describeComponents()`, and its list given under the new name in its place. The
   usage and messages say "element" (`hyper-elements describe [Element]`).
+- **A design its template refuses isn't told to install the email client checks.** Neither is `design new` or
+  `design set`. The note saying where those checks come from (`email/more-checks`) was printed there even with
+  `@hyper-elements/email-clients` installed, though nothing in those runs makes the checks.
 
 ## 0.2.0
 

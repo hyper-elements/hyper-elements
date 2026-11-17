@@ -134,7 +134,7 @@ export async function GET() {
 
 ## An OpenGraph image from a template
 
-A page's social card can be a [template](/docs/guides/templates) drawn by `@hyper-elements/react/image` in an `opengraph-image.tsx` route: the pages `generateStaticParams` names are drawn when the app builds, any other when it's asked for. The template's check runs before anything is drawn. A title past the template's `maxLength` fails the request with the template's diagnostics instead of drawing a broken card.
+A page's social card can be a [template](/docs/templates) drawn by `@hyper-elements/react/image` in an `opengraph-image.tsx` route: the pages `generateStaticParams` names are drawn when the app builds, any other when it's asked for. The template's check runs before anything is drawn. A title past the template's `maxLength` fails the request with the template's diagnostics instead of drawing a broken card.
 
 ```tsx
 // app/blog/[slug]/opengraph-image.tsx

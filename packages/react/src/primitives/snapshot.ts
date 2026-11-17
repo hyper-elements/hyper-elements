@@ -291,7 +291,7 @@ export function snapshot(element: React.ReactElement, options: SnapshotOptions =
     for (const definition of bound ?? fragmentDefinitions(fragment)) {
       const known = definitions.get(definition.type);
       if (known && known !== definition) {
-        diagnostics.push({ code: "custom/duplicate", severity: "error", message: `Two different custom components are named ${definition.type}: the design's and the slot ${slot}'s`, path: `values.${slot}` });
+        diagnostics.push({ code: "custom/duplicate", severity: "error", message: `Two different custom elements are named ${definition.type}: the design's and the slot ${slot}'s`, path: `values.${slot}` });
       } else definitions.set(definition.type, definition);
     }
   }

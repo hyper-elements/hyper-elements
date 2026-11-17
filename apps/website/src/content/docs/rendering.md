@@ -136,7 +136,7 @@ const { html } = await render(<Receipt />, { pretty: true, classPrefix: "acme-" 
 
 ## Merge tags
 
-A [`MergeTag`](/docs/components/mergetag) is a value your sending service fills in, written in that service's syntax:
+A [`MergeTag`](/docs/elements/mergetag) is a value your sending service fills in, written in that service's syntax:
 
 ```tsx
 <Text>

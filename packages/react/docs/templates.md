@@ -12,7 +12,7 @@ A template has three kinds of parts:
   - **fields:** typed values, each with its rules: a headline of at most 90 characters, a date, exactly three
     features, an optional promo, a product screenshot at least 1600px wide and 1.2:1 to 2:1, shown whole;
   - **blocks:** approved section types, picked, ordered and filled as data;
-  - **slots:** JSX the filler writes, with only the components and brand styles the template allows.
+  - **slots:** JSX the filler writes, with only the elements and brand styles the template allows.
 - **Rules over the result:** checks on the finished design (an unsubscribe link, links only to the team's domains,
   root props), each failing with what to fix.
 
@@ -30,7 +30,7 @@ export default () => (
     features={["Drafts from merged PRs", "Your voice, every release", "Ships to Slack and email"]}
     launchDate="2026-12-03"
     screenshot={{ src: "./art/screenshot.png", width: 2400, height: 1500 }}
-    artwork={{ src: "./art/waves.png", width: 2160, height: 1360 }}
+    artwork={{ src: "./art/shapes.png", width: 2160, height: 1360 }}
   />
 );
 ```
@@ -86,7 +86,7 @@ export default template({
       <Column style={{ gap: 24 }}>
         <Heading field="headline" level={1} style={{ fontSize: square ? 76 : 56 }}>{v.headline}</Heading>
         <List>{v.features.map((feature, i) => <ListItem key={i} field={`features[${i}]`}>{feature}</ListItem>)}</List>
-        <Text field="launchDate">{formatDate(v.launchDate, v.locale, { dateStyle: "long" })}</Text>
+        <Text field="launchDate">{formatDate(v.launchDate, v.locale, { month: "long", day: "numeric" })}</Text>
       </Column>
     );
     const art = (
@@ -115,7 +115,7 @@ export default template({
   `minWidth`, `minHeight`, `accepts` (`png`, `jpeg`, `gif`, `svg`, `webp`), `transparent` and `maxCrop`.
 - **`field="…"`** on a built-in says which field it shows (`headline`, `features[1]`, `stories[1].image`). It's how the
   template's checks find each image where it's drawn, and a diagnostic on a bound node names its `field`. A binding
-  inside a `component()`'s own render is left out (`field/dropped`).
+  inside a custom element's own render is left out (`field/dropped`).
 - **`guidance`**, on a field or the template, is plain English for whoever fills it: never enforced, listed by
   `describe()` and returned by `check()` as `review` items for a person to judge.
 - **`formats`** are a template's named sizes: a Canvas's `{ width, height, scale }`, a Document's `{ size,
@@ -135,7 +135,7 @@ templates/assets/orbit-logo.png    its logo: the template's own
 fonts/Inter-Regular.ttf            the brand's fonts
 fonts/Inter-Bold.ttf
 designs/art/screenshot.png         a launch's pictures
-designs/art/waves.png
+designs/art/shapes.png
 brief.json                         a launch's copy
 package.json                       "hyperElements": { "templates": ["templates/**"] }
 ```
@@ -143,25 +143,26 @@ package.json                       "hyperElements": { "templates": ["templates/*
 ### The template
 
 The layout of each format, the colors, the fonts and the logo are the template's. A launch gives six values: a
-headline, exactly three features, a date, a language, a product screenshot and a piece of artwork. The headline has a
-fixed room in each format and is fitted to it: drawn at the largest of its sizes that takes three lines or fewer. The
-screenshot is shown whole over the artwork, which fills its region.
+headline, exactly three features, a date, a language, a product screenshot and a piece of artwork. The headline is
+fitted: drawn at the largest of its sizes that takes three lines or fewer, and what's under it follows it. The
+artwork fills a panel, and the screenshot is shown whole in a window over it.
 
 ```tsx
 // templates/launch-graphic.tsx
-import { Canvas, Column, Heading, Image, Layer, Row, Text, prop } from "@hyper-elements/react";
+import { Canvas, Circle, Column, Heading, Image, Layer, Path, Rect, Row, Svg, Text, prop } from "@hyper-elements/react";
 import { field, fitInside, formatDate, template } from "@hyper-elements/react/template";
 
-// The brand's fonts: a file for each weight the design uses.
+// The brand's fonts and colors.
 const FONTS = [
   { family: "Inter", src: "../fonts/Inter-Regular.ttf", weight: 400 },
   { family: "Inter", src: "../fonts/Inter-Bold.ttf", weight: 700 },
 ];
+const [INK, PAPER, INDIGO, TEAL] = ["#15132e", "#f6f2ea", "#4f46e5", "#2dd4bf"];
 
 // Each format's layout. It's the template's: no value changes it.
 const LAYOUT = {
-  square: { width: 1080, height: 1080, padding: 72, gap: 32, words: 936, headline: { height: 264, sizes: [72, 64, 56, 48] }, text: 30, art: { width: 936, height: 343 } },
-  landscape: { width: 1200, height: 630, padding: 56, gap: 24, words: 548, headline: { height: 186, sizes: [56, 48, 40] }, text: 24, art: { width: 504, height: 518 } },
+  square: { width: 1080, height: 1080, words: 952, headline: [72, 64, 56], text: 30, art: { width: 952, height: 420 }, shot: { width: 512, height: 320 } },
+  landscape: { width: 1200, height: 630, words: 504, headline: [52, 46, 40], text: 23, art: { width: 552, height: 566 }, shot: { width: 456, height: 285 } },
 } as const;
 
 export default template({
@@ -177,7 +178,7 @@ export default template({
     launchDate: prop.date({ label: "Launch date", required: true }),
     locale: prop.choice(["en-US", "de-DE"], { label: "Language", default: "en-US" }),
     screenshot: field.image({ label: "Product screenshot", required: true, fit: "contain", aspect: { min: 1.2, max: 2 }, minWidth: 1000, accepts: ["png"] }),
-    artwork: field.image({ label: "Artwork", required: true, fit: "cover", maxCrop: 0.6, accepts: ["png"], guidance: "Abstract light waves in violet and teal. No text, logos or people." }),
+    artwork: field.image({ label: "Artwork", required: true, fit: "cover", maxCrop: 0.6, accepts: ["png"], guidance: "Bold flat shapes in the brand's colors. No text, logos or people." }),
   },
   // What only measuring decides has to hold: nothing past the Canvas, a font for every character, a headline that fits.
   rules: { require: { core: ["image/overflow", "image/glyph", "image/fit"] } },
@@ -185,50 +186,81 @@ export default template({
     headline: "Meet Orbit 3.0: release notes that write themselves",
     features: ["Drafts from merged PRs", "Your voice, every release", "Ships to Slack and email"],
     launchDate: "2026-12-03",
-    screenshot: { src: "../designs/art/screenshot.png", width: 1200, height: 750 },
-    artwork: { src: "../designs/art/waves.png", width: 1080, height: 680 },
+    screenshot: { src: "../designs/art/screenshot.png", width: 1600, height: 1000 },
+    artwork: { src: "../designs/art/shapes.png", width: 1600, height: 1200 },
   },
   render(v, { format }) {
     const f = LAYOUT[format];
+    const logo = <Image src={{ src: "./assets/orbit-logo.png", width: 252, height: 128 }} alt="Orbit" style={{ width: 126 }} />;
     const words = (
-      <Column style={{ width: f.words, gap: 16 }}>
-        {/* The headline's room is fixed, and its size is the largest that fits it in three lines. */}
-        <Column style={{ height: f.headline.height }}>
-          <Heading field="headline" level={1} fit={{ sizes: [...f.headline.sizes], maxLines: 3 }} style={{ color: "#f7f7fb", lineHeight: 1.1 }}>
-            {v.headline}
-          </Heading>
-        </Column>
+      <Column style={{ width: f.words, gap: 18 }}>
+        {/* The date, written for the language, without its year. */}
+        <Row style={{ gap: 10, alignItems: "center" }}>
+          <Svg width={14} height={14}>
+            <Circle cx={7} cy={7} r={7} style={{ fill: TEAL }} />
+          </Svg>
+          <Text field="launchDate" style={{ color: INDIGO, fontSize: f.text - 3, fontWeight: 700, lineHeight: 1.2, letterSpacing: 2, textTransform: "uppercase" }}>
+            {formatDate(v.launchDate, v.locale, { month: "long", day: "numeric" })}
+          </Text>
+        </Row>
+        {/* The headline is drawn at the largest size that fits it in three lines. What's under it follows it. */}
+        <Heading field="headline" level={1} fit={{ sizes: [...f.headline], maxLines: 3 }} style={{ color: INK, lineHeight: 1.06, letterSpacing: -1.5 }}>
+          {v.headline}
+        </Heading>
         <Column style={{ gap: 8 }}>
           {v.features.map((feature, i) => (
-            <Text key={i} field={`features[${i}]`} style={{ color: "#c7d2fe", fontSize: f.text, lineHeight: 1.3 }}>
-              {feature}
-            </Text>
+            <Row key={i} style={{ gap: 12, alignItems: "center" }}>
+              <Svg width={f.text - 2} height={f.text - 2} viewBox="0 0 24 24">
+                <Circle cx={12} cy={12} r={12} style={{ fill: INDIGO }} />
+                <Path d="M6.5 12.5 L10.5 16.5 L17.5 8.5" style={{ fill: "transparent", stroke: PAPER, strokeWidth: 2.6 }} />
+              </Svg>
+              <Text field={`features[${i}]`} style={{ color: "#3d3a57", fontSize: f.text, lineHeight: 1.3 }}>
+                {feature}
+              </Text>
+            </Row>
           ))}
         </Column>
-        <Text field="launchDate" style={{ color: "#2dd4bf", fontSize: f.text - 2, fontWeight: 700, lineHeight: 1.25 }}>
-          {formatDate(v.launchDate, v.locale, { dateStyle: "long" })}
-        </Text>
       </Column>
     );
-    // The artwork covers its region; the screenshot is shown whole over it.
-    const art = (
-      <Layer style={{ ...f.art, alignItems: "center", justifyItems: "center" }}>
-        <Image field="artwork" src={v.artwork} alt="" />
-        <Image field="screenshot" src={v.screenshot} alt="The product" style={fitInside(v.screenshot, { width: f.art.width - 48, height: f.art.height - 48 })} />
+    // The screenshot, shown whole in a window of the template's own, with the window's shadow behind it.
+    const shot = fitInside(v.screenshot, f.shot);
+    const [width, height] = [shot.width + 4, shot.height + 38];
+    const product = (
+      <Layer style={{ width: width + 12, height: height + 12, justifyItems: "start" }}>
+        <Svg width={width + 12} height={height + 12}>
+          <Rect x={12} y={12} width={width} height={height} rx={18} style={{ fill: INK }} />
+        </Svg>
+        <Column style={{ width, backgroundColor: PAPER, border: `2px solid ${INK}`, borderRadius: 18, overflow: "hidden" }}>
+          <Row style={{ padding: [11, 14] }}>
+            <Svg width={52} height={12}>
+              <Circle cx={6} cy={6} r={6} style={{ fill: "#ff6b57" }} />
+              <Circle cx={26} cy={6} r={6} style={{ fill: "#ffc93c" }} />
+              <Circle cx={46} cy={6} r={6} style={{ fill: TEAL }} />
+            </Svg>
+          </Row>
+          <Image field="screenshot" src={v.screenshot} alt="The product" style={shot} />
+        </Column>
       </Layer>
     );
-    const logo = <Image src={{ src: "./assets/orbit-logo.png", width: 252, height: 128 }} alt="Orbit" style={{ width: 126 }} />;
+    // The artwork fills a panel, and the product sits in the middle of it.
+    const art = (
+      <Layer style={{ ...f.art, borderRadius: 32, alignItems: "center", justifyItems: "center" }}>
+        <Image field="artwork" src={v.artwork} alt="" />
+        {product}
+      </Layer>
+    );
     return (
-      <Canvas width={f.width} height={f.height} fonts={FONTS} lang={v.locale} style={{ backgroundColor: "#0b1020", fontFamily: "Inter", padding: f.padding }}>
+      <Canvas width={f.width} height={f.height} fonts={FONTS} lang={v.locale} style={{ backgroundColor: PAPER, fontFamily: "Inter" }}>
         {format === "square" ? (
-          <Column style={{ gap: f.gap }}>
+          // The logo at the top and the art at the bottom: the space around the words takes up the slack.
+          <Column style={{ height: f.height, padding: 64, justifyContent: "space-between" }}>
             {logo}
             {words}
             {art}
           </Column>
         ) : (
-          <Row style={{ gap: 36 }}>
-            <Column style={{ width: f.words, gap: f.gap }}>
+          <Row style={{ height: f.height, padding: [32, 32, 32, 64], gap: 48 }}>
+            <Column style={{ width: f.words, height: f.art.height, padding: [24, 0], justifyContent: "space-between" }}>
               {logo}
               {words}
             </Column>
@@ -256,7 +288,7 @@ export default template({
 `design new` makes the design from it, with each picture given as its file:
 
 ```bash
-npx hyper-elements design new templates/launch-graphic.tsx -o designs/orbit.values.json --values brief.json --set screenshot=@designs/art/screenshot.png --set artwork=@designs/art/waves.png
+npx hyper-elements design new templates/launch-graphic.tsx -o designs/orbit.values.json --values brief.json --set screenshot=@designs/art/screenshot.png --set artwork=@designs/art/shapes.png
 ```
 
 It writes `designs/orbit.values.json`: the template it's made from, the formats it's for, its values (each picture's
@@ -274,7 +306,7 @@ was written.
     "launchDate": "2026-12-03",
     "locale": "en-US",
     "screenshot": {"src": "./art/screenshot.png", "width": 1200, "height": 750},
-    "artwork": {"src": "./art/waves.png", "width": 1080, "height": 680}
+    "artwork": {"src": "./art/shapes.png", "width": 1080, "height": 680}
   },
   "assets": {
     "screenshot": {"sha256": "26796c37ec9b…"},
@@ -291,18 +323,18 @@ npx hyper-elements check designs/orbit.values.json
 
 ```text
 ✓ designs/orbit.values.json [square] (Canvas)
-  artwork (square): 936×343, needs 936×343px
-  screenshot (square): 472×295, needs 472×295px
-  fit headline: 72px (fits at 72, 64, 56, 48)
-  review artwork: Abstract light waves in violet and teal. No text, logos or people.
+  artwork (square): 952×420, needs 952×420px
+  screenshot (square): 512×320, needs 512×320px
+  fit headline: 72px (fits at 72, 64, 56)
+  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.
   review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.
   review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)
   review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)
 ✓ designs/orbit.values.json [landscape] (Canvas)
-  artwork (landscape): 504×518, needs 504×518px
+  artwork (landscape): 552×566, needs 552×566px
   screenshot (landscape): 456×285, needs 456×285px
-  fit headline: 56px (fits at 56, 48, 40)
-  review artwork: Abstract light waves in violet and teal. No text, logos or people.
+  fit headline: 52px (fits at 52, 46, 40)
+  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.
   review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.
   review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)
   review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)
@@ -325,7 +357,7 @@ npx hyper-elements render designs/orbit.values.json
 
 | square, 1080×1080 | landscape, 1200×630 |
 |---|---|
-| <img src="../../../apps/website/public/generated/templates-guide/orbit-square.png" width="320" alt="The square launch graphic: Orbit's logo, the headline in three lines, three features, the launch date, and the product screenshot over the artwork"> | <img src="../../../apps/website/public/generated/templates-guide/orbit-landscape.png" width="480" alt="The landscape launch graphic: the same copy on the left, the product screenshot over the artwork on the right"> |
+| <img src="../../../apps/website/public/generated/templates-guide/orbit-square.png" width="320" alt="The square launch graphic: Orbit's logo, the launch date, the headline and three features, and the product screenshot in a window over a panel of bold, colorful shapes"> | <img src="../../../apps/website/public/generated/templates-guide/orbit-landscape.png" width="480" alt="The landscape launch graphic: the same copy on the left, and on the right the product screenshot in its window over the same shapes"> |
 
 ### A longer headline
 
@@ -336,11 +368,11 @@ npx hyper-elements design set designs/orbit.values.json "headline=Meet Orbit 3.0
 ```
 
 The square format still takes it at 72px. The landscape format's headline is narrower: there it's drawn at 40px, not
-56px, in the same three lines, and nothing else in the design moves.
+52px, in the same three lines, with the date right above it and the features right under it.
 
-| 51 characters, drawn at 56px | 66 characters, drawn at 40px |
+| 51 characters, drawn at 52px | 66 characters, drawn at 40px |
 |---|---|
-| <img src="../../../apps/website/public/generated/templates-guide/orbit-landscape.png" width="400" alt="The landscape launch graphic with its first headline, drawn at 56px"> | <img src="../../../apps/website/public/generated/templates-guide/long-landscape.png" width="400" alt="The landscape launch graphic with the longer headline, drawn at 40px in three lines, the rest of the design where it was"> |
+| <img src="../../../apps/website/public/generated/templates-guide/orbit-landscape.png" width="400" alt="The landscape launch graphic with its first headline, drawn at 52px"> | <img src="../../../apps/website/public/generated/templates-guide/long-landscape.png" width="400" alt="The landscape launch graphic with the longer headline, drawn at 40px in three lines, the rest of the design where it was"> |
 
 ### What it refuses
 
@@ -365,20 +397,20 @@ npx hyper-elements check designs/orbit.values.json
 
 ```text
 ✓ designs/orbit.values.json [square] (Canvas)
-  artwork (square): 936×343, needs 936×343px
-  screenshot (square): 472×295, needs 472×295px
-  fit headline: 64px (fits at 64, 56, 48)
-  review artwork: Abstract light waves in violet and teal. No text, logos or people.
+  artwork (square): 952×420, needs 952×420px
+  screenshot (square): 512×320, needs 512×320px
+  fit headline: 64px (fits at 64, 56)
+  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.
   review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.
   review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)
   review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)
 ✗ designs/orbit.values.json [landscape] (Canvas)
-    error image/fit at root.children[0].children[0].children[1].children[0].children[0]: This Heading doesn't fit: it takes 4 lines at 40px, its smallest size, and fits 3: cut about 18 characters (required by acme.LaunchGraphic) Fix: Shorten the text, or give the template a smaller size
+    error image/fit at root.children[0].children[0].children[1].children[1]: This Heading doesn't fit: it takes 4 lines at 40px, its smallest size, and fits 3: cut about 18 characters (required by acme.LaunchGraphic) Fix: Shorten the text, or give the template a smaller size
   rule image/fit (landscape): failed
-  artwork (landscape): 504×518, needs 504×518px
+  artwork (landscape): 552×566, needs 552×566px
   screenshot (landscape): 456×285, needs 456×285px
   fit headline: no size fits
-  review artwork: Abstract light waves in violet and teal. No text, logos or people.
+  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.
   review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.
   review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)
   review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)
@@ -395,7 +427,7 @@ fields: {
   body: field.slot({
     label: "Body",
     required: true,
-    allow: [Row, Column, Heading, Text, Image, Button, ProductCard], // the components themselves
+    allow: [Row, Column, Heading, Text, Image, Button, ProductCard], // the elements themselves
     styles: "theme", // every color, font, size and spacing a token()
     count: { Button: { min: 1, max: 2 } },
     guidance: "Lead with the news in one sentence.",
@@ -410,12 +442,12 @@ render: (v) => (
 ),
 ```
 
-- **`allow`** lists the components the content may use, given as the components. A built-in is allowed by its type, a
-  `component()` by its definition: content that defines its own `acme.ProductCard` is refused (`template/slot-component`,
+- **`allow`** lists the elements the content may use, given as the elements themselves. A built-in is allowed by its type, a
+  custom element by its definition: content that defines its own `acme.ProductCard` is refused (`template/slot-element`,
   "not the template's"), and its render never runs. A root and `Html` are never allowed.
 - **`allow: "all"`** allows every built-in the template's root may hold (what `describeElements({ root })` lists),
   but the roots and `Html`: a later Elements that adds one widens it. `deny: [Table, Video]` takes built-ins out of it,
-  and `["all", ProductCard]` adds your own components. A template that wants a fixed set across upgrades writes a list.
+  and `["all", ProductCard]` adds your own custom elements. A template that wants a fixed set across upgrades writes a list.
 - **`styles`:** `"theme"` (the default) requires a `token()` for every brand value: each style and prop whose kind is a
   color, a font, insets or a radius, a border's color, and `fontSize`, `lineHeight`, `letterSpacing`, `gap` and
   `rowGap`, in `style`, `mobile` and `hover`. `"none"` takes only the theme's named styles (`apply`) and variants;
@@ -633,7 +665,7 @@ For a `cover` image it adds the smallest size that fills every region without up
 - `fitInside(image, box)`: the size that shows an image whole inside a box, at its own aspect.
 - `sniffImage(bytes)`: an image file's `{ width, height, type, alpha }`, read from its header (PNG, JPEG, GIF, SVG), in
   plain JavaScript.
-- `formatDate(date, locale, options)`: a date field written for a locale (`"3. Dezember 2026"`), in UTC, so the day is
+- `formatDate(date, locale, options)`: a date field written for a locale (`"3. Dezember"`, with `{ month: "long", day: "numeric" }`), in UTC, so the day is
   the one given and no clock is read.
 
 ## Keeping templates trusted

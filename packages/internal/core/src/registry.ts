@@ -141,7 +141,7 @@ export function propsWithDefaults(definition: ComponentDefinition, props: Record
 }
 
 export interface ComponentsOption {
-  /** Custom components (made with `component()`) the document may use. */
+  /** Custom elements (made with `defineElement()`) the document may use. */
   components?: readonly CustomDefinition<any>[];
 }
 

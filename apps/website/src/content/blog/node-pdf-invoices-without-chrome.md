@@ -217,7 +217,7 @@ For text outside Western European characters, provide a font with the necessary 
 
 ## Will a long invoice create more pages automatically?
 
-No. [`Document.Page`](/docs/components/document-page) defines a page; it does not spill its children onto another one. Alternatively, `PageBreak` splits a run of content into explicit pages. A header and footer repeat on each page inside the document’s margins.
+No. [`Document.Page`](/docs/elements/document-page) defines a page; it does not spill its children onto another one. Alternatively, `PageBreak` splits a run of content into explicit pages. A header and footer repeat on each page inside the document’s margins.
 
 Choose page boundaries in your application. For larger invoices, prepare page-sized groups, repeat the table heading in each page’s table and put the grand total where you intend it. A fixed number of rows is only a starting policy: variable descriptions, font sizes and header heights change the space required.
 

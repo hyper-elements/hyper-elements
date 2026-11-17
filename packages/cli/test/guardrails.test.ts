@@ -46,7 +46,7 @@ describe("slots stored as their modules", () => {
     const dir = newsProject({ "designs/june.body.tsx": slotModule(`<Column><Button href="https://acme.example">Buy</Button></Column>`, "", "Button, Column") });
     const checked = await cli(dir, ["check", "designs/june.values.json", "--json"]);
     expect(checked.code).toBe(1);
-    expect(all(lines(checked)[0])).toContain("template/slot-component");
+    expect(all(lines(checked)[0])).toContain("template/slot-element");
     const rendered = await cli(dir, ["render", "designs/june.values.json"]);
     expect(rendered.code).toBe(1);
     expect(existsSync(join(dir, "out"))).toBe(false);

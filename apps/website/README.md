@@ -50,15 +50,19 @@ by `scripts/compare-previews.mjs`. Its one email in two themes is `examples/bran
 `examples/showcase/brand-north.tsx` and `brand-bloom.tsx`. Redraw them after `generate` when one of those examples changes:
 `pnpm --filter @hyper-elements/website generate:compare`.
 
-The templates docs' examples (`/docs/guides/templates` and its reference pages, and `packages/react/docs/templates.md`)
+The templates docs' examples (`/docs/templates` and its reference pages, and `packages/react/docs/templates.md`)
 are run for real: `scripts/templates-guide.mjs` runs the docs' commands with the built CLI on
-`examples/templates-guide/` (a launch graphic and a newsletter) in a temporary project. It writes the images the docs
-show (`public/generated/templates-guide/`: the graphic in its formats, its parts diagram from the boxes
-`layoutImage()` measured, and the newsletter as Chromium draws it) and each command's output
+`examples/templates-guide/` (a launch graphic, a newsletter, a brand email, a digest of blocks and an invoice) in a
+temporary project. It writes the images the docs show (`public/generated/templates-guide/`: the graphic in its formats,
+its parts diagram from the boxes `layoutImage()` measured, the emails as Chromium draws them, the brand email's and
+the invoice's diagrams of locked and open parts from the boxes Chromium lays out, and `concept-*.svg`, one small
+picture per idea: a field, an image field, formats, a slot, blocks, a rule) and each command's output
 (`src/generated/templates-guide.json`). It fails if a doc's copy of an example file, an excerpt of one (a block that
-starts `// from <file>`), or the output the guide quotes isn't what the example is or what the command printed. Run it
+starts `// from <file>`), or the output a page quotes isn't what the example is or what the command printed. Run it
 again after a change to the examples, the template entry or the CLI's output, with the packages built and
-Playwright's Chromium installed: `pnpm --filter @hyper-elements/website generate:templates-guide`.
+Playwright's Chromium installed: `pnpm --filter @hyper-elements/website generate:templates-guide`. The launch's own
+pictures (`examples/templates-guide/designs/art/`: the artwork, the product screenshot and the banner) are drawn from
+SVG by `node scripts/templates-guide-art.mjs`, and committed.
 
 Images the examples use live in `public/img/` and are referenced as `https://hyperelements.dev/img/…`, so a copied example works anywhere. Previews load them from the site itself.
 
@@ -68,7 +72,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 |-------|--------|
 | `/` | `src/pages/index.astro` |
 | `/docs/…` | `src/content/docs/**/*.md`, in the order of `docsNav` in `src/lib/site.ts` |
-| `/docs/components/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
+| `/docs/elements/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
 | `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |

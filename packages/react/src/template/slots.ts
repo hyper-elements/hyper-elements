@@ -1,7 +1,7 @@
 /**
  * Slots: JSX the filler writes, inside limits the template sets. A slot's content is collected on its own and
  * spliced in at its mark (Decision 29's snapshot), and its preflight runs on the captured content before anything is
- * read or expanded: which components it may use (built-ins by type, a `component()` by its definition, never its
+ * read or expanded: which elements it may use (built-ins by type, a custom element by its definition, never its
  * name), how it may be styled (`"none"`, `"theme"` or `"free"`), how many of each (`count`), and no `attrs`, scopes
  * or bindings of its own.
  */
@@ -13,7 +13,7 @@ import React from "react";
 /** How a slot's content may be styled: only the theme's named styles and variants, every brand value a token, or anything. */
 export type SlotStyles = "none" | "theme" | "free";
 
-/** A component a slot allows: a built-in (`Text`) or a `component()`, given as the component itself. */
+/** An element a slot allows: a built-in (`Text`) or a custom element, given as the element itself. */
 export type SlotComponent = React.ComponentType<any>;
 
 export interface SlotOptions<R extends boolean> {
@@ -21,7 +21,7 @@ export interface SlotOptions<R extends boolean> {
   required?: R;
   description?: string;
   guidance?: string;
-  /** The components its content may use, or `"all"` (every built-in its root takes but the roots and Html), with `component()`s beside it. */
+  /** The elements its content may use, or `"all"` (every built-in its root takes but the roots and Html), with custom elements beside it. */
   allow: "all" | ReadonlyArray<SlotComponent | "all">;
   /** With `"all"`: built-ins it leaves out. */
   deny?: readonly SlotComponent[];
@@ -78,7 +78,7 @@ const PRIMITIVE = Symbol.for("@hyper-elements/react/primitive");
 const ROOTS = ["Email", "Page", "Document", "Canvas"];
 const CUSTOM_TYPE = /^[a-z][a-z0-9-]*\.[A-Z][A-Za-z0-9]*$/;
 
-/** A built-in component's type, or a `component()`'s definition. */
+/** A built-in element's type, or a custom element's definition. */
 function identify(component: unknown): { builtIn: string } | { custom: CustomDefinition<any> } | undefined {
   const type = component && (typeof component === "function" || typeof component === "object") ? (component as Record<symbol, unknown>)[PRIMITIVE] : undefined;
   if (typeof type === "string") return { builtIn: type };
@@ -87,7 +87,7 @@ function identify(component: unknown): { builtIn: string } | { custom: CustomDef
   return undefined;
 }
 
-/** A slot's rules, resolved for the template's root: the built-in types it allows, and its custom components by type. */
+/** A slot's rules, resolved for the template's root: the built-in types it allows, and its custom elements by type. */
 export interface ResolvedSlot {
   path: string;
   label: string;
@@ -116,26 +116,26 @@ export function resolveSlot(path: string, spec: SlotSpec, root: RootName): { slo
   const builtIns = new Set<string>();
   const customs = new Map<string, CustomDefinition<any>>();
   let all = false;
-  if (!spec.slot.allow.length) problems.push(problem("template/slot-allow", `The slot ${path}'s allow lists the components its content may use, or "all"`, `${at}.allow`));
+  if (!spec.slot.allow.length) problems.push(problem("template/slot-allow", `The slot ${path}'s allow lists the elements its content may use, or "all"`, `${at}.allow`));
   for (const entry of spec.slot.allow) {
     if (entry === "all") {
       all = true;
       continue;
     }
     const found = identify(entry);
-    if (!found) problems.push(problem("template/slot-allow", `The slot ${path}'s allow holds components (Text, a component() of yours) or "all", not ${typeof entry === "string" ? JSON.stringify(entry) : String(entry)}`, `${at}.allow`));
+    if (!found) problems.push(problem("template/slot-allow", `The slot ${path}'s allow holds elements (Text, a custom element of yours) or "all", not ${typeof entry === "string" ? JSON.stringify(entry) : String(entry)}`, `${at}.allow`));
     else if ("builtIn" in found) builtIns.add(found.builtIn);
     else if (customs.has(found.custom.type) && customs.get(found.custom.type) !== found.custom)
-      problems.push(problem("template/slot-allow", `The slot ${path}'s allow has two different components named ${found.custom.type}: its content names one by type, so one may be allowed`, `${at}.allow`));
+      problems.push(problem("template/slot-allow", `The slot ${path}'s allow has two different custom elements named ${found.custom.type}: its content names one by type, so one may be allowed`, `${at}.allow`));
     else customs.set(found.custom.type, found.custom);
   }
   const denied: string[] = [];
-  if (spec.slot.deny.length && !all) problems.push(problem("template/slot-allow", `The slot ${path}'s deny leaves built-ins out of "all": beside a list of allowed components, it says nothing (list only what's allowed)`, `${at}.deny`));
+  if (spec.slot.deny.length && !all) problems.push(problem("template/slot-allow", `The slot ${path}'s deny leaves built-ins out of "all": beside a list of allowed elements, it says nothing (list only what's allowed)`, `${at}.deny`));
   for (const entry of spec.slot.deny) {
     const found = identify(entry);
-    if (found && "custom" in found) problems.push(problem("template/slot-allow", `The slot ${path}'s deny holds built-ins only: "all" allows no component() of yours, so leave ${found.custom.type} out of allow instead`, `${at}.deny`));
+    if (found && "custom" in found) problems.push(problem("template/slot-allow", `The slot ${path}'s deny holds built-ins only: "all" allows no custom element of yours, so leave ${found.custom.type} out of allow instead`, `${at}.deny`));
     else if (found) denied.push(found.builtIn);
-    else problems.push(problem("template/slot-allow", `The slot ${path}'s deny holds built-in components (Table, Video)`, `${at}.deny`));
+    else problems.push(problem("template/slot-allow", `The slot ${path}'s deny holds built-in elements (Table, Video)`, `${at}.deny`));
   }
   if (all) for (const type of allUnder(root)) if (!denied.includes(type)) builtIns.add(type);
   // A root and Html are never slot content, listed or not.
@@ -156,7 +156,7 @@ export function resolveSlot(path: string, spec: SlotSpec, root: RootName): { slo
 /** The kinds whose values carry the brand, and the styles that do whatever their kind. */
 const BRAND_KINDS = new Set(["color", "fontFamily", "insets", "radius", "border", "line"]);
 const BRAND_STYLES = new Set(["fontSize", "lineHeight", "letterSpacing", "gap", "rowGap"]);
-/** A `component()` prop that takes a theme's token (`prop.color`, `prop.fontFamily`): brand-valued. */
+/** A custom element's prop that takes a theme's token (`prop.color`, `prop.fontFamily`): brand-valued. */
 const BRAND_PROP_KINDS = new Set(["color", "fontFamily"]);
 
 /** By built-in type: its brand-valued styles and props, each with its kind's name. */
@@ -221,7 +221,7 @@ export interface PreflightContext {
 }
 
 /**
- * A slot's content checked as captured, before anything is read: its host, its components, its styles and scopes, its
+ * A slot's content checked as captured, before anything is read: its host, its elements, its styles and scopes, its
  * attributes and bindings, and its counts. Diagnostics carry the document's paths.
  */
 export function preflight(context: PreflightContext, capture: FragmentCapture, host: { node: CapturedNode; path: string } | null, marks: number): Diagnostic[] {
@@ -243,27 +243,27 @@ export function preflight(context: PreflightContext, capture: FragmentCapture, h
   const visit = (node: CapturedNode, path: string, hidden: { mobile: boolean; desktop: boolean }) => {
     const custom = CUSTOM_TYPE.test(node.type);
     if (node.type === "#slot") return;
-    // Which components: built-ins by type, a component() by its definition, never its name.
+    // Which elements: built-ins by type, a custom element by its definition, never its name.
     if (ROOTS.includes(node.type) || node.type === "Html") {
-      out.push(problem("template/slot-component", `A slot's content can't hold ${node.type === "Html" ? "an Html block" : `a ${node.type}`}: ${context.id}'s ${slot.path} takes ${list}`, path));
+      out.push(problem("template/slot-element", `A slot's content can't hold ${node.type === "Html" ? "an Html block" : `a ${node.type}`}: ${context.id}'s ${slot.path} takes ${list}`, path));
       return;
     }
     if (custom) {
       const genuine = slot.customs.get(node.type);
       const own = definitions.get(node.type);
       if (!genuine) {
-        out.push(problem("template/slot-component", `${node.type} isn't one of the components ${context.id}'s ${slot.path} takes (${list})`, path));
+        out.push(problem("template/slot-element", `${node.type} isn't one of the elements ${context.id}'s ${slot.path} takes (${list})`, path));
         return;
       }
       if (own && own !== genuine) {
-        out.push(problem("template/slot-component", `This ${node.type} isn't the template's: it was defined by the slot's content. ${slot.path} takes the template's own ${node.type}`, path));
+        out.push(problem("template/slot-element", `This ${node.type} isn't the template's: it was defined by the slot's content. ${slot.path} takes the template's own ${node.type}`, path));
         return;
       }
     } else if (!slot.builtIns.has(node.type)) {
       out.push(
         problem(
-          "template/slot-component",
-          slot.denied.includes(node.type) ? `${context.id} denies ${node.type} in ${slot.path}` : `A ${node.type} isn't one of the components ${context.id}'s ${slot.path} takes (${list})`,
+          "template/slot-element",
+          slot.denied.includes(node.type) ? `${context.id} denies ${node.type} in ${slot.path}` : `A ${node.type} isn't one of the elements ${context.id}'s ${slot.path} takes (${list})`,
           path
         )
       );

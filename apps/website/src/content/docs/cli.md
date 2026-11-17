@@ -177,7 +177,7 @@ npx hyper-elements dev emails/ docs/
 
 ## Templates
 
-A [template](/docs/guides/templates) is a design with fields: what may change, and the rules each value must meet. A design made from one is a values file, `name.values.json`, or a TSX file whose root is the template:
+A [template](/docs/templates) is a design with fields: what may change, and the rules each value must meet. A design made from one is a values file, `name.values.json`, or a TSX file whose root is the template:
 
 ```bash
 npx hyper-elements describe templates/launch.tsx --json        # formats, fields, image regions and rules
@@ -190,7 +190,7 @@ npx hyper-elements design set designs/orbit.values.json launchDate=2026-12-10   
 
 `render`, `check`, `inspect` and `outline` run a design once per format, each with its own line and file. A value the template refuses exits `1`, and `render` writes nothing for a format that fails. `--require-template` fails anything a template didn't check, and `template extract` makes a template from a design a person approved.
 
-[Templates in the command line](/docs/guides/templates-cli) has every command and flag, values files, trusted templates and the diagnostics. The [templates guide](/docs/guides/templates) runs them on a real example.
+[Templates in the command line](/docs/templates/cli) has every command and flag, values files, trusted templates and the diagnostics. [Template examples](/docs/templates/examples) runs them on real ones.
 
 ## JSON and exit codes
 

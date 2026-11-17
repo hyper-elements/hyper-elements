@@ -117,9 +117,9 @@ describe("slots", () => {
   });
 
   it("refuses a type it doesn't allow, and Html or a root even when listed", () => {
-    expect(codesOf(body(<Column><Table><TableRow><TableCell>x</TableCell></TableRow></Table><Button href="https://acme.com">Go</Button></Column>).diagnostics)).toEqual(["template/slot-component"]);
+    expect(codesOf(body(<Column><Table><TableRow><TableCell>x</TableCell></TableRow></Table><Button href="https://acme.com">Go</Button></Column>).diagnostics)).toEqual(["template/slot-element"]);
     const withHtml = newsletter({ label: "Body", allow: [Column, Html, Button] });
-    expect(codesOf(withHtml.check({ subject: "Hi", body: <Column><Html html="<b>x</b>" /></Column> }).diagnostics)).toEqual(["template/slot-component"]);
+    expect(codesOf(withHtml.check({ subject: "Hi", body: <Column><Html html="<b>x</b>" /></Column> }).diagnostics)).toEqual(["template/slot-element"]);
   });
 
   it("allows a component() by its definition: a look-alike with its name is refused, and its Html never renders", () => {
@@ -127,8 +127,8 @@ describe("slots", () => {
     const genuine = body(<Column><ProductCard sku="A1" /><Button href="https://acme.com">Go</Button></Column>);
     expect(errors(genuine.diagnostics)).toEqual([]);
     const fake = body(<Column><Fake sku="A1" /><Button href="https://acme.com">Go</Button></Column>);
-    expect(codesOf(fake.diagnostics)).toEqual(["template/slot-component"]);
-    expect(fake.diagnostics.find((d) => d.code === "template/slot-component")?.message).toContain("isn't the template's");
+    expect(codesOf(fake.diagnostics)).toEqual(["template/slot-element"]);
+    expect(fake.diagnostics.find((d) => d.code === "template/slot-element")?.message).toContain("isn't the template's");
     expect(fake.snapshots).toEqual({});
   });
 
@@ -298,11 +298,11 @@ describe("slots", () => {
     it("refuses Html and an unlisted component(); allows the one listed beside it; deny takes built-ins out", () => {
       const All = newsletter({ label: "Body", allow: ["all", ProductCard], deny: [Table] });
       const check = (content: React.ReactNode) => codesOf(All.check({ subject: "Hi", body: <>{content}</> }).diagnostics);
-      expect(check(<Column><Html html="x" /></Column>)).toEqual(["template/slot-component"]);
+      expect(check(<Column><Html html="x" /></Column>)).toEqual(["template/slot-element"]);
       expect(check(<Column><ProductCard sku="A" /><Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" /></Column>)).toEqual([]);
-      expect(check(<Column><Table><TableRow><TableCell>x</TableCell></TableRow></Table></Column>)).toEqual(["template/slot-component"]);
+      expect(check(<Column><Table><TableRow><TableCell>x</TableCell></TableRow></Table></Column>)).toEqual(["template/slot-element"]);
       const Other = component({ type: "acme.Other", label: "Other", props: {}, render: () => <Column /> });
-      expect(check(<Column><Other /></Column>)).toEqual(["template/slot-component"]);
+      expect(check(<Column><Other /></Column>)).toEqual(["template/slot-element"]);
     });
 
     it("refuses deny beside a list, a component() in deny, and two allowed components with one type", () => {
@@ -337,7 +337,7 @@ describe("stored slots and captures", () => {
     const fragment = JSON.parse(JSON.stringify(captureFragment(content)));
     expect(codesOf(N.check({ subject: "Hi", body: { fragment } }, { fragments: { body: fragment } }).diagnostics)).toEqual(["template/slot-twice"]);
     const html = JSON.parse(JSON.stringify(captureFragment(<Column><Html html="<b>x</b>" /></Column>)));
-    expect(codesOf(N.check({ subject: "Hi", body: { fragment: html } }).diagnostics)).toEqual(["template/slot-component"]);
+    expect(codesOf(N.check({ subject: "Hi", body: { fragment: html } }).diagnostics)).toEqual(["template/slot-element"]);
     // A capture that came from elsewhere binds custom types by name to the allowed definition, never its own.
     const card = JSON.parse(JSON.stringify(captureFragment(<Column><ProductCard sku="Z9" /></Column>)));
     expect(errors(N.check({ subject: "Hi", body: { fragment: card } }).diagnostics)).toEqual([]);

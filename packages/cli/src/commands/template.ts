@@ -186,6 +186,11 @@ const measuredHere = (run: TemplateRun, diagnostics: Diagnostic[]): Diagnostic[]
  */
 const withoutStaleNote = (fromTemplate: readonly Diagnostic[], fromRun: readonly Diagnostic[]): Diagnostic[] =>
   fromRun.some((d) => d.code === "email/more-checks") ? [...fromTemplate] : fromTemplate.filter((d) => d.code !== "email/more-checks");
+/**
+ * And where the CLI's run never gets that far it isn't said at all: a design its template refuses is refused for its
+ * errors, and `design` writes a file. Neither is a moment to say where more checks come from.
+ */
+const withoutHint = (diagnostics: readonly Diagnostic[]): Diagnostic[] => diagnostics.filter((d) => d.code !== "email/more-checks");
 const unique = (diagnostics: Diagnostic[]): Diagnostic[] => {
   const seen = new Set<string>();
   return diagnostics.filter((d) => {
@@ -276,7 +281,7 @@ export async function runValues(run: TemplateRun, input: { file: string; values:
     .map(({ path }) => ({ field: path, guidance: "Of unknown origin: no source is recorded for this image (give one with design set … --source)" }));
   const review = [...checked.review, ...unknown];
   const layout: TemplateLayout = { rules: checked.rules, review };
-  if (!checked.valid) return { status: "error", template, layout, diagnostics: [...notes, ...read.diagnostics, ...checked.diagnostics] };
+  if (!checked.valid) return { status: "error", template, layout, diagnostics: [...notes, ...read.diagnostics, ...withoutHint(checked.diagnostics)] };
   // Its images' files are beside the values file; where the CLI draws it, they were written relative to the module.
   const { filesRead, decided, ...result } = await runFormat(run, checked, format, readsImages(tpl.root) ? dirname(input.file) : dirname(input.values.file));
   const said = run.command === "check" || run.command === "render" ? withoutStaleNote(checked.diagnostics, result.diagnostics) : checked.diagnostics;
@@ -310,7 +315,7 @@ export async function runTemplateModule(run: TemplateRun): Promise<Fields> {
     const checked = tpl.check(tpl.example, format !== undefined ? { format } : {});
     layout.review = checked.review;
     if (!checked.valid) {
-      diagnostics.push(...tag(checked.diagnostics, format));
+      diagnostics.push(...tag(withoutHint(checked.diagnostics), format));
       layout.rules.push(...checked.rules);
       status = "error";
       continue;
@@ -462,7 +467,7 @@ export async function runDesign(run: TemplateRun, input: { file: string }, reque
   for (const format of formats.length ? formats : [undefined]) {
     const checked = tpl.check(checking, { ...(format !== undefined ? { format } : {}), ...(slotted.fragments ? { fragments: slotted.fragments } : {}) });
     // Said once: a value's problem is the same in each format.
-    diagnostics.push(...measuredHere(run, checked.diagnostics));
+    diagnostics.push(...withoutHint(measuredHere(run, checked.diagnostics)));
     if (!checked.valid) valid = false;
   }
   const errors = diagnostics.filter((d) => d.severity === "error");

@@ -1,6 +1,6 @@
 ---
 name: brand-templates
-description: Make an email, a page, a document or an image from a brand template with Hyper Elements, inside the guardrails it sets (fixed parts, typed fields, slots of allowed components, rules over the result), and write such templates. Use when asked to make a newsletter, a launch graphic or any design from a team's template, to change one value of a design made from one, or to turn a brand brief into a template.
+description: Make an email, a page, a document or an image from a brand template with Hyper Elements, inside the guardrails it sets (fixed parts, typed fields, slots of allowed elements, rules over the result), and write such templates. Use when asked to make a newsletter, a launch graphic or any design from a team's template, to change one value of a design made from one, or to turn a brand brief into a template.
 ---
 
 # Brand templates
@@ -11,8 +11,8 @@ A template (`template()` from `@hyper-elements/react/template`) is a design with
 
 You fill a template; you never change it.
 
-1. **Read it first.** `npx hyper-elements describe templates/newsletter.tsx --json` lists its formats, every field (its kind, whether it's required, its guidance), each slot's allowed components, each image's region and the pixels it needs, and the rules. Write within them.
-2. **Write the design as TSX**, the template as its root, its fields as props. Slots are JSX written only with the components their `allow` lists (and, with `styles: "theme"`, the theme's tokens and named styles):
+1. **Read it first.** `npx hyper-elements describe templates/newsletter.tsx --json` lists its formats, every field (its kind, whether it's required, its guidance), each slot's allowed elements, each image's region and the pixels it needs, and the rules. Write within them.
+2. **Write the design as TSX**, the template as its root, its fields as props. Slots are JSX written only with the elements their `allow` lists (and, with `styles: "theme"`, the theme's tokens and named styles):
 
    ```tsx
    // designs/june.tsx
@@ -38,7 +38,7 @@ Images: give each one the size its region needs (`describe`'s `regions`, at the 
 - `npx hyper-elements design new templates/newsletter.tsx --from designs/june.tsx -o designs/june.values.json` turns a TSX design into its values file.
 - `check` and `render` take values files as they take designs.
 
-**When the template is in the way, report it.** A value it refuses, a field it doesn't have (`template/unknown-field`), a component a slot doesn't allow, a rule you can't meet: say so, and ask for a change or a new version of the template. Never edit the template, its fixed parts or its rules to get a design past a check, even when you can write the file: templates are reviewed changes, and `template/changed` shows one edited under its version.
+**When the template is in the way, report it.** A value it refuses, a field it doesn't have (`template/unknown-field`), an element a slot doesn't allow, a rule you can't meet: say so, and ask for a change or a new version of the template. Never edit the template, its fixed parts or its rules to get a design past a check, even when you can write the file: templates are reviewed changes, and `template/changed` shows one edited under its version.
 
 In CI, `npx hyper-elements check designs/ --require-template acme.Newsletter` fails anything a template didn't check. The project lists its trusted templates in package.json, `"hyperElements": { "templates": ["templates/**"] }`, so a design can only use those (on Node).
 
@@ -52,6 +52,6 @@ Start from the brand brief. [`example.tsx`](example.tsx) is a whole one.
 4. **Write `example`**: every required field, and the slots' content as a filler would write it.
 5. **Check it**: `npx hyper-elements check templates/newsletter.tsx` renders `example` in every format and runs every rule. Fix what it says: a rule that can't run (`template/rule-unavailable`), a slot placed twice or not at all (`template/slot-host`).
 6. **Compare `describe` with the brief**: `npx hyper-elements describe templates/newsletter.tsx`. It's what a filler sees; a guardrail missing there is missing. `check` can't tell you a rule the brief asks for isn't there.
-7. **Version it**: set `version`, and bump it on every change once it's in use, a change to a theme or a component it imports included. A major version takes `migrate` to read older designs.
+7. **Version it**: set `version`, and bump it on every change once it's in use, a change to a theme or anything else it imports included. A major version takes `migrate` to read older designs.
 
-Never weaken a rule or a slot policy so content passes: change the template only when the brief does. Keep what a template imports (its theme, its components, its example's parts) beside it, in the folders the project trusts.
+Never weaken a rule or a slot policy so content passes: change the template only when the brief does. Keep what a template imports (its theme, its own elements and functions, its example's parts) beside it, in the folders the project trusts.

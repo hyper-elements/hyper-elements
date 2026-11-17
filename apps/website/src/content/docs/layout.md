@@ -51,7 +51,7 @@ There are no margins. Space between blocks is their parent's `gap`. Space inside
 
 ## Section
 
-A [`Section`](/docs/components/section) is a band across the whole window. It goes directly in a root, never inside a Column, Row or another Section. Its background spans the window, and its children are stacked at the content width.
+A [`Section`](/docs/elements/section) is a band across the whole window. It goes directly in a root, never inside a Column, Row or another Section. Its background spans the window, and its children are stacked at the content width.
 
 ```tsx
 <Email width={600}>
@@ -68,7 +68,7 @@ The heading is 520px wide: the 600px content less 40px of padding on each side.
 
 ## Row
 
-A [`Row`](/docs/components/row) puts its children side by side. Each child takes its `width`, or a share of what's left: its `flex`, 1 by default.
+A [`Row`](/docs/elements/row) puts its children side by side. Each child takes its `width`, or a share of what's left: its `flex`, 1 by default.
 
 ```tsx
 // Equal shares.
@@ -109,7 +109,7 @@ Phones are at or below the content width plus 20px in an email (620px for a 600p
 
 ## Column
 
-A [`Column`](/docs/components/column) stacks its children, with its own `gap`, `padding` and box. With a background, it's a card.
+A [`Column`](/docs/elements/column) stacks its children, with its own `gap`, `padding` and box. With a background, it's a card.
 
 ```tsx
 <Column style={{ backgroundColor: "#ffffff", padding: 24, gap: 12, border: "1px solid #e4e4e7", borderRadius: 8 }}>
@@ -122,7 +122,7 @@ A child of a stack (a root, a Section, a Column) fills its width, unless it take
 
 ## Grid
 
-A [`Grid`](/docs/components/grid) puts its children in columns of equal width, row after row. On phones, they go one under another unless `stackOnMobile={false}`.
+A [`Grid`](/docs/elements/grid) puts its children in columns of equal width, row after row. On phones, they go one under another unless `stackOnMobile={false}`.
 
 ```tsx
 <Grid columns={3} style={{ gap: 16, rowGap: 24 }}>
@@ -137,7 +137,7 @@ A [`Grid`](/docs/components/grid) puts its children in columns of equal width, r
 
 ## Layer
 
-A [`Layer`](/docs/components/layer) puts its children over each other, in one box as tall as the tallest. Use it for words on an image.
+A [`Layer`](/docs/elements/layer) puts its children over each other, in one box as tall as the tallest. Use it for words on an image.
 
 ```tsx
 <Layer style={{ height: 280, alignItems: "end" }}>

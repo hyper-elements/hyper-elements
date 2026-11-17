@@ -84,10 +84,10 @@ The source is on GitHub at [hyper-elements/hyper-elements](https://github.com/hy
 ## Where to go next
 
 - [Quickstart](/docs/quickstart): install, write an email, render it and send it.
-- [Designs and roots](/docs/templates): the four roots, their props, and your own components.
+- [Designs](/docs/designs): the four roots, their props, and your own functions.
 - [Layout](/docs/layout): Section, Row, Column, Grid and Layer.
-- [Styles, phones and hover](/docs/styles): `style`, `mobile`, `hidden`, `hover` and fonts.
+- [Styles](/docs/styles): `style`, `mobile`, `hidden`, `hover` and fonts.
 - [Rendering](/docs/rendering): `render()`, `validate()`, `outline()` and merge tags.
 - [Diagnostics](/docs/diagnostics): what the checks report, and how to use them in CI.
-- [Defining elements](/docs/defining-elements): `defineElement()` and `<Html>`.
+- [Custom elements](/docs/defining-elements): `defineElement()` and `<Html>`.
 - Outputs: [Email](/docs/outputs/email), [Page](/docs/outputs/page), [PDF](/docs/outputs/pdf), [Image](/docs/outputs/image).

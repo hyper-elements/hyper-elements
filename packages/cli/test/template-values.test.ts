@@ -329,4 +329,23 @@ describe("a template's design, where the CLI makes the email client checks", () 
     expect(noted(await cli(project(files), ["check", "designs/a.values.json", "--no-lint", "--json"]))).toBe(1);
     expect(noted(await cli(project(files, { modules: WITH_CLIENTS }), ["check", "designs/a.values.json", "--no-lint", "--json"]))).toBe(0);
   });
+
+  it("isn't told where they come from when its template refuses it, or when design writes its file", async () => {
+    // A link off the template's domains: the design is refused for that, with or without the package.
+    const template = noteTemplate()
+      .replace("import { Email, Heading, Text, prop }", "import { Email, Heading, Link, Text, prop }")
+      .replace("  example: {", '  rules: { links: { domains: ["acme.example"] } },\n  example: {')
+      .replace("{v.body}</Text>", '{v.body} <Link href="https://elsewhere.example/">More</Link></Text>');
+    const refused = { "templates/note.tsx": template, "designs/a.values.json": valuesFile("../templates/note.tsx", { title: "Hi", body: "Body" }, { id: "acme.Note", formats: null }) };
+    const ran = await cli(project(refused), ["check", "designs/a.values.json", "--no-lint", "--json"]);
+    const codes = lines(ran)[0].diagnostics.map((d: { code: string }) => d.code);
+    expect(ran.code, ran.stdout + ran.stderr).toBe(1);
+    expect(codes).toContain("template/link-domain");
+    expect(codes).not.toContain("email/more-checks");
+    // design new checks the values and writes the file: it runs no email client checks, and doesn't point at them.
+    const dir = project({ "templates/note.tsx": noteTemplate() });
+    const made = await cli(dir, ["design", "new", "templates/note.tsx", "-o", "designs/b.values.json", "--set", "title=Hi", "--set", "body=Body", "--json"]);
+    expect(made.code, made.stdout + made.stderr).toBe(0);
+    expect(made.stdout).not.toContain("email/more-checks");
+  });
 });

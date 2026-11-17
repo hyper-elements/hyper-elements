@@ -130,7 +130,7 @@ try {
 | `mobile/invalid`, `hover/invalid`, `hidden/invalid` | A `mobile`, `hover` or `hidden` value that isn't one they take |
 | `target/unsupported` | An element the output can't draw: an `Svg` or a `PageNumber` in an email (Gmail and classic Outlook drop inline SVG) |
 | `document/page-number` | A `PageNumber` in a Page or a Canvas, which have no pages |
-| `component/not-supported` | An element under a root that doesn't take it. The message names the roots that do |
+| `element/not-supported` | An element under a root that doesn't take it. The message names the roots that do |
 | `prop/not-supported` | A prop for some roots only (a `defineElement()`'s, made with `roots`), under another |
 | `style/not-supported` | A style for some roots only, under another, in `style` or in its `mobile` or `hover` block |
 | `theme/schema` | A theme that isn't one: a token name that isn't letters and digits (`gray-900`: nest it as `gray.900`) or is `__proto__`, `constructor` or `prototype`, a value its group doesn't take, a `{ base, dark }` value (modes come later), a second `by` prop or a `by` value its prop never has, `variants` on a root, a group that isn't one yet (`shadows`), or a theme given both at a document's top level and on its root |

@@ -36,7 +36,7 @@ const rest = [
         </div>
         <div class="cg-grid">
           {g.items.map((c) => (
-            <a class="spec" href={`/docs/components/${c.slug}`}>
+            <a class="spec" href={`/docs/elements/${c.slug}`}>
               <div class="spec-stage"><Thumb example={c} width={560} height={168} /></div>
               <div class="spec-body">
                 <h3><code>{`<${c.title} />`}</code></h3>
@@ -52,13 +52,13 @@ const rest = [
   <section class="also">
     <div class="wrap also-head">
       <h2>Also in the box</h2>
-      <a href="/docs/components">Full reference →</a>
+      <a href="/docs/elements">Full reference →</a>
     </div>
     {rest.map((r) => (
       <div class="also-line">
         <div class="wrap also-row">
           <span class="also-label">{r.label}</span>
-          <div class="also-items">{r.items.map((n) => <a href="/docs/components"><code>{n}</code></a>)}</div>
+          <div class="also-items">{r.items.map((n) => <a href="/docs/elements"><code>{n}</code></a>)}</div>
         </div>
       </div>
     ))}

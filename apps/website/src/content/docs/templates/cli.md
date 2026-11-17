@@ -3,14 +3,17 @@ title: "Templates in the command line"
 description: "Values files, design new and design set, TSX template designs, slots as modules, trusted templates, --require-template and template extract, with the hyper-elements CLI."
 ---
 
-How the [`hyper-elements` command](/docs/cli) works with templates. The [templates guide](/docs/guides/templates) runs
-these commands on a real example, with what each writes.
+How the [`hyper-elements` command](/docs/cli) works with templates. [Template examples](/docs/templates/examples)
+runs these commands on real templates, with what each writes.
+
+Every command exits `0` when it's done, `1` when a design has errors, and `2` when it couldn't run at all: a wrong
+option, a missing package. [JSON and exit codes](/docs/cli#json-and-exit-codes) has the rest.
 
 ## The commands
 
 | Command | What it does |
 |---------|--------------|
-| `describe templates/launch.tsx` | What a template takes: its formats, fields, image regions and rules. `--json` has all of it |
+| `describe templates/launch-graphic.tsx` | What a template takes: its formats, fields, image regions and rules. `--json` has all of it |
 | `design new <template> -o <name.values.json>` | Makes a design from a template: a values file |
 | `design set <name.values.json> field=value` | Changes values in a design; the rest stays as it was |
 | `check <design>` | Checks a design: its values, its images against their files, fitted text, each format |
@@ -25,23 +28,25 @@ A design is a values file (`name.values.json`) or a TSX file whose root is a tem
 A values file names its template's module, the formats wanted and the values:
 
 ```bash
-npx hyper-elements design new templates/launch.tsx -o designs/orbit.values.json \
-  --values brief.json --set artwork=@art/waves.png --source artwork=source.json
+npx hyper-elements design new templates/launch-graphic.tsx -o designs/orbit.values.json \
+  --values brief.json --set artwork=@art/shapes.png --source artwork=source.json
 npx hyper-elements design set designs/orbit.values.json launchDate=2026-12-10
 ```
 
 | You give | It's read as |
 |----------|--------------|
 | `--values brief.json` | The values to start from (`design new`) |
-| `--set field=value`, or `field=value` after the file (`design set`) | JSON where it parses, else text |
+| `--set field=value`, or `field=value` after the file (`design set`) | JSON where it parses, else text. A nested value goes by its path: `customer.name=Northwind`, `lines[2].price=30`, `features[0]=…` |
 | `field=@path/to/image.png` | An image file: its size is read from it, and its hash goes in the file's `assets` |
 | `field=@path/to/body.tsx` | A slot's content, stored as its module |
-| `--source field=source.json` | Where an image came from, recorded beside its hash |
+| `--source field=source.json` | Where an image came from, recorded beside its hash: a JSON object with a `kind` (`"supplied"`, `"generated"`, `"stock"` or your own) and whatever else you keep, such as a provider, a model and a prompt, or a license |
 | `--draft` | Writes the file even where values are missing, with `"draft": true` and what's `missing` |
 
 - **A value the template refuses exits `1`**, and the file stays as it was.
-- **`design set` reads the file as its template takes it now**: its migrations run, for a draft too. So a set can
-  repair a file whose values the template refuses. A file of another template, or of a newer version, is left alone.
+- **`design new` lists every format the template has.** To render fewer, take one out of the file's `formats`.
+- **`design set` first brings the file up to the template's current version:** its migrations run, for a draft too.
+  So a set can repair a file whose values the template refuses. A file of another template, or of a newer version, is
+  left alone.
 - **A draft isn't rendered** (`cli/draft`) until a `design set` completes it.
 - **An image's entry follows its file.** Moved to another field, it keeps its hash and source. Changed under the same
   name, it has no source until one is given (`template/asset-changed`). `check` lists an image with no source under
@@ -51,9 +56,10 @@ npx hyper-elements design set designs/orbit.values.json launchDate=2026-12-10
 
 | A path | Is relative to |
 |--------|----------------|
-| The template's module | The values file (or it's a package specifier, kept as given) |
-| A Canvas's or a Document's image files | The values file: the CLI reads them to draw it |
-| An Email's or a Page's image `src` | Nothing: it's written as it's given (a URL, a service's tag such as `{{logo_url}}`, `cid:`) |
+| The template's module, in a values file | The values file (or it's a package specifier, kept as given) |
+| A template's own files: its logo, its fonts, its example's pictures | The template's module |
+| A Canvas's or a Document's image, in a design | The design: its values file or its TSX file. The command line reads it to draw it |
+| An Email's or a Page's image `src` | Nothing: it's written into the HTML as it's given (a URL, a service's tag such as `{{logo_url}}`, `cid:`). Where it's a file's path, the file is read relative to the design, only to check it |
 | A slot's module | The values file |
 
 ## Checking and rendering
@@ -63,8 +69,8 @@ npx hyper-elements design set designs/orbit.values.json launchDate=2026-12-10
 
 | Flag | What it does |
 |------|--------------|
-| `--template-format square` | Runs one format |
-| `--format svg` | A Canvas's image format, as for any Canvas |
+| `--template-format square` | Runs one of the template's formats |
+| `--format svg` | The file type of a Canvas's image (`png` or `svg`), as for any Canvas. Not a template's format |
 | `--scale 2` | Pixels per px, in place of the format's own scale |
 | `--require-template [id]` | Fails every input that isn't a design a template checked, or is one of another template |
 | `--props file.json` | A TSX design's props, as for any design |
@@ -97,10 +103,11 @@ import Newsletter from "../templates/newsletter";
 export default () => <Newsletter subject="What's new in June" body={<Column><Heading level={2}>Faster exports</Heading><Text>…</Text></Column>} />;
 ```
 
-The CLI loads it in a process of its own, as far as the template's props, then checks and renders it as it does a
-values file: one output per format, in a process that loads the template and not the design.
+The command line runs the design file only far enough to read which template it uses and the props it gives it. Then
+it checks and renders those as it does a values file, one output per format.
 
-- It's rendered with the props any design gets: `--props file.json`, else its `PreviewProps`.
+- It's rendered with the props any design gets: `--props file.json`, else the sample props its file gives
+  ([`PreviewProps`](/docs/cli)).
 - A design whose template isn't among its own imports, or whose props aren't data (a function), is
   `cli/template-design`.
 - `design new <template> --from designs/june.tsx -o june.values.json` writes its values file.
@@ -113,7 +120,8 @@ A values file's slot can be its module, relative to the file:
 npx hyper-elements design set designs/june.values.json body=@designs/_slots/june.body.tsx
 ```
 
-The module runs in a process of its own, which can reply only with what it rendered. One that throws, sends anything
+[A slot module](/docs/templates/slots#a-slot-stored-as-data) is a component that renders the content. It runs
+in a process of its own, which can reply only with what it rendered. One that throws, sends anything
 else, sends more than 8 MB or exits first is `cli/slot-module` (exit `1`), and nothing is written. Its hash is kept
 in `assets`, as an image's is.
 
@@ -122,7 +130,9 @@ whole folder: a folder run takes every module with a default export for a design
 
 ## Trusted templates
 
-List the templates a project's designs may use, in the nearest `package.json`:
+A values file names its own template, and so does a TSX design. Without a list, a design could name any template:
+one somebody wrote to let anything through. So list the templates a project's designs may use, in the nearest
+`package.json`:
 
 ```json
 { "hyperElements": { "templates": ["templates/**", "@acme/brand-templates"] } }
@@ -134,7 +144,7 @@ Paths and globs are relative to it; a name is a package.
 |---------------|--------------|
 | A template outside it | `cli/template-untrusted`, exit `1` |
 | A template inside it | Loaded in a process that refuses anything it imports outside the list and your installed packages: statically, dynamically or with `require()`, before it runs, naming who imported it |
-| A design kept in a listed folder | Still runs as a design |
+| A file in a listed folder that isn't a template (a design someone kept there) | Runs as any design does |
 | A `package.json` that can't be read as JSON | The run stops, exit `2`: it can't say there's no list |
 | On Bun | Bun's plugins can't see every load, so a project with the list runs its templates on Node (exit `2` on Bun) |
 
@@ -166,12 +176,13 @@ npx hyper-elements template extract designs/orbit.tsx --id acme.LaunchGraphic \
 | The node itself | Keeps its `id`, and gains `field` |
 | The rest of the file: its theme, variants and components | As written, with relative imports and `src` paths rewritten for the template's folder |
 
-A value that isn't a literal is `extract/not-literal`, with its line and column, and nothing is written. Then add the
-template's rules and formats, set its `version`, and `check` it.
+It writes a template with `fields`, an `example` and a `render`, at version `0.1.0`. A value that isn't a literal is
+`extract/not-literal`, with its line and column, and nothing is written. Then add the template's rules and formats,
+set its `version`, and `check` it.
 
 ## Diagnostics
 
-The template's own diagnostics (`template/…`) are on [Checks and diagnostics](/docs/guides/templates-checks#diagnostics).
+The template's own diagnostics (`template/…`) are on [Rules, checks and diagnostics](/docs/templates/rules#diagnostics).
 These are the command line's:
 
 | Code | What triggers it | Exit |

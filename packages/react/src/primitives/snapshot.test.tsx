@@ -115,9 +115,9 @@ describe("snapshot()", () => {
       <Email>
         <Section field="body">{slotMark("body")}</Section>
       </Email>,
-      { fragments: { body: <Evil /> }, preflight: () => [{ code: "template/slot-component", severity: "error", message: "no", path: "root.children[0].children[0]" }] }
+      { fragments: { body: <Evil /> }, preflight: () => [{ code: "template/slot-element", severity: "error", message: "no", path: "root.children[0].children[0]" }] }
     );
-    expect(codes(validate(snap).diagnostics)).toEqual([["template/slot-component", "root.children[0].children[0]"]]);
+    expect(codes(validate(snap).diagnostics)).toEqual([["template/slot-element", "root.children[0].children[0]"]]);
     expect(ran).toBe(false);
   });
 

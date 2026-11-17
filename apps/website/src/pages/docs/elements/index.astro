@@ -10,13 +10,13 @@ const groups = componentGroups
   .map((g) => ({ title: g, items: entries.filter((e) => e.data.group === g) }))
   .filter((g) => g.items.length);
 ---
-<Docs title="Elements" description="Every element, what it holds, and every prop and style it takes, written from the elements' own definitions." slug="components" headings={[...groups.map((g) => ({ depth: 2, slug: g.title.toLowerCase().replace(/\W+/g, "-"), text: g.title })), ...headings]} markdown={overview.body}>
+<Docs title="Elements" description="Every element, what it holds, and every prop and style it takes, written from the elements' own definitions." slug="elements" headings={[...groups.map((g) => ({ depth: 2, slug: g.title.toLowerCase().replace(/\W+/g, "-"), text: g.title })), ...headings]} markdown={overview.body}>
   {groups.map((g) => (
     <section>
       <h2 id={g.title.toLowerCase().replace(/\W+/g, "-")}>{g.title}</h2>
       <div class="cgrid">
         {g.items.map((e) => (
-          <a class="card" href={`/docs/components/${e.id}`}>
+          <a class="card" href={`/docs/elements/${e.id}`}>
             <h3><code class="cname">{e.data.title}</code></h3>
             <p>{e.data.summary}</p>
           </a>

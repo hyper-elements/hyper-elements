@@ -1,5 +1,5 @@
 ---
-title: "Styles, phones and hover"
+title: "Styles"
 description: "Style elements with style={{ }} using CSS names, set phone and hover styles in its mobile and hover blocks, set where a Page's phones start, show blocks on one size with hidden, and load fonts."
 ---
 

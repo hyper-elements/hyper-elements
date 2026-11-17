@@ -37,7 +37,8 @@ What a design is made of is called an element now, as the library's name says: t
   given under both, under `elements`.
 - `VariantName` reads an element's variants under either key.
 - `inspect()`'s theme lists each element's variants as `elements`, and as `components` too, the same list.
-- Messages say "element". Diagnostic codes are unchanged (`component/not-supported` among them).
+- Messages say "element". One diagnostic code changes with them: `component/not-supported` is now
+  `element/not-supported`. Code that matches on the old code needs the new one. The other codes are unchanged.
 
 ### A Table is the builder's table
 

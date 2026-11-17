@@ -58,7 +58,7 @@ A `Video` is its player on a page: YouTube's or Vimeo's embed, in a 16:9 box. We
 
 ## Embed it in your own page
 
-`render()` also returns the document in parts, so you can put the output inside a page of your own, a Next.js route or a CMS layout. With the `InvoiceContent` from [Designs and roots](/docs/templates#share-content-between-roots):
+`render()` also returns the document in parts, so you can put the output inside a page of your own, a Next.js route or a CMS layout. With the `InvoiceContent` from [Designs](/docs/designs#share-content-between-roots):
 
 ```tsx
 import { Page, render } from "@hyper-elements/react";

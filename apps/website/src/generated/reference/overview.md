@@ -5,7 +5,7 @@ order: -1
 summary: "Every element, what it holds, and every prop and style it takes."
 ---
 
-Every element, what it holds, and every prop and style it takes, with its default and what it does. [Designs and roots](/docs/templates) shows how a design is written; `validate()` checks one against what's here.
+Every element, what it holds, and every prop and style it takes, with its default and what it does. [Designs](/docs/designs) shows how a design is written; `validate()` checks one against what's here.
 
 Every element also takes:
 

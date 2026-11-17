@@ -204,7 +204,7 @@ const examples = {
 await rm(cacheDir, { recursive: true, force: true });
 await writeFile(join(outDir, "examples.json"), JSON.stringify(examples, null, 2) + "\n");
 
-// One Markdown file per element, from the reference, for /docs/components/<slug>.
+// One Markdown file per element, from the reference, for /docs/elements/<slug>.
 function splitReference(md) {
   const pages = [];
   let group = null;
@@ -249,6 +249,6 @@ for (const [i, page] of pages.entries()) {
 }
 await writeFile(
   join(refDir, "overview.md"),
-  `---\ntitle: "Elements"\ngroup: "Overview"\norder: -1\nsummary: "Every element, what it holds, and every prop and style it takes."\n---\n\n${intro.replace("[GUIDE.md](./GUIDE.md)", "[Designs and roots](/docs/templates)")}\n`,
+  `---\ntitle: "Elements"\ngroup: "Overview"\norder: -1\nsummary: "Every element, what it holds, and every prop and style it takes."\n---\n\n${intro.replace("[GUIDE.md](./GUIDE.md)", "[Designs](/docs/designs)")}\n`,
 );
 console.log(`wrote src/generated/`);

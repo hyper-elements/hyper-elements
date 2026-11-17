@@ -51,7 +51,7 @@ card.tsx
 
 ## How do I turn post data into a React image template?
 
-Save this as `card.tsx`. A [Canvas](/docs/components/canvas) has explicit pixel dimensions. Its children stack vertically, and `justifyContent: "space-between"` spreads them through the available height. Text belongs in `Heading` and `Text`, not loose HTML elements.
+Save this as `card.tsx`. A [Canvas](/docs/elements/canvas) has explicit pixel dimensions. Its children stack vertically, and `justifyContent: "space-between"` spreads them through the available height. Text belongs in `Heading` and `Text`, not loose HTML elements.
 
 `card.tsx`
 

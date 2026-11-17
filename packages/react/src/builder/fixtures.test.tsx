@@ -462,7 +462,7 @@ describe("malformed design JSON", () => {
       expect(validate(back.element).valid).toBe(true);
       expect(back.report.length).toBeGreaterThan(0);
     }
-    expect(fromDesign({ body: { rows: [{ columns: [{ contents: [{ type: "timer", values: {} }] }] }] } }).report).toEqual(["rows[0].columns[0].contents[0]: a timer of the builder's has no component in Elements: left out"]);
+    expect(fromDesign({ body: { rows: [{ columns: [{ contents: [{ type: "timer", values: {} }] }] }] } }).report).toEqual(["rows[0].columns[0].contents[0]: a timer of the builder's has no element in Elements: left out"]);
   });
 
   it("writes no code from a design's data: the code it prints, run, is the template it gives", () => {

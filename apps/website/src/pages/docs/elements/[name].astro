@@ -32,7 +32,7 @@ const import_ = `import { ${entry.data.title.split(".")[0]} } from "@hyper-eleme
   title={entry.data.title}
   metaTitle={metaTitle}
   description={metaDescription}
-  slug={`components/${entry.id}`}
+  slug={`elements/${entry.id}`}
   headings={[...(example ? [{ depth: 2, slug: "example", text: "Example" }] : []), { depth: 2, slug: "reference", text: "Reference" }, ...headings]}
   markdown={(example ? `## Example\n\n\`\`\`tsx\n${example.source}\n\`\`\`\n\n` : "") + `## Reference\n\n${entry.body}`}
 >

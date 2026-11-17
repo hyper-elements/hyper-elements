@@ -267,7 +267,7 @@ const DEFAULTS = new Map<string, Values>([
 export function readBlock(type: unknown, values: Values, context: Context, slot?: Slot): Node[] {
   const read = typeof type === "string" ? READERS.get(type) : undefined;
   if (!read) {
-    context.say(`a ${typeof type === "string" ? type : "block"} of the builder's has no component in Elements: left out`);
+    context.say(`a ${typeof type === "string" ? type : "block"} of the builder's has no element in Elements: left out`);
     return [];
   }
   sayUnread(type as string, values, DEFAULTS.get(type as string), context.say);

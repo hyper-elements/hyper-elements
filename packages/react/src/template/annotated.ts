@@ -116,7 +116,7 @@ export function fromAnnotated<F extends PropSpecs>(spec: AnnotatedSpec<F>): Reco
       found.set(marker, (found.get(marker) ?? 0) + 1);
       const name = names.get(marker);
       if (!name) problems.push(fail("template/inline-unlisted", `A marker in the design isn't named in open: name it there`, path));
-      else if (!type) problems.push(fail("template/inline-target", `${name}'s marker is on a component of your own: a marker goes on a built-in written in design (a Heading, a Section, an Image)`, path));
+      else if (!type) problems.push(fail("template/inline-target", `${name}'s marker isn't on a built-in: a marker goes on a built-in written in design (a Heading, a Section, an Image)`, path));
       else if (inSlot) problems.push(fail("template/inline-nested", `${name}'s marker is inside the slot ${inSlot}'s host: the slot's content replaces it`, path));
       else {
         const problem = pairing(name, marker.spec, type, props, definitions);
@@ -177,7 +177,7 @@ function pairing(name: string, spec: PropSpec, type: string, props: { children?:
   }
   if (isSlot(spec)) {
     const holds = definitions.get(type)?.children.categories ?? [];
-    return holds.length ? undefined : { code: "template/inline-target", message: `${name} is a slot: its host holds components (a Section, a Column), not a ${type}` };
+    return holds.length ? undefined : { code: "template/inline-target", message: `${name} is a slot: its host holds elements (a Section, a Column), not a ${type}` };
   }
   if (imageRules(spec) || spec.kind.name === "asset") return type === "Image" ? undefined : { code: "template/inline-target", message: `${name} is an image: its marker goes on an Image, not a ${type}` };
   if (spec.kind.name === "link") return LINK_HOSTS.has(type) ? undefined : { code: "template/inline-target", message: `${name} is a link: its marker goes on a Link or a Button (its href), not a ${type}` };
