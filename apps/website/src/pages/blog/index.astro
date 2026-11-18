@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import { cardPath } from "../../og/cards.mjs";
 const posts = (await getCollection("blog")).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 <Base title="Blog" description="Tutorials and notes on building emails, pages, PDFs and images with your coding agent, and checking them before they ship.">
@@ -12,7 +13,7 @@ const posts = (await getCollection("blog")).sort((a, b) => b.data.date.valueOf()
     <div class="grid grid-2">
       {posts.map(({ data }) => (
         <a class="card post" href={`/blog/${data.slug}`}>
-          <img src={data.hero} alt={data.heroAlt} width="1600" height="912" />
+          {data.hero ? <img src={data.hero} alt={data.heroAlt} width="1600" height="912" /> : <img src={cardPath(`/blog/${data.slug}`)} alt="" width="1200" height="630" />}
           <p class="eyebrow"><time datetime={data.date.toISOString().slice(0, 10)}>{data.date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
           <h2>{data.title}</h2>
           <p>{data.description}</p>

@@ -29,7 +29,7 @@ const lintVersion = JSON.parse(await readFile(join(lintDir, "package.json"), "ut
 export const RUNTIME_BUNDLES = ["runner", "core", "pdf", "image", "clients"];
 
 /** This repository's packages, from their sources. */
-const SOURCES = {
+export const SOURCES = {
   "@hyper-elements/react": join(reactDir, "src/primitives/index.ts"),
   "@hyper-elements/react/inspect": join(reactDir, "src/inspect/index.ts"),
   "@hyper-elements/react/pdf": join(reactDir, "src/pdf/index.ts"),
