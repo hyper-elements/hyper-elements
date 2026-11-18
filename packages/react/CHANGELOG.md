@@ -79,6 +79,15 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
 
 ### Fixed
 
+- **A Page's images hold their place while they load.** An Image with its file's size (`src={{ src, width, height }}`)
+  and a width in px was written with its `width` attribute alone, so a browser gave it no height until the file
+  arrived, and what's under it moved down then. A Page now writes its `height` attribute too, in proportion, as an
+  Email does. So do the HTML blocks `toDesign()` writes for what the builder has no tool for (a Layer, a Table, a
+  template's own component), a Document's included, as they're drawn as a page's. With the file loaded the page is
+  laid out as before, but for two kinds of image, which now take the proportion the template gives: an SVG with no
+  proportion of its own (no `viewBox`, and not both a width and a height), and one that fails to load, which keeps
+  its box (in Chromium always, in Safari where it has no alternate text). What `render()` writes for a Document and a
+  Canvas is unchanged.
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

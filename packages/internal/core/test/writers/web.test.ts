@@ -138,6 +138,55 @@ describe("web HTML", () => {
     expect(web(quoted, { mergeTag: (name: string) => `<span data-name="${name}">tag</span>` }).body).toContain('<span data-name="a&quot; onmouseover=&quot;x">tag</span>');
   });
 
+  it("writes an Image's height with its width where its file's size is known, so the page holds its place before the file arrives", () => {
+    const file = { src: "https://example.com/a.png", width: 1200, height: 600 };
+    const { body } = web(
+      page([
+        { type: "Image", props: { src: file, alt: "Fills" } },
+        { type: "Image", props: { src: file, alt: "Shown" }, style: { width: 300 } },
+        { type: "Row", children: [{ type: "Image", props: { src: file, alt: "Row" }, style: { width: 84 } }, { type: "Column", children: [{ type: "Text", children: ["Beside"] }] }] },
+        // In proportion, to the nearest px.
+        { type: "Image", props: { src: { src: "https://example.com/d.png", width: 1200, height: 680 }, alt: "Rounds" }, style: { width: 100 } },
+        // Nothing to go by: a URL alone, a file with no height, a share of its parent.
+        { type: "Image", props: { src: "https://example.com/b.png", alt: "Url" }, style: { width: 300 } },
+        { type: "Image", props: { src: { src: "https://example.com/c.png", width: 1200 }, alt: "Wide" } },
+        { type: "Image", props: { src: file, alt: "Half" }, style: { width: "50%" } },
+        // A height of its own is the style's.
+        { type: "Image", props: { src: file, alt: "Tall" }, style: { width: 300, height: 200 } },
+        // No height a browser could hold a place with: under 1px, not a number of px, or millions of them; nor beside a width of millions.
+        { type: "Image", props: { src: { src: "https://example.com/e.png", width: 2000, height: 1 }, alt: "Rule" }, style: { width: 300 } },
+        { type: "Image", props: { src: { src: "https://example.com/f.png", width: 1200, height: Infinity }, alt: "Endless" }, style: { width: 300 } },
+        { type: "Image", props: { src: { src: "https://example.com/g.png", width: 1, height: 1e13 }, alt: "Vast" }, style: { width: 300 } },
+        { type: "Image", props: { src: { src: "https://example.com/h.png", width: 1e21, height: 100 }, alt: "Wider" }, style: { width: 1e21 } },
+        // The last px each may be, and the first it may not.
+        { type: "Image", props: { src: { src: "https://example.com/i.png", width: 1, height: 99999.99 }, alt: "Tallest" }, style: { width: 100 } },
+        { type: "Image", props: { src: { src: "https://example.com/j.png", width: 1, height: 100000 }, alt: "Taller" }, style: { width: 100 } },
+        { type: "Image", props: { src: { src: "https://example.com/k.png", width: 9999999, height: 100 }, alt: "Widest" }, style: { width: 9999999 } },
+        { type: "Image", props: { src: { src: "https://example.com/l.png", width: 1e7, height: 100 }, alt: "Wider still" }, style: { width: 1e7 } },
+      ])
+    );
+    expect(body).toContain('alt="Fills" width="600" height="300" style="align-self:flex-start;display:block;max-width:100%;height:auto">');
+    expect(body).toContain('alt="Shown" width="300" height="150" style="align-self:flex-start;display:block;max-width:100%;width:300px;height:auto">');
+    expect(body).toContain('alt="Row" width="84" height="42" style="flex:0 1 84px;');
+    expect(body).toContain('alt="Rounds" width="100" height="57" style="');
+    expect(body).toContain('alt="Url" width="300" style="');
+    expect(body).toContain('alt="Wide" width="600" style="');
+    expect(body).toContain('alt="Half" style="');
+    expect(body).toContain('alt="Tall" width="300" style="align-self:flex-start;display:block;max-width:100%;width:300px;height:200px">');
+    expect(body).toContain('alt="Rule" width="300" style="');
+    expect(body).toContain('alt="Endless" width="300" style="');
+    expect(body).toContain('alt="Vast" width="300" style="');
+    expect(body).toMatch(/alt="Wider" width="[^"]*" style="/);
+    expect(body).toContain('alt="Tallest" width="100" height="9999999" style="');
+    expect(body).toContain('alt="Taller" width="100" style="');
+    expect(body).toContain('alt="Widest" width="9999999" height="100" style="');
+    expect(body).toContain('alt="Wider still" width="10000000" style="');
+    // A Page alone waits for its files in a window: a Document's print HTML and a Canvas's HTML are as they were.
+    const shown = { type: "Image", props: { src: file, alt: "Shown" }, style: { width: 300 } };
+    expect(web({ root: { type: "Document", children: [shown] } }).html).toContain('alt="Shown" width="300" style="');
+    expect(web({ root: { type: "Canvas", props: { width: 600, height: 400 }, children: [shown] } }).html).toContain('alt="Shown" width="300" style="');
+  });
+
   it("writes the root's web fonts as @font-face rules, a face each, its format from its file where not given", () => {
     const { head, body } = web(
       page([{ type: "Text", style: { fontFamily: "'Brand Sans', Arial, sans-serif" }, children: ["x"] }], {
