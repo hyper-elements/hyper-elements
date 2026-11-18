@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import React, { createContext, forwardRef, Fragment, memo, Suspense, useContext, useId, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button, Canvas, Circle, Column, Divider, Document, ElementsError, Html, Rect, Svg, PageBreak, PageFooter, PageHeader, PageNumber, Email, Grid, Heading, Image, LineBreak, Link, List, ListItem, MergeTag, Menu, outline, Page, Text, render, Row, Section, Social, Span, Table, TableCell, TableRow, validate, Video } from "./index";
-import { collectTemplate } from "./collect";
+import { Button, Canvas, Circle, Column, Divider, Document, ElementsError, Html, Rect, Svg, PageBreak, PageFooter, PageHeader, PageNumber, Email, Grid, Heading, Image, LineBreak, Link, List, ListItem, MergeTag, Menu, outline, Page, Text, prepare, render, Row, Section, snapshot, Social, Span, Table, TableCell, TableRow, validate, Video } from "./index";
+import { collectTemplate, withFound } from "./collect";
+import { inspect } from "../inspect";
 import * as primitives from "./index";
 
 const tree = (element: React.ReactElement) => collectTemplate(element).document;
@@ -449,6 +450,47 @@ describe("validate()", () => {
     expect(validate(<Page><Text><b>bold</b></Text></Page>).diagnostics[0].message).toMatch(/use the primitives .*\. Every element: @hyper-elements\/react\/GUIDE\.md$/);
     expect(validate(<div />).diagnostics.map((d) => d.code)).toEqual(["jsx/markup", "jsx/root"]);
     expect(validate(<><Page /><Page /></>).diagnostics.map((d) => d.code)).toEqual(["jsx/root"]);
+  });
+
+  it("names every root where a design isn't one root", () => {
+    const roots = "(an Email, a Page, a Document or a Canvas)";
+    const said = (design: Parameters<typeof validate>[0]) => validate(design).diagnostics.filter((d) => d.code === "jsx/root").map((d) => d.message);
+    expect(said(<><Document /><Canvas width={600} height={315} /></>)).toEqual([`A design renders one root ${roots} and nothing beside it`]);
+    expect(said(<></>)).toEqual([`The JSX rendered no Elements root ${roots}`]);
+    // A snapshot of one says the same.
+    expect(said(snapshot(<><Page /><Page /></>))).toEqual([`A design renders one root ${roots} and nothing beside it`]);
+    expect(said(snapshot(<></>))).toEqual([`The JSX rendered no Elements root ${roots}`]);
+  });
+
+  it("says once what the design's read and the output's both find: a block hidden on phones and on desktops", async () => {
+    const hidden = (
+      <Email>
+        <Text hidden={{ mobile: true, desktop: true }}>x</Text>
+      </Email>
+    );
+    const everywhere = (diagnostics: Array<{ code: string; path: string }>) => diagnostics.filter((d) => d.code === "hidden/everywhere").map((d) => d.path);
+    const once = ["root.children[0].hidden"];
+    expect(everywhere(validate(hidden).diagnostics)).toEqual(once);
+    expect(everywhere((await render(hidden)).diagnostics)).toEqual(once);
+    expect(everywhere(prepare(hidden).diagnostics)).toEqual(once);
+    expect(everywhere(inspect(hidden).diagnostics)).toEqual(once);
+    expect(everywhere(validate(snapshot(hidden)).diagnostics)).toEqual(once);
+    // One for each block it's true of.
+    const two = (
+      <Page>
+        <Text hidden={{ mobile: true, desktop: true }}>x</Text>
+        <Text hidden={{ mobile: true, desktop: true }}>y</Text>
+      </Page>
+    );
+    expect(everywhere(validate(two).diagnostics)).toEqual(["root.children[0].hidden", "root.children[1].hidden"]);
+  });
+
+  it("leaves out only what was said already at the same severity: an error that reads like a warning is kept", () => {
+    const at = { code: "x/y", path: "root.children[0]", message: "Same words" };
+    const warning = { ...at, severity: "warning" as const };
+    const error = { ...at, severity: "error" as const };
+    expect(withFound([warning], [warning], undefined)).toEqual([warning]);
+    expect(withFound([warning], [error], undefined)).toEqual([warning, error]);
   });
 
   it("says a component that's async or suspends can't be rendered yet, rather than writing its fallback", async () => {

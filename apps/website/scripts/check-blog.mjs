@@ -17,7 +17,7 @@ const articles = [
 const llms = readFileSync(join(dist, "llms.txt"), "utf8");
 const llmsFull = readFileSync(join(dist, "llms-full.txt"), "utf8");
 const pages = new Map();
-for (const { slug, description, hero, images = 2 } of articles) {
+for (const { slug, description, hero, images = hero ? 2 : 1 } of articles) {
   const html = readFileSync(join(dist, `blog/${slug}/index.html`), "utf8");
   pages.set(slug, html);
   assert(llms.includes(`/blog/${slug})`), `${slug}: missing llms.txt discovery link`);
@@ -27,9 +27,11 @@ for (const { slug, description, hero, images = 2 } of articles) {
   assert(html.includes(`<meta name="description" content="${description}`), `${slug}: missing description`);
   assert(html.includes(`<link rel="canonical" href="https://www.hyperelements.dev/blog/${slug}"`), `${slug}: missing canonical`);
   assert.match(html, /property="og:type" content="article"/);
-  assert(html.includes(`property="og:image" content="https://www.hyperelements.dev/img/blog/${hero}"`), `${slug}: missing social image`);
+  // A post with a hero shares it; one without shares its generated card (checkCard(), below).
+  if (hero) assert(html.includes(`property="og:image" content="https://www.hyperelements.dev/img/blog/${hero}"`), `${slug}: missing social image`);
+  else checkCard(html, `blog/${slug}`);
   assert.match(html, /"@type":"TechArticle"/);
-  assert.equal((html.match(/<img\b/g) ?? []).length, images, `${slug}: hero plus ${images - 1} content image(s)`);
+  assert.equal((html.match(/<img\b/g) ?? []).length, images, `${slug}: ${images} images (its hero, if any, and its content images)`);
   const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
   const links = [...new Set([...html.matchAll(/href="([^"#]+|#[^"]+)"/g)].map(m => m[1]))];
   for (const href of links) {
@@ -43,10 +45,24 @@ for (const { slug, description, hero, images = 2 } of articles) {
     assert(existsSync(p), `Missing internal page: ${href}`);
     if (anchor) assert(readFileSync(p, "utf8").includes(`id="${anchor}"`), `Missing internal anchor: ${href}`);
   }
-  assert(existsSync(join(dist, `img/blog/${hero}`)), `${slug}: missing hero asset`);
+  if (hero) assert(existsSync(join(dist, `img/blog/${hero}`)), `${slug}: missing hero asset`);
   assert(sitemap.includes(`/blog/${slug}</loc>`), `${slug}: missing sitemap entry`);
 }
 assert(sitemap.includes(`/blog</loc>`));
+
+// A page with no image of its own (the blog's index, a post without a hero) has a generated card: a 1200×630 PNG.
+// (A function declaration: the articles' loop above uses it.)
+function checkCard(html, page) {
+  const card = `og/cards/${page}.png`;
+  assert(html.includes(`property="og:image" content="https://www.hyperelements.dev/${card}"`), `${page}: its social image isn't its card`);
+  assert(html.includes('property="og:image:width" content="1200"') && html.includes('property="og:image:height" content="630"'), `${page}: card dimensions`);
+  assert(existsSync(join(dist, card)), `${page}: missing card ${card}`);
+  const bytes = readFileSync(join(dist, card));
+  assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a", `${page}: card must be a PNG`);
+  assert.equal(bytes.readUInt32BE(16), 1200, `${page}: card width`);
+  assert.equal(bytes.readUInt32BE(20), 630, `${page}: card height`);
+}
+checkCard(index, "blog");
 
 function checkScreenshot(html, { heading, src, alt, width, height }) {
   const section = html.split(`<h2 id="${heading}">`)[1]?.split("<h2")[0];
@@ -111,5 +127,5 @@ assert.equal(ciDiagram.readUInt32BE(16), 1600);
 assert.equal(ciDiagram.readUInt32BE(20), 1008);
 assert(llmsFull.includes("name: Check email HTML"), "Complete CI workflow must be readable in full text");
 assert(llmsFull.includes("exit \"$status\""), "Full-text workflow must preserve CLI failure status");
-console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, each post's image count, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
+console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, the index's generated card, structured data, internal links/anchors, each post's image count, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
 console.log("Static checks only: this does not replace browser layout inspection or execute the tutorial examples.");

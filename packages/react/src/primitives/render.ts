@@ -14,7 +14,7 @@ import {
   type RenderResult,
   type ResolvedNode,
 } from "@hyper-elements/core";
-import { collectTemplate, snapshotData, withFields, type CollectedTemplate } from "./collect";
+import { collectTemplate, snapshotData, withFound, type CollectedTemplate } from "./collect";
 
 /** Given to prepare() by the entry that decides a template's measured rules: they're handed over, not refused. */
 const DECIDES = Symbol.for("hyper-elements.decides-measured");
@@ -100,7 +100,7 @@ export async function render(element: React.ReactElement | Snapshot, options: Re
   if (refused.length) throw new ElementsError(refused);
   if (!document || diagnostics.some((d) => d.severity === "error")) throw new ElementsError(diagnostics);
   const rendered = renderTemplate(document, { ...options, components });
-  const all = [...diagnostics, ...withFields(rendered.diagnostics, fields)];
+  const all = withFound(diagnostics, rendered.diagnostics, fields);
   return { ...rendered, diagnostics: [...all, ...callNotes(document.root.type, all, options)], ...used(from) };
 }
 
@@ -131,7 +131,7 @@ export function validate(element: React.ReactElement | Snapshot, options: Valida
   // A template design with formats and none named is checked in each.
   const { document, diagnostics, components, fields, template: from, checkedFormats } = template(element, "validate", { all: true });
   if (checkedFormats) return { valid: checkedFormats.valid, diagnostics: [...checkedFormats.diagnostics, ...movedNote(options as { emailClients?: unknown })], ...used(from) };
-  const all = [...diagnostics, ...(document && !diagnostics.some((d) => d.severity === "error") ? withFields(validateTemplate(document, { components, plugins: options.plugins }).diagnostics, fields) : [])];
+  const all = document && !diagnostics.some((d) => d.severity === "error") ? withFound(diagnostics, validateTemplate(document, { components, plugins: options.plugins }).diagnostics, fields) : diagnostics;
   const withNotes = [...all, ...callNotes(document?.root.type, all, options)];
   return { valid: !withNotes.some((d) => d.severity === "error"), diagnostics: withNotes, ...used(from) };
 }
@@ -174,7 +174,7 @@ export function prepare(
   const root = prepared.resolved?.root ?? null;
   // A Document is prepared for its PDF and a Canvas for its image: what they can't show that the HTML can.
   const paged = root?.type === "Document" ? pagedSupport(root, "pdf") : root?.type === "Canvas" ? pagedSupport(root, "image") : [];
-  return { root, diagnostics: [...diagnostics, ...withFields([...prepared.diagnostics, ...paged], fields), ...moved], layout: LAYOUT_VERSION, ...used(from), ...(decides && pending?.length ? { [DECIDES]: pending } : {}) };
+  return { root, diagnostics: [...withFound(diagnostics, [...prepared.diagnostics, ...paged], fields), ...moved], layout: LAYOUT_VERSION, ...used(from), ...(decides && pending?.length ? { [DECIDES]: pending } : {}) };
 }
 
 export type { RenderOptions, RenderResult, ResolvedNode };

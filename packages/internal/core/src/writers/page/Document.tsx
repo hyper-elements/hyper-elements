@@ -11,13 +11,16 @@ import { isNode, type Component } from "./context";
 import { alignSelf, stackOf } from "./layout";
 import { numbering } from "./PageNumber";
 
-/** The print stylesheet: the paper's size, backgrounds printed, and the desk the pages sit on on a screen. */
+/**
+ * The print stylesheet: the paper's size, backgrounds printed, and the desk the pages sit on on a screen. There a page
+ * is white where it sets no background (its own is in its style attribute, which comes first), as the paper is.
+ */
 export function documentCss(root: ResolvedNode): string {
   const box = pageBox(root.props);
   return (
     `@page{size:${box.css};margin:0}` +
     "body{-webkit-print-color-adjust:exact;print-color-adjust:exact}" +
-    "@media screen{body{background:#e5e7eb;padding:24px 0}.elements-page{box-shadow:0 1px 4px rgba(0,0,0,.2)}.elements-page+.elements-page{margin-top:24px!important}}"
+    "@media screen{body{background:#e5e7eb;padding:24px 0}.elements-page{background-color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}.elements-page+.elements-page{margin-top:24px!important}}"
   );
 }
 

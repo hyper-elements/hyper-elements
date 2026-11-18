@@ -10,14 +10,14 @@
     "code": "lint/heading-one",
     "severity": "info",
     "line": 1,
-    "column": 5508,
+    "column": 5530,
     "message": "This is a second <h1>"
   },
   {
     "code": "lint/heading-one",
     "severity": "info",
     "line": 1,
-    "column": 7057,
+    "column": 7079,
     "message": "This is a second <h1>"
   }
 ]

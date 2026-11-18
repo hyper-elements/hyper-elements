@@ -237,7 +237,7 @@ export function snapshot(element: React.ReactElement, options: SnapshotOptions =
     return done({ document: null, diagnostics, components, collected: null });
   }
   if (top.length !== 1 || typeof top[0] === "string") {
-    if (!aborted) diagnostics.push({ code: "jsx/root", severity: "error", message: top.length ? "A design renders one root (an Email or a Page) and nothing beside it" : "The JSX rendered no Elements root (an Email or a Page)", path: "jsx" });
+    if (!aborted) diagnostics.push({ code: "jsx/root", severity: "error", message: top.length ? "A design renders one root (an Email, a Page, a Document or a Canvas) and nothing beside it" : "The JSX rendered no Elements root (an Email, a Page, a Document or a Canvas)", path: "jsx" });
     return done({ document: null, diagnostics, components, collected: null });
   }
   const root = captureNode(top[0], "root", diagnostics);

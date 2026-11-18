@@ -375,6 +375,18 @@ export function withFields(diagnostics: Diagnostic[], fields: ReadonlyMap<string
   });
 }
 
+/**
+ * What the collecting render's read of a design said, then what core found on the document it read: core reads that
+ * document again, and says again what's as true of it read (a block hidden on phones and on desktops), which a design
+ * is told once.
+ */
+export function withFound(said: Diagnostic[], found: Diagnostic[], fields: ReadonlyMap<string, string> | undefined): Diagnostic[] {
+  // Its severity too: an error is never left out for a warning that reads the same.
+  const key = (diagnostic: Diagnostic) => `${diagnostic.severity}\n${diagnostic.code}\n${diagnostic.path}\n${diagnostic.message}`;
+  const heard = new Set(said.map(key));
+  return [...said, ...withFields(found, fields).filter((diagnostic) => !heard.has(key(diagnostic)))];
+}
+
 /** A template collected from JSX: its tree (internal: never part of the API), the problems, the custom components it uses. */
 export interface CollectedTemplate extends CheckResult {
   components: CustomDefinition<any>[];
@@ -433,7 +445,7 @@ export function collectTemplate(element: React.ReactElement | object, options: {
       diagnostics.push({
         code: "jsx/root",
         severity: "error",
-        message: top.length ? "A design renders one root (an Email or a Page) and nothing beside it" : "The JSX rendered no Elements root (an Email or a Page)",
+        message: top.length ? "A design renders one root (an Email, a Page, a Document or a Canvas) and nothing beside it" : "The JSX rendered no Elements root (an Email, a Page, a Document or a Canvas)",
         path: "jsx",
       });
     }
