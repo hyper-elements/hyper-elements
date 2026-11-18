@@ -224,7 +224,7 @@ describe("the version check", () => {
     const { BLOCK_MAP_VERSION: _, ...older } = core;
     expect(mismatch(older)).toEqual({
       name: "email-clients/version-mismatch",
-      message: `@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no BLOCK_MAP_VERSION (render()'s blockMap). Install a matching pair: npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.4`,
+      message: `@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no BLOCK_MAP_VERSION (render()'s blockMap). Install a matching pair: npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.5`,
     });
     // 0.3.1's format: no block types, which the findings need.
     expect(mismatch({ ...core, BLOCK_MAP_VERSION: 1 })!.message).toContain("a blockMap format it reads (this core's is 1, it reads 2)");
