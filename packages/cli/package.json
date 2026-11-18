@@ -1,6 +1,6 @@
 {
   "name": "@hyper-elements/cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Check existing HTML emails and preview Outlook, Gmail and Apple Mail locally, with no React required. Render Hyper Elements templates to HTML, PDF and images. Stable exit codes and JSON for agents and CI.",
   "license": "MIT",
   "type": "module",
