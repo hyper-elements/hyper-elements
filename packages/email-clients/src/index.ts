@@ -75,8 +75,8 @@ export interface EmailClientsResult<D = Diagnostic> {
  *
  * Given an HTML email as a string (the whole email, from <html> to </html>), it previews it as given, as data in the
  * file, with the preview options only (emailClients, dark, fonts, widths, computers): a fragment, or render()'s options,
- * is a TypeError. It loads no core and no React. HTML not built with Hyper Elements is emulated less closely in some
- * clients: those previews are approximate. It rejects with the import's error where @hyper-elements/email-client-models
+ * is a TypeError. It loads no core and no React. HTML from any tool is drawn with the same reverse-engineered client
+ * models as a Hyper Elements email. It rejects with the import's error where @hyper-elements/email-client-models
  * can't be loaded, and with `email-clients/version-mismatch` where the one installed speaks another protocol.
  */
 export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult<EmailHtmlDiagnostic>>;

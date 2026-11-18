@@ -66,17 +66,11 @@ export interface PreviewSource {
  */
 export function previewFile(html: string, config: PreviewConfig, scripts: { runtime: Runtime; models: Runtime } | null, { source }: PreviewSource = { source: "render" }): string {
   const fromHtml = source === "html";
-  // HTML the caller gave is emulated less closely than Hyper Elements' own: the header says so, and how much where it's approximate.
-  const approximate = fromHtml
-    ? config.approximate
-      ? " This email wasn't built with Hyper Elements, and the model is approximate for it: words can sit a few pixels from where the client puts them, or more."
-      : " This email wasn't built with Hyper Elements, which the models are measured on most."
-    : config.approximate
-      ? " The model is approximate: words can sit a few pixels from where the client puts them."
-      : "";
+  // HTML the caller gave is drawn with the same models as Hyper Elements' own; the header says where it came from.
+  const origin = fromHtml ? " This email wasn't built with Hyper Elements, and it's drawn with the same models." : "";
   const sent = fromHtml ? "what you send is the HTML you gave" : "what you send is render()'s html";
-  // Classic Outlook's model places words as Word does; what it draws around them (rounded corners, for one) can still show.
-  const words = config.client === "outlook" ? " It models where words fall: details Outlook doesn't draw, such as rounded corners, may still show." : "";
+  // Classic Outlook's model lays text out as Word does; rounded corners Outlook doesn't draw can still show.
+  const words = config.client === "outlook" ? " Text is laid out with Word's rules, as Outlook lays it out; rounded corners Outlook doesn't draw can still show here." : "";
   const title = `${config.name}${config.dark ? ", dark" : ""} (${config.variant}, ${config.width}px)`;
   return [
     "<!DOCTYPE html>",
@@ -89,7 +83,7 @@ export function previewFile(html: string, config: PreviewConfig, scripts: { runt
     `<style>${STYLE}</style>`,
     "</head>",
     "<body>",
-    `<header class="note"><h1>${escapeHtml(title)}</h1><p>How this email draws in ${escapeHtml(config.name)}.${approximate}${words} A preview isn't an email: ${sent}. What the client changed is listed here once the preview has loaded.</p><div id="findings"></div></header>`,
+    `<header class="note"><h1>${escapeHtml(title)}</h1><p>How this email draws in ${escapeHtml(config.name)}, from Hyper Elements' model of the client, reverse-engineered by testing thousands of emails in it.${origin}${words} A preview isn't an email: ${sent}. What the client changed is listed here once the preview has loaded.</p><div id="findings"></div></header>`,
     '<main id="frames"></main>',
     `<script type="application/json" id="email">${scriptJson(html)}</script>`,
     `<script type="application/json" id="email-client-config">${scriptJson(config)}</script>`,

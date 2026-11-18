@@ -6,6 +6,9 @@ Each release records the models package it was tested with.
 
 - **This is the line for Elements 0.5.** It takes `@hyper-elements/react` `^0.5.0`, as 0.4.x takes `^0.4.0`. Nothing
   else changes with the number: a project on Elements 0.4 stays on 0.4.x of this package.
+- **A preview's header says what it's drawn with:** a model of the client, reverse-engineered by testing thousands of
+  emails in it, the same for any HTML as for a Hyper Elements email. Classic Outlook's says its text is laid out with
+  Word's rules.
 - **A font file the models name that this package doesn't ship no longer fails a preview.** With `fonts: "inline"`,
   a models release newer than this package could name a file `fonts/` doesn't have (models 1.12.3's AOL faces did,
   for 0.4.14), and the preview threw `email-clients/fonts-unreadable`, saying the package had been bundled away from its

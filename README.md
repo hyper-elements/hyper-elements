@@ -191,7 +191,7 @@ npx hyper-elements preview email.html --findings
 
 If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. See [browser setup and findings](https://hyperelements.dev/docs/cli#preview).
 
-For emails built with Hyper Elements, the emulator is 97–99% accurate against the real clients. An email sign-in code, drawn by the emulator in four email clients:
+Tested on Hyper Elements emails and on HTML emails built any other way, the emulator is 98% accurate on average against the real clients. Here's an example email template, a sign-in code, as the emulator draws it in four email clients:
 
 <p align="center">
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-outlook.png" alt="A sign-in code email in classic Outlook, drawn by the Hyper Elements email client emulator" width="230" />

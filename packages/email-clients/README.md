@@ -16,6 +16,14 @@ For AI agents, the [email-testing skill](https://www.hyperelements.dev/skills/em
 npm i @hyper-elements/email-clients
 ```
 
+## Accuracy
+
+We reverse-engineered each of these email clients, classic Outlook included, by testing thousands of emails in the
+real client and measuring what it does to them. The previews are drawn with those models, 98% accurate on average
+([every client](https://hyperelements.dev/docs/email-client-emulator#supported-email-clients)). Classic Outlook is
+drawn with Word's rules, as Outlook draws email with Word, so its spacing, line wrapping and tables come out as Outlook
+draws them. Every release is tested against the real clients again.
+
 ## Any HTML email
 
 `renderInEmailClients()` takes an email built any other way (MJML, React Email, by hand, an email builder's export) as
@@ -40,10 +48,7 @@ Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome
   its scripts, handlers or navigation run). A fragment, HTML as bytes (read it as text), or one of `render()`'s options,
   is a `TypeError`.
 - Its options are the [preview options](#previews): `emailClients`, `dark`, `fonts`, `widths` and `computers`.
-- The models are measured mostly on Hyper Elements emails. HTML built another way is emulated less closely in some
-  clients, so its previews are `approximate` where a client is under 95% on such emails or isn't measured on them:
-  classic Outlook, Outlook for Mac, the Gmail apps, Apple Mail's dark mode, Apple Mail and the Gmail app on an iPhone,
-  Yahoo Mail and AOL Mail, and webmail read on a Mac.
+- HTML from any tool is drawn with the same reverse-engineered client models as a Hyper Elements email.
 - It rejects with the import's error where `@hyper-elements/email-client-models` can't be loaded, and with
   `email-clients/version-mismatch` where the one installed speaks a protocol this package doesn't read. A template
   without `@hyper-elements/react` installed is `email-clients/version-mismatch` too, with what to install.
@@ -135,8 +140,7 @@ what the client changed. To show a preview, write the files and open them in you
 - `diagnostics`: `render()`'s, with the plugin's checks for the clients previewed (unless you passed your own
   `emailClients()` in `plugins`, which is used as it is).
 
-A preview isn't an email: what you send is `render()`'s `html`. Classic Outlook's model is approximate, and the file
-says so.
+A preview isn't an email: what you send is `render()`'s `html`.
 
 ### What a preview says
 

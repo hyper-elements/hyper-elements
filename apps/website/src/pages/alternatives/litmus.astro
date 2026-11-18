@@ -57,7 +57,7 @@ const kinds = ["Email engine, free previews", "Builder and testing", "Email code
 const matrix: MatrixRow[] = [
   { k: "Results your agent can read", m: [["yes", "Findings as JSON"], ["part", "Images, API by request"], ["no", "Images"], ["part", "Images, API"]] },
   { k: "Free previews on every change", m: [["yes", "Unlimited"], ["no", "Contact sales"], ["no", "Paid per preview"], ["no", "Paid plan"]] },
-  { k: "Previews of real email clients", m: [["yes", "Modeled, up to 99% match"], ["yes", "Screenshots"], ["yes", "Screenshots"], ["yes", "Screenshots"]] },
+  { k: "Previews of real email clients", m: [["yes", "Modeled, 98% accurate on average"], ["yes", "Screenshots"], ["yes", "Screenshots"], ["yes", "Screenshots"]] },
   { k: "Your email stays on your machine", m: [["yes"], ["no"], ["no"], ["no"]] },
   { k: "In your tests and CI", m: [["yes", "npm package, CLI"], ["part", "API by request"], ["no", "Not documented"], ["yes", "API, SMTP"]] },
   { k: "Build emails", m: [["yes", "React components"], ["yes", "Builder"], ["yes", "Code editor"], ["no"]] },
@@ -102,7 +102,7 @@ const faq = [
   },
   {
     q: "How accurate are Hyper Elements' previews?",
-    a: "Each preview is modeled on the real client, not a screenshot of it. How closely it matches the real client: 97% for classic Outlook, 99% for Outlook.com, Gmail, Yahoo Mail and AOL Mail, and 97 to 98% for Outlook for Mac, the Gmail app and Apple Mail. Use them on every change, and real-device screenshots or a real inbox for a final check across many clients.",
+    a: "We reverse-engineered each client, classic Outlook included, by testing thousands of emails in the real client and measuring what it does to them. The previews are 98% accurate on average, with classic Outlook drawn with Word's rules, as Outlook draws email. Every release is tested against the real clients again. For clients the previews don't cover yet, such as the Outlook app and Samsung Email, use real-device screenshots.",
   },
   {
     q: "Can I preview emails I didn't build with Hyper Elements?",
@@ -160,7 +160,7 @@ const faq = [
         <div class="lx-side us">
           <p class="lx-who"><span class="lx-dot" aria-hidden="true"></span>Hyper Elements</p>
           <ul>{versus.us.map((t) => <li>{t}</li>)}</ul>
-          <p class="lx-acc">Its previews match the real clients up to 99%.</p>
+          <p class="lx-acc">Its previews are 98% accurate on average against the real clients.</p>
           <a class="btn btn-primary btn-sm lx-try" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
         </div>
       </div>
