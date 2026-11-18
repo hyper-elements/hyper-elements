@@ -1,100 +1,85 @@
 ---
 title: "Themes"
-description: "Write a brand once with defineTheme(): tokens referred to with token(), roles the built-in elements read, defaults for each element, variants, named styles, scopes that change tokens for a band, overrides for one kind of root, and typed names."
+description: "Write a brand once with defineTheme() and give it to any root: tokens, roles the built-in elements read, each element's defaults and variants, named styles, and scopes that change tokens for one band."
 ---
 
-A theme is the brand, written once. Give it to any root, and every Email, Page, Document and Canvas that takes it is on brand: its colors, fonts, sizes, each element's defaults, its variants and its named styles.
+A theme is the brand, written once. Give it to a root, and the design needs almost no styles of its own:
 
+<!-- example: themes/welcome.tsx -->
 ```tsx
-import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hyper-elements/react";
+<Email theme={brand} lang="en" previewText="Your Acme account is ready.">
+  <Section style={{ apply: ["card"] }}>
+    <Heading level={1}>Welcome to Acme</Heading>
+    <Text>Your account is ready.</Text>
+    <Button href="https://example.com/start">Get started</Button>
+    <Button href="https://example.com/docs" variant="secondary">
+      Read the docs
+    </Button>
+  </Section>
+  <Section
+    tokens={{ colors: { background: "#15132e", foreground: "#ffffff" } }}
+    style={{ padding: [24, 32] }}
+  >
+    <Text style={{ fontSize: token("fontSizes.small") }}>
+      Acme Inc., 1 Market St, San Francisco
+    </Text>
+  </Section>
+</Email>
+```
 
-const brand = defineTheme({
-  colors: { background: "#ffffff", foreground: "#111827", primary: "#0f766e", primaryForeground: "#ffffff", muted: "#f3f4f6", border: "#e5e7eb" },
-  fonts: { body: "Inter, Arial, sans-serif", heading: "Georgia, serif" },
+<figure class="diagram"><img src="/generated/core-concepts/themes-welcome.svg" width="987" height="360" alt="The welcome email, each part labeled with what in the theme styles it: the card by a named style, the heading and text by roles, the buttons by a role and a variant, the dark band by a scope, and its small text by a token."></figure>
+
+The design names no font, and no color but the band's. Each label in the picture is one part of the theme:
+
+| Part | What it is |
+|------|------------|
+| [Tokens](#tokens) | The brand's values, by name: `colors.primary`, `spacing.lg` |
+| [Roles](#roles) | The tokens built-in elements read by themselves: a Button's background is `colors.primary` |
+| [Element defaults and variants](#element-defaults-and-variants) | How every Button looks, and its named versions |
+| [Named styles](#named-styles) | A set of styles any element applies by name: a card |
+| [Scopes](#scopes) | Other token values for one part of a design: a dark band |
+
+The rest of this page writes that theme, a part at a time. A theme takes any root: the same one styles an Email, a Page, a Document and a Canvas. A design without a theme renders as it always did, and a theme changes only what it defines.
+
+## Tokens
+
+`defineTheme()`, from `@hyper-elements/react` like `token()`, takes the brand's values by name. These are its tokens:
+
+<!-- example: themes/brand.ts -->
+```tsx
+export const brand = defineTheme({
+  colors: {
+    background: "#f4f4f5",
+    foreground: "#15132e",
+    primary: "#4f46e5",
+    primaryForeground: "#ffffff",
+    muted: "#e0e7ff",
+    border: "#e4e4e7",
+  },
+  fonts: { body: "Helvetica, Arial, sans-serif", heading: "Georgia, serif" },
   fontSizes: { body: 16, small: 13 },
   lineHeights: { body: 1.6 },
   spacing: { md: 16, lg: 32 },
-  elements: {
-    Heading: { by: { level: { 1: { fontSize: 36, mobile: { fontSize: 28 } }, 2: { fontSize: 24 } } } },
-    Button: { borderRadius: 8, variants: { secondary: { backgroundColor: "{colors.muted}", color: "{colors.foreground}" } } },
-  },
-  styles: { card: { padding: "{spacing.lg}", gap: "{spacing.md}", mobile: { padding: "{spacing.md}" } } },
-});
-
-export default function Welcome() {
-  return (
-    <Email theme={brand}>
-      <Section style={{ apply: ["card"] }}>
-        <Heading level={1}>Welcome to Acme</Heading>
-        <Text>Your account is ready.</Text>
-        <Button href="https://example.com/start">Get started</Button>
-        <Button href="https://example.com/docs" variant="secondary">Read the docs</Button>
-      </Section>
-      <Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }} style={{ apply: ["card"] }}>
-        <Text style={{ fontSize: token("fontSizes.small") }}>Acme Inc., 1 Market St, San Francisco</Text>
-      </Section>
-    </Email>
-  );
-}
 ```
 
-Designs without a theme render as they always did. A theme only changes what it defines.
+There are six groups of tokens: `colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts` and `radii`. A token's value is what the same style takes, so a number is px.
 
-## defineTheme()
-
-`defineTheme()` takes the theme's parts and returns it as frozen data. Every part is optional.
-
-| Part | What it holds |
-|------|---------------|
-| `colors` | Colors: `primary: "#0f766e"` |
-| `spacing` | Lengths for padding, gaps and borders: `md: 16` |
-| `fontSizes` | Font sizes: `body: 16` |
-| `lineHeights` | Line heights: `body: 1.6` |
-| `fonts` | Font stacks: `body: "Inter, Arial, sans-serif"` |
-| `radii` | Corner radii: `card: 8`, or `card: { topLeft: 8, topRight: 8 }` |
-| `elements` | Each built-in element's defaults, by one prop's value (`by`), and its `variants` |
-| `styles` | Named styles, applied with `style={{ apply: [...] }}` |
-| `formats` | Overrides for one kind of root: `email`, `page`, `document`, `canvas` |
-
-The first six are tokens. A token's value is what the same style takes (a number is px), and it's checked when the design is read, whether a design uses it or not.
-
-- **Names are letters and digits**, so each token is also a CSS custom property's name. To group tokens, nest them: `colors: { gray: { 100: "#f3f4f6", 900: "#111827" } }` makes `colors.gray.100` and `colors.gray.900`. `gray-900` is an error that says to nest it.
-- **One token refers to another** as `"{colors.primary}"`, the [W3C Design Tokens](https://www.designtokens.org/) format's alias: `link: "{colors.primary}"`. That works only inside a theme. A reference to a token that doesn't exist, to one in another group, or a loop of references, is an error.
-- A token has one value. `{ base, dark }` values are an error until dark mode comes, as are groups Elements doesn't take yet (`shadows`, `keyframes`).
-
-## token()
-
-In a design, `token("colors.primary")` stands for a token's value, where a style or part of one takes it:
+In a design, `token("colors.primary")` stands for a token's value wherever a style takes one:
 
 ```tsx
-<Column style={{ padding: token("spacing.lg"), border: { width: 1, style: "solid", color: token("colors.border") } }}>
-  <Text style={{ color: token("colors.primary"), fontSize: token("fontSizes.small") }}>Paid</Text>
-</Column>
+<Text style={{ color: token("colors.primary") }}>Paid</Text>
 ```
 
-A style takes tokens from the groups of its kind:
-
-| Style | Takes tokens from |
-|-------|-------------------|
-| A color (`color`, `backgroundColor`, a border's `color`) | `colors` |
-| A length (`fontSize`, `width`, `gap`, …) | `spacing`, `fontSizes` |
-| `padding`, a border's `width` | `spacing` |
-| `borderRadius` | `radii` |
-| `fontFamily` | `fonts` |
-| `lineHeight` | `lineHeights` |
-
-A token from another group is an error (`theme/value`), and so is one that doesn't exist (`theme/missing-token`), with the token meant where it's a typo away. `brand.tokens.colors.primary` is the same as `token("colors.primary")`.
-
-`"{colors.primary}"` in a design is a string, not a token: the error for it says to write `token("colors.primary")`.
+Inside the theme, one token refers to another as `"{colors.primary}"`. That form is for the theme only. In a design it's a plain string, and the error for it says to write `token("colors.primary")`.
 
 ## Roles
 
-Some tokens are roles: where the theme defines them, the built-in elements read them without the design naming them.
+Some token names are roles. Where the theme defines one, the built-in elements read it without the design naming it. That's why the welcome email's heading is in Georgia and its button is indigo.
 
 | Token | Is |
 |-------|----|
-| `colors.background` | The root's background |
-| `colors.foreground` | Body text's color |
+| `colors.background` | The root's background, and a scope's |
+| `colors.foreground` | Body text's color, in the root and in a scope |
 | `fonts.body` | Body text's font |
 | `fontSizes.body` | Body text's size, and a Button's |
 | `lineHeights.body` | Body text's line height |
@@ -103,156 +88,93 @@ Some tokens are roles: where the theme defines them, the built-in elements read 
 | `colors.primaryForeground` | A Button's text color |
 | `colors.border` | A Divider's color |
 
-Body text's styles are set on the root, and Text, table cells and list items inherit them. Set body text with these roles, not with a default for `Text`: a style on `Text` misses table cells and list items. Where a theme's default for an element replaces the color, font, size or line height a box sets for what it holds, `validate()` warns (`theme/inherited`).
+Any other name (`muted`, `small`, `lg`) is yours, to use with `token()`.
 
-## Element defaults
+Body text's styles are set on the root, and Text, table cells and list items inherit them. So set body text with these roles, not with a default for `Text`, which would miss table cells and list items.
 
-`elements.Button: { … }` is every Button's default style. Styles inside it are written as in `style`, with `mobile` and `hover` blocks, and may refer to tokens.
+## Element defaults and variants
 
-```ts
-elements: {
-  Button: { borderRadius: 8, padding: [12, 24], hover: { backgroundColor: "#115e59" } },
-  Divider: { borderTop: { width: 2, style: "solid", color: "{colors.border}" } },
-}
-```
+`elements` holds each built-in element's default styles, written as in `style`, and its `variants`: named versions picked with the `variant` prop.
 
-`by` sets a default by one of the element's props, a choice or a boolean. A type scale is a Heading's style by its level:
-
-```ts
-elements: {
-  Heading: { by: { level: { 1: { fontSize: 36, mobile: { fontSize: 28 } }, 2: { fontSize: 24 }, 3: { fontSize: 20 } } } },
-}
-```
-
-A value the prop never has (a level 7) is an error. Other differences are variants.
-
-## Variants
-
-`variants` are an element's named versions, picked with its `variant` prop. A list merges in order:
-
+<!-- example: themes/brand.ts -->
 ```tsx
-const brand = defineTheme({
-  elements: {
-    Button: {
-      variants: {
-        secondary: { backgroundColor: "#f3f4f6", color: "#111827" },
-        small: { padding: [6, 12], fontSize: 13 },
+elements: {
+  Heading: {
+    by: {
+      level: {
+        1: { fontSize: 32, mobile: { fontSize: 26 } },
+        2: { fontSize: 22 },
       },
     },
   },
-});
-
-<Button href="https://example.com" variant="secondary">Learn more</Button>
-<Button href="https://example.com" variant={["secondary", "small"]}>Later</Button>
+  Button: {
+    borderRadius: 8,
+    variants: {
+      secondary: {
+        backgroundColor: "{colors.muted}",
+        color: "{colors.foreground}",
+      },
+    },
+  },
+},
 ```
 
-Every built-in element but the roots takes `variant`. A variant the theme doesn't give that element is an error that lists the ones it has.
+- **Every Button** gets `borderRadius: 8`.
+- **`<Button variant="secondary">`** also gets the variant's colors. A list of variants merges in order: `variant={["secondary", "small"]}`.
+- **`by`** sets a default by one of the element's props. Here it's a type scale: a Heading's size by its `level`.
+
+A variant the theme doesn't give that element is an error that lists the ones it has.
 
 ## Named styles
 
-`styles` are named styles any element can apply, in order, with `apply` at the top of its `style`:
+`styles` holds sets of styles that any element applies by name, with `apply` in its `style`:
 
+<!-- example: themes/brand.ts -->
 ```tsx
-const brand = defineTheme({
-  styles: {
-    card: { backgroundColor: "#ffffff", padding: 32, borderRadius: 8, mobile: { padding: 16 } },
-    quiet: { color: "#6b7280", fontSize: 13 },
+styles: {
+  card: {
+    backgroundColor: "#ffffff",
+    padding: "{spacing.lg}",
+    gap: "{spacing.md}",
+    mobile: { padding: "{spacing.md}" },
   },
-});
-
-<Column style={{ apply: ["card"], gap: 16 }}>
-  <Text style={{ apply: ["quiet"] }}>Ships in 2 days</Text>
-</Column>
+},
 ```
 
-A named style, a variant or an element default may apply named styles too. Named styles that apply each other in a loop are an error. A custom element takes no named styles: apply them in what it renders.
+```tsx
+<Section style={{ apply: ["card"] }}>…</Section>
+<Column style={{ apply: ["card"], gap: 8 }}>…</Column>
+```
 
-## Which wins
+The element's own styles go beside `apply` and win over it: the Column above has the card's padding and background, and its own `gap`.
 
-An element's style is merged from, lowest first:
-
-1. Its roles
-2. Its element's defaults, then its defaults by its prop's value (`by`)
-3. Its variants, in order
-4. Its named styles, in order
-5. Its own `style`
-
-Each `mobile` and `hover` block merges key by key the same way. A style the element sets itself, outside a block, also replaces the theme's phone and hover values for it: `style={{ padding: 8 }}` stays 8 on phones, whatever the theme's `mobile` says.
+Use a variant for a version of one element (a secondary Button), and a named style for a look several elements share (a card).
 
 ## Scopes
 
-`tokens` on a Section, Row, Column or Grid changes tokens for itself and everything it holds. A scope that sets a role applies it to itself, so an inverted band is one prop:
+`tokens` on a Section, Row, Column or Grid changes token values for itself and everything inside it. It's called a scope. A scope that sets `colors.background` or `colors.foreground` takes them as its own background and text color, so the welcome email's dark band is one prop:
 
 ```tsx
-<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>
+<Section tokens={{ colors: { background: "#15132e", foreground: "#ffffff" } }}>
   <Text>White text on a dark band</Text>
   <Button href="https://example.com">Still the primary color</Button>
 </Section>
 ```
 
-Scopes nest. A reference in the theme follows them: with `link: "{colors.primary}"`, a scope that changes `colors.primary` changes `link` inside it too. A scope can refer to the tokens around it with `token()`. Scopes work without a theme.
+Scopes nest, and they work in a design that has no theme.
 
-## formats
+## Which wins
 
-`formats` overrides the theme for one kind of root, merged over the rest:
+An element's style is merged from these, each over the one before:
 
-```ts
-const brand = defineTheme({
-  fontSizes: { body: 16 },
-  formats: {
-    document: { fontSizes: { body: 11 }, fonts: { body: "Georgia, serif" } },
-    email: { elements: { Button: { borderRadius: 4 } } },
-  },
-});
-```
+1. Its roles
+2. Its element's defaults, then its defaults by a prop's value (`by`)
+3. Its variants, in order
+4. Its named styles, in order
+5. Its own `style`
 
-What a root can't show is left out of the theme there: a theme's phone and hover styles do nothing in a Document. Every root's overrides are checked whichever root reads the theme.
+So a style written on the element always wins.
 
-## extendTheme()
+## Next
 
-`extendTheme(base, overrides)` makes a theme from another, for a brand over a shared base or a customer over a brand. Objects merge key by key at every depth, and anything else (a value, a list) is replaced:
-
-```ts
-const customer = extendTheme(brand, { colors: { primary: "#b91c1c" }, fonts: { body: "Helvetica, Arial, sans-serif" } });
-```
-
-## Your own elements
-
-A [defineElement()](/docs/custom-elements)'s color, length and font props take a token like a style does. Its `render` gets the theme's tokens where the instance is, scopes included, as values in its second argument:
-
-```tsx
-const Badge = defineElement({
-  type: "acme.Badge",
-  label: "Badge",
-  props: { tint: prop.color({ label: "Tint" }) },
-  render: ({ tint }, { theme }) => (
-    <Text style={{ backgroundColor: tint ?? String(theme.colors?.muted ?? "#f3f4f6"), padding: [2, 8] }}>New</Text>
-  ),
-});
-
-<Badge tint={token("colors.primary")} />
-```
-
-## Typed names
-
-Register your theme, once in your app, to type every token, variant and named style:
-
-```ts
-declare module "@hyper-elements/react" {
-  interface Register {
-    theme: typeof brand;
-  }
-}
-```
-
-Then `token("colors.primry")`, `variant="tertiary"` and `apply: ["crad"]` are type errors. Without a registered theme they're strings, checked when the design is read. A theme made with `extendTheme()` can be registered too.
-
-## What's written
-
-A theme's values are written into each output as values, as if the design had set them: an email, a PDF and an image hold no theme.
-
-- **A Page** also writes its tokens as CSS custom properties (`--colors-primary`, `--fontSizes-body`) on its root, and a scope's where they differ, for your own CSS and `Html` blocks.
-- **The visual editor** gets the values each block has. `toDesign()` says it keeps no theme.
-- **`inspect()`** lists the theme: its tokens and their values, the roles it defines, its named styles and each element's variants.
-
-Every theme problem is a [diagnostic](/docs/diagnostics) with the path to the token, style or variant it's about: `root.theme.elements.Button.variants.ghost`.
+[Theme reference](/docs/themes/reference) has the rest: every part of `defineTheme()`, which tokens each style takes, overrides for one kind of root (`formats`), `extendTheme()`, tokens in your own elements, typed names, and what each output writes.

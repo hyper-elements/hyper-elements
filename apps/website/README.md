@@ -64,6 +64,18 @@ Playwright's Chromium installed: `pnpm --filter @hyper-elements/website generate
 pictures (`examples/templates-guide/designs/art/`: the artwork, the product screenshot and the banner) are drawn from
 SVG by `node scripts/templates-guide-art.mjs`, and committed.
 
+The Core concepts pages (Designs, Layout, Styles, Rendering, Themes, Custom elements, Command line and the two
+reference pages) get their pictures the same way: `scripts/core-concepts.mjs` typechecks the designs in
+`examples/core-concepts/`, renders each with the built CLI in a temporary project, draws it in Chromium at desktop and
+phone width, and outlines its parts from the boxes of the `id`s the examples give them
+(`public/generated/core-concepts/`). It also runs the commands and scripts those pages show
+(`src/generated/core-concepts.json`), and fails where a page differs from them: a code block under
+`<!-- example: <file> -->` is that file's lines in order (less its `id`s), one under `<!-- output: <name> -->` is what
+that command printed (`part-of`: some of its lines; `json`: one of its lines, laid out), and a picture's `<img>` gives
+the size it was drawn at. Run it after `pnpm build`:
+`pnpm --filter @hyper-elements/website generate:core-concepts` (a folder's name after it draws only that page's
+pictures, without the docs check). Both scripts' drawing helpers are `scripts/pictures.mjs`.
+
 Images the examples use live in `public/img/` and are referenced as `https://hyperelements.dev/img/…`, so a copied example works anywhere. Previews load them from the site itself.
 
 ## Pages

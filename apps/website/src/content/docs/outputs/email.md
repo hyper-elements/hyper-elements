@@ -95,4 +95,4 @@ There are no dark-mode styles yet. The head declares `color-scheme` as light.
 
 > **Warning:** Chromium and a model of Outlook aren't email clients. The output hasn't been checked in real email clients yet, and button padding through `mso-padding-alt` hasn't been measured in real Outlook. Send tests to the clients your users have before you rely on a layout.
 
-The layout doesn't measure text, either. A box with less room than its words needs looks different in email, where the table cell widens to its longest word, than on a page. See [Layout](/docs/layout#every-box-gets-a-px-width).
+The layout doesn't measure text, either. A box with less room than its words needs looks different in email, where the table cell widens to its longest word, than on a page. See [Layout](/docs/layout#how-widths-are-worked-out).

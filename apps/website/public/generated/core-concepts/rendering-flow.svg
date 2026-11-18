@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 318" width="880" height="318" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif" role="img" aria-label="A design goes through four steps: it is collected in one React render, checked, laid out, and written. validate() and outline() stop after the layout: one returns what is wrong, the other prints the layout. render(), renderPdf() and renderImage() go on to write the output.">
+  <rect width="880" height="318" rx="12" fill="#0f172a"/>
+  <rect x="20" y="20" width="150.4" height="92" rx="10" fill="#0f172a" stroke="#2dd4bf" stroke-width="2"/>
+  <text x="95.2" y="54" text-anchor="middle" font-size="17" font-weight="700" fill="#f1f5f9">Your design</text>
+  <text x="95.2" y="76" text-anchor="middle" font-size="13.5" fill="#cbd5e1">JSX with one root</text>
+  <rect x="192.4" y="20" width="150.4" height="92" rx="10" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <text x="267.6" y="54" text-anchor="middle" font-size="17" font-weight="700" fill="#f1f5f9">Collect</text>
+  <text x="267.6" y="76" text-anchor="middle" font-size="13.5" fill="#cbd5e1">React runs your</text>
+  <text x="267.6" y="94" text-anchor="middle" font-size="13.5" fill="#cbd5e1">functions, once</text>
+  <path d="M174.4 66 H185.4 m-6 -5 l6 5 l-6 5" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="364.8" y="20" width="150.4" height="92" rx="10" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <text x="440" y="54" text-anchor="middle" font-size="17" font-weight="700" fill="#f1f5f9">Check</text>
+  <text x="440" y="76" text-anchor="middle" font-size="13.5" fill="#cbd5e1">Props, styles,</text>
+  <text x="440" y="94" text-anchor="middle" font-size="13.5" fill="#cbd5e1">children, ids</text>
+  <path d="M346.8 66 H357.8 m-6 -5 l6 5 l-6 5" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="537.2" y="20" width="150.4" height="92" rx="10" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <text x="612.4000000000001" y="54" text-anchor="middle" font-size="17" font-weight="700" fill="#f1f5f9">Lay out</text>
+  <text x="612.4000000000001" y="76" text-anchor="middle" font-size="13.5" fill="#cbd5e1">Every box's</text>
+  <text x="612.4000000000001" y="94" text-anchor="middle" font-size="13.5" fill="#cbd5e1">width in px</text>
+  <path d="M519.2 66 H530.2 m-6 -5 l6 5 l-6 5" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="709.6" y="20" width="150.4" height="92" rx="10" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <text x="784.8000000000001" y="54" text-anchor="middle" font-size="17" font-weight="700" fill="#f1f5f9">Write</text>
+  <text x="784.8000000000001" y="76" text-anchor="middle" font-size="13.5" fill="#cbd5e1">The root's output</text>
+  <path d="M691.6 66 H702.6 m-6 -5 l6 5 l-6 5" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <rect x="192.4" y="138" width="495.20000000000005" height="8" rx="4" fill="#fbbf24"/>
+  <text x="192.4" y="168" font-size="15" font-weight="700" fill="#f1f5f9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">validate()</text>
+  <text x="298.4" y="168" font-size="14" fill="#cbd5e1">returns what's wrong, and writes nothing</text>
+  <rect x="192.4" y="196" width="495.20000000000005" height="8" rx="4" fill="#f472b6"/>
+  <text x="192.4" y="226" font-size="15" font-weight="700" fill="#f1f5f9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">outline()</text>
+  <text x="289.2" y="226" font-size="14" fill="#cbd5e1">prints the layout as text</text>
+  <rect x="192.4" y="254" width="667.6" height="8" rx="4" fill="#2dd4bf"/>
+  <text x="192.4" y="284" font-size="15" font-weight="700" fill="#f1f5f9" font-family="ui-monospace, SFMono-Regular, Menlo, monospace">render()  renderPdf()  renderImage()</text>
+  <text x="537.6" y="284" font-size="14" fill="#cbd5e1">write the output</text>
+</svg>

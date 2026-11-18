@@ -57,8 +57,8 @@ export const docsNav: DocGroup[] = [
       { slug: "designs", label: "Designs" },
       { slug: "layout", label: "Layout" },
       { slug: "styles", label: "Styles" },
-      { slug: "themes", label: "Themes" },
       { slug: "rendering", label: "Rendering" },
+      { slug: "themes", label: "Themes" },
       { slug: "custom-elements", label: "Custom elements" },
       { slug: "cli", label: "Command line" },
     ],
@@ -89,6 +89,13 @@ export const docsNav: DocGroup[] = [
       { slug: "diagnostics", label: "Diagnostics" },
       { slug: "email-client-emulator", label: "Email client emulator" },
       { slug: "lint", label: "Lint" },
+    ],
+  },
+  {
+    title: "Reference",
+    items: [
+      { slug: "themes/reference", label: "Theme reference" },
+      { slug: "cli/reference", label: "Command line reference" },
     ],
   },
   {

@@ -16,6 +16,7 @@
     "generate:email-clients": "node scripts/email-client-previews.mjs",
     "generate:compare": "node scripts/compare-previews.mjs",
     "generate:templates-guide": "node scripts/templates-guide.mjs",
+    "generate:core-concepts": "node scripts/core-concepts.mjs",
     "check:blog": "node scripts/check-blog.mjs",
     "check:playground": "node scripts/check-playground.mjs",
     "check:email-testing": "node scripts/check-email-testing.mjs"

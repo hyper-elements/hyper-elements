@@ -82,5 +82,5 @@ A `Document` renders to print HTML with the same page writer, plus a CSS `@page`
 
 ## Limits
 
-- The layout gives every box a width in px without measuring text. A box with less room than its words needs overflows on a page. See [Layout](/docs/layout#every-box-gets-a-px-width).
+- The layout gives every box a width in px without measuring text. A box with less room than its words needs overflows on a page. See [Layout](/docs/layout#how-widths-are-worked-out).
 - `validate()` reports what a page can't show as asked (`web/unsupported`).
