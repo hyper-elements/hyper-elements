@@ -1,13 +1,13 @@
 ---
 "title": "PageHeader"
 "group": "Parts"
-"order": 29
+"order": 30
 "summary": "In a Document: drawn at the top of every page, inside its margins."
 ---
 
 In a Document: drawn at the top of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)

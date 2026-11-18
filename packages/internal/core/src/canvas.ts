@@ -7,7 +7,7 @@
 import { defineComponent, prop, type PropSpecs, type SupportByTarget } from "./define";
 import { color, length, number, text } from "./kinds";
 import { ROOT_DEFAULT_STYLE, ROOT_PROPS, ROOT_STYLE, SURFACE_ROLES, TEXT_EDITOR } from "./roots";
-import { boxStyle, css, layoutStyle, pick, placementStyle } from "./styles";
+import { boxStyle, css, layoutStyle, PAGE_BLOCK, pick, placementStyle } from "./styles";
 
 const WRITTEN: SupportByTarget = { web: { level: "full", source: "writer" } };
 const coordinate = (label: string, description?: string) => prop(number(), { support: WRITTEN, label, ...(description ? { description } : {}), default: 0 });
@@ -49,7 +49,7 @@ export const Svg = defineComponent({
     viewBox: prop(text({ maxLength: 100 }), { support: WRITTEN, label: "View box", description: 'The shapes\' coordinates in it, as "x y width height" (its width and height by default).' }),
     title: prop(text({ maxLength: 200 }), { support: WRITTEN, label: "Title", description: "What it shows, read out by screen readers." }),
   },
-  style: { ...pick(boxStyle, "padding", "backgroundColor", "border", "borderRadius"), ...placementStyle },
+  style: { ...PAGE_BLOCK, ...pick(boxStyle, "padding", "backgroundColor", "border", "borderRadius"), ...placementStyle },
   children: { categories: ["shape"] },
   sizing: "shrink",
   targets: { web: {} },

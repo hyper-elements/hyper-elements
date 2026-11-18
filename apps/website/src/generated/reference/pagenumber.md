@@ -1,7 +1,7 @@
 ---
 "title": "PageNumber"
 "group": "Inline"
-"order": 22
+"order": 23
 "summary": "In a Document's text: the number of the page it's on, or (total) how many pages there are."
 ---
 

@@ -1,7 +1,7 @@
 ---
 "title": "Ellipse"
 "group": "Shapes"
-"order": 36
+"order": 37
 "summary": "An ellipse centered at cx, cy in its Svg."
 ---
 

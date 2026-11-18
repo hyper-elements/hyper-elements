@@ -1,7 +1,7 @@
 ---
 "title": "Polygon"
 "group": "Shapes"
-"order": 38
+"order": 39
 "summary": "A closed shape through its points (\"0,0 40,0 20,30\"), in its Svg."
 ---
 

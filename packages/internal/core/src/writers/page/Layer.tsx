@@ -2,7 +2,7 @@
 import { h } from "../jsx";
 import { textDeclarations } from "../shared/css";
 import type { Component } from "./context";
-import { box } from "./layout";
+import { box, inRow } from "./layout";
 
 export const Layer: Component = ({ node, style, parent, placement, classes, children }) => (
   <div
@@ -18,7 +18,7 @@ export const Layer: Component = ({ node, style, parent, placement, classes, chil
         // Its corners cut what's in it, as an email's background is cut.
         overflow: style.borderRadius !== undefined ? "hidden" : undefined,
       },
-      box(node, parent.type !== "Row"),
+      box(node, !inRow(parent)),
       textDeclarations(node.text, parent.text),
     ]}
   >

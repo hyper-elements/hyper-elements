@@ -183,7 +183,7 @@ await import(${JSON.stringify(pathToFileURL(BIN).href)});
     const ran = await new Promise<{ code: number | null; stderr: string }>((resolve) => {
       const child = spawn(ON_BUN ? "bun" : process.execPath, [fake, "render", "."], { cwd: dir, env: cliEnv() });
       let stderr = "";
-      child.stderr.on("data", (d) => (stderr += d));
+      child.stderr.setEncoding("utf8").on("data", (d: string) => (stderr += d));
       child.on("close", (code) => resolve({ code, stderr }));
     });
     expect(ran.code).toBe(2);

@@ -1,7 +1,7 @@
 ---
 "title": "LineBreak"
 "group": "Inline"
-"order": 25
+"order": 26
 "summary": "Starts a new line inside text."
 ---
 

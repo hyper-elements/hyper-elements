@@ -1,13 +1,13 @@
 ---
 "title": "PageFooter"
 "group": "Parts"
-"order": 30
+"order": 31
 "summary": "In a Document: drawn at the bottom of every page, inside its margins."
 ---
 
 In a Document: drawn at the bottom of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)

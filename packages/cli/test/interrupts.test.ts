@@ -18,7 +18,7 @@ export default function Busy() { return <Email><Text>busy</Text></Email>; }
 function start(dir: string, args: string[]) {
   const child = spawn(ON_BUN ? "bun" : process.execPath, [BIN, ...args], { cwd: dir, env: cliEnv(), stdio: ["ignore", "pipe", "pipe"] });
   let stdout = "";
-  child.stdout.on("data", (d) => (stdout += d));
+  child.stdout.setEncoding("utf8").on("data", (d: string) => (stdout += d));
   const closed = new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolve) => child.on("close", (code, signal) => resolve({ code, signal })));
   return { child, closed, stdout: () => stdout };
 }

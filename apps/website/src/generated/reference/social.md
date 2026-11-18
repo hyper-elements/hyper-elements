@@ -1,7 +1,7 @@
 ---
 "title": "Social"
 "group": "Blocks"
-"order": 19
+"order": 20
 "summary": "Links to social profiles: a line of the networks' icons, each linked to its profile."
 ---
 
@@ -15,7 +15,7 @@ Props:
 - `size`: an integer from 1 (default `32`). Each icon's width and height, in px.
 
 `style`:
-- `gap`: a length (a number of px) (default `5`, Spacing). Space between children.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `5`, Spacing). Space between children.
 - `justifyContent`: one of "start", "center", "end" (default `"center"`, Layout). Where the icons sit across the line.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 

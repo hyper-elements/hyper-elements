@@ -1,7 +1,7 @@
 ---
 "title": "Path"
 "group": "Shapes"
-"order": 39
+"order": 40
 "summary": "A shape drawn by an SVG path (d), in its Svg."
 ---
 
