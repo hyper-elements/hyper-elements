@@ -8,6 +8,7 @@ const dist = resolve(fileURLToPath(new URL("../dist/", import.meta.url)));
 const index = readFileSync(join(dist, "blog/index.html"), "utf8");
 const sitemap = readFileSync(join(dist, "sitemap-0.xml"), "utf8");
 const articles = [
+  { slug: "automate-open-graph-images-nextjs", description: "Give every Next.js page an on-brand Open Graph image", hero: "nextjs-open-graph-images-workflow.webp", images: 5 },
   { slug: "html-email-checks-github-actions", description: "Check existing HTML emails in GitHub Actions", hero: "html-email-ci-workflow-labeled.webp" },
   { slug: "node-open-graph-images-local-fonts", description: "Generate branded Open Graph PNGs", hero: "node-open-graph-images-workflow.webp" },
   { slug: "react-emails-claude-code", description: "Build a receipt email", hero: "claude-code-email-loop.webp" },
@@ -16,7 +17,7 @@ const articles = [
 const llms = readFileSync(join(dist, "llms.txt"), "utf8");
 const llmsFull = readFileSync(join(dist, "llms-full.txt"), "utf8");
 const pages = new Map();
-for (const { slug, description, hero } of articles) {
+for (const { slug, description, hero, images = 2 } of articles) {
   const html = readFileSync(join(dist, `blog/${slug}/index.html`), "utf8");
   pages.set(slug, html);
   assert(llms.includes(`/blog/${slug})`), `${slug}: missing llms.txt discovery link`);
@@ -28,7 +29,7 @@ for (const { slug, description, hero } of articles) {
   assert.match(html, /property="og:type" content="article"/);
   assert(html.includes(`property="og:image" content="https://www.hyperelements.dev/img/blog/${hero}"`), `${slug}: missing social image`);
   assert.match(html, /"@type":"TechArticle"/);
-  assert.equal((html.match(/<img\b/g) ?? []).length, 2, `${slug}: hero plus one content image`);
+  assert.equal((html.match(/<img\b/g) ?? []).length, images, `${slug}: hero plus ${images - 1} content image(s)`);
   const ids = new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(m => m[1]));
   const links = [...new Set([...html.matchAll(/href="([^"#]+|#[^"]+)"/g)].map(m => m[1]))];
   for (const href of links) {
@@ -83,6 +84,23 @@ assert.match(cardHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/node-open-
 assert.match(card, /The template rendered as a PNG/);
 assert(cardHtml.includes("renderImage"), "Image rendering instructions must be in static HTML");
 assert(llmsFull.includes("scripts/render-card.tsx"), "Card script must be readable in full text");
+const nextHtml = pages.get("automate-open-graph-images-nextjs");
+const nextCard = checkScreenshot(nextHtml, {
+  heading: "how-do-i-serve-the-cards-from-nextjs", src: "/img/blog/nextjs-open-graph-card-output.png",
+  alt: "A rose Northline card", width: 1200, height: 630,
+});
+// The same template's cards for four pages, in a gallery right after the route handler.
+assert.match(nextHtml, /<\/pre>\s*<div[^>]*><figure[^>]*><img src="\/img\/blog\/nextjs-open-graph-card-home\.png"/, "Card gallery must follow the route handler");
+for (const name of ["home", "pricing", "docs"]) {
+  assert(nextCard.includes(`src="/img/blog/nextjs-open-graph-card-${name}.png" width="1200" height="630"`), `Missing card: ${name}`);
+  const bytes = readFileSync(join(dist, `img/blog/nextjs-open-graph-card-${name}.png`));
+  assert.equal(bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  assert.equal(bytes.readUInt32BE(16), 1200);
+  assert.equal(bytes.readUInt32BE(20), 630);
+}
+assert.match(nextCard, /The PNGs this route returned/);
+assert(nextHtml.includes("generateStaticParams") && nextHtml.includes("renderImage"), "Next.js wiring must be in static HTML");
+assert(llmsFull.includes("app/og/[...path]/route.ts"), "Card route must be readable in full text");
 const ciHtml = pages.get("html-email-checks-github-actions");
 assert.match(ciHtml, /<\/pre>\s*<figure[^>]*><img src="\/img\/blog\/html-email-ci-reporting\.png"/, "CI diagram must follow the complete workflow");
 assert(ciHtml.includes('width="1600" height="1008"'), "CI diagram dimensions must be explicit");
@@ -93,5 +111,5 @@ assert.equal(ciDiagram.readUInt32BE(16), 1600);
 assert.equal(ciDiagram.readUInt32BE(20), 1008);
 assert(llmsFull.includes("name: Check email HTML"), "Complete CI workflow must be readable in full text");
 assert(llmsFull.includes("exit \"$status\""), "Full-text workflow must preserve CLI failure status");
-console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, two images per post, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
+console.log("Blog integration PASS: all articles' routes, headings, descriptions, canonicals, social images, structured data, internal links/anchors, each post's image count, screenshot assets/placement, sitemap and existing text-discovery endpoints.");
 console.log("Static checks only: this does not replace browser layout inspection or execute the tutorial examples.");
