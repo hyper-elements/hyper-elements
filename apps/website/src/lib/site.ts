@@ -19,7 +19,7 @@ export const site = {
   emailTestingPrompt:
     "Install the email-testing skill (npx skills add hyper-elements/hyper-elements --skill email-testing -y, or read https://www.hyperelements.dev/skills/email-testing.md) and follow it to preview [my email: an HTML file or a design] in Outlook, Gmail, Yahoo Mail and Apple Mail, light and dark. Show me each client's screenshot and what it changed.",
   /** The engine's version line, shown in the header; links to the releases. */
-  version: "0.4",
+  version: "0.5",
   releases: "https://github.com/hyper-elements/hyper-elements/releases",
   repo: "hyper-elements/hyper-elements",
   description:

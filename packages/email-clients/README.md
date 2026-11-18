@@ -183,7 +183,7 @@ with this one. It's free to use, under its own licence (not open source); this p
 
 ## Versions
 
-This package follows `@hyper-elements/react`'s minor: 0.4 works with core `^0.4.0` (plugins, and `render()`'s
+This package follows `@hyper-elements/react`'s minor: 0.5 works with core `^0.5.0` (plugins, and `render()`'s
 `blockMap` in format 2). With an older core, 0.3.x included, `emailClients()` and `renderInEmailClients()` throw
 `email-clients/version-mismatch`, with the command to install a matching pair; so does a models package whose protocol
 this one doesn't read.
