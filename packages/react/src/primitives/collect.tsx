@@ -381,7 +381,8 @@ export function withFields(diagnostics: Diagnostic[], fields: ReadonlyMap<string
  * is told once.
  */
 export function withFound(said: Diagnostic[], found: Diagnostic[], fields: ReadonlyMap<string, string> | undefined): Diagnostic[] {
-  const key = (diagnostic: Diagnostic) => `${diagnostic.code}\n${diagnostic.path}\n${diagnostic.message}`;
+  // Its severity too: an error is never left out for a warning that reads the same.
+  const key = (diagnostic: Diagnostic) => `${diagnostic.severity}\n${diagnostic.code}\n${diagnostic.path}\n${diagnostic.message}`;
   const heard = new Set(said.map(key));
   return [...said, ...withFields(found, fields).filter((diagnostic) => !heard.has(key(diagnostic)))];
 }

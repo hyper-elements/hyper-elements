@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import React, { createContext, forwardRef, Fragment, memo, Suspense, useContext, useId, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Button, Canvas, Circle, Column, Divider, Document, ElementsError, Html, Rect, Svg, PageBreak, PageFooter, PageHeader, PageNumber, Email, Grid, Heading, Image, LineBreak, Link, List, ListItem, MergeTag, Menu, outline, Page, Text, prepare, render, Row, Section, snapshot, Social, Span, Table, TableCell, TableRow, validate, Video } from "./index";
-import { collectTemplate } from "./collect";
+import { collectTemplate, withFound } from "./collect";
 import { inspect } from "../inspect";
 import * as primitives from "./index";
 
@@ -483,6 +483,14 @@ describe("validate()", () => {
       </Page>
     );
     expect(everywhere(validate(two).diagnostics)).toEqual(["root.children[0].hidden", "root.children[1].hidden"]);
+  });
+
+  it("leaves out only what was said already at the same severity: an error that reads like a warning is kept", () => {
+    const at = { code: "x/y", path: "root.children[0]", message: "Same words" };
+    const warning = { ...at, severity: "warning" as const };
+    const error = { ...at, severity: "error" as const };
+    expect(withFound([warning], [warning], undefined)).toEqual([warning]);
+    expect(withFound([warning], [error], undefined)).toEqual([warning, error]);
   });
 
   it("says a component that's async or suspends can't be rendered yet, rather than writing its fallback", async () => {
