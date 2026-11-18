@@ -28,7 +28,7 @@ import {
   type StyleGroup,
 } from "@hyper-elements/core";
 import type { Snapshot } from "../primitives/snapshot";
-import { collectTemplate, snapshotData, withFields, type JsonNode } from "../primitives/collect";
+import { collectTemplate, snapshotData, withFound, type JsonNode } from "../primitives/collect";
 
 export type { ConditionName, Diagnostic, PropertyDescription, RootName, StyleGroup };
 
@@ -179,7 +179,7 @@ export function inspect(element: React.ReactElement | Snapshot): Inspection {
   }
   const { document, diagnostics: read, components, collected, fields, template } = collectTemplate(element);
   const failed = read.some((d) => d.severity === "error");
-  const diagnostics = [...read, ...(document && !failed ? withFields(validateTemplate(document, { components }).diagnostics, fields) : [])];
+  const diagnostics = document && !failed ? withFound(read, validateTemplate(document, { components }).diagnostics, fields) : read;
   const registry = new Registry(components);
   const rootType = document?.root.type;
   const root = rootType && (ROOT_NAMES as readonly string[]).includes(rootType) ? (rootType as RootName) : null;

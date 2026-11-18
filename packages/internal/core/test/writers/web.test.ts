@@ -395,6 +395,20 @@ describe("web HTML", () => {
       expect(pages[1]).not.toContain("break-after");
     });
 
+    it("shows a page white on a screen where it sets no background, as its paper is, and prints it as it was", () => {
+      const { head, body } = web(doc([text("One"), { type: "DocumentPage", style: { backgroundColor: "#f5f5f5" }, children: [text("Two")] }]));
+      const screen = /@media screen\{(.*?\})\}/.exec(head)![1];
+      expect(screen).toMatch(/\.elements-page\{background-color:#fff;/);
+      // Only on a screen: nothing else in the stylesheet gives a page a background, so what's printed is unchanged.
+      expect(head.replace(/@media screen\{.*?\}\}/, "")).not.toContain("elements-page");
+      // A page's own background is in its style attribute, which the rule doesn't replace; a page without one has none there.
+      const pages = body.match(/<section class="elements-page" style="[^"]*"/g)!;
+      expect(pages[0]).not.toContain("background");
+      expect(pages[1]).toContain("background-color:#f5f5f5");
+      const own = web({ root: { type: "Document", style: { backgroundColor: "#0f172a" }, children: [text("One")] } });
+      expect(own.body).toMatch(/<section class="elements-page" style="[^"]*background-color:#0f172a/);
+    });
+
     it("puts its header and footer on every page, numbered, and its pages' content between them", () => {
       const { body, text: plain } = web(
         doc([
