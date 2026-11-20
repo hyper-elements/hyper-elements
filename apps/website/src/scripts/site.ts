@@ -73,6 +73,15 @@ function fit(view: HTMLElement) {
 // A full thumbnail is as tall as what it shows (measured once its frame has loaded), up to three times its width; an
 // uncapped one (a template page's preview) is as tall as all of it.
 const FULL_MAX = 3;
+// A frame shown after it loaded (a brand picked on a template's page) loads its web fonts only then, after it's been
+// measured, and the text they set can take another height: measure it again once they've loaded.
+const awaitingFonts = new WeakSet<Document>();
+function againWhenFontsLoad(doc: Document, again: () => void) {
+  if (awaitingFonts.has(doc) || !doc.fonts) return;
+  awaitingFonts.add(doc);
+  doc.fonts.addEventListener("loadingdone", again);
+  void doc.fonts.ready.then(again);
+}
 function fitFull(view: HTMLElement, frame: HTMLIFrameElement, width: number, scale: number) {
   const doc = frame.contentDocument;
   if (!doc?.body || doc.readyState !== "complete") return;
@@ -84,6 +93,7 @@ function fitFull(view: HTMLElement, frame: HTMLIFrameElement, width: number, sca
   view.style.aspectRatio = "auto";
   view.style.height = `${Math.ceil(shown * scale)}px`;
   view.toggleAttribute("data-capped", natural > shown);
+  againWhenFontsLoad(doc, () => fit(view));
 }
 const fitAll = () => document.querySelectorAll<HTMLElement>("[data-fit]").forEach(fit);
 // A phone's screen as tall as what it shows, where its preview asks for it: one scrollbar, the page's.
@@ -94,8 +104,12 @@ document.addEventListener(
     if (!(frame instanceof HTMLIFrameElement) || frame.dataset.fitContent === undefined) return;
     const doc = frame.contentDocument;
     if (!doc?.body) return;
-    frame.style.height = "1px";
-    frame.style.height = `${Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight)}px`;
+    const size = () => {
+      frame.style.height = "1px";
+      frame.style.height = `${Math.max(doc.documentElement.scrollHeight, doc.body.scrollHeight)}px`;
+    };
+    size();
+    againWhenFontsLoad(doc, size);
   },
   true,
 );

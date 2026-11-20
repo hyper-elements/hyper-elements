@@ -158,21 +158,21 @@ try {
   // By default: the preview alone, as tall as what it shows (no scrollbar of its own), on a desktop and on a phone.
   assert.equal(await page.$eval(".stage-code", (c) => getComputedStyle(c).display), "none", "the code shows before Code is picked");
   // The shown brand's frame for a view: whether it has loaded, the height it's drawn at, and its content's.
-  const measure = (view) =>
-    page.evaluate((view) => {
+  const measure = (view, on = page) =>
+    on.evaluate((view) => {
       const shown = [...document.querySelectorAll(".stage-preview > [data-brand]")].find((d) => !d.hidden);
       const frame = shown?.querySelector(`.view[data-view="${view}"] iframe`);
       const doc = frame?.contentDocument;
       const box = frame?.getBoundingClientRect();
       return { brand: shown?.dataset.brand, loaded: Boolean(doc?.body?.childElementCount), drawn: box && frame.offsetWidth ? box.height / (box.width / frame.offsetWidth) : 0, content: doc?.documentElement.scrollHeight ?? 0 };
     }, view);
-  const fits = async (view) => {
+  const fits = async (view, on = page) => {
     const until = Date.now() + 20000;
     let last;
     while (Date.now() < until) {
-      last = await measure(view);
+      last = await measure(view, on);
       if (last.loaded && Math.abs(last.drawn - last.content) <= 2) return;
-      await page.waitForTimeout(250);
+      await on.waitForTimeout(250);
     }
     assert.fail(`the ${view} preview isn't as tall as its content: ${JSON.stringify(last)}`);
   };
@@ -191,6 +191,20 @@ try {
   assert(brandFile.includes(`"${brand.name}"`), "brand.ts isn't the picked brand's");
   assert.equal(await page.getAttribute(`.one-file [data-brand="${brand.id}"] [data-copy]`, "data-copy"), t.byBrand[brand.id].single, "copy it as one file doesn't copy the picked brand's file");
   assert(await page.isVisible(`.one-file [data-brand="${brand.id}"]`), "the picked brand's one file line doesn't show");
+
+  // Opened in a brand that isn't the first, on a slow network: that brand's preview starts hidden, so its fonts load
+  // only once it's shown, after it's first measured. It's as tall as its content once they have.
+  const slow = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await slow.route("**/*", async (route) => {
+    const url = route.request().url();
+    if (!url.startsWith(origin)) return route.abort();
+    if (/\.(ttf|otf)$/.test(url)) await new Promise((done) => setTimeout(done, 2000));
+    return route.continue();
+  });
+  const late = await slow.newPage();
+  await late.goto(`${origin}/templates/${t.folder}/${t.name}?brand=${brand.id}`);
+  await fits("desktop", late);
+  await slow.close();
 } finally {
   await browser.close();
   server.close();
