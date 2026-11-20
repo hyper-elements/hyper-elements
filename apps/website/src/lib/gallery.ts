@@ -23,7 +23,6 @@ export interface TemplateInfo {
   name: string;
   output: string;
   root: "Email" | "Page" | "Document" | "Canvas";
-  category: string;
   label: string;
   description: string;
   author: string;
@@ -39,20 +38,11 @@ export interface TemplateInfo {
 /** A view of a template in one brand, with the file the gallery loads it from when that brand is picked: its HTML
  * (images and assets already pointed at this site), or a Canvas's PNG. */
 export type View = Example & { preview?: string };
-export interface CategoryInfo {
-  label: string;
-  group: string;
-  useWhen: string;
-  avoidWhen: string;
-  roots: string[];
-}
 
-const gallery = data as unknown as { assets: string; brands: BrandInfo[]; companies: CompanyInfo[]; templates: TemplateInfo[]; categories: Record<string, CategoryInfo> };
+const gallery = data as unknown as { assets: string; brands: BrandInfo[]; companies: CompanyInfo[]; templates: TemplateInfo[] };
 
 export const brands = gallery.brands;
 export const galleryTemplates = gallery.templates;
-export const galleryCategories = gallery.categories;
-export const GROUPS = ["Account", "Billing", "Orders", "Launches", "Content", "Events", "Social", "People", "Records", "Marketing"];
 
 /** The brands a template is shown in: its company's own first, where it's a recreation, then the samples. */
 export const brandsFor = (t: TemplateInfo): BrandInfo[] => {

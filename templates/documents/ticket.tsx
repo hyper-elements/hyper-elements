@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Ticket",
-  category: "ticket",
   description: "A ticket as a PDF: the event on a band of the brand's color, who it's for, when and where, and the code to show at the door",
 };
 

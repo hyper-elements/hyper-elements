@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Product drop post",
-  category: "announcement",
   description: "A new product for a social feed, 1080 by 1080: a huge headline in capitals, what it is and when, and the product's photo on a pale panel",
   recreates: { company: "nike", what: "product drop post", original: "https://www.instagram.com/nike/" },
 };

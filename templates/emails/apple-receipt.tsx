@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "App Store receipt",
-  category: "receipt",
   author: "zehfernandes",
   description: "A subscription's receipt: the order's details in a gray table, the app with its icon and price, the total, an offer, and the fine print",
   recreates: { company: "apple", what: "App Store receipt", original: "https://reallygoodemails.com/search/emails/Apple" },

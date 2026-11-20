@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Certificate",
-  category: "certificate",
   description: "A certificate on a landscape page: a double frame, the recipient's photo and name, what they achieved, the date, a seal, and the signer's signature",
 };
 

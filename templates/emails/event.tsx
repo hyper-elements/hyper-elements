@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Event invitation",
-  category: "event",
   description: "An invitation: the event's name on a band of the brand's color, when and where, a button to register, and the day's schedule",
 };
 

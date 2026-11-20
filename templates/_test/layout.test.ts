@@ -4,7 +4,7 @@ import { extname, join, relative } from "node:path";
 import ts from "typescript";
 import { ASSETS } from "../_brand";
 import { ASSET_DIR, ROOT } from "../_scripts/assets";
-import { ROOT_FOLDERS, SHARED, categories, companies, designs } from "./discover";
+import { ROOT_FOLDERS, SHARED, companies, designs } from "./discover";
 
 const PACKAGE = /^(react|@hyper-elements\/react)$/;
 const NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -36,18 +36,12 @@ it("has only the root folders and the shared folders at the top", () => {
   }
 });
 
-it("keeps designs as .tsx files named in kebab case, each in a category that takes its folder's root", async () => {
-  const cats = await categories();
+it("keeps designs as .tsx files named in kebab case", () => {
   for (const folder of Object.keys(ROOT_FOLDERS) as Array<keyof typeof ROOT_FOLDERS>) {
     for (const file of readdirSync(join(ROOT, folder))) {
       expect(extname(file), `${folder}/${file}`).toBe(".tsx");
       expect(file.replace(/\.tsx$/, ""), `${folder}/${file}: a name in kebab case`).toMatch(NAME);
     }
-  }
-  for (const t of await designs()) {
-    const category = cats.find((c) => c.id === t.category);
-    expect(category, `${t.key}: meta.category "${t.category}" has no _categories/${t.category}.ts`).toBeDefined();
-    expect(category!.category.roots as string[], `${t.key}: ${t.category} doesn't take a ${t.root}`).toContain(t.root);
   }
 });
 

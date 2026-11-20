@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Welcome",
-  category: "welcome",
   description: "A greeting on a band of the brand's color, three numbered next steps, and one button",
 };
 

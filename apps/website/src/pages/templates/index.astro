@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import GalleryThumb from "../../components/GalleryThumb.astro";
-import { GROUPS, brands, brandsFor, firstView, galleryCategories, galleryTemplates, templateUrl, type TemplateInfo } from "../../lib/gallery";
+import { brands, brandsFor, firstView, galleryTemplates, templateUrl, type TemplateInfo } from "../../lib/gallery";
 
 const outputs = [
   { id: "all", label: "Everything" },
@@ -11,10 +11,8 @@ const outputs = [
   { id: "images", label: "Images" },
 ].filter((o) => o.id === "all" || galleryTemplates.some((t) => t.folder === o.id));
 
-// One gallery, its outputs mixed so no one kind leads: the next template of each output in turn, each output's own in
-// the order of its jobs.
-const byGroup = (t: TemplateInfo) => GROUPS.indexOf(galleryCategories[t.category]?.group ?? "");
-const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => galleryTemplates.filter((t) => t.folder === folder).sort((a, b) => byGroup(a) - byGroup(b)));
+// One gallery, its outputs mixed so no one kind leads: the next template of each output in turn.
+const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => galleryTemplates.filter((t) => t.folder === folder));
 const gallery: TemplateInfo[] = [];
 while (queues.some((q) => q.length)) for (const q of queues) if (q.length) gallery.push(q.shift()!);
 

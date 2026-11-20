@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Invoice",
-  category: "invoice",
   description: "An invoice as a PDF: the letterhead, who it's billed to, the lines with their sums, the total due, and page numbers",
 };
 

@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Order confirmation",
-  category: "order-confirmation",
   description: "An order confirmed: its number and date, the items with the total, and where it's going",
 };
 

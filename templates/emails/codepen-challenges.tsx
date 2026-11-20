@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "CodePen Challenges",
-  category: "newsletter",
   description: "A weekly challenge: header art on a dark band, a yellow heading, the brief and a boxed challenge, a picture, a PRO panel, how to take part, ideas and resources side by side, and a button to the challenge",
   recreates: {
     company: "codepen",

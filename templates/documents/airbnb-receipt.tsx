@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Trip receipt",
-  category: "receipt",
   description: "A stay's receipt as a PDF: the logo and receipt ID, where and when, the guests, the price night by night with fees and taxes, how it was paid, and the cancellation policy",
   recreates: { company: "airbnb", what: "trip receipt", original: "https://www.airbnb.com/help/article/2491" },
 };

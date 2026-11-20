@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Welcome to Premium",
-  category: "welcome",
   description: "A paid plan that has just started: a big headline, what it gives you, one pill button, the plan and its price, and the apps",
   recreates: { company: "spotify", what: "Premium welcome email", original: "https://reallygoodemails.com/search/emails/Spotify" },
 };

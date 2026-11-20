@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Password reset",
-  category: "password-reset",
   description: "A link to choose a new password, how long it works, and what to do if the reader didn't ask",
 };
 

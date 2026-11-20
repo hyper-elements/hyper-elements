@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Open Graph card",
-  category: "og-card",
   description: "A link preview, 1200 by 630: the title fitted to three lines, the brand's logo and site, and shapes in its colors",
 };
 

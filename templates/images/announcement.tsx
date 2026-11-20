@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Launch graphic",
-  category: "announcement",
   description: "A product launch for social posts: the date, a headline fitted to three lines, three features, and the product shown in a window over artwork",
 };
 

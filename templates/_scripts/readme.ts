@@ -1,17 +1,16 @@
 /**
- * Writes `templates/README.md` from the folder: every design by group and category, and the sample brands.
+ * Writes `templates/README.md` from the folder: every design by its output, and the sample brands.
  *   pnpm --filter ./templates readme
  */
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ROOT } from "./assets";
-import { brands, categories, companies, designs } from "../_test/discover";
+import { ROOT_FOLDERS, brands, companies, designs } from "../_test/discover";
 
-const GROUPS = ["Account", "Billing", "Orders", "Launches", "Content", "Events", "Social", "People", "Records", "Marketing"];
-const OUTPUT = { emails: "email", pages: "page", documents: "PDF", images: "image" } as const;
+const HEADINGS = { emails: "Emails", pages: "Pages", documents: "PDFs", images: "Images" } as const;
 
 export async function readme(): Promise<string> {
-  const [all, cats, owned, brandList] = [await designs(), await categories(), await companies(), await brands()];
+  const [all, owned, brandList] = [await designs(), await companies(), await brands()];
   const lines = [
     "# Templates",
     "",
@@ -27,21 +26,15 @@ export async function readme(): Promise<string> {
     "",
     "This file is written by `pnpm --filter ./templates readme`. Don't edit it by hand.",
     "",
-    "## By category",
-    "",
   ];
-  for (const group of GROUPS) {
-    const inGroup = cats.filter((c) => c.category.group === group && all.some((t) => t.category === c.id));
-    if (!inGroup.length) continue;
-    lines.push(`### ${group}`, "");
-    for (const c of inGroup) {
-      lines.push(`- **${c.category.label}** (\`${c.id}\`): ${c.category.useWhen}.`);
-      for (const t of all.filter((x) => x.category === c.id)) {
-        const as = OUTPUT[t.folder] === "image" ? "an image" : OUTPUT[t.folder] === "email" ? "an email" : `a ${OUTPUT[t.folder]}`;
-        const company = t.meta.recreates && owned.find((o) => o.id === t.meta.recreates!.company)!.brand.name;
-        const notes = [company ? `a recreation of ${company}'s ${t.meta.recreates!.what}` : "", t.meta.author ? `by ${t.meta.author}` : ""].filter(Boolean);
-        lines.push(`  - [${t.meta.label}](./${t.key}.tsx), as ${as}${notes.length ? `: ${notes.join(", ")}` : ""}`);
-      }
+  for (const folder of Object.keys(ROOT_FOLDERS) as Array<keyof typeof ROOT_FOLDERS>) {
+    const inFolder = all.filter((t) => t.folder === folder);
+    if (!inFolder.length) continue;
+    lines.push(`## ${HEADINGS[folder]}`, "");
+    for (const t of inFolder) {
+      const company = t.meta.recreates && owned.find((o) => o.id === t.meta.recreates!.company)!.brand.name;
+      const notes = [company ? `a recreation of ${company}'s ${t.meta.recreates!.what}` : "", t.meta.author ? `by ${t.meta.author}` : ""].filter(Boolean);
+      lines.push(`- [${t.meta.label}](./${t.key}.tsx): ${t.meta.description}${notes.length ? ` (${notes.join(", ")})` : ""}`);
     }
     lines.push("");
   }

@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Stripe invoice",
-  category: "invoice",
   description: "An invoice as Stripe's PDFs lay it out: the title and logo, its numbers and dates, from and bill to, the amount due with a link to pay, the lines, the totals, and a footer on every page",
   recreates: { company: "stripe", what: "invoice PDF", original: "https://docs.stripe.com/invoicing/customize" },
 };

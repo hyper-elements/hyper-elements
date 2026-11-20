@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Receipt",
-  category: "receipt",
   description: "A receipt as a PDF: paid in full, with the items, the total, the date and how it was paid",
 };
 

@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Review received",
-  category: "feedback-request",
   author: "joaom00",
   description: "A guest's review, shown to the host once the review period ends: the logo, the reviewer's photo, their words in a shaded box, a button to reply, and common questions",
   recreates: { company: "airbnb", what: "review email", original: "https://reallygoodemails.com/search/emails/Airbnb" },

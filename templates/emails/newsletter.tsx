@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Newsletter",
-  category: "newsletter",
   description: "A regular issue: a masthead with the issue and date, a lead story, more stories with thumbnails, a closing note, and an unsubscribe footer",
 };
 

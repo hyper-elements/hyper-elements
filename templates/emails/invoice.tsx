@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Invoice email",
-  category: "invoice",
   description: "The email that sends an invoice: the amount due, the due date, the lines, and a button to pay online",
 };
 

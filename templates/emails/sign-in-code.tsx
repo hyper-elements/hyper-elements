@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Sign-in code",
-  category: "sign-in-code",
   description: "A one-time code, large and centered in a box of its own, with when it expires and what to do if it wasn't you",
 };
 

@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Verify email",
-  category: "verify-email",
   description: "One step before the account is ready: confirm the email address it was made with",
 };
 

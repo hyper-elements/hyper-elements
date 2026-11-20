@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Wrapped share card",
-  category: "stat-card",
   description: "A year in listening as a story to share, 1080 by 1920: bold shapes, the minutes listened, the top artists and songs, and the top genre",
   recreates: { company: "spotify", what: "Wrapped share card", original: "https://newsroom.spotify.com/wrapped/" },
 };

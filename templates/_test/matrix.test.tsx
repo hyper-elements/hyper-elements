@@ -19,7 +19,7 @@ import { lint } from "@hyper-elements/lint";
 import type { Brand } from "../_brand";
 import { ROOT, fontFiles, imageFiles } from "../_scripts/assets";
 import { checker, type Finding } from "./checks";
-import { brands, categories, companies, designs } from "./discover";
+import { brands, companies, designs } from "./discover";
 import { PROBES, contractOnly, tokenNames } from "./probes";
 import { treeFacts } from "./tree";
 
@@ -34,7 +34,7 @@ const DOESNT_FIT = ["layout/overflow", "document/overflow", "canvas/overflow", "
 /** The lint rules every design holds to. */
 const READABLE = ["contrast", "text-size", "link-text", "alt-text"].flatMap((rule) => [`email/lint-${rule}`, `page/lint-${rule}`]);
 
-const [all, sampleBrands, cats, owned] = [await designs(), await brands(), await categories(), await companies()];
+const [all, sampleBrands, owned] = [await designs(), await brands(), await companies()];
 const clients = await emailClients();
 const sha = (text: string | Uint8Array) => createHash("sha256").update(text).digest("hex").slice(0, 16);
 const codes = (ds: readonly Diagnostic[]) => ds.map((d) => `${d.severity} ${d.code} ${d.path}`).sort();
@@ -56,13 +56,10 @@ for (const t of all) {
     const recorded: Record<string, unknown> = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
     baseline[file] = {};
 
-    it("says what it is, has its folder's root, and is in a category that takes it", () => {
+    it("says what it is, and has its folder's root", () => {
       expect(typeof t.meta?.label, "meta.label").toBe("string");
       expect(typeof t.meta?.description, "meta.description").toBe("string");
       expect(treeFacts(<Design brand={sampleBrands[0].brand} />).root).toBe(t.root);
-      const category = cats.find((c) => c.id === t.category);
-      expect(category, `templates/_categories/${t.category}.ts`).toBeDefined();
-      expect(category!.category.roots as string[]).toContain(t.root);
     });
 
     for (const { id: name, brand } of brandsFor(t)) {

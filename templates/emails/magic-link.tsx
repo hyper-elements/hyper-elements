@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Magic link",
-  category: "magic-link",
   description: "A one-time link that signs the reader in, how long it works, and a note for when they didn't ask",
 };
 

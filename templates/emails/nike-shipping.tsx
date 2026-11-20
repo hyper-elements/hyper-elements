@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "It's on its way",
-  category: "shipping",
   author: "zehfernandes",
   description: "An order that has shipped: the tracking number and a button up top, a bold headline, where it's going, the item with its picture, picks for you, and help",
   recreates: { company: "nike", what: "shipping confirmation", original: "https://reallygoodemails.com/search/emails/Nike" },

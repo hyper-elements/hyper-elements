@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Shipping",
-  category: "shipping",
   description: "An order on its way: when it should arrive, who's carrying it, a button to track it, and what's in the box",
 };
 

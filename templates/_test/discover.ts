@@ -1,4 +1,4 @@
-/** Every design, category, sample brand and company brand in the folder, found from the files, as the matrix tests them. */
+/** Every design, sample brand and company brand in the folder, found from the files, as the matrix tests them. */
 import { readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { ReactElement } from "react";
@@ -13,8 +13,6 @@ export type RootFolder = keyof typeof ROOT_FOLDERS;
 export interface DesignMeta {
   label: string;
   description: string;
-  /** Its job: a file in `_categories/`. */
-  category: string;
   /** Who made it, where it isn't the project ("Hyper Elements"). */
   author?: string;
   /** A recreation's: the company, what it rebuilds, and where the original can be seen. */
@@ -26,7 +24,6 @@ export interface DesignInfo {
   root: (typeof ROOT_FOLDERS)[RootFolder];
   /** Its file's name: `sign-in-code`. */
   name: string;
-  category: string;
   file: string;
   /** `<root folder>/<name>`. */
   key: string;
@@ -36,9 +33,8 @@ export interface DesignInfo {
 }
 
 export const pascal = (name: string) => name.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("");
-export const camel = (name: string) => pascal(name).replace(/^./, (c) => c.toLowerCase());
 
-/** The folder's own folders, that aren't a root folder: `_brands`, `_categories`, … */
+/** The folder's own folders, that aren't a root folder: `_brands`, `_assets`, … */
 export const SHARED = (name: string) => name.startsWith("_") || name.startsWith(".") || name === "node_modules";
 
 export async function designs(): Promise<DesignInfo[]> {
@@ -48,7 +44,7 @@ export async function designs(): Promise<DesignInfo[]> {
     for (const file of readdirSync(dir).filter((f) => f.endsWith(".tsx")).sort()) {
       const name = basename(file, ".tsx");
       const module = (await import(join(dir, file))) as { default: DesignInfo["Design"]; meta: DesignMeta };
-      out.push({ folder, root: ROOT_FOLDERS[folder], name, category: module.meta?.category, file: join(dir, file), key: `${folder}/${name}`, meta: module.meta, Design: module.default });
+      out.push({ folder, root: ROOT_FOLDERS[folder], name, file: join(dir, file), key: `${folder}/${name}`, meta: module.meta, Design: module.default });
     }
   }
   return out;
@@ -68,14 +64,3 @@ export const brands = () => brandFiles("_brands");
 
 /** The real companies whose work a recreation rebuilds, by id: a recreation is drawn in its company's brand too. */
 export const companies = () => brandFiles("_companies");
-
-export async function categories(): Promise<Array<{ id: string; file: string; category: Record<string, unknown> }>> {
-  const dir = join(ROOT, "_categories");
-  const out: Array<{ id: string; file: string; category: Record<string, unknown> }> = [];
-  for (const file of readdirSync(dir).filter((f) => f.endsWith(".ts")).sort()) {
-    const id = basename(file, ".ts");
-    const module = (await import(join(dir, file))) as Record<string, Record<string, unknown>>;
-    out.push({ id, file: join(dir, file), category: module[camel(id)] });
-  }
-  return out;
-}

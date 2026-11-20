@@ -8,8 +8,7 @@ details from a brand it's given. The website shows each one in the sample brands
 
 ## What you can contribute
 
-- **A design:** an email, a page, a PDF or an image, for a job in `_categories/`. Most contributions are designs.
-- **A category:** a job the list doesn't have yet.
+- **A design:** an email, a page, a PDF or an image. Most contributions are designs.
 - **A sample brand:** an invented one that covers a look the others don't.
 - **A recreation:** a faithful rebuild of something a real company makes, in its own brand.
 
@@ -26,21 +25,20 @@ templates/
   _brand.ts          the Brand type, the tokens a design may use, and checkBrand()
   _brands/           the sample brands
   _companies/        a real company's brand, for its recreations
-  _categories/       the jobs: one file each
   _assets/           fonts, and the brands', designs' and companies' images
 ```
 
-- **A design's folder says what it makes:** an email, a web page, a PDF (`documents/`) or an image. Its `meta` says
-  its job (`category`). `.preview/`, `.single/` and `node_modules/` aren't committed.
-- **A design's name** is lowercase words joined by hyphens, for what it is. The first design for a category can take
-  the category's name (`documents/invoice.tsx`); the next one says what sets it apart (`documents/invoice-studio.tsx`,
+- **A design's folder says what it makes:** an email, a web page, a PDF (`documents/`) or an image. `.preview/`,
+  `.single/` and `node_modules/` aren't committed.
+- **A design's name** is lowercase words joined by hyphens, for what it is (`documents/invoice.tsx`). A second design
+  of the same kind says what sets it apart (`documents/invoice-studio.tsx`,
   or `documents/stripe-invoice.tsx` for a recreation).
 
 ## Before you start
 
 1. Read [Designs](https://hyperelements.dev/docs/designs) in the docs: roots, elements, styles and themes.
-2. Pick its category from `_categories/`, or from the list in [README.md](./README.md) and below.
-3. Look at the other designs for that category on [hyperelements.dev/templates](https://hyperelements.dev/templates).
+2. Look at the designs already there, on [hyperelements.dev/templates](https://hyperelements.dev/templates) or in
+   [README.md](./README.md).
    Yours should look clearly different, not only in color, since the brand sets the colors.
 
 ## Write a design
@@ -51,7 +49,7 @@ A design is a component that takes a brand and returns its root, with real words
 import { Column, Document, Heading, Image, Text, token } from "@hyper-elements/react";
 import type { Brand } from "../_brand";
 
-export const meta = { label: "Invoice", category: "invoice", description: "An invoice as a PDF, with its lines in a table" };
+export const meta = { label: "Invoice", description: "An invoice as a PDF, with its lines in a table" };
 
 export default function Invoice({ brand }: { brand: Brand }) {
   return (
@@ -79,7 +77,7 @@ every design follows:
 - **Take everything about the company from the brand:** its name, address, logo and links. Pass its fonts, language
   and direction to your root, and write links on its site (`` `${brand.links.site}/billing` ``), so they're on the
   brand's own domain in every brand.
-- **Say what it is** in `meta`: its `label`, its `category` and a one-sentence `description`, and your name as
+- **Say what it is** in `meta`: its `label` and a one-sentence `description`, and your name as
   `author` (it's "Hyper Elements" where it isn't set).
 - **Import only** React, `@hyper-elements/react` and `_brand.ts` (for its types). Don't rename imports. Export your
   design as the default, a component taking `{ brand }`, and its `meta`. That's what lets the website give your
@@ -99,27 +97,6 @@ every design follows:
 A design has one size. To make another (a square image beside a landscape one), add it as its own design, with a
 name of its own. Each design is one file, so it can be copied on its own.
 
-## A new category
-
-Copy an existing file in `_categories/` and fill it in. Its export is the category's name in camel case
-(`signInCode` for `sign-in-code.ts`):
-
-- `group`: one of Account, Billing, Orders, Launches, Content, Events, Social, People, Records, Marketing
-- `label`
-- `roots`: which outputs the job makes sense for
-- `useWhen` and `avoidWhen`: one sentence each, for people and agents choosing
-
-Name it for what the reader gets or does (`sign-in-code`, not `otp`), never for its output (`invoice`, not
-`invoice-pdf`). Different sizes of the same thing are the same category.
-
-These names are agreed, so a pull request can add one of them as it is: welcome, verify-email,
-sign-in-code, magic-link, password-reset, security-alert, invoice, receipt, quote, statement, payment-failed,
-trial-ending, subscription-changed, order-confirmation, shipping, delivered, refund, packing-slip, shipping-label,
-announcement, changelog, waitlist, landing, pricing, newsletter, digest, article, og-card, thumbnail, event, ticket,
-speaker, social-post, quote-card, testimonial, stat-card, job-post, invitation, mention, comment, feedback-request,
-certificate, report, letter, contract, proposal, resume, promotion, ad, re-engagement. Any other name, or a new root
-for an existing category, needs a maintainer's approval in the pull request, with a reason no category does that job.
-
 ## A recreation
 
 A recreation rebuilds something a real company makes (an email, a page, a document, an image) in the company's own
@@ -133,7 +110,6 @@ used only for the company's recreations. It adds:
   ```ts
   export const meta = {
     label: "Welcome",
-    category: "welcome",
     description: "…",
     recreates: { company: "stripe", what: "welcome email", original: "https://…" },
   };
@@ -143,7 +119,6 @@ The rules:
 
 - **Only what the company really makes.** Rebuild a kind of email, page, document or image the company sends or
   publishes, as close to its own as you can. No made-up kinds in a real company's brand, and no lookalike companies.
-- **Each design in a category,** like any design, or bring the category.
 - **Logos and images only as they appear in the company's own work,** saved under `_assets/companies/<company>/`.
 - **No names or details of real people.** Sample words are invented.
 - **Every check still passes,** in the company's brand and in every sample brand. There are no exceptions: if the
@@ -198,18 +173,17 @@ website's previews and copyable files for it.
 Tick each item:
 
 - [ ] Each design is one file in its root's folder, named as above.
-- [ ] Each design is in a category that takes its root, and says its `label`, `category` and `description` in `meta`.
+- [ ] Each design says its `label` and `description` in `meta`.
 - [ ] No colors, fonts or company details of its own; only the brand's.
 - [ ] `pnpm --filter ./templates typecheck` and `test` pass, and the output, `README.md` and the website's files are
   regenerated and committed.
 - [ ] I looked at every design in the preview, in light and dark brands.
 - [ ] Sample words are invented. Images are mine to share or openly licensed, or, for a recreation, as in the
   original.
-- [ ] A new category, or a new root for one, has a maintainer's approval; a listed category doesn't need it.
 - [ ] For a recreation: only what the company really makes, with where the original can be seen, and its images as
   in the company's own work.
 
-A maintainer reviews it for a look that's clearly different from the other designs for the same category.
+A maintainer reviews it for a look that's clearly different from the other designs of the same kind.
 
 By contributing, you agree your contribution is released under this repository's MIT license. Images, and a
 recreation's brand, belong to their owners.

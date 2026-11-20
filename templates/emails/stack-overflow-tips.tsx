@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Stack Overflow tips",
-  category: "newsletter",
   author: "bruno88cabral",
   description: "A tips issue: the logo on the page, a banner with the headline beside its art, ruled sections with a list of tips, one button, and a footer with the email's settings and the address",
   recreates: {

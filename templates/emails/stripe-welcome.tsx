@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Stripe welcome",
-  category: "welcome",
   author: "zenorocha",
   description: "The email once an account can take live payments: the logo, short paragraphs with links into the docs, one button, and the address",
   recreates: { company: "stripe", what: "welcome email", original: "https://reallygoodemails.com/search/emails/Stripe" },

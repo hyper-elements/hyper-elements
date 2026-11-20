@@ -13,7 +13,7 @@ import { outline, render } from "@hyper-elements/react";
 import { renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
 import { renderPdf, templateAssets as pdfAssets } from "@hyper-elements/react/pdf";
 import { ASSETS, type Brand } from "../_brand";
-import { brands, categories, companies, designs, type RootFolder } from "../_test/discover";
+import { brands, companies, designs, type RootFolder } from "../_test/discover";
 import { ROOT, fontFiles, imageFiles } from "./assets";
 import { brandBlock, singleFile, splitFiles } from "./single-file";
 
@@ -26,7 +26,7 @@ const lines = (ds: ReadonlyArray<{ severity: string; code: string; message: stri
 rmSync(PUBLIC, { recursive: true, force: true });
 mkdirSync(PUBLIC, { recursive: true });
 
-const [all, cats, owned] = [await designs(), await categories(), await companies()];
+const [all, owned] = [await designs(), await companies()];
 // Orbit, the docs' brand, first: what a page shows before a visitor picks one.
 const sampleBrands = (await brands()).sort((a, b) => (a.id === "orbit" ? -1 : b.id === "orbit" ? 1 : 0));
 const failures: string[] = [];
@@ -61,7 +61,6 @@ const OUTPUT: Record<RootFolder, string> = { emails: "Email", pages: "Web page",
 const data = {
   assets: ASSETS,
   brands: sampleBrands.map(({ id, brand }) => ({ id, name: brand.name, colors: brand.theme.colors, block: brandBlock(join(ROOT, "_brands", `${id}.ts`)) })),
-  categories: Object.fromEntries(cats.map(({ id, category }) => [id, { label: category.label, group: category.group, useWhen: category.useWhen, avoidWhen: category.avoidWhen, roots: category.roots }])),
   // The real companies' brands, each shown only with the recreations of its work.
   companies: owned.map(({ id, file, brand }) => ({ company: id, id: `${id}-original`, name: `Original (${brand.name})`, colors: brand.theme.colors, block: brandBlock(file) })),
   templates: [] as unknown[],
@@ -85,7 +84,6 @@ for (const t of all) {
     name: t.name,
     output: OUTPUT[t.folder],
     root: t.root,
-    category: t.category,
     label: t.meta.label,
     description: t.meta.description,
     author: t.meta.author ?? "Hyper Elements",

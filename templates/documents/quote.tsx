@@ -3,7 +3,6 @@ import type { Brand } from "../_brand";
 
 export const meta = {
   label: "Quote",
-  category: "quote",
   description: "A quote as a PDF: who it's for, the work with its prices, the estimated total, how long it holds, and lines to sign it",
 };
 
