@@ -33,9 +33,9 @@ export interface TemplateInfo {
   code: string;
   byBrand: Record<string, { views: Record<string, View>; single: string; brandFile: string }>;
 }
-/** A view of a template in one brand, with the file the gallery loads it from when that brand is picked: its HTML
- * (images and assets already pointed at this site), or a Canvas's PNG. */
-export type View = Example & { preview?: string };
+/** A view of a template in one brand: an Email's, Page's or Document's with the HTML file the gallery loads when that
+ * brand is picked; a Canvas's with its size, as it's drawn in the visitor's browser (src/scripts/gallery-images.ts). */
+export type View = Example & { preview?: string; size?: [number, number] };
 
 const gallery = data as unknown as { assets: string; brands: BrandInfo[]; companies: CompanyInfo[]; templates: TemplateInfo[] };
 

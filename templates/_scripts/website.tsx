@@ -1,13 +1,14 @@
 /**
- * The website's templates pages' data: every design in every sample brand (and a recreation's company's), as the site's
- * examples are (HTML, plain text, outline, diagnostics, and a Canvas's PNG), with its code, its brand.ts and its
- * copyable single file. A Canvas's PNG is a file of its own; an HTML preview is
- * written as a file when the site is built (`src/pages/generated/gallery/[preview].html.ts`), from the HTML here. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, and deletes only those.
- * The folder's assets are served from `_assets/` by the site itself (`apps/website/scripts/gallery-assets-integration.mjs`). Fails if any design fails, so stale pictures can't ship.
+ * The website's templates pages' data, `apps/website/src/generated/gallery.json`: every design in every sample brand
+ * (and a recreation's company's), as the site's examples are (HTML, plain text, outline, diagnostics, and a Canvas's
+ * size), with its code, its brand.ts and its copyable single file. The site writes each HTML preview as a file when
+ * it's built (`src/pages/generated/gallery/[preview].html.ts`), draws an image in the visitor's browser
+ * (`src/gallery/worker.ts`), and serves the assets from `_assets/` (`scripts/gallery-assets-integration.mjs`). Fails if
+ * any design fails, so stale pictures can't ship.
  *
  *   pnpm --filter @hyper-elements/website generate:gallery
  */
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { outline, render } from "@hyper-elements/react";
 import { renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
@@ -17,13 +18,10 @@ import { ROOT, fontFiles, imageFiles } from "./assets";
 import { brandBlock, singleFile, splitFiles } from "./single-file";
 
 const SITE = join(ROOT, "..", "apps", "website");
-const PUBLIC = join(SITE, "public", "generated", "gallery");
 const DATA = join(SITE, "src", "generated", "gallery.json");
 const URL_BASE = "/generated/gallery";
 const lines = (ds: ReadonlyArray<{ severity: string; code: string; message: string; path?: string }>) => ds.map(({ severity, code, message, path }) => ({ severity, code, message, ...(path ? { path } : {}) }));
 
-rmSync(PUBLIC, { recursive: true, force: true });
-mkdirSync(PUBLIC, { recursive: true });
 
 const [all, owned] = [await designs(), await companies()];
 // Orbit, the docs' brand, first: what a page shows before a visitor picks one.
@@ -36,9 +34,8 @@ async function example(t: (typeof all)[number], brandId: string, brand: Brand) {
   const name = `${t.folder}.${t.name}.${brandId}`;
   const base = { slug: t.key, title: `${t.meta.label}, ${brand.name}`, description: t.meta.description, root: t.root, source: "", html: "", text: "", outline: "", diagnostics: [] as ReturnType<typeof lines> };
   if (t.root === "Canvas") {
-    const { image, diagnostics } = await renderImage(design, { fonts: fontFiles(brand), images: imageFiles(imageAssets(design).images) });
-    writeFileSync(join(PUBLIC, `${name}.png`), image);
-    return { ...base, outline: safeOutline(design), diagnostics: lines(diagnostics), file: `${URL_BASE}/${name}.png`, preview: `${URL_BASE}/${name}.png` };
+    const { width, height, diagnostics } = await renderImage(design, { fonts: fontFiles(brand), images: imageFiles(imageAssets(design).images), format: "svg" });
+    return { ...base, outline: safeOutline(design), diagnostics: lines(diagnostics), size: [width, height] };
   }
   const out = await render(design);
   return { ...base, html: out.html, text: out.text ?? "", outline: safeOutline(design), diagnostics: lines(out.diagnostics), preview: `${URL_BASE}/${name}.html` };

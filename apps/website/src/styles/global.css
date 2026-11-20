@@ -272,6 +272,8 @@ a.card:hover { border-color: var(--line-3); }
 .preview.full .view-phone, .preview.full .view-text { height: auto; overflow: visible; }
 .preview.full .view-file:has(img) { height: auto; }
 .preview.full .view-file img { height: auto; }
+/* An image template drawn in the visitor's browser (src/scripts/gallery-images.ts): nothing shown until it's drawn. */
+img[data-draw]:not([src]) { visibility: hidden; }
 .diags { list-style: none; margin: 0; padding: 16px; display: grid; gap: 10px; overflow: auto; height: 100%; align-content: start; }
 .diags li { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--hover); font-size: 14px; }
 .diags .sev { font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin-right: 8px; }

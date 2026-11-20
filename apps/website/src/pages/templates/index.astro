@@ -80,8 +80,12 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
 </Base>
 
 <script>
+  import { inBrand, watch } from "../../scripts/gallery-images";
+
   const cards = [...document.querySelectorAll<HTMLElement>("[data-gallery] [data-output]")];
   const gallery = document.querySelector<HTMLElement>("[data-gallery]")!;
+  // An image template is drawn in the visitor's browser, in the brand its card shows, as it comes into view.
+  watch(document.querySelectorAll<HTMLImageElement>("[data-gallery] img[data-draw]"));
 
   // Outputs.
   const outputs = [...document.querySelectorAll<HTMLElement>("[data-output-pick]")];
@@ -115,6 +119,12 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
       card.querySelector<HTMLElement>("[data-caption]")!.textContent = id === "own" ? card.dataset.ownCaption! : `in ${BRANDS[id]!.name}`;
       // Its page opens in the brand it's shown in.
       card.setAttribute("href", `${card.dataset.href}?brand=${brand}`);
+      const drawn = card.querySelector<HTMLImageElement>("img[data-draw]");
+      if (drawn) {
+        card.querySelector<HTMLElement>(".gshot")!.style.background = background;
+        inBrand(drawn, brand);
+        continue;
+      }
       if (!src || card.dataset.shown === brand) continue;
       card.dataset.shown = brand;
       card.querySelector<HTMLElement>(".gshot")!.style.background = background;
@@ -128,8 +138,6 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
         frame.removeAttribute("srcdoc");
         frame.src = src;
       }
-      const image = card.querySelector<HTMLImageElement>("img");
-      if (image) image.src = src;
     }
     if (!remember) return;
     store.set(id);
