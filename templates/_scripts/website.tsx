@@ -2,19 +2,19 @@
  * The website's templates pages' data: every design in every sample brand (and a recreation's company's), as the site's
  * examples are (HTML, plain text, outline, diagnostics, and a Document's PDF or a Canvas's PNG), with its code, its
  * brand.ts and its copyable single file. A Canvas's PNG and a Document's PDF are files of their own; an HTML preview is
- * written as a file when the site is built (`src/pages/generated/gallery/[preview].html.ts`), from the HTML here. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, the
- * folder's assets copied under it, and deletes only those. Fails if any design fails, so stale pictures can't ship.
+ * written as a file when the site is built (`src/pages/generated/gallery/[preview].html.ts`), from the HTML here. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, and deletes only those.
+ * The folder's assets are served from `_assets/` by the site itself (`apps/website/scripts/gallery-assets-integration.mjs`). Fails if any design fails, so stale pictures can't ship.
  *
  *   pnpm --filter @hyper-elements/website generate:gallery
  */
-import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { outline, render } from "@hyper-elements/react";
 import { renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
 import { renderPdf, templateAssets as pdfAssets } from "@hyper-elements/react/pdf";
 import { ASSETS, type Brand } from "../_brand";
 import { brands, categories, companies, designs, type RootFolder } from "../_test/discover";
-import { ASSET_DIR, ROOT, fontFiles, imageFiles } from "./assets";
+import { ROOT, fontFiles, imageFiles } from "./assets";
 import { brandBlock, singleFile, splitFiles } from "./single-file";
 
 const SITE = join(ROOT, "..", "apps", "website");
@@ -25,7 +25,6 @@ const lines = (ds: ReadonlyArray<{ severity: string; code: string; message: stri
 
 rmSync(PUBLIC, { recursive: true, force: true });
 mkdirSync(PUBLIC, { recursive: true });
-cpSync(ASSET_DIR, join(PUBLIC, "assets"), { recursive: true });
 
 const [all, cats, owned] = [await designs(), await categories(), await companies()];
 // Orbit, the docs' brand, first: what a page shows before a visitor picks one.
