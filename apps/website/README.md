@@ -103,7 +103,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/docs/…` | `src/content/docs/**/*.md`, in the order of `docsNav` in `src/lib/site.ts` |
 | `/docs/elements/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
-| `/templates`, `/templates/<folder>/<name>` | The community templates (`templates/` at the repository's root): `templates/_scripts/website.tsx` draws each in every sample brand into `src/generated/gallery.json` and `public/generated/gallery/` (`pnpm --filter @hyper-elements/website generate:gallery`). `/templates/<slug>` sends an old gallery design to the playground |
+| `/templates`, `/templates/<folder>/<name>` | The community templates (`templates/` at the repository's root): `templates/_scripts/website.tsx` draws each in every sample brand into `src/generated/gallery.json` and `public/generated/gallery/` (its PNGs, PDFs and assets; `pnpm --filter @hyper-elements/website generate:gallery`). Each HTML preview, which a card or a template's page loads when a visitor picks a brand, is written when the site is built, from `gallery.json` (`src/pages/generated/gallery/[preview].html.ts`). `/templates/<slug>` sends an old gallery design to the playground |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |

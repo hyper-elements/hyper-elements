@@ -1,8 +1,8 @@
 /**
  * The website's templates pages' data: every design in every sample brand (and a recreation's company's), as the site's
  * examples are (HTML, plain text, outline, diagnostics, and a Document's PDF or a Canvas's PNG), with its code, its
- * brand.ts and its copyable single file. Each preview is also a file of its own (HTML, or a Canvas's PNG), which the gallery
- * loads when a visitor picks another brand. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, the
+ * brand.ts and its copyable single file. A Canvas's PNG and a Document's PDF are files of their own; an HTML preview is
+ * written as a file when the site is built (`src/pages/generated/gallery/[preview].html.ts`), from the HTML here. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, the
  * folder's assets copied under it, and deletes only those. Fails if any design fails, so stale pictures can't ship.
  *
  *   pnpm --filter @hyper-elements/website generate:gallery
@@ -43,17 +43,12 @@ async function example(t: (typeof all)[number], brandId: string, brand: Brand) {
     return { ...base, outline: safeOutline(design), diagnostics: lines(diagnostics), file: `${URL_BASE}/${name}.png`, preview: `${URL_BASE}/${name}.png` };
   }
   const out = await render(design);
-  writeFileSync(join(PUBLIC, `${name}.html`), previewHtml(out.html));
   const result = { ...base, html: out.html, text: out.text ?? "", outline: safeOutline(design), diagnostics: lines(out.diagnostics), preview: `${URL_BASE}/${name}.html` };
   if (t.root !== "Document") return result;
   const pdf = await renderPdf(design, { fonts: fontFiles(brand), images: imageFiles(pdfAssets(design).images) });
   writeFileSync(join(PUBLIC, `${name}.pdf`), pdf.pdf);
   return { ...result, diagnostics: lines([...out.diagnostics, ...pdf.diagnostics]), file: `${URL_BASE}/${name}.pdf` };
 }
-
-/** As the site's previewHtml() (apps/website/src/lib/examples.ts): images and assets load from the site that shows them. */
-const previewHtml = (html: string) =>
-  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/gallery/assets/", "/generated/gallery/assets/");
 
 function safeOutline(design: unknown): string {
   try {
