@@ -259,7 +259,7 @@ export class PreviewFrame {
     // A template's fonts, fetched from this site by the page: as data: URLs, since this frame loads fonts only over
     // https or as data, and a local build is http.
     for (const [url, data] of Object.entries(options.fonts ?? {})) marked = marked.replaceAll(url, data);
-    for (const prefix of ["img/", "generated/kits/assets/"]) {
+    for (const prefix of ["img/", "generated/gallery/assets/"]) {
       marked = marked.replaceAll(`https://hyperelements.dev/${prefix}`, `${location.origin}/${prefix}`).replaceAll(`https://www.hyperelements.dev/${prefix}`, `${location.origin}/${prefix}`);
     }
     const doc = documentOf(marked, policy(token), { nonce: token, code: inspector(token, options.inspect) }, (parsed) => {

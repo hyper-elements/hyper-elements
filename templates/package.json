@@ -2,7 +2,7 @@
   "name": "@hyper-elements/templates-folder",
   "private": true,
   "version": "0.0.0",
-  "description": "Community templates for Hyper Elements, as designs in kits, with the sample brands they're tested in. Not published: copy one from hyperelements.dev/templates.",
+  "description": "Community templates for Hyper Elements, as designs, with the sample brands they're tested in. Not published: copy one from hyperelements.dev/templates.",
   "license": "MIT",
   "type": "module",
   "scripts": {

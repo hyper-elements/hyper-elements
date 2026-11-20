@@ -78,15 +78,15 @@ export interface Assets {
 
 /**
  * The site's own files, which the examples and the templates name by its address: images under /img/, and the templates'
- * fonts and images under /generated/kits/assets/. They load from this site, wherever it runs, so a local or preview build
+ * fonts and images under /generated/gallery/assets/. They load from this site, wherever it runs, so a local or preview build
  * shows its own files, not the live site's.
  */
 export const ownFile = (url: string): string | undefined =>
-  /^https:\/\/(www\.)?hyperelements\.dev\/(img|generated\/kits\/assets)\/[\w./-]+$/.exec(url) && !url.includes("..") ? new URL(url).pathname : undefined;
+  /^https:\/\/(www\.)?hyperelements\.dev\/(img|generated\/gallery\/assets)\/[\w./-]+$/.exec(url) && !url.includes("..") ? new URL(url).pathname : undefined;
 const ownImage = ownFile;
 
 /** The templates' assets' address on the live site, as it's written in their HTML. */
-export const KIT_ASSETS = /https:\/\/(?:www\.)?hyperelements\.dev\/generated\/kits\/assets\/[\w./-]+/g;
+export const GALLERY_ASSETS = /https:\/\/(?:www\.)?hyperelements\.dev\/generated\/gallery\/assets\/[\w./-]+/g;
 
 /** Where a font need's file comes from: its own address (this site's where it's the site's), else Fontsource by its family. */
 const fontSource = (need: FontNeed): { key: string; url: string; init?: RequestInit } | undefined => {

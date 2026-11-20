@@ -3,7 +3,7 @@
 // (preview.ts), a PDF or an image into a file of the type this page says it is.
 import type { Diagnostic, FontNeed, Preview, Request, Result, RootName } from "../../playground/protocol";
 import { installAgentPaths } from "./agent";
-import { fetchAssets, fontDataUrl, KIT_ASSETS } from "./assets";
+import { fetchAssets, fontDataUrl, GALLERY_ASSETS } from "./assets";
 import { Checks, clientName, type Pick } from "./checks";
 import { $, $$, bytes, copy, download, h, plural } from "./dom";
 import { Templates, type StarterInfo } from "./templates";
@@ -19,9 +19,9 @@ type Layout = "split" | "code" | "preview";
 interface Boot {
   starter: StarterInfo & { source: string };
   starters: StarterInfo[];
-  /** The sample brands the Brand menu offers, and a recreation kit's own, by kit. */
+  /** The sample brands the Brand menu offers, and each real company's, offered for its recreations. */
   brands: Array<{ id: string; name: string; block: string }>;
-  kitBrands: Record<string, { id: string; name: string; block: string }>;
+  companyBrands: Record<string, { id: string; name: string; block: string }>;
   engine: string;
   build: string;
 }
@@ -566,10 +566,10 @@ function brandBlockOf(code: string): { start: number; end: number } | undefined 
   const end = code.indexOf(BRAND_END, start);
   return start >= 0 && end > start ? { start, end: end + BRAND_END.length } : undefined;
 }
-/** The brands the menu offers: the sample brands, and the template's kit's own where it's a recreation. */
+/** The brands the menu offers: the sample brands, and the company's own where the template is a recreation. */
 function brandChoices() {
-  const kit = boot.starters.find((each) => each.id === state.starter)?.kit;
-  const own = kit ? boot.kitBrands[kit] : undefined;
+  const company = boot.starters.find((each) => each.id === state.starter)?.company;
+  const own = company ? boot.companyBrands[company] : undefined;
   return [...(own ? [own] : []), ...boot.brands];
 }
 /** The Brand menu: shown where the code is a template's single file, with the brand whose block it holds picked. */
@@ -725,7 +725,7 @@ let shownInspect = true;
  */
 async function showPreview(good: Result, types: Map<string, string>) {
   const html = good.html!;
-  const urls = [...new Set(html.match(KIT_ASSETS) ?? [])].filter((url) => /\.(ttf|otf|woff2?)$/i.test(url));
+  const urls = [...new Set(html.match(GALLERY_ASSETS) ?? [])].filter((url) => /\.(ttf|otf|woff2?)$/i.test(url));
   const fonts: Record<string, string> = {};
   if (urls.length) {
     const loaded = await Promise.all(urls.map((url) => fontDataUrl(url)));

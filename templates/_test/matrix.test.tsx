@@ -1,5 +1,5 @@
 /**
- * Every design, in every sample brand (and a recreation kit's own), by its root's path:
+ * Every design, in every sample brand (and a recreation's company's), by its root's path:
  *
  * - Email, Page: render(). An Email renders with the email client checks, and both with the lint rules.
  * - Document: render() for print HTML, then renderPdf() with the brand's fonts and the images it names.
@@ -19,7 +19,7 @@ import { lint } from "@hyper-elements/lint";
 import type { Brand } from "../_brand";
 import { ROOT, fontFiles, imageFiles } from "../_scripts/assets";
 import { checker, type Finding } from "./checks";
-import { brands, categories, designs, kits } from "./discover";
+import { brands, categories, companies, designs } from "./discover";
 import { PROBES, contractOnly, tokenNames } from "./probes";
 import { treeFacts } from "./tree";
 
@@ -34,16 +34,17 @@ const DOESNT_FIT = ["layout/overflow", "document/overflow", "canvas/overflow", "
 /** The lint rules every design holds to. */
 const READABLE = ["contrast", "text-size", "link-text", "alt-text"].flatMap((rule) => [`email/lint-${rule}`, `page/lint-${rule}`]);
 
-const [all, sampleBrands, cats, kitList] = [await designs(), await brands(), await categories(), await kits()];
+const [all, sampleBrands, cats, owned] = [await designs(), await brands(), await categories(), await companies()];
 const clients = await emailClients();
 const sha = (text: string | Uint8Array) => createHash("sha256").update(text).digest("hex").slice(0, 16);
 const codes = (ds: readonly Diagnostic[]) => ds.map((d) => `${d.severity} ${d.code} ${d.path}`).sort();
 const failing = (ds: readonly Diagnostic[], list: string[]) => codes(ds.filter((d) => list.includes(d.code)));
 
-/** The brands a design is drawn in: the samples, and its kit's company brand where it's a recreation. */
-function brandsFor(kit: string): Array<{ id: string; brand: Brand }> {
-  const own = kitList.find((k) => k.id === kit)?.brand;
-  return own ? [{ id: `${kit} (original)`, brand: own }, ...sampleBrands] : sampleBrands;
+/** The brands a design is drawn in: the samples, and its company's brand first where it's a recreation. */
+function brandsFor(t: (typeof all)[number]): Array<{ id: string; brand: Brand }> {
+  const company = t.meta.recreates?.company;
+  const own = owned.find((c) => c.id === company)?.brand;
+  return own ? [{ id: `${company} (original)`, brand: own }, ...sampleBrands] : sampleBrands;
 }
 
 const baseline: Record<string, Record<string, unknown>> = {};
@@ -51,7 +52,7 @@ const baseline: Record<string, Record<string, unknown>> = {};
 for (const t of all) {
   const { Design } = t;
   describe(t.key, () => {
-    const file = join(BASELINE, `${t.kit}.${t.folder}.${t.category}.json`);
+    const file = join(BASELINE, `${t.folder}.${t.name}.json`);
     const recorded: Record<string, unknown> = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
     baseline[file] = {};
 
@@ -64,7 +65,7 @@ for (const t of all) {
       expect(category!.category.roots as string[]).toContain(t.root);
     });
 
-    for (const { id: name, brand } of brandsFor(t.kit)) {
+    for (const { id: name, brand } of brandsFor(t)) {
       it(`renders in ${name}`, async () => {
         const design = <Design brand={brand} />;
         let entry: Record<string, unknown>;
@@ -121,7 +122,7 @@ for (const t of all) {
     // Evergreen: a template reads the same in any year, so it names no year, and no weekday with a date (a weekday is
     // right for a date only in some years).
     it("names no year, and no weekday with a date", () => {
-      const { text, said } = treeFacts(<Design brand={brandsFor(t.kit)[0]!.brand} />);
+      const { text, said } = treeFacts(<Design brand={brandsFor(t)[0]!.brand} />);
       for (const words of [text, ...said]) {
         expect(words.match(/\b(?:19|20)\d{2}\b/g), `a year in "${words.slice(0, 120)}"`).toBeNull();
         expect(words.match(/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*,? (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]* \d/g), `a weekday with a date in "${words.slice(0, 120)}"`).toBeNull();

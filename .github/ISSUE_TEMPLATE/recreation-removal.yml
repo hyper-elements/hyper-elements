@@ -18,7 +18,7 @@ body:
     id: page
     attributes:
       label: The recreation
-      description: Its page on hyperelements.dev/templates, or its kit's name.
+      description: Its page on hyperelements.dev/templates, or its file in templates/.
     validations:
       required: true
   - type: textarea

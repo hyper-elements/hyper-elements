@@ -8,12 +8,10 @@ details from a brand it's given. The website shows each one in the sample brands
 
 ## What you can contribute
 
-- **A kit:** one or more designs with one look. Most contributions are kits.
-- **A design to an existing kit:** with the kit's author's approval in the pull request (or a maintainer's, if the
-  author doesn't answer).
+- **A design:** an email, a page, a PDF or an image, for a job in `_categories/`. Most contributions are designs.
 - **A category:** a job the list doesn't have yet.
 - **A sample brand:** an invented one that covers a look the others don't.
-- **A recreation:** a faithful rebuild of something a real company actually sent, as a kit.
+- **A recreation:** a faithful rebuild of something a real company makes, in its own brand.
 
 To ask for one rather than write it, open a [template request](https://github.com/hyper-elements/hyper-elements/issues/new?template=template-request.yml).
 
@@ -21,27 +19,28 @@ To ask for one rather than write it, open a [template request](https://github.co
 
 ```text
 templates/
+  emails/            one file per design: emails/sign-in-code.tsx
+  pages/
+  documents/         PDFs: documents/invoice.tsx
+  images/            images: images/og-card.tsx
   _brand.ts          the Brand type, the tokens a design may use, and checkBrand()
   _brands/           the sample brands
+  _companies/        a real company's brand, for its recreations
   _categories/       the jobs: one file each
-  _assets/           fonts, and the brands' and kits' images
-  ledger/            a kit
-    kit.ts           its name, description, author and tags
-    emails/invoice.tsx
-    documents/invoice.tsx
+  _assets/           fonts, and the brands', designs' and companies' images
 ```
 
-- **Every folder in `templates/` is a kit,** except the shared ones starting with `_`, and `.preview/`, `.single/` and
-  `node_modules/`, which aren't committed. A kit can hold one design or many.
-- **A design's path says what it is:** `<kit>/<emails|pages|documents|images>/<category>.tsx`. So
-  `ledger/documents/invoice.tsx` is the Ledger kit's invoice, as a PDF.
-- **A kit's name** is lowercase words joined by hyphens: `ledger`, `quiet-hours`.
+- **A design's folder says what it makes:** an email, a web page, a PDF (`documents/`) or an image. Its `meta` says
+  its job (`category`). `.preview/`, `.single/` and `node_modules/` aren't committed.
+- **A design's name** is lowercase words joined by hyphens, for what it is. The first design for a category can take
+  the category's name (`documents/invoice.tsx`); the next one says what sets it apart (`documents/invoice-studio.tsx`,
+  or `documents/stripe-invoice.tsx` for a recreation).
 
 ## Before you start
 
 1. Read [Designs](https://hyperelements.dev/docs/designs) in the docs: roots, elements, styles and themes.
-2. Pick the categories your kit covers from `_categories/`, or from the list in [README.md](./README.md) and below.
-3. Look at the other kits' versions of those categories on [hyperelements.dev/templates](https://hyperelements.dev/templates).
+2. Pick its category from `_categories/`, or from the list in [README.md](./README.md) and below.
+3. Look at the other designs for that category on [hyperelements.dev/templates](https://hyperelements.dev/templates).
    Yours should look clearly different, not only in color, since the brand sets the colors.
 
 ## Write a design
@@ -50,11 +49,11 @@ A design is a component that takes a brand and returns its root, with real words
 
 ```tsx
 import { Column, Document, Heading, Image, Text, token } from "@hyper-elements/react";
-import type { Brand } from "../../_brand";
+import type { Brand } from "../_brand";
 
-export const meta = { label: "Invoice", description: "An invoice as a PDF, with its lines in a table" };
+export const meta = { label: "Invoice", category: "invoice", description: "An invoice as a PDF, with its lines in a table" };
 
-export default function LedgerInvoice({ brand }: { brand: Brand }) {
+export default function Invoice({ brand }: { brand: Brand }) {
   return (
     <Document size="A4" theme={brand.theme} fonts={brand.fonts} lang={brand.lang ?? "en"} dir={brand.dir}>
       <Document.Page>
@@ -80,7 +79,8 @@ every design follows:
 - **Take everything about the company from the brand:** its name, address, logo and links. Pass its fonts, language
   and direction to your root, and write links on its site (`` `${brand.links.site}/billing` ``), so they're on the
   brand's own domain in every brand.
-- **Say what it is** in `meta`: its `label` and a one-sentence `description`.
+- **Say what it is** in `meta`: its `label`, its `category` and a one-sentence `description`, and your name as
+  `author` (it's "Hyper Elements" where it isn't set).
 - **Import only** React, `@hyper-elements/react` and `_brand.ts` (for its types). Don't rename imports. Export your
   design as the default, a component taking `{ brand }`, and its `meta`. That's what lets the website give your
   design as files anyone can copy.
@@ -92,29 +92,12 @@ every design follows:
   "Tuesday, March 31" (a weekday is right for a date only in some years), and "© Acme", not "© 2026 Acme".
 - **No `Html` blocks.** Raw markup can't be checked for brand colors, contrast or alternate text.
 - **Images** you add must be yours to share, or under a license that lets anyone use them. They go under
-  `_assets/kits/<kit>/` and are named by their URL under `https://hyperelements.dev/generated/kits/assets/kits/<kit>/`;
-  no other image addresses are allowed. Use PNG or JPEG files: some email clients don't show WebP or SVG, and a PDF
+  `_assets/images/`, each with a name no other image has, and are named by their URL under
+  `https://hyperelements.dev/generated/gallery/assets/images/`; no other image addresses are allowed. Use PNG or JPEG files: some email clients don't show WebP or SVG, and a PDF
   can't draw an SVG. A recreation's images are the exception: see "A recreation".
 
-A design has one size. To make another (a square image beside a landscape one), add it as its own design in another
-kit, or as the same category in a new kit.
-
-## A kit
-
-`kit.ts`:
-
-```ts
-export const kit = {
-  name: "Ledger",
-  description: "Quiet, tabular billing: the invoice as an email and a PDF",
-  author: "Your Name",
-  tags: ["serif", "dense"],
-};
-```
-
-A kit's designs share a look by being written alike: the same header, footer and button style in each. Each design is
-one file on its own, so it can be copied on its own. If someone else adds a design to your kit, its `meta` says so
-with `author: "Their Name"`.
+A design has one size. To make another (a square image beside a landscape one), add it as its own design, with a
+name of its own. Each design is one file, so it can be copied on its own.
 
 ## A new category
 
@@ -139,25 +122,29 @@ for an existing category, needs a maintainer's approval in the pull request, wit
 
 ## A recreation
 
-A recreation rebuilds something a real company actually sent or published (an email, a page, a document, an image)
-as a kit. Its designs take a brand like any other, so anyone can use the layout with their own brand,
-and the company's brand is used only for its own kit. It adds:
+A recreation rebuilds something a real company makes (an email, a page, a document, an image) in the company's own
+look. It takes a brand like any other, so anyone can use the layout with their own brand, and the company's brand is
+used only for the company's recreations. It adds:
 
-- `recreates: { company }` in `kit.ts`, and the company's brand in the kit's `brand.ts`, one declaration like a sample
-  brand's
-- `meta.recreates` in each design: what it rebuilds and where the original can be seen, either a public archive of
-  it or your screenshot under `_assets/recreations/<kit>/`
+- the company's brand in `_companies/<company>.ts`, one declaration like a sample brand's, if it isn't there yet
+- `meta.recreates`: the company, what it rebuilds (as it reads after "a recreation of Stripe's"), and where the original can be seen, either a public archive of it
+  or your screenshot under `_assets/companies/<company>/`
 
   ```ts
-  export const meta = { label: "Sign-in code", description: "…", recreates: { what: "Login code email", original: "https://…" } };
+  export const meta = {
+    label: "Welcome",
+    category: "welcome",
+    description: "…",
+    recreates: { company: "stripe", what: "welcome email", original: "https://…" },
+  };
   ```
 
 The rules:
 
-- **Only what the company sent.** No invented emails or documents in a real company's brand, and no lookalike
-  companies.
+- **Only what the company really makes.** Rebuild a kind of email, page, document or image the company sends or
+  publishes, as close to its own as you can. No made-up kinds in a real company's brand, and no lookalike companies.
 - **Each design in a category,** like any design, or bring the category.
-- **Logos and images only as they appear in the original,** saved under `_assets/recreations/<kit>/`.
+- **Logos and images only as they appear in the company's own work,** saved under `_assets/companies/<company>/`.
 - **No names or details of real people.** Sample words are invented.
 - **Every check still passes,** in the company's brand and in every sample brand. There are no exceptions: if the
   original fails one, such as low contrast, adjust the company brand's color until it passes, and say so in
@@ -184,7 +171,7 @@ pnpm install
 pnpm build
 pnpm --filter ./templates typecheck
 pnpm --filter ./templates test
-pnpm --filter ./templates preview ledger
+pnpm --filter ./templates preview documents/invoice
 ```
 
 `pnpm build` builds the packages the designs import; run it again after you change one.
@@ -192,25 +179,26 @@ pnpm --filter ./templates preview ledger
 - `test` checks every design in every sample brand, as CI does: it renders it, checks its colors and fonts come from
   the brand, its text is readable, its layout fits, it shows no other brand's name, and its copyable files work on
   their own.
-- `preview` writes your kit in every brand to `templates/.preview/ledger/`; open its `index.html`.
+- `preview` draws your design in every brand into `templates/.preview/`; open its `index.html`. Name a folder
+  (`emails`) to draw all of its designs, or nothing to draw them all.
 
-Then record what your kit adds, and commit all of it with your pull request:
+Then record what your design adds, and commit all of it with your pull request:
 
 ```bash
 UPDATE_TEMPLATES=1 pnpm --filter ./templates test
 pnpm --filter ./templates readme
-pnpm --filter @hyper-elements/website generate:kits
+pnpm --filter @hyper-elements/website generate:gallery
 ```
 
-The first records your designs' output, the second updates this folder's `README.md`, and the last writes the
-website's previews and copyable files for your kit. CI checks that each is up to date.
+The first records your design's output, the second updates this folder's `README.md`, and the last writes the
+website's previews and copyable files for it. CI checks that each is up to date.
 
 ## Open a pull request
 
 Tick each item:
 
-- [ ] The kit is one folder, laid out as above, with `kit.ts` filled in.
-- [ ] Each design is in a category that takes its root, and says its `label` and `description` in `meta`.
+- [ ] Each design is one file in its root's folder, named as above.
+- [ ] Each design is in a category that takes its root, and says its `label`, `category` and `description` in `meta`.
 - [ ] No colors, fonts or company details of its own; only the brand's.
 - [ ] `pnpm --filter ./templates typecheck` and `test` pass, and the output, `README.md` and the website's files are
   regenerated and committed.
@@ -218,11 +206,10 @@ Tick each item:
 - [ ] Sample words are invented. Images are mine to share or openly licensed, or, for a recreation, as in the
   original.
 - [ ] A new category, or a new root for one, has a maintainer's approval; a listed category doesn't need it.
-- [ ] A design added to someone else's kit has its author's approval.
-- [ ] For a recreation: only what the company sent, with where each original can be seen, and its images as in the
-  original.
+- [ ] For a recreation: only what the company really makes, with where the original can be seen, and its images as
+  in the company's own work.
 
-A maintainer reviews it for a look that's clearly different from the other kits' versions of the same categories.
+A maintainer reviews it for a look that's clearly different from the other designs for the same category.
 
 By contributing, you agree your contribution is released under this repository's MIT license. Images, and a
 recreation's brand, belong to their owners.

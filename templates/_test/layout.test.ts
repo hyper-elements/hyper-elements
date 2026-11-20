@@ -1,15 +1,13 @@
-/** The folder's rules: what a kit is, where a design lives, what it imports, and what its assets are. */
+/** The folder's rules: where a design lives, what it imports, and what its assets are. */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { extname, join, relative } from "node:path";
 import ts from "typescript";
 import { ASSETS } from "../_brand";
 import { ASSET_DIR, ROOT } from "../_scripts/assets";
-import { NOT_KITS, ROOT_FOLDERS, categories, designs, kitNames } from "./discover";
+import { ROOT_FOLDERS, SHARED, categories, companies, designs } from "./discover";
 
 const PACKAGE = /^(react|@hyper-elements\/react)$/;
-const KIT_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-// The website's old gallery pages redirect from these, so no kit may take one.
-const GALLERY_SLUGS = ["oyen-launch", "tarn-shipped", "quarry-welcome", "pith-weekly", "saltworks-invitation", "keel-sign-in-code", "casa-albero-page", "pell-ashby-invoice", "shipwright-ticket", "slow-signals-card", "fernway-spring-sale", "gridline-workshop-banner", "crumb-club-thumbnail", "morning-pages-quote"];
+const NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
 const imports = (file: string) => {
   const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
@@ -31,31 +29,41 @@ const topNames = (file: string) => {
 };
 const walk = (dir: string): string[] => readdirSync(dir).flatMap((name) => (statSync(join(dir, name)).isDirectory() ? walk(join(dir, name)) : [join(dir, name)]));
 
-it("has only kits and the shared folders at the top", () => {
+it("has only the root folders and the shared folders at the top", () => {
   for (const name of readdirSync(ROOT)) {
-    if (!statSync(join(ROOT, name)).isDirectory() || NOT_KITS(name)) continue;
-    expect(name, "a kit's name").toMatch(KIT_NAME);
-    expect(GALLERY_SLUGS, `${name} is an old gallery page's address`).not.toContain(name);
-    expect(readdirSync(join(ROOT, name)), `${name}/kit.ts`).toContain("kit.ts");
+    if (!statSync(join(ROOT, name)).isDirectory() || SHARED(name)) continue;
+    expect(Object.keys(ROOT_FOLDERS), `${name}: a design goes in ${Object.keys(ROOT_FOLDERS).join(", ")}`).toContain(name);
   }
 });
 
-it("keeps every kit's designs under a root folder, named for a category that takes that root", async () => {
+it("keeps designs as .tsx files named in kebab case, each in a category that takes its folder's root", async () => {
   const cats = await categories();
-  for (const kit of kitNames()) {
-    for (const name of readdirSync(join(ROOT, kit))) {
-      const path = join(ROOT, kit, name);
-      if (statSync(path).isDirectory()) {
-        expect(Object.keys(ROOT_FOLDERS), `${kit}/${name}`).toContain(name);
-        for (const file of readdirSync(path)) {
-          expect(extname(file), `${kit}/${name}/${file}`).toBe(".tsx");
-          const category = cats.find((c) => `${c.id}.tsx` === file);
-          expect(category, `${kit}/${name}/${file}: no _categories/${file.replace(".tsx", ".ts")}`).toBeDefined();
-          expect(category!.category.roots as string[], `${file} as ${ROOT_FOLDERS[name as keyof typeof ROOT_FOLDERS]}`).toContain(ROOT_FOLDERS[name as keyof typeof ROOT_FOLDERS]);
-        }
-      } else expect(["kit.ts", "brand.ts"], `${kit}/${name}`).toContain(name);
+  for (const folder of Object.keys(ROOT_FOLDERS) as Array<keyof typeof ROOT_FOLDERS>) {
+    for (const file of readdirSync(join(ROOT, folder))) {
+      expect(extname(file), `${folder}/${file}`).toBe(".tsx");
+      expect(file.replace(/\.tsx$/, ""), `${folder}/${file}: a name in kebab case`).toMatch(NAME);
     }
   }
+  for (const t of await designs()) {
+    const category = cats.find((c) => c.id === t.category);
+    expect(category, `${t.key}: meta.category "${t.category}" has no _categories/${t.category}.ts`).toBeDefined();
+    expect(category!.category.roots as string[], `${t.key}: ${t.category} doesn't take a ${t.root}`).toContain(t.root);
+  }
+});
+
+it("gives each design in a folder a label of its own, so the gallery can tell them apart", async () => {
+  const seen = new Map<string, string>();
+  for (const t of await designs()) {
+    const key = `${t.folder}: ${t.meta.label}`;
+    expect(seen.get(key), `${t.key} and ${seen.get(key)} are both "${t.meta.label}"`).toBeUndefined();
+    seen.set(key, t.key);
+  }
+});
+
+it("has a company brand only for a company a design recreates", async () => {
+  const recreated = new Set((await designs()).map((t) => t.meta.recreates?.company).filter(Boolean));
+  for (const { id } of await companies()) expect(recreated.has(id), `_companies/${id}.ts: no design recreates ${id}`).toBe(true);
+  for (const id of recreated) expect((await companies()).map((c) => c.id), `a recreation of ${id} needs _companies/${id}.ts`).toContain(id);
 });
 
 it("imports only React, Elements and _brand.ts's types, so each design is one file to copy", async () => {
@@ -75,8 +83,8 @@ it("imports only React, Elements and _brand.ts's types, so each design is one fi
 });
 
 it("has brand files of one declaration of literals", () => {
-  for (const file of readdirSync(join(ROOT, "_brands"))) {
-    const path = join(ROOT, "_brands", file);
+  for (const path of ["_brands", "_companies"].flatMap((dir) => readdirSync(join(ROOT, dir)).map((file) => join(ROOT, dir, file)))) {
+    const file = relative(ROOT, path);
     const source = ts.createSourceFile(path, readFileSync(path, "utf8"), ts.ScriptTarget.Latest, true);
     const statements = source.statements.filter((s) => !ts.isImportDeclaration(s));
     expect(statements.length, file).toBe(1);

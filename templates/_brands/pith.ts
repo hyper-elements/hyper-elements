@@ -33,13 +33,13 @@ export const brand: Brand = {
       },
     },
   }),
-  logo: { src: "https://hyperelements.dev/generated/kits/assets/brands/pith/logo.png", width: 480, height: 120, alt: "Pith" },
+  logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/pith/logo.png", width: 480, height: 120, alt: "Pith" },
   address: "9 Press Row, Portland",
   links: { site: "https://pith.example", domains: ["pith.example", "*.pith.example"] },
   lang: "en",
   fonts: [
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
-    { family: "Source Serif 4", src: "https://hyperelements.dev/generated/kits/assets/fonts/SourceSerif4-600.ttf", weight: 600, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
+    { family: "Source Serif 4", src: "https://hyperelements.dev/generated/gallery/assets/fonts/SourceSerif4-600.ttf", weight: 600, style: "normal" },
   ],
 };

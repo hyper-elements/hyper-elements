@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
 import { abs, docsInOrder, header, referenceInOrder } from "../lib/llms";
-import { GROUPS, kitCategories, kitList, kitTemplates, templateUrl } from "../lib/kits";
+import { GROUPS, galleryCategories, galleryTemplates, templateUrl } from "../lib/gallery";
 import { site } from "../lib/site";
 
 export const GET: APIRoute = async () => {
@@ -19,10 +19,9 @@ export const GET: APIRoute = async () => {
   // Each template's page has its output in each sample brand and the one file to copy, which takes your brand.
   lines.push("", "## Templates\n", `- [Templates](${site.url}/templates): ready-made emails, pages, PDFs and images as plain Elements JSX, each drawn in a brand; copy one and its brand.ts`);
   for (const group of GROUPS) {
-    for (const [id, category] of Object.entries(kitCategories).filter(([, c]) => c.group === group)) {
-      for (const t of kitTemplates.filter((x) => x.category === id)) {
-        const kit = kitList.find((k) => k.id === t.kit)!;
-        lines.push(`- [${category.label}: ${kit.name}](${site.url}${templateUrl(t)}): ${t.output}. ${t.description}. Use when: ${category.useWhen}`);
+    for (const [id, category] of Object.entries(galleryCategories).filter(([, c]) => c.group === group)) {
+      for (const t of galleryTemplates.filter((x) => x.category === id)) {
+        lines.push(`- [${category.label}: ${t.label}](${site.url}${templateUrl(t)}): ${t.output}. ${t.description}. Use when: ${category.useWhen}`);
       }
     }
   }

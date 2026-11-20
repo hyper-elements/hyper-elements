@@ -33,13 +33,13 @@ export const brand: Brand = {
       },
     },
   }),
-  logo: { src: "https://hyperelements.dev/generated/kits/assets/brands/oyen/logo.png", width: 480, height: 120, alt: "Oyen" },
+  logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/oyen/logo.png", width: 480, height: 120, alt: "Oyen" },
   address: "14 Foundry Lane, Pittsburgh",
   links: { site: "https://oyen.example", domains: ["oyen.example", "*.oyen.example"] },
   lang: "en",
   fonts: [
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-800.ttf", weight: 800, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-800.ttf", weight: 800, style: "normal" },
   ],
 };

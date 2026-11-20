@@ -21,14 +21,14 @@ beforeAll(() => {
   rmSync(OUT, { recursive: true, force: true });
   for (const t of all) {
     for (const { id: brand } of sampleBrands) {
-      const dir = join(OUT, t.kit, brand, `${t.folder}.${t.category}`);
+      const dir = join(OUT, brand, `${t.folder}.${t.name}`);
       mkdirSync(dir, { recursive: true });
       const brandFile = join(ROOT, "_brands", `${brand}.ts`);
       writeFileSync(join(dir, "single.tsx"), singleFile(t.file, brandFile));
       const split = splitFiles(t.file, brandFile);
-      writeFileSync(join(dir, `${t.category}.tsx`), split.code);
+      writeFileSync(join(dir, `${t.name}.tsx`), split.code);
       writeFileSync(join(dir, "brand.ts"), split.brand);
-      writeFileSync(join(dir, "use.tsx"), `import ${t.Design.name} from "./${t.category}";\n\nexport default ${t.Design.name};\n`);
+      writeFileSync(join(dir, "use.tsx"), `import ${t.Design.name} from "./${t.name}";\n\nexport default ${t.Design.name};\n`);
       files.push({ key: t.key, brand, single: join(dir, "single.tsx"), code: join(dir, "use.tsx"), name: t.Design.name });
     }
   }

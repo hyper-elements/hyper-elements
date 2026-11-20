@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
-import KitThumb from "../../components/KitThumb.astro";
-import { GROUPS, brands, brandsFor, firstView, kitCategories, kitList, kitTemplates, templateUrl, type TemplateInfo } from "../../lib/kits";
+import GalleryThumb from "../../components/GalleryThumb.astro";
+import { GROUPS, brands, brandsFor, firstView, galleryCategories, galleryTemplates, templateUrl, type TemplateInfo } from "../../lib/gallery";
 
 const outputs = [
   { id: "all", label: "Everything" },
@@ -9,12 +9,12 @@ const outputs = [
   { id: "pages", label: "Pages" },
   { id: "documents", label: "PDFs" },
   { id: "images", label: "Images" },
-].filter((o) => o.id === "all" || kitTemplates.some((t) => t.folder === o.id));
+].filter((o) => o.id === "all" || galleryTemplates.some((t) => t.folder === o.id));
 
 // One gallery, its outputs mixed so no one kind leads: the next template of each output in turn, each output's own in
 // the order of its jobs.
-const byGroup = (t: TemplateInfo) => GROUPS.indexOf(kitCategories[t.category]?.group ?? "");
-const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => kitTemplates.filter((t) => t.folder === folder).sort((a, b) => byGroup(a) - byGroup(b)));
+const byGroup = (t: TemplateInfo) => GROUPS.indexOf(galleryCategories[t.category]?.group ?? "");
+const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => galleryTemplates.filter((t) => t.folder === folder).sort((a, b) => byGroup(a) - byGroup(b)));
 const gallery: TemplateInfo[] = [];
 while (queues.some((q) => q.length)) for (const q of queues) if (q.length) gallery.push(q.shift()!);
 
@@ -32,7 +32,7 @@ const brandOf = () => {
   const from = dark.length && i % 2 ? dark : light;
   return from[Math.floor(i / 2) % from.length];
 };
-const company = (t: TemplateInfo) => t.recreates?.company ?? kitList.find((k) => k.id === t.kit)?.name ?? t.kit;
+const company = (t: TemplateInfo) => t.recreates?.company ?? "";
 const swatch = (colors: Record<string, string>) => `background:linear-gradient(135deg, ${colors.background ?? "#fff"} 50%, ${colors.primary ?? "#888"} 50%)`;
 // What the picker's script needs of each sample brand: its name and its background, for a card's frame.
 const picker = Object.fromEntries(brands.map((b) => [b.id, { name: b.name, background: b.colors.background ?? "#fff" }]));
@@ -67,7 +67,7 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
         const previews = Object.fromEntries(Object.keys(t.byBrand).map((id) => [id, firstView(t, id)?.preview]));
         return (
           <a class="gcard" href={`${templateUrl(t)}?brand=${own.id}`} data-href={templateUrl(t)} data-output={t.folder} data-own={own.id} data-own-caption={ownCaption} data-own-background={own.colors.background} data-previews={JSON.stringify(previews)}>
-            <span class="gshot" style={`background:${own.colors.background}`}><KitThumb t={t} brand={own.id} /></span>
+            <span class="gshot" style={`background:${own.colors.background}`}><GalleryThumb t={t} brand={own.id} /></span>
             <span class="gcap">
               <span class="gname">{t.label}</span>
               <span class="gmeta">{t.output} · <span data-caption>{ownCaption}</span></span>

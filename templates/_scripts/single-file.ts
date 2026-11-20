@@ -6,7 +6,7 @@
  * It relies on the folder's grammar (templates/CONTRIBUTING.md): a design imports only packages and `_brand.ts`'s
  * types, with no renamed imports, and a brand file is one `export const brand: Brand = { … }`.
  *
- *   pnpm --filter ./templates single-file <kit>/<root folder>/<category> <brand> [out-file]
+ *   pnpm --filter ./templates single-file <root folder>/<name> <brand> [out-file]
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -124,7 +124,7 @@ function importLines(imports: Imports): string {
   return lines.join("\n");
 }
 
-/** The copyable file for a design (`<kit>/<root folder>/<category>.tsx`) in a brand (a brand file). */
+/** The copyable file for a design (`<root folder>/<name>.tsx`) in a brand (a brand file). */
 export function singleFile(designFile: string, brandFile: string): string {
   const { imports, body, name } = designPieces(designFile);
   const types = brandTypes(imports);
@@ -137,7 +137,7 @@ export function singleFile(designFile: string, brandFile: string): string {
  * they're the single file, with the brand kept apart (what a design's page shows). */
 export function splitFiles(designFile: string, brandFile: string): { code: string; brand: string } {
   const { name } = designPieces(designFile);
-  const text = withoutProps(readFileSync(designFile, "utf8").replace('import type { Brand } from "../../_brand";', 'import { brand } from "./brand";'), designFile);
+  const text = withoutProps(readFileSync(designFile, "utf8").replace('import type { Brand } from "../_brand";', 'import { brand } from "./brand";'), designFile);
   const header = `// ${relative(ROOT, designFile)}, from hyperelements.dev/templates. Render it with render(<${name} />) from\n// "@hyper-elements/react"; your brand goes in ./brand.ts.`;
   const code = `${header}\n\n${text}`;
   const brandImports: Imports = { values: new Map(), types: new Map() };
@@ -169,7 +169,7 @@ export function swapBrand(file: string, block: string): string {
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(ROOT, "_scripts", "single-file.ts")) {
   const [path, brandId, out] = process.argv.slice(2);
-  if (!path || !brandId) throw new Error("usage: single-file <kit>/<root folder>/<category> <brand> [out-file]");
+  if (!path || !brandId) throw new Error("usage: single-file <root folder>/<name> <brand> [out-file]");
   const file = singleFile(join(ROOT, `${path}.tsx`), join(ROOT, "_brands", `${brandId}.ts`));
   if (out) writeFileSync(out, file);
   else process.stdout.write(file);

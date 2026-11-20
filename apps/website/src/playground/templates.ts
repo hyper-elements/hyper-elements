@@ -8,8 +8,8 @@ export interface StarterInfo {
   title: string;
   description: string;
   root: "Email" | "Page" | "Document" | "Canvas";
-  /** A community template's kit (templates/<kit>): a recreation kit's own brand is offered for it. */
-  kit?: string;
+  /** A recreation's company (templates/_companies/<company>.ts): its brand is offered for it. */
+  company?: string;
 }
 export interface Starter extends StarterInfo {
   source: string;

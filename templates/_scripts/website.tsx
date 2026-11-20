@@ -1,11 +1,11 @@
 /**
- * The website's templates pages' data: every design in every sample brand (and a recreation kit's own), as the site's
+ * The website's templates pages' data: every design in every sample brand (and a recreation's company's), as the site's
  * examples are (HTML, plain text, outline, diagnostics, and a Document's PDF or a Canvas's PNG), with its code, its
  * brand.ts and its copyable single file. Each preview is also a file of its own (HTML, or a Canvas's PNG), which the gallery
- * loads when a visitor picks another brand. Writes `apps/website/src/generated/kits.json` and `apps/website/public/generated/kits/`, the
+ * loads when a visitor picks another brand. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, the
  * folder's assets copied under it, and deletes only those. Fails if any design fails, so stale pictures can't ship.
  *
- *   pnpm --filter @hyper-elements/website generate:kits
+ *   pnpm --filter @hyper-elements/website generate:gallery
  */
 import { cpSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -13,21 +13,21 @@ import { outline, render } from "@hyper-elements/react";
 import { renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
 import { renderPdf, templateAssets as pdfAssets } from "@hyper-elements/react/pdf";
 import { ASSETS, type Brand } from "../_brand";
-import { brands, categories, designs, kits, type RootFolder } from "../_test/discover";
+import { brands, categories, companies, designs, type RootFolder } from "../_test/discover";
 import { ASSET_DIR, ROOT, fontFiles, imageFiles } from "./assets";
 import { brandBlock, singleFile, splitFiles } from "./single-file";
 
 const SITE = join(ROOT, "..", "apps", "website");
-const PUBLIC = join(SITE, "public", "generated", "kits");
-const DATA = join(SITE, "src", "generated", "kits.json");
-const URL_BASE = "/generated/kits";
+const PUBLIC = join(SITE, "public", "generated", "gallery");
+const DATA = join(SITE, "src", "generated", "gallery.json");
+const URL_BASE = "/generated/gallery";
 const lines = (ds: ReadonlyArray<{ severity: string; code: string; message: string; path?: string }>) => ds.map(({ severity, code, message, path }) => ({ severity, code, message, ...(path ? { path } : {}) }));
 
 rmSync(PUBLIC, { recursive: true, force: true });
 mkdirSync(PUBLIC, { recursive: true });
 cpSync(ASSET_DIR, join(PUBLIC, "assets"), { recursive: true });
 
-const [all, cats, kitList] = [await designs(), await categories(), await kits()];
+const [all, cats, owned] = [await designs(), await categories(), await companies()];
 // Orbit, the docs' brand, first: what a page shows before a visitor picks one.
 const sampleBrands = (await brands()).sort((a, b) => (a.id === "orbit" ? -1 : b.id === "orbit" ? 1 : 0));
 const failures: string[] = [];
@@ -35,7 +35,7 @@ const failures: string[] = [];
 /** One render of a design, in the shape the site's examples have. */
 async function example(t: (typeof all)[number], brandId: string, brand: Brand) {
   const design = <t.Design brand={brand} />;
-  const name = `${t.kit}.${t.folder}.${t.category}.${brandId}`;
+  const name = `${t.folder}.${t.name}.${brandId}`;
   const base = { slug: t.key, title: `${t.meta.label}, ${brand.name}`, description: t.meta.description, root: t.root, source: "", html: "", text: "", outline: "", diagnostics: [] as ReturnType<typeof lines> };
   if (t.root === "Canvas") {
     const { image, diagnostics } = await renderImage(design, { fonts: fontFiles(brand), images: imageFiles(imageAssets(design).images) });
@@ -53,7 +53,7 @@ async function example(t: (typeof all)[number], brandId: string, brand: Brand) {
 
 /** As the site's previewHtml() (apps/website/src/lib/examples.ts): images and assets load from the site that shows them. */
 const previewHtml = (html: string) =>
-  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/kits/assets/", "/generated/kits/assets/");
+  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/gallery/assets/", "/generated/gallery/assets/");
 
 function safeOutline(design: unknown): string {
   try {
@@ -68,13 +68,14 @@ const data = {
   assets: ASSETS,
   brands: sampleBrands.map(({ id, brand }) => ({ id, name: brand.name, colors: brand.theme.colors, block: brandBlock(join(ROOT, "_brands", `${id}.ts`)) })),
   categories: Object.fromEntries(cats.map(({ id, category }) => [id, { label: category.label, group: category.group, useWhen: category.useWhen, avoidWhen: category.avoidWhen, roots: category.roots }])),
-  kits: kitList.map(({ id, kit, brand }) => ({ id, ...kit, ...(brand ? { brand: { id: `${id}-original`, name: `Original (${kit.recreates?.company ?? brand.name})`, colors: brand.theme.colors, block: brandBlock(join(ROOT, id, "brand.ts")) } } : {}) })),
+  // The real companies' brands, each shown only with the recreations of its work.
+  companies: owned.map(({ id, file, brand }) => ({ company: id, id: `${id}-original`, name: `Original (${brand.name})`, colors: brand.theme.colors, block: brandBlock(file) })),
   templates: [] as unknown[],
 };
 
 for (const t of all) {
-  const own = kitList.find((k) => k.id === t.kit)?.brand;
-  const drawIn = own ? [{ id: `${t.kit}-original`, brand: own, file: join(ROOT, t.kit, "brand.ts") }, ...sampleBrands.map((b) => ({ ...b, file: join(ROOT, "_brands", `${b.id}.ts`) }))] : sampleBrands.map((b) => ({ ...b, file: join(ROOT, "_brands", `${b.id}.ts`) }));
+  const own = owned.find((c) => c.id === t.meta.recreates?.company);
+  const drawIn = [...(own ? [{ id: `${own.id}-original`, brand: own.brand, file: own.file }] : []), ...sampleBrands];
   const byBrand: Record<string, unknown> = {};
   for (const { id, brand, file } of drawIn) {
     try {
@@ -86,15 +87,16 @@ for (const t of all) {
   data.templates.push({
     key: t.key,
     id: t.key,
-    kit: t.kit,
     folder: t.folder,
+    name: t.name,
     output: OUTPUT[t.folder],
     root: t.root,
     category: t.category,
     label: t.meta.label,
     description: t.meta.description,
-    author: t.meta.author ?? kitList.find((k) => k.id === t.kit)!.kit.author,
-    ...(t.meta.recreates ? { recreates: { company: kitList.find((k) => k.id === t.kit)!.kit.recreates?.company ?? "", ...t.meta.recreates } } : {}),
+    author: t.meta.author ?? "Hyper Elements",
+    // A recreation: the company's id and name, what it rebuilds, and where the original can be seen.
+    ...(t.meta.recreates && own ? { recreates: { ...t.meta.recreates, companyId: own.id, company: own.brand.name } } : {}),
     formats: [],
     file: relative(join(ROOT, ".."), t.file),
     // The design as it's written: the same in every brand, taking its brand's type from ./brand.

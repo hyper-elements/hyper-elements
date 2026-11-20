@@ -4,7 +4,7 @@
 import Base from "../layouts/Base.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import "../styles/playground.css";
-import { brands, defaultStarter, engineVersion, kitBrands, starterList } from "../lib/playground";
+import { brands, companyBrands, defaultStarter, engineVersion, starterList } from "../lib/playground";
 import { site } from "../lib/site";
 
 const description =
@@ -35,7 +35,7 @@ const roots = [
 ] as const;
 
 // What the page starts with: the first starter's code, so the editor is full before anything loads.
-const boot = { starter: defaultStarter, starters: starterList, brands, kitBrands, engine: engineVersion, build: String(Date.now()) };
+const boot = { starter: defaultStarter, starters: starterList, brands, companyBrands, engine: engineVersion, build: String(Date.now()) };
 const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
 
 const linkSample = `${site.url}/playground

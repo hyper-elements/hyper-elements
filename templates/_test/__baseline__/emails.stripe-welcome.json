@@ -1,0 +1,80 @@
+{
+  "casa-albero": {
+    "html": "5933efe6ce377d85",
+    "text": "4c9c6384cb0be20b",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "ember": {
+    "html": "840592d1c743397f",
+    "text": "c5143b49f713b124",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "keel": {
+    "html": "1fb700617a484d66",
+    "text": "c19c4fa3deb0d39c",
+    "diagnostics": [
+      "info email/degraded root.props.fonts"
+    ]
+  },
+  "orbit": {
+    "html": "459d5caf0c5c7ed5",
+    "text": "3e69dc5f1160747c",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "oyen": {
+    "html": "ebe88fe0ca62ead8",
+    "text": "fd52ff99f9e22da5",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "pell-ashby": {
+    "html": "30f971a0c1088505",
+    "text": "8ffc713b10962f1e",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "pith": {
+    "html": "4ee35a76169f4e6f",
+    "text": "42bb2d41a276b649",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "quarry": {
+    "html": "9c5da4a1888524fc",
+    "text": "7df0b1dcfba51da9",
+    "diagnostics": [
+      "info email/degraded root.props.fonts"
+    ]
+  },
+  "slow-signals": {
+    "html": "6d7e948147782aa8",
+    "text": "11ccf3a6c9089446",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  },
+  "stripe (original)": {
+    "html": "a0a8fb8918cd4597",
+    "text": "64607907cdd36178",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[0].children[0].children[4].style.borderRadius"
+    ]
+  }
+}

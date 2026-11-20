@@ -1,5 +1,5 @@
 name: Template request
-description: Ask for a template, a kit or a category in templates/
+description: Ask for a template or a category in templates/
 labels: ["templates"]
 body:
   - type: markdown

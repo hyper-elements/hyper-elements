@@ -33,13 +33,13 @@ export const brand: Brand = {
       },
     },
   }),
-  logo: { src: "https://hyperelements.dev/generated/kits/assets/brands/casa-albero/logo.png", width: 480, height: 120, alt: "Casa Albero" },
+  logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/casa-albero/logo.png", width: 480, height: 120, alt: "Casa Albero" },
   address: "Strada dei Colli 12, Montalcino",
   links: { site: "https://casaalbero.example", domains: ["casaalbero.example", "*.casaalbero.example"] },
   lang: "en",
   fonts: [
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
-    { family: "Source Serif 4", src: "https://hyperelements.dev/generated/kits/assets/fonts/SourceSerif4-600.ttf", weight: 600, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
+    { family: "Source Serif 4", src: "https://hyperelements.dev/generated/gallery/assets/fonts/SourceSerif4-600.ttf", weight: 600, style: "normal" },
   ],
 };

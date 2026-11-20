@@ -14,13 +14,13 @@ import { extname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const dist = resolve(fileURLToPath(new URL("../dist/", import.meta.url)));
-const data = JSON.parse(readFileSync(new URL("../src/generated/kits.json", import.meta.url), "utf8"));
+const data = JSON.parse(readFileSync(new URL("../src/generated/gallery.json", import.meta.url), "utf8"));
 const gallery = Object.keys(JSON.parse(readFileSync(new URL("../src/generated/examples.json", import.meta.url), "utf8")).templates);
 const page = (path) => join(dist, path.replace(/^\//, ""), "index.html");
 
 assert(existsSync(page("/templates")), "no /templates page");
 for (const t of data.templates) {
-  const html = readFileSync(page(`/templates/${t.kit}/${t.folder}/${t.category}`), "utf8");
+  const html = readFileSync(page(`/templates/${t.folder}/${t.name}`), "utf8");
   // A way back to the picture from Code: a tab before it.
   assert.match(html, /data-mode-pick="(?!code")[^"]+"[^]*data-mode-pick="code"/, `${t.key}: no view to pick besides Code`);
   for (const brand of data.brands) assert(html.includes(`data-brand="${brand.id}"`), `${t.key}: no preview in ${brand.id}`);
@@ -149,7 +149,7 @@ try {
   // A template's page, opened from its card in a brand.
   const t = data.templates.find((x) => x.root === "Email" && !x.recreates);
   await page.click(`[data-brand-pick="${brand.id}"]`);
-  await Promise.all([page.waitForURL(`**/templates/${t.kit}/${t.folder}/${t.category}?brand=${brand.id}`), page.click(`[data-gallery] .gcard[data-href="/templates/${t.kit}/${t.folder}/${t.category}"]`)]);
+  await Promise.all([page.waitForURL(`**/templates/${t.folder}/${t.name}?brand=${brand.id}`), page.click(`[data-gallery] .gcard[data-href="/templates/${t.folder}/${t.name}"]`)]);
   assert.equal(await page.getAttribute(`[data-brand-pick="${brand.id}"]`, "aria-checked"), "true", "the page doesn't open in the card's brand");
   const visible = (selector) => page.locator(selector).evaluateAll((all) => all.filter((e) => e.offsetParent !== null || e.getClientRects().length).length);
   assert.equal(await visible(".t-actions [data-copy]"), 1, "more than one Copy the code shows");

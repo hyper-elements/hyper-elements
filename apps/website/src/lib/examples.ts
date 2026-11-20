@@ -18,7 +18,7 @@ export type Example = {
 
 /** Images in examples point at https://hyperelements.dev/img/…; in a preview they load from this site, wherever it runs. */
 export const previewHtml = (html: string) =>
-  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/kits/assets/", "/generated/kits/assets/");
+  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/gallery/assets/", "/generated/gallery/assets/");
 
 export const templates = Object.values(data.templates) as Example[];
 export const components = data.components as Record<string, Example>;

@@ -33,13 +33,13 @@ export const brand: Brand = {
       },
     },
   }),
-  logo: { src: "https://hyperelements.dev/generated/kits/assets/brands/quarry/logo.png", width: 480, height: 120, alt: "Quarry" },
+  logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/quarry/logo.png", width: 480, height: 120, alt: "Quarry" },
   address: "88 Kiln Road, Austin",
   links: { site: "https://quarry.example", domains: ["quarry.example", "*.quarry.example"] },
   lang: "en",
   fonts: [
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
-    { family: "JetBrains Mono", src: "https://hyperelements.dev/generated/kits/assets/fonts/JetBrainsMono-500.ttf", weight: 500, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
+    { family: "JetBrains Mono", src: "https://hyperelements.dev/generated/gallery/assets/fonts/JetBrainsMono-500.ttf", weight: 500, style: "normal" },
   ],
 };

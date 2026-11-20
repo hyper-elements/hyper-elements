@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 const site = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const dist = join(site, "dist");
 assert(existsSync(join(dist, "playground/index.html")), "Build the site first: pnpm --filter @hyper-elements/website build");
-const kits = JSON.parse(readFileSync(join(site, "src/generated/kits.json"), "utf8"));
+const gallery = JSON.parse(readFileSync(join(site, "src/generated/gallery.json"), "utf8"));
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".txt": "text/plain; charset=utf-8", ".wasm": "application/wasm", ".ttf": "font/ttf", ".otf": "font/otf", ".png": "image/png", ".jpg": "image/jpeg", ".svg": "image/svg+xml", ".pdf": "application/pdf", ".xml": "application/xml" };
 const server = createServer(async (request, response) => {
@@ -59,8 +59,8 @@ await context.route("**/*", (route) => {
 const step = (name) => console.log(`  ✓ ${name}`);
 const api = (page, call, ...args) => page.evaluate(([call, args]) => window.hyperElementsPlayground[call](...args), [call, args]);
 const rendered = (page) => page.waitForFunction(() => ["ok", "error"].includes(document.documentElement.dataset.renderStatus), null, { timeout: 60_000 });
-const idOf = (t) => `kit-${t.key.replaceAll("/", "-")}`;
-const brandOf = (t) => t.byBrand[kits.brands[0].id];
+const idOf = (t) => `template-${t.key.replaceAll("/", "-")}`;
+const brandOf = (t) => t.byBrand[gallery.brands[0].id];
 
 async function open(hash = "") {
   const page = await context.newPage();
@@ -82,7 +82,7 @@ try {
   const page = await open();
 
   // ─── 1. Every template's single file renders through the sandbox ─────────
-  for (const t of kits.templates) {
+  for (const t of gallery.templates) {
     const source = brandOf(t).single;
     const include = t.root === "Canvas" ? ["png"] : t.root === "Document" ? ["pdf"] : ["html"];
     const result = await api(page, "render", source, { include });
@@ -91,11 +91,11 @@ try {
     if (t.root === "Canvas") assert(result.png && !result.error, `${t.key} draws its PNG: ${JSON.stringify(result.error)} ${JSON.stringify(result.diagnostics.map((d) => `${d.code}: ${d.message}`))}`);
     if (t.root === "Document") assert(result.pdf, `${t.key} writes its PDF`);
   }
-  step(`every design's single file renders through the sandbox (${kits.templates.length}, an image's PNG and a PDF drawn)`);
+  step(`every design's single file renders through the sandbox (${gallery.templates.length}, an image's PNG and a PDF drawn)`);
 
   // ─── 2. A template's formats ─────────────────────────────────────────────
   // A Canvas template() of two formats, with an image field: the gallery holds designs, so the fixture is here.
-  const ASSET = "https://hyperelements.dev/generated/kits/assets/";
+  const ASSET = "https://hyperelements.dev/generated/gallery/assets/";
   const canvasTemplate = (width, height) => `import { Canvas, Heading, Image } from "@hyper-elements/react";
 import { field, template } from "@hyper-elements/react/template";
 const fonts = [
@@ -106,7 +106,7 @@ export default template({
   id: "acme.Launch", version: "1.0.0", label: "Launch", root: "Canvas",
   formats: { square: { width: 1080, height: 1080 }, landscape: { width: 1200, height: 630 } },
   fields: { screenshot: field.image({ label: "Screenshot", required: true, accepts: ["png"] }) },
-  example: { screenshot: { src: "${ASSET}kits/signal/screenshot.png", width: ${width}, height: ${height} } },
+  example: { screenshot: { src: "${ASSET}images/screenshot.png", width: ${width}, height: ${height} } },
   render: (v, { format }) => (
     <Canvas width={format === "square" ? 1080 : 1200} height={format === "square" ? 1080 : 630} fonts={[...fonts]} style={{ fontFamily: "Inter", padding: 48, gap: 24 }}>
       <Heading level={1} style={{ fontSize: 56 }}>Launch day</Heading>
@@ -147,13 +147,13 @@ export default template({
 
   // ─── 3. The Brand menu ───────────────────────────────────────────────────
   // A design in the sample brands: a recreation opens in its own company's brand.
-  const welcome = kits.templates.find((t) => t.root === "Email" && !t.recreates);
+  const welcome = gallery.templates.find((t) => t.root === "Email" && !t.recreates);
   const branded = await open(`#starter=${idOf(welcome)}`);
   const menu = branded.locator("[data-brand]");
   assert.equal(await menu.isHidden(), false, "the Brand menu shows on a template's single file");
   const before = await api(branded, "getCode");
-  const second = kits.brands[1];
-  assert.equal(await branded.locator("[data-brand-select]").inputValue(), kits.brands[0].id, "the brand the file holds is picked");
+  const second = gallery.brands[1];
+  assert.equal(await branded.locator("[data-brand-select]").inputValue(), gallery.brands[0].id, "the brand the file holds is picked");
   await branded.locator("[data-brand-select]").selectOption(second.id);
   await branded.waitForFunction((block) => window.hyperElementsPlayground.getCode().includes(block), second.block);
   await rendered(branded);
@@ -230,7 +230,7 @@ export default template({
   step("a template's logo and font load from this site in the preview (the font as a data: URL), with its blocks still marked");
 
   assert.deepEqual(live, [], "nothing was asked of the live site");
-  console.log(`PLAYGROUND_TEMPLATES_OK: ${kits.templates.length} templates in the playground, offline`);
+  console.log(`PLAYGROUND_TEMPLATES_OK: ${gallery.templates.length} templates in the playground, offline`);
 } finally {
   await browser.close();
   server.close();

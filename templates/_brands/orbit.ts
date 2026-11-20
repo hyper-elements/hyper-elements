@@ -33,12 +33,12 @@ export const brand: Brand = {
       },
     },
   }),
-  logo: { src: "https://hyperelements.dev/generated/kits/assets/brands/orbit/logo.png", width: 480, height: 120, alt: "Orbit" },
+  logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/orbit/logo.png", width: 480, height: 120, alt: "Orbit" },
   address: "1 Main Street, Springfield",
   links: { site: "https://orbit.example", domains: ["orbit.example", "*.orbit.example"] },
   lang: "en",
   fonts: [
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
-    { family: "Inter", src: "https://hyperelements.dev/generated/kits/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
+    { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-700.ttf", weight: 700, style: "normal" },
   ],
 };

@@ -1,0 +1,103 @@
+{
+  "casa-albero": {
+    "html": "27b0d3a97cfe9d23",
+    "text": "013b00d0f0b292ef",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "ember": {
+    "html": "d9e0f5f3aa456826",
+    "text": "7331501261ec459d",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "keel": {
+    "html": "ee3b32419713f9ec",
+    "text": "437e8c4cc52dfce7",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[1].children[0].children[1].style.fontWeight",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[3].children[0].children[0].style.fontWeight"
+    ]
+  },
+  "orbit": {
+    "html": "2f25257b9a415721",
+    "text": "8e05f5df0dfbd8fd",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "oyen": {
+    "html": "d890d7aa0178badf",
+    "text": "5f58a0329d45a3e7",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "pell-ashby": {
+    "html": "bc81f7c5be715cb6",
+    "text": "e0f90dbdfc7f7c0c",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "pith": {
+    "html": "df1ff68d9b64d1ec",
+    "text": "165cb29fef406646",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  },
+  "quarry": {
+    "html": "abb7737ea9f429e8",
+    "text": "c7ddf5be0f4fa454",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[1].children[0].children[1].style.fontWeight",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[3].children[0].children[0].style.fontWeight"
+    ]
+  },
+  "slow-signals": {
+    "html": "a069d025126cc95a",
+    "text": "bdc499eab9a281d5",
+    "diagnostics": [
+      "info email/degraded root.props.fonts",
+      "info email/outlook-degraded root.children[1].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].children[0].style.letterSpacing",
+      "info email/outlook-degraded root.children[2].children[0].children[0].children[0].children[0].style.borderRadius",
+      "info email/outlook-degraded root.children[2].children[0].children[1].style.borderRadius"
+    ]
+  }
+}
