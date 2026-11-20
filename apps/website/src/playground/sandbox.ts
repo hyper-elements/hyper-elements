@@ -15,7 +15,7 @@ const SANDBOX = "allow-scripts";
 /** Inside it: nothing loads from the network. Scripts are the runner (inline) and the workers it makes from text. */
 const POLICY = "default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob:; worker-src blob:; child-src blob:";
 
-const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, "html-previews": 25000, describe: 8000 };
+const TIMEOUTS: Record<Request["kind"], number> = { render: 8000, pdf: 25000, image: 25000, previews: 25000, "html-previews": 25000, describe: 8000, "template-assets": 15000 };
 /** How long after the frame's own timeout the page gives up on the frame and makes another. */
 const GRACE = 2500;
 
@@ -105,11 +105,21 @@ function read(value: unknown, kind: Request["kind"]): Result {
           fonts: list(assets.fonts, 24).flatMap((f) => {
             const font = record(f);
             const family = text(font.family, 80);
-            return family ? [{ family, weight: count(font.weight, 1000) ?? 400, style: font.style === "italic" ? ("italic" as const) : ("normal" as const) }] : [];
+            // A font's own address is kept only where it's an https URL: the page fetches nothing else by it.
+            const url = text(font.url, 2000);
+            const https = url && /^https:\/\/[^\s"'<>]+$/.test(url) ? url : undefined;
+            return family ? [{ family, weight: count(font.weight, 1000) ?? 400, style: font.style === "italic" ? ("italic" as const) : ("normal" as const), ...(https ? { url: https } : {}) }] : [];
           }),
           images: list(assets.images, 24).flatMap((u) => text(u, 2000) ?? []),
         }
       : undefined,
+    template: (() => {
+      const t = record(r.template);
+      if (!r.template || !ROOTS.includes(t.root as string)) return undefined;
+      const formats = list(t.formats, 20).flatMap((f) => (typeof f === "string" && /^[a-z][a-z0-9-]{0,40}$/.test(f) ? [f] : []));
+      const format = typeof t.format === "string" && formats.includes(t.format) ? t.format : undefined;
+      return { root: t.root as RootName, formats, ...(format ? { format } : {}) };
+    })(),
     bytes,
     previews: Array.isArray(r.previews)
       ? list(r.previews, PREVIEW_LIMIT).flatMap((p): Preview[] => {

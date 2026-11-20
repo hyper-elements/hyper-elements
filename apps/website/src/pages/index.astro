@@ -34,9 +34,9 @@ const note = showcase.email.diagnostics.find((d) => d.code === "email/outlook-de
 const kinds: Record<string, string> = { Email: "Email", Page: "Web page", Document: "PDF", Canvas: "Image" };
 const items = [
   { ...showcase.page, title: "Product launch", href: "/docs/outputs/page" },
-  ...templates.slice(0, 3).map((t) => ({ ...t, href: `/templates/${t.slug}` })),
+  ...templates.slice(0, 3).map((t) => ({ ...t, href: `/playground#starter=${t.slug}` })),
   { ...showcase.document, title: "Release notes", href: "/docs/outputs/pdf" },
-  ...templates.slice(3).map((t) => ({ ...t, href: `/templates/${t.slug}` })),
+  ...templates.slice(3).map((t) => ({ ...t, href: `/playground#starter=${t.slug}` })),
 ];
 const strip = [...items, ...items];
 ---

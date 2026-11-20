@@ -118,6 +118,13 @@ Version bumps are automatic on merge to `main`. To control the bump type, add a 
 - `release:minor` — new features
 - `release:major` — breaking changes
 
+## Contributing templates
+
+Ready-made templates (emails, pages, PDFs and images, each a design in plain JSX that takes any brand) live in
+[`templates/`](templates/), one folder per kit. [templates/CONTRIBUTING.md](templates/CONTRIBUTING.md) says how to add
+one: the folder's layout, the rules every design follows, categories, sample brands, and the checks to run before a pull request. To ask for a
+template instead, open a template request issue.
+
 ## Code Style
 
 - TypeScript strict mode

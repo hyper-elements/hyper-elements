@@ -44,6 +44,7 @@ into the published ones (tsup's `noExternal`), so nobody installs them.
 | `packages/internal/template-loader` | `@hyper-elements/template-loader` | No (bundled into migrate and cli) | What loading a design needs with no resolution policy of its own: `projectTsconfig()`, `walk()`, `defaultExport()`, `templateComponent()`, `guard()`. The CLI reaches it by path (`tsconfig.json` paths, tsup and Vitest aliases), so its published manifest names no private package. |
 | `packages/internal/core` | `@hyper-elements/core` | No (bundled into react) | The design tree (internal), element definitions, value kinds, validation, custom elements, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
 | `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. Its `/playground` runs the engine in the visitor's browser, bundled from `packages/*/src` (`scripts/playground-runtime.mjs`): a Node-only import added to the main, PDF, image, email-clients or lint entries needs a stand-in in `apps/website/playground/sandbox/shims/`. The code runs in a sandbox; `apps/website/playground/README.md` says how. Its `/tools/open-graph-image-generator` draws the Canvas templates in `apps/website/examples/og-image/` in a worker bundled the same way (`apps/website/README.md`). |
+| `templates/` | `@hyper-elements/templates-folder` | No | Community templates, as designs: plain JSX of Elements' own elements, in kits, one folder per kit (`<kit>/<emails|pages|documents|images>/<category>.tsx`, a kit's `kit.ts`), each a component taking a `Brand` (`_brand.ts`: the type, the token contract, `checkBrand()`) with a `meta` of its label and description. The jobs are `_categories/` (`group`, `roots`, `useWhen`, `avoidWhen`), the sample brands `_brands/` (invented only, one declaration of literals each), their fonts and images `_assets/`. `_test/matrix.test.tsx` renders every design in every brand and runs the neutral, pair and contrast checks (`_test/checks.ts`) with the probe brands, and checks no design shows another brand's name or site; `_scripts/single-file.ts` writes a design's copyable files for a brand (one file, or the design and its `brand.ts`, both taking no props). Tested against the built packages (`pnpm build` first); `README.md` is generated (`pnpm --filter ./templates readme`). |
 | `benchmark/` | `@hyper-elements/agent-benchmark` | No | The agent benchmark: how long a coding agent takes to write a correct email or image with Hyper Elements and with other tools. Its own npm package, outside the pnpm workspace; see `benchmark/README.md`. |
 | `examples/` | | No | `demo` (`@hyper-elements/example-demo`, the showcase app), `content-workflows` (email, JSON and PDF recipes; tested in CI), `react-email-in-editor`, `nextjs-app-router` |
 | `skills/hyper-elements/SKILL.md` | | | The agent skill for writing designs, generated from the element definitions like `GUIDE.md` |
@@ -243,7 +244,8 @@ as "looks different". Every template is written either way; `--strict` refuses t
 skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
-  template loader; the release script's tests
+  template loader; the community templates (`templates/`: typecheck, every design in every sample brand, and a
+  fresh `README.md`); the release script's tests
   (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 349,800 bytes, `dist/builder.js`
   521,700 bytes, `dist/template.js` 94,800 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
@@ -256,6 +258,11 @@ skip it):
   E2E; the layout gate; PDF and image against Chromium; the email client previews in Chromium; lint's tree as Chromium shows it; the CLI's previews
   drawn in browsers (on Node and Bun); migration fidelity; migration differential; the Next.js 15, 14 and 16 and
   Jest 30 consumer apps.
+
+`.github/workflows/website.yml` runs on changes to `templates/`, `apps/website/` or `packages/`: it regenerates the
+templates pages' data (`generate:kits`) and fails if it differs from what's committed, builds the site, and runs
+`check-templates.mjs`, `check-playground.mjs` and `check-playground-templates.mjs` (the templates in the playground,
+offline). On a pull request it also draws every kit in every sample brand and uploads the pictures for review.
 
 ## Review bar for the migration tool
 

@@ -1,0 +1,47 @@
+{
+  "casa-albero": {
+    "html": "0367e61f798023e8",
+    "text": "9266d9a108acc40b",
+    "diagnostics": []
+  },
+  "ember": {
+    "html": "7674537f670bafe1",
+    "text": "4a3219d29de00a4b",
+    "diagnostics": []
+  },
+  "keel": {
+    "html": "380e69b7ffd73512",
+    "text": "3062df8033634a87",
+    "diagnostics": []
+  },
+  "orbit": {
+    "html": "70854abcef271313",
+    "text": "5c12b6cda8441912",
+    "diagnostics": []
+  },
+  "oyen": {
+    "html": "34cbce27ee04c224",
+    "text": "f8c19ecbad91340e",
+    "diagnostics": []
+  },
+  "pell-ashby": {
+    "html": "a5555db7fa1c15d2",
+    "text": "c18b02c693b249d3",
+    "diagnostics": []
+  },
+  "pith": {
+    "html": "331888fb473ef26f",
+    "text": "cb4757496554d723",
+    "diagnostics": []
+  },
+  "quarry": {
+    "html": "22f811c42a2ca955",
+    "text": "983a71b5ed6951b8",
+    "diagnostics": []
+  },
+  "slow-signals": {
+    "html": "3621969393497b41",
+    "text": "7d578bd232b082a9",
+    "diagnostics": []
+  }
+}

@@ -1,0 +1,103 @@
+name: Website and templates
+
+# The Tests and Storybook workflows skip changes only under apps/, so the website's templates pages and playground are
+# checked here: on any change to the templates folder, the website, or the packages they're built from.
+on:
+  push:
+    branches: [ main ]
+    paths: [ 'templates/**', 'apps/website/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/website.yml' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'templates/**', 'apps/website/**', 'packages/**', 'pnpm-lock.yaml', '.github/workflows/website.yml' ]
+
+concurrency:
+  group: website-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  website:
+    name: Templates pages and playground
+    # Playwright 1.60 has no Chromium for ubuntu-latest's Ubuntu 26.04 image.
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # The website asks for Node 22.23.4 or later (apps/website/package.json).
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.7.0
+
+      - name: Authenticate npm registry
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.TEST_NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build packages
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm --filter @hyper-elements/react exec playwright install --with-deps chromium
+
+      # Every template in every sample brand, written again: a template that fails stops the run, and output that
+      # differs from what's committed means it wasn't regenerated (templates/CONTRIBUTING.md says how).
+      - name: Templates pages' data is up to date
+        run: |
+          pnpm --filter @hyper-elements/website generate:kits
+          git add -N apps/website/public/generated/kits apps/website/src/generated/kits.json
+          git diff --exit-code --stat -- apps/website/public/generated/kits apps/website/src/generated/kits.json || { echo "::error::the templates pages' data is out of date: run pnpm --filter @hyper-elements/website generate:kits and commit it"; exit 1; }
+
+      - name: Build the website
+        run: pnpm --filter @hyper-elements/website build
+
+      - name: Templates pages and redirects
+        run: pnpm --filter @hyper-elements/website check:templates
+
+      - name: Playground isolation
+        run: pnpm --filter @hyper-elements/website check:playground
+
+      # Templates in the playground, offline (anything asked of hyperelements.dev fails it): every single file renders,
+      # an image template's formats switch without editing the code, the Brand menu swaps only the brand block, slots'
+      # allow lists work, an image whose file disagrees with its declared size gives no PNG, and the preview loads kit
+      # assets from this site.
+      - name: Templates in the playground
+        run: pnpm --filter @hyper-elements/website check:playground-templates
+
+      # For review: every kit drawn in every sample brand, side by side, so a pull request's look can be compared
+      # with the other kits' versions of the same categories without checking it out.
+      - name: Draw every kit for review
+        if: github.event_name == 'pull_request'
+        run: |
+          for kit in $(ls templates); do
+            case "$kit" in _*|.*|node_modules) continue ;; esac
+            if [ -f "templates/$kit/kit.ts" ]; then pnpm --filter ./templates preview "$kit"; fi
+          done
+
+      - name: Upload the kits' pictures
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: templates-preview
+          path: templates/.preview
+          retention-days: 14

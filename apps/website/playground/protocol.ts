@@ -8,10 +8,12 @@ export interface FontNeed {
   family: string;
   weight: number;
   style: "normal" | "italic";
+  /** Where the design's own `fonts` say the file is (an https URL): fetched from there, rather than looked up by its family. */
+  url?: string;
 }
 
 /** A font file the page fetched for a PDF or an image (TTF, OTF or WOFF). */
-export interface FontFile extends FontNeed {
+export interface FontFile extends Omit<FontNeed, "url"> {
   src: Uint8Array;
 }
 
@@ -20,6 +22,8 @@ interface Common {
   code: string;
   /** An Email's client checks (on unless false). Lint's checks run either way. */
   checks?: boolean;
+  /** Where the code exports a template with formats: the one to check and draw (its first where it isn't said). */
+  templateFormat?: string;
 }
 
 export type Request =
@@ -28,6 +32,8 @@ export type Request =
   | (Common & { kind: "render" })
   | (Common & { kind: "pdf"; fonts: FontFile[]; images: Record<string, Uint8Array> })
   | (Common & { kind: "image"; format: "png" | "svg"; scale: number; fonts: FontFile[]; images: Record<string, Uint8Array> })
+  /** What a Canvas template's image needs fetched: templateAssets() of its snapshot (its render writes no HTML). */
+  | (Common & { kind: "template-assets" })
   | (Common & { kind: "previews"; clients?: string[]; dark?: boolean })
   /** What the components are, for the editor's completions (`code` is unused). */
   | (Common & { kind: "describe" });
@@ -101,6 +107,8 @@ export interface Result {
   size?: { width: number; height: number };
   /** What a PDF or an image of it needs fetched. */
   assets?: { fonts: FontNeed[]; images: string[] };
+  /** Where the code exports a template: its root, its formats (none for one size), and the format checked. */
+  template?: { root: RootName; formats: string[]; format?: string };
   /** The PDF, PNG or SVG. */
   bytes?: Uint8Array;
   previews?: Preview[];
