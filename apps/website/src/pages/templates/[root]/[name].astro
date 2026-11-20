@@ -9,24 +9,19 @@ export function getStaticPaths() {
 }
 const { t } = Astro.props as { t: TemplateInfo };
 const list = brandsFor(t);
-const views = t.root === "Document" ? (["desktop", "pdf"] as const) : t.root === "Canvas" ? (["image"] as const) : t.root === "Email" ? (["desktop", "phone", "text"] as const) : (["desktop", "phone"] as const);
+const views = t.root === "Document" ? (["desktop"] as const) : t.root === "Canvas" ? (["image"] as const) : t.root === "Email" ? (["desktop", "phone", "text"] as const) : (["desktop", "phone"] as const);
 const width = previewWidth(t);
-// A PDF is shown at the width its page is drawn: the preview's own width.
-const pdfWidth = `--pdf-w:${width}px`;
 const file = `${t.name}.tsx`;
 // The stage's tabs: an email or page at desktop width and on a phone (an email's plain text too), a document as its
-// page and as its PDF, an image in each of its formats; then the code.
+// page, an image; then the code.
 const modes = [
   ...(t.root === "Canvas"
-    ? t.formats.length
-      ? t.formats.map((f) => ({ id: f, label: f.charAt(0).toUpperCase() + f.slice(1) }))
-      : [{ id: "image", label: "Image" }]
+    ? [{ id: "image", label: "Image" }]
     : t.root === "Document"
-      ? [{ id: "desktop", label: "Page" }, { id: "pdf", label: "PDF" }]
+      ? [{ id: "desktop", label: "Page" }]
       : [{ id: "desktop", label: "Desktop" }, { id: "phone", label: "Phone" }, ...(t.root === "Email" ? [{ id: "text", label: "Plain text" }] : [])]),
   { id: "code", label: "Code" },
 ];
-const shownFormats = t.formats.length ? (t.root === "Canvas" ? t.formats : [t.formats[0]]) : ["default"];
 const starter = `template-${t.folder}-${t.name}`;
 const swatch = (colors: Record<string, string>) => `background:linear-gradient(135deg, ${colors.background ?? "#fff"} 50%, ${colors.primary ?? "#888"} 50%)`;
 ---
@@ -46,7 +41,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   </section>
 
   <div class="wrap">
-    <div class="stage panel" data-stage data-show="preview" style={pdfWidth}>
+    <div class="stage panel" data-stage data-show="preview">
       <div class="stage-bar">
         <div class="seg" role="tablist" aria-label="View">
           {modes.map((m, i) => <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} data-mode-pick={m.id}>{m.label}</button>)}
@@ -61,14 +56,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
       <div class="stage-preview">
         {list.map((b, i) => (
           <div data-brand={b.id} hidden={i !== 0}>
-            {shownFormats.map((format, j) => {
-              const ex = t.byBrand[b.id]?.views[format];
-              return ex && (
-                <div data-format={format} hidden={t.root === "Canvas" && j !== 0}>
-                  <Preview example={ex} views={[...views]} width={width} height={t.root === "Canvas" ? 640 : 820} full />
-                </div>
-              );
-            })}
+            {t.byBrand[b.id] && <Preview example={t.byBrand[b.id]!.views.default} views={[...views]} width={width} height={t.root === "Canvas" ? 640 : 820} full />}
           </div>
         ))}
       </div>
@@ -97,14 +85,12 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
 
 <script>
   // The stage shows one thing: the preview in the view picked, or the code. The views drive each brand's preview
-  // (its own tabs are hidden); an image's are its formats instead.
+  // (its own tabs are hidden).
   const stage = document.querySelector<HTMLElement>("[data-stage]");
   if (stage) {
     const preview = stage.querySelector<HTMLElement>(".stage-preview")!;
     const code = stage.querySelector<HTMLElement>(".stage-code")!;
     const modes = [...stage.querySelectorAll<HTMLButtonElement>("[data-mode-pick]")];
-    const formats = [...stage.querySelectorAll<HTMLElement>("[data-format]")];
-    const byFormat = formats.some((f) => modes.some((m) => m.dataset.modePick === f.dataset.format));
     modes.forEach((m) =>
       m.addEventListener("click", () => {
         const id = m.dataset.modePick!;
@@ -113,17 +99,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
         stage.dataset.show = what;
         preview.hidden = what !== "preview";
         code.hidden = what !== "code";
-        if (what === "preview") {
-          if (byFormat) formats.forEach((f) => (f.hidden = f.dataset.format !== id));
-          else {
-            // A PDF is as tall as its page view, plus the viewer's own bar.
-            if (id === "pdf") stage.querySelectorAll<HTMLElement>(".preview").forEach((p) => {
-              const page = p.querySelector<HTMLElement>('.view-frame[data-view="desktop"]');
-              if (page?.style.height) p.style.setProperty("--pdf-h", `${parseFloat(page.style.height) + 56}px`);
-            });
-            stage.querySelectorAll<HTMLButtonElement>(`.preview [role="tab"][data-view="${id}"]`).forEach((tab) => tab.click());
-          }
-        }
+        if (what === "preview") stage.querySelectorAll<HTMLButtonElement>(`.preview [role="tab"][data-view="${id}"]`).forEach((tab) => tab.click());
         window.dispatchEvent(new Event("resize"));
       }),
     );
@@ -201,8 +177,6 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   .stage :global(.preview .view-frame .scaler) { margin: 0 auto; }
   .stage-code { min-height: 760px; display: flex; flex-direction: column; }
   .stage-code[hidden] { display: none; }
-  /* A document's PDF at the width its page is drawn, as tall as the page view was. */
-  .stage :global(.preview.full .view-file:has(iframe)) { max-width: var(--pdf-w); margin: 0 auto; height: var(--pdf-h, 820px); }
   .code-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .file { font: 12.5px var(--mono); color: var(--text); }
   .note { font-size: 13px; color: var(--text-3); }

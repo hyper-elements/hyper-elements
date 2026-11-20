@@ -28,8 +28,6 @@ export interface TemplateInfo {
   author: string;
   /** A recreation: the company's id and name, what it rebuilds, and where the original can be seen. */
   recreates?: { companyId: string; company: string; what: string; original: string };
-  /** A design has one size: none. */
-  formats: string[];
   file: string;
   /** The design as it's written, which takes its brand's type from ./brand: the same in every brand. */
   code: string;
@@ -64,8 +62,5 @@ export const previewWidth = (t: TemplateInfo, brand?: string): number => {
   if (!size) return 820;
   return (page![2]?.toLowerCase() === "landscape" ? size[1] : size[0]) + 26;
 };
-/** The first view of a template in a brand: its first format. */
-export const firstView = (t: TemplateInfo, brand: string): View => {
-  const views = t.byBrand[brand]?.views ?? {};
-  return views[t.formats[0] ?? "default"] ?? Object.values(views)[0];
-};
+/** A template's preview in a brand. */
+export const firstView = (t: TemplateInfo, brand: string): View | undefined => t.byBrand[brand]?.views.default;

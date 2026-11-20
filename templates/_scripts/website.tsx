@@ -1,7 +1,7 @@
 /**
  * The website's templates pages' data: every design in every sample brand (and a recreation's company's), as the site's
- * examples are (HTML, plain text, outline, diagnostics, and a Document's PDF or a Canvas's PNG), with its code, its
- * brand.ts and its copyable single file. A Canvas's PNG and a Document's PDF are files of their own; an HTML preview is
+ * examples are (HTML, plain text, outline, diagnostics, and a Canvas's PNG), with its code, its brand.ts and its
+ * copyable single file. A Canvas's PNG is a file of its own; an HTML preview is
  * written as a file when the site is built (`src/pages/generated/gallery/[preview].html.ts`), from the HTML here. Writes `apps/website/src/generated/gallery.json` and `apps/website/public/generated/gallery/`, and deletes only those.
  * The folder's assets are served from `_assets/` by the site itself (`apps/website/scripts/gallery-assets-integration.mjs`). Fails if any design fails, so stale pictures can't ship.
  *
@@ -11,7 +11,6 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { outline, render } from "@hyper-elements/react";
 import { renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
-import { renderPdf, templateAssets as pdfAssets } from "@hyper-elements/react/pdf";
 import { ASSETS, type Brand } from "../_brand";
 import { brands, companies, designs, type RootFolder } from "../_test/discover";
 import { ROOT, fontFiles, imageFiles } from "./assets";
@@ -42,11 +41,7 @@ async function example(t: (typeof all)[number], brandId: string, brand: Brand) {
     return { ...base, outline: safeOutline(design), diagnostics: lines(diagnostics), file: `${URL_BASE}/${name}.png`, preview: `${URL_BASE}/${name}.png` };
   }
   const out = await render(design);
-  const result = { ...base, html: out.html, text: out.text ?? "", outline: safeOutline(design), diagnostics: lines(out.diagnostics), preview: `${URL_BASE}/${name}.html` };
-  if (t.root !== "Document") return result;
-  const pdf = await renderPdf(design, { fonts: fontFiles(brand), images: imageFiles(pdfAssets(design).images) });
-  writeFileSync(join(PUBLIC, `${name}.pdf`), pdf.pdf);
-  return { ...result, diagnostics: lines([...out.diagnostics, ...pdf.diagnostics]), file: `${URL_BASE}/${name}.pdf` };
+  return { ...base, html: out.html, text: out.text ?? "", outline: safeOutline(design), diagnostics: lines(out.diagnostics), preview: `${URL_BASE}/${name}.html` };
 }
 
 function safeOutline(design: unknown): string {
@@ -89,7 +84,6 @@ for (const t of all) {
     author: t.meta.author ?? "Hyper Elements",
     // A recreation: the company's id and name, what it rebuilds, and where the original can be seen.
     ...(t.meta.recreates && own ? { recreates: { ...t.meta.recreates, companyId: own.id, company: own.brand.name } } : {}),
-    formats: [],
     file: relative(join(ROOT, ".."), t.file),
     // The design as it's written: the same in every brand, taking its brand's type from ./brand.
     code: splitFiles(t.file, drawIn[0].file).code,
