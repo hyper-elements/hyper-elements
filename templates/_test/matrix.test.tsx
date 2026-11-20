@@ -9,7 +9,7 @@
  * contract's tokens only, no other brand's name or site in it, and a baseline of what was written.
  */
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { render, validate, type Diagnostic } from "@hyper-elements/react";
 import { layoutImage, renderImage, templateAssets as imageAssets } from "@hyper-elements/react/image";
@@ -24,7 +24,9 @@ import { PROBES, contractOnly, tokenNames } from "./probes";
 import { treeFacts } from "./tree";
 
 const UPDATE = process.env.UPDATE_TEMPLATES === "1";
-const BASELINE = join(ROOT, "_test", "__baseline__");
+/** What every design wrote in every brand, by design and brand: one file, `UPDATE_TEMPLATES=1` rewrites it. */
+const BASELINE = join(ROOT, "_test", "baseline.json");
+const recordedAll: Record<string, Record<string, unknown>> = existsSync(BASELINE) ? JSON.parse(readFileSync(BASELINE, "utf8")) : {};
 /** The email client warnings that mean content is lost: an image some clients don't show, a message Gmail clips. */
 const EMAIL_LOSS = ["email/image-format", "email/size", "email/style-size"];
 /** A PDF that couldn't draw a font or an image falls back, and says so: here, that fails. */
@@ -52,9 +54,8 @@ const baseline: Record<string, Record<string, unknown>> = {};
 for (const t of all) {
   const { Design } = t;
   describe(t.key, () => {
-    const file = join(BASELINE, `${t.folder}.${t.name}.json`);
-    const recorded: Record<string, unknown> = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")) : {};
-    baseline[file] = {};
+    const recorded = recordedAll[t.key] ?? {};
+    baseline[t.key] = {};
 
     it("says what it is, and has its folder's root", () => {
       expect(typeof t.meta?.label, "meta.label").toBe("string");
@@ -86,8 +87,8 @@ for (const t of all) {
           expect(failing([...image.diagnostics, ...layout.diagnostics], DOESNT_FIT), "what doesn't fit").toEqual([]);
           entry = { size: [image.width, image.height], image: sha(image.image), diagnostics: codes([...image.diagnostics, ...layout.diagnostics]) };
         }
-        baseline[file][name] = entry;
-        if (!UPDATE) expect(entry, `the baseline in ${file} (UPDATE_TEMPLATES=1 rewrites it)`).toEqual(recorded[name]);
+        baseline[t.key][name] = entry;
+        if (!UPDATE) expect(entry, `${t.key} in ${name}, in _test/baseline.json (UPDATE_TEMPLATES=1 rewrites it)`).toEqual(recorded[name]);
       });
 
       it(`has readable text in ${name}`, () => {
@@ -135,9 +136,14 @@ for (const t of all) {
 
 afterAll(() => {
   if (!UPDATE) return;
-  mkdirSync(BASELINE, { recursive: true });
-  for (const [file, entries] of Object.entries(baseline)) {
-    const sorted = Object.fromEntries(Object.entries(entries).sort(([a], [b]) => a.localeCompare(b)));
-    writeFileSync(file, JSON.stringify(sorted, null, 2) + "\n");
-  }
+  // A run of some designs or brands (vitest -t) keeps the others' records; a design or brand that's gone loses its own.
+  const sorted = Object.fromEntries(
+    [...all]
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .map((t) => {
+        const entries = { ...recordedAll[t.key], ...baseline[t.key] };
+        return [t.key, Object.fromEntries(brandsFor(t).map(({ id }) => id).sort((a, b) => a.localeCompare(b)).filter((id) => id in entries).map((id) => [id, entries[id]]))];
+      }),
+  );
+  writeFileSync(BASELINE, JSON.stringify(sorted, null, 2) + "\n");
 });
