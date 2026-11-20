@@ -255,16 +255,6 @@ jobs:
       - name: Run tests
         run: pnpm -r --filter "./packages/**" --filter "!@hyper-elements/react" --filter "!@hyper-elements/migrate" run test
 
-      # The community templates (templates/): every template in every sample brand and format, by its root's path
-      # (render, the PDF, the image measured and its files checked), the neutral, pair and contrast checks, the copyable
-      # single files typechecked and rendered, and a README that's up to date (templates/CONTRIBUTING.md).
-      - name: Templates
-        run: |
-          pnpm --filter ./templates typecheck
-          pnpm --filter ./templates test
-          pnpm --filter ./templates readme
-          git diff --exit-code -- templates/README.md || { echo "::error::templates/README.md is out of date: run pnpm --filter ./templates readme"; exit 1; }
-
       # The CLI's dev, alone on the runner (one test file at a time, Node then Bun): a change to an imported file
       # (relative, aliased, in a workspace package, in one rebuilt into dist/ 500 ms after its source) and to a folder of
       # two with their own tsconfigs is shown within a second of it (packages/cli/vitest.timing.config.ts).

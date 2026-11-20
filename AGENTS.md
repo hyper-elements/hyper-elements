@@ -244,8 +244,7 @@ as "looks different". Every template is written either way; `--strict` refuses t
 skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
-  template loader; the community templates (`templates/`: typecheck, every design in every sample brand, and a
-  fresh `README.md`); the release script's tests
+  template loader; the release script's tests
   (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 349,800 bytes, `dist/builder.js`
   521,700 bytes, `dist/template.js` 94,800 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
@@ -258,11 +257,6 @@ skip it):
   E2E; the layout gate; PDF and image against Chromium; the email client previews in Chromium; lint's tree as Chromium shows it; the CLI's previews
   drawn in browsers (on Node and Bun); migration fidelity; migration differential; the Next.js 15, 14 and 16 and
   Jest 30 consumer apps.
-
-`.github/workflows/website.yml` runs on changes to `templates/`, `apps/website/` or `packages/`: it regenerates the
-templates pages' data (`generate:gallery`) and fails if it differs from what's committed, builds the site, and runs
-`check-templates.mjs`, `check-playground.mjs` and `check-playground-templates.mjs` (the templates in the playground,
-offline). On a pull request it also draws every template in every sample brand and uploads the pictures for review.
 
 ## Review bar for the migration tool
 

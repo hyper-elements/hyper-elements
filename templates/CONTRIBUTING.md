@@ -13,7 +13,7 @@ details from a brand it's given. The website shows each one in the sample brands
 - **A sample brand:** an invented one that covers a look the others don't.
 - **A recreation:** a faithful rebuild of something a real company makes, in its own brand.
 
-To ask for one rather than write it, open a [template request](https://github.com/hyper-elements/hyper-elements/issues/new?template=template-request.yml).
+To ask for one rather than write it, open an [issue](https://github.com/hyper-elements/hyper-elements/issues/new).
 
 ## How the folder works
 
@@ -153,8 +153,8 @@ The rules:
   reads one with a fallback to a contract token (`brand.theme.colors.highlight ?? brand.theme.colors.accent`), so the
   sample brands still work.
 
-A recreation is taken down if its company asks, with no discussion: the
-[removal form](https://github.com/hyper-elements/hyper-elements/issues/new?template=recreation-removal.yml) is how.
+A recreation is taken down if its company asks, with no discussion: an
+[issue](https://github.com/hyper-elements/hyper-elements/issues/new) naming it is how.
 
 ## A sample brand
 
@@ -176,7 +176,7 @@ pnpm --filter ./templates preview documents/invoice
 
 `pnpm build` builds the packages the designs import; run it again after you change one.
 
-- `test` checks every design in every sample brand, as CI does: it renders it, checks its colors and fonts come from
+- `test` checks every design in every sample brand: it renders it, checks its colors and fonts come from
   the brand, its text is readable, its layout fits, it shows no other brand's name, and its copyable files work on
   their own.
 - `preview` draws your design in every brand into `templates/.preview/`; open its `index.html`. Name a folder
@@ -191,7 +191,7 @@ pnpm --filter @hyper-elements/website generate:gallery
 ```
 
 The first records your design's output, the second updates this folder's `README.md`, and the last writes the
-website's previews and copyable files for it. CI checks that each is up to date.
+website's previews and copyable files for it.
 
 ## Open a pull request
 
