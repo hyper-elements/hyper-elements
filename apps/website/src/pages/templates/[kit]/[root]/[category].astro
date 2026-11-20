@@ -146,6 +146,8 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   const pick = (id: string, remember: boolean) => {
     if (!ids.includes(id)) return;
     document.querySelectorAll<HTMLElement>("[data-brand]").forEach((el) => (el.hidden = el.dataset.brand !== id));
+    // A lazy frame that started out hidden may not load once shown: the picked brand's previews load now.
+    document.querySelectorAll<HTMLIFrameElement>(`.stage-preview [data-brand="${id}"] iframe[loading="lazy"]`).forEach((frame) => (frame.loading = "eager"));
     swatches.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.brandPick === id)));
     document.querySelector<HTMLElement>("[data-brand-name]")!.textContent = swatches.find((b) => b.dataset.brandPick === id)!.dataset.name!;
     if (remember) {

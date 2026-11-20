@@ -157,13 +157,25 @@ try {
   assert.equal(await page.locator("text=template extract").count(), 0, "the page still shows template extract");
   // By default: the preview alone, as tall as what it shows (no scrollbar of its own), on a desktop and on a phone.
   assert.equal(await page.$eval(".stage-code", (c) => getComputedStyle(c).display), "none", "the code shows before Code is picked");
-  const fits = (view) =>
-    page.waitForFunction((view) => {
+  // The shown brand's frame for a view: whether it has loaded, the height it's drawn at, and its content's.
+  const measure = (view) =>
+    page.evaluate((view) => {
       const shown = [...document.querySelectorAll(".stage-preview > [data-brand]")].find((d) => !d.hidden);
       const frame = shown?.querySelector(`.view[data-view="${view}"] iframe`);
       const doc = frame?.contentDocument;
-      return doc?.body?.childElementCount && Math.abs(frame.getBoundingClientRect().height / (frame.getBoundingClientRect().width / frame.offsetWidth) - doc.documentElement.scrollHeight) <= 2;
-    }, view, { timeout: 15000 });
+      const box = frame?.getBoundingClientRect();
+      return { brand: shown?.dataset.brand, loaded: Boolean(doc?.body?.childElementCount), drawn: box && frame.offsetWidth ? box.height / (box.width / frame.offsetWidth) : 0, content: doc?.documentElement.scrollHeight ?? 0 };
+    }, view);
+  const fits = async (view) => {
+    const until = Date.now() + 20000;
+    let last;
+    while (Date.now() < until) {
+      last = await measure(view);
+      if (last.loaded && Math.abs(last.drawn - last.content) <= 2) return;
+      await page.waitForTimeout(250);
+    }
+    assert.fail(`the ${view} preview isn't as tall as its content: ${JSON.stringify(last)}`);
+  };
   await fits("desktop");
   await page.click('[data-mode-pick="phone"]');
   await fits("phone");
