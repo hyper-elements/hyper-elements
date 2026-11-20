@@ -1,4 +1,4 @@
-/** Every design, sample brand and company brand in the folder, found from the files, as the matrix tests them. */
+/** Every design, sample brand and company brand in the folder, found from the files. */
 import { readdirSync } from "node:fs";
 import { basename, join } from "node:path";
 import type { ReactElement } from "react";

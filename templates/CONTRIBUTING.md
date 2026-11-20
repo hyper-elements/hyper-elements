@@ -22,7 +22,7 @@ templates/
   pages/
   documents/         PDFs: documents/invoice.tsx
   images/            images: images/og-card.tsx
-  _brand.ts          the Brand type, the tokens a design may use, and checkBrand()
+  _brand.ts          the Brand type, and the tokens a design may use
   _brands/           the sample brands
   _companies/        a real company's brand, for its recreations
   _assets/           fonts, and the brands', designs' and companies' images
@@ -71,9 +71,8 @@ every design follows:
 
 - **No colors or fonts of its own.** Use the brand's tokens: `token("colors.primary")`, `token("fontSizes.small")`.
   `_brand.ts` lists the ones you can use (`CONTRACT`). Heading sizes and weights come from the brand too.
-- **Draw text only in the brand's pairs:** `foreground`, `muted` or `primary` on `background` or `surface`, and
-  `primaryForeground` on `primary`. Text inside a Layer needs a background color set on its own box, and text that's
-  fitted to its box always needs a 4.5:1 contrast, whatever its largest size.
+- **Draw text in the brand's pairs,** so it's readable in every brand: `foreground`, `muted` or `primary` on
+  `background` or `surface`, and `primaryForeground` on `primary`.
 - **Take everything about the company from the brand:** its name, address, logo and links. Pass its fonts, language
   and direction to your root, and write links on its site (`` `${brand.links.site}/billing` ``), so they're on the
   brand's own domain in every brand.
@@ -83,12 +82,11 @@ every design follows:
   design as the default, a component taking `{ brand }`, and its `meta`. That's what lets the website give your
   design as files anyone can copy.
 - **Make it work everywhere it's shown:** on phones, as plain text, with a screen reader, and in a dark brand as well
-  as a light one. An email or a page passes lint's `contrast`, `text-size`, `link-text` and `alt-text`; nothing is
-  wider than its layout; an image's text fits its box.
+  as a light one. Give images alternate text, and keep everything inside its layout.
 - **Use invented sample words,** never real people's names or details.
 - **Keep it evergreen:** no years, and no weekday with a date. Write "March 31", not "March 31, 2026" or
   "Tuesday, March 31" (a weekday is right for a date only in some years), and "© Acme", not "© 2026 Acme".
-- **No `Html` blocks.** Raw markup can't be checked for brand colors, contrast or alternate text.
+- **No `Html` blocks.** Raw markup doesn't take the brand.
 - **Images** you add must be yours to share, or under a license that lets anyone use them. They go under
   `_assets/images/`, each with a name no other image has, and are named by their URL under
   `https://hyperelements.dev/generated/gallery/assets/images/`; no other image addresses are allowed. Use PNG or JPEG files: some email clients don't show WebP or SVG, and a PDF
@@ -121,9 +119,8 @@ The rules:
   publishes, as close to its own as you can. No made-up kinds in a real company's brand, and no lookalike companies.
 - **Logos and images only as they appear in the company's own work,** saved under `_assets/companies/<company>/`.
 - **No names or details of real people.** Sample words are invented.
-- **Every check still passes,** in the company's brand and in every sample brand. There are no exceptions: if the
-  original fails one, such as low contrast, adjust the company brand's color until it passes, and say so in
-  `meta.recreates`.
+- **It works in every sample brand too,** and its text stays readable: where the original's colors are hard to read,
+  darken the company brand's color, and say so in its file.
 - **The company's brand may hold extra tokens** where the original needs a color the contract doesn't have. A design
   reads one with a fallback to a contract token (`brand.theme.colors.highlight ?? brand.theme.colors.accent`), so the
   sample brands still work.
@@ -134,9 +131,9 @@ A recreation is taken down if its company asks, with no discussion: an
 ## A sample brand
 
 Sample brands are invented: no real companies, and nothing that looks like one. A new brand should cover a look the
-others don't (`_test/range.test.ts` prints how they differ). It's one declaration of literals,
+others don't. It's one declaration of literals,
 `export const brand: Brand = { … }`, importing only `defineTheme` and the `Brand` type, with every token in
-`CONTRACT`, text pairs of at least 4.5:1, and its fonts as TTF or OTF files under `_assets/fonts/` (with their
+`CONTRACT`, readable text in its pairs, and its fonts as TTF or OTF files under `_assets/fonts/` (with their
 licenses). Draw its logo with `pnpm --filter ./templates logos`.
 
 ## Check your work
@@ -151,22 +148,20 @@ pnpm --filter ./templates preview documents/invoice
 
 `pnpm build` builds the packages the designs import; run it again after you change one.
 
-- `test` checks every design in every sample brand: it renders it, checks its colors and fonts come from
-  the brand, its text is readable, its layout fits, it shows no other brand's name, and its copyable files work on
-  their own.
+- `test` renders every design in every sample brand, and checks its copyable files typecheck and render the same
+  on their own.
 - `preview` draws your design in every brand into `templates/.preview/`; open its `index.html`. Name a folder
   (`emails`) to draw all of its designs, or nothing to draw them all.
 
-Then record what your design adds, and commit all of it with your pull request:
+Then update the folder's README and the website's files, and commit them with your pull request:
 
 ```bash
-UPDATE_TEMPLATES=1 pnpm --filter ./templates test
 pnpm --filter ./templates readme
 pnpm --filter @hyper-elements/website generate:gallery
 ```
 
-The first records your design's output, the second updates this folder's `README.md`, and the last writes the
-website's previews and copyable files for it.
+The first updates this folder's `README.md`, and the second writes the website's previews and copyable files for
+your design.
 
 ## Open a pull request
 
@@ -175,7 +170,7 @@ Tick each item:
 - [ ] Each design is one file in its root's folder, named as above.
 - [ ] Each design says its `label` and `description` in `meta`.
 - [ ] No colors, fonts or company details of its own; only the brand's.
-- [ ] `pnpm --filter ./templates typecheck` and `test` pass, and the output, `README.md` and the website's files are
+- [ ] `pnpm --filter ./templates typecheck` and `test` pass, and `README.md` and the website's files are
   regenerated and committed.
 - [ ] I looked at every design in the preview, in light and dark brands.
 - [ ] Sample words are invented. Images are mine to share or openly licensed, or, for a recreation, as in the

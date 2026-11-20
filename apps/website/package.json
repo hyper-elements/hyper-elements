@@ -22,8 +22,6 @@
     "check:blog": "node scripts/check-blog.mjs",
     "check:og-cards": "node scripts/check-og-cards.mjs",
     "check:playground": "node scripts/check-playground.mjs",
-    "check:templates": "node scripts/check-templates.mjs",
-    "check:playground-templates": "node scripts/check-playground-templates.mjs",
     "check:email-testing": "node scripts/check-email-testing.mjs",
     "check:og-image": "node scripts/check-og-image.mjs"
   },

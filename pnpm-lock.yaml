@@ -549,12 +549,6 @@ importers:
 
   templates:
     devDependencies:
-      '@hyper-elements/email-clients':
-        specifier: workspace:*
-        version: link:../packages/email-clients
-      '@hyper-elements/lint':
-        specifier: workspace:*
-        version: link:../packages/lint
       '@hyper-elements/react':
         specifier: workspace:*
         version: link:../packages/react
@@ -573,9 +567,6 @@ importers:
       '@types/react-dom':
         specifier: ^18.3.0
         version: 18.3.7(@types/react@18.3.26)
-      pdfjs-dist:
-        specifier: 6.5.438
-        version: 6.5.438
       react:
         specifier: 18.3.1
         version: 18.3.1
