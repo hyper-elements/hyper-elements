@@ -24,3 +24,29 @@ export const hyperTheme = {
     { scope: ["markup.deleted"], settings: { foreground: "#ff7b6e" } },
   ],
 };
+
+// The same, in color: for a template's page, where the code is the thing a visitor came to read and copy. Muted on
+// the same background, so it sits with the greyscale blocks elsewhere.
+export const hyperColorTheme = {
+  name: "hyper-color",
+  type: "dark",
+  colors: {
+    "editor.background": "#0e0e0e",
+    "editor.foreground": "#d4d4d4",
+  },
+  tokenColors: [
+    { scope: ["comment", "punctuation.definition.comment"], settings: { foreground: "#6b7280", fontStyle: "italic" } },
+    { scope: ["string", "string.quoted", "string.template", "punctuation.definition.string"], settings: { foreground: "#a5d6ff" } },
+    { scope: ["constant.numeric", "constant.language", "constant.language.boolean"], settings: { foreground: "#79c0ff" } },
+    { scope: ["keyword", "storage", "storage.type", "storage.modifier", "keyword.control", "keyword.operator.new"], settings: { foreground: "#ff7b72" } },
+    { scope: ["entity.name.tag", "support.class.component", "entity.name.tag.tsx", "entity.name.tag.jsx"], settings: { foreground: "#7ee787" } },
+    { scope: ["entity.other.attribute-name", "entity.other.attribute-name.tsx"], settings: { foreground: "#d2a8ff" } },
+    { scope: ["entity.name.function", "support.function", "meta.function-call entity.name.function"], settings: { foreground: "#d2a8ff" } },
+    { scope: ["variable", "variable.other.readwrite", "meta.object-literal.key"], settings: { foreground: "#e6edf3" } },
+    { scope: ["support.type.property-name", "meta.object-literal.key string"], settings: { foreground: "#79c0ff" } },
+    { scope: ["entity.name.type", "support.type", "entity.name.class"], settings: { foreground: "#ffa657" } },
+    { scope: ["punctuation", "meta.brace", "punctuation.section"], settings: { foreground: "#8b949e" } },
+    { scope: ["markup.inserted"], settings: { foreground: "#7ee2a8" } },
+    { scope: ["markup.deleted"], settings: { foreground: "#ff7b6e" } },
+  ],
+};

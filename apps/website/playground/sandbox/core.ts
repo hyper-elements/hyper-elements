@@ -5,7 +5,7 @@
 // Nothing here is trusted by the page: the code it runs shares this worker's globals, so the page reads every result
 // as data (text shown as text, HTML only inside another sandboxed frame).
 import * as Elements from "@hyper-elements/react";
-import { lint } from "@hyper-elements/lint";
+import * as Lint from "@hyper-elements/lint";
 import { lintHtml } from "@hyper-elements/lint/html";
 import { describeElements, inspect } from "@hyper-elements/react/inspect";
 // Templates: the code a visitor writes can define one and use it as its design's root.
@@ -22,8 +22,12 @@ import type { Diagnostic, FontNeed, PlaygroundError, Request, Result, RootName, 
 type Extras = {
   pdf?: { renderPdf: (element: React.ReactElement, options: object) => Promise<{ pdf: Uint8Array; diagnostics: Elements.Diagnostic[] }> };
   image?: {
-    renderImage: (element: React.ReactElement, options: object) => Promise<{ image: Uint8Array; width: number; height: number; diagnostics: Elements.Diagnostic[] }>;
+    renderImage: (element: React.ReactElement | Elements.Snapshot, options: object) => Promise<{ image: Uint8Array; width: number; height: number; diagnostics: Elements.Diagnostic[] }>;
     loadResvg: (wasm: WebAssembly.Module | ArrayBuffer) => Promise<void>;
+    /** The fonts and images a Canvas template's snapshot is drawn with (its render writes no HTML to read them from). */
+    templateAssets: (element: React.ReactElement | Elements.Snapshot) => { fonts: Array<{ family: string; src: string; weight?: number | string; style?: string }>; images: string[] };
+    /** A Canvas measured, for a template's checkLayout(). */
+    layoutImage: (element: React.ReactElement | Elements.Snapshot, options: object) => Promise<Templates.MeasuredLayout>;
   };
   clients?: {
     emailClients: (options?: object) => Promise<Elements.ElementsPlugin>;
@@ -77,7 +81,7 @@ const ROOTS: readonly string[] = ["Email", "Page", "Document", "Canvas"];
 /** Each Elements component rendered, in the order React renders them (document order), with the line its JSX is on. */
 /** Lint's plugin, made once: what makes an Email or a Page hard to read. */
 let lintPlugin: Elements.ElementsPlugin | undefined;
-const linter = () => (lintPlugin ??= lint());
+const linter = () => (lintPlugin ??= Lint.lint());
 
 let trace: Array<{ type: string; line?: number }> = [];
 
@@ -93,6 +97,16 @@ function locate<T extends object>(name: string, Real: T): T {
     return React.createElement(Real as unknown as React.ComponentType, rest);
   };
   Located.displayName = name;
+  // What tells an element apart (a built-in's symbol, a custom element's definition) stays on the stand-in, so a
+  // template's slot can still say which elements it allows.
+  for (const key of Object.getOwnPropertySymbols(Real)) {
+    try {
+      (Located as unknown as Record<symbol, unknown>)[key] = (Real as unknown as Record<symbol, unknown>)[key];
+    } catch {
+      // A symbol that can't be copied isn't one slots read.
+    }
+  }
+  if ("definition" in (Real as object)) (Located as unknown as Record<string, unknown>).definition = (Real as unknown as Record<string, unknown>).definition;
   located.add(Located);
   return Located as unknown as T;
 }
@@ -132,6 +146,8 @@ const MODULES: Record<string, unknown> = {
   },
   "@hyper-elements/react": elementsExports(),
   "@hyper-elements/react/template": Templates,
+  // A template's rules name lint's plugin: `rules: { plugins: { lint: lint() } }`.
+  "@hyper-elements/lint": Lint,
 };
 
 /**
@@ -308,13 +324,24 @@ function place(error: unknown): { line?: number; column?: number } {
 
 function requireModule(name: string): unknown {
   if (name in MODULES) return MODULES[name];
-  throw new SourceError("import", `Can't import "${name}": the playground runs one file, with "@hyper-elements/react", "@hyper-elements/react/template" and "react"`);
+  throw new SourceError("import", `Can't import "${name}": the playground runs one file, with "@hyper-elements/react", "@hyper-elements/react/template", "@hyper-elements/lint" and "react"`);
 }
 
 const isElement = (value: unknown): value is React.ReactElement => React.isValidElement(value);
 
-/** The template a module exports: its default export, else its first exported element or component. */
-function exported(exports: Record<string, unknown>): React.ReactElement {
+const TEMPLATE_RECORD = Symbol.for("hyper-elements.template");
+type TemplateObject = Templates.Template;
+/** A template(): its function carries the record template() gives it. */
+const isTemplate = (value: unknown): value is TemplateObject => typeof value === "function" && Boolean((value as unknown as Record<symbol, unknown>)[TEMPLATE_RECORD]);
+
+/** What a module exports: a template() it exports as its default, else its design (its first exported element or component). */
+function exported(exports: Record<string, unknown>): { element?: React.ReactElement; template?: TemplateObject } {
+  if (isTemplate(exports.default)) return { template: exports.default };
+  return { element: designOf(exports) };
+}
+
+/** The design a module exports: its default export, else its first exported element or component. */
+function designOf(exports: Record<string, unknown>): React.ReactElement {
   const named = Object.entries(exports).filter(([name]) => name !== "default" && name !== "__esModule");
   const template = exports.default ?? named.find(([, value]) => isElement(value))?.[1] ?? named.find(([name, value]) => typeof value === "function" && /^[A-Z]/.test(name))?.[1];
   if (isElement(template)) return template;
@@ -327,7 +354,7 @@ function exported(exports: Record<string, unknown>): React.ReactElement {
   throw new SourceError("export", `The default export is ${template === null ? "null" : `a ${typeof template}`}: export a component or its JSX`);
 }
 
-function evaluate(code: string): React.ReactElement {
+function evaluate(code: string): { element?: React.ReactElement; template?: TemplateObject } {
   const js = compile(code);
   const module = { exports: {} as Record<string, unknown> };
   try {
@@ -435,7 +462,40 @@ function assetsOf(root: Resolved): Result["assets"] {
     for (const child of node.children) if (typeof child !== "string") visit(child);
   };
   visit(root);
-  return { fonts: [...fonts.values()].slice(0, 24), images: [...images].slice(0, 24) };
+  return { fonts: withUrls([...fonts.values()], root.props.fonts).slice(0, 24), images: [...images].slice(0, 24) };
+}
+
+/** Each font need with the address the design's own `fonts` give for its family, weight and style, where it's https. */
+function withUrls(needs: FontNeed[], faces: unknown): FontNeed[] {
+  const list = Array.isArray(faces) ? (faces as Array<{ family?: unknown; src?: unknown; weight?: unknown; style?: unknown }>) : [];
+  return needs.map((need) => {
+    const face = list.find((f) => String(f.family) === need.family && (Number(f.weight) || 400) === need.weight && (f.style === "italic" ? "italic" : "normal") === need.style);
+    return typeof face?.src === "string" && /^https:\/\//.test(face.src) ? { ...need, url: face.src } : need;
+  });
+}
+
+/** templateAssets()'s faces as font needs, each with its file's address where it's https. */
+function needsOf(faces: Array<{ family: string; src: string; weight?: number | string; style?: string }>): FontNeed[] {
+  return faces.map((face) => ({
+    family: face.family,
+    weight: Number(face.weight) || 400,
+    style: face.style === "italic" ? "italic" : "normal",
+    ...(/^https:\/\//.test(face.src) ? { url: face.src } : {}),
+  }));
+}
+
+/** Each top-level image field's file, sniffed, by its field path: what checkLayout() reads beside the layout. */
+function sniffedFiles(template: TemplateObject, values: Record<string, unknown>, images: Record<string, Uint8Array>): Record<string, Templates.SniffedImage> {
+  const files: Record<string, Templates.SniffedImage> = {};
+  for (const field of template.describe().fields) {
+    if (field.kind !== "image" || /[.[]/.test(field.path)) continue;
+    const value = values[field.path] as string | { src?: string } | undefined;
+    const src = typeof value === "string" ? value : value?.src;
+    const bytes = src ? images[src] : undefined;
+    const sniffed = bytes && Templates.sniffImage(bytes);
+    if (sniffed) files[field.path] = sniffed;
+  }
+  return files;
 }
 
 // ─── Requests ──────────────────────────────────────────────────────────────
@@ -497,10 +557,32 @@ async function handle(request: Request): Promise<Result> {
   }
   const restore = captureConsole(result.logs);
   try {
-    const element = evaluate(request.code);
-
-    // What it holds, and where each component is in the code: before anything else renders it.
     trace = [];
+    const module = evaluate(request.code);
+    // A template is checked with its example, in the format asked for (its first): what's rendered is the snapshot.
+    let template: { object: TemplateObject; checked: ReturnType<TemplateObject["check"]>; format?: string } | undefined;
+    let element: React.ReactElement | Elements.Snapshot;
+    if (module.template) {
+      const object = module.template;
+      const formats = object.formats ? Object.keys(object.formats) : [];
+      const format = formats.length ? (request.templateFormat && formats.includes(request.templateFormat) ? request.templateFormat : formats[0]) : undefined;
+      const checked = object.check(object.example, format ? ({ format } as never) : {});
+      result.template = { root: object.root as RootName, formats, ...(format ? { format } : {}) };
+      result.root = object.root as RootName;
+      if (!checked.valid) {
+        result.diagnostics = withLines(checked.diagnostics, []);
+        result.error = { kind: "template", message: `${checked.diagnostics.filter((d) => d.severity === "error").length || "Some"} problems to fix in the template's example` };
+        result.ms = Math.round(performance.now() - started);
+        return result;
+      }
+      template = { object, checked, ...(format ? { format } : {}) };
+      element = (checked.snapshots as Record<string, Elements.Snapshot>)[format ?? "default"];
+    } else element = module.element!;
+    const canvasTemplate = template?.object.root === "Canvas";
+
+    // What it holds, and where each component is in the code: before anything else renders it (a template's were
+    // rendered by its check, just above).
+    if (!template) trace = [];
     const inspection = inspect(element);
     const rendered = trace;
     result.root = inspection.root as RootName | null;
@@ -513,19 +595,32 @@ async function handle(request: Request): Promise<Result> {
     // (email/more-checks) isn't said either.
     const checks = request.checks !== false;
     const lintable = result.root === "Email" || result.root === "Page";
-    const plugins = [...(isEmail && checks && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable ? [linter()] : [])];
+    // A template brings its own rules (lint's among them, where it requires it): lint isn't run on it twice.
+    const plugins = [...(isEmail && checks && sandbox.extras.clients ? [await sandbox.extras.clients.emailClients()] : []), ...(lintable && !template ? [linter()] : [])];
     const options = plugins.length ? { plugins } : {};
     const lines = (diagnostics: readonly Elements.Diagnostic[]) => withLines(checks ? diagnostics : diagnostics.filter((d) => d.code !== "email/more-checks"), result.nodes);
 
     try {
-      if (request.kind === "render") {
-        const output = await Elements.render(element, { ...options, ...(isEmail ? { blockMap: true } : {}) });
+      if (request.kind === "render" && canvasTemplate) {
+        // A Canvas template's measured rules are decided only when it's drawn: its render is its image (the page asks
+        // for its assets, then for the PNG), so there's no HTML here.
+        result.diagnostics = lines(template!.checked.diagnostics);
+        result.outline = Elements.outline(element);
+        const format = template!.format ? (template!.object.formats as Record<string, { width?: number; height?: number }>)[template!.format] : undefined;
+        if (format?.width && format.height) result.size = { width: format.width, height: format.height };
+      } else if (request.kind === "template-assets") {
+        if (!canvasTemplate) throw new Error("template-assets is a Canvas template's request");
+        if (!sandbox.extras.image) throw new Error(missing("image", "The image writer"));
+        const found = sandbox.extras.image.templateAssets(element);
+        result.assets = { fonts: needsOf(found.fonts).slice(0, 24), images: found.images.filter((url) => /^https?:/.test(url)).slice(0, 24) };
+      } else if (request.kind === "render") {
+        const output = await Elements.render(element as never, { ...options, ...(isEmail ? { blockMap: true } : {}) });
         result.html = output.html;
         result.text = output.text;
         result.blocks = output.blocks?.entries.map(({ path, type, offset }) => ({ path, type, offset }));
         result.diagnostics = lines(output.diagnostics);
         result.outline = Elements.outline(element);
-        const prepared = Elements.prepare(element).root as Resolved | null;
+        const prepared = Elements.prepare(element as never).root as Resolved | null;
         if (prepared) {
           const paths = outlinePaths(prepared);
           // Only where they line up: an outline written another way than this file reads it has no paths.
@@ -535,18 +630,32 @@ async function handle(request: Request): Promise<Result> {
         }
       } else if (request.kind === "pdf") {
         if (!sandbox.extras.pdf) throw new Error(missing("pdf", "The PDF writer"));
-        const output = await sandbox.extras.pdf.renderPdf(element, { fonts: request.fonts, images: request.images });
+        const output = await sandbox.extras.pdf.renderPdf(element as never, { fonts: request.fonts, images: request.images });
         result.bytes = output.pdf;
         result.diagnostics = lines(output.diagnostics);
       } else if (request.kind === "image") {
         if (!sandbox.extras.image) throw new Error(missing("image", "The image writer"));
+        if (canvasTemplate) {
+          // A template's image fields are checked against the files given, at the scale it's drawn, before it's drawn
+          // (as the CLI does): a file whose size or type isn't what its value says is an error, and nothing is drawn.
+          const { object, checked, format } = template!;
+          const layout = await sandbox.extras.image.layoutImage(element, { fonts: request.fonts, images: request.images, scale: request.scale, strict: true });
+          const files = sniffedFiles(object, checked.values as Record<string, unknown>, request.images);
+          const report = Templates.checkLayout(object, checked.values, { ...(format ? { format } : {}), scale: request.scale, layout, files, checked });
+          if (report.diagnostics.some((d) => d.severity === "error")) {
+            result.diagnostics = lines([...layout.diagnostics, ...report.diagnostics]);
+            result.error = { kind: "template", message: `${report.diagnostics.filter((d) => d.severity === "error").length} problems with the template's images` };
+            result.ms = Math.round(performance.now() - started);
+            return result;
+          }
+        }
         const output = await sandbox.extras.image.renderImage(element, { fonts: request.fonts, images: request.images, format: request.format, scale: request.scale });
         result.bytes = output.image;
         result.size = { width: output.width, height: output.height };
         result.diagnostics = lines(output.diagnostics);
       } else if (request.kind === "previews") {
         if (!sandbox.extras.clients) throw new Error(missing("clients", "The email client previews"));
-        const output = await sandbox.extras.clients.renderInEmailClients(element, { emailClients: request.clients ?? sandbox.extras.clients.previewClients, dark: request.dark, fonts: "url" });
+        const output = await sandbox.extras.clients.renderInEmailClients(element as never, { emailClients: request.clients ?? sandbox.extras.clients.previewClients, dark: request.dark, fonts: "url" });
         result.previews = output.previews.map((p) => ({
           id: String(p.id),
           client: String(p.client),

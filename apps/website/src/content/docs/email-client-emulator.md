@@ -90,7 +90,7 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/welcome-gmail-app.png" title="Open the welcome email in the Gmail app on Android at full size"><img src="/generated/email-clients/welcome-gmail-app.png" width="380" height="193" loading="lazy" alt="The welcome email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
 
-**[Tarn order shipped](/templates/tarn-shipped)**
+**[Tarn order shipped](/playground#starter=tarn-shipped)**
 
 <div class="client-gallery">
 <figure><a href="/generated/email-clients/tarn-shipped-outlook.png" title="Open the Tarn order shipped email in Classic Outlook at full size"><img src="/generated/email-clients/tarn-shipped-outlook.png" width="820" height="1373" loading="lazy" alt="The Tarn order shipped email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
@@ -99,7 +99,7 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/tarn-shipped-gmail-app.png" title="Open the Tarn order shipped email in the Gmail app on Android at full size"><img src="/generated/email-clients/tarn-shipped-gmail-app.png" width="380" height="1506" loading="lazy" alt="The Tarn order shipped email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
 
-**[Keel sign-in code](/templates/keel-sign-in-code)**
+**[Keel sign-in code](/playground#starter=keel-sign-in-code)**
 
 <div class="client-gallery">
 <figure><a href="/generated/email-clients/keel-sign-in-code-outlook.png" title="Open the Keel sign-in code email in Classic Outlook at full size"><img src="/generated/email-clients/keel-sign-in-code-outlook.png" width="820" height="829" loading="lazy" alt="The Keel sign-in code email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>

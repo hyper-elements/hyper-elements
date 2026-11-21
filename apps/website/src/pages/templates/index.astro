@@ -1,35 +1,212 @@
 ---
 import Base from "../../layouts/Base.astro";
-import Thumb from "../../components/Thumb.astro";
-import { templates, thumbWidth } from "../../lib/examples";
+import GalleryThumb from "../../components/GalleryThumb.astro";
+import { brands, brandsFor, firstView, galleryTemplates, templateUrl, type TemplateInfo } from "../../lib/gallery";
+
+const outputs = [
+  { id: "all", label: "Everything" },
+  { id: "emails", label: "Emails" },
+  { id: "pages", label: "Pages" },
+  { id: "documents", label: "PDFs" },
+  { id: "images", label: "Images" },
+].filter((o) => o.id === "all" || galleryTemplates.some((t) => t.folder === o.id));
+
+// One gallery, its outputs mixed so no one kind leads: the next template of each output in turn.
+const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => galleryTemplates.filter((t) => t.folder === folder));
+const gallery: TemplateInfo[] = [];
+while (queues.some((q) => q.length)) for (const q of queues) if (q.length) gallery.push(q.shift()!);
+
+// Each card in the next sample brand, dark and light in turn, so the gallery shows the range of looks: "their own
+// brands", until a visitor picks one.
+const luminance = (hex: string) => {
+  const n = parseInt(hex.replace("#", "").padEnd(6, "0").slice(0, 6), 16);
+  return 0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255);
+};
+const dark = brands.filter((b) => luminance(b.colors.background ?? "#fff") < 128);
+const light = brands.filter((b) => !dark.includes(b));
+let next = 0;
+const brandOf = () => {
+  const i = next++;
+  const from = dark.length && i % 2 ? dark : light;
+  return from[Math.floor(i / 2) % from.length];
+};
+const company = (t: TemplateInfo) => t.recreates?.company ?? "";
+const swatch = (colors: Record<string, string>) => `background:linear-gradient(135deg, ${colors.background ?? "#fff"} 50%, ${colors.primary ?? "#888"} 50%)`;
+// What the picker's script needs of each sample brand: its name and its background, for a card's frame.
+const picker = Object.fromEntries(brands.map((b) => [b.id, { name: b.name, background: b.colors.background ?? "#fff" }]));
 ---
-<Base title="Templates" description="Designs written with Hyper Elements: emails, a landing page, an invoice and social images, each shown as the engine renders it, with its code.">
-  <section class="page-hero">
-    <div class="wrap">
-      <p class="eyebrow">Templates</p>
-      <h1 class="h-page"><span class="grad">Copy, paste, send.</span></h1>
-      <p class="lede">Complete designs you can drop into your app. Every one is rendered by the engine with its plain text, its phone layout and its diagnostics, so you see exactly what you'll ship.</p>
-    </div>
-  </section>
-  <div class="wrap">
-    <div class="grid grid-2">
-      {templates.map((t) => (
-        <a class="card tcard reveal" href={`/templates/${t.slug}`}>
-          <Thumb example={t} width={thumbWidth(t, { page: 1000, document: 860, email: 640 })} height={340} />
-          <div class="tcard-body">
-            <div class="tcard-top"><h2>{t.title}</h2><span class="chip">{`<${t.root}>`}</span></div>
-            <p>{t.description}</p>
-          </div>
-        </a>
-      ))}
+<Base title="Templates" description="Ready-made designs for emails, web pages, PDFs and images, in plain JSX. Each takes your brand: see it in the sample brands, and copy it.">
+  <div class="t-bar">
+    <div class="gwrap">
+      <div class="t-left">
+        <h1>Templates</h1>
+        <div class="chips" role="radiogroup" aria-label="Output">
+          {outputs.map((o, i) => <button type="button" role="radio" aria-checked={i === 0 ? "true" : "false"} data-output-pick={o.id}>{o.label}</button>)}
+        </div>
+      </div>
+      <div class="t-right">
+        <span class="t-in" id="brand-label">See them in <strong data-brand-name>their own brands</strong></span>
+        <div class="swatches" role="radiogroup" aria-labelledby="brand-label">
+          <button type="button" role="radio" aria-checked="true" data-brand-pick="own" aria-label="Their own brands" title="Their own brands" class="own"></button>
+          {brands.map((b) => <button type="button" role="radio" aria-checked="false" data-brand-pick={b.id} aria-label={b.name} title={b.name} style={swatch(b.colors)}></button>)}
+        </div>
+      </div>
     </div>
   </div>
+
+  <div class="gwrap">
+    <div class="gallery" data-gallery>
+      {gallery.map((t) => {
+        // A recreation is shown in its company's own brand.
+        const own = t.recreates ? brandsFor(t)[0] : brandOf();
+        const ownCaption = t.recreates ? `in ${company(t)}'s own brand` : `in ${own.name}`;
+        const previews = Object.fromEntries(Object.keys(t.byBrand).map((id) => [id, firstView(t, id)?.preview]));
+        return (
+          <a class="gcard" href={`${templateUrl(t)}?brand=${own.id}`} data-href={templateUrl(t)} data-output={t.folder} data-own={own.id} data-own-caption={ownCaption} data-own-background={own.colors.background} data-previews={JSON.stringify(previews)}>
+            <span class="gshot" style={`background:${own.colors.background}`}><GalleryThumb t={t} brand={own.id} /></span>
+            <span class="gcap">
+              <span class="gname">{t.label}</span>
+              <span class="gmeta">{t.output} · <span data-caption>{ownCaption}</span></span>
+            </span>
+          </a>
+        );
+      })}
+    </div>
+    <p class="empty" data-empty hidden>Nothing here yet.</p>
+  </div>
+  <script type="application/json" id="brands" set:html={JSON.stringify(picker)} />
 </Base>
 
+<script>
+  import { inBrand, watch } from "../../scripts/gallery-images";
+
+  const cards = [...document.querySelectorAll<HTMLElement>("[data-gallery] [data-output]")];
+  const gallery = document.querySelector<HTMLElement>("[data-gallery]")!;
+  // An image template is drawn in the visitor's browser, in the brand its card shows, as it comes into view.
+  watch(document.querySelectorAll<HTMLImageElement>("[data-gallery] img[data-draw]"));
+
+  // Outputs.
+  const outputs = [...document.querySelectorAll<HTMLElement>("[data-output-pick]")];
+  outputs.forEach((b) =>
+    b.addEventListener("click", () => {
+      outputs.forEach((x) => x.setAttribute("aria-checked", String(x === b)));
+      const output = b.dataset.outputPick;
+      for (const card of cards) card.hidden = !(output === "all" || card.dataset.output === output);
+      document.querySelector<HTMLElement>("[data-empty]")!.hidden = cards.some((c) => !c.hidden);
+      window.dispatchEvent(new Event("resize"));
+    }),
+  );
+
+  // Brands: every card drawn again in the one picked, from its own file; "own" is each card's first brand. The pick is
+  // kept in the address (?brand=) and, for the next visit, in this browser.
+  const BRANDS = JSON.parse(document.getElementById("brands")!.textContent!) as Record<string, { name: string; background: string }>;
+  const swatches = [...document.querySelectorAll<HTMLElement>("[data-brand-pick]")];
+  const KEY = "templates.brand";
+  const store = {
+    get: () => { try { return localStorage.getItem(KEY); } catch { return null; } },
+    set: (value: string) => { try { if (value === "own") localStorage.removeItem(KEY); else localStorage.setItem(KEY, value); } catch {} },
+  };
+  function pickBrand(id: string, remember = true) {
+    if (id !== "own" && !BRANDS[id]) id = "own";
+    swatches.forEach((x) => x.setAttribute("aria-checked", String(x.dataset.brandPick === id)));
+    document.querySelector<HTMLElement>("[data-brand-name]")!.textContent = id === "own" ? "their own brands" : BRANDS[id]!.name;
+    for (const card of cards) {
+      const brand = id === "own" ? card.dataset.own! : id;
+      const src = (JSON.parse(card.dataset.previews!) as Record<string, string | undefined>)[brand];
+      const background = id === "own" ? card.dataset.ownBackground! : BRANDS[id]!.background;
+      card.querySelector<HTMLElement>("[data-caption]")!.textContent = id === "own" ? card.dataset.ownCaption! : `in ${BRANDS[id]!.name}`;
+      // Its page opens in the brand it's shown in.
+      card.setAttribute("href", `${card.dataset.href}?brand=${brand}`);
+      const drawn = card.querySelector<HTMLImageElement>("img[data-draw]");
+      if (drawn) {
+        card.querySelector<HTMLElement>(".gshot")!.style.background = background;
+        inBrand(drawn, brand);
+        continue;
+      }
+      if (!src || card.dataset.shown === brand) continue;
+      card.dataset.shown = brand;
+      card.querySelector<HTMLElement>(".gshot")!.style.background = background;
+      card.querySelector<HTMLElement>(".view-frame")?.style.setProperty("--frame-bg", background);
+      const frame = card.querySelector<HTMLIFrameElement>("iframe");
+      if (frame) {
+        // A lazy frame that a filter hid and showed again doesn't load a new address: load it now if it's near the
+        // screen, else when it comes near.
+        const near = frame.getBoundingClientRect().top < innerHeight * 2;
+        frame.loading = near ? "eager" : "lazy";
+        frame.removeAttribute("srcdoc");
+        frame.src = src;
+      }
+    }
+    if (!remember) return;
+    store.set(id);
+    const url = new URL(location.href);
+    if (id === "own") url.searchParams.delete("brand");
+    else url.searchParams.set("brand", id);
+    history.replaceState(history.state, "", url);
+  }
+  cards.forEach((card) => (card.dataset.shown = card.dataset.own));
+  swatches.forEach((b) => b.addEventListener("click", () => pickBrand(b.dataset.brandPick!)));
+  const asked = new URLSearchParams(location.search).get("brand") ?? store.get();
+  if (asked && asked !== "own") pickBrand(asked, false);
+
+  // Masonry in reading order: the gallery is a grid of short rows, and each card spans as many as its preview is tall.
+  // Previews are measured as they load (site.ts fits them first), so it's laid out again after each one.
+  const ROW = 4;
+  const GAP = parseFloat(getComputedStyle(gallery).getPropertyValue("--gap")) || 20;
+  const lay = () =>
+    requestAnimationFrame(() => {
+      gallery.classList.add("masonry");
+      for (const card of cards) {
+        if (card.hidden) continue;
+        const height = card.querySelector<HTMLElement>(".gshot")!.offsetHeight;
+        card.style.gridRowEnd = `span ${Math.ceil((height + GAP) / ROW)}`;
+      }
+    });
+  window.addEventListener("resize", lay);
+  gallery.addEventListener("load", lay, true);
+  lay();
+</script>
+
 <style>
-  .page-hero { padding: 80px 0 48px; position: relative; }
-  .tcard { padding: 0; overflow: hidden; }
-  .tcard-body { padding: 18px 20px 22px; }
-  .tcard-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
-  .tcard-top h2 { margin: 0; }
+  .gwrap { width: 100%; max-width: 1480px; margin: 0 auto; padding: 0 24px; }
+  .t-bar { position: sticky; top: var(--header); z-index: 5; background: var(--bg); padding: 16px 0 14px; margin-bottom: 8px; }
+  .t-bar .gwrap { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; }
+  .t-left, .t-right { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; min-width: 0; }
+  .t-bar h1 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line-2); background: transparent; color: var(--text-2); font: 13px var(--sans); cursor: pointer; white-space: nowrap; }
+  .chips button[aria-checked="true"] { color: var(--bg); border-color: var(--text); background: var(--text); }
+  .t-in { font-size: 13px; color: var(--text-3); }
+  .t-in strong { color: var(--text); font-weight: 600; }
+  .swatches { display: flex; gap: 4px; flex-wrap: wrap; }
+  .swatches button { width: 24px; height: 24px; padding: 0; border-radius: 999px; cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 0 0 1px var(--line-2); }
+  .swatches button.own { background: conic-gradient(#f4f5fa 0 25%, #1a0b3d 0 50%, #ebe3d4 0 75%, #0e0f10 0); }
+  .swatches button[aria-checked="true"] { box-shadow: 0 0 0 2px var(--text); }
+  .swatches button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .gallery { --gap: 20px; columns: 3 300px; column-gap: var(--gap); }
+  .gallery.masonry { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 4px; column-gap: var(--gap); columns: auto; align-items: start; }
+  .gcard { position: relative; display: block; break-inside: avoid; margin-bottom: var(--gap); text-decoration: none; color: inherit; border-radius: 12px; }
+  .gallery.masonry .gcard { margin-bottom: 0; }
+  .gcard[hidden] { display: none; }
+  .gcard:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+  .gshot { display: block; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); transition: box-shadow 0.15s ease; }
+  .gcard:hover .gshot, .gcard:focus-visible .gshot { box-shadow: 0 14px 36px -14px rgba(0, 0, 0, 0.5); }
+  /* The name and brand only on hover or focus: the gallery is its previews. Always shown where there's no hover. */
+  .gcap { position: absolute; inset: auto 1px 1px; border-radius: 0 0 11px 11px; padding: 44px 16px 14px; display: flex; flex-direction: column; gap: 3px; background: linear-gradient(to top, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.6) 60%, rgba(0, 0, 0, 0)); opacity: 0; transform: translateY(6px); transition: opacity 0.15s ease, transform 0.15s ease; pointer-events: none; }
+  .gcard:hover .gcap, .gcard:focus-visible .gcap { opacity: 1; transform: none; }
+  @media (hover: none) { .gcap { opacity: 1; transform: none; } }
+  .gname { font-size: 15px; font-weight: 600; color: #fff; }
+  .gmeta { font: 12px var(--mono); color: #e5e5e5; }
+  .empty { color: var(--text-3); padding: 40px 0; }
+  @media (max-width: 1000px) {
+    .gallery { columns: 2; }
+    .gallery.masonry { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .gwrap { padding: 0 16px; }
+    .t-bar { position: static; }
+    .gallery { --gap: 16px; columns: 1; }
+    .gallery.masonry { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) { .gcap, .gshot { transition: none; } }
 </style>

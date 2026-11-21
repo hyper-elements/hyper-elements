@@ -3,7 +3,7 @@
 // (preview.ts), a PDF or an image into a file of the type this page says it is.
 import type { Diagnostic, FontNeed, Preview, Request, Result, RootName } from "../../playground/protocol";
 import { installAgentPaths } from "./agent";
-import { fetchAssets } from "./assets";
+import { fetchAssets, fontDataUrl, GALLERY_ASSETS } from "./assets";
 import { Checks, clientName, type Pick } from "./checks";
 import { $, $$, bytes, copy, download, h, plural } from "./dom";
 import { Templates, type StarterInfo } from "./templates";
@@ -19,6 +19,9 @@ type Layout = "split" | "code" | "preview";
 interface Boot {
   starter: StarterInfo & { source: string };
   starters: StarterInfo[];
+  /** The sample brands the Brand menu offers, and each real company's, offered for its recreations. */
+  brands: Array<{ id: string; name: string; block: string }>;
+  companyBrands: Record<string, { id: string; name: string; block: string }>;
   engine: string;
   build: string;
 }
@@ -129,6 +132,8 @@ const state = {
   goodCode: "",
   /** The block picked in the preview, a diagnostic or the outline. */
   selected: null as string | null,
+  /** Where the code exports a template with formats: the one checked and drawn. */
+  templateFormat: undefined as string | undefined,
 };
 
 const sandbox = new Sandbox({ base: "/playground/runtime", version: boot.build });
@@ -284,12 +289,13 @@ export async function render(): Promise<Result> {
   setStatus("rendering");
   sandbox.cancel("editor");
   const needs: Bundle[] = wantsClients(code) ? ["clients"] : [];
-  let result = await sandbox.run({ kind: "render", code, checks: true }, needs, "editor");
+  const templateFormat = state.templateFormat;
+  let result = await sandbox.run({ kind: "render", code, checks: true, ...(templateFormat ? { templateFormat } : {}) }, needs, "editor");
   if (mine !== sequence) return new Promise((resolve) => settle.push(resolve));
   if (result.root === "Email" && !needs.includes("clients")) {
     // An Email the code's text didn't give away: again, with its client checks.
     sawEmail = true;
-    result = await sandbox.run({ kind: "render", code, checks: true }, ["clients"], "editor");
+    result = await sandbox.run({ kind: "render", code, checks: true, ...(templateFormat ? { templateFormat } : {}) }, ["clients"], "editor");
     if (mine !== sequence) return new Promise((resolve) => settle.push(resolve));
   }
   sawEmail = result.root === "Email";
@@ -301,6 +307,8 @@ export async function render(): Promise<Result> {
 function apply(result: Result, code: string) {
   state.result = result;
   fileDiagnostics = [];
+  // A template's format, as the sandbox checked it (its first, where none was asked for).
+  state.templateFormat = result.template?.format;
   if (result.ok) {
     state.good = result;
     state.goodCode = code;
@@ -318,6 +326,8 @@ function apply(result: Result, code: string) {
   }
   drawRoots();
   drawViews();
+  drawTemplateFormats();
+  drawBrand();
   drawProblems();
   checks.show(result);
   drawCounts();
@@ -513,6 +523,82 @@ rootsHost.addEventListener("keydown", (event) => {
   $(`[data-root="${to}"]`, rootsHost).focus();
 });
 
+// ─── A template's formats, and its brand ───────────────────────────────────
+
+const templateFormatsHost = $("[data-template-formats]");
+/** The template's formats (square, landscape; A4, Letter), where it has more than one: picking one checks and draws it. */
+function drawTemplateFormats() {
+  const template = state.good?.template;
+  const formats = template?.formats ?? [];
+  templateFormatsHost.hidden = formats.length < 2;
+  templateFormatsHost.replaceChildren(
+    ...formats.map((format) =>
+      h(
+        "button",
+        {
+          type: "button",
+          role: "radio",
+          "aria-checked": String(format === (state.templateFormat ?? formats[0])),
+          title: `The template's ${format} format`,
+          "data-template-format": format,
+          onclick: () => void setTemplateFormat(format),
+        },
+        format.charAt(0).toUpperCase() + format.slice(1),
+      ),
+    ),
+  );
+}
+
+export function setTemplateFormat(format: string): Promise<Result> | undefined {
+  const formats = state.good?.template?.formats ?? [];
+  if (!formats.includes(format) || format === state.templateFormat) return undefined;
+  state.templateFormat = format;
+  return render();
+}
+
+const BRAND_START = "// brand: start";
+const BRAND_END = "// brand: end";
+const brandHost = $("[data-brand]");
+const brandSelect = $("[data-brand-select]") as HTMLSelectElement;
+/** The text between a single file's brand markers, or undefined where the code has none. */
+function brandBlockOf(code: string): { start: number; end: number } | undefined {
+  const start = code.indexOf(BRAND_START);
+  const end = code.indexOf(BRAND_END, start);
+  return start >= 0 && end > start ? { start, end: end + BRAND_END.length } : undefined;
+}
+/** The brands the menu offers: the sample brands, and the company's own where the template is a recreation. */
+function brandChoices() {
+  const company = boot.starters.find((each) => each.id === state.starter)?.company;
+  const own = company ? boot.companyBrands[company] : undefined;
+  return [...(own ? [own] : []), ...boot.brands];
+}
+/** The Brand menu: shown where the code is a template's single file, with the brand whose block it holds picked. */
+function drawBrand() {
+  const code = editor.code;
+  const at = brandBlockOf(code);
+  brandHost.hidden = !at;
+  if (!at) return;
+  const block = code.slice(at.start, at.end);
+  const choices = brandChoices();
+  const current = choices.find((brand) => brand.block === block);
+  brandSelect.replaceChildren(
+    ...(current ? [] : [h("option", { value: "" }, "Your own brand")]),
+    ...choices.map((brand) => h("option", { value: brand.id }, brand.name)),
+  );
+  brandSelect.value = current?.id ?? "";
+}
+/** Swaps the brand block for another brand's: only the text between the markers changes, the rest of the code stays. */
+export function swapBrand(code: string, block: string): string | undefined {
+  const at = brandBlockOf(code);
+  return at ? code.slice(0, at.start) + block + code.slice(at.end) : undefined;
+}
+brandSelect.addEventListener("change", () => {
+  const brand = brandChoices().find((each) => each.id === brandSelect.value);
+  const next = brand && swapBrand(editor.code, brand.block);
+  if (next === undefined || next === editor.code) return;
+  void setCode(next, state.origin, state.starter, { changed: true });
+});
+
 // ─── Views ─────────────────────────────────────────────────────────────────
 
 const viewsHost = $("[data-views]");
@@ -623,7 +709,7 @@ function showOutput() {
       shownHtml = good.html;
       shownInspect = state.inspect;
       const types = new Map((good.blocks ?? []).map((block) => [block.path, `${block.type}${lineOf(block.path, good) ? ` · line ${lineOf(block.path, good)}` : ""}`]));
-      if (good.html) preview.show(good.html, { blocks: good.blocks, types, inspect: state.inspect && good.root === "Email" });
+      if (good.html) void showPreview(good, types);
     }
     fitDevice();
   } else if (state.view === "html" || state.view === "text") drawSource();
@@ -632,6 +718,23 @@ function showOutput() {
 }
 let shownHtml: string | undefined;
 let shownInspect = true;
+
+/**
+ * The HTML in the preview. A template's fonts are the site's own files: fetched here first and handed to the preview as
+ * data: URLs, which it writes in after it's marked the blocks (their offsets count the HTML as written).
+ */
+async function showPreview(good: Result, types: Map<string, string>) {
+  const html = good.html!;
+  const urls = [...new Set(html.match(GALLERY_ASSETS) ?? [])].filter((url) => /\.(ttf|otf|woff2?)$/i.test(url));
+  const fonts: Record<string, string> = {};
+  if (urls.length) {
+    const loaded = await Promise.all(urls.map((url) => fontDataUrl(url)));
+    urls.forEach((url, i) => loaded[i] && (fonts[url] = loaded[i]!));
+    // Something newer was shown meanwhile.
+    if (state.good !== good || shownHtml !== html) return;
+  }
+  preview.show(html, { blocks: good.blocks, types, inspect: state.inspect && good.root === "Email", fonts });
+}
 
 // The HTML as text, the block that's picked marked in it (an Email's block map says where each one is).
 function drawSource() {
@@ -713,12 +816,30 @@ function fileUrl(kind: FileKind, bytes: Uint8Array): Promise<string> {
 }
 
 /** The file of the last good render, drawn by the sandbox with the fonts and images this page fetched for it. */
-async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: FontNeed[]; images: string[] } | undefined = state.good?.assets, group = "editor-file", scale = 1): Promise<{ drawn?: Drawn; result: Result; missing: string[] }> {
+/** A Canvas template's assets, by its code and format: templateAssets() of its snapshot, asked of the image bundle once. */
+const templateNeeds = new Map<string, Promise<Result>>();
+
+async function fileOf(kind: FileKind, code = state.goodCode, needs: { fonts: FontNeed[]; images: string[] } | null | undefined = state.good?.assets, group = "editor-file", scale = 1, templateFormat = state.templateFormat): Promise<{ drawn?: Drawn; result: Result; missing: string[] }> {
   if (kind !== "png") scale = 1;
-  const key = `${kind}|${scale}|${code}`;
+  // A template's format is part of what's drawn: the same code in another format is another file.
+  const key = `${kind}|${scale}|${templateFormat ?? ""}|${code}`;
   if (group === "editor-file" && files[kind]?.key === key) return { drawn: files[kind], result: state.good!, missing: [] };
-  const assets = await fetchAssets(needs, { fallback: kind !== "pdf" });
-  const request: Request = kind === "pdf" ? { kind: "pdf", code, fonts: assets.fonts, images: assets.images } : { kind: "image", code, format: kind, scale, fonts: assets.fonts, images: assets.images };
+  const format = templateFormat ? { templateFormat } : {};
+  if (!needs && kind !== "pdf") {
+    // A Canvas template's render writes no HTML to find its fonts and images in (a design's render does, and says them):
+    // the image bundle says what they are. An agent's code comes this way too, with no page state to go by.
+    const asked = `${templateFormat ?? ""}|${code}`;
+    if (!templateNeeds.has(asked)) templateNeeds.set(asked, sandbox.run({ kind: "template-assets", code, ...format }, ["image"], group));
+    const found = await templateNeeds.get(asked)!;
+    if (found.ok) needs = found.assets;
+    else {
+      templateNeeds.delete(asked);
+      // A template that couldn't say what it needs fails here; a design that isn't a template is drawn as before.
+      if (found.template) return { result: found, missing: [] };
+    }
+  }
+  const assets = await fetchAssets(needs ?? undefined, { fallback: kind !== "pdf" });
+  const request: Request = kind === "pdf" ? { kind: "pdf", code, fonts: assets.fonts, images: assets.images, ...format } : { kind: "image", code, format: kind, scale, fonts: assets.fonts, images: assets.images, ...format };
   const result = await sandbox.run(request, [kind === "pdf" ? "pdf" : "image"], group);
   if (!result.ok || !result.bytes) return { result, missing: assets.missing };
   // It says it's a PDF (a PNG, an SVG): it's kept only if its first bytes agree, as a file of that type and no other.
@@ -1061,6 +1182,8 @@ function drawOrigin() {
 
 /** Replace the code: a starter's, a link's, an agent's. The editor's own typing doesn't come through here. */
 export function setCode(code: string, origin: typeof state.origin, starter: string | null = null, options: { changed?: boolean } = {}): Promise<Result> {
+  // Other code is another template, in its first format; the same template in another brand keeps the format it's in.
+  if (!(starter && starter === state.starter)) state.templateFormat = undefined;
   state.origin = origin;
   state.starter = starter;
   state.changed = options.changed ?? false;
@@ -1172,6 +1295,7 @@ installAgentPaths({
   setLayout,
   loadStarter,
   linkTo,
-  fileOf: (kind, code, needs) => fileOf(kind, code, needs, "agent"),
+  // (Code of the agent's own, whose assets its render may not have said: null, so they're asked for, not the page's.)
+  fileOf: (kind, code, needs) => fileOf(kind, code, needs ?? null, "agent"),
   views: () => (state.root ? VIEWS[state.root] : []),
 });

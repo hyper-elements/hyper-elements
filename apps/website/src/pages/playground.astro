@@ -4,7 +4,7 @@
 import Base from "../layouts/Base.astro";
 import CodeBlock from "../components/CodeBlock.astro";
 import "../styles/playground.css";
-import { defaultStarter, engineVersion, starterList } from "../lib/playground";
+import { brands, companyBrands, defaultStarter, engineVersion, starterList } from "../lib/playground";
 import { site } from "../lib/site";
 
 const description =
@@ -35,7 +35,7 @@ const roots = [
 ] as const;
 
 // What the page starts with: the first starter's code, so the editor is full before anything loads.
-const boot = { starter: defaultStarter, starters: starterList, engine: engineVersion, build: String(Date.now()) };
+const boot = { starter: defaultStarter, starters: starterList, brands, companyBrands, engine: engineVersion, build: String(Date.now()) };
 const json = (value: unknown) => JSON.stringify(value).replace(/</g, "\\u003c");
 
 const linkSample = `${site.url}/playground
@@ -115,6 +115,10 @@ get_playground_code()`;
         </button>
         <div class="pg-menu-list pg-templates-list" role="menu" aria-label="Designs" data-templates-list hidden></div>
       </div>
+      <label class="pg-brand" data-brand hidden title="The brand the template is drawn in: its block between // brand: start and // brand: end">
+        <span class="pg-brand-label">Brand</span>
+        <select data-brand-select aria-label="Brand"></select>
+      </label>
       <span class="pg-origin" data-origin hidden></span>
       <div class="pg-top-actions">
         <button class="btn btn-ghost btn-sm" type="button" data-share><span set:html={icons.link} /><span class="pg-label">Share</span></button>
@@ -146,6 +150,7 @@ get_playground_code()`;
         <header class="pg-bar pg-bar-views">
           <div class="pg-views" role="tablist" aria-label="View" data-views></div>
           <div class="pg-tools">
+            <div class="pg-seg pg-seg-text" role="radiogroup" aria-label="Template format" data-template-formats hidden></div>
             <div class="pg-seg pg-seg-text" role="radiogroup" data-formats hidden></div>
             <div class="pg-file-tools" data-file-tools hidden></div>
             <div class="pg-seg" role="radiogroup" aria-label="Preview width" data-devices>
@@ -261,3 +266,10 @@ get_playground_code()`;
     import "../playground/main.ts";
   </script>
 </Base>
+
+<style is:global>
+  /* The Brand menu: shown when the code is a template's single file, with its brand block. */
+  .pg-brand { display: inline-flex; align-items: center; gap: 8px; font: 500 11.5px var(--mono); color: var(--text-3); }
+  .pg-brand[hidden] { display: none; }
+  .pg-brand select { font: 500 12.5px var(--sans, system-ui); color: var(--text); background: var(--bg-2, #171717); border: 1px solid var(--line-2, #333); border-radius: 8px; padding: 5px 8px; }
+</style>

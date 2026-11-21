@@ -183,6 +183,8 @@ export interface PreviewOptions {
   /** Each path's element, for the label over a block. */
   types?: Map<string, string>;
   inspect: boolean;
+  /** Font files of the site's own, by the address the HTML names them by, as data: URLs: written in after marking. */
+  fonts?: Record<string, string>;
 }
 
 export interface PreviewEvents {
@@ -252,8 +254,14 @@ export class PreviewFrame {
     const token = random();
     this.tokens[index] = token;
     this.inspect = options.inspect;
+    // The block map counts the original HTML's bytes: it's marked first, and what's rewritten is rewritten after.
     let marked = options.blocks?.length ? mark(html, options.blocks) : html;
-    marked = marked.replaceAll("https://hyperelements.dev/img/", `${location.origin}/img/`).replaceAll("https://www.hyperelements.dev/img/", `${location.origin}/img/`);
+    // A template's fonts, fetched from this site by the page: as data: URLs, since this frame loads fonts only over
+    // https or as data, and a local build is http.
+    for (const [url, data] of Object.entries(options.fonts ?? {})) marked = marked.replaceAll(url, data);
+    for (const prefix of ["img/", "generated/gallery/assets/"]) {
+      marked = marked.replaceAll(`https://hyperelements.dev/${prefix}`, `${location.origin}/${prefix}`).replaceAll(`https://www.hyperelements.dev/${prefix}`, `${location.origin}/${prefix}`);
+    }
     const doc = documentOf(marked, policy(token), { nonce: token, code: inspector(token, options.inspect) }, (parsed) => {
       // Each block's element beside its path, for the inspector's label.
       for (const element of parsed.querySelectorAll(`[${PATH}]`)) {

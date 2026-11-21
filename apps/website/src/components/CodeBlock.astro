@@ -1,6 +1,6 @@
 ---
 import { Code } from "astro:components";
-import { hyperTheme } from "../lib/shiki-theme.mjs";
+import { hyperColorTheme, hyperTheme } from "../lib/shiki-theme.mjs";
 
 interface Props {
   code: string;
@@ -8,8 +8,10 @@ interface Props {
   file?: string;
   class?: string;
   style?: string;
+  /** In color, not the site's greyscale: where the code is what the page is for. */
+  color?: boolean;
 }
-const { code, lang = "tsx", file, class: className = "", style } = Astro.props;
+const { code, lang = "tsx", file, class: className = "", style, color = false } = Astro.props;
 ---
 <div class:list={["code-block", { floating: !file }, className]} style={style}>
   {file && (
@@ -19,5 +21,5 @@ const { code, lang = "tsx", file, class: className = "", style } = Astro.props;
     </div>
   )}
   {!file && <button class="copy-btn" type="button" data-copy-code>Copy</button>}
-  <Code code={code} lang={lang as any} theme={hyperTheme as any} />
+  <Code code={code} lang={lang as any} theme={(color ? hyperColorTheme : hyperTheme) as any} />
 </div>

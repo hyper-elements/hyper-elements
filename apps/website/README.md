@@ -11,7 +11,7 @@ pnpm --filter @hyper-elements/website check:playground   # after build: the play
 
 ## Every preview is real output
 
-Nothing on the site is a mockup. `scripts/generate.mjs` renders every example in `examples/` with Hyper Elements itself: the gallery's designs (`templates/`), one example per component (`components/`), and the home page's own examples (`showcase/`). It writes:
+Nothing on the site is a mockup. `scripts/generate.mjs` renders every example in `examples/` with Hyper Elements itself: the designs other pages show (`templates/`: the home page, `/ai`, the comparisons and the playground's starters), one example per component (`components/`), and the home page's own examples (`showcase/`). It writes:
 
 | Output | What |
 |--------|------|
@@ -103,7 +103,7 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 | `/docs/…` | `src/content/docs/**/*.md`, in the order of `docsNav` in `src/lib/site.ts` |
 | `/docs/elements/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
-| `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
+| `/templates`, `/templates/<folder>/<name>` | The templates (`templates/` at the repository's root): `templates/_scripts/website.tsx` draws each in every sample brand into `src/generated/gallery.json` (`pnpm --filter @hyper-elements/website generate:gallery`). An image template is drawn in the visitor's browser, by a worker bundled from the packages' sources (`src/gallery/worker.ts`, `scripts/gallery-runtime.mjs`). The templates' fonts and images, `/generated/gallery/assets/`, come from `templates/_assets/` (`scripts/gallery-assets-integration.mjs`). Each HTML preview, which a card or a template's page loads when a visitor picks a brand, is written when the site is built, from `gallery.json` (`src/pages/generated/gallery/[preview].html.ts`). `/templates/<slug>` sends an old gallery design to the playground |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
