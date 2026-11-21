@@ -45,7 +45,7 @@ into the published ones (tsup's `noExternal`), so nobody installs them.
 | `packages/internal/core` | `@hyper-elements/core` | No (bundled into react) | The design tree (internal), element definitions, value kinds, validation, custom elements, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
 | `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. Its `/playground` runs the engine in the visitor's browser, bundled from `packages/*/src` (`scripts/playground-runtime.mjs`): a Node-only import added to the main, PDF, image, email-clients or lint entries needs a stand-in in `apps/website/playground/sandbox/shims/`. The code runs in a sandbox; `apps/website/playground/README.md` says how. Its `/tools/open-graph-image-generator` draws the Canvas templates in `apps/website/examples/og-image/` in a worker bundled the same way (`apps/website/README.md`). |
 | `benchmark/` | `@hyper-elements/agent-benchmark` | No | The agent benchmark: how long a coding agent takes to write a correct email or image with Hyper Elements and with other tools. Its own npm package, outside the pnpm workspace; see `benchmark/README.md`. |
-| `examples/` | | No | `demo` (`@hyper-elements/example-demo`, the showcase app), `content-workflows` (email, JSON and PDF recipes; tested in CI), `react-email-in-editor`, `nextjs-app-router` |
+| `examples/` | | No | `demo` (`@hyper-elements/example-demo`, the showcase app), `content-workflows` (email, JSON and PDF recipes; tested in CI), `react-email-in-editor`, `custom-elements-in-editor` (custom elements as tools of the Unlayer editor: a shop's five, one filled from a store, and a whole email's), `nextjs-app-router` |
 | `skills/hyper-elements/SKILL.md` | | | The agent skill for writing designs, generated from the element definitions like `GUIDE.md` |
 | `skills/brand-templates/` | | | The agent skill for designs made from templates, and for writing templates: hand-written, its commands and its `example.tsx` held to the CLI by `packages/cli/test/skill.test.ts` |
 | `tests/` | | No | Consumer apps that install the packed package (see Testing) |
@@ -81,7 +81,11 @@ renders against the environment where it is.
 Elements aren't hand-written. Each is a definition in `packages/internal/core/src/components.ts` (props, styles, children,
 targets, support per output, editors), and `packages/react/src/primitives/components.tsx` makes a React component of
 each, so its prop types come from the same definition that validates them. `defineElement()`
-(`packages/react/src/primitives/custom.tsx`) makes a custom element from them.
+(`packages/react/src/primitives/custom.tsx`) makes a custom element from them. Its props are made with `prop`'s helpers
+and `defineProperty()` (`packages/react/src/primitives/properties/`): data that imports only core, never React or the
+collecting render (`properties.test.ts`), so the same limits can check a value where nothing renders. `checkValue()`
+there is how an editing app checks what a field holds against its prop (Unlayer's builder's fields in
+`packages/react/src/builder/field.ts` use it).
 
 ## Rendering pipeline
 
@@ -128,7 +132,7 @@ JSX
 | `packages/internal/core/src/resolve.ts` | Layout: the width of every block, which every output reads |
 | `packages/internal/core/src/theme.ts` | Themes: reading one, token environments and scopes, and merging a theme into a node's style |
 | `packages/react/src/utils/` | The collecting render: `collect.ts`, `server-renderer.ts`, `render-scope.ts` |
-| `packages/react/src/builder/` | `/builder`. `toDesign()` writes a design as a builder design, the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
+| `packages/react/src/builder/` | `/builder`. `toDesign()` writes a design as a builder design, the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). `custom.ts` is a template's own elements as the builder's custom tools: their blocks in a design both ways (`customTools`, `elements`), and `registerTools()`. It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
 | `packages/react/src/builder/tool-defaults.ts` | Each tool's default values and the design's schema version, in the editor's key order |
 
 ## Testing
@@ -244,8 +248,8 @@ skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
   template loader; the release script's tests
-  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 349,800 bytes, `dist/builder.js`
-  521,700 bytes, `dist/template.js` 94,800 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 356,350 bytes, `dist/builder.js`
+  571,600 bytes, `dist/template.js` 94,800 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
   email-clients packed and installed beside the packed core and the models package from npm (`test:pack`); the CLI's
   tests on Node and Bun, and its consumer app (`tests/cli-integration`).

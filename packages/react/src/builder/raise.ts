@@ -7,12 +7,14 @@
  * its HTML, a Table the builder's table (table.ts). What a tool has no field for is a hidden property of it
  * (hide.ts); what no tool shows (a Layer, an Svg, a box nested in a column, a custom element), or a table
  * the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new engine's own markup,
- * and said.
+ * and said; a template's own element is its custom tool's block instead where the design is written with them
+ * (custom.ts).
  */
 import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
 import { collectTemplate, snapshotData } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
+import { customBlock, toolProblem, toolsOf, unkept } from "./custom";
 import { block, columnWith, rowWith, type Block, type Body, type BodyFields, type Row } from "./design";
 import { hiddenOf, leftOut, merge } from "./hide";
 import { lockedHtml } from "./locked";
@@ -36,11 +38,14 @@ const PAINT = ["backgroundColor", "border", "borderRadius"];
 /** What a browser gives text where nothing says otherwise. */
 const BROWSER_TEXT: Record<string, unknown> = { fontSize: 16, fontStyle: "normal", letterSpacing: 0, textAlign: "left", textTransform: "none" };
 
-export function raise(element: React.ReactElement): Raised {
+export function raise(element: React.ReactElement, options: { customTools?: boolean } = {}): Raised {
   const report: string[] = [];
   // The builder takes a design's element; a snapshot is the guardrail path's, which the builder isn't part of.
   if (snapshotData(element)) return { body: null, report: ["builder/snapshot: toDesign() takes a design's element, not a snapshot"] };
   const { document, diagnostics, components, template } = collectTemplate(element);
+  // Two elements that are one tool in the builder (their types in its words are one name) can't both be its blocks:
+  // refused, as registerTools() refuses them.
+  if (options.customTools) toolsOf(components.filter((c) => c.custom && !c.categories.includes("section") && !unkept(c)).map((definition) => ({ definition })));
   // A template's guardrails aren't the builder's: it takes the design a template builds, as a plain root.
   if (template) return { body: null, report: [`builder/template: the design's root is the template ${template.id}: the builder takes the design it builds, toDesign(Template.design(values))`] };
   if (!document || diagnostics.some((d) => d.severity === "error")) return { body: null, report: diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
@@ -99,6 +104,8 @@ export function raise(element: React.ReactElement): Raised {
     const given: Record<string, unknown> = { ...BROWSER_TEXT, color: resolvedRoot.text.color, fontFamily: resolvedRoot.text.fontFamily, fontWeight: resolvedRoot.text.fontWeight };
     return Object.fromEntries(Object.entries(text).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(given[key]))) as Record<string, Json>;
   };
+  /** Each element's tool's block, with what it's of. */
+  const tools = new Map<Block, { node: Node; path: string; around: Sides; definition: (typeof components)[number] }>();
   const place: Place = {
     at,
     report,
@@ -108,6 +115,16 @@ export function raise(element: React.ReactElement): Raised {
       report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
       const own = at(path);
       return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
+    },
+    custom: (node, path, around, hiding) => {
+      // An element placed where a Section goes renders a band across the window, which no block in a column is; one
+      // with a prop named as one of the builder's own for a block can't keep it there.
+      const definition = options.customTools ? components.find((c) => c.type === node.type && !c.categories.includes("section") && !unkept(c)) : undefined;
+      if (!definition) return undefined;
+      // Checked once the rows are written, at the room its column leaves it there (below).
+      const made = put(customBlock(node, definition, around, hiding));
+      tools.set(made, { node, path, around, definition });
+      return made;
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,
@@ -309,6 +326,20 @@ export function raise(element: React.ReactElement): Raised {
   const margin = root.type === "Document" ? { margin: cssSides((root.props?.margin as Sides | undefined) ?? { top: 48, right: 48, bottom: 48, left: 48 }) } : {};
   // No background is none (the builder's own default is a grey).
   const bodyHidden = { ...hiddenOf("body", root, ["props.margin"]), ...margin, ...title, backgroundColor: (style.backgroundColor as string | undefined) ?? "" };
+  // Each element's tool's block, drawn as the builder exports it: on its own, at the room its column leaves it, with
+  // no theme (in a document, as a page's, which the builder prints). One its tool can't draw so (a theme's token in
+  // its render) would fail the export: it's an HTML block of its markup instead, drawn as the template draws it, and
+  // said.
+  for (const row of [...body, ...headers, ...footers]) {
+    row.columns.forEach((column, index) => {
+      column.contents = column.contents.map((made) => {
+        const tool = tools.get(made);
+        if (!tool) return made;
+        const problem = toolProblem(tool.definition, components, root.type === "Email" ? "Email" : "Page", made.values, { contentWidth: common.contentWidth }, row.cells, index, { ...column.fields, ...column.values });
+        return problem ? place.locked(tool.node, tool.path, `its custom tool draws a ${tool.node.type} on its own, at the room its column leaves it and without the template's theme, and can't draw it so (${problem})`, tool.around) : made;
+      });
+    });
+  }
   if (root.type === "Document") {
     const paper = { documentSize: (root.props?.size as string | undefined) ?? "A4", documentOrientation: (root.props?.orientation as string | undefined) ?? "portrait" };
     return { body: { root: root.type, fields: { ...common, ...paper }, values: bodyHidden, rows: body, headers, footers }, report };

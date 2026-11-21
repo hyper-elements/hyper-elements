@@ -85,12 +85,14 @@ export type {
   VideoProps,
   HtmlProps,
 } from "./components";
+export { defineElement, type CustomElement, type CustomProps, type ElementSpec, type RenderContext, type ThemeValues } from "./custom";
+// What props are made with: framework-neutral, apart from the elements.
 export {
-  defineElement,
+  checkValue,
+  defineProperty,
   prop,
-  type CustomElement,
-  type CustomProps,
-  type ElementSpec,
+  type CheckedValue,
+  type PropertyDefinition,
   type FieldInput,
   type FieldInputs,
   type FieldValue,
@@ -98,9 +100,7 @@ export {
   type BlocksSpec,
   type ListSpec,
   type ObjectSpec,
-  type RenderContext,
-  type ThemeValues,
-} from "./custom";
+} from "./properties";
 // The earlier names, deprecated and kept so designs written with them still work.
 export { component, type ComponentSpec, type CustomComponent } from "./custom";
 export { defineTheme, extendTheme, token } from "./theme";

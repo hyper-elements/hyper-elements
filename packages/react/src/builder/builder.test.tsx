@@ -396,7 +396,7 @@ describe("a Table", () => {
 
   it("writes columns' percentages as their shares, as they're given, not as the whole pixels Elements lays them out in", () => {
     const shares = (template: React.ReactElement) => tables(toDesign(template).design)[0].values.table.rows[0].cells.map((cell: Values) => cell.width);
-    const given = (...widths: Array<string | undefined>) => (
+    const given = (...widths: Array<`${number}%` | undefined>) => (
       <Table>
         <TableRow>
           {widths.map((width, i) => (

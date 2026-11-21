@@ -8,14 +8,27 @@ import type React from "react";
 import { printTemplate, toElement } from "./print";
 import { readDesign, type DisplayMode } from "./read";
 import { checkTemplate } from "./check";
+import { registerTools, toolName, toolsOf, type Builder, type EditorOptions, type EditorWidget, type RegisterToolsOptions, type ToolSettings, type WithDefinition } from "./custom";
 import { uniqueIds } from "./ids";
 import { writeDesign, type Design, type DesignResult } from "./write";
 
-export type { Design, DesignResult, DisplayMode };
+export { registerTools, toolName };
+export type { Builder, Design, DesignResult, DisplayMode, EditorOptions, EditorWidget, RegisterToolsOptions, ToolSettings };
+
+export interface ToDesignOptions {
+  /**
+   * Write each of the template's own elements (made with `defineElement()`) as its custom tool's block, its props the
+   * block's values, for a builder those tools are registered in (`registerTools()`): there it's edited by its props,
+   * and `fromDesign()` reads it back as the element. Without it, each is an HTML block of its own markup, which any
+   * builder draws and none edits. An element placed where a Section goes is that HTML block either way. In a
+   * Document it's written and read back the same, and a document builder draws it as a page's.
+   */
+  customTools?: boolean;
+}
 
 /** A template in the new components (an `<Email>`, a `<Page>` or a `<Document>`) as the builder's design JSON. */
-export function toDesign(element: React.ReactElement): DesignResult {
-  return writeDesign(element);
+export function toDesign(element: React.ReactElement, options: ToDesignOptions = {}): DesignResult {
+  return writeDesign(element, options);
 }
 
 export interface TemplateResult {
@@ -41,12 +54,20 @@ export interface FromDesignOptions {
    * kept as it is: give one where a design can hold untrusted content.
    */
   toSafeHtml?: (html: string) => string;
+  /**
+   * The template's own elements (made with `defineElement()`): a custom tool's block of one of them (as
+   * `toDesign()` writes with `customTools`, or as dragged in from a builder's panel) comes back as that element,
+   * its values read by its props' kinds. A custom tool's block of none of them is left out, and said.
+   */
+  elements?: readonly WithDefinition[];
 }
 
 /** The builder's design JSON (made by toDesign() or in the builder) as a template in the new components. */
 export function fromDesign(design: unknown, options: FromDesignOptions = {}): TemplateResult {
   const report: string[] = [];
-  const root = checkTemplate(uniqueIds(readDesign(design, options.displayMode, report, options.toSafeHtml)), report);
+  const tools = toolsOf(options.elements);
+  const own = new Map([...tools.values()].map((definition) => [definition.type, definition]));
+  const root = checkTemplate(uniqueIds(readDesign(design, options.displayMode, report, options.toSafeHtml, tools)), report, own);
   const code = printTemplate(root, options.name, report);
-  return { element: toElement(root), code, report };
+  return { element: toElement(root, Object.fromEntries((options.elements ?? []).map((element) => [element.definition.type, element as unknown as React.ComponentType<any>]))), code, report };
 }

@@ -75,9 +75,11 @@ const WHAT_IN: Record<string, Record<string, string>> = {
   table: { linkStyle: "link style isn't read: the links in its cells keep their own style, Elements' blue and underlined where they have none" },
 };
 
-/** Says each value of the item (by its tool, `paragraph` a text's) that isn't read, and draws something. */
-export function sayUnread(tool: string, values: Values, defaults: Values | undefined, say: (message: string) => void): void {
-  const read = READ[tool === "paragraph" ? "text" : tool];
+/**
+ * Says each value of the item (by its tool, `paragraph` a text's) that isn't read, and draws something. A custom tool's
+ * block says what's read of it itself (`read`): that's its element's (custom.ts).
+ */
+export function sayUnread(tool: string, values: Values, defaults: Values | undefined, say: (message: string) => void, read: { values: string[]; phone: string[] } | undefined = READ[tool === "paragraph" ? "text" : tool]): void {
   if (!read) return;
   const hidden = (HIDDEN[tool === "text" ? "paragraph" : tool] ?? []).map((entry) => entry.key);
   const given = defaults ?? FRAMES[tool] ?? {};

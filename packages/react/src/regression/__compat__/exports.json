@@ -42,8 +42,10 @@
   "Text",
   "Video",
   "captureFragment",
+  "checkValue",
   "component",
   "defineElement",
+  "defineProperty",
   "defineTheme",
   "extendTheme",
   "formatDiagnostics",
@@ -59,7 +61,9 @@
  ],
  "./builder": [
   "fromDesign",
-  "toDesign"
+  "registerTools",
+  "toDesign",
+  "toolName"
  ],
  "./pdf": [
   "renderPdf",
