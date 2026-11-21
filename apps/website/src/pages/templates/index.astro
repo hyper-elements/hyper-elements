@@ -34,7 +34,6 @@ const company = (t: TemplateInfo) => t.recreates?.company ?? "";
 const swatch = (colors: Record<string, string>) => `background:linear-gradient(135deg, ${colors.background ?? "#fff"} 50%, ${colors.primary ?? "#888"} 50%)`;
 // What the picker's script needs of each sample brand: its name and its background, for a card's frame.
 const picker = Object.fromEntries(brands.map((b) => [b.id, { name: b.name, background: b.colors.background ?? "#fff" }]));
-const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/templates/CONTRIBUTING.md";
 ---
 <Base title="Templates" description="Ready-made designs for emails, web pages, PDFs and images, in plain JSX. Each takes your brand: see it in the sample brands, and copy it.">
   <div class="t-bar">
@@ -51,7 +50,6 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
           <button type="button" role="radio" aria-checked="true" data-brand-pick="own" aria-label="Their own brands" title="Their own brands" class="own"></button>
           {brands.map((b) => <button type="button" role="radio" aria-checked="false" data-brand-pick={b.id} aria-label={b.name} title={b.name} style={swatch(b.colors)}></button>)}
         </div>
-        <a class="t-add" href={CONTRIBUTE}>Add yours</a>
       </div>
     </div>
   </div>
@@ -74,7 +72,7 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
         );
       })}
     </div>
-    <p class="empty" data-empty hidden>Nothing here yet. <a href={CONTRIBUTE}>Add the first one</a>.</p>
+    <p class="empty" data-empty hidden>Nothing here yet.</p>
   </div>
   <script type="application/json" id="brands" set:html={JSON.stringify(picker)} />
 </Base>
@@ -185,7 +183,6 @@ const CONTRIBUTE = "https://github.com/hyper-elements/hyper-elements/blob/main/t
   .swatches button.own { background: conic-gradient(#f4f5fa 0 25%, #1a0b3d 0 50%, #ebe3d4 0 75%, #0e0f10 0); }
   .swatches button[aria-checked="true"] { box-shadow: 0 0 0 2px var(--text); }
   .swatches button:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
-  .t-add { font-size: 13px; color: var(--text-2); }
   .gallery { --gap: 20px; columns: 3 300px; column-gap: var(--gap); }
   .gallery.masonry { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 4px; column-gap: var(--gap); columns: auto; align-items: start; }
   .gcard { position: relative; display: block; break-inside: avoid; margin-bottom: var(--gap); text-decoration: none; color: inherit; border-radius: 12px; }

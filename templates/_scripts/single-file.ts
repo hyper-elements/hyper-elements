@@ -3,7 +3,7 @@
  * locally, the brand's block between `// brand: start` and `// brand: end`, the design, the imports merged, and
  * `export default` drawing the design in the brand), or as two files, the design and its `brand.ts`.
  *
- * It relies on the folder's grammar (templates/CONTRIBUTING.md): a design imports only packages and `_brand.ts`'s
+ * It relies on how the folder's files are written: a design imports only packages and `_brand.ts`'s
  * types, with no renamed imports, and a brand file is one `export const brand: Brand = { … }`.
  *
  *   pnpm --filter ./templates single-file <root folder>/<name> <brand> [out-file]

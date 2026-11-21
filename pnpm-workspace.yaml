@@ -3,7 +3,7 @@ packages:
   # Private, bundled into the published packages above: never published themselves.
   - 'packages/internal/*'
   - 'apps/*'
-  # Community templates and their sample brands: private, tested in CI, never published.
+  # The website's templates and their sample brands: private, never published.
   - 'templates'
   - 'examples/*'
   - '!examples/nextjs-app-router'

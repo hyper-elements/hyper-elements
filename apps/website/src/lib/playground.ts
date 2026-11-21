@@ -2,7 +2,7 @@
 // scripts/generate.mjs writes). The Design menu lists the ones of the root that's picked. (The API and links call
 // them starters: hyperElementsPlayground.starters(), loadStarter(), #starter=.)
 import data from "../generated/examples.json";
-// The community templates (templates/), each as its copyable single file in a sample brand (templates/_scripts/website.tsx).
+// The templates (templates/), each as its copyable single file in a sample brand (templates/_scripts/website.tsx).
 import gallery from "../generated/gallery.json";
 import engine from "../../../../packages/react/package.json";
 
@@ -49,7 +49,7 @@ export const brands: PlaygroundBrand[] = galleryData.brands.map(({ id, name, blo
 /** A real company's brand ("Original (…)"), by company: offered only for its recreations. */
 export const companyBrands: Record<string, PlaygroundBrand> = Object.fromEntries(galleryData.companies.map(({ company, id, name, block }) => [company, { id, name, block }]));
 
-/** A community template as a starter: its single file in the first sample brand (its company's brand for a recreation). */
+/** A template as a starter: its single file in the first sample brand (its company's brand for a recreation). */
 function fromGallery(t: GalleryTemplate): Starter {
   const company = t.recreates?.companyId;
   const brand = company ? `${company}-original` : FIRST_BRAND;
@@ -94,7 +94,7 @@ export const starters: Starter[] = [
   fromExample(examples.showcase.document, { id: "growth-report", title: "Growth report", description: "A quarterly board report: three figures, monthly revenue drawn in Svg, a table by region, and a header and page numbers on every page.", root: "Document" }),
   ...byRoot("Document").filter((starter) => starter.id !== "pell-ashby-invoice"),
   ...byRoot("Canvas"),
-  // Then the community templates, each in a sample brand the Brand menu changes.
+  // Then the templates, each in a sample brand the Brand menu changes.
   ...galleryData.templates.map(fromGallery),
 ];
 

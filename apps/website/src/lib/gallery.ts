@@ -1,4 +1,4 @@
-// The community templates (templates/ at the repository's root), as templates/_scripts/website.tsx wrote them into
+// The templates (templates/ at the repository's root), as templates/_scripts/website.tsx wrote them into
 // src/generated/gallery.json: every template in every sample brand, with its copyable files.
 import data from "../generated/gallery.json";
 import type { Example } from "./examples";
