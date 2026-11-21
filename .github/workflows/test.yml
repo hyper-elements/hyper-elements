@@ -182,17 +182,18 @@ jobs:
           fi
           echo "✅ /builder bundle within budget"
 
-      # Templates (/template, dist/template.js): about 86.2KB unminified ESM (template(), reading
+      # Templates (/template, dist/template.js): about 98.3KB unminified ESM (template(), reading
       # values by their fields, the checks of a design built from them, describe(), values files and
       # versions, fitInside(), sniffImage() and formatDate(); slots and their preflight, blocks, rules
-      # over the result with lint's and core's, links and root props, and annotated templates). The
-      # main entry and /inspect are external. Set from that plus 10%. Raise it on purpose, with what grew.
+      # over the result with lint's and core's, links (their hosts read past a sending service's tags),
+      # the hosts images load from, root props, and annotated templates). The main entry and /inspect
+      # are external. Set from that plus 10%. Raise it on purpose, with what grew.
       - name: Check /template bundle size
         run: |
           BUNDLE="packages/react/dist/template.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/template.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=94800
+          MAX_SIZE=108200
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/template bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

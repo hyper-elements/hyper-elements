@@ -48,6 +48,8 @@ export interface RulesDescription {
   lint: Array<{ id: string; summary: string; fix: string }>;
   core: Array<{ code: string; stage: "read" | "measured" }>;
   links?: TemplateRules["links"];
+  /** The hosts every image loads from. */
+  images?: TemplateRules["images"];
   root?: string[];
 }
 
@@ -213,6 +215,7 @@ function describeRules(rules: TemplateRules): RulesDescription {
     }),
     core: (rules.require?.core ?? []).map((code) => ({ code, stage: CORE_RULES[code]?.stage ?? "read" })),
     ...(rules.links ? { links: rules.links } : {}),
+    ...(rules.images?.domains ? { images: rules.images } : {}),
     ...(rules.root ? { root: Object.keys(rules.root) } : {}),
   };
 }

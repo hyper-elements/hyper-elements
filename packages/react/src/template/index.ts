@@ -23,7 +23,7 @@ import { compareVersions, isVersion, mergePatch, own, readValue, readValues, ver
 
 export { field, type ImageRules, type ImageSpec, type ImageType, type ImageValue } from "./fields";
 export { open, type AnnotatedSpec, type Open } from "./annotated";
-export { CORE_RULES, type LinkRules, type LintRuleDescriptor, type RuleResult, type TemplateRules } from "./rules";
+export { CORE_RULES, type ImageHostRules, type LinkRules, type LintRuleDescriptor, type RuleResult, type TemplateRules } from "./rules";
 export type { SlotOptions, SlotSpec, SlotStyles, StoredSlot } from "./slots";
 export { checkLayout, type CheckLayoutOptions, type LayoutCheck, type MeasuredLayout } from "./layout";
 export { fitInside, sniffImage, type SniffedImage } from "./layout";
