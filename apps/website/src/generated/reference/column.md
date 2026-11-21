@@ -7,7 +7,7 @@
 
 Stacks its children vertically, with its own spacing and box.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)

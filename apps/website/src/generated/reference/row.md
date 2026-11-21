@@ -7,7 +7,7 @@
 
 Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `stackOnMobile`: true or false (default `true`). Its children stack full-width on phones (in an Email or a Page).

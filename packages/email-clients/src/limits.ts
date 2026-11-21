@@ -75,6 +75,19 @@ export const IMAGE_FORMATS: Readonly<Record<string, { clients: readonly EmailCli
  */
 export const FORMAT_IN: readonly RegExp[] = [/^data:image\/([a-z]+)/i, /[?&](?:fm|format|f)=(webp|avif|svg|png|jpe?g|gif)\b/i, /\/f_(webp|avif|svg|png|jpe?g|gif)[,/]/i, /\.([a-z]+)(?:[?#]|$)/i];
 
+/**
+ * An image whose file is in the email, as a `data:` URI (caniemail's image-base64): every Gmail, HEY, SFR and La Poste
+ * drop it (Gmail's `src` becomes `nosrc`), classic Outlook shows no GIF so, GMX and WEB.DE only a PNG. An image file
+ * the email links to shows; an Svg in an Email is one (render()'s `assets`).
+ */
+export const DATA_IMAGES: { clients: readonly EmailClient[]; feature: string } = {
+  clients: ["gmail", "gmail-app", "gmail-app-other", "hey", "sfr", "laposte", "outlook", "gmx", "web-de"],
+  feature: "image-base64",
+};
+
+/** Whether `src` is a data: URI (after the white space a browser skips at its start). */
+export const isDataImage = (src: string) => /^\s*data:/i.test(src);
+
 /** The format of the image at `src` some clients don't show (IMAGE_FORMATS), or undefined. */
 export function imageFormatOf(src: string): (typeof IMAGE_FORMATS)[string] | undefined {
   const format = FORMAT_IN.map((pattern) => pattern.exec(src)?.[1]).find(Boolean)?.toLowerCase();

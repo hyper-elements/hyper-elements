@@ -7,7 +7,7 @@
 
 Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)

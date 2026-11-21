@@ -5,7 +5,7 @@
 import type React from "react";
 import { writeParts, type Design } from "./design";
 import { withFontStylesheets } from "./fonts";
-import { raise } from "./raise";
+import { raise, type RaiseOptions } from "./raise";
 
 export type { Design };
 
@@ -16,8 +16,8 @@ export interface DesignResult {
   report: string[];
 }
 
-export function writeDesign(element: React.ReactElement): DesignResult {
-  const { body, report } = raise(element);
+export function writeDesign(element: React.ReactElement, options: RaiseOptions = {}): DesignResult {
+  const { body, report } = raise(element, options);
   if (!body) throw new Error(`[Elements] This template can't go to the builder:\n${report.join("\n")}`);
   return { design: withFontStylesheets(writeParts(body)), report };
 }

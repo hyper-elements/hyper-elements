@@ -7,7 +7,7 @@
 
 A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke).
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `x1`: a number (default `0`)

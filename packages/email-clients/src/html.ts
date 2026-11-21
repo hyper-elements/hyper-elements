@@ -6,7 +6,7 @@
  * Each scan reads the markup in one pass: an Html block's markup is the author's, and can be long.
  */
 import { caniemail, type ClientDiagnostic, type EmailClient } from "./email-clients";
-import { GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, imageFormatOf, NO_MEDIA_QUERIES, NO_WEB_FONTS, STYLE_REMOVED } from "./limits";
+import { DATA_IMAGES, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, imageFormatOf, isDataImage, NO_MEDIA_QUERIES, NO_WEB_FONTS, STYLE_REMOVED } from "./limits";
 
 /** The clients that remove a <style> in the email's body, with all it holds (caniemail's html-style). */
 export const BODY_STYLE_REMOVED: readonly EmailClient[] = ["gmail", "gmail-app", "gmail-app-other", "protonmail", "gmx", "web-de", "sfr", "laposte", "rainloop"];
@@ -412,9 +412,13 @@ export function documentNotes(html: string): EmailHtmlDiagnostic[] {
       ...at(null),
     });
   }
-  // Each image in a format some clients don't show.
+  // Each image in a format some clients don't show, or in the email as a data: URI.
   for (const image of markup.matchAll(/<img\b[^>]*?\ssrc\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/gi)) {
-    const known = imageFormatOf(image[1] ?? image[2] ?? image[3] ?? "");
+    const src = image[1] ?? image[2] ?? image[3] ?? "";
+    if (isDataImage(src)) {
+      out.push({ code: "email/image-data", severity: "warning", message: "This image is a data: URI, its file in the email, which these email clients don't show (or show only in some formats)", clients: [...DATA_IMAGES.clients], fix: "host the file and link to it", see: caniemail(DATA_IMAGES.feature), ...at(lineOf(image.index!)) });
+    }
+    const known = imageFormatOf(src);
     if (!known) continue;
     out.push({ code: "email/image-format", severity: "warning", message: `This image is ${known.name} file, which these email clients don't show`, clients: [...known.clients], fix: "use a PNG, JPEG or GIF file", see: caniemail(known.feature), ...at(lineOf(image.index!)) });
   }

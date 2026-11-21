@@ -155,6 +155,15 @@ describe("documentNotes(): the checks on a whole email", () => {
     ]);
   });
 
+  it("warns for each image whose file is in the email (a data: URI), at its line", () => {
+    const html = email({ body: ['<img src="data:image/png;base64,iVBORw0KGgo=" alt="a">', '<img alt="b" src="https://cdn.example/b.png">', "<img src=' data:image/gif;base64,R0lGOD'>"] });
+    const images = documentNotes(html).filter((d) => d.code === "email/image-data");
+    expect(images.map(({ line, clients, see }) => ({ line, clients, see }))).toEqual([
+      { line: 6, clients: ["gmail", "gmail-app", "gmail-app-other", "hey", "sfr", "laposte", "outlook", "gmx", "web-de"], see: "https://www.caniemail.com/features/image-base64/" },
+      { line: 8, clients: ["gmail", "gmail-app", "gmail-app-other", "hey", "sfr", "laposte", "outlook", "gmx", "web-de"], see: "https://www.caniemail.com/features/image-base64/" },
+    ]);
+  });
+
   it("checks a fixture email as a whole document: its head <style>, @media, body <style> and opacity", () => {
     const html = email({
       head: ["<style>", ".col { display: inline-block; }", "@media (max-width: 620px) { .col { display: block !important; } }", "</style>"],

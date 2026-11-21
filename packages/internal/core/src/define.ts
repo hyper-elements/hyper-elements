@@ -185,8 +185,6 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
    */
   roots?: readonly RootName[];
   notAllowed?: { code: string; message: (root: string) => string };
-  /** Why a target it doesn't render can't, and what to do instead (in the diagnostic). */
-  unsupported?: Partial<Record<Target, string>>;
   editor?: { groups: readonly EditorGroup[] };
 }
 

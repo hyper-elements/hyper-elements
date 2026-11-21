@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import React, { createContext, forwardRef, Fragment, memo, Suspense, useContext, useId, useState } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button, Canvas, Circle, Column, Divider, Document, ElementsError, Html, Rect, Svg, PageBreak, PageFooter, PageHeader, PageNumber, Email, Grid, Heading, Image, LineBreak, Link, List, ListItem, MergeTag, Menu, outline, Page, Text, prepare, render, Row, Section, snapshot, Social, Span, Table, TableCell, TableRow, validate, Video } from "./index";
+import { Button, Canvas, Circle, Column, Divider, Document, ElementsError, Html, Layer, Rect, Svg, PageBreak, PageFooter, PageHeader, PageNumber, Email, Grid, Heading, Image, LineBreak, Link, List, ListItem, MergeTag, Menu, outline, Page, Text, prepare, render, Row, Section, snapshot, Social, Span, Table, TableCell, TableRow, validate, Video } from "./index";
 import { collectTemplate, withFound } from "./collect";
 import { inspect } from "../inspect";
 import * as primitives from "./index";
@@ -346,15 +346,16 @@ describe("outline()", () => {
   });
 
   it("throws a problem found laying the template out, with what it is", () => {
+    // An email draws a Layer as an Image's background: one without an Image is found laying it out.
     expect(() =>
       outline(
         <Email>
-          <Svg width={10} height={10}>
-            <Rect width={10} height={10} />
-          </Svg>
+          <Layer>
+            <Text>Over nothing</Text>
+          </Layer>
         </Email>
       )
-    ).toThrow(/A Svg can't be rendered to email/);
+    ).toThrow(/In an email, a Layer is an Image with one child over it/);
   });
 
   it("throws the template's problems, as render() does", () => {

@@ -7,7 +7,7 @@
 
 A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)

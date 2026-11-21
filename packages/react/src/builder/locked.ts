@@ -3,7 +3,7 @@
  * markup for it, in an HTML block of the builder's. It can be moved, duplicated or deleted there, not edited; it
  * comes back as an `Html` block.
  */
-import { renderTemplate, type Json, type Node } from "@hyper-elements/core";
+import { pictureUrl, renderTemplate, type EmailAssetsOption, type Json, type Node } from "@hyper-elements/core";
 import { block, type Block } from "./design";
 import { withParagraphMargin } from "./text";
 import { cssSides } from "./values";
@@ -22,28 +22,43 @@ export function lockedHtml(node: Node, width: number, root: Node, components: un
 export interface Themed {
   theme?: { [key: string]: Json };
   scopes?: ReadonlyArray<{ [key: string]: Json }>;
+  /**
+   * In an Email, where its pictures' files are (render()'s `assets`), and the files the whole template's render names
+   * for the pictures in this block, in the template's order: its markup links those.
+   */
+  assets?: EmailAssetsOption;
+  pictures?: ReadonlyArray<{ name: string }>;
 }
 
 /** A node drawn on its own by the new engine, at its width, in the root's output: its HTML, with its stylesheet. */
-function renderSubtree(node: Node, width: number, root: Node, components: unknown, inherited: Record<string, Json>, { theme, scopes = [] }: Themed): string {
+function renderSubtree(node: Node, width: number, root: Node, components: unknown, inherited: Record<string, Json>, { theme, scopes = [], assets, pictures = [] }: Themed): string {
   // Drawn at its width in a page at least as wide as a root can be (a Document's block as a page's), the root's text
   // styles around it, and the text styles its ancestors give it in a Column around it.
   const drawn = Math.round(width);
   // A Document's page numbers as the builder's tokens, which a Page can hold.
   const tokens = (n: Node): Node =>
     n.type === "PageNumber" ? { type: "MergeTag", props: { name: n.props?.total ? "page_count" : "page_number" } } : n.children ? { ...n, children: n.children.map((child) => (typeof child === "string" ? child : tokens(child))) } : n;
-  const own = tokens(node);
+  const subtree = tokens(node);
   const around = { ...inherited, ...(drawn < 200 ? { width: drawn } : {}) };
   // A Page's own phone width, so the block's phone styles switch where the page's do.
   const breakpoints: Record<string, Json> = root.type === "Page" && root.props?.breakpoints ? { breakpoints: root.props.breakpoints } : {};
   // The theme it sees where it is: the template's, with each scope around it in a Column of its tokens, read as they
   // are in place, so what a custom element in it renders is themed as it was there.
-  const placed = scopes.reduceRight<Node>((inner, tokens) => ({ type: "Column", tokens, children: [inner] }), Object.keys(around).length ? { type: "Column", style: around, children: [own] } : own);
+  const placed = scopes.reduceRight<Node>((inner, tokens) => ({ type: "Column", tokens, children: [inner] }), Object.keys(around).length ? { type: "Column", style: around, children: [subtree] } : subtree);
   // The root's text styles, not its background: the builder draws the body's color, and its rows' and columns', behind
   // the block, so the block painting the body's over them would hide a Section's own.
   const { backgroundColor: _, ...rootStyle } = root.style ?? {};
   const page: Node = { type: root.type === "Email" ? "Email" : "Page", props: { width: Math.max(200, drawn), ...breakpoints }, style: rootStyle, children: [placed] };
-  const { head, body } = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never });
+  const written = renderTemplate(theme ? { root: page, theme, merged: true } : { root: page }, { components: components as never, ...(assets ? { assets } : {}) });
+  const { head } = written;
+  // Its pictures, drawn on their own here (without the template's fonts and language around them), link the files the
+  // whole template's render names: one for one, in order.
+  let { body } = written;
+  const own = written.pictures ?? [];
+  if (own.length !== pictures.length) throw new Error(`[Elements] This block's pictures (${own.length}) aren't the template's here (${pictures.length}): it can't link the files render() returns`);
+  // As the HTML writes a URL: its & as &amp; (a baseUrl has no quote or angle bracket).
+  const inHtml = (url: string) => url.replace(/&/g, "&amp;");
+  own.forEach((picture, i) => (body = body.split(inHtml(pictureUrl(assets!.baseUrl, picture.name))).join(inHtml(pictureUrl(assets!.baseUrl, pictures[i]!.name)))));
   const style = /<style>[\s\S]*?<\/style>/.exec(head)?.[0] ?? "";
   // A page's <main> is centered by its margins: in a flex box, which the builder may draw a block in, those shrink it to its words. It fills its block.
   const filled = body.replace(/^<main style="/, '<main style="width:100%;');

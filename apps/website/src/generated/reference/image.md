@@ -20,6 +20,7 @@ Props:
 - `height`: a length (a number of px) (Size)
 - `border`: *border* (Border)
 - `borderRadius`: *radius* (Border)
+- `backgroundColor`: *color* (Background). Behind the image, and in its place where it doesn't load (images turned off): its alternate text is then in the text's color and font.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 - `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack on phones, where that's another place than on desktop.
 - `verticalAlign`: one of "top", "middle" (Layout). Where it sits in a line of text it's in.

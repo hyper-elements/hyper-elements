@@ -128,14 +128,19 @@ jobs:
       # once as inert data (snapshot(), slotMark(), captureFragment() and readFragment(), with their plain-data
       # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
       # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
-      # bytes for the two together, templates and the `elements` key (349,212 measured).
+      # bytes for the two together, templates and the `elements` key (349,212 measured); 374,700 bytes (24,924 more:
+      # 374,136 measured) for a Canvas (and an Svg) in an Email as a picture: cut out of the Email and checked as a
+      # Canvas, an Image of its PNG in its place, named by a SHA-256 written in (the package has no dependencies),
+      # render()'s assets option and files, and what it says of a picture (a merge tag or a link in one, text with no
+      # alt or no background, one wider than its column), with an Image's background and alt where it doesn't load (in
+      # a color that reads on it, the CSS names' values for it).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=349800
+          MAX_SIZE=374700
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -168,13 +173,15 @@ jobs:
       # it as it is, an HTML block with the reason said where it doesn't (3,431 bytes measured);
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
-      # 521,700 bytes for templates and the builder's table together (521,210 measured).
+      # 521,700 bytes for templates and the builder's table together (521,210 measured). 548,700 bytes (26,897 more:
+      # 548,107 measured) for a Canvas (and an Svg) in an Email as a picture, which the builder's copy of core writes
+      # too, and toDesign()'s assets option, each picture an image of its file.
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=521700
+          MAX_SIZE=548700
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -208,12 +215,13 @@ jobs:
       # and findings around the models, minified, about 8KB). The models are their own
       # package (a dependency, not bundled), and so is core (external). Set from that plus
       # 2,000 bytes. Raise it on purpose, with what grew. Raised 400 bytes with Outlook for Mac's previews (about 125).
+      # Raised 1,000 bytes with the check for an image that's a data: URI (1,005 measured).
       - name: Check email client previews bundle size
         run: |
           BUNDLE="packages/email-clients/dist/index.js"
           test -s "$BUNDLE" && test -s "packages/email-clients/dist/index.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=62800
+          MAX_SIZE=63800
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Email client previews bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

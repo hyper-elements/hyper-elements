@@ -5,6 +5,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
+import { pixel, pngSize } from "./png";
 import { fileURLToPath } from "node:url";
 import { COMPONENTS, LAYOUT_VERSION } from "@hyper-elements/core";
 import {
@@ -79,6 +80,22 @@ const card = (
 );
 
 describe("renderImage", () => {
+  it("draws an Svg whose viewBox is another shape at one scale, centered, what's beside it in the margins, as a page does", async () => {
+    // A square viewBox in a wide drawing: shown at its height's scale in the middle, the rect beside it in the margin.
+    const wide = (
+      <Canvas width={400} height={20}>
+        <Svg width={400} height={20} viewBox="0 0 20 20">
+          <Rect x={60} width={20} height={20} style={{ fill: "#123456" }} />
+        </Svg>
+      </Canvas>
+    );
+    const { image } = await renderImage(wide);
+    expect(pngSize(image)).toEqual([400, 20]);
+    // The viewBox's 20 units at 1 px each, centered (190 to 210): its x 60 to 80 is 250 to 270.
+    expect(await pixel(image, 260, 10)).toEqual([0x12, 0x34, 0x56, 255]);
+    expect((await pixel(image, 300, 10))[3]).toBe(0);
+  });
+
   it("writes a PNG of the Canvas's size, sharper at a scale", async () => {
     const { image, width, height, diagnostics } = await renderImage(card, { fonts });
     expect(Buffer.from(image.subarray(1, 4)).toString()).toBe("PNG");
@@ -301,7 +318,8 @@ describe("renderImage", () => {
 
     it("has a sample of each (a new block needs its case in the writer, and one here)", () => {
       const takes = new Set(COMPONENTS.Canvas.children.categories);
-      const blocks = Object.values(COMPONENTS).filter((definition) => definition.categories.some((category) => takes.has(category)));
+      // A root isn't a block in it (a Canvas is one only in an Email, as a picture).
+      const blocks = Object.values(COMPONENTS).filter((definition) => !definition.categories.includes("root") && definition.categories.some((category) => takes.has(category)));
       expect(Object.keys(SAMPLES).sort()).toEqual(blocks.map((definition) => definition.type).sort());
     });
 

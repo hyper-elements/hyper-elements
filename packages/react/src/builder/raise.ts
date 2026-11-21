@@ -9,7 +9,7 @@
  * the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new engine's own markup,
  * and said.
  */
-import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
+import { checkAssetsOption, pictureUrl, prepareTemplate, type EmailAssetsOption, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
 import { collectTemplate, snapshotData } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
@@ -36,7 +36,47 @@ const PAINT = ["backgroundColor", "border", "borderRadius"];
 /** What a browser gives text where nothing says otherwise. */
 const BROWSER_TEXT: Record<string, unknown> = { fontSize: 16, fontStyle: "normal", letterSpacing: 0, textAlign: "left", textTransform: "none" };
 
-export function raise(element: React.ReactElement): Raised {
+export interface RaiseOptions {
+  /** An Email's pictures' files (each Canvas's, and Svg's): render()'s assets. */
+  assets?: EmailAssetsOption;
+}
+
+/**
+ * Each of an Email's pictures (a Canvas, an Svg on its own) put in the template as the Image of its file render()
+ * writes, where the template has it: the builder's image tool takes it, or a block it's in drawn as HTML links its
+ * file. Returns the places of those put in (what's in a custom element isn't in the template: its block links them).
+ */
+function picturesAsImages(root: Node, pictures: ReadonlyArray<{ path: string; name: string; width: number; height: number }>, baseUrl: string, report: string[]): Set<string> {
+  const byPath = new Map(pictures.map((picture) => [picture.path, picture]));
+  const placed = new Set<string>();
+  const visit = (node: Node, path: string) => {
+    node.children?.forEach((child, index) => {
+      if (typeof child === "string") return;
+      const at = `${path}.children[${index}]`;
+      if (child.type !== "Canvas" && child.type !== "Svg") return visit(child, at);
+      const picture = byPath.get(at);
+      if (!picture) {
+        // One of no size draws nothing: an empty Column, which a stack leaves out (it's only its padding, none).
+        node.children![index] = { type: "Column" };
+        return;
+      }
+      const alt = child.type === "Svg" ? child.props?.title : child.props?.alt;
+      node.children![index] = {
+        ...(child.id ? { id: child.id } : {}),
+        type: "Image",
+        props: { src: { src: pictureUrl(baseUrl, picture.name), width: picture.width, height: picture.height }, alt: alt ?? "" },
+        style: { width: picture.width },
+        ...(child.hidden ? { hidden: child.hidden } : {}),
+      };
+      placed.add(at);
+      report.push(`${at}: a ${child.type} in an Email is a picture: it goes to the builder as an image of its file (${picture.name}, which render() returns), edited in code`);
+    });
+  };
+  visit(root, "root");
+  return placed;
+}
+
+export function raise(element: React.ReactElement, options: RaiseOptions = {}): Raised {
   const report: string[] = [];
   // The builder takes a design's element; a snapshot is the guardrail path's, which the builder isn't part of.
   if (snapshotData(element)) return { body: null, report: ["builder/snapshot: toDesign() takes a design's element, not a snapshot"] };
@@ -59,8 +99,22 @@ export function raise(element: React.ReactElement): Raised {
     for (const child of node.children ?? []) if (typeof child !== "string") scopes(child, inner);
   };
   scopes(root, []);
-  const prepared = prepareTemplate(document, { components });
+  const badAssets = checkAssetsOption(options.assets);
+  if (badAssets.length) return { body: null, report: badAssets.map((d) => `${d.path}: ${d.message}`) };
+  const prepared = prepareTemplate(document, { components, assets: options.assets });
   if (!prepared.resolved) return { body: null, report: prepared.diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
+  if (prepared.pictures?.length) {
+    if (!options.assets) {
+      return {
+        body: null,
+        report: [
+          `${prepared.pictures[0]!.path}: a Canvas (or an Svg) in an Email is a picture, a PNG file it links to: toDesign(email, { assets }) with the assets render() takes, so its image links to the file render() returns`,
+        ],
+      };
+    }
+  }
+  // Each picture as the Image of its file; one of no size, nothing.
+  const placed = root.type === "Email" ? picturesAsImages(root, prepared.pictures ?? [], options.assets?.baseUrl ?? "", report) : new Set<string>();
   const resolvedRoot = prepared.resolved.root;
   const resolved = new Map<string, ResolvedNode>();
   const index = (node: ResolvedNode) => {
@@ -107,7 +161,16 @@ export function raise(element: React.ReactElement): Raised {
     locked: (node, path, why, around) => {
       report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
       const own = at(path);
-      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
+      // The pictures drawn in it (a custom element's Canvas): their files are the template's. (One the template has in
+      // it, as in a Layer, is an Image of its file already.)
+      const inside = (prepared.pictures ?? []).filter((picture) => !placed.has(picture.path) && (picture.path === path || picture.path.startsWith(`${path}.`) || picture.path.startsWith(`${path}(`)));
+      return put(
+        lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), {
+          theme: document.theme,
+          scopes: enclosing.get(node),
+          ...(options.assets ? { assets: options.assets, pictures: inside } : {}),
+        })
+      );
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,

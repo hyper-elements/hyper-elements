@@ -85,8 +85,10 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
     // command line's line beside the render example: 22,500 and 24,500 before. The skill's by what an agent does
     // before writing (install the package, compare the guide's id): 24,750 before. Both by where an image's src comes
     // from (agents made one up, and the email showed broken images): 22,800 and 25,500 before. Then by the line
-    // pointing to templates: 23,400 and 26,100 before.
-    expect(read("GUIDE.md").length).toBeLessThan(23_520);
+    // pointing to templates: 23,400 and 26,100 before. Then by what a Canvas and an Svg are in an email (a linked
+    // PNG, render()'s assets: a Canvas's alt, a Link around one, an Image's background where it doesn't load): 23,520
+    // before.
+    expect(read("GUIDE.md").length).toBeLessThan(23_640);
     expect(read(SKILL).length).toBeLessThan(26_220);
   });
 });

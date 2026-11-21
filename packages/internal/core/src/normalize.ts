@@ -261,7 +261,8 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     return null;
   }
   const root = context.root;
-  if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
+  // A root's `roots` are where it may go in another (a Canvas in an Email): as the template's root, it's its own.
+  if (root && parent && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
     const { code, message } = definition.notAllowed ?? {
       code: "element/not-supported",
       message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
@@ -463,7 +464,11 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (hidden) node.hidden = hidden;
   }
 
+  // A root inside another (a Canvas in an Email) is the root of what's in it: its rules, not the outer root's.
+  const outer = context.root;
+  if (isRoot && parent) context.root = definition;
   const children = readChildren(input.children, definition, `${path}.children`, id, context);
+  context.root = outer;
   if (children.length) node.children = children;
   context.environment = saved.environment;
   context.inherited = saved.inherited;

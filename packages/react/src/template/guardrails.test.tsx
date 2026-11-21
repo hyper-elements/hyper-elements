@@ -290,7 +290,7 @@ describe("slots", () => {
         for (const root of ["Email", "Page", "Canvas"] as const) expect(typesOf(root)).not.toContain(type);
       }
       expect(typesOf("Canvas")).toContain("Svg");
-      expect(typesOf("Email")).not.toContain("Svg");
+      expect(typesOf("Email")).toContain("Svg");
       // A new built-in changes this on purpose.
       expect(typesOf("Email")).toMatchSnapshot();
     });

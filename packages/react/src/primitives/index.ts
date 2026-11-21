@@ -109,3 +109,4 @@ export { captureFragment, readFragment, slotMark, snapshot, type CapturedNode, t
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type TemplateUsed, type ValidateOptions, type ValidationResult } from "./render";
 export { BLOCK_MAP_VERSION, ElementsError, formatDiagnostics, PLUGIN_API } from "@hyper-elements/core";
 export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, Severity } from "@hyper-elements/core";
+export type { EmailAssetsOption, PictureDrawer, PictureToDraw, RenderedFile } from "@hyper-elements/core";

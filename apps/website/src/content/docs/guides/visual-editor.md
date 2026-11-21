@@ -45,10 +45,18 @@ Read the report before you promise an editor user that a block is editable.
 
 ## What the builder holds
 
-The builder holds what its tools can. Two things happen to the rest:
+The builder holds what its tools can. This happens to the rest:
 
 - **Hidden properties.** A style or prop a tool has no field for is a hidden property of that tool. It's kept in the builder design under its own name and drawn by Elements, but the builder shows no control for it yet.
-- **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
+- **An Email's pictures.** A `Canvas` in an Email, or an `Svg` on its own there, is a picture (see [Email](/docs/outputs/email#a-canvas)): it goes to the builder as an image of its file. Pass `toDesign()` the same `assets` as `render()`, and upload the files `render()` returns: each image links to the same file, so what the editor exports is what `render()` sends. An editor user can swap the image, not edit the drawing. It comes back from `fromDesign()` as an `Image`. Without `assets`, an Email with a picture can't go to the builder, and the error says what to pass.
+
+```tsx
+const assets = { baseUrl: "https://cdn.example.com/email/", draw: emailImages({ fonts }) };
+const { files } = await render(<Launch />, { assets }); // upload these
+const { design } = toDesign(<Launch />, { assets });
+```
+
+- **HTML blocks.** What no tool shows (a `Layer`, a page's `Svg`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
 - **Tables.** A `Table` is the builder's table: its header and footer rows, each cell's words and each column's share, what its rows share (text styles, background, padding) and each cell's own. The builder draws one border around every cell and has no cells across columns, no table width and no phone values. In an `Email` or a `Page`, a table the builder would draw otherwise (a line between rows only, a cell spanning columns, a border around the table, a width, a column of a fixed width) stays an HTML block, which draws it exactly. In a `Document`, where the builder doesn't draw an HTML block, it's the builder's table all the same: a line between rows is drawn above the first row and below the last too, and a cell spanning columns is a cell for each column. A table with an image in a cell, or a row, a cell or words in a cell hidden on phones or desktops, stays an HTML block. The report says each. `fromDesign()` reads a table back as a `Table`, one made in the builder too.
 
 Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet, so a `PageNumber` goes in as its token, which the editor's PDF prints as it is. The report says so.

@@ -26,6 +26,7 @@ export const Image: Component = ({ node, style, parent, placement, classes }) =>
         verticalAlign: style.verticalAlign,
         border: style.border,
         borderRadius: style.borderRadius,
+        backgroundColor: style.backgroundColor,
       },
       covers && { width: "100%", height: "100%", maxWidth: "none", objectFit: "cover" },
     ]}

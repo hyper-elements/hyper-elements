@@ -781,10 +781,6 @@ describe("email HTML", () => {
     });
   });
 
-  it("leaves an Svg out of an email, with an error: the Email writer has no inline SVG", () => {
-    expect(() => render(email([{ type: "Svg", props: { width: 40, height: 40 }, children: [{ type: "Circle", props: { cx: 20, cy: 20, r: 10 } }] }]))).toThrow("A Svg can't be rendered to email: the Email writer has no inline SVG; use an Image of it (a PNG) instead");
-  });
-
   it("writes a large email without TextEncoder (Jest's jsdom has none), and leaves its size to the email-clients plugin", () => {
     const many = Array.from({ length: 600 }, (_, i) => ({ type: "Text", children: [`Text ${i} with some words in it to take up room.`] }));
     const encoder = globalThis.TextEncoder;

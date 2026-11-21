@@ -55,7 +55,9 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
   };
   collect(document.root);
   const rootDefinition = registry.get(document.root.type);
-  const responsive = !!rootDefinition?.responsive;
+  // The root what's being expanded is in: the template's, or one inside it (a Canvas in an Email), whose rules what's
+  // in it renders under (as normalize.ts reads it).
+  let scope = rootDefinition;
   // The tokens each place sees: the theme's, with every enclosing scope's over them. A Page writes them as CSS custom
   // properties: its root every token, a scope those that differ there.
   const themed = document.theme !== undefined ? ThemeEnvironment.of(document.theme, "root.theme") : undefined;
@@ -102,6 +104,8 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
   /** A node's children expanded; inside an arranged node, what it adds around the children it was given is it (`self`). */
   const walk = (node: Node, path: string, self: string, depth: number, environment: ThemeEnvironment | undefined, origins?: Map<Node, string>, own?: Record<string, string>): Node => {
     const definition = registry.get(node.type)!;
+    const outer = scope;
+    if (node !== document.root && definition.categories.includes("root")) scope = definition;
     const children = node.children?.map((child, index) => {
       if (!isNode(child)) return child;
       const at = origins ? (origins.get(child) ?? self) : `${path}.children[${index}]`;
@@ -110,6 +114,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       if (origins && !origins.has(child)) return walk(child, self, self, depth, environment, origins);
       return visit(child, at, depth, at, environment);
     });
+    scope = outer;
     const { tokens: _, ...rest } = node;
     const out: Node = children?.length ? { ...rest, children: children.filter((child): child is NonNullable<typeof child> => child !== null) } : node.tokens ? rest : node;
     if (own) out.customProperties = own;
@@ -130,7 +135,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       raw = definition.expand(propsWithDefaults(definition, node.props) as never, {
         register: (custom) => registry.add(custom),
         style,
-        responsive,
+        responsive: !!scope?.responsive,
         report: (diagnostic) => reported.push(diagnostic),
         theme: environment?.view() ?? {},
       });
@@ -145,7 +150,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       d.error("custom/render", `${node.type} renders one element (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
       return undefined;
     }
-    const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: rootDefinition, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})`, environment });
+    const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: scope, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})`, environment });
     for (const diagnostic of diagnostics) d.list.push(diagnostic);
     if (!expanded) return undefined;
     collectIds(expanded);

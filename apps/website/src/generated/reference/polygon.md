@@ -7,7 +7,7 @@
 
 A closed shape through its points ("0,0 40,0 20,30"), in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `points`: text (required)

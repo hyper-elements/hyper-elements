@@ -6,7 +6,7 @@
 import type { PluginInput, PluginNode, PluginOutput } from "@hyper-elements/react";
 import { caniemail, type ClientDiagnostic } from "./email-clients";
 import { htmlNotes } from "./html";
-import { GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, HOVER_LIMIT, imageFormatOf, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, type Limit } from "./limits";
+import { DATA_IMAGES, GMAIL_CLIP_BYTES, GMAIL_STYLE_BYTES, GMAILS, HOVER_LIMIT, imageFormatOf, isDataImage, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, type Limit } from "./limits";
 
 type Json = PluginNode["props"][string];
 
@@ -80,9 +80,16 @@ const fontStack = (stack: string) =>
 function imageFormat(node: PluginNode, key: "src" | "thumbnail", d: Found): void {
   const asset = node.props[key];
   const src = typeof asset === "string" ? asset : asset && typeof asset === "object" && !Array.isArray(asset) && typeof asset.src === "string" ? asset.src : "";
+  const what = key === "src" ? "This Image is" : "This Video's thumbnail is";
+  if (isDataImage(src)) {
+    d.add("email/image-data", "warning", `${what} a data: URI, its file in the email, which these email clients don't show (or show only in some formats)`, `${node.path}.props.${key}`, node.id, {
+      clients: DATA_IMAGES.clients,
+      fix: "host the file and link to it (an Svg in an Email is one: render()'s assets option)",
+      see: caniemail(DATA_IMAGES.feature),
+    });
+  }
   const known = imageFormatOf(src);
   if (!known) return;
-  const what = key === "src" ? "This Image is" : "This Video's thumbnail is";
   d.add("email/image-format", "warning", `${what} ${known.name} file, which these email clients don't show`, `${node.path}.props.${key}`, node.id, {
     clients: known.clients,
     fix: "use a PNG, JPEG or GIF file",

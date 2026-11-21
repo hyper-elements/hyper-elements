@@ -7,7 +7,7 @@
 
 A circle centered at cx, cy in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `cx`: a number (default `0`)

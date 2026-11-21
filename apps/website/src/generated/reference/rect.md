@@ -7,7 +7,7 @@
 
 A rectangle at x, y in its Svg, rounded by rx.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `x`: a number (default `0`)
