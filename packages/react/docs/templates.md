@@ -499,6 +499,7 @@ rules: {
     core: ["layout/overflow"],
   },
   links: { domains: ["acme.com", "*.acme.com"], params: { utm_source: "newsletter" }, schemes: ["mailto"] },
+  images: { domains: ["cdn.acme.com"] },
   root: { lang: true },
 },
 ```
@@ -517,7 +518,11 @@ as passed.
   (`acme.com` itself; `*.acme.com` its subdomains, not itself) is `template/link-domain`, a missing parameter
   `template/link-param`, another scheme not in `schemes` `template/link-scheme`, and a relative one
   `template/link-relative`. A URL with a sending service's tag (`{{…}}`) is listed for review, or refused with
-  `tags: "deny"`.
+  `tags: "deny"`; its host is checked all the same where it's written out (`https://evil.example/?id={{id}}` fails),
+  and only a host that is itself a tag (`{{unsubscribe_url}}`) can't be.
+- **`images`** checks every image the design loads, fixed parts, slots and a Social's icons included, when it's given:
+  one from a host not in `images.domains`, a tag's host, inline data or a relative address is `template/image-domain`.
+  A YouTube video with no thumbnail of its own shows YouTube's, from `img.youtube.com`.
 - **`root`** requires root props (`template/root-prop`).
 - `plugins.other` runs other plugins (email-clients'), whose findings are reported but can't be required.
 

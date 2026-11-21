@@ -4,6 +4,19 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### Templates: a tagged link's host is checked, and images can be held to the brand's hosts
+
+- `links.domains` checks a link with a sending service's tag (`{{…}}`) too, wherever its host is written out:
+  `https://evil.example/landing?id={{contact.id}}` is `template/link-domain`, where it was only a note for review.
+  Only a host that is itself a tag (`{{unsubscribe_url}}`, `https://{{host}}/`) can't be checked: it stays a note
+  (`template/link-tag`), or is refused with `tags: "deny"`. What's written of the rest is checked the same way: a
+  relative `/path/{{id}}` is `template/link-relative`, and `tel:{{phone}}` is `template/link-scheme` unless
+  `links.schemes` lists it.
+- `rules.images.domains` is a new rule: every image a design loads (an Image, a Video's thumbnail, a Social's icons, in
+  fixed parts, slots and blocks) comes from one of the hosts listed, or it's `template/image-domain`. So is an image
+  whose host is a tag, an inline `data:` image and a relative one. It's off unless given, so templates without it
+  check as before. `describe()` lists it in `rules.images`.
+
 ### GUIDE.md: where an image comes from, and an id to compare
 
 - The guide says an image's `src` is a public URL the reader's email client can fetch, never a made-up one

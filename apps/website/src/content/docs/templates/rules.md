@@ -27,6 +27,7 @@ rules: {
     core: ["layout/overflow"],
   },
   links: { domains: ["acme.com", "*.acme.com"], params: { utm_source: "newsletter" }, schemes: ["mailto"] },
+  images: { domains: ["cdn.acme.com"] },
   root: { lang: true },
 },
 ```
@@ -39,6 +40,7 @@ rules: {
 | `links.params` | A query parameter on every link | `template/link-param` |
 | `links.schemes` | The other schemes a link may use (`mailto`) | `template/link-scheme` |
 | | A relative link is refused | `template/link-relative` |
+| `images.domains` | Every image's host: an Image's, a Video's thumbnail, a Social's icons. Off unless given; with it, an image from any other host, inline (`data:`) or relative is refused | `template/image-domain` |
 | `root` | Root props that must be set. For a prop `render` takes from a value that may be missing, such as an optional language | `template/root-prop` |
 
 Each required rule ends `passed`, `failed` or `not-run`, in `check()`'s `rules`. One that didn't run never counts as
@@ -52,8 +54,15 @@ passed.
   rules are `not-run`, an error (`template/rule-not-run`).
 - **A Canvas's `image/…` rules are decided when the image is measured.** `check()` leaves them `not-run`, and
   `renderImage()` decides them as it draws. See [measured rules](#measured-rules-and-checklayout).
-- **Links are checked everywhere:** in locked parts and a Menu's too. A URL with a sending service's tag (`{{…}}`) is
-  listed for review, or refused with `tags: "deny"` (`template/link-tag`).
+- **Links are checked everywhere:** in locked parts and a Menu's too. A URL with a sending service's tag (`{{…}}`) still
+  has its host checked where it's written out: `https://evil.example/?id={{contact.id}}` fails `links.domains`. Only a
+  host that is itself a tag (`{{unsubscribe_url}}`, `https://{{host}}/`) can't be checked, so the link is listed for
+  review, or refused with `tags: "deny"` (`template/link-tag`). A tagged URL's query parameters are the service's to
+  fill, so `links.params` doesn't check them.
+- **Images are checked everywhere too,** with `images.domains`: in locked parts, slots and blocks. An image whose host
+  is a sending service's tag can't be checked, and is refused. A YouTube video with no thumbnail of its own shows
+  YouTube's, from `img.youtube.com`: give it a thumbnail, or list that host. The Social element's icons load from its
+  icon host, which the message names.
 - **`plugins.other`** runs other plugins (email-clients'), whose findings are reported but can't be required.
 
 ### What require.core takes
@@ -232,7 +241,8 @@ on a bound node also names its `field`. Errors make a design invalid; warnings a
 | `template/link-param` | A link without a parameter `links.params` requires |
 | `template/link-scheme` | A link with a scheme that isn't in `links.schemes` |
 | `template/link-relative` | A relative link |
-| `template/link-tag` | A link with a sending service's tag: a note for review, or an error with `tags: "deny"` |
+| `template/link-tag` | A link with a sending service's tag: a note for review, or an error with `tags: "deny"`. Its host is checked by `links.domains` all the same, unless it's a tag |
+| `template/image-domain` | An image that doesn't load from a host in `images.domains`: another host, a tag's, inline data or a relative address |
 | `template/root-prop` | A root prop `rules.root` requires isn't set |
 | `template/rule-not-run` | A required rule that didn't run: a note for a measured rule until the image is measured; an error if lint failed, or an output function was given the snapshot first |
 | A lint rule's code, `image/overflow`, `layout/overflow`… | A finding of a required rule: an error, its message ending "(required by …)" |
