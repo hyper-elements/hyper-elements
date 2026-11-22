@@ -190,7 +190,9 @@ with this one. It's free to use, under its own licence (not open source); this p
 This package follows `@hyper-elements/react`'s minor: 0.5 works with core `^0.5.0` (plugins, and `render()`'s
 `blockMap` in format 2). With an older core, 0.3.x included, `emailClients()` and `renderInEmailClients()` throw
 `email-clients/version-mismatch`, with the command to install a matching pair; so does a models package whose protocol
-this one doesn't read.
+this one doesn't read. A core that gives every root a block map (a Page, a Document and a Canvas too) needs this
+package's release from the same time: an earlier 0.5.x would preview such a design instead of refusing it, so update
+both together.
 
 `publish.yml` releases it on its own, tagged `email-clients-v<version>`, after core when both change. Each release
 records in the changelog the models package it was tested with.

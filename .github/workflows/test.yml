@@ -129,7 +129,7 @@ jobs:
       # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
       # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
       # bytes for the two together, templates and the `elements` key (349,212 measured); 350,800 bytes for a block
-      # map of every root, the page writer marking its blocks as the email writer does (706 bytes more, 350,258 measured).
+      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
@@ -170,7 +170,7 @@ jobs:
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
       # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (721 bytes more, 521,992 measured).
+      # every root, in the writers it shares (844 bytes more, 522,115 measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"

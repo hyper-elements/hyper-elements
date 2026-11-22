@@ -103,8 +103,8 @@ export async function renderInEmailClients(input: React.ReactElement | string, o
   // The findings read each block's component from its entry: a map without them (a core whose BLOCK_MAP_VERSION
   // claims a format it doesn't write) would leave them silently empty.
   if (!blocks.entries.every((entry) => typeof entry.type === "string")) throw versionMismatch(["block types in render()'s blockMap"]);
-  // Only an Email is previewed: the map's first entry is the root, with its component.
-  if (blocks.entries[0] && blocks.entries[0].type !== "Email") throw notAnEmail();
+  // Only an Email is previewed: the map's first entry is the root, with its component (a map without one isn't an Email's).
+  if (blocks.entries[0]?.type !== "Email") throw notAnEmail();
   const previews = await previewsOf(rendered.html, blocks, variants, models, { fonts, source: "render" });
   return { previews, skipped, diagnostics: rendered.diagnostics };
 }

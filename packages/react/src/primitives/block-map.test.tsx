@@ -299,6 +299,35 @@ describe("render(page, { blockMap: true }): a Page, a Document's print HTML and 
     expect(blocks.entries.map((e) => e.path)).not.toContain("root.children[2]");
   });
 
+  it("maps a Document's own pages, with the header and footer on each", async () => {
+    const { plain, mapped, blocks } = await both(
+      <Document>
+        <PageHeader>
+          <Text>Acme</Text>
+        </PageHeader>
+        <Document.Page>
+          <Heading level={1}>Quote</Heading>
+        </Document.Page>
+        <Document.Page>
+          <Text>Terms</Text>
+        </Document.Page>
+        <PageFooter>
+          <Text>
+            Page <PageNumber /> of <PageNumber total />
+          </Text>
+        </PageFooter>
+      </Document>
+    );
+    expect(mapped.html).toBe(plain.html);
+    expect(misplaced(mapped.html, blocks)).toEqual([]);
+    const count = (path: string) => blocks.entries.filter((e) => e.path === path).length;
+    // Each page once, as a DocumentPage, with what it holds; the header and footer on both.
+    expect(blocks.entries.filter((e) => e.type === "DocumentPage").map((e) => e.path)).toEqual(["root.children[1]", "root.children[2]"]);
+    expect([count("root.children[1].children[0]"), count("root.children[2].children[0]")]).toEqual([1, 1]);
+    expect([count("root.children[0]"), count("root.children[0].children[0]"), count("root.children[3]"), count("root.children[3].children[0]")]).toEqual([2, 2, 2, 2]);
+    expect(blocks.entries.map((e) => e.type)).not.toContain("PageNumber");
+  });
+
   it("isn't misled by the noncharacters it marks with, in a Page's text", async () => {
     const element = (
       <Page width={600}>
