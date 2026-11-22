@@ -37,6 +37,21 @@ reference:
 A **design** is one finished piece: this launch's graphic, this month's newsletter. Any Email, Page, Document or
 Canvas is a design. One made from a template is checked by it.
 
+## How an agent sees a template
+
+An agent gets the same template you do, read as what it may change and what it may not. Here is an event invitation
+with a divider between the two: on the left the email as you see it, on the right as an agent sees it. Green is open,
+each field labeled with its limits: the event's name (up to 60 characters), the tagline (20 to 120), the date, the
+venue and the hours (no year), and the day's schedule (up to eight rows, or none, each up to 100 characters).
+Red is locked: the logo, the layout and the footer.
+
+<div class="output-gallery single">
+<figure><a href="/img/templates/agent-view.webp" title="Open the event invitation as you see it and as an agent sees it at full size"><img src="/img/templates/agent-view.webp" width="736" height="948" loading="lazy" alt="An event invitation split by a divider. The left part is the email as you see it. The right part is the same email as an agent sees it: the event name, tagline, date, venue, hours and each schedule line in green, each labeled Allowed to change with its limits, and the header and footer in red, labeled Locked."></a><figcaption>The event invitation template, as you see it and as an agent sees it</figcaption></figure>
+</div>
+
+Every email and image template in the [template gallery](/templates) opens with this view. Drag the divider to compare
+the two.
+
 ## The parts, one at a time
 
 A template has six kinds of part. Four hold what a design gives (a field, an image field, blocks, a slot), one sets

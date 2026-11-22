@@ -47,18 +47,19 @@ const css = `
 `;
 
 /**
- * A label, on the agent's side, at an area's top-right corner (inside it, or above a short one), else its top-left;
- * none where both would cover a label already placed (`placed`, in the layer's coordinates).
+ * A label for an area, where it covers no label already placed (`placed`, in the layer's coordinates): on the agent's
+ * side first, at the area's right. Inside a tall area, at its top, or lower down; above a short one, or below it.
+ * Then the same at the area's left, and none where every place is taken.
  */
-function chip(doc: Document, layer: HTMLElement, width: number, r: Rect, ok: boolean, text: string, detail: string | undefined, placed: Rect[]): boolean {
+function chip(doc: Document, layer: HTMLElement, size: { w: number; h: number }, r: Rect, ok: boolean, text: string, detail: string | undefined, placed: Rect[]): boolean {
   const c = doc.createElement("div");
-  const inside = r.h > 60;
   Object.assign(c.style, {
     position: "absolute",
     zIndex: "3",
-    top: `${inside ? r.y + 6 : r.y - 3}px`,
-    transform: inside ? "none" : "translateY(-100%)",
-    maxWidth: "300px",
+    left: "0",
+    top: "0",
+    // One line each: near the layer's right edge a label would otherwise shrink and wrap.
+    whiteSpace: "nowrap",
     padding: "4px 9px",
     borderRadius: "6px",
     background: ok ? OK : NO,
@@ -75,15 +76,28 @@ function chip(doc: Document, layer: HTMLElement, width: number, r: Rect, ok: boo
     c.appendChild(small);
   }
   layer.appendChild(c);
-  // Where it sits in the layer: layout offsets, which a scaled view doesn't change (less the lift above a short area).
-  const at = (): Rect => ({ x: c.offsetLeft, y: c.offsetTop - (inside ? 0 : c.offsetHeight), w: c.offsetWidth, h: c.offsetHeight });
-  const clashes = (a: Rect) => placed.some((p) => a.x < p.x + p.w + 4 && p.x < a.x + a.w + 4 && a.y < p.y + p.h + 4 && p.y < a.y + a.h + 4);
-  for (const side of ["right", "left"] as const) {
-    Object.assign(c.style, side === "right" ? { right: `${width - (r.x + r.w) - 3}px`, left: "" } : { left: `${r.x - 3}px`, right: "" });
-    const box = at();
-    if (!clashes(box)) {
-      placed.push(box);
-      return true;
+  // Layout offsets, which a scaled view doesn't change.
+  const w = c.offsetWidth;
+  const h = c.offsetHeight;
+  const covers = (a: Rect) => placed.filter((p) => a.x < p.x + p.w + 4 && p.x < a.x + a.w + 4 && a.y < p.y + p.h + 4 && p.y < a.y + a.h + 4);
+  const sides = [Math.max(0, r.x + r.w + 3 - w), Math.max(0, Math.min(r.x - 3, size.w - w))];
+  for (const x of sides) {
+    const tops = r.h > 60 ? [r.y + 6] : [r.y - 3 - h, r.y + r.h + 3];
+    for (let i = 0; i < tops.length && i < 6; i++) {
+      const y = tops[i];
+      if (y < 0 || y + h > size.h) continue;
+      const box = { x, y, w, h };
+      const hit = covers(box);
+      if (hit.length === 0) {
+        Object.assign(c.style, { left: `${x}px`, top: `${y}px` });
+        placed.push(box);
+        return true;
+      }
+      // Inside a tall area, a label can move down past the labels it would cover, while it stays in the area.
+      if (r.h > 60) {
+        const lower = Math.max(...hit.map((p) => p.y + p.h + 6));
+        if (lower + h <= r.y + r.h - 6) tops.push(lower);
+      }
     }
   }
   c.remove();
@@ -114,7 +128,7 @@ function paint(doc: Document, layer: HTMLElement, size: { w: number; h: number }
     layer.appendChild(box);
     // One label for a field, however many times a list shows it.
     if (labeled.has(field)) continue;
-    if (chip(doc, layer, size.w, r, true, "Allowed to change", detail, placed)) labeled.add(field);
+    if (chip(doc, layer, size, r, true, "Allowed to change", detail, placed)) labeled.add(field);
   }
   // Locked: each outermost part with nothing an agent may change (a slot's content is the agent's), labeled where
   // it's large enough and there's room.
@@ -123,7 +137,7 @@ function paint(doc: Document, layer: HTMLElement, size: { w: number; h: number }
   for (const path of paths) {
     if (path === "root" || holds(path) || !holds(parent(path)) || editable.some((e) => path.startsWith(`${e}.`))) continue;
     const r = rectOf(path);
-    if (r && r.w > 120 && r.h > 30) chip(doc, layer, size.w, r, false, "Locked", undefined, placed);
+    if (r && r.w > 120 && r.h > 30) chip(doc, layer, size, r, false, "Locked", undefined, placed);
   }
   const NS = "http://www.w3.org/2000/svg";
   const svg = doc.createElementNS(NS, "svg");
