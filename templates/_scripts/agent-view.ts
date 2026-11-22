@@ -1,7 +1,8 @@
 /**
  * What a template page's agent view needs (`apps/website/src/scripts/agent-view.ts`): which parts of a design an agent
- * may change, and where they are. The HTML is marked with each block's path, from `render()`'s block map, as the
- * playground's preview does; a Canvas gives each node's box instead, from `layoutImage()`. A part is a field the
+ * may change, and where they are. The HTML (an Email's, a Page's, a Document's print HTML) is marked with each block's
+ * path, from `render()`'s block map, as the playground's preview does; a Canvas gives each node's box instead, from
+ * `layoutImage()`. A Document's header and footer are marked on every page. A part is a field the
  * template binds (`field="…"`) or a slot an agent writes; everything else is locked.
  */
 import type { Template } from "@hyper-elements/react/template";
@@ -41,7 +42,7 @@ export function fieldGuide(tpl: Template): Record<string, FieldGuide> {
 /** The HTML with each block's path written into its outermost tag, at the block map's offsets (UTF-8 bytes). */
 export function markBlocks(html: string, blocks: { entries: ReadonlyArray<{ path: string; offset: number }> }): string {
   const bytes = new TextEncoder().encode(html);
-  // One mark per element: where several blocks share one (a Section and its only Column), the innermost.
+  // One mark per element: where several blocks share one offset, the innermost (the entries put the outer first).
   const byOffset = new Map<number, string>();
   for (const b of blocks.entries) if (b.offset > 0 && b.offset <= bytes.length) byOffset.set(b.offset, b.path);
   const decoder = new TextDecoder();

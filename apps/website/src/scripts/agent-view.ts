@@ -1,8 +1,9 @@
 // A template page's agent view: one design as you see it and as an agent sees it, side by side behind a divider you
 // drag. On the agent's side, what the template lets an agent change is green ("Allowed to change"), and everything else
 // is red ("Locked"). What's allowed comes from the template itself (templates/_scripts/agent-view.ts writes it into
-// gallery.json): the fields and slots it binds, by each part's path, and each field's limits. An email's parts are
-// found in its HTML by the paths its block map marked; an image's are its boxes, from layoutImage().
+// gallery.json): the fields and slots it binds, by each part's path, and each field's limits. An email's, a page's and
+// a document's parts are found in its HTML by the paths its block map marked (a document's header and footer on every
+// page); an image's are its boxes, from layoutImage().
 import { draw } from "./gallery-images";
 
 export interface FieldGuide {
@@ -14,7 +15,7 @@ export interface FieldGuide {
 export interface AgentViewOptions {
   /** The width the design is drawn at, before it's scaled to fit. */
   width: number;
-  /** An email: its preview file, its HTML marked with each block's path. */
+  /** An email, a page or a document: its preview file, its HTML marked with each block's path. */
   preview?: string;
   /** An image: the design to draw (`images/og-card/launch`), its brand, its size and its parts' boxes. */
   image?: { draw: string; brand: string; size: [number, number]; boxes: Array<[string, number, number, number, number]> };
@@ -109,35 +110,38 @@ function chip(doc: Document, layer: HTMLElement, size: { w: number; h: number },
  * the rest, and a label on each area and on the larger locked parts, where they don't cover each other. An area's
  * field and limits also show on hovering it.
  */
-function paint(doc: Document, layer: HTMLElement, size: { w: number; h: number }, paths: string[], rectOf: (path: string) => Rect | undefined, options: AgentViewOptions) {
+function paint(doc: Document, layer: HTMLElement, size: { w: number; h: number }, paths: string[], rectsOf: (path: string) => Rect[], options: AgentViewOptions) {
   layer.replaceChildren();
   const holes: Rect[] = [];
   const labeled = new Set<string>();
   const editable: string[] = [];
   const placed: Rect[] = [];
   for (const { path, field } of options.areas) {
-    const r = rectOf(path);
-    if (!r || !r.w || !r.h) continue;
+    // Each place it's drawn: a document's header and footer are on every page.
+    const rects = rectsOf(path).filter((r) => r.w && r.h);
+    if (!rects.length) continue;
     editable.push(path);
-    holes.push(r);
     const g = options.guide[field];
     const detail = [g?.label ?? field, g?.limits].filter(Boolean).join(" · ");
-    const box = doc.createElement("div");
-    Object.assign(box.style, { position: "absolute", zIndex: "2", left: `${r.x - 3}px`, top: `${r.y - 3}px`, width: `${r.w + 6}px`, height: `${r.h + 6}px`, borderRadius: "6px", background: "rgba(34,197,94,.24)", outline: `2px solid #16a34a`, pointerEvents: "auto" });
-    box.title = `Allowed to change: ${detail}`;
-    layer.appendChild(box);
-    // One label for a field, however many times a list shows it.
-    if (labeled.has(field)) continue;
-    if (chip(doc, layer, size, r, true, "Allowed to change", detail, placed)) labeled.add(field);
+    for (const r of rects) {
+      holes.push(r);
+      const box = doc.createElement("div");
+      Object.assign(box.style, { position: "absolute", zIndex: "2", left: `${r.x - 3}px`, top: `${r.y - 3}px`, width: `${r.w + 6}px`, height: `${r.h + 6}px`, borderRadius: "6px", background: "rgba(34,197,94,.24)", outline: `2px solid #16a34a`, pointerEvents: "auto" });
+      box.title = `Allowed to change: ${detail}`;
+      layer.appendChild(box);
+      // One label for a field, however many times it's drawn (a list's rows, a document's pages).
+      if (!labeled.has(field) && chip(doc, layer, size, r, true, "Allowed to change", detail, placed)) labeled.add(field);
+    }
   }
   // Locked: each outermost part with nothing an agent may change (a slot's content is the agent's), labeled where
   // it's large enough and there's room.
   const holds = (p: string) => editable.some((e) => e === p || e.startsWith(`${p}.`));
   const parent = (p: string) => p.replace(/\.children\[\d+\]$/, "");
-  for (const path of paths) {
+  for (const path of new Set(paths)) {
     if (path === "root" || holds(path) || !holds(parent(path)) || editable.some((e) => path.startsWith(`${e}.`))) continue;
-    const r = rectOf(path);
-    if (r && r.w > 120 && r.h > 30) chip(doc, layer, size, r, false, "Locked", undefined, placed);
+    // One label for a part, on the first place it's drawn that's large enough.
+    const r = rectsOf(path).find((each) => each.w > 120 && each.h > 30);
+    if (r) chip(doc, layer, size, r, false, "Locked", undefined, placed);
   }
   const NS = "http://www.w3.org/2000/svg";
   const svg = doc.createElementNS(NS, "svg");
@@ -235,10 +239,11 @@ export function mountAgentView(host: HTMLElement, options: AgentViewOptions): ()
     Object.assign(layer.style, { position: "absolute", inset: "0" });
     agent.appendChild(layer);
     const byPath = new Map(boxes.map(([p, x, y, bw, bh]) => [p, { x, y, w: bw, h: bh }]));
-    paint(document, layer, size, boxes.map(([p]) => p), (p) => byPath.get(p), options);
+    paint(document, layer, size, boxes.map(([p]) => p), (p) => (byPath.has(p) ? [byPath.get(p)!] : []), options);
     fit();
   } else if (options.preview) {
-    // An email: its marked HTML, twice; each part measured in the agent's copy, and measured again when it moves.
+    // An email, a page or a document: its marked HTML, twice; each part measured in the agent's copy, and measured
+    // again when it moves.
     const frame = (title: string) => {
       const f = document.createElement("iframe");
       f.title = title;
@@ -270,14 +275,14 @@ export function mountAgentView(host: HTMLElement, options: AgentViewOptions): ()
         }
         Object.assign(layer.style, { position: "absolute", left: "0", top: "0", width: `${size.w}px`, height: `${h}px`, pointerEvents: "none", zIndex: "2147483000" });
         const view = doc.defaultView!;
-        const rectOf = (p: string): Rect | undefined => {
-          const el = doc.querySelector(`[data-he-path="${CSS.escape(p)}"]`);
-          if (!el) return undefined;
-          const r = el.getBoundingClientRect();
-          return { x: r.left + view.scrollX, y: r.top + view.scrollY, w: r.width, h: r.height };
-        };
+        // Every element marked with a path: a document's header and footer are marked on each page.
+        const rectsOf = (p: string): Rect[] =>
+          [...doc.querySelectorAll(`[data-he-path="${CSS.escape(p)}"]`)].map((el) => {
+            const r = el.getBoundingClientRect();
+            return { x: r.left + view.scrollX, y: r.top + view.scrollY, w: r.width, h: r.height };
+          });
         const paths = [...doc.querySelectorAll("[data-he-path]")].map((el) => el.getAttribute("data-he-path")!);
-        paint(doc, layer, size, paths, rectOf, options);
+        paint(doc, layer, size, paths, rectsOf, options);
         fit();
       });
     };

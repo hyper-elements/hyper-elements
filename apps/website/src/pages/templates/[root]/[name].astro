@@ -15,23 +15,20 @@ const width = previewWidth(t);
 const designs = t.designs ?? [];
 const shown = designs.length ? designs.map((d) => d.name) : ["default"];
 const file = designs.length ? "template.tsx" : `${t.name}.tsx`;
-// The agent view: what an agent may change, beside the design. An email's parts are found by its block map, and an
-// image's by its layout; a page and a document have no block map yet.
-const agentView = t.root === "Email" || t.root === "Canvas";
-const agentData = agentView
-  ? {
-      root: t.root,
-      key: t.key,
-      width,
-      guide: t.guide ?? {},
-      views: Object.fromEntries(list.map((b) => [b.id, Object.fromEntries(shown.map((name) => {
-        const v = t.byBrand[b.id]?.views[name];
-        return [name, v ? { preview: v.preview, areas: v.areas ?? [], boxes: v.boxes, size: v.size } : null];
-      }))])),
-    }
-  : null;
+// The agent view: what an agent may change, beside the design. An email's, a page's and a document's parts are found
+// by their block map, and an image's by its layout.
+const agentData = {
+  root: t.root,
+  key: t.key,
+  width,
+  guide: t.guide ?? {},
+  views: Object.fromEntries(list.map((b) => [b.id, Object.fromEntries(shown.map((name) => {
+    const v = t.byBrand[b.id]?.views[name];
+    return [name, v ? { preview: v.preview, areas: v.areas ?? [], boxes: v.boxes, size: v.size } : null];
+  }))])),
+};
 // The stage's tabs: an email or page at desktop width and on a phone (an email's plain text too), a document as its
-// page, an image; then the code. An email's desktop view and an image's view are the agent view: the design beside
+// page, an image; then the code. The first (desktop, a document's page, an image) is the agent view: the design beside
 // what an agent may change.
 const modes = [
   ...(t.root === "Canvas"
@@ -77,7 +74,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
           </div>
         </div>
       </div>
-      <div class="stage-preview" hidden={agentView}>
+      <div class="stage-preview" hidden>
         {list.map((b, i) => (
           <div data-brand={b.id} hidden={i !== 0}>
             {shown.map((name, j) => {
@@ -95,7 +92,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
           </div>
         ))}
       </div>
-      {agentView && <div class="stage-agent" data-agent></div>}
+      <div class="stage-agent" data-agent></div>
       {agentData && <script type="application/json" id="agent-data" set:html={JSON.stringify(agentData).replace(/</g, "\\u003c")} />}
       <div class="stage-code" hidden>
         <div class="code-bar">
@@ -164,7 +161,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
       m.addEventListener("click", () => {
         const id = m.dataset.modePick!;
         modes.forEach((x) => x.setAttribute("aria-selected", String(x === m)));
-        // An email's desktop view and an image's view are the agent view.
+        // The desktop view (a document's page) and an image's view are the agent view.
         const what = id === "code" ? "code" : agentHost && (id === "desktop" || id === "image") ? "agent" : "preview";
         stage.dataset.show = what;
         preview.hidden = what !== "preview";

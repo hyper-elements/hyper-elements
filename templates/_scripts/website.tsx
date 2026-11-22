@@ -42,12 +42,8 @@ async function example(t: { key: string; root: string }, design: ReactElement, n
     const boxes = layout.nodes.map((n) => [n.path, Math.round(n.x), Math.round(n.y), Math.round(n.width), Math.round(n.height)]);
     return { ...base, outline: safeOutline(design), diagnostics: lines(diagnostics), size: [width, height], areas: areasOf(layout.nodes), boxes };
   }
-  if (t.root !== "Email") {
-    // A Page or a Document has no block map yet, so no agent view.
-    const out = await render(design);
-    return { ...base, html: out.html, text: out.text ?? "", outline: safeOutline(design), diagnostics: lines(out.diagnostics), preview: `${URL_BASE}/${name}.html` };
-  }
-  // The HTML marked with each block's path, and what's bound to a field, for the agent view.
+  // An Email, a Page or a Document (its print HTML): the HTML marked with each block's path, and what's bound to a
+  // field, for the agent view.
   const out = await render(design, { blockMap: true });
   const html = markBlocks(out.html, out.blocks as never);
   const areas = areasOf((inspect(design as never) as unknown as { nodes: Array<{ path: string; field?: string }> }).nodes);

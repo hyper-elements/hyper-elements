@@ -49,7 +49,7 @@ Red is locked: the logo, the layout and the footer.
 <figure><a href="/img/templates/agent-view.webp" title="Open the event invitation as you see it and as an agent sees it at full size"><img src="/img/templates/agent-view.webp" width="736" height="948" loading="lazy" alt="An event invitation split by a divider. The left part is the email as you see it. The right part is the same email as an agent sees it: the event name, tagline, date, venue, hours and each schedule line in green, each labeled Allowed to change with its limits, and the header and footer in red, labeled Locked."></a><figcaption>The event invitation template, as you see it and as an agent sees it</figcaption></figure>
 </div>
 
-Every email and image template in the [template gallery](/templates) opens with this view. Drag the divider to compare
+Every template in the [template gallery](/templates) opens with this view: emails, pages, PDFs and images. Drag the divider to compare
 the two.
 
 ## The parts, one at a time
