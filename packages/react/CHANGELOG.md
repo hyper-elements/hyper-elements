@@ -4,6 +4,32 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A block map for every root
+
+`render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),
+as it did for an Email: each block's place in the design and the UTF-8 byte offset in `html` just after its outermost
+element's tag name, with the HTML the same bytes as without the option. A Document's `PageHeader` and `PageFooter`,
+written on every page, have an entry on each page, with the same `path`; a `Document.Page`'s entry is its page's box. A `PageNumber`, like a `LineBreak` and a
+`MergeTag`, has none. The format is the same, so `BLOCK_MAP_VERSION` stays 2. Before, `blocks` was undefined for a root
+other than an Email.
+
+`@hyper-elements/email-clients` 0.5.3 and earlier read a missing map as "not an Email": with this core, they'd preview a
+Page, a Document or a Canvas instead of refusing it. Update it with this release, whose `renderInEmailClients()` reads
+the root from the map's first entry.
+
+### Templates: a tagged link's host is checked, and images can be held to the brand's hosts
+
+- `links.domains` checks a link with a sending service's tag (`{{…}}`) too, wherever its host is written out:
+  `https://evil.example/landing?id={{contact.id}}` is `template/link-domain`, where it was only a note for review.
+  Only a host that is itself a tag (`{{unsubscribe_url}}`, `https://{{host}}/`) can't be checked: it stays a note
+  (`template/link-tag`), or is refused with `tags: "deny"`. What's written of the rest is checked the same way: a
+  relative `/path/{{id}}` is `template/link-relative`, and `tel:{{phone}}` is `template/link-scheme` unless
+  `links.schemes` lists it.
+- `rules.images.domains` is a new rule: every image a design loads (an Image, a Video's thumbnail, a Social's icons, in
+  fixed parts, slots and blocks) comes from one of the hosts listed, or it's `template/image-domain`. So is an image
+  whose host is a tag, an inline `data:` image and a relative one. It's off unless given, so templates without it
+  check as before. `describe()` lists it in `rules.images`.
+
 ### GUIDE.md: where an image comes from, and an id to compare
 
 - The guide says an image's `src` is a public URL the reader's email client can fetch, never a made-up one

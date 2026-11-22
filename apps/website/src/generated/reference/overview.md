@@ -34,10 +34,11 @@ Only inside the element named: a list's items, a table's rows and cells, a docum
 Only inside an Svg, in its viewBox's units.
 
 
-`await render(email, { blockMap: true })` also gives `blocks`, for a tool that previews an Email and needs to know which block of the design it's looking at: `{ version, unit: "utf8", entries: [{ path, nodeId?, type, offset }] }`.
+`await render(design, { blockMap: true })` also gives `blocks`, for a tool that previews a design and needs to know which block of it it's looking at: `{ version, unit: "utf8", entries: [{ path, nodeId?, type, offset }] }`. Every root has one: an Email, a Page, a Document (its print HTML) and a Canvas (as HTML).
 
-- Each block written as an element has an entry: its place in the design (`root.children[2]`, as diagnostics give it), its `id` where it has one, its element (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). That's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.
-- Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak` and a `MergeTag` have none, nor a `Layer`'s `Image` (drawn as the Layer's background).
+- Each block written as an element has an entry: its place in the design (`root.children[2]`, as diagnostics give it), its `id` where it has one, its element (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). In an Email, that's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.
+- Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak`, a `MergeTag` and a `PageNumber` have none, nor, in an Email, a `Layer`'s `Image` (drawn as the Layer's background).
+- A Document's `PageHeader` and `PageFooter`, and what they hold, are written on every page: they have an entry on each, with the same `path`. A `Document.Page`'s entry is its page's box.
 - The HTML is the same bytes as without the option. Merge tags are written before the offsets are taken, and the offsets count the whole document, `<head>` included.
 - `version` is `BLOCK_MAP_VERSION`, which changes only when this format does.
-- Not with `pretty`, which indents the HTML after the offsets are taken (`render/block-map-pretty`). Another root than an Email has no `blocks`.
+- Not with `pretty`, which indents the HTML after the offsets are taken (`render/block-map-pretty`).

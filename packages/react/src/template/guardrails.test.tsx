@@ -31,6 +31,7 @@ import {
   token,
   validate,
   Video,
+  Social,
   captureFragment,
   defineTheme,
   type Diagnostic,
@@ -516,9 +517,137 @@ describe("rules", () => {
       expect(linked("https://acme.com/{{tag}}", { links: { ...domains.links, tags: "deny" } })).toEqual(["template/link-tag"]);
     });
 
+    it("checks a tagged link's literal host, and leaves only a host that is a tag to the service", () => {
+      const hosts = { links: { domains: ["acme.com", "*.acme.com"] } };
+      const notes = (href: string) => {
+        const T = template({ id: "acme.Tagged", version: "1.0.0", label: "Tagged", root: "Email", fields: { href: prop.link({ label: "Link", required: true }) }, rules: hosts, example: { href: "https://acme.com" }, render: (v) => <Email><Text><Link href={v.href}>Go</Link></Text></Email> });
+        return T.check({ href }).diagnostics.filter((d) => d.code === "template/link-tag").map((d) => d.severity);
+      };
+      // A literal host is read as a browser reads it, whatever tag follows it.
+      for (const href of [
+        "https://evil.example/landing?id={{contact.id}}",
+        "https://evil.example/{{path}}",
+        "https://evil.example#{{anchor}}",
+        "https://evil.example\\{{x}}",
+        "https:evil.example/{{x}}",
+        "HTTPS://Evil.Example:{{port}}/",
+        "https://acme.com.evil.example/{{x}}",
+        "  https://ev\til.example/?u=<%= id %>",
+        "https://evil.example/?u={% id %}",
+      ]) expect([href, linked(href, hosts)]).toEqual([href, ["template/link-domain"]]);
+      expect(linked("https://{{user}}@acme.com/", hosts)).toEqual(["template/link-domain"]);
+      expect(linked("http{{s}}://evil.example/", hosts)).toEqual(["template/link-domain"]);
+      // Still allowed, and still listed for review.
+      expect(linked("https://acme.com/landing?id={{contact.id}}", hosts)).toEqual([]);
+      expect(linked("https://news.acme.com/{{path}}", hosts)).toEqual([]);
+      expect(notes("https://acme.com/landing?id={{contact.id}}")).toEqual(["info"]);
+      // A host that is a tag, or runs into one, can't be checked: a note, or refused with tags: "deny".
+      for (const href of ["{{unsubscribe_url}}", "https://{{host}}/x", "https://acme.com{{rest}}", "https://www.{{brand}}.com/", "https:/{{x}}/acme.com", "{{base}}/path", "http{{rest}}"]) {
+        expect([href, linked(href, hosts)]).toEqual([href, []]);
+        expect([href, notes(href)]).toEqual([href, ["info"]]);
+        expect([href, linked(href, { links: { ...hosts.links, tags: "deny" } })]).toEqual([href, ["template/link-tag"]]);
+      }
+      // A host that's written out but isn't one: refused, tag or not.
+      for (const href of ["https://acme.com:99999/", "https://exa mple.com/{{x}}", "https://:{{port}}/", "https://[{{v6}}/", "https://[::1]/{{x}}"]) expect([href, linked(href, hosts)]).toEqual([href, ["template/link-domain"]]);
+      // What's written of the rest is checked too.
+      expect(linked("/path/{{id}}", hosts)).toEqual(["template/link-relative"]);
+      expect(linked("tel:{{phone}}", hosts)).toEqual(["template/link-scheme"]);
+      expect(linked("mailto:{{email}}", { links: { ...hosts.links, schemes: ["mailto"] } })).toEqual([]);
+    });
+
+    it("refuses an agent's tagged link off the brand's domains in a slot", () => {
+      const N = newsletter({ label: "Body", allow: allowed }, { links: { domains: ["acme.com"] } });
+      const checked = N.check({ subject: "Hi", body: <Column><Button href="https://evil.example/landing?id={{contact.id}}">Read more</Button></Column> });
+      expect(checked.valid).toBe(false);
+      expect(checked.diagnostics.find((d) => d.code === "template/link-domain")?.message).toMatch(/^evil\.example isn't one of acme\.Newsletter's domains/);
+    });
+
     it("covers fixed parts, and a Menu's links after expansion", () => {
       const N = newsletter({ label: "Body", allow: allowed }, { links: { domains: ["example.com"] } });
       expect(codesOf(N.check({ subject: "Hi", body }).diagnostics).filter((c) => c === "template/link-domain").length).toBeGreaterThan(1);
+    });
+  });
+
+  describe("images", () => {
+    const pictured = (src: string, rules: Parameters<typeof template>[0]["rules"] = { images: { domains: ["cdn.acme.com", "*.acme-media.com"] } }) => {
+      const T = template({
+        id: "acme.Pictured",
+        version: "1.0.0",
+        label: "Pictured",
+        root: "Email",
+        fields: { src: prop.image({ label: "Image", required: true }) },
+        rules,
+        example: { src: "https://cdn.acme.com/a.png" },
+        render: (v) => <Email><Image src={v.src} alt="A picture" /></Email>,
+      });
+      return T.check({ src }).diagnostics.filter((d) => d.severity === "error").map((d) => [d.code, d.path]);
+    };
+    const refused = [["template/image-domain", "root.children[0].props.src"]];
+
+    it("checks every image's host", () => {
+      expect(pictured("https://cdn.acme.com/a.png")).toEqual([]);
+      expect(pictured("https://eu.acme-media.com/a.png")).toEqual([]);
+      expect(pictured("https://cdn.acme.com/{{contact.id}}.png")).toEqual([]);
+      expect(pictured("https://track.evil.example/pixel.gif")).toEqual(refused);
+      expect(pictured("https://cdn.acme.com.evil.example/a.png")).toEqual(refused);
+      expect(pictured("https://acme-media.com/a.png")).toEqual(refused);
+      expect(pictured("https://user@cdn.acme.com/a.png")).toEqual(refused);
+      expect(pictured("https://track.evil.example/pixel.gif?id={{contact.id}}")).toEqual(refused);
+      // Where it loads from can't be checked, or it isn't from a host at all.
+      expect(pictured("{{image_url}}")).toEqual(refused);
+      expect(pictured("https://cdn.acme.com{{x}}/a.png")).toEqual(refused);
+      expect(pictured("data:image/png;base64,iVBORw0KGgo=")).toEqual(refused);
+      expect(pictured("/a.png")).toEqual(refused);
+      expect(pictured("https://exa mple.com/a.png")).toEqual(refused);
+      // No rule, no check: what templates without one held keeps passing.
+      expect(pictured("https://track.evil.example/pixel.gif", {})).toEqual([]);
+      expect(pictured("https://track.evil.example/pixel.gif", { links: { domains: ["acme.com"] } })).toEqual([]);
+    });
+
+    it("covers slots, fixed parts, a Video's thumbnail and a Social's icons, and is a rule in check() and describe()", () => {
+      const rules = { images: { domains: ["cdn.acme.com"] } };
+      const N = newsletter({ label: "Body", allow: allowed }, rules);
+      const slot = N.check({ subject: "Hi", body: <Column><Image src={{ src: "https://track.evil.example/p.gif", width: 1, height: 1 }} alt="" /></Column> });
+      expect(slot.valid).toBe(false);
+      expect(slot.diagnostics.find((d) => d.code === "template/image-domain")?.message).toBe("An image from track.evil.example isn't from one of acme.Newsletter's image domains (cdn.acme.com) (required by acme.Newsletter)");
+      expect(slot.rules.find((r) => r.rule === "images")).toMatchObject({ source: "template", status: "failed" });
+      expect(N.check({ subject: "Hi", body: <Column><Image src="https://cdn.acme.com/a.png" alt="A" /></Column> }).rules.find((r) => r.rule === "images")?.status).toBe("passed");
+      expect(N.describe().rules.images).toEqual({ domains: ["cdn.acme.com"] });
+      expect(newsletter({ label: "Body", allow: allowed }).describe().rules.images).toBeUndefined();
+
+      const fixed = (design: React.ReactElement) =>
+        template({ id: "acme.Fixed", version: "1.0.0", label: "Fixed", root: "Email", fields: { title: prop.text({ label: "Title", required: true }) }, rules, example: { title: "x" }, render: () => design }).check({ title: "x" }).diagnostics.filter((d) => d.code === "template/image-domain").map((d) => d.path);
+      expect(fixed(<Email><Image src="https://elsewhere.example/logo.png" alt="Logo" /></Email>)).toEqual(["root.children[0].props.src"]);
+      expect(fixed(<Email><Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" thumbnail="https://elsewhere.example/t.png" title="Launch" /></Email>)).toEqual(["root.children[0].props.thumbnail"]);
+      expect(fixed(<Email><Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="Launch" /></Email>)).toEqual(["root.children[0].props.src"]);
+      expect(fixed(<Email><Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" thumbnail="https://cdn.acme.com/t.png" title="Launch" /></Email>)).toEqual([]);
+      expect(fixed(<Email><Social icons={[{ name: "LinkedIn", href: "https://linkedin.com/company/acme" }]} /></Email>).length).toBe(1);
+    });
+
+    it("is decided per format", () => {
+      const Card = template({
+        id: "acme.Card",
+        version: "1.0.0",
+        label: "Card",
+        root: "Canvas",
+        formats: { wide: { width: 600, height: 315 } },
+        fields: { src: prop.image({ label: "Image", required: true }) },
+        rules: { images: { domains: ["cdn.acme.com"] } },
+        example: { src: "https://cdn.acme.com/a.png" },
+        render: (v) => <Canvas width={600} height={315}><Image src={v.src} alt="A" style={{ width: 600 }} /></Canvas>,
+      });
+      expect(Card.check({ src: "https://evil.example/a.png" }, { format: "wide" }).rules).toEqual([expect.objectContaining({ rule: "images", format: "wide", status: "failed" })]);
+    });
+
+    it("checks its domains when the template is defined, and owns them", () => {
+      const spec = (rules: unknown) => () => template({ id: "acme.Bad", version: "1.0.0", label: "Bad", root: "Email", fields: {}, rules: rules as never, example: {}, render: () => <Email><Text>x</Text></Email> });
+      expect(spec("cdn.acme.com")).toThrow(/rules is \{ plugins, require, links, images, root \}/);
+      expect(spec({ images: { domains: "cdn.acme.com" } })).toThrow(/rules\.images\.domains is a list of hosts/);
+      expect(() => template({ id: "acme.Bad", version: "1.0.0", label: "Bad", root: "Email", fields: {}, rules: { images: { domains: ["https://cdn.acme.com"] } }, example: {}, render: () => <Email><Text>x</Text></Email> })).toThrow(/rules\.images\.domains\[0\]/);
+      const rules = { images: { domains: ["cdn.acme.com"] } };
+      const T = template({ id: "acme.OwnImages", version: "1.0.0", label: "Own", root: "Email", fields: { src: prop.image({ label: "Image", required: true }) }, rules, example: { src: "https://cdn.acme.com/a.png" }, render: (v) => <Email><Image src={v.src} alt="A" /></Email> });
+      rules.images.domains.push("evil.example");
+      expect(codesOf(T.check({ src: "https://evil.example/a.png" }).diagnostics)).toEqual(["template/image-domain"]);
     });
   });
 

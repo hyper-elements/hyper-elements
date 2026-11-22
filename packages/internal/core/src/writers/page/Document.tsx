@@ -6,6 +6,7 @@
 import { documentPages, pageBox } from "../../document";
 import type { ResolvedNode } from "../../resolve";
 import { h } from "../jsx";
+import { markBlock } from "../shared/block-map";
 import { px, textDeclarations } from "../shared/css";
 import { isNode, type Component } from "./context";
 import { alignSelf, stackOf } from "./layout";
@@ -31,30 +32,34 @@ export const Document: Component = ({ node: root, style, rtl, render }) => {
   return (
     <main style={textDeclarations(root.text, undefined)}>
       {pages.map(({ page, children }, index) =>
-        numbering({ page: index + 1, total: pages.length }, () => (
-          <section
-            id={page?.id}
-            class="elements-page"
-            style={{
-              boxSizing: "border-box",
-              width: box.width,
-              height: box.height,
-              margin: "0 auto",
-              padding: `${px(margin.top)} ${px(margin.right)} ${px(margin.bottom)} ${px(margin.left)}`,
-              display: "flex",
-              flexDirection: "column",
-              backgroundColor: page?.style.backgroundColor ?? style.backgroundColor,
-              overflow: "hidden",
-              breakAfter: index < pages.length - 1 ? "page" : undefined,
-            }}
-          >
-            {header && render(header, [])}
-            <div style={[{ flex: "1 1 auto", minHeight: 0 }, stackOf(page ?? root), page ? textDeclarations(page.text, root.text) : {}]}>
-              {children.filter(isNode).map((child) => render(child, alignSelf(child, page ?? root, rtl)))}
-            </div>
-            {footer && render(footer, [])}
-          </section>
-        ))
+        numbering({ page: index + 1, total: pages.length }, () => {
+          // A Document.Page's element is its box: in the block map, where the design has one.
+          const sheet = (
+            <section
+              id={page?.id}
+              class="elements-page"
+              style={{
+                boxSizing: "border-box",
+                width: box.width,
+                height: box.height,
+                margin: "0 auto",
+                padding: `${px(margin.top)} ${px(margin.right)} ${px(margin.bottom)} ${px(margin.left)}`,
+                display: "flex",
+                flexDirection: "column",
+                backgroundColor: page?.style.backgroundColor ?? style.backgroundColor,
+                overflow: "hidden",
+                breakAfter: index < pages.length - 1 ? "page" : undefined,
+              }}
+            >
+              {header && render(header, [])}
+              <div style={[{ flex: "1 1 auto", minHeight: 0 }, stackOf(page ?? root), page ? textDeclarations(page.text, root.text) : {}]}>
+                {children.filter(isNode).map((child) => render(child, alignSelf(child, page ?? root, rtl)))}
+              </div>
+              {footer && render(footer, [])}
+            </section>
+          );
+          return page ? markBlock(sheet, page) : sheet;
+        })
       )}
     </main>
   );
