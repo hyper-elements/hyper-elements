@@ -78,3 +78,51 @@ export const firstView = (t: TemplateInfo, brand: string): View | undefined => {
   const views = t.byBrand[brand]?.views;
   return views && (views.default ?? views[t.designs?.[0]?.name ?? ""]);
 };
+
+/** The same text always gives the same number (FNV-1a): a fixed shuffle that doesn't follow the names' order. */
+const hash = (text: string) => {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
+  return h >>> 0;
+};
+
+/**
+ * The gallery's order: its outputs, companies and sample brands mixed, so the first rows show the range. Each place
+ * takes the template that fits best: each output, and the recreations, spread over the whole gallery by their share, no company's recreation
+ * within six places of another of its own, no two recreations side by side, and where it can, not the output of the
+ * card before (or the one before that). Ties fall to a fixed shuffle, so the order is the same on every build and
+ * doesn't follow the names.
+ */
+export function mixed(list: readonly TemplateInfo[]): TemplateInfo[] {
+  const left = [...list].sort((a, b) => hash(a.key) - hash(b.key));
+  const total: Record<string, number> = {};
+  const placed: Record<string, number> = {};
+  // Each output, and the recreations and the sample brands' templates, by how many there are.
+  const groups = (t: TemplateInfo) => [t.folder, t.recreates ? "recreation" : "sample"];
+  for (const t of list) for (const g of groups(t)) total[g] = (total[g] ?? 0) + 1;
+  const out: TemplateInfo[] = [];
+  while (left.length) {
+    const recent = out.slice(-6);
+    const last = out[out.length - 1];
+    const progress = (out.length + 1) / list.length;
+    const cost = (t: TemplateInfo) => {
+      let c = 0;
+      const company = t.recreates?.companyId;
+      if (company && recent.some((r) => r.recreates?.companyId === company)) c += 1000;
+      if (last?.folder === t.folder) c += 40;
+      if (out[out.length - 2]?.folder === t.folder) c += 15;
+      if (last?.recreates && t.recreates) c += 40;
+      // An output behind its share of the places so far goes sooner, and so does a recreation, or a sample brand's.
+      c -= 300 * (progress - (placed[t.folder] ?? 0) / total[t.folder]!);
+      const kind = groups(t)[1]!;
+      c -= 200 * (progress - (placed[kind] ?? 0) / total[kind]!);
+      return c;
+    };
+    let best = 0;
+    for (let i = 1; i < left.length; i++) if (cost(left[i]!) < cost(left[best]!)) best = i;
+    const [t] = left.splice(best, 1);
+    out.push(t!);
+    for (const g of groups(t!)) placed[g] = (placed[g] ?? 0) + 1;
+  }
+  return out;
+}

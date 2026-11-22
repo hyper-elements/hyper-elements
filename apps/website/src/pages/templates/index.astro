@@ -1,7 +1,7 @@
 ---
 import Base from "../../layouts/Base.astro";
 import GalleryThumb from "../../components/GalleryThumb.astro";
-import { brands, brandsFor, firstView, galleryTemplates, templateUrl, type TemplateInfo } from "../../lib/gallery";
+import { brands, brandsFor, firstView, galleryTemplates, mixed, templateUrl, type TemplateInfo } from "../../lib/gallery";
 
 const outputs = [
   { id: "all", label: "Everything" },
@@ -11,10 +11,8 @@ const outputs = [
   { id: "images", label: "Images" },
 ].filter((o) => o.id === "all" || galleryTemplates.some((t) => t.folder === o.id));
 
-// One gallery, its outputs mixed so no one kind leads: the next template of each output in turn.
-const queues = (["emails", "images", "documents", "pages"] as const).map((folder) => galleryTemplates.filter((t) => t.folder === folder));
-const gallery: TemplateInfo[] = [];
-while (queues.some((q) => q.length)) for (const q of queues) if (q.length) gallery.push(q.shift()!);
+// One gallery, mixed so no one kind, company or brand leads (mixed()).
+const gallery = mixed(galleryTemplates);
 
 // Each card in the next sample brand, dark and light in turn, so the gallery shows the range of looks: "their own
 // brands", until a visitor picks one.
