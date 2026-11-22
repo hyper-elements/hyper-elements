@@ -247,7 +247,8 @@ function readAddress(href: string): Address {
   const at = authority.lastIndexOf("@");
   const hostPort = authority.slice(at + 1);
   const host = hostPort.startsWith("[") ? hostPort.slice(0, hostPort.indexOf("]") + 1) : hostPort.split(":")[0]!;
-  if (host.includes(TAG) || (!host && hostPort.includes(TAG))) return { kind: "tagged-host" };
+  // An empty host (`https://:{{port}}/`) is no host at all, which URL refuses below.
+  if (host.includes(TAG)) return { kind: "tagged-host" };
   try {
     return { kind: "host", host: new URL(`http://${host}/`).hostname, credentials: at >= 0 };
   } catch {
