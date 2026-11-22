@@ -94,9 +94,11 @@ JSX
   → the writers in packages/internal/core/src/writers write the root's output: email, page or print HTML, and plain text
 ```
 
-- `render(email, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
-  preview an email (`packages/internal/core/src/writers/shared/block-map.ts`): marks written in as the email is, then taken out,
-  so the HTML is the same bytes (`block-map.test.tsx` checks it over the examples and generated designs).
+- `render(design, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
+  preview a design, whatever its root (`packages/internal/core/src/writers/shared/block-map.ts`, used by the email and
+  page writers): marks written in as the HTML is, then taken out, so the HTML is the same bytes (`block-map.test.tsx`
+  checks it over the examples and generated designs of every root). A Document's header and footer have an entry on
+  each page.
 - `snapshot(element, { fragments, bind, preflight })` (`src/primitives/snapshot.ts`) collects a design once and captures
   it as inert plain data, which every entry point takes in place of an element without collecting again; slots' content
   is captured on its own (`captureFragment()`), spliced in at `slotMark()`, and seen by a preflight before anything is
@@ -244,8 +246,8 @@ skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
   template loader; the release script's tests
-  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 349,800 bytes, `dist/builder.js`
-  521,700 bytes, `dist/template.js` 108,200 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 350,800 bytes, `dist/builder.js`
+  522,500 bytes, `dist/template.js` 108,200 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
   email-clients packed and installed beside the packed core and the models package from npm (`test:pack`); the CLI's
   tests on Node and Bun, and its consumer app (`tests/cli-integration`).

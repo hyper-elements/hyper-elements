@@ -1,15 +1,19 @@
 /**
- * Where each block of an Email is in its HTML, for render()'s `blockMap`: a tool that previews the email (marking each
- * block, then reading where each one is drawn) finds the template path of what it draws.
+ * Where each block is in a design's HTML, for render()'s `blockMap`: a tool that previews it (marking each block, then
+ * reading where each one is drawn) finds the template path of what it draws. Both writers mark: the email's, and the
+ * page's (a Page, a Document's print HTML, a Canvas as HTML).
  *
- * While the email is written, each node's markup gets a mark just after the tag name of its outermost element (the
- * first one every client but classic Outlook reads, else the first in Outlook's own markup): two Unicode
+ * While the HTML is written, each node's markup gets a mark just after the tag name of its outermost element (in an
+ * email, the first one every client but classic Outlook reads, else the first in Outlook's own markup): two Unicode
  * noncharacters around the node's number. Once it's written the marks are taken out, so the HTML is the same bytes as
  * without them, and where each one was is its block's offset. A template whose own text holds those noncharacters
  * would be misread: it's written again with another pair.
+ *
+ * A block written more than once (a Document's header and footer, on every page) has an entry each time.
  */
-import type { ResolvedNode } from "../../resolve";
+import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Html } from "../jsx";
+import { utf8Bytes } from "./bytes";
 
 /**
  * The format of render()'s `blocks`, kept by hand: raised only when the format changes (not the package's version).
@@ -33,14 +37,17 @@ export interface BlockMap {
   version: number;
   /** What `offset` counts: bytes of the HTML in UTF-8. */
   unit: "utf8";
-  /** Each block written as an element, in the order of their offsets (blocks at one offset: the outer first). */
+  /**
+   * Each block written as an element, in the order of their offsets (blocks at one offset: the outer first). A block
+   * written more than once (a Document's header and footer, on each page) has an entry each time.
+   */
   entries: BlockMapEntry[];
 }
 
 /** How many pairs of noncharacters there are to mark with (U+FDD0 to U+FDEF). */
 export const MARK_PAIRS = 16;
 
-/** The marks of one writing of an email: the nodes marked, by number, and the pair of characters around each number. */
+/** The marks of one writing of the HTML: the nodes marked, by number, and the pair of characters around each number. */
 export class BlockMarks {
   readonly nodes: ResolvedNode[] = [];
   readonly open: string;
@@ -148,4 +155,35 @@ export function readMarks(marks: BlockMarks, written: string): { text: string; f
   const text = pieces.join("");
   if (text.includes(marks.open) || text.includes(marks.close)) return null;
   return { text, found };
+}
+
+/** Where each mark was in the markup written without them: its node, and a character index. */
+export type Found = Array<{ node: ResolvedNode; at: number }>;
+
+/**
+ * `write`'s markup, and with `blockMap`, where each block is in it: written with marks (again with another pair where
+ * the template's own text holds one), which come out again. `what` names the design in the error where no pair is left.
+ */
+export function writeMarked<T extends { markup: string }>(blockMap: boolean | undefined, write: (marks: BlockMarks | null) => T, what: string): { written: T; found?: Found } {
+  if (!blockMap) return { written: write(null) };
+  for (let pair = 0; pair < MARK_PAIRS; pair++) {
+    const marks = new BlockMarks(pair);
+    const attempt = write(marks);
+    const marked = readMarks(marks, attempt.markup);
+    if (marked) return { written: { ...attempt, markup: marked.text }, found: marked.found };
+  }
+  throw new Error(`[Elements] blockMap can't mark this ${what}: its text holds every pair of the noncharacters U+FDD0 to U+FDEF`);
+}
+
+/** Each mark's block, at its offset in UTF-8 bytes: `start` bytes before the markup, and the markup up to the mark. */
+export function blockMapOf(resolved: ResolvedDocument, found: Found, markup: string, start: number): BlockMap {
+  const templatePath = resolved.templatePath ?? ((path: string) => path);
+  let offset = start;
+  let from = 0;
+  const entries = found.map(({ node, at }) => {
+    offset += utf8Bytes(markup.slice(from, at));
+    from = at;
+    return { path: templatePath(node.path), ...(node.id ? { nodeId: node.id } : {}), type: node.type, offset };
+  });
+  return { version: BLOCK_MAP_VERSION, unit: "utf8", entries };
 }

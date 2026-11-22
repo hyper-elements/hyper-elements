@@ -4,6 +4,15 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A block map for every root
+
+`render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),
+as it did for an Email: each block's place in the design and the UTF-8 byte offset in `html` just after its outermost
+element's tag name, with the HTML the same bytes as without the option. A Document's `PageHeader` and `PageFooter`,
+written on every page, have an entry on each page, with the same `path`. A `PageNumber`, like a `LineBreak` and a
+`MergeTag`, has none. The format is the same, so `BLOCK_MAP_VERSION` stays 2. Before, `blocks` was undefined for a root
+other than an Email.
+
 ### Templates: a tagged link's host is checked, and images can be held to the brand's hosts
 
 - `links.domains` checks a link with a sending service's tag (`{{…}}`) too, wherever its host is written out:

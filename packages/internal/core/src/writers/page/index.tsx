@@ -10,6 +10,8 @@
 import type { Diagnostic } from "../../diagnostics";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, withStylesheet, type Html } from "../jsx";
+import { blockMapOf, markBlock, withBlockMarks, writeMarked, type BlockMap, type BlockMarks } from "../shared/block-map";
+import { utf8Bytes } from "../shared/bytes";
 import { Stylesheet } from "../shared/classes";
 import { attrs, css, escapeText, styleAttr, type Declarations } from "../shared/css";
 import { fontFaces } from "../shared/fonts";
@@ -53,6 +55,8 @@ export interface PageHtml {
   body: string;
   /** The `<body>`'s own style (the window's background), for a page that embeds `body`. */
   bodyStyle: string;
+  /** With `blockMap`, where each block is in `html`. */
+  blocks?: BlockMap;
 }
 
 /** At and below this window width a Page is on a phone, unless its `breakpoints` say otherwise. */
@@ -131,19 +135,29 @@ function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declaratio
   };
 }
 
+/** What writes no element of its own, so has no place in the block map: a line break, a merge tag (its markup is the template's), a page number. */
+const UNMAPPED = new Set(["LineBreak", "MergeTag", "PageNumber"]);
+
 function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl: boolean): Html {
   const component = COMPONENTS[node.type];
   if (!component) throw new Error(`[Elements] The page exporter can't render a ${node.type}`);
-  return component(propsOf(node, parent, placement, options, inRtl));
+  const html = component(propsOf(node, parent, placement, options, inRtl));
+  return UNMAPPED.has(node.type) ? html : markBlock(html, node);
 }
 
-export function renderPage(resolved: ResolvedDocument, options: PageOptions = {}): PageHtml {
+export function renderPage(resolved: ResolvedDocument, options: PageOptions & { blockMap?: boolean } = {}): PageHtml {
   const root = resolved.root;
-  const sheet = new Stylesheet(options.classPrefix);
   const fonts = fontFaces(root, { swap: true });
   const document = root.type === "Document";
   const writer = document ? Document : root.type === "Canvas" ? Canvas : Page;
-  const body = withStylesheet(sheet, () => String(writer(propsOf(root, root, [], options))));
+  const writeBody = (marks: BlockMarks | null) => {
+    const sheet = new Stylesheet(options.classPrefix);
+    const markup = withStylesheet(sheet, () => withBlockMarks(marks, () => String(markBlock(writer(propsOf(root, root, [], options)), root))));
+    return { sheet, markup };
+  };
+  // With a block map, written with marks (again with another pair where the template's text holds one), which come out again.
+  const { written, found } = writeMarked(options.blockMap, writeBody, root.type === "Document" ? "document" : root.type === "Canvas" ? "canvas" : "page");
+  const { sheet, markup: body } = written;
 
   // A Canvas and a Document are of a fixed size, whatever the window: no phone layout.
   const fixed = !root.definition.responsive;
@@ -162,6 +176,7 @@ export function renderPage(resolved: ResolvedDocument, options: PageOptions = {}
     ["margin", "0"],
     ["background-color", background],
   ]);
-  const html = `<!DOCTYPE html><html${attrs({ lang: root.props.lang as string | undefined, dir: root.props.dir as string | undefined })}><head>${head}</head><body${styleAttr([["margin", "0"], ["background-color", background]])}>${body}</body></html>`;
-  return { html, head, body, bodyStyle };
+  const opening = `<!DOCTYPE html><html${attrs({ lang: root.props.lang as string | undefined, dir: root.props.dir as string | undefined })}><head>${head}</head><body${styleAttr([["margin", "0"], ["background-color", background]])}>`;
+  const html = `${opening}${body}</body></html>`;
+  return { html, head, body, bodyStyle, ...(found ? { blocks: blockMapOf(resolved, found, body, utf8Bytes(opening)) } : {}) };
 }

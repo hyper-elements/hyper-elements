@@ -197,7 +197,7 @@ The preview text isn't in it.
 | `plugins` | None | Packages that add checks, such as `@hyper-elements/email-clients`. `validate()` takes them too. See [validate()](#validate) |
 | `classPrefix` | `"e"` | What every class name in the stylesheet starts with, for HTML embedded where other CSS is. A Document's page boxes keep the class `elements-page` |
 | `hideBelow` | Where the phone styles start | In an Email, the window width in px at and below which what's hidden on phones is hidden |
-| `blockMap` | `false` | For tools that preview an Email: also returns `blocks`, the UTF-8 byte offset of each block in `html` with its place in the design. The HTML stays the same. Not with `pretty` ([REFERENCE.md](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/REFERENCE.md#for-tools-where-each-block-is-in-an-emails-html)) |
+| `blockMap` | `false` | For tools that preview a design: also returns `blocks`, the UTF-8 byte offset of each block in `html` with its place in the design, for every root. The HTML stays the same. Not with `pretty` ([REFERENCE.md](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/REFERENCE.md#for-tools-where-each-block-is-in-the-html)) |
 
 ```tsx
 const { html } = await render(<Receipt />, {
