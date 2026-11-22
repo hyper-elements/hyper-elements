@@ -41,7 +41,14 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/airbnb/logo.png", width: 190, height: 60, alt: "Airbnb" },
   address: "888 Brannan St, San Francisco, CA 94103",
-  links: { site: "https://www.airbnb.com", domains: ["airbnb.com", "*.airbnb.com"] },
+  links: {
+    site: "https://www.airbnb.com",
+    domains: ["airbnb.com", "*.airbnb.com"],
+    unsubscribe: "https://www.airbnb.com/unsubscribe",
+    preferences: "https://www.airbnb.com/account/emails",
+    help: "https://www.airbnb.com/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

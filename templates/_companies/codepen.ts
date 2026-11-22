@@ -42,7 +42,14 @@ export const brand: Brand = {
     },
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/codepen/challengers.png", width: 1400, height: 400, alt: "CodePen Challenges" },
-  links: { site: "https://codepen.io", domains: ["codepen.io", "*.codepen.io"] },
+  links: {
+    site: "https://codepen.io",
+    domains: ["codepen.io", "*.codepen.io"],
+    unsubscribe: "https://codepen.io/unsubscribe",
+    preferences: "https://codepen.io/account/emails",
+    help: "https://codepen.io/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

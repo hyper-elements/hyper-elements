@@ -3,7 +3,7 @@ import gallery from "../../../generated/gallery.json";
 import { previewHtml } from "../../../lib/examples";
 
 type View = { html: string; preview?: string };
-type Entry = { views: { default: View } };
+type Entry = { views: Record<string, View> };
 
 /**
  * Each template's HTML preview in each brand, `/generated/gallery/<folder>.<name>.<brand>.html`, which a gallery card or a
@@ -13,7 +13,7 @@ type Entry = { views: { default: View } };
 export const getStaticPaths: GetStaticPaths = () =>
   (gallery.templates as Array<{ byBrand: Record<string, Entry> }>).flatMap((t) =>
     Object.values(t.byBrand)
-      .map((entry) => entry.views.default)
+      .flatMap((entry) => Object.values(entry.views))
       .filter((view): view is Required<View> => !!view.preview?.endsWith(".html"))
       .map((view) => ({ params: { preview: view.preview.replace(/^.*\//, "").replace(/\.html$/, "") }, props: { html: view.html } })),
   );

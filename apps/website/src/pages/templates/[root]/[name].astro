@@ -11,9 +11,28 @@ const { t } = Astro.props as { t: TemplateInfo };
 const list = brandsFor(t);
 const views = t.root === "Document" ? (["desktop"] as const) : t.root === "Canvas" ? (["image"] as const) : t.root === "Email" ? (["desktop", "phone", "text"] as const) : (["desktop", "phone"] as const);
 const width = previewWidth(t);
-const file = `${t.name}.tsx`;
+// A template's designs, picked one at a time (a design is its own one view, "default").
+const designs = t.designs ?? [];
+const shown = designs.length ? designs.map((d) => d.name) : ["default"];
+const file = designs.length ? "template.tsx" : `${t.name}.tsx`;
+// The agent view: what an agent may change, beside the design. An email's parts are found by its block map, and an
+// image's by its layout; a page and a document have no block map yet.
+const agentView = t.root === "Email" || t.root === "Canvas";
+const agentData = agentView
+  ? {
+      root: t.root,
+      key: t.key,
+      width,
+      guide: t.guide ?? {},
+      views: Object.fromEntries(list.map((b) => [b.id, Object.fromEntries(shown.map((name) => {
+        const v = t.byBrand[b.id]?.views[name];
+        return [name, v ? { preview: v.preview, areas: v.areas ?? [], boxes: v.boxes, size: v.size } : null];
+      }))])),
+    }
+  : null;
 // The stage's tabs: an email or page at desktop width and on a phone (an email's plain text too), a document as its
-// page, an image; then the code.
+// page, an image; then the code. An email's desktop view and an image's view are the agent view: the design beside
+// what an agent may change.
 const modes = [
   ...(t.root === "Canvas"
     ? [{ id: "image", label: "Image" }]
@@ -46,6 +65,11 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
         <div class="seg" role="tablist" aria-label="View">
           {modes.map((m, i) => <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} data-mode-pick={m.id}>{m.label}</button>)}
         </div>
+        {designs.length > 1 && (
+          <div class="seg" role="radiogroup" aria-label="Design">
+            {designs.map((d, i) => <button type="button" role="radio" aria-checked={i === 0 ? "true" : "false"} data-design-pick={d.name}>{d.label}</button>)}
+          </div>
+        )}
         <div class="brand-pick">
           <span class="in" id="brand-label">In <strong data-brand-name>{list[0]!.name}</strong></span>
           <div class="swatches" role="radiogroup" aria-labelledby="brand-label">
@@ -53,17 +77,26 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
           </div>
         </div>
       </div>
-      <div class="stage-preview">
+      <div class="stage-preview" hidden={agentView}>
         {list.map((b, i) => (
           <div data-brand={b.id} hidden={i !== 0}>
-            {t.root === "Canvas" ? (
-              <div class="preview full"><div class="view view-file"><img data-draw={t.key} data-draw-brand={b.id} width={t.byBrand[b.id]?.views.default.size?.[0]} height={t.byBrand[b.id]?.views.default.size?.[1]} alt={`${t.label}, in ${b.name}`} /></div></div>
-            ) : (
-              t.byBrand[b.id] && <Preview example={t.byBrand[b.id]!.views.default} views={[...views]} width={width} height={820} full />
-            )}
+            {shown.map((name, j) => {
+              const view = t.byBrand[b.id]?.views[name];
+              return view && (
+                <div data-design={name} hidden={j !== 0}>
+                  {t.root === "Canvas" ? (
+                    <div class="preview full"><div class="view view-file"><img data-draw={`${t.key}/${name}`} data-draw-brand={b.id} width={view.size?.[0]} height={view.size?.[1]} alt={`${view.title}`} /></div></div>
+                  ) : (
+                    <Preview example={view} views={[...views]} width={width} height={820} full />
+                  )}
+                </div>
+              );
+            })}
           </div>
         ))}
       </div>
+      {agentView && <div class="stage-agent" data-agent></div>}
+      {agentData && <script type="application/json" id="agent-data" set:html={JSON.stringify(agentData).replace(/</g, "\\u003c")} />}
       <div class="stage-code" hidden>
         <div class="code-bar">
           <span class="file">{file}</span>
@@ -78,6 +111,12 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
             </div>
           ))}
         </div>
+        {designs.map((d, i) => (
+          <div data-design={d.name} hidden={i !== 0}>
+            <p class="code-bar"><span class="file">{d.file}</span><span class="note">A design made from the template</span></p>
+            <CodeBlock code={d.code} color />
+          </div>
+        ))}
         <p class="one-file">
           {list.map((b, i) => <span data-brand={b.id} hidden={i !== 0}>Or <button class="btn-link" type="button" data-copy={t.byBrand[b.id]?.single ?? ""}>copy it as one file</button>, with {b.name} written in.</span>)}
         </p>
@@ -89,6 +128,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
 
 <script>
   import { watch } from "../../../scripts/gallery-images";
+  import { mountAgentView, type AgentViewOptions, type FieldGuide } from "../../../scripts/agent-view";
   // An image is drawn in the visitor's browser, in the brand shown, as it comes into view.
   watch(document.querySelectorAll<HTMLImageElement>("img[data-draw]"));
 
@@ -98,16 +138,51 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   if (stage) {
     const preview = stage.querySelector<HTMLElement>(".stage-preview")!;
     const code = stage.querySelector<HTMLElement>(".stage-code")!;
+    // The agent view, for the brand and design picked, drawn when it's shown and again when either changes.
+    const agentHost = stage.querySelector<HTMLElement>("[data-agent]");
+    type AgentData = { root: string; key: string; width: number; guide: Record<string, FieldGuide>; views: Record<string, Record<string, { preview?: string; areas: AgentViewOptions["areas"]; boxes?: NonNullable<AgentViewOptions["image"]>["boxes"]; size?: [number, number] } | null>> };
+    const agentData = JSON.parse(document.getElementById("agent-data")?.textContent ?? "null") as AgentData | null;
+    let unmount: (() => void) | undefined;
+    const showAgent = () => {
+      if (!agentHost || !agentData || agentHost.hidden) return;
+      const brand = document.querySelector<HTMLElement>('[data-brand-pick][aria-checked="true"]')?.dataset.brandPick ?? Object.keys(agentData.views)[0]!;
+      const design = stage.querySelector<HTMLElement>('[data-design-pick][aria-checked="true"]')?.dataset.designPick ?? Object.keys(agentData.views[brand] ?? {})[0]!;
+      const view = agentData.views[brand]?.[design];
+      unmount?.();
+      if (!view) return;
+      unmount = mountAgentView(agentHost, {
+        width: agentData.root === "Canvas" ? view.size?.[0] ?? 1080 : agentData.width,
+        areas: view.areas,
+        guide: agentData.guide,
+        ...(agentData.root === "Canvas" ? { image: { draw: `${agentData.key}/${design}`, brand, size: view.size ?? [1080, 1080], boxes: view.boxes ?? [] } } : { preview: view.preview }),
+      });
+    };
+    document.addEventListener("template:shown", showAgent);
+    showAgent();
     const modes = [...stage.querySelectorAll<HTMLButtonElement>("[data-mode-pick]")];
     modes.forEach((m) =>
       m.addEventListener("click", () => {
         const id = m.dataset.modePick!;
         modes.forEach((x) => x.setAttribute("aria-selected", String(x === m)));
-        const what = id === "code" ? "code" : "preview";
+        // An email's desktop view and an image's view are the agent view.
+        const what = id === "code" ? "code" : agentHost && (id === "desktop" || id === "image") ? "agent" : "preview";
         stage.dataset.show = what;
         preview.hidden = what !== "preview";
         code.hidden = what !== "code";
+        if (agentHost) agentHost.hidden = what !== "agent";
+        if (what === "agent") showAgent();
         if (what === "preview") stage.querySelectorAll<HTMLButtonElement>(`.preview [role="tab"][data-view="${id}"]`).forEach((tab) => tab.click());
+        window.dispatchEvent(new Event("resize"));
+      }),
+    );
+    // A template's designs: the one picked shows, in its preview and its code.
+    const picks = [...stage.querySelectorAll<HTMLElement>("[data-design-pick]")];
+    picks.forEach((p) =>
+      p.addEventListener("click", () => {
+        picks.forEach((x) => x.setAttribute("aria-checked", String(x === p)));
+        stage.querySelectorAll<HTMLElement>("[data-design]").forEach((el) => (el.hidden = el.dataset.design !== p.dataset.designPick));
+        stage.querySelectorAll<HTMLIFrameElement>(`[data-design="${p.dataset.designPick}"] iframe[loading="lazy"]`).forEach((frame) => (frame.loading = "eager"));
+        document.dispatchEvent(new Event("template:shown"));
         window.dispatchEvent(new Event("resize"));
       }),
     );
@@ -142,6 +217,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
       url.searchParams.set("brand", id);
       history.replaceState(history.state, "", url);
     }
+    document.dispatchEvent(new Event("template:shown"));
     // The previews fit themselves to their panels on resize.
     window.dispatchEvent(new Event("resize"));
   };
@@ -156,7 +232,7 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
 
 <style>
   /* One brand's copy of each part shows at a time; a button's own display doesn't bring the others back. */
-  [data-brand][hidden] { display: none !important; }
+  [data-brand][hidden], [data-design][hidden] { display: none !important; }
   .t-top { padding-top: 20px; padding-bottom: 14px; }
   .t-row { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; }
   .t-id { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; min-width: 0; }
@@ -173,7 +249,9 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   .stage-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 10px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
   .seg { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line-2); border-radius: 999px; }
   .seg button { padding: 5px 14px; border: 0; border-radius: 999px; background: transparent; color: var(--text-2); font: 13px var(--sans); cursor: pointer; white-space: nowrap; }
-  .seg button[aria-selected="true"] { background: var(--text); color: var(--bg); }
+  .seg button[aria-selected="true"], .seg button[aria-checked="true"] { background: var(--text); color: var(--bg); }
+  /* The design picker sits beside the view tabs; the brand circles keep to the right. */
+  .seg[aria-label="Design"] { margin-right: auto; }
   .brand-pick { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
   .in { font-size: 13px; color: var(--text-3); }
   .in strong { color: var(--text); font-weight: 600; }
@@ -185,6 +263,9 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
   .stage :global(.preview .view-frame .scaler) { margin: 0 auto; }
   .stage-code { min-height: 760px; display: flex; flex-direction: column; }
   .stage-code[hidden] { display: none; }
+  .stage-preview[hidden] { display: none; }
+  .stage-agent { padding: 16px; }
+  .stage-agent[hidden] { display: none; }
   .code-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line); }
   .file { font: 12.5px var(--mono); color: var(--text); }
   .note { font-size: 13px; color: var(--text-3); }

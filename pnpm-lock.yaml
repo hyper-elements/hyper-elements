@@ -549,6 +549,9 @@ importers:
 
   templates:
     devDependencies:
+      '@hyper-elements/lint':
+        specifier: workspace:*
+        version: link:../packages/lint
       '@hyper-elements/react':
         specifier: workspace:*
         version: link:../packages/react

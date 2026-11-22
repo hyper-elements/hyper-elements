@@ -39,7 +39,14 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/spotify/logo.png", width: 438, height: 140, alt: "Spotify" },
   address: "Regeringsgatan 19, 111 53 Stockholm, Sweden",
-  links: { site: "https://www.spotify.com", domains: ["spotify.com", "*.spotify.com"] },
+  links: {
+    site: "https://www.spotify.com",
+    domains: ["spotify.com", "*.spotify.com"],
+    unsubscribe: "https://www.spotify.com/unsubscribe",
+    preferences: "https://www.spotify.com/account/emails",
+    help: "https://www.spotify.com/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

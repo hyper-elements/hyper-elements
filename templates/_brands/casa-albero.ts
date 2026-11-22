@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/casa-albero/logo.png", width: 480, height: 120, alt: "Casa Albero" },
   address: "Strada dei Colli 12, Montalcino",
-  links: { site: "https://casaalbero.example", domains: ["casaalbero.example", "*.casaalbero.example"] },
+  links: {
+    site: "https://casaalbero.example",
+    domains: ["casaalbero.example", "*.casaalbero.example"],
+    unsubscribe: "https://casaalbero.example/unsubscribe",
+    preferences: "https://casaalbero.example/account/emails",
+    help: "https://casaalbero.example/help",
+  },
+  currency: "EUR",
+  legal: { entity: "Casa Albero S.r.l.", taxId: "P.IVA IT01234567890" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

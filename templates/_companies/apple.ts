@@ -40,7 +40,14 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/apple/logo.png", width: 84, height: 84, alt: "Apple" },
   address: "One Apple Park Way, Cupertino, CA 95014",
-  links: { site: "https://www.apple.com", domains: ["apple.com", "*.apple.com"] },
+  links: {
+    site: "https://www.apple.com",
+    domains: ["apple.com", "*.apple.com"],
+    unsubscribe: "https://www.apple.com/unsubscribe",
+    preferences: "https://www.apple.com/account/emails",
+    help: "https://www.apple.com/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

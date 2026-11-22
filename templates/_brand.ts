@@ -13,10 +13,27 @@ export type Brand = {
   theme: Theme;
   /** A PNG or JPEG file. */
   logo: { src: string; width: number; height: number; alt: string };
-  /** The postal address footers show. */
+  /** The postal address footers show: a marketing email shows it. */
   address?: string;
-  /** The brand's site, and the hosts its links may go to (`acme.example`, or `*.acme.example`). */
-  links: { site: string; domains: readonly string[]; params?: Readonly<Record<string, string>> };
+  /**
+   * The brand's site, the hosts its links may go to (`acme.example`, or `*.acme.example`), and the pages a template
+   * links to that belong to the brand, not to a send: where a reader unsubscribes in one step, chooses which emails
+   * they get, and gets help. `payments` are other hosts a payment link may go to (a payment processor's).
+   */
+  links: {
+    site: string;
+    domains: readonly string[];
+    unsubscribe: string;
+    preferences: string;
+    help: string;
+    payments?: readonly string[];
+  };
+  /** The currency amounts are in, as an ISO 4217 code ("USD"), written in the brand's language. */
+  currency: string;
+  /** Who the brand is in law, for invoices and receipts: its registered name, and its tax or VAT number. */
+  legal?: { entity: string; taxId?: string };
+  /** How a reader reaches support, where a template shows it. */
+  support?: { phone?: string; hours?: string };
   /** The language, as a BCP 47 tag: "en" where it isn't set. */
   lang?: string;
   dir?: "ltr" | "rtl" | "auto";

@@ -40,7 +40,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/nike/logo.png", width: 264, height: 104, alt: "Nike" },
   address: "One Bowerman Drive, Beaverton, Oregon 97005, USA",
-  links: { site: "https://www.nike.com", domains: ["nike.com", "*.nike.com"] },
+  links: {
+    site: "https://www.nike.com",
+    domains: ["nike.com", "*.nike.com"],
+    unsubscribe: "https://www.nike.com/unsubscribe",
+    preferences: "https://www.nike.com/account/emails",
+    help: "https://www.nike.com/help",
+  },
+  currency: "USD",
+  support: { phone: "1-800-806-6453", hours: "4 am - 11 pm PT" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

@@ -39,7 +39,14 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/stripe/logo.png", width: 101, height: 42, alt: "Stripe" },
   address: "354 Oyster Point Blvd, South San Francisco, CA 94080",
-  links: { site: "https://stripe.com", domains: ["stripe.com", "*.stripe.com"] },
+  links: {
+    site: "https://stripe.com",
+    domains: ["stripe.com", "*.stripe.com"],
+    unsubscribe: "https://stripe.com/unsubscribe",
+    preferences: "https://stripe.com/account/emails",
+    help: "https://stripe.com/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

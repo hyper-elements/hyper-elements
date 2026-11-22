@@ -15,7 +15,7 @@ const guess = t.root === "Document" ? 1.32 : t.root === "Page" ? 1.2 : 1.6;
 {view && (
   <div class="kthumb" aria-hidden="true">
     {t.root === "Canvas" ? (
-      <img class="kt-image" data-draw={t.key} data-draw-brand={brand.id} width={view.size?.[0]} height={view.size?.[1]} alt="" />
+      <img class="kt-image" data-draw={`${t.key}/${t.designs?.[0]?.name}`} data-draw-brand={brand.id} width={view.size?.[0]} height={view.size?.[1]} alt="" />
     ) : (
       <div class="thumb view-frame" data-fit={width} data-fit-full style={`aspect-ratio:1/${guess};--frame-bg:${bg}`}>
         <div class="scaler">

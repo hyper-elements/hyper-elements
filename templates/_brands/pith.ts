@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/pith/logo.png", width: 480, height: 120, alt: "Pith" },
   address: "9 Press Row, Portland",
-  links: { site: "https://pith.example", domains: ["pith.example", "*.pith.example"] },
+  links: {
+    site: "https://pith.example",
+    domains: ["pith.example", "*.pith.example"],
+    unsubscribe: "https://pith.example/unsubscribe",
+    preferences: "https://pith.example/account/emails",
+    help: "https://pith.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Pith Press, LLC", taxId: "EIN 56-7890123" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

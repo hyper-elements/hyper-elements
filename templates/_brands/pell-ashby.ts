@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/pell-ashby/logo.png", width: 480, height: 120, alt: "Pell & Ashby" },
   address: "3 Lincoln's Court, Philadelphia",
-  links: { site: "https://pellashby.example", domains: ["pellashby.example", "*.pellashby.example"] },
+  links: {
+    site: "https://pellashby.example",
+    domains: ["pellashby.example", "*.pellashby.example"],
+    unsubscribe: "https://pellashby.example/unsubscribe",
+    preferences: "https://pellashby.example/account/emails",
+    help: "https://pellashby.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Pell & Ashby LLP", taxId: "EIN 78-9012345" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

@@ -1,38 +1,49 @@
 /**
- * Writes `templates/README.md` from the folder: every design by its output, and the sample brands.
+ * Writes `templates/README.md` from the folder: every template by its output, with its designs, and the sample brands.
  *   pnpm --filter ./templates readme
  */
 import { writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { ROOT } from "./assets";
-import { ROOT_FOLDERS, brands, companies, designs } from "../_test/discover";
+import { ROOT_FOLDERS, brands, companies, templates } from "../_test/discover";
 
 const HEADINGS = { emails: "Emails", pages: "Pages", documents: "PDFs", images: "Images" } as const;
 
 export async function readme(): Promise<string> {
-  const [all, owned, brandList] = [await designs(), await companies(), await brands()];
+  const [owned, brandList, made] = [await companies(), await brands(), await templates()];
   const lines = [
     "# Templates",
     "",
-    "Ready-made [Hyper Elements](https://hyperelements.dev) designs: emails, web pages, PDFs and images, each one plain JSX",
-    "of Elements' own elements. None of them carries a brand: each takes its colors, fonts, logo and company details",
-    "from a brand it's given, and is tested in every sample brand.",
+    "Ready-made [Hyper Elements](https://hyperelements.dev) templates: emails, web pages, PDFs and images. Each is a",
+    "template (`template()` from `@hyper-elements/react/template`): what stays the same is locked, and what changes is a",
+    "field, with the limits and rules every design made from it is checked against. None of them carries a brand: each",
+    "is made from one (`newsletter(brand)`), which gives it its colors, fonts, logo, company details and the domains its",
+    "links may go to.",
+    "",
+    "```text",
+    "emails/newsletter/",
+    "  template.tsx          newsletter(brand) makes the template; its default export is made from a sample brand",
+    "  designs/*.tsx         designs made from it: <Newsletter subject=\"…\" body={…} />",
+    "```",
     "",
     "**To use one,** open it on [hyperelements.dev/templates](https://hyperelements.dev/templates), pick a sample brand,",
-    "and copy it with its `brand.ts` (or as one file). It imports only Elements' own packages. Put your own brand in",
-    "`brand.ts`, and change anything else you like.",
+    "and copy the template with its `brand.ts` (or as one file). Put your own brand in `brand.ts`, then write designs",
+    "from it, and check them: `npx hyper-elements describe template.tsx` lists its fields, and `npx hyper-elements check`",
+    "checks a design against them.",
     "",
     "This file is written by `pnpm --filter ./templates readme`. Don't edit it by hand.",
     "",
   ];
   for (const folder of Object.keys(ROOT_FOLDERS) as Array<keyof typeof ROOT_FOLDERS>) {
-    const inFolder = all.filter((t) => t.folder === folder);
-    if (!inFolder.length) continue;
+    const templatesHere = made.filter((t) => t.folder === folder);
+    if (!templatesHere.length) continue;
     lines.push(`## ${HEADINGS[folder]}`, "");
-    for (const t of inFolder) {
-      const company = t.meta.recreates && owned.find((o) => o.id === t.meta.recreates!.company)!.brand.name;
+    // A template, made from a brand, and the designs made from it.
+    for (const t of templatesHere) {
+      const tpl = t.make(brandList[0]!.brand);
+      const company = t.meta.recreates && owned.find((o) => o.id === t.meta.recreates!.company)?.brand.name;
       const notes = [company ? `a recreation of ${company}'s ${t.meta.recreates!.what}` : "", t.meta.author ? `by ${t.meta.author}` : ""].filter(Boolean);
-      lines.push(`- [${t.meta.label}](./${t.key}.tsx): ${t.meta.description}${notes.length ? ` (${notes.join(", ")})` : ""}`);
+      lines.push(`- [${tpl.label}](./${t.key}/template.tsx): ${tpl.description ?? ""}${notes.length ? ` (${notes.join(", ")})` : ""}. Designs: ${t.designs.map((d) => `[${d.label}](./${t.key}/designs/${d.name}.tsx)`).join(", ")}`);
     }
     lines.push("");
   }

@@ -29,13 +29,24 @@ export interface TemplateInfo {
   /** A recreation: the company's id and name, what it rebuilds, and where the original can be seen. */
   recreates?: { companyId: string; company: string; what: string; original: string };
   file: string;
-  /** The design as it's written, which takes its brand's type from ./brand: the same in every brand. */
+  /** The design as it's written, which takes its brand's type from ./brand: the same in every brand. A template's
+   * code is the template, made from the brand in ./brand. */
   code: string;
+  /** A template's designs, made from it: each one's name (its view's key in `byBrand`), label, file and code. */
+  designs?: Array<{ name: string; label: string; file: string; code: string }>;
+  /** Each field's label and limits, by its path, for the agent view. */
+  guide?: Record<string, { label: string; kind: string; limits: string }>;
   byBrand: Record<string, { views: Record<string, View>; single: string; brandFile: string }>;
 }
 /** A view of a template in one brand: an Email's, Page's or Document's with the HTML file the gallery loads when that
  * brand is picked; a Canvas's with its size, as it's drawn in the visitor's browser (src/scripts/gallery-images.ts). */
-export type View = Example & { preview?: string; size?: [number, number] };
+export type View = Example & {
+  preview?: string;
+  size?: [number, number];
+  /** For the agent view: the parts bound to a field (an email's by its block map, an image's by its layout), and an image's boxes. */
+  areas?: Array<{ path: string; field: string }>;
+  boxes?: Array<[string, number, number, number, number]>;
+};
 
 const gallery = data as unknown as { assets: string; brands: BrandInfo[]; companies: CompanyInfo[]; templates: TemplateInfo[] };
 
@@ -62,5 +73,8 @@ export const previewWidth = (t: TemplateInfo, brand?: string): number => {
   if (!size) return 820;
   return (page![2]?.toLowerCase() === "landscape" ? size[1] : size[0]) + 26;
 };
-/** A template's preview in a brand. */
-export const firstView = (t: TemplateInfo, brand: string): View | undefined => t.byBrand[brand]?.views.default;
+/** A template's preview in a brand: a design's, or a template's first design's. */
+export const firstView = (t: TemplateInfo, brand: string): View | undefined => {
+  const views = t.byBrand[brand]?.views;
+  return views && (views.default ?? views[t.designs?.[0]?.name ?? ""]);
+};

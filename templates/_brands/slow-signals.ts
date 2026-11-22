@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/slow-signals/logo.png", width: 480, height: 120, alt: "Slow Signals" },
   address: "PO Box 1170, Taos",
-  links: { site: "https://slowsignals.example", domains: ["slowsignals.example", "*.slowsignals.example"] },
+  links: {
+    site: "https://slowsignals.example",
+    domains: ["slowsignals.example", "*.slowsignals.example"],
+    unsubscribe: "https://slowsignals.example/unsubscribe",
+    preferences: "https://slowsignals.example/account/emails",
+    help: "https://slowsignals.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Slow Signals Radio, Inc.", taxId: "EIN 67-8901234" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

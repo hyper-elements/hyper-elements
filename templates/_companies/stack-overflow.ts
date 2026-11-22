@@ -42,7 +42,14 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/companies/stack-overflow/logo.png", width: 292, height: 72, alt: "Stack Overflow" },
   address: "110 William Street, 28th Floor, New York, NY 10038",
-  links: { site: "https://stackoverflow.com", domains: ["stackoverflow.com", "*.stackoverflow.com", "stackoverflow.blog"] },
+  links: {
+    site: "https://stackoverflow.com",
+    domains: ["stackoverflow.com", "*.stackoverflow.com", "stackoverflow.blog"],
+    unsubscribe: "https://stackoverflow.com/unsubscribe",
+    preferences: "https://stackoverflow.com/account/emails",
+    help: "https://stackoverflow.com/help",
+  },
+  currency: "USD",
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

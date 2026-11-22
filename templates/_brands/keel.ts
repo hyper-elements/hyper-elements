@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/keel/logo.png", width: 480, height: 120, alt: "Keel" },
   address: "200 Harbor Street, Boston",
-  links: { site: "https://keel.example", domains: ["keel.example", "*.keel.example"] },
+  links: {
+    site: "https://keel.example",
+    domains: ["keel.example", "*.keel.example"],
+    unsubscribe: "https://keel.example/unsubscribe",
+    preferences: "https://keel.example/account/emails",
+    help: "https://keel.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Keel Labs, LLC", taxId: "EIN 98-7654321" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

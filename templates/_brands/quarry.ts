@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/quarry/logo.png", width: 480, height: 120, alt: "Quarry" },
   address: "88 Kiln Road, Austin",
-  links: { site: "https://quarry.example", domains: ["quarry.example", "*.quarry.example"] },
+  links: {
+    site: "https://quarry.example",
+    domains: ["quarry.example", "*.quarry.example"],
+    unsubscribe: "https://quarry.example/unsubscribe",
+    preferences: "https://quarry.example/account/emails",
+    help: "https://quarry.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Quarry Goods, LLC", taxId: "EIN 34-5678901" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

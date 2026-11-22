@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/orbit/logo.png", width: 480, height: 120, alt: "Orbit" },
   address: "1 Main Street, Springfield",
-  links: { site: "https://orbit.example", domains: ["orbit.example", "*.orbit.example"] },
+  links: {
+    site: "https://orbit.example",
+    domains: ["orbit.example", "*.orbit.example"],
+    unsubscribe: "https://orbit.example/unsubscribe",
+    preferences: "https://orbit.example/account/emails",
+    help: "https://orbit.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Orbit Software, Inc.", taxId: "EIN 12-3456789" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

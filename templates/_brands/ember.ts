@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/ember/logo.png", width: 480, height: 120, alt: "Ember" },
   address: "1 Riverside Yard, Detroit",
-  links: { site: "https://ember.example", domains: ["ember.example", "*.ember.example"] },
+  links: {
+    site: "https://ember.example",
+    domains: ["ember.example", "*.ember.example"],
+    unsubscribe: "https://ember.example/unsubscribe",
+    preferences: "https://ember.example/account/emails",
+    help: "https://ember.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Ember Studio, Inc.", taxId: "EIN 45-6789012" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },

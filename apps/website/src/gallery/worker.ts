@@ -1,8 +1,10 @@
-// The templates pages' image worker: draws an image template (templates/images/) in a brand, as SVG, off the page's
-// thread. scripts/gallery-runtime.mjs bundles it; src/scripts/gallery-images.ts starts it. Its fonts and images are
+// The templates pages' image worker: draws an image template's design (templates/images/<name>/designs/) in a brand,
+// as SVG, off the page's thread. scripts/gallery-runtime.mjs bundles it; src/scripts/gallery-images.ts starts it. Its fonts and images are
 // this site's own files.
 import { createElement } from "react";
 import { renderImage, templateAssets } from "@hyper-elements/react/image";
+import { templateRequest, type Template } from "@hyper-elements/react/template";
+import { valuesIn } from "../../../../templates/_scripts/links";
 // @ts-expect-error: written by scripts/gallery-runtime.mjs
 import { brands, designs } from "virtual:gallery-catalog";
 import type { Brand } from "../../../../templates/_brand";
@@ -30,10 +32,13 @@ self.onmessage = async (event: MessageEvent<DrawImage>) => {
   const { id, design: key, brand: brandId } = event.data;
   let reply: DrawnImage;
   try {
-    const Design = (designs as Record<string, (props: { brand: Brand }) => unknown>)[key];
+    const entry = (designs as Record<string, { make: (brand: Brand) => Template; Design: () => unknown }>)[key];
     const brand = (brands as Record<string, Brand>)[brandId];
-    if (!Design || !brand) throw new Error(`There's no ${key} in ${brandId}`);
-    const design = createElement(Design as never, { brand });
+    if (!entry || !brand) throw new Error(`There's no ${key} in ${brandId}`);
+    // The design's values, its links moved to this brand's site, drawn by the template made from this brand.
+    const values = templateRequest(createElement(entry.Design as never)).props;
+    if (!values) throw new Error(`${key} isn't a design made from its template`);
+    const design = entry.make(brand).design(valuesIn(values, brand, Object.values(brands as Record<string, Brand>)) as never);
     const [fonts, images] = await Promise.all([
       Promise.all(brand.fonts.map(async (face) => ({ ...face, src: await load(face.src) }))),
       Promise.all(templateAssets(design).images.map(async (src) => [src, await load(src)] as const)),

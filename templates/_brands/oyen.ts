@@ -35,7 +35,15 @@ export const brand: Brand = {
   }),
   logo: { src: "https://hyperelements.dev/generated/gallery/assets/brands/oyen/logo.png", width: 480, height: 120, alt: "Oyen" },
   address: "14 Foundry Lane, Pittsburgh",
-  links: { site: "https://oyen.example", domains: ["oyen.example", "*.oyen.example"] },
+  links: {
+    site: "https://oyen.example",
+    domains: ["oyen.example", "*.oyen.example"],
+    unsubscribe: "https://oyen.example/unsubscribe",
+    preferences: "https://oyen.example/account/emails",
+    help: "https://oyen.example/help",
+  },
+  currency: "USD",
+  legal: { entity: "Oyen Works, Inc.", taxId: "EIN 23-4567890" },
   lang: "en",
   fonts: [
     { family: "Inter", src: "https://hyperelements.dev/generated/gallery/assets/fonts/Inter-400.ttf", weight: 400, style: "normal" },
