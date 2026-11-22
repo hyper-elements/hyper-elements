@@ -28,6 +28,10 @@ function ask(design: string, brand: string): Promise<DrawnImage> {
     const request: DrawImage = { id: ++next, design, brand };
     reply = new Promise((resolve) => waiting.set(request.id, resolve));
     drawn.set(key, reply);
+    // A drawing that failed (a file that didn't load) is asked for again next time, not kept.
+    void reply.then((answer) => {
+      if (!answer.ok && drawn.get(key) === reply) drawn.delete(key);
+    });
     worker.postMessage(request);
   }
   return reply;

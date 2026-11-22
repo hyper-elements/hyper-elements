@@ -18,7 +18,13 @@ export default function galleryAssets() {
     hooks: {
       "astro:server:setup": ({ server }) => {
         server.middlewares.use(async (request, response, next) => {
-          const url = decodeURIComponent((request.url ?? "").split("?")[0]);
+          let url;
+          try {
+            url = decodeURIComponent((request.url ?? "").split("?")[0]);
+          } catch {
+            // A malformed escape isn't one of these files.
+            return next();
+          }
           if (url === `/${RUNTIME}`) {
             try {
               const body = await buildGalleryRuntime({ fresh: true, minify: false });

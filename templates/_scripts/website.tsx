@@ -107,7 +107,7 @@ for (const t of made) {
     ...(t.meta.recreates && own ? { recreates: { ...t.meta.recreates, companyId: own.id, company: own.brand.name } } : {}),
     file: relative(join(ROOT, ".."), t.file),
     // Each field's label and limits, for the agent view.
-    guide: fieldGuide(t.make(drawIn[0]!.brand), drawIn[0]!.brand.links.domains[0] ?? ""),
+    guide: fieldGuide(t.make(drawIn[0]!.brand)),
     // The template as it's written, made from the brand in ./brand; and each design made from it.
     code: copies.code,
     designs: t.designs.map((d) => ({ name: d.name, label: d.label, file: `designs/${d.name}.tsx`, code: copies!.designs[d.file] })),

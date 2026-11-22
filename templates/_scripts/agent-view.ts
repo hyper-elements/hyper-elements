@@ -17,8 +17,8 @@ export interface FieldGuide {
 /** A field's path as `describe()` lists it: `stories[2].title` is `stories[].title`. */
 export const fieldPath = (path: string) => path.replace(/\[\d+\]/g, "[]");
 
-/** Each field's label and limits, by its path, from the template's own `describe()`. */
-export function fieldGuide(tpl: Template, brandDomain: string): Record<string, FieldGuide> {
+/** Each field's label and limits, by its path, from the template's own `describe()`: the same in every brand. */
+export function fieldGuide(tpl: Template): Record<string, FieldGuide> {
   const out: Record<string, FieldGuide> = {};
   for (const f of (tpl.describe() as unknown as { fields: Array<Record<string, any>> }).fields) {
     const s = f.schema ?? {};
@@ -31,7 +31,7 @@ export function fieldGuide(tpl: Template, brandDomain: string): Record<string, F
     if (f.kind === "number" && (s.minimum !== undefined || s.maximum !== undefined)) bits.push(`a number${s.minimum !== undefined ? ` from ${s.minimum}` : ""}${s.maximum !== undefined ? ` to ${s.maximum}` : ""}`);
     if (f.kind === "choice" && Array.isArray(s.enum)) bits.push(`one of ${s.enum.join(", ")}`);
     if (f.kind === "image" && f.minWidth) bits.push(`at least ${f.minWidth}px wide`);
-    if (f.kind === "link") bits.push(`on ${brandDomain}`);
+    if (f.kind === "link") bits.push("on the brand's own site");
     if (f.kind === "list" && (s.minItems !== undefined || s.maxItems !== undefined)) bits.push(`${s.minItems ?? 0} to ${s.maxItems ?? "any"}`);
     out[f.path] = { label: f.label ?? f.path, kind: f.kind, limits: bits.join(" · ") };
   }

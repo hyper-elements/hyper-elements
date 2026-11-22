@@ -170,7 +170,12 @@ const swatch = (colors: Record<string, string>) => `background:linear-gradient(1
         preview.hidden = what !== "preview";
         code.hidden = what !== "code";
         if (agentHost) agentHost.hidden = what !== "agent";
+        // Hidden, it's taken down (its divider stops moving); shown again, it's drawn afresh.
         if (what === "agent") showAgent();
+        else {
+          unmount?.();
+          unmount = undefined;
+        }
         if (what === "preview") stage.querySelectorAll<HTMLButtonElement>(`.preview [role="tab"][data-view="${id}"]`).forEach((tab) => tab.click());
         window.dispatchEvent(new Event("resize"));
       }),

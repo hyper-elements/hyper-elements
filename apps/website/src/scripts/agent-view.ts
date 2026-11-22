@@ -343,7 +343,8 @@ export function mountAgentView(host: HTMLElement, options: AgentViewOptions): ()
     const r = stage.getBoundingClientRect();
     set(((e.clientX - r.left) / r.width) * 100, true);
   });
-  divider.addEventListener("pointerup", () => (dragging = false));
+  // A drag ends when the pointer lifts, or when the browser takes the gesture or the capture is lost.
+  for (const end of ["pointerup", "pointercancel", "lostpointercapture"]) divider.addEventListener(end, () => (dragging = false));
   divider.addEventListener("keydown", (e) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
     take();
