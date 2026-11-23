@@ -38,11 +38,9 @@ const css = `
 .av-divider::before { content: ""; position: absolute; top: 0; bottom: 0; left: 11px; width: 2px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); }
 .av-handle { position: absolute; top: 96px; left: -6px; width: 36px; height: 36px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; font: 700 15px system-ui, sans-serif; box-shadow: 0 4px 14px rgba(0,0,0,.3); user-select: none; }
 .av-heads { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 8px 12px; margin: 0 auto 10px; max-width: 100%; }
-.av-heads span { padding: 8px 16px; border-radius: 999px; font: 700 15px/1.2 system-ui, sans-serif; letter-spacing: -0.01em; box-shadow: 0 4px 14px rgba(0,0,0,.18); white-space: nowrap; }
+.av-heads span { font: 500 12px/1.2 var(--mono, ui-monospace, monospace); letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2, #525252); white-space: nowrap; }
 .av-heads .agent { margin-left: auto; }
-@media (max-width: 520px) { .av-heads span { padding: 6px 10px; font-size: 12.5px; } .av-heads { gap: 6px 8px; } }
-.av-heads .you { background: var(--text, #111); color: var(--bg, #fff); }
-.av-heads .agent { background: #7c3aed; color: #fff; }
+@media (max-width: 520px) { .av-heads span { font-size: 10.5px; letter-spacing: 0.06em; } .av-heads { gap: 6px 8px; } }
 .av-also { font-size: 13px; color: var(--text-2); margin: 12px auto 0; max-width: 680px; text-align: center; }
 .av-also b { color: var(--text); font-weight: 600; }
 `;
@@ -196,10 +194,11 @@ export function mountAgentView(host: HTMLElement, options: AgentViewOptions): ()
   divider.tabIndex = 0;
   stage.append(scale, divider);
   scale.append(you, agent);
-  // Above the preview, at its two edges: which side is which.
+  // Above the preview, at its two edges: which side is which. Captions, with nothing of a button about them (no fill,
+  // no shadow, no arrow): only the divider is there to use.
   const heads = document.createElement("div");
   heads.className = "av-heads";
-  heads.innerHTML = `<span class="you">← How you see it</span><span class="agent">How an agent sees it →</span>`;
+  heads.innerHTML = `<span class="you">How you see it</span><span class="agent">How an agent sees it</span>`;
   const also = unbound(options);
   const note = document.createElement("p");
   note.className = "av-also";
