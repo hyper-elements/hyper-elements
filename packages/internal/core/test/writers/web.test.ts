@@ -153,12 +153,15 @@ describe("web HTML", () => {
         { type: "Image", props: { src: file, alt: "Half" }, style: { width: "50%" } },
         // A height of its own is the style's.
         { type: "Image", props: { src: file, alt: "Tall" }, style: { width: 300, height: 200 } },
+        // In a Layer with no height it covers nothing: an image as any other.
+        { type: "Layer", children: [{ type: "Image", props: { src: file, alt: "Layered" }, style: { width: 300 } }, { type: "Column", children: [{ type: "Text", children: ["Over"] }] }] },
         // No height a browser could hold a place with: under 1px, not a number of px, or millions of them; nor beside a width of millions.
         { type: "Image", props: { src: { src: "https://example.com/e.png", width: 2000, height: 1 }, alt: "Rule" }, style: { width: 300 } },
         { type: "Image", props: { src: { src: "https://example.com/f.png", width: 1200, height: Infinity }, alt: "Endless" }, style: { width: 300 } },
         { type: "Image", props: { src: { src: "https://example.com/g.png", width: 1, height: 1e13 }, alt: "Vast" }, style: { width: 300 } },
         { type: "Image", props: { src: { src: "https://example.com/h.png", width: 1e21, height: 100 }, alt: "Wider" }, style: { width: 1e21 } },
-        // The last px each may be, and the first it may not.
+        // The least a height may be, the last px each may be, and the first it may not.
+        { type: "Image", props: { src: { src: "https://example.com/m.png", width: 600, height: 1 }, alt: "Hairline" }, style: { width: 600 } },
         { type: "Image", props: { src: { src: "https://example.com/i.png", width: 1, height: 99999.99 }, alt: "Tallest" }, style: { width: 100 } },
         { type: "Image", props: { src: { src: "https://example.com/j.png", width: 1, height: 100000 }, alt: "Taller" }, style: { width: 100 } },
         { type: "Image", props: { src: { src: "https://example.com/k.png", width: 9999999, height: 100 }, alt: "Widest" }, style: { width: 9999999 } },
@@ -173,10 +176,12 @@ describe("web HTML", () => {
     expect(body).toContain('alt="Wide" width="600" style="');
     expect(body).toContain('alt="Half" style="');
     expect(body).toContain('alt="Tall" width="300" style="align-self:flex-start;display:block;max-width:100%;width:300px;height:200px">');
+    expect(body).toContain('alt="Layered" width="300" height="150" style="');
     expect(body).toContain('alt="Rule" width="300" style="');
     expect(body).toContain('alt="Endless" width="300" style="');
     expect(body).toContain('alt="Vast" width="300" style="');
     expect(body).toMatch(/alt="Wider" width="[^"]*" style="/);
+    expect(body).toContain('alt="Hairline" width="600" height="1" style="');
     expect(body).toContain('alt="Tallest" width="100" height="9999999" style="');
     expect(body).toContain('alt="Taller" width="100" style="');
     expect(body).toContain('alt="Widest" width="9999999" height="100" style="');
