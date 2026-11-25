@@ -63,7 +63,7 @@ function ownExports(file: ts.SourceFile, imported: Set<string>): Set<string> {
 }
 
 /** Finds a module's imports of today's components, following the project's modules with `resolve`. */
-/** Whether a module imports the new package (types aren't counted): it's on the new components already. */
+/** Whether a module imports the new package (types aren't counted): it's on the new elements already. */
 export function importsNewPackage(path: string, source: string): boolean {
   return importsOf(parse(path, source)).some(({ specifier }) => specifier === NEW_PACKAGE || specifier.startsWith(`${NEW_PACKAGE}/`));
 }

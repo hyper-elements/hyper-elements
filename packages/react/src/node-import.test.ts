@@ -45,7 +45,7 @@ describe("Node environment (no jsdom)", () => {
 });
 
 describe("each entry's types, for every moduleResolution", () => {
-  it("resolves the main entry, /builder, /inspect, /pdf and /image to their declarations, under node (node10) too", () => {
+  it("resolves the main entry, /builder, /inspect, /pdf, /image and /template to their declarations, under node (node10) too", () => {
     // A project's node_modules with this package in it, as an install has it.
     const dir = resolve(__dirname, "..");
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
@@ -58,7 +58,7 @@ describe("each entry's types, for every moduleResolution", () => {
     // TypeScript reads a `.d.ts` here as an ES module, which a CommonJS file can't require (TS1479).
     type Entry = { import: { types: string }; require: { types: string } };
     const entries = Object.entries(pkg.exports as Record<string, Entry | string>).filter((pair): pair is [string, Entry] => typeof pair[1] === "object");
-    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./inspect", "./pdf", "./image"]);
+    expect(entries.map(([subpath]) => subpath)).toEqual([".", "./builder", "./inspect", "./pdf", "./image", "./template"]);
     for (const [, entry] of entries) expect(entry.require.types).toBe(entry.import.types.replace(/\.d\.ts$/, ".d.cts"));
     const declared = new Set(entries.flatMap(([, entry]) => [join(dir, entry.import.types), join(dir, entry.require.types)]));
     const inPackage = (file: string) => (file.startsWith(installed) ? join(dir, file.slice(installed.length)) : file);

@@ -109,7 +109,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
   let current: DevState = { version: 0, rendering: true, error: null, templates: [], late: [], ms: 0, changed: [], history: [] };
   server.publish(current);
   state.serving = true;
-  await io.stdout(`Serving the templates at ${server.base} until Ctrl-C\n`);
+  await io.stdout(`Serving the designs at ${server.base} until Ctrl-C\n`);
 
   const extra = {
     lint,
@@ -169,10 +169,10 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
           root: null,
           status: "error",
           outputs: [],
-          diagnostics: [cliDiagnostic("timeout", "error", `It didn't finish within ${args.timeout} ms: the process running it was ended (the templates after it ran in a new one)`, "make the template finish sooner, or give a longer --timeout")],
+          diagnostics: [cliDiagnostic("timeout", "error", `It didn't finish within ${args.timeout} ms: the process running it was ended (the designs after it ran in a new one)`, "make the design finish sooner, or give a longer --timeout")],
         });
       } else {
-        outcomes.set(input.id, { file: input.display, root: null, status: "error", outputs: [], diagnostics: [], error: ended?.error || "child ended before this template's result" });
+        outcomes.set(input.id, { file: input.display, root: null, status: "error", outputs: [], diagnostics: [], error: ended?.error || "child ended before this design's result" });
       }
     };
     const lateFrom = (group: Group, report: ChildReport, inputs: Input[]) => {
@@ -306,7 +306,7 @@ export async function runDev(args: Args, io: Io, state: RunState): Promise<numbe
     const errors = shown.templates.filter((t) => t.status === "error").length;
     io.stderr(
       said.map((t) => inputText({ file: t.file, root: t.root, status: t.status, outputs: [], diagnostics: t.diagnostics, ...(t.error !== undefined ? { error: t.error } : {}) })).join("") +
-        `Rendered ${shown.templates.length} template${shown.templates.length === 1 ? "" : "s"} in ${shown.ms} ms${errors ? `: ${errors} with errors` : ""}${after(shown.changed)}\n`,
+        `Rendered ${shown.templates.length} design${shown.templates.length === 1 ? "" : "s"} in ${shown.ms} ms${errors ? `: ${errors} with errors` : ""}${after(shown.changed)}\n`,
     );
   };
 

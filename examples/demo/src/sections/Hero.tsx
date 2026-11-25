@@ -26,7 +26,7 @@ const { html } = await render(<WelcomeEmail />);
 // Ready to send via any ESP…`;
 
 const stats = [
-  { value: "14+", label: "Components", detail: "All you need" },
+  { value: "14+", label: "Elements", detail: "All you need" },
   { value: "3", label: "Render Modes", detail: "Email, Web, PDF" },
   { value: "0", label: "Config Files", detail: "Just works" },
 ];
@@ -69,7 +69,7 @@ export default function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl text-text-secondary mb-8 leading-relaxed max-w-lg">
-              Components that render to email-safe HTML, responsive web, or print-ready documents.{" "}
+              Elements that render to email-safe HTML, responsive web, or print-ready documents.{" "}
               <span className="text-text-primary font-medium">One API, three outputs.</span>
             </p>
 

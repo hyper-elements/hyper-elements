@@ -1,51 +1,49 @@
 ---
 title: "AI agents"
-description: "Give your coding agent the Hyper Elements guide, and a loop to check its own templates, in code or from the shell: write, validate, outline, render, and check it in the email client emulator."
+description: "Give your coding agent the Hyper Elements guide, and a loop to check its own designs, in code or from the shell: write, validate, outline, render, and check it in the email client emulator."
 ---
 
-If an agent writes your templates, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email faster with Hyper Elements than with MJML (1.3×), hand-written HTML (1.8×) or React Email (2.6×).
+If an agent writes your designs, Hyper Elements is built so its first try works more often, and so a wrong try tells it exactly what to fix. You don't read HTML to find out. In [our benchmark](/docs/benchmark), an agent reached a passing email faster with Hyper Elements than with MJML (1.3×), hand-written HTML (1.8×) or React Email (2.6×).
 
 ## Why the API suits agents
 
-- **One way to write each thing.** Styles go in `style={{ }}`, never as props. Space between blocks is the parent's `gap`; there are no margins. Text is components, not HTML. An agent doesn't have to guess which of three equivalent forms you meant.
-- **Errors say where and what to do.** Every problem comes back with a `code`, a `path` into the template and a `message` that names the fix.
-- **Layout without HTML.** `outline()` prints the laid-out template as text: each block, its width, its words. An agent checks that two columns sit side by side by reading a few lines, not nested email tables.
-- **The guide ships with the package.** `GUIDE.md` is written from the components' own definitions, so it matches the version you installed.
+- **One way to write each thing.** Styles go in `style={{ }}`, never as props. Space between blocks is the parent's `gap`; there are no margins. Text is elements, not HTML. An agent doesn't have to guess which of three equivalent forms you meant.
+- **Errors say where and what to do.** Every problem comes back with a `code`, a `path` into the design and a `message` that names the fix.
+- **Layout without HTML.** `outline()` prints the laid-out design as text: each block, its width, its words. An agent checks that two columns sit side by side by reading a few lines, not nested email tables.
+- **The guide ships with the package.** `GUIDE.md` is written from the elements' own definitions, so it matches the version you installed.
 
 ## Give your agent the guide
 
-### Claude Code
-
-Add this line to your project's `CLAUDE.md`, and every session starts out knowing the components:
-
-```text
-@node_modules/@hyper-elements/react/GUIDE.md
-```
-
-### Codex, Cursor and other agents
-
-Add this to `AGENTS.md`, or to a rule:
-
-```text
-Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md.
-```
-
 ### As a skill
 
-Install the same guide as an agent skill:
+Install the guide as an agent skill. It works in Claude Code, Codex, Cursor, Copilot and other agents, and before Hyper Elements is installed:
 
 ```bash
 npx skills add hyper-elements/hyper-elements
 ```
 
-It offers two skills: `hyper-elements`, the guide, and `email-testing`, which tells an agent how to preview and check any email (a template, or HTML from MJML, React Email or a builder) in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail. `npx skills add hyper-elements/hyper-elements --skill email-testing` installs that one alone.
+The skill tells the agent to install `@hyper-elements/react` where the project doesn't have it. Once the package is installed, the agent checks the skill against the package's own `GUIDE.md`, which is written for the version you installed: both carry an id made from the guide's text, and where the ids differ the agent reads `GUIDE.md` and follows it. A skill installed months ago can't steer the agent wrong after an upgrade.
+
+It offers two skills: `hyper-elements`, the guide, and `email-testing`, which tells an agent how to preview and check any email (a design, or HTML from MJML, React Email or a builder) in Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail. `npx skills add hyper-elements/hyper-elements --skill email-testing` installs that one alone.
 
 In Claude Code, both are plugins as well, in the repository's plugin marketplace:
 
 ```text
 /plugin marketplace add hyper-elements/hyper-elements
+/plugin install hyper-elements@hyper-elements
 /plugin install email-testing@hyper-elements
 ```
+
+### As a rule, in CLAUDE.md or AGENTS.md
+
+Without the skill, add this to `CLAUDE.md` (Claude Code), `AGENTS.md` (Codex, Cursor and others) or a rule:
+
+```text
+Designs use Hyper Elements (@hyper-elements/react). If it isn't installed, install it with react and react-dom.
+Before writing a design, read node_modules/@hyper-elements/react/GUIDE.md.
+```
+
+In a project that already has the package, Claude Code can load the guide into every session with an import in `CLAUDE.md`: `@node_modules/@hyper-elements/react/GUIDE.md`. Claude Code skips an import of a file that doesn't exist without a word, so before the package is installed, the agent gets nothing from that line: use the skill or the rule above until it is.
 
 ### For any model, from the web
 
@@ -56,13 +54,13 @@ The site serves the docs in plain text for language models:
 
 Every docs page also has a **Copy page** button that copies it as Markdown, ready to paste into a chat.
 
-> **Tip:** `GUIDE.md` is the short guide: how a template is written, the common mistakes, every component on a line. `REFERENCE.md`, next to it in the package, has every prop and style in full, with defaults.
+> **Tip:** `GUIDE.md` is the short guide: how a design is written, the common mistakes, every element on a line. `REFERENCE.md`, next to it in the package, has every prop and style in full, with defaults.
 
 ### In a browser, with nothing installed
 
-An agent with a browser can render a template in the [playground](/playground), read its diagnostics, and hand you a link to the result:
+An agent with a browser can render a design in the [playground](/playground), read its diagnostics, and hand you a link to the result:
 
-- **A link.** `https://www.hyperelements.dev/playground#code=<base64url of the code>` opens the page with the template rendered. Add `&view=pdf`, `&device=phone` or `&layout=preview`.
+- **A link.** `https://www.hyperelements.dev/playground#code=<base64url of the code>` opens the page with the design rendered. Add `&view=pdf`, `&device=phone` or `&layout=preview`.
 - **JavaScript.** `await hyperElementsPlayground.render(code, { root: "Page" })` resolves with `{ ok, root, html, text, outline, diagnostics, error }`. `hyperElementsPlayground.help()` lists every method.
 - **WebMCP.** Where the browser has it, the page registers `render_hyper_elements`, `show_hyper_elements_preview`, `get_hyper_elements_reference` and `get_playground_code`.
 
@@ -74,7 +72,7 @@ Point your agent at this loop. Each step is cheap, and only the last two write H
 
 ### 1. Write
 
-The agent writes a template with the components from `@hyper-elements/react`.
+The agent writes a design with the elements from `@hyper-elements/react`.
 
 ### 2. Validate
 
@@ -94,7 +92,7 @@ error prop/unknown at root.props.backgroundColor: An Email has no prop "backgrou
 error style/unknown at root.children[0].style.marginBottom: "marginBottom" isn't a style a Text takes: use the parent's gap, or padding. See Text in @hyper-elements/react/GUIDE.md
 ```
 
-Each line is a fix the agent can apply without asking you. Warnings and notes leave a template valid; only errors make `valid` false. With `@hyper-elements/email-clients`' plugin (`validate(email, { plugins: [await emailClients()] })`), a problem with email clients names them and says what to change:
+Each line is a fix the agent can apply without asking you. Warnings and notes leave a design valid; only errors make `valid` false. With `@hyper-elements/email-clients`' plugin (`validate(email, { plugins: [await emailClients()] })`), a problem with email clients names them and says what to change:
 
 ```text
 warning email/font-fallback at root.children[0].style.fontFamily: This font stack ends with the web font "Inter": where it doesn't load (Gmail, classic Outlook) the email client picks its own font [gmail, outlook] Fix: end it with a font the client has: "Inter, Arial, sans-serif"
@@ -104,7 +102,7 @@ With [lint](/docs/lint)'s plugin (`validate(email, { plugins: [lint()] })`, from
 
 ### 3. Outline
 
-`outline()` prints the template as laid out on desktop, and says whether each `Row` stacks on phones:
+`outline()` prints the design as laid out on desktop, and says whether each `Row` stacks on phones:
 
 ```tsx
 import { Column, Email, Heading, Text, Row, outline } from "@hyper-elements/react";
@@ -130,7 +128,7 @@ Email 600px
       Text 404px "Ada Lovelace"
 ```
 
-The agent compares this against what you asked for. Wrong width, wrong nesting, missing words: all visible here. `outline()` throws an `ElementsError` if the template has errors, so validate first.
+The agent compares this against what you asked for. Wrong width, wrong nesting, missing words: all visible here. `outline()` throws an `ElementsError` if the design has errors, so validate first.
 
 ### 4. Render
 
@@ -140,7 +138,7 @@ import { render } from "@hyper-elements/react";
 const { html, text, diagnostics } = await render(<Welcome />);
 ```
 
-A template with errors rejects with an `ElementsError` whose `diagnostics` hold the same `code`, `message` and `path` as `validate()`. `diagnostics` on success holds warnings. A few checks need the written output, such as an email's size against Gmail's limits, so they only run here.
+A design with errors rejects with an `ElementsError` whose `diagnostics` hold the same `code`, `message` and `path` as `validate()`. `diagnostics` on success holds warnings. A few checks need the written output, such as an email's size against Gmail's limits, so they only run here.
 
 ### 5. Check it in the email client emulator
 
@@ -152,7 +150,7 @@ The `email-testing` skill gives an agent these steps for any email. To have an a
 Install the email-testing skill
 (npx skills add hyper-elements/hyper-elements --skill email-testing -y,
 or read https://www.hyperelements.dev/skills/email-testing.md)
-and follow it to preview [my email: an HTML file or a template]
+and follow it to preview [my email: an HTML file or a design]
 in Outlook, Gmail, Yahoo Mail and Apple Mail, light and dark.
 Show me each client's screenshot and what it changed.
 ```
@@ -170,16 +168,16 @@ Open each file, wait for `<html data-email-client-ready>`, and read `#email-clie
 
 ## The loop from the shell
 
-An agent that can run commands can do the same loop without writing a script, with [`@hyper-elements/cli`](/docs/cli) (`npm install -D @hyper-elements/cli`). Each template is a module whose default export renders the root, with its `PreviewProps` as props:
+An agent that can run commands can do the same loop without writing a script, with [`@hyper-elements/cli`](/docs/cli) (`npm install -D @hyper-elements/cli`). Each design is a module whose default export renders the root, with its `PreviewProps` as props:
 
 ```bash
 npx hyper-elements check emails/welcome.tsx --json     # 2. validate, with the email client checks
 npx hyper-elements outline emails/welcome.tsx          # 3. the layout as text
 npx hyper-elements render emails/welcome.tsx           # 4. out/emails/welcome.html and out/emails/welcome.txt
-npx hyper-elements describe Button --root Email        # what a component takes, before writing it
+npx hyper-elements describe Button --root Email        # what an element takes, before writing it
 ```
 
-With `--json`, stdout holds one line per template, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every template is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error; no templates, such as a file whose default export isn't a component). A template that doesn't load has an `error` instead: for a syntax error, its file, line, column and reason.
+With `--json`, stdout holds one line per design, with its `status` and `diagnostics`, then a summary line. The exit code is `0` when every design is free of errors, `1` when one has errors, and `2` when the command couldn't run as asked (a usage error; no designs, such as a file whose default export isn't a component). A design that doesn't load has an `error` instead: for a syntax error, its file, line, column and reason.
 
 To test an email in the email clients from the shell, the agent uses what it has:
 
@@ -201,10 +199,10 @@ Each of these made an agent's first try fail:
 
 ## Rules worth giving your agent
 
-- Read `GUIDE.md` before writing a template.
-- Check each template you write with `npx hyper-elements check <file> --json` (or `validate()`), and fix every error before you render it.
-- A template has one root: `Email`, `Page`, `Document` or `Canvas`. The root decides the output.
-- Raw tags such as `<b>`, `<br>` or `<div>` are errors. Use `Span`, `LineBreak` and the layout components.
+- Read `GUIDE.md` before writing a design.
+- Check each design you write with `npx hyper-elements check <file> --json` (or `validate()`), and fix every error before you render it.
+- A design has one root: `Email`, `Page`, `Document` or `Canvas`. The root decides the output.
+- Raw tags such as `<b>`, `<br>` or `<div>` are errors. Use `Span`, `LineBreak` and the layout elements.
 - Build reusable trees with a plain synchronous function that returns the root. Fetch data first: a component that is async or suspends is an error.
 - Pass dynamic values as children or props, which Hyper Elements escapes. Only put markup you trust in an `Html` block.
 - To move React Email templates, run `npx @hyper-elements/migrate` instead of rewriting them by hand. It keeps their logic and checks the result. Exit code `2` means a template failed to convert or lost content: report it, with the file and the reason. Don't pass `--force` to hide it. See [From React Email](/docs/migrate/react-email).

@@ -13,13 +13,19 @@ export interface Diagnostic {
   clients?: readonly string[];
   fix?: string;
   see?: string;
+  /** The template field the node shows, where a template's render binds it. */
+  field?: string;
+  /** A template module's diagnostic: the format of the template it's about. */
+  templateFormat?: string;
   /** An HTML email's diagnostic (email-clients' EmailHtmlDiagnostic, `path: "html"`): its line (from 1, or null). */
   line?: number | null;
   /** Up to 80 characters of that line. */
   excerpt?: string;
 }
 
-export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate" | "dev";
+export type Command = "render" | "check" | "outline" | "preview" | "inspect" | "describe" | "migrate" | "dev" | "design" | "template";
+/** A capture child's command, beside the others: it loads slot modules and template designs, and replies with captures only. */
+export type ChildCommand = Command | "capture";
 export type Root = "Email" | "Page" | "Document" | "Canvas";
 
 /** A template sent to a child: its id in the run, its absolute path, and how the child loads it. */
@@ -28,11 +34,23 @@ export interface ChildInput {
   file: string;
   /** "cjs": a CommonJS module on Node (loaded with require); otherwise an ES module (and always on Bun). */
   format: "esm" | "cjs";
+  /**
+   * A values file's input: `file` is its template module, and this the values file (absolute) and its JSON, checked by
+   * the parent's shape check. The child reads it against the template (readValuesFile()), never as a module.
+   */
+  values?: { file: string; envelope: Record<string, unknown> };
+  /** A values file's or a template module's format, where one is selected. */
+  templateFormat?: string;
+  /** A TSX template design's input: the export of `file` (the template module) that is its template, and what it must be. */
+  templateExport?: string;
+  expect?: { id: string; version: string; formats: string[] };
+  /** capture: what the request is (a slot module, or a TSX design and its static imports). */
+  capture?: { kind: "slot" } | { kind: "design"; imports: string[] };
 }
 
 export interface StartMessage {
   type: "start";
-  command: Command;
+  command: ChildCommand;
   inputs: ChildInput[];
   /** The group's templates run alone, one per child: a React count above one fails the template. */
   alone: boolean;
@@ -46,10 +64,20 @@ export interface StartMessage {
   /** Milliseconds the child has, from its start, before its watchdog ends it (the parent's timeout plus 5 s). */
   deadline: number;
   options: ChildOptions;
+  /** capture: the template module whose folder Elements is resolved from (`captureFragment()` is the template's). */
+  resolveFrom?: string;
+}
+
+/** The trusted template modules (`hyperElements.templates`), expanded by the parent: what a template child may load. */
+export interface TrustList {
+  /** Real paths of the files the list holds. */
+  files: string[];
+  /** Real paths of the listed packages' folders. */
+  packages: string[];
 }
 
 export interface ChildOptions {
-  /** `--props`: one object for every template, over PreviewProps. */
+  /** `--props`: one object for every design, instead of its PreviewProps. */
   props?: Record<string, unknown>;
   pretty?: boolean;
   clients?: string[];
@@ -68,14 +96,77 @@ export interface ChildOptions {
   /** preview: renderInEmailClients()'s `dark` and `fonts`. */
   dark?: boolean;
   fonts?: "url" | "inline";
-  /** describe: the component (all where none) and the root. */
-  component?: string;
+  /** describe: the input is a template module, described by its template's describe(). */
+  describeTemplate?: boolean;
+  /** describe: the element (all where none) and the root. */
+  element?: string;
   root?: string;
   /**
    * render, check, dev: lint's options, their shape checked (`hyperElements.lint`, `{}` where none), for the copy of
    * `@hyper-elements/lint` the child loads to check what they mean; false with `--no-lint`.
    */
   lint?: { rules?: Record<string, string>; kind?: string } | false;
+  /** check, render: a template module's formats narrowed (`--template-format`). */
+  templateFormat?: string;
+  /** design: what to do (new or set), and what with. */
+  design?: DesignRequest;
+  /**
+   * A template child: every input is a template's (a values file, a template module, a TSX design's expansion), and no
+   * agent code runs in it. With `guard`, it loads only the trusted list, installed packages and its own loader modules.
+   */
+  templateChild?: boolean;
+  guard?: TrustList;
+}
+
+/** A capture child's replies: one per request, and nothing else is accepted from it. */
+export type CaptureMessage =
+  | { type: "captured"; request: number; capture: unknown }
+  | {
+      type: "captured-design";
+      request: number;
+      template: { id: string; version: string; formats: string[] };
+      format: string | null;
+      specifier: string;
+      export: string;
+      values: Record<string, unknown>;
+      assets?: Record<string, unknown>;
+    }
+  | { type: "capture-failed"; request: number; error: string; code?: string };
+
+/** The template channel's slot exchange: a template child asks for its slot modules' captures, and gets them. */
+export interface SlotsNeeded {
+  type: "slots-needed";
+  id: number;
+  /** Each slot stored as `{ module }` (after migration), relative to `from`. */
+  slots: Array<{ path: string; module: string }>;
+  /** The values file (or the one design writes) its modules are relative to. */
+  from: string;
+}
+export type SlotsReply = { type: "slots-ready"; id: number; captures: Record<string, unknown> } | { type: "slots-failed"; id: number; error: string };
+
+/** `design new` and `design set`, as the child does them: it reads and checks; the parent writes. */
+export interface DesignRequest {
+  kind: "new" | "set";
+  /** The values file written (absolute): where its module and images are written relative to. */
+  output: string;
+  /** new: the values given (--values); set: the file's envelope as it is. */
+  values?: Record<string, unknown>;
+  /** new, from a TSX design (--from): the folder its values' image files are relative to (the design's). */
+  valuesFolder?: string;
+  envelope?: Record<string, unknown>;
+  /** Each value set, in order: a JSON value or text, or `file`, an image's absolute path (`@path`). */
+  sets: Array<{ path: string; value?: unknown; file?: string }>;
+  draft?: boolean;
+  /** Each image's source (--source), by field path. */
+  sources?: Record<string, Record<string, unknown>>;
+}
+
+/** What a template's check measured and found, for `check --json`: fitted text, regions, rules, review items. */
+export interface TemplateLayout {
+  fits?: unknown[];
+  regions?: Record<string, unknown>;
+  rules?: unknown[];
+  review?: unknown[];
 }
 
 /** One preview file from renderInEmailClients(), for the parent to write. */
@@ -106,12 +197,21 @@ export interface ResultMessage {
   previews?: PreviewFile[];
   /** `inspect`: inspect()'s result, as it is. */
   inspection?: unknown;
-  /** `describe`: describeComponents()'s or describeComponent()'s result, as it is. */
+  /** `describe`: describeElements()'s or describeElement()'s result, as it is (an older Elements' given in that shape). */
   described?: unknown;
   /** The run can't do what it was asked for this template (Elements missing or out of range, process.exit): exit 2. */
   usage?: boolean;
   /** Skipped because it isn't a template (its default export isn't a component, or renders no root): a run of none exits 2. */
   notTemplate?: boolean;
+  /** A values file or a template module: the template, as its module says. */
+  template?: { id: string; version: string };
+  /** What its template's check measured and found. */
+  layout?: TemplateLayout;
+  /** An ordinary child's input that turned out to be a template's: run again in a template child (Decision 31). */
+  templateDesign?: boolean;
+  templateModule?: boolean;
+  /** `design`: the values file to write (the parent writes it), or why not. */
+  designed?: { file: Record<string, unknown>; valid: boolean; missing?: string[]; changed: string[] };
 }
 
 /** More than one React in a group's process: the parent runs each of its templates again, alone. */
@@ -125,7 +225,15 @@ export interface DoneMessage {
   late: string[];
 }
 
-export type ChildMessage = ResultMessage | ReactsMessage | DoneMessage;
+export type ChildMessage = ResultMessage | ReactsMessage | DoneMessage | SlotsNeeded;
+
+/** A template, as a line reports it: where its module is, and whether the project's list trusts it. */
+export interface TemplateInfo {
+  id: string;
+  version: string;
+  module?: string;
+  trusted?: boolean;
+}
 
 /** A group: the package (the folder of the nearest package.json) and the tsconfig its templates compile with. */
 export interface Group {
@@ -141,8 +249,16 @@ export interface InputLine {
   version: 1;
   command: Command;
   file: string;
-  /** "html": an HTML email (`check` and `preview`), whose `root` is null. */
-  input: "template" | "html";
+  /** "html": an HTML email (`check` and `preview`), whose `root` is null; "values": a values file. */
+  input: "template" | "html" | "values";
+  /** A values file's format, where its template has formats. */
+  templateFormat?: string;
+  /** A values file's, a template module's or a template design's template, as the template child that checked it found it. */
+  template?: TemplateInfo;
+  fits?: unknown[];
+  regions?: Record<string, unknown>;
+  rules?: unknown[];
+  review?: unknown[];
   root: Root | null;
   status: "ok" | "error" | "skipped";
   outputs: string[];

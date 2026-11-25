@@ -1,6 +1,6 @@
 # @hyper-elements/react
 
-React components for transactional emails, email templates, landing pages, invoices, reports and documents. One template renders to email-safe HTML, a responsive web page, print-ready HTML, a PDF or an image, on your own server, with no network calls.
+React components for transactional emails, landing pages, invoices, reports and documents. One design renders to email-safe HTML, a responsive web page, print-ready HTML, a PDF or an image, on your own server, with no network calls.
 
 ## Installation
 
@@ -12,7 +12,7 @@ pnpm add @hyper-elements/react
 
 ## Quick start
 
-Import from `@hyper-elements/react`. A template has one root, its styles go in `style={{ }}`, and the space between blocks is their parent's `gap`.
+Import from `@hyper-elements/react`. A design has one root, its styles go in `style={{ }}`, and the space between blocks is their parent's `gap`.
 
 ```tsx
 import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow, token } from "@hyper-elements/react";
@@ -21,7 +21,7 @@ import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListIte
 const acme = defineTheme({
   colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
   fonts: { body: "Inter, Arial, sans-serif" },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
     Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
   },
@@ -75,26 +75,26 @@ import { outline, render, validate } from "@hyper-elements/react";
 
 const { html, text, diagnostics } = await render(<Receipt />); // warnings in diagnostics; errors throw an ElementsError
 const { valid } = validate(<Receipt />); // the same checks, without rendering
-console.log(outline(<Receipt />)); // the laid-out template as text: each block, its width, its words
+console.log(outline(<Receipt />)); // the laid-out design as text: each block, its width, its words
 ```
 
-To write a template, read [GUIDE.md](./GUIDE.md): how a template is written, and every component on a line. [REFERENCE.md](./REFERENCE.md) has every prop and style in full. Both are written from the components' definitions.
+To write a design, read [GUIDE.md](./GUIDE.md): how a design is written, and every element on a line. [REFERENCE.md](./REFERENCE.md) has every prop and style in full. Both are written from the elements' definitions.
 
 Upgrading from Unlayer Elements? See [Moving from Unlayer Elements](#moving-from-unlayer-elements).
 
 ## Using with an AI agent
 
-**With an AI agent:** in Claude Code, add this line to your project's `CLAUDE.md`, and every session starts out knowing these components:
+**With an AI agent:** in Claude Code, add this line to your project's `CLAUDE.md`, and every session starts out knowing these elements:
 
 ```
 @node_modules/@hyper-elements/react/GUIDE.md
 ```
 
-For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md."
+For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements design, read node_modules/@hyper-elements/react/GUIDE.md."
 
 Or install the same guide as an agent skill: `npx skills add hyper-elements/hyper-elements`.
 
-An agent that runs commands can check what it writes with `npx hyper-elements check <file> --json` ([`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli)): one JSON line per template, with its diagnostics.
+An agent that runs commands can check what it writes with `npx hyper-elements check <file> --json` ([`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli)): one JSON line per design, with its diagnostics.
 
 ## Structure
 
@@ -114,11 +114,11 @@ An agent that runs commands can check what it writes with `npx hyper-elements ch
 
 A root, a `Section` and a `Column` stack what they hold, so a block doesn't need a `Row` around it. There are no margins: space between blocks is their parent's `gap`, and space inside a box is its `padding`.
 
-## Components
+## Elements
 
 ### Roots
 
-| Component | Renders to |
+| Element | Renders to |
 |-----------|-------------|
 | `<Email>` | Email-safe HTML: tables, with Outlook's markup in conditional comments |
 | `<Page>` | A responsive web page |
@@ -127,7 +127,7 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 
 ### Layout
 
-| Component | Description |
+| Element | Description |
 |-----------|-------------|
 | `<Section>` | A band across the whole window, directly in an Email or Page |
 | `<Row>` | Its children side by side; stacked on phones |
@@ -137,7 +137,7 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 
 ### Content
 
-| Component | Description |
+| Element | Description |
 |-----------|-------------|
 | `<Heading>` | A heading, `level` 1 to 6 |
 | `<Text>` | A block of text |
@@ -151,7 +151,7 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 | `<Social>` | A line of social network icons, each a link |
 | `<Menu>` | A line or column of links |
 | `<Svg>` and its shapes | Shapes drawn in a box of their own |
-| `<Html>` | Markup written as it is, for what no component says |
+| `<Html>` | Markup written as it is, for what no element says |
 | `<PageBreak>`, `<PageHeader>`, `<PageFooter>`, `<PageNumber>` | In a Document: where a page ends, what's on every page, and page numbers |
 
 ## Columns
@@ -202,15 +202,15 @@ const { html, text, head, body, bodyStyle, diagnostics } = await render(<Receipt
 - `html` is the whole document, from `<!DOCTYPE html>`, with no React hydration markers and no client-side JavaScript.
 - `text` is the plain-text version.
 - `head`, `body` and `bodyStyle` are for embedding the output in a page of your own.
-- `diagnostics` holds warnings and notes. A template with errors throws an `ElementsError`, whose `diagnostics` give each problem's `code`, `message` and `path`.
+- `diagnostics` holds warnings and notes. A design with errors throws an `ElementsError`, whose `diagnostics` give each problem's `code`, `message` and `path`.
 
 The options are `pretty` (the HTML indented, for reading it), `mergeTag` (how a merge tag is written, by default `{{name}}`) and `classPrefix` (what every class name starts with, for HTML embedded where other CSS is).
 
-`validate()` runs the same checks without rendering, and `outline()` prints the laid-out template, to check the layout without reading the HTML.
+`validate()` runs the same checks without rendering, and `outline()` prints the laid-out design, to check the layout without reading the HTML.
 
-From the shell, [`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli) does the same with no script: `npx hyper-elements check emails/` validates each template (a module whose default export renders the root), `npx hyper-elements render emails/` writes each one's HTML and plain text (a Document's PDF, a Canvas's PNG), and `npx hyper-elements preview emails/welcome.tsx` shows an Email in each email client (with `@hyper-elements/email-clients`). With `--json` they print one line per template, and they exit `1` when a template has errors.
+From the shell, [`@hyper-elements/cli`](https://github.com/hyper-elements/hyper-elements/tree/main/packages/cli) does the same with no script: `npx hyper-elements check emails/` validates each design (a module whose default export renders the root), `npx hyper-elements render emails/` writes each one's HTML and plain text (a Document's PDF, a Canvas's PNG), and `npx hyper-elements preview emails/welcome.tsx` shows an Email in each email client (with `@hyper-elements/email-clients`). With `--json` they print one line per design, and they exit `1` when a design has errors.
 
-## One template, every output
+## One design, every output
 
 Share the content, and give each output its root:
 
@@ -234,7 +234,7 @@ const printed = await render(<Document size="A4" margin={48}><Invoice /></Docume
 
 ## Phones and hover
 
-Inside `style`, `mobile` holds a component's styles on phones and `hover` its styles under the pointer; `hidden` shows it on one size only. Each component's list is in [GUIDE.md](./GUIDE.md).
+Inside `style`, `mobile` holds an element's styles on phones and `hover` its styles under the pointer; `hidden` shows it on one size only. Each element's list is in [GUIDE.md](./GUIDE.md).
 
 ```tsx
 <Heading style={{ fontSize: 32, mobile: { fontSize: 24, textAlign: "center" } }}>Welcome</Heading>
@@ -247,14 +247,14 @@ Phones are at or below an email's width plus 20px, and at or below 480px on a pa
 
 ## Themes
 
-A theme is the brand, written once and given to any root. Its tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`) are referred to with `token()`. Some are roles the built-in components read:
+A theme is the brand, written once and given to any root. Its tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`) are referred to with `token()`. Some are roles the built-in elements read:
 
 - the root's background, `colors.background`;
 - body text, which Text, table cells and list items inherit: `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body`;
 - a Button's colors, `colors.primary` and `colors.primaryForeground`, and its size, `fontSizes.body`;
 - a Link's color, `colors.primary`; a Heading's font, `fonts.heading`; a Divider's color, `colors.border`.
 
-`components` gives each component its defaults, by one prop's value with `by` (a type scale) and as `variants`; `styles` are named styles, applied with `style={{ apply: [...] }}`.
+`elements` gives each element its defaults, by one prop's value with `by` (a type scale) and as `variants`; `styles` are named styles, applied with `style={{ apply: [...] }}`.
 
 ```tsx
 import { defineTheme, token, Button, Email, Heading, Section, Text } from "@hyper-elements/react";
@@ -264,7 +264,7 @@ const brand = defineTheme({
   fonts: { body: "Inter, Arial, sans-serif", heading: "Georgia, serif" },
   fontSizes: { body: 16 },
   lineHeights: { body: 1.6 },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 40, mobile: { fontSize: 30 } }, 2: { fontSize: 28 } } } },
     Button: { borderRadius: 8, variants: { secondary: { backgroundColor: "{colors.muted}", color: "{colors.foreground}" } } },
   },
@@ -293,7 +293,7 @@ declare module "@hyper-elements/react" {
 }
 ```
 
-Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme. The [Themes page](https://hyperelements.dev/docs/themes) has the rest: which style takes which tokens, the order styles merge in, `formats`, and your own components.
+Everything is written as values: an email, a PDF and an image hold no theme. A Page also writes its tokens as CSS custom properties (`--colors-primary`) for its own CSS and `Html` blocks. `inspect()` lists the theme. The [Themes page](https://hyperelements.dev/docs/themes) has the rest: which style takes which tokens, the order styles merge in, `formats`, and your own elements.
 
 ## Common design patterns
 
@@ -361,14 +361,14 @@ Everything is written as values: an email, a PDF and an image hold no theme. A P
 </Section>
 ```
 
-## Your own components
+## Your own elements
 
-A function that returns components is a component of your own, as in [One template, every output](#one-template-every-output). For a named block with typed props and its own editors, use `component()`:
+A function that returns elements is a component of your own, as in [One design, every output](#one-design-every-output). For a named block with typed props and its own editors, use `defineElement()`:
 
 ```tsx
-import { Button, Column, Heading, Image, component, prop } from "@hyper-elements/react";
+import { Button, Column, Heading, Image, defineElement, prop } from "@hyper-elements/react";
 
-const ProductCard = component({
+const ProductCard = defineElement({
   type: "acme.ProductCard",
   label: "Product card",
   props: {
@@ -387,44 +387,44 @@ const ProductCard = component({
 });
 ```
 
-For markup no component says, `<Html html="…" />` writes it as it is, in an email and on a page, with nothing in it checked or escaped. Put only markup you wrote there.
+For markup no element says, `<Html html="…" />` writes it as it is, in an email and on a page, with nothing in it checked or escaped. Put only markup you wrote there.
 
 ## To the Unlayer builder and back
 
-`@hyper-elements/react/builder`: `toDesign()` writes a template as the builder's design JSON, for `loadDesign()`; `fromDesign()` reads a design (made by `toDesign()`, edited in the builder or made there) back as a template, as an element to render and as JSX source.
+`@hyper-elements/react/builder`: `toDesign()` writes a design as a builder design, the builder's design JSON, for `loadDesign()`; `fromDesign()` reads a builder design (made by `toDesign()`, edited in the builder or made there) back, as an element to render and as JSX source.
 
 ```tsx
 import { fromDesign, toDesign } from "@hyper-elements/react/builder";
 
 const { design, report } = toDesign(<Receipt />); // report: what the builder can't hold as it is, one line each
-// …the design is edited in the builder, and saved…
+// …the builder design is edited in the builder, and saved…
 const { element, code, report: read } = fromDesign(saved, { displayMode: "email" }); // "web" a Page, "document" a Document
 ```
 
-The design holds no Hyper Elements data. A style or prop a builder tool has no field for is a hidden property of that tool, kept in the design under its own name and drawn by Hyper Elements, with no editor in the builder yet. What the builder can't arrange comes back with the same look, flatter: a Section around several Rows as a Section each, a box's padding on its blocks, a Grid as Rows of Columns. What no tool shows (a Layer, an Svg, a Table, a box nested in a column, your own `component()`) goes as an HTML block of the new engine's markup, and comes back as an `Html` block, as the builder's own HTML blocks do. A design's markup comes back as it is: where designs can hold untrusted content, pass your sanitizer, `fromDesign(saved, { toSafeHtml })`. A line height goes in the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px is `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet: a `PageNumber` goes as its token, which the editor's PDF prints as it is, and `report` says so.
+The builder design holds no Hyper Elements data. A style or prop a builder tool has no field for is a hidden property of that tool, kept in the builder design under its own name and drawn by Hyper Elements, with no editor in the builder yet. What the builder can't arrange comes back with the same look, flatter: a Section around several Rows as a Section each, a box's padding on its blocks, a Grid as Rows of Columns. What no tool shows (a Layer, an Svg, a box nested in a column, your own `defineElement()`) goes as an HTML block of the new engine's markup, and comes back as an `Html` block, as the builder's own HTML blocks do. A Table is the builder's table, and comes back as a Table; in an Email or a Page, one the builder's table would draw otherwise (a line between rows only, a cell spanning columns, a border around it, a width) stays an HTML block, which draws it exactly, and `report` says why. A builder design's markup comes back as it is: where builder designs can hold untrusted content, pass your sanitizer, `fromDesign(saved, { toSafeHtml })`. A line height goes in the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px is `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet: a `PageNumber` goes as its token, which the editor's PDF prints as it is, and `report` says so.
 
 ## What each root takes
 
-Not everything goes in every root: an `Svg` isn't in an Email, a `PageNumber` is only in a Document, and phone styles are only in an Email or a Page. `@hyper-elements/react/inspect` says which, as data, for an agent or an editor: before writing a template, what a root takes; after, whether each part of it is allowed where it is.
+Not everything goes in every root: an `Svg` isn't in an Email, a `PageNumber` is only in a Document, and phone styles are only in an Email or a Page. `@hyper-elements/react/inspect` says which, as data, for an agent or an editor: before writing a design, what a root takes; after, whether each part of it is allowed where it is.
 
 ```tsx
-import { describeComponent, describeComponents, inspect } from "@hyper-elements/react/inspect";
+import { describeElement, describeElements, inspect } from "@hyper-elements/react/inspect";
 
-describeComponents({ root: "Email" });          // the components an Email takes, each prop and style with its kind, group and default
-describeComponent("Svg", { root: "Email" });     // undefined: an Email doesn't take one
-describeComponent("Svg").roots;                  // ["Page", "Document", "Canvas"]
+describeElements({ root: "Email" });            // the elements an Email takes, each prop and style with its kind, group and default
+describeElement("Svg", { root: "Email" });       // undefined: an Email doesn't take one
+describeElement("Svg").roots;                    // ["Page", "Document", "Canvas"]
 
 const { valid, nodes } = inspect(<Welcome />);
-// nodes: each component, in order: { path, type, roots, allowed, given: ["style.padding", "mobile.padding"], problems }
+// nodes: each element, in order: { path, type, roots, allowed, given: ["style.padding", "mobile.padding"], problems }
 ```
 
-`inspect()` checks what `validate()` checks, without rendering, and puts each problem on the component it's on. Your own components (`component()`) are described with the built-in ones: `describeComponents({ components: [ProductCard] })`.
+`inspect()` checks what `validate()` checks, without rendering, and puts each problem on the element it's on. Your own elements (`defineElement()`) are described with the built-in ones: `describeElements({ elements: [ProductCard] })`.
 
 ## Task guides and runnable examples
 
 - [Transactional email in React](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/transactional-email.md): render HTML and plain text, then send a receipt.
 - [Resend, AWS SES, Postmark, SendGrid, and Nodemailer](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/email-providers.md): complete provider integrations.
-- [One React template to email, web, and PDF](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/one-template-email-web-pdf.md): shared invoice content with output-specific roots.
+- [One React design to email, web, and PDF](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/one-template-email-web-pdf.md): shared invoice content with output-specific roots.
 - [React invoice PDF with Playwright](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/react-to-pdf.md): generate actual PDF bytes from document HTML.
 - [React to Unlayer visual editing](https://github.com/hyper-elements/hyper-elements/blob/main/packages/react/docs/visual-editing.md): `toDesign()`, editor loading, export, and what the builder can hold.
 

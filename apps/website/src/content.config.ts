@@ -12,7 +12,7 @@ const docs = defineCollection({
   }),
 });
 
-/** One page per component, split from the package's own REFERENCE.md by scripts/generate.mjs. */
+/** One page per element, split from the package's own REFERENCE.md by scripts/generate.mjs. */
 const reference = defineCollection({
   loader: glob({ pattern: "*.md", base: "./src/generated/reference" }),
   schema: z.object({
@@ -30,9 +30,10 @@ const blog = defineCollection({
     description: z.string(),
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     date: z.coerce.date(),
-    hero: z.string(),
-    heroAlt: z.string(),
-  }),
+    /** The post's picture, shown in it and on the blog's index, and its social image. Without one, its social image is its generated card. */
+    hero: z.string().optional(),
+    heroAlt: z.string().optional(),
+  }).refine((post) => !post.hero || post.heroAlt, { message: "A post with a hero needs its heroAlt", path: ["heroAlt"] }),
 });
 
 export const collections = { docs, reference, blog };

@@ -1,12 +1,12 @@
 # AGENTS.md: Hyper Elements
 
 Guidance for contributors and coding agents working in this repository. `CONTRIBUTING.md` covers setup and the
-pull request process; `packages/internal/core/README.md` explains the writers and how to add a component.
+pull request process; `packages/internal/core/README.md` explains the writers and how to add an element.
 
 ## What this project is
 
 A pnpm monorepo of React components that render to email-safe HTML (tables for Outlook and Gmail), responsive web
-HTML, print HTML, PDFs and images. A template is written once in JSX; its root decides the output.
+HTML, print HTML, PDFs and images. A design is written once in JSX; its root decides the output.
 
 ## Commands
 
@@ -36,20 +36,22 @@ into the published ones (tsup's `noExternal`), so nobody installs them.
 
 | Path | Package | Published | Purpose |
 |------|---------|-----------|---------|
-| `packages/react` | `@hyper-elements/react` | Yes | The components and `render()` (main entry); the builder adapter (`/builder`); what each root takes and what a template holds, as data (`/inspect`: `describeComponents({ root })`, `inspect()`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
+| `packages/react` | `@hyper-elements/react` | Yes | The elements and `render()` (main entry); the builder adapter (`/builder`); what each root takes and what a design holds, as data (`/inspect`: `describeElements({ root })`, `inspect()`); a `Document` as a PDF with react-pdf (`/pdf`: `renderPdf()`) and a `Canvas` as PNG or SVG with Satori and resvg (`/image`: `renderImage()`); templates, reusable designs with guardrails (`/template`: `template()`, `field.image()`, `check()`, values files; `src/template/`), which a design uses as its root (`<Newsletter … />`, handed to the template by the collecting render, `collectTemplate()` in `src/primitives/collect.tsx`). The PDF and image engines are optional peer dependencies, imported only by their own entries: `dist/primitives.js` imports neither. |
 | `packages/migrate` | `@hyper-elements/migrate` | Yes | The `npx @hyper-elements/migrate` CLI: converts React Email templates (`src/react-email/`, API at `@hyper-elements/migrate/react-email`) and Unlayer Elements templates (`--from unlayer-elements`: the command in `src/legacy/`, the codemod in `src/convert/elements/`, API at `@hyper-elements/migrate/elements`), checks each against its original and writes a report; `compare` checks a template migrated by hand. What the converters share is in `src/convert/` (the Elements tree, the report, the TSX printer, the content check). Fidelity benchmark in `bench/`, results in `FIDELITY.md`. |
-| `packages/email-clients` | `@hyper-elements/email-clients` | Yes | The email client checks, as a plugin (`emailClients()`, `src/plugin.ts`; the checks from caniemail's tables in `src/checks.ts`, `src/html.ts` and `src/limits.ts`, held to the tables by `test/caniemail.test.ts`), and `renderInEmailClients()`: an Email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, one self-contained HTML preview file per email client. `renderInEmailClients()` also takes any HTML email as a string (`src/html-input.ts`), which loads neither core nor React: core is loaded only for a template (`loadCore()` in `src/core.ts`, `require()` in the CommonJS build and `import()` in the ES module one, so a caller's `ElementsError` is its own core's), and the peers are optional (`test/node-import.test.ts` and `scripts/pack-check.mjs` hold it to that). Previews of HTML are approximate where the models are weak on HTML Elements didn't write (`APPROXIMATE_FOR_HTML`). Their `diagnostics` are `documentNotes()` (`src/html.ts`, each finding with its line), and the models' captured checks on HTML (`check({ html })`, models 1.8.0) where the installed models have them, over the HTML with its comments and scripts blanked (`blankUnread()`); the plugin and `renderInEmailClients(html)` load the models for their checks with `src/load-models.ts`. Templates and HTML write previews with `src/previews.ts`. Builds on core's public API only (the plugin API and `render()`'s `blockMap`), loaded as a namespace with a version check (`src/core.ts`); core is a peer, left external. The models of the clients, and the checks only captures found, are `@hyper-elements/email-client-models` (a dependency, closed, loaded with a dynamic `import()`): its WebAssembly runs the captured checks in Node and, as a script of its own, the previews. None of the models, their calibration or captured rules go in this repository. |
-| `packages/lint` | `@hyper-elements/lint` | Yes | The lint plugin (`lint()`, `src/index.ts`): what makes an Email or a Page hard to read (links, alternate text, contrast, text size, headings, language, merge syntax), as diagnostics `email/lint-<rule>` and `page/lint-<rule>`. `lintHtml()` (`@hyper-elements/lint/html`, `src/html.ts`) runs the rules HTML can show on any HTML email, as `lint/<rule>` with a line and column; an `Html` block's markup gets them too. HTML is read by the package's own tokenizer (`src/tokenize.ts`: linear, never throws, Outlook's conditional comments skipped). One registry of rules (`src/rules.ts`), from which `/docs/lint`'s sections are written (`test/docs.test.ts`). It reads the laid-out tree a plugin is handed in one pass (`src/tree.ts`): what's shown, the text's size and what's behind it at desktop and phone width, as the writers write them. It imports nothing at run time (Elements' types only), so any copy of it runs with any 0.4 Elements; `test/__baseline__/` records its findings on the gallery and stress templates (`UPDATE_LINT_BASELINE=1` rewrites them). |
-| `packages/cli` | `@hyper-elements/cli` | Yes | The `hyper-elements` command: `render`, `check`, `outline`, `preview`, `inspect` and `describe` of templates (and `migrate`, which runs `@hyper-elements/migrate`), with exit codes 0/1/2 and `--json` lines. `preview`'s browser is `src/preview/browser.ts`, the only module that imports `playwright-core` (its own entry, loaded only for `--findings`, `--screenshots` and `--install-browser`), and `--serve`'s server `src/preview/serve.ts`. `src/bin.ts` checks the runtime (Node 20.6+, Bun 1.3+); `src/run.ts` (the parent) finds the inputs, groups them by package and tsconfig, runs each group in a child process (`src/child.ts`, `child_process.fork()`) and alone writes files and stdout. A child loads each template through a loader module written beside it (`src/loader-module.ts`), so Elements, React, email-clients and lint come from where the template's own imports do (lint falls back to the CLI's own copy, `src/lint.ts`, with a `cli/lint-copy` note; its options, `hyperElements.lint` in the nearest package.json, are shape-checked by `src/lint-config.ts`); it counts React copies (`src/react-copies.ts`), and a watchdog thread (`src/watchdog.ts`) ends it if the parent dies. Destinations are checked before anything runs (`src/destinations.ts`). It bundles nothing of Elements or React: they're the project's. Its tests (`test/`) run the built CLI as a child process on Node and again on Bun. |
-| `packages/internal/template-loader` | `@hyper-elements/template-loader` | No (bundled into migrate and cli) | What loading a template needs with no resolution policy of its own: `projectTsconfig()`, `walk()`, `defaultExport()`, `templateComponent()`, `guard()`. The CLI reaches it by path (`tsconfig.json` paths, tsup and Vitest aliases), so its published manifest names no private package. |
-| `packages/internal/core` | `@hyper-elements/core` | No (bundled into react) | The template tree (internal), component definitions, value kinds, validation, custom components, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
-| `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. Its `/playground` runs the engine in the visitor's browser, bundled from `packages/*/src` (`scripts/playground-runtime.mjs`): a Node-only import added to the main, PDF, image, email-clients or lint entries needs a stand-in in `apps/website/playground/sandbox/shims/`. The code runs in a sandbox; `apps/website/playground/README.md` says how. |
+| `packages/email-clients` | `@hyper-elements/email-clients` | Yes | The email client checks, as a plugin (`emailClients()`, `src/plugin.ts`; the checks from caniemail's tables in `src/checks.ts`, `src/html.ts` and `src/limits.ts`, held to the tables by `test/caniemail.test.ts`), and `renderInEmailClients()`: an Email as classic Outlook, Outlook.com, Gmail and Apple Mail draw it, one self-contained HTML preview file per email client. `renderInEmailClients()` also takes any HTML email as a string (`src/html-input.ts`), which loads neither core nor React: core is loaded only for a design (`loadCore()` in `src/core.ts`, `require()` in the CommonJS build and `import()` in the ES module one, so a caller's `ElementsError` is its own core's), and the peers are optional (`test/node-import.test.ts` and `scripts/pack-check.mjs` hold it to that). Previews of HTML are approximate where the models are weak on HTML Elements didn't write (`APPROXIMATE_FOR_HTML`). Their `diagnostics` are `documentNotes()` (`src/html.ts`, each finding with its line), and the models' captured checks on HTML (`check({ html })`, models 1.8.0) where the installed models have them, over the HTML with its comments and scripts blanked (`blankUnread()`); the plugin and `renderInEmailClients(html)` load the models for their checks with `src/load-models.ts`. Designs and HTML write previews with `src/previews.ts`. Builds on core's public API only (the plugin API and `render()`'s `blockMap`), loaded as a namespace with a version check (`src/core.ts`); core is a peer, left external. The models of the clients, and the checks only captures found, are `@hyper-elements/email-client-models` (a dependency, closed, loaded with a dynamic `import()`): its WebAssembly runs the captured checks in Node and, as a script of its own, the previews. None of the models, their calibration or captured rules go in this repository. |
+| `packages/lint` | `@hyper-elements/lint` | Yes | The lint plugin (`lint()`, `src/index.ts`): what makes an Email or a Page hard to read (links, alternate text, contrast, text size, headings, language, merge syntax), as diagnostics `email/lint-<rule>` and `page/lint-<rule>`. `lintHtml()` (`@hyper-elements/lint/html`, `src/html.ts`) runs the rules HTML can show on any HTML email, as `lint/<rule>` with a line and column; an `Html` block's markup gets them too. HTML is read by the package's own tokenizer (`src/tokenize.ts`: linear, never throws, Outlook's conditional comments skipped). One registry of rules (`src/rules.ts`), from which `/docs/lint`'s sections are written (`test/docs.test.ts`). It reads the laid-out tree a plugin is handed in one pass (`src/tree.ts`): what's shown, the text's size and what's behind it at desktop and phone width, as the writers write them. It imports nothing at run time (Elements' types only), so any copy of it runs with any 0.4 Elements; `test/__baseline__/` records its findings on the gallery and stress designs (`UPDATE_LINT_BASELINE=1` rewrites them). |
+| `packages/cli` | `@hyper-elements/cli` | Yes | The `hyper-elements` command: `render`, `check`, `outline`, `preview`, `inspect` and `describe` of designs, `design new` and `design set` of values files, `template extract` of a design into a template (`src/commands/extract.ts`, a codemod on the design's source with TypeScript's API, in the parent) (and `migrate`, which runs `@hyper-elements/migrate`), with exit codes 0/1/2 and `--json` lines. Templates: a values file is checked and expanded into one input per format by the parent (`src/values-files.ts`); the child reads it against its template, checks it, and runs the command on the snapshot `check()` returns, measuring a Canvas with `layoutImage()` and `checkLayout()` (`src/commands/template.ts`); `design` runs in the parent (`src/commands/design.ts`), which alone writes the file. Agent code (slot modules, TSX template designs) runs only in capture children (`src/capture.ts`, `runCapture()` in `src/run.ts`), which reply only with captures; a template child loads only the template, and with `hyperElements.templates` (`src/trust.ts`) its load guard (`src/guard.ts`, `src/guard-hooks.ts`, `src/guard-rules.ts`) refuses any file outside the list and installed packages. `preview`'s browser is `src/preview/browser.ts`, the only module that imports `playwright-core` (its own entry, loaded only for `--findings`, `--screenshots` and `--install-browser`), and `--serve`'s server `src/preview/serve.ts`. `src/bin.ts` checks the runtime (Node 20.6+, Bun 1.3+); `src/run.ts` (the parent) finds the inputs, groups them by package and tsconfig, runs each group in a child process (`src/child.ts`, `child_process.fork()`) and alone writes files and stdout. A child loads each design through a loader module written beside it (`src/loader-module.ts`), so Elements, React, email-clients and lint come from where the design's own imports do (lint falls back to the CLI's own copy, `src/lint.ts`, with a `cli/lint-copy` note; its options, `hyperElements.lint` in the nearest package.json, are shape-checked by `src/lint-config.ts`); it counts React copies (`src/react-copies.ts`), and a watchdog thread (`src/watchdog.ts`) ends it if the parent dies. Destinations are checked before anything runs (`src/destinations.ts`). It bundles nothing of Elements or React: they're the project's. Its tests (`test/`) run the built CLI as a child process on Node and again on Bun. |
+| `packages/internal/template-loader` | `@hyper-elements/template-loader` | No (bundled into migrate and cli) | What loading a design needs with no resolution policy of its own: `projectTsconfig()`, `walk()`, `defaultExport()`, `templateComponent()`, `guard()`. The CLI reaches it by path (`tsconfig.json` paths, tsup and Vitest aliases), so its published manifest names no private package. |
+| `packages/internal/core` | `@hyper-elements/core` | No (bundled into react) | The design tree (internal), element definitions, value kinds, validation, custom elements, layout, and the writers: `src/writers/` (web HTML, email HTML, print HTML, plain text), `src/pdf/` and `src/image/` (a Document or Canvas as data to draw, with one adapter file per engine; entries `./pdf` and `./image`). Framework-neutral apart from those two. |
+| `apps/website` | `@hyper-elements/website` | No | hyperelements.dev, an Astro site. Its previews are real output from `scripts/generate.mjs`, committed; see `apps/website/README.md`. Its `/playground` runs the engine in the visitor's browser, bundled from `packages/*/src` (`scripts/playground-runtime.mjs`): a Node-only import added to the main, PDF, image, email-clients or lint entries needs a stand-in in `apps/website/playground/sandbox/shims/`. The code runs in a sandbox; `apps/website/playground/README.md` says how. Its `/tools/open-graph-image-generator` draws the Canvas templates in `apps/website/examples/og-image/` in a worker bundled the same way (`apps/website/README.md`). `/templates` draws the image templates' designs (`templates/images/`) in the visitor's browser the same way (`src/gallery/worker.ts`). |
+| `templates/` | `@hyper-elements/templates-folder` | No | The website's templates: each a `template()` (`/template`) in a folder for its output, `<emails|pages|documents|images>/<name>/template.tsx`, with two or more designs made from it in `designs/` (`<Newsletter … />`, written for the template's default brand, its links on that brand's site). A template is made from a brand: it exports `<name>(brand)` (camel case), which returns the `template()`, and that template in its default brand as its default export (a sample brand, or a recreation's company's, from `_brands/` or `_companies/`). What's the same every send is locked and what changes is a field, with lengths that fit and patterns (no years in dates); a newsletter's header and footer are fields and its body a `field.slot` of allowed elements styled with the brand's tokens. Rules: lint's (emails and pages), the root's core checks, and links on `brand.links.domains`. `meta` in `template.tsx` holds `author` and a recreation's `recreates` (the company, what it rebuilds, the original). `_brand.ts` is the `Brand` type and the token contract; the sample brands are `_brands/` (invented only, one declaration of literals each), their fonts and images `_assets/`. `_test/render.test.tsx` checks each template's example and designs by its rules in every sample brand (and a recreation's company's), each design's links moved to that brand's site (`_scripts/links.ts`), and renders them; `_scripts/single-file.ts` writes a template's copyable files for a brand (one file, or the template beside its `brand.ts` and designs), which `_test/single-file.test.tsx` typechecks and renders. `hyperElements.templates` in `templates/package.json` lets the CLI check and describe them. Tested against the built packages (`pnpm build` first); `README.md` is generated (`pnpm --filter ./templates readme`). |
 | `benchmark/` | `@hyper-elements/agent-benchmark` | No | The agent benchmark: how long a coding agent takes to write a correct email or image with Hyper Elements and with other tools. Its own npm package, outside the pnpm workspace; see `benchmark/README.md`. |
 | `examples/` | | No | `demo` (`@hyper-elements/example-demo`, the showcase app), `content-workflows` (email, JSON and PDF recipes; tested in CI), `react-email-in-editor`, `nextjs-app-router` |
-| `skills/hyper-elements/SKILL.md` | | | The agent skill for writing templates, generated from the component definitions like `GUIDE.md` |
+| `skills/hyper-elements/SKILL.md` | | | The agent skill for writing designs, generated from the element definitions like `GUIDE.md` |
+| `skills/brand-templates/` | | | The agent skill for designs made from templates, and for writing templates: hand-written, its commands and its `example.tsx` held to the CLI by `packages/cli/test/skill.test.ts` |
 | `tests/` | | No | Consumer apps that install the packed package (see Testing) |
 
-## Template structure
+## Design structure
 
 ```
 Email / Page / Document / Canvas   (the root: which output render() writes)
@@ -64,43 +66,49 @@ in its `mobile` block and hover styles in its `hover` block: `style={{ padding: 
 conditions are one list in `packages/internal/core/src/conditions.ts`, each with its support per output. A Page's phone width is
 its `breakpoints={{ mobile }}` (480px where it isn't set); an Email's is its width + 20px. There are no margins: space
 between blocks is the parent's `gap`. Every
-component and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
+element and prop is listed in `packages/react/GUIDE.md` and `REFERENCE.md`, which `src/primitives/reference.ts`
 writes from the definitions. Don't edit them by hand.
 
-A root's `theme` (`defineTheme()`) is merged into each node when the template is read (`packages/internal/core/src/theme.ts`):
-roles (the tokens a definition's `roles` names), its component's defaults (by one prop's value with `by`), its
+A root's `theme` (`defineTheme()`) is merged into each node when the design is read (`packages/internal/core/src/theme.ts`):
+roles (the tokens a definition's `roles` names), its element's defaults (by one prop's value with `by`), its
 `variant`s, the named styles in `style.apply`, then its own style, and tokens resolved where they're used, against the
 theme with each enclosing scope's `tokens` (Section, Row, Column, Grid) over it. The first read moves the theme to
 `ElementsDocument.theme` with `merged: true`; a document with it isn't merged again (a top-level `theme` without it is
-a template's, read as its root's), and expansion reads what a template's own component
+a design's, read as its root's), and expansion reads what a custom element
 renders against the environment where it is.
 
-## Components
+## Elements
 
-Components aren't hand-written. Each is a definition in `packages/internal/core/src/components.ts` (props, styles, children,
+Elements aren't hand-written. Each is a definition in `packages/internal/core/src/components.ts` (props, styles, children,
 targets, support per output, editors), and `packages/react/src/primitives/components.tsx` makes a React component of
-each, so its prop types come from the same definition that validates them. `component()`
-(`packages/react/src/primitives/custom.tsx`) makes a template's own component from them.
+each, so its prop types come from the same definition that validates them. `defineElement()`
+(`packages/react/src/primitives/custom.tsx`) makes a custom element from them.
 
 ## Rendering pipeline
 
 ```
 JSX
-  → one React render collects the template (packages/react/src/primitives/collect.tsx): each component records its
+  → one React render collects the design (packages/react/src/primitives/collect.tsx): each element records its
     props and renders markers around its children; React renders everything else (user components, hooks, Context,
     Fragments)
-  → packages/internal/core validates it (expanding custom components) and lays it out (each block's width)
+  → packages/internal/core validates it (expanding custom elements) and lays it out (each block's width)
   → the writers in packages/internal/core/src/writers write the root's output: email, page or print HTML, and plain text
 ```
 
-- `render(email, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
-  preview an email (`packages/internal/core/src/writers/shared/block-map.ts`): marks written in as the email is, then taken out,
-  so the HTML is the same bytes (`block-map.test.tsx` checks it over the examples and generated templates).
-- `render()` is async and rejects with an `ElementsError` listing the template's problems. `validate()` checks
-  without rendering, `outline()` prints the laid-out template. A component that is async or suspends is an error
+- `render(design, { blockMap: true })` also returns `blocks`, each block's UTF-8 offset in the HTML, for tools that
+  preview a design, whatever its root (`packages/internal/core/src/writers/shared/block-map.ts`, used by the email and
+  page writers): marks written in as the HTML is, then taken out, so the HTML is the same bytes (`block-map.test.tsx`
+  checks it over the examples and generated designs of every root). A Document's header and footer have an entry on
+  each page.
+- `snapshot(element, { fragments, bind, preflight })` (`src/primitives/snapshot.ts`) collects a design once and captures
+  it as inert plain data, which every entry point takes in place of an element without collecting again; slots' content
+  is captured on its own (`captureFragment()`), spliced in at `slotMark()`, and seen by a preflight before anything is
+  read. Templates' `check()` returns its snapshots. Kinds and `defineElement()` definitions are frozen, and own their data.
+- `render()` is async and rejects with an `ElementsError` listing the design's problems. `validate()` checks
+  without rendering, `outline()` prints the laid-out design. A component that is async or suspends is an error
   (`jsx/async`).
 - The collecting render uses a react-dom module that isn't currently rendering (`src/utils/server-renderer.ts`), so
-  an app's own server render can render a template and keep calling hooks afterwards.
+  an app's own server render can render a design and keep calling hooks afterwards.
 - The stack of collecting renders and the render counter behind each render's nonce are shared by every copy of
   Elements in a process through `Symbol.for` (`src/utils/collect.ts`), not React context, so rendering works in
   Server Components.
@@ -116,14 +124,14 @@ JSX
 
 | File | Purpose |
 |------|---------|
-| `packages/react/src/primitives/index.ts` | The main entry: the components, `component()`, `render()`, `validate()`, `outline()`, `prepare()` |
-| `packages/internal/core/src/components.ts` | Component definitions |
+| `packages/react/src/primitives/index.ts` | The main entry: the elements, `defineElement()`, `render()`, `validate()`, `outline()`, `prepare()` |
+| `packages/internal/core/src/components.ts` | Element definitions |
 | `packages/internal/core/src/plugins.ts` | Plugins: what a package outside core adds to `validate()` and `render()` (`check` on a frozen copy of the laid-out tree, `checkOutput` on the written HTML), and how core checks, maps and merges what they return. Email client checks are a plugin, `@hyper-elements/email-clients`; core has none of its own |
-| `packages/internal/core/src/writers/{email,page}/` | One writer per component per output (`Button.tsx`, `Row.tsx`, …), in a JSX that writes strings (`packages/internal/core/src/writers/jsx.ts`, no React); each output's document shell is its `index.tsx` |
+| `packages/internal/core/src/writers/{email,page}/` | One writer per element per output (`Button.tsx`, `Row.tsx`, …), in a JSX that writes strings (`packages/internal/core/src/writers/jsx.ts`, no React); each output's document shell is its `index.tsx` |
 | `packages/internal/core/src/resolve.ts` | Layout: the width of every block, which every output reads |
 | `packages/internal/core/src/theme.ts` | Themes: reading one, token environments and scopes, and merging a theme into a node's style |
 | `packages/react/src/utils/` | The collecting render: `collect.ts`, `server-renderer.ts`, `render-scope.ts` |
-| `packages/react/src/builder/` | `/builder`. `toDesign()` writes a template as the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
+| `packages/react/src/builder/` | `/builder`. `toDesign()` writes a design as a builder design, the Unlayer builder's design JSON (`raise.ts` and `tools.ts` build rows, columns and blocks; `design.ts` writes them over each tool's defaults, matching what Unlayer Elements 0.2's `renderToJson()` wrote). `fromDesign()` reads one back (`read.ts`, `rows.ts`, `blocks.ts`, `read-values.ts`, `read-runs.ts`, `lexical.ts`). It imports only its own files, the main entry's and React (`imports.test.ts`). `manifest.ts` lists every hidden property (a style or prop with no field in its tool) and the builder's own keys; a test holds `toDesign()` to it. |
 | `packages/react/src/builder/tool-defaults.ts` | Each tool's default values and the design's schema version, in the editor's key order |
 
 ## Testing
@@ -131,19 +139,19 @@ JSX
 Unit tests are Vitest files next to the code (`name.test.ts(x)`), plus `packages/react/test/` and
 `packages/*/test/`. Notable suites:
 
-- **Components**: `packages/react/src/primitives/` (`template`, `custom`, `content`, `reference` tests);
+- **Elements**: `packages/react/src/primitives/` (`template`, `custom`, `content`, `reference` tests);
   `types.test-d.tsx` is the type contract that `pnpm typecheck` checks.
 - **Generated docs**: `reference.test.tsx` fails if `GUIDE.md`, `REFERENCE.md` or `skills/hyper-elements/SKILL.md`
-  differ from what the definitions write, or if the README's template is out of date. It also checks REFERENCE.md says the same roots as `describeComponents()`.
+  differ from what the definitions write, or if the README's design is out of date. It also checks REFERENCE.md says the same roots as `describeElements()`.
 - **Support per output**: `packages/internal/core/test/writers/support.test.ts`. Every style and prop declares how each
   output shows it, must change the output or give a diagnostic (nothing dropped silently), and every declared limit
   is reported by `validate()`.
 - **Hostile inputs**: `src/regression/hostile-input.test.tsx`. Markup in every user-facing value, in every root,
-  must add no element or attribute (including inside Outlook's conditional comments), and the builder's design no
+  must add no element or attribute (including inside Outlook's conditional comments), and the builder design no
   markup where the builder reads HTML.
-- **Compatibility baseline**: `src/regression/cross-format-compatibility.test.tsx`. What existing templates give, recorded
-  in `src/regression/__compat__/`: every gallery and stress template (the screen ones as an Email and a Page) and
-  templates with their own components, as HTML, plain text, class names, diagnostics, outline, Unlayer design, and a
+- **Compatibility baseline**: `src/regression/cross-format-compatibility.test.tsx`. What existing designs give, recorded
+  in `src/regression/__compat__/`: every gallery and stress design (the screen ones as an Email and a Page) and
+  designs with their own elements, as HTML, plain text, class names, diagnostics, outline, builder design, and a
   Document's PDF or a Canvas's image as drawn; each saved builder design read back; each entry's exports. A change
   meant to change one rewrites it on purpose (`UPDATE_COMPAT=1 pnpm --filter @hyper-elements/react test cross-format`)
   and says why.
@@ -165,14 +173,14 @@ Unit tests are Vitest files next to the code (`name.test.ts(x)`), plus `packages
   React 18), `next16-integration` (Next.js 16 with Cache Components, prerendered at build), `jest-integration`
   (Jest 30's jsdom environment, React 19), `cli-integration` (the packed CLI and packed react in an app of a pnpm
   workspace, run with `npx` and `bunx --bun`; `CLI_TARBALL=… REACT_TARBALL=… LINT_TARBALL=… node tests/cli-integration/verify.mjs`).
-- **Lint** (`packages/lint/test/`): each rule fires on a template and not on a near miss; `tree.test.tsx` holds the
+- **Lint** (`packages/lint/test/`): each rule fires on a design and not on a near miss; `tree.test.tsx` holds the
   tree read at both widths to the cases in `cases.tsx`, which `test:browser` checks against Chromium with every run of
-  the gallery and stress templates; the baseline of findings in `test/__baseline__/`; `docs.test.ts` keeps
+  the gallery and stress designs; the baseline of findings in `test/__baseline__/`; `docs.test.ts` keeps
   `/docs/lint`'s rule sections written from the rules.
 - **The CLI** (`packages/cli/test/`): every case runs the built CLI as a child process on Node and again on Bun
   (`--project node`, `--project bun`; Bun is required where `CI` is set), against projects in the temporary folder
   whose `node_modules` link to this repository's packages; `parity.test.ts` renders the compatibility baseline's
-  templates on both runtimes and compares the bytes. `pnpm --filter @hyper-elements/cli test:browser`
+  designs on both runtimes and compares the bytes. `pnpm --filter @hyper-elements/cli test:browser`
   (`test/browser/`, needs Playwright's Chromium) runs `preview --findings` in each browser the CLI finds.
 
 Browser gates (need `pnpm build` and `playwright install chromium`):
@@ -239,8 +247,8 @@ skip it):
 
 - **Tests** (Node 20 and Bun 1.3): `pnpm build`; typechecks of react, core, migrate, email-clients, cli, lint and the
   template loader; the release script's tests
-  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 317,000 bytes, `dist/builder.js`
-  479,000 bytes, email-clients' `dist/index.js` 62,400 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
+  (`node --test scripts/release.test.mjs`); bundle budgets (`dist/primitives.js` 350,800 bytes, `dist/builder.js`
+  522,500 bytes, `dist/template.js` 108,200 bytes, email-clients' `dist/index.js` 62,800 bytes, lint's `dist/index.js` 41,500 bytes and `dist/html.js` 22,700 bytes, unminified ESM; raise one on purpose and say what grew);
   no bundle imports `@unlayer/exporters`; unit tests with coverage; the CSP gates (react and email-clients);
   email-clients packed and installed beside the packed core and the models package from npm (`test:pack`); the CLI's
   tests on Node and Bun, and its consumer app (`tests/cli-integration`).
@@ -254,12 +262,12 @@ skip it):
 
 ## Review bar for the migration tool
 
-The tool's goal is an editable Unlayer template with the same content, not pixel parity: every template is written,
+The tool's goal is an editable design with the same content, not pixel parity: every template is written,
 content that differs is flagged (`✗`, exit 2), and how it looks is listed ("looks different"). These block a merge
 of the converter, the check or the CLI (`packages/migrate`), and of Elements changes made for them:
 
 1. **Elements regressions**: code that rendered with the last release gives a reader something else (words, links,
-   images, layout, plain text) or another design, and the change isn't a documented difference.
+   images, layout, plain text) or another builder design, and the change isn't a documented difference.
 2. **Content the check misses**: it passes a migration whose content a reader gets differently: a word, link, image
    or alt text lost, added or out of order, or shown where the original hides it (or the reverse), on desktop,
    phones, wider screens or in dark mode.
@@ -275,7 +283,7 @@ test that fails without it. A false pass found by `test:differential` is committ
 
 - Diagnostic codes starting `email/lint-` and `page/lint-` are `@hyper-elements/lint`'s: nothing else writes one
   (`packages/lint/test/guards.test.tsx` scans core, email-clients and the CLI, and validates the gallery and stress
-  templates).
+  designs).
 - Styles go in `style={{ … }}`, never as props, and a number is px. There are no margins; use the parent's `gap`.
 - An `Image` takes its file's size, `src={{ src, width, height }}`; `style.width` is the size shown.
 - `render()` is async (`await render(element)`); `validate()`, `outline()`, `toDesign()` and `fromDesign()` aren't.

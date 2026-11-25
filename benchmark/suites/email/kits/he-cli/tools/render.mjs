@@ -1,6 +1,7 @@
 // Checks emails/email.tsx with the Hyper Elements CLI, then renders it to out/email.html (--base emails), and prints its problems.
-//   npx hyper-elements check emails/email.tsx --rendered --json
-//   npx hyper-elements render emails/email.tsx --json
+//   npx hyper-elements check emails/email.tsx --rendered --no-lint --json
+//   npx hyper-elements render emails/email.tsx --no-lint --json
+// (--no-lint: the `he` kit's render tool doesn't run lint, so neither does this; it's the same engine's problems.)
 // --json: also prints the problems as JSON, on the last line, as the `he` kit's render tool does.
 //
 // `check --rendered` gives render()'s diagnostics, with the email client checks where @hyper-elements/email-clients is
@@ -40,13 +41,13 @@ function cli(command, ...flags) {
   return { line, exitCode: summary.exitCode, stderr: r.stderr ?? "" };
 }
 
-const check = cli("check", "--rendered");
+const check = cli("check", "--rendered", "--no-lint");
 const problems = check.line.diagnostics ?? [];
 // A template that didn't load, or whose default export isn't a template, is skipped or an error: it isn't rendered.
 if (check.line.status !== "ok" || check.exitCode !== 0) {
   end(false, problems, check.line.error ?? (check.line.status === "skipped" ? "emails/email.tsx wasn't rendered: its default export must be a component that renders an <Email>." : check.stderr.trim()));
 }
-const render = cli("render", "--base", "emails");
+const render = cli("render", "--base", "emails", "--no-lint");
 if (render.line.status !== "ok" || render.exitCode !== 0) end(false, problems.length ? problems : (render.line.diagnostics ?? []), render.line.error ?? render.stderr.trim());
 const html = render.line.outputs?.find((o) => o.endsWith(".html"));
 if (html !== "out/email.html") end(false, problems, `hyper-elements render wrote ${render.line.outputs?.join(", ") || "nothing"}, not out/email.html.`);

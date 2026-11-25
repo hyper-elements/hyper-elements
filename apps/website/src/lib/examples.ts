@@ -17,7 +17,8 @@ export type Example = {
 };
 
 /** Images in examples point at https://hyperelements.dev/img/…; in a preview they load from this site, wherever it runs. */
-export const previewHtml = (html: string) => html.replaceAll("https://hyperelements.dev/img/", "/img/");
+export const previewHtml = (html: string) =>
+  html.replaceAll("https://hyperelements.dev/img/", "/img/").replaceAll("https://hyperelements.dev/generated/gallery/assets/", "/generated/gallery/assets/");
 
 export const templates = Object.values(data.templates) as Example[];
 export const components = data.components as Record<string, Example>;
@@ -35,6 +36,6 @@ templates.sort((a, b) => order.indexOf(a.slug) - order.indexOf(b.slug));
 export const thumbWidth = (t: Example, widths: { page: number; document: number; email: number }) =>
   t.root === "Canvas" ? Number(t.outline.match(/^Canvas (\d+)px/)?.[1] ?? 1200) : t.root === "Page" ? widths.page : t.root === "Document" ? widths.document : widths.email;
 
-/** The site's own examples (examples/showcase/): the home page's template strip page and document, feature tiles' email and
+/** The site's own examples (examples/showcase/): the home page's design strip page and document, feature tiles' email and
  * phone demo, and the React Email comparison's one email in two themes (brand-north, brand-bloom). */
 export const showcase = (data as any).showcase as Record<"email" | "page" | "document" | "responsive" | "brand-north" | "brand-bloom", Example>;

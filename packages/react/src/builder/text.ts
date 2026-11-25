@@ -166,8 +166,11 @@ export function tooDeep(html: string): boolean {
 const blocky = (html: string) => /<\s*(p|ul|ol|h[1-6])\b/i.test(html);
 const P_STYLES = new Set(["line-height", "text-align", "padding-inline-start"]);
 
-/** The HTML as parts, each a block, and what isn't read. */
-export function readText(html: string, { weight = 400, pages = false, links = true, fontSize = 16, lineHeight = 1.5 as Json } = {}): { parts: TextPart[]; left: string[] } {
+/**
+ * The HTML as parts, each a block, and what isn't read. `cell` reads a paragraph as a table cell's, as toDesign() writes
+ * one: its line height without a unit the multiple CSS makes it, and its font size (px) its own.
+ */
+export function readText(html: string, { weight = 400, pages = false, links = true, fontSize = 16, lineHeight = 1.5 as Json, cell = false } = {}): { parts: TextPart[]; left: string[] } {
   const left: string[] = [];
   if (tooDeep(html)) return { parts: [], left: [`markup nested more than ${DEEPEST} deep`] };
   const runs = (inner: string, bold = weight): Child[] => {
@@ -198,7 +201,7 @@ export function readText(html: string, { weight = 400, pages = false, links = tr
     const inner = html.slice(match.index! + match[0].length, end.start);
     flush();
     if (tag === "p") {
-      const part = readParagraph(match[3], inner, runs, fontSize, left);
+      const part = readParagraph(match[3], inner, runs, fontSize, left, cell);
       if (part) parts.push(part);
     } else if (tag[0] === "h") parts.push(readHeading(Number(tag[1]), match[3], inner, runs, fontSize, lineHeight, left));
     else parts.push(readList(tag, match[3], inner, runs, fontSize, left));
@@ -249,14 +252,20 @@ function readHeading(level: number, attrs: string, inner: string, runs: (html: s
 }
 
 /** A `<p>` as a Text: its line height, alignment, direction and indent its own, its margins none but its style's. */
-function readParagraph(attrs: string, inner: string, runs: (html: string) => Child[], fontSize: number, left: string[]): TextPart | undefined {
+function readParagraph(attrs: string, inner: string, runs: (html: string) => Child[], fontSize: number, left: string[], cell = false): TextPart | undefined {
   const d = declarations(styleOf(attrs));
   const own: Record<string, Json> = {};
   if (d["line-height"] !== undefined) {
     const height = /^(\d*\.?\d+)%$/.exec(d["line-height"]);
     if (height) own.lineHeight = Number(height[1]) / 100;
+    else if (cell && /^\s*\d*\.?\d+\s*$/.test(d["line-height"])) own.lineHeight = Number(d["line-height"]);
     else if (px(d["line-height"]) !== undefined) own.lineHeight = `${px(d["line-height"])}px`;
     else left.push(`a paragraph's line height ${d["line-height"]}`);
+  }
+  if (cell && d["font-size"] !== undefined) {
+    const size = /px\s*$/.test(d["font-size"]) ? px(d["font-size"]) : undefined;
+    if (size !== undefined && size > 0) own.fontSize = size;
+    else left.push(`a paragraph's font size ${d["font-size"]}`);
   }
   if (d["text-align"] !== undefined) own.textAlign = d["text-align"];
   const indent = d["padding-inline-start"] === undefined ? 0 : length(d["padding-inline-start"], fontSize);
@@ -264,7 +273,7 @@ function readParagraph(attrs: string, inner: string, runs: (html: string) => Chi
   const margin = margins(d, 0, fontSize);
   if (!margin) left.push("a paragraph's margins");
   const dir = /\bdir\s*=\s*"?(ltr|rtl|auto)\b/i.exec(attrs)?.[1].toLowerCase();
-  const other = Object.keys(d).filter((name) => !P_STYLES.has(name) && !name.startsWith("margin"));
+  const other = Object.keys(d).filter((name) => !P_STYLES.has(name) && !name.startsWith("margin") && !(cell && name === "font-size"));
   if (other.length || attributeNames(attrs).some((name) => name !== "dir") || (/\bdir\s*=/.test(attrs) && !dir)) left.push("a paragraph with attributes of its own");
   const children = runs(inner);
   // An empty paragraph is nothing; one with only a line break, a line of its height.

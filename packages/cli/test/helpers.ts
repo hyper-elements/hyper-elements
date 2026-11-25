@@ -10,6 +10,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { deflateSync, inflateSync } from "node:zlib";
 import { afterAll, afterEach } from "vitest";
 
 export const CLI_ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -247,15 +248,19 @@ export function withFixtures(dir: string, into = ""): string {
 /**
  * A copy of this repository's built Elements as a project's own `node_modules/@hyper-elements/react` (a folder, not a
  * link), so it resolves its peers (React, the PDF and image engines) from the project: only those the project links.
- * With `templateAssets: false`, its `/pdf` and `/image` are those of an Elements from before templateAssets().
+ * With `templateAssets: false`, its `/pdf` and `/image` are those of an Elements from before templateAssets(); with
+ * `templates: false`, it has no `/template`, as an Elements from before templates.
  */
-export function copyElements(dir: string, options: { templateAssets?: boolean } = {}): void {
+export function copyElements(dir: string, options: { templateAssets?: boolean; templates?: boolean } = {}): void {
   const from = join(REPO, "packages", "react");
   const to = join(dir, "node_modules", "@hyper-elements", "react");
   mkdirSync(join(to, "dist"), { recursive: true });
-  cpSync(join(from, "package.json"), join(to, "package.json"));
+  const manifest = JSON.parse(readFileSync(join(from, "package.json"), "utf8"));
+  if (options.templates === false) delete manifest.exports["./template"];
+  writeFileSync(join(to, "package.json"), JSON.stringify(manifest, null, 2));
   for (const name of readdirSync(join(from, "dist"))) {
     if (!name.endsWith(".js")) continue;
+    if (options.templates === false && name === "template.js") continue;
     let text = readFileSync(join(from, "dist", name), "utf8");
     if (options.templateAssets === false && (name === "pdf.js" || name === "image.js")) {
       text = text
@@ -398,7 +403,7 @@ export async function startDev(cwd: string, args: string[], options: { runtime?:
     text: async (url) => (await fetch(base + url)).text(),
     exited,
   };
-  if (!(await until(() => /Rendered \d+ templates?|✗ /.test(err), 30_000))) throw new Error(`dev didn't render:\n${out}\n${err}`);
+  if (!(await until(() => /Rendered \d+ designs?|✗ /.test(err), 30_000))) throw new Error(`dev didn't render:\n${out}\n${err}`);
   return dev;
 }
 
@@ -423,4 +428,212 @@ export async function devUntil(dev: Dev, check: (template: any, text: string) =>
     await wait(20);
   }
   throw new Error(`dev never showed what was expected for ${file}: ${JSON.stringify(last)}\n${dev.stderr()}`);
+}
+
+/** A PNG of a solid color: width × height, 8-bit RGB. */
+export function makePng(width: number, height: number, rgb: [number, number, number] = [128, 64, 32]): Buffer {
+  const row = Buffer.concat([Buffer.from([0]), Buffer.from(Array.from({ length: width }, () => rgb).flat())]);
+  const raw = Buffer.concat(Array.from({ length: height }, () => row));
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (bytes: Buffer) => {
+    let c = 0xffffffff;
+    for (const byte of bytes) c = crcTable[(c ^ byte) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type: string, data: Buffer) => {
+    const body = Buffer.concat([Buffer.from(type, "ascii"), data]);
+    const out = Buffer.alloc(12 + data.length);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(crc(body), 8 + data.length);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header.set([8, 2, 0, 0, 0], 8);
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", header), chunk("IDAT", deflateSync(raw)), chunk("IEND", Buffer.alloc(0))]);
+}
+
+/** A PNG's pixels, as resvg writes them (8-bit RGBA, not interlaced): RGBA bytes, row by row. */
+export function decodePng(png: Buffer): { width: number; height: number; data: Buffer } {
+  let at = 8;
+  let width = 0;
+  let height = 0;
+  let channels = 4;
+  const idat: Buffer[] = [];
+  while (at < png.length) {
+    const length = png.readUInt32BE(at);
+    const type = png.toString("ascii", at + 4, at + 8);
+    const data = png.subarray(at + 8, at + 8 + length);
+    if (type === "IHDR") {
+      width = data.readUInt32BE(0);
+      height = data.readUInt32BE(4);
+      if (data[8] !== 8 || data[12] !== 0) throw new Error("decodePng reads 8-bit, non-interlaced PNGs");
+      channels = data[9] === 6 ? 4 : data[9] === 2 ? 3 : 0;
+      if (!channels) throw new Error("decodePng reads RGB and RGBA PNGs");
+    } else if (type === "IDAT") idat.push(data);
+    at += 12 + length;
+  }
+  const raw = inflateSync(Buffer.concat(idat));
+  const stride = width * channels;
+  const out = Buffer.alloc(width * height * 4);
+  const previous = Buffer.alloc(stride);
+  const line = Buffer.alloc(stride);
+  for (let y = 0; y < height; y++) {
+    const filter = raw[y * (stride + 1)];
+    for (let x = 0; x < stride; x++) {
+      const value = raw[y * (stride + 1) + 1 + x];
+      const a = x >= channels ? line[x - channels] : 0;
+      const b = previous[x];
+      const c = x >= channels ? previous[x - channels] : 0;
+      const p = a + b - c;
+      const paeth = Math.abs(p - a) <= Math.abs(p - b) && Math.abs(p - a) <= Math.abs(p - c) ? a : Math.abs(p - b) <= Math.abs(p - c) ? b : c;
+      line[x] = (value + [0, a, b, (a + b) >> 1, paeth][filter]) & 0xff;
+    }
+    for (let x = 0; x < width; x++) {
+      for (let k = 0; k < 4; k++) out[(y * width + x) * 4 + k] = k < channels ? line[x * channels + k] : 255;
+    }
+    line.copy(previous);
+  }
+  return { width, height, data: out };
+}
+
+/** The box (x0, y0, x1, y1; px, exclusive) of the pixels two images of one size differ in, or null where none do. */
+export function differingBox(a: ReturnType<typeof decodePng>, b: ReturnType<typeof decodePng>): [number, number, number, number] | null {
+  if (a.width !== b.width || a.height !== b.height) throw new Error("differingBox compares images of one size");
+  let box: [number, number, number, number] | null = null;
+  for (let y = 0; y < a.height; y++) {
+    for (let x = 0; x < a.width; x++) {
+      const i = (y * a.width + x) * 4;
+      if (a.data.readUInt32BE(i) === b.data.readUInt32BE(i)) continue;
+      box = box ? [Math.min(box[0], x), Math.min(box[1], y), Math.max(box[2], x + 1), Math.max(box[3], y + 1)] : [x, y, x + 1, y + 1];
+    }
+  }
+  return box;
+}
+
+/**
+ * A launch card template (a Canvas in two formats: square 300×300 at 2×, wide 400×200 at 1×), its text in Inter:
+ * a headline fitted in a 100px band, a 32×32 cover image, and the launch date at y 164.
+ */
+export function launchTemplate(options: { version?: string; id?: string; extra?: string } = {}): string {
+  return `import { Canvas, Column, Heading, Image, Text, prop } from "@hyper-elements/react";
+import { field, formatDate, template } from "@hyper-elements/react/template";
+
+const FONTS = [{ family: "Inter", src: "../fonts/Inter-Regular.ttf", weight: 400 }, { family: "Inter", src: "../fonts/Inter-Bold.ttf", weight: 700 }];
+${options.extra ?? ""}
+export default template({
+  id: "${options.id ?? "acme.Launch"}",
+  version: "${options.version ?? "1.0.0"}",
+  label: "Launch card",
+  guidance: "For product launches. Sentence case, no exclamation marks.",
+  root: "Canvas",
+  formats: { square: { width: 300, height: 300, scale: 2 }, wide: { width: 400, height: 200 } },
+  fields: {
+    headline: prop.text({ label: "Headline", required: true, maxLength: 60 }),
+    launchDate: prop.date({ label: "Launch date", required: true }),
+    locale: prop.choice(["en-US", "de-DE"], { label: "Language", default: "en-US" }),
+    art: field.image({ label: "Art", required: true, fit: "cover", accepts: ["png"], guidance: "Abstract waves, no text." }),
+  },
+  example: { headline: "Meet Orbit", launchDate: "2026-12-03", art: { src: "../images/tide.png", width: 64, height: 64 } },
+  render(v, { format }) {
+    const square = format === "square";
+    return (
+      <Canvas width={square ? 300 : 400} height={square ? 300 : 200} fonts={FONTS} lang={v.locale} style={{ fontFamily: "Inter", padding: 16, gap: 8, backgroundColor: "#ffffff" }}>
+        <Column style={{ height: 100 }}>
+          <Heading field="headline" level={1} fit={{ sizes: [40, 32, 24], maxLines: 2 }}>{v.headline}</Heading>
+        </Column>
+        <Image field="art" src={v.art} alt="" style={{ width: 32, height: 32 }} />
+        <Text field="launchDate">{formatDate(v.launchDate, v.locale, { dateStyle: "long" })}</Text>
+      </Canvas>
+    );
+  },
+});
+`;
+}
+
+/** A note template: an Email of a title and a body. */
+export function noteTemplate(version = "1.0.0"): string {
+  return `import { Email, Heading, Text, prop } from "@hyper-elements/react";
+import { template } from "@hyper-elements/react/template";
+
+export default template({
+  id: "acme.Note",
+  version: "${version}",
+  label: "Note",
+  root: "Email",
+  fields: {
+    title: prop.text({ label: "Title", required: true, maxLength: 40 }),
+    body: prop.text({ label: "Body", required: true }),
+  },
+  example: { title: "Hello", body: "A short note." },
+  render(v) {
+    return (
+      <Email lang="en" previewText="A short note from the team, as always">
+        <Heading field="title" level={1}>{v.title}</Heading>
+        <Text field="body">{v.body}</Text>
+      </Email>
+    );
+  },
+});
+`;
+}
+
+/** A values file's JSON: its template's module (relative to it), id and version, its formats and its values. */
+export function valuesFile(module: string, values: Record<string, unknown>, options: { id?: string; version?: string; formats?: string[] | null; extra?: Record<string, unknown> } = {}): string {
+  const formats = options.formats === undefined ? ["square", "wide"] : options.formats;
+  return `${JSON.stringify({ version: 1, template: { module, id: options.id ?? "acme.Launch", version: options.version ?? "1.0.0" }, ...(formats ? { formats } : {}), values, ...(options.extra ?? {}) }, null, 2)}\n`;
+}
+
+/** The launch template's values for a design in designs/, its art from images/. */
+export const LAUNCH_VALUES = { headline: "Orbit is here", launchDate: "2026-12-03", art: { src: "../images/tide.png", width: 64, height: 64 } };
+
+/**
+ * A newsletter template (an Email): a subject, a body slot the filler writes with Column, Heading and Text, and a fixed
+ * footer. `migrate` and `version` for a major version that renames the slot.
+ */
+export function newsTemplate(options: { version?: string; slot?: string; migrate?: string; sidebar?: boolean; extra?: string } = {}): string {
+  const slot = options.slot ?? "body";
+  return `import { Column, Email, Heading, Section, Text, prop } from "@hyper-elements/react";
+import { field, template } from "@hyper-elements/react/template";
+${options.extra ?? ""}
+export default template({
+  id: "acme.News",
+  version: "${options.version ?? "1.0.0"}",
+  label: "News",
+  root: "Email",
+  fields: {
+    subject: prop.text({ label: "Subject", required: true, maxLength: 70 }),
+    ${slot}: field.slot({ label: "Body", required: true, allow: [Column, Heading, Text], guidance: "Short sections: a Heading and a Text each." }),
+    ${options.sidebar ? `sidebar: field.slot({ label: "Sidebar", allow: [Column, Text] }),` : ""}
+  },
+  ${options.migrate ? `migrate: ${options.migrate},` : ""}
+  example: { subject: "Hi", ${slot}: <Column><Text>Example body</Text></Column> },
+  render(v) {
+    return (
+      <Email lang="en" previewText="The news this week, in one short email for you">
+        <Heading level={1}>{v.subject}</Heading>
+        <Section field="${slot}">{v.${slot}}</Section>
+        ${options.sidebar ? `{v.sidebar ? <Section field="sidebar">{v.sidebar}</Section> : null}` : ""}
+        <Text>Fixed footer</Text>
+      </Email>
+    );
+  },
+});
+`;
+}
+
+/** A slot module: its default export renders the slot's content (JSX), with `before` run when it loads. */
+export function slotModule(content: string, before = "", imports = "Column, Heading, Text"): string {
+  return `import { ${imports} } from "@hyper-elements/react";
+${before}
+export default function Body() {
+  return ${content};
+}
+`;
 }

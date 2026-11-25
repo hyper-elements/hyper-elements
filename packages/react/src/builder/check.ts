@@ -29,7 +29,7 @@ function itemLinks(value: Json, key: string, path: string, report: string[]): Js
 function checkNode(node: Node, path: string, report: string[], inText = false): Node | Child[] | null {
   const definition = definitionOf(node.type);
   if (!definition) {
-    report.push(`${path}: ${JSON.stringify(node.type)} isn't a component: left out`);
+    report.push(`${path}: ${JSON.stringify(node.type)} isn't an element: left out`);
     return null;
   }
   const out: Node = { ...node };

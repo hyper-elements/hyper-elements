@@ -1,6 +1,6 @@
 # Generate a React invoice PDF
 
-Use `@hyper-elements/react` for invoices, receipts, and reports that need a real PDF file. Write the template with a `<Document>` from `@hyper-elements/react`; then there are two ways to get the file:
+Use `@hyper-elements/react` for invoices, receipts, and reports that need a real PDF file. Write the design with a `<Document>` from `@hyper-elements/react`; then there are two ways to get the file:
 
 - **With Playwright:** `await render(<Document>…</Document>)` produces print-ready HTML, and `page.pdf()` in headless Chromium produces the PDF bytes. It needs Chromium wherever it runs. The rest of this guide and the checked-in example use this way.
 - **Without a browser:** `renderPdf(<Document>…</Document>)` from `@hyper-elements/react/pdf` writes the PDF on the server, from font and image files you give it. See [below](#without-a-browser).
@@ -20,7 +20,7 @@ Linux CI may need `npx playwright install --with-deps chromium`. Chromium must b
 
 ## Generate the PDF
 
-Use the complete [invoice template](./one-template-email-web-pdf.md#define-the-shared-react-template). This helper, [src/pdf.ts](../../../examples/content-workflows/src/pdf.ts), waits for fonts and images before printing and always closes the browser:
+Use the complete [invoice design](./one-template-email-web-pdf.md#define-the-shared-react-design). This helper, [src/pdf.ts](../../../examples/content-workflows/src/pdf.ts), waits for fonts and images before printing and always closes the browser:
 
 ```ts
 import { chromium } from "playwright";
@@ -70,7 +70,7 @@ pnpm --filter @hyper-elements/example-content-workflows render:all
 
 `preferCSSPageSize` honors the paper the `Document` asks for: its print HTML sets the CSS page to its `size` and `orientation`, with no page margin, and draws each page as a box with its own `margin` (48px by default). So set both on the `Document`: a `margin` passed to `page.pdf()` changes nothing. `printBackground` retains background colors. See [Playwright PDF options](https://playwright.dev/docs/api/class-page#page-pdf).
 
-Nothing flows from one page to the next: content taller than its page is cut off, and `render()` warns about it in `diagnostics` (`document/overflow`, an estimate). Use the [PageBreak component](../REFERENCE.md#pagebreak) or `Document.Page` to start a new page, and `PageHeader`, `PageFooter` and `PageNumber` for what repeats on each one. Test tables, fonts, and multiple pages with representative data; fitting one sample invoice does not establish pagination for every document.
+Nothing flows from one page to the next: content taller than its page is cut off, and `render()` warns about it in `diagnostics` (`document/overflow`, an estimate). Use the [PageBreak element](../REFERENCE.md#pagebreak) or `Document.Page` to start a new page, and `PageHeader`, `PageFooter` and `PageNumber` for what repeats on each one. Test tables, fonts, and multiple pages with representative data; fitting one sample invoice does not establish pagination for every document.
 
 This example uses system fonts and no remote images. If adding assets, use absolute accessible URLs or embedded data, wait for them, and fail on missing images rather than printing incomplete invoices. Only print trusted application-generated HTML; do not turn this helper into an arbitrary URL/HTML rendering endpoint without controlling network access. Playwright needs a Node.js host that can run a browser, so use a worker/container rather than an edge runtime.
 
@@ -95,6 +95,6 @@ for (const { code, message } of diagnostics) console.warn(code, message);
 await writeFile("output/invoice.pdf", pdf);
 ```
 
-It takes the same template. Nothing is fetched: pass font files in `fonts` and image files in `images`, as bytes. Text whose font has no file given, as in this invoice, is drawn in a standard PDF font, which covers Western European characters only. The [`/pdf` guide](./render-pdf.md) lists its options, diagnostics and limits.
+It takes the same design. Nothing is fetched: pass font files in `fonts` and image files in `images`, as bytes. Text whose font has no file given, as in this invoice, is drawn in a standard PDF font, which covers Western European characters only. The [`/pdf` guide](./render-pdf.md) lists its options, diagnostics and limits.
 
-For email and browser versions of the same content, see [one React template, three outputs](./one-template-email-web-pdf.md).
+For email and browser versions of the same content, see [one React design, three outputs](./one-template-email-web-pdf.md).

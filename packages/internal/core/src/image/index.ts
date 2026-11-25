@@ -5,6 +5,6 @@
  */
 export * from "./model";
 // What the entry's reader (src/image in @hyper-elements/react) takes from the core too, so its bundle holds one copy of it.
-export { assetParts, fontStack, LAYOUT_VERSION, type Asset, type FontFace } from "../index";
-export { satoriResvg } from "./satori";
+export { assetParts, fontStack, LAYOUT_VERSION, lineHeightPx, type Asset, type FontFace } from "../index";
+export { satoriLayout, satoriMissing, satoriResvg, satoriWidest, satoriWords, type LaidOutBox } from "./satori";
 export { writeCanvas, type WriteContext } from "./write";

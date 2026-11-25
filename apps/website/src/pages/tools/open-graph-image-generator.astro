@@ -1,0 +1,294 @@
+---
+// The free Open Graph image generator: pick a design, type a headline, add a photo and a logo, and download a
+// 1200 × 630 PNG or JPG. Every design is a template in examples/og-image/, drawn in the visitor's browser by a worker
+// (src/og-image/worker.ts) with the same engine that runs on a server; src/og-image/main.ts drives the page.
+import Base from "../../layouts/Base.astro";
+import CodeBlock from "../../components/CodeBlock.astro";
+import { ogDescription, ogDesigns, ogFaq, ogPath, ogTitle } from "../../lib/og-image";
+import { site } from "../../lib/site";
+import "../../styles/og-image.css";
+
+const first = ogDesigns[0];
+const example = { headline: "How we cut our image pipeline from forty seconds to four hundred milliseconds", site: "Fieldnotes", author: "Maya Okafor", date: "Nov 18, 2026" };
+const designsData = JSON.stringify(ogDesigns.map(({ name, id, label, description, fields }) => ({ name, id, label, description, fields })));
+
+const swatches = ["#4f46e5", "#0891b2", "#14532d", "#b45309", "#e11d48", "#7c5cff", "#f59e0b", "#111827"];
+
+const networks = [
+  { id: "x", label: "X" },
+  { id: "x-summary", label: "X, small" },
+  { id: "facebook", label: "Facebook" },
+  { id: "linkedin", label: "LinkedIn" },
+];
+
+const steps = [
+  { t: "Pick a design", d: "Six designs, each 1200 × 630. Your text and pictures carry over when you switch." },
+  { t: "Type your headline", d: "It's drawn at the largest size that fits, and steps down as it gets longer. Leave any other field empty to leave it out." },
+  { t: "Add a photo and a logo", d: "Pick files from your device. They're read in your browser and never uploaded." },
+  { t: "Check the previews", d: "See the image as X, Facebook and LinkedIn show a link, and the square X crops it to for a small card." },
+  { t: "Download it", d: "A PNG for flat designs, a JPG for photos. Put it on your site and name its full URL in og:image." },
+];
+
+const metaRows = [
+  { tag: "og:image", value: "The image's full URL, starting with https://" },
+  { tag: "og:image:width", value: "1200" },
+  { tag: "og:image:height", value: "630" },
+  { tag: "og:image:alt", value: "What the image shows, for screen readers" },
+  { tag: "og:title", value: "The page's title, which the networks show with the image" },
+  { tag: "twitter:card", value: "summary_large_image, for X's large card" },
+];
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: ogTitle,
+    url: new URL(ogPath, site.url).href,
+    description: ogDescription,
+    applicationCategory: "DesignApplication",
+    operatingSystem: "Any (runs in the browser)",
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    isAccessibleForFree: true,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: ogFaq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  },
+];
+---
+<Base
+  title={`${ogTitle} (1200 × 630)`}
+  description={ogDescription}
+  image="/generated/og-image/page.png"
+  imageAlt="Free Open Graph image generator, by Hyper Elements: a headline on a dark design with a violet glow"
+  imageWidth={1200}
+  imageHeight={630}
+  jsonLd={jsonLd}
+>
+  <section class="og-hero">
+    <div class="wrap">
+      <p class="eyebrow">Free tool</p>
+      <h1 class="h-page">Free Open Graph image generator</h1>
+      <p class="lede">Make a 1200 × 630 share image for any page, and see it as X, Facebook and LinkedIn will. Drawn in your browser: no sign-up, no watermark, nothing uploaded.</p>
+      <ul class="og-badges" aria-label="What it is">
+        <li>100% free</li>
+        <li>No sign-up</li>
+        <li>No watermark</li>
+        <li>Your files stay on your device</li>
+        <li>Open-source designs</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="og-tool" id="tool" aria-label="Open Graph image generator" data-og-tool data-designs={designsData} data-runtime="/tools/og-image/runtime.js">
+    <div class="wrap og-bench">
+      <form id="og-form" class="og-controls" autocomplete="off">
+        <fieldset class="og-group">
+          <legend>Design</legend>
+          <div class="og-designs">
+            {ogDesigns.map((d, i) => (
+              <button type="button" class="og-design" data-design={d.name} aria-pressed={i === 0 ? "true" : "false"}>
+                <img src={`/generated/og-image/${d.name}.png`} width="1200" height="630" alt="" loading={i < 2 ? "eager" : "lazy"} decoding="async" />
+                <span>{d.label}</span>
+              </button>
+            ))}
+          </div>
+          <p class="og-hint" id="og-design-note">{first.description}</p>
+        </fieldset>
+
+        <fieldset class="og-group">
+          <legend>Text</legend>
+          <label class="og-field" data-field="headline">
+            <span class="og-label">Headline <span class="og-count" id="og-count" aria-live="polite"></span></span>
+            <textarea name="headline" rows="3" maxlength="140" required>{example.headline}</textarea>
+          </label>
+          <div class="og-pair">
+            <label class="og-field" data-field="site">
+              <span class="og-label">Site name</span>
+              <input name="site" type="text" maxlength="40" value={example.site} />
+            </label>
+            <label class="og-field" data-field="author">
+              <span class="og-label">Author</span>
+              <input name="author" type="text" maxlength="40" value={example.author} />
+            </label>
+          </div>
+          <label class="og-field" data-field="date">
+            <span class="og-label">Date, or any short line</span>
+            <input name="date" type="text" maxlength="32" value={example.date} />
+          </label>
+          <p class="og-hint">Leave a field empty to leave it out of the image.</p>
+        </fieldset>
+
+        <fieldset class="og-group">
+          <legend>Pictures</legend>
+          <div class="og-file" data-field="photo">
+            <span class="og-label">Photo</span>
+            <div class="og-file-row">
+              <label class="btn btn-ghost btn-sm og-pick">Choose a photo<input id="og-photo" type="file" accept="image/*" /></label>
+              <span class="og-file-name" id="og-photo-name">Sample photo</span>
+              <button type="button" class="og-link" data-sample="photo" hidden>Use the sample</button>
+              <button type="button" class="og-link" data-remove="photo">Remove</button>
+            </div>
+          </div>
+          <div class="og-file" data-field="logo">
+            <span class="og-label">Logo <span class="og-optional">shown in place of the site name</span></span>
+            <div class="og-file-row">
+              <label class="btn btn-ghost btn-sm og-pick">Choose a logo<input id="og-logo" type="file" accept="image/*" /></label>
+              <span class="og-file-name" id="og-logo-name">None</span>
+              <button type="button" class="og-link" data-remove="logo" hidden>Remove</button>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="og-group" data-field="accent">
+          <legend>Color</legend>
+          <div class="og-swatches">
+            {swatches.map((c) => <button type="button" class="og-swatch" data-swatch={c} style={`--swatch:${c}`} aria-label={`Color ${c}`} aria-pressed="false"></button>)}
+            <label class="og-swatch og-custom" title="Pick any color">
+              <span class="sr-only">Pick any color</span>
+              <input id="og-accent" type="color" value="#4f46e5" />
+            </label>
+          </div>
+        </fieldset>
+      </form>
+
+      <div class="og-output">
+        <div class="og-stage" id="og-stage" data-crop="false">
+          <img id="og-image" src={`/generated/og-image/${first.name}.png`} width="1200" height="630" alt="The Open Graph image, as you've made it" />
+          <div class="og-crop" aria-hidden="true"><i></i></div>
+        </div>
+        <div class="og-bar">
+          <span class="og-status" id="og-status" aria-live="polite">Loading the image engine…</span>
+          <label class="og-check"><input id="og-crop" type="checkbox" /> Show X's square crop</label>
+        </div>
+        <ul class="og-problems" id="og-problems" hidden aria-live="polite"></ul>
+        <div class="og-downloads">
+          <button type="button" class="btn btn-primary" data-download="png" disabled>Download PNG</button>
+          <button type="button" class="btn btn-ghost" data-download="jpg" disabled>Download JPG</button>
+          <span class="og-size">1200 × 630 px</span>
+        </div>
+
+        <div class="og-share">
+          <div class="og-share-head">
+            <h2>How the link looks when it's shared</h2>
+            <label class="og-domain"><span>Domain</span><input id="og-domain" type="text" value="fieldnotes.dev" maxlength="60" spellcheck="false" /></label>
+          </div>
+          <div class="og-tabs" role="tablist" aria-label="Network">
+            {networks.map((n, i) => <button type="button" role="tab" data-network={n.id} aria-selected={i === 0 ? "true" : "false"}>{n.label}</button>)}
+          </div>
+          <div class="og-card og-x" data-network-panel="x">
+            <div class="og-x-media"><img data-share-image alt="" width="1200" height="630" /><span class="og-x-domain" data-share-domain></span></div>
+            <p class="og-x-from">From <span data-share-domain></span></p>
+          </div>
+          <div class="og-card og-xs" data-network-panel="x-summary" hidden>
+            <div class="og-xs-media"><img data-share-image alt="" width="1200" height="630" /></div>
+            <div class="og-xs-text"><span data-share-domain></span><strong data-share-title></strong></div>
+          </div>
+          <div class="og-card og-fb" data-network-panel="facebook" hidden>
+            <img data-share-image alt="" width="1200" height="630" />
+            <div class="og-fb-text"><span data-share-domain="upper"></span><strong data-share-title></strong></div>
+          </div>
+          <div class="og-card og-li" data-network-panel="linkedin" hidden>
+            <img data-share-image alt="" width="1200" height="630" />
+            <div class="og-li-text"><strong data-share-title></strong><span data-share-domain></span></div>
+          </div>
+          <p class="og-hint">The previews take the headline as the page's title. Each network uses its own fonts, and changes its design from time to time.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap og-code" id="code">
+      <div class="og-code-head">
+        <p class="eyebrow">Open source</p>
+        <h2 class="h-section">Make one for every post, in your own code</h2>
+        <p class="lede">Each design is a <a href="/docs/templates">Hyper Elements template</a>: a React component with typed fields that checks the headline fits before it draws. Copy it into your project, and draw an image for every page on your own server, free.</p>
+      </div>
+      <div class="og-tabs" role="tablist" aria-label="Code">
+        <button type="button" role="tab" data-code-tab="template" aria-selected="true">The template</button>
+        <button type="button" role="tab" data-code-tab="next" aria-selected="false">Next.js route</button>
+        <button type="button" role="tab" data-code-tab="cli" aria-selected="false">Command line</button>
+        <button type="button" role="tab" data-code-tab="meta" aria-selected="false">Meta tags</button>
+      </div>
+      {ogDesigns.map((d, i) => (
+        <div data-for-design={d.name} hidden={i !== 0}>
+          <div data-code-panel="template"><CodeBlock code={d.source} file={`og/${d.name}.tsx`} /></div>
+          <div data-code-panel="next" hidden><CodeBlock code={d.nextRoute} file="app/blog/[slug]/opengraph-image.tsx" /></div>
+          <div data-code-panel="cli" hidden>
+            <CodeBlock code={d.values} file="og/launch.tsx" />
+            <CodeBlock code={d.cli} lang="bash" file="Terminal" />
+          </div>
+        </div>
+      ))}
+      <div data-code-panel="meta" hidden>
+        <div class="code-block">
+          <div class="bar"><span class="file"><span class="dots"><i></i><i></i><i></i></span>The page's &lt;head&gt;</span><button class="copy-btn" type="button" data-copy-meta>Copy</button></div>
+          <pre class="og-meta" id="og-meta"></pre>
+        </div>
+        <p class="og-hint">Put the image on your site, and change og:image to its full URL.</p>
+      </div>
+    </div>
+  </section>
+
+  <article class="og-guide">
+    <div class="wrap og-prose">
+      <section>
+        <h2>How it works</h2>
+        <p>Each design is drawn on your device at exactly 1200 × 630 pixels, by the same engine Hyper Elements runs on a server: <a href="/docs/rendering">@hyper-elements/react/image</a>. Your headline, photo and logo never leave the page. The PNG and JPG files are made in your browser too.</p>
+        <p>The headline is measured with its font before anything is drawn. It's drawn at the largest size whose lines fit the design, so a short headline is large and a long one steps down. When it can't fit at the smallest size, the tool tells you how much to cut, rather than cutting it off.</p>
+      </section>
+
+      <section>
+        <h2>What is an Open Graph image?</h2>
+        <p>An Open Graph image is the picture a link shows when someone shares it: in a post on X, Facebook or LinkedIn, and in Slack, Discord, iMessage and WhatsApp. A page names it in its <code>og:image</code> meta tag. A link with an image and a clear headline takes up more of the feed than a bare URL, and gets more clicks.</p>
+        <p>Blogs, newsletters, docs and changelogs usually give each page its own image, with the page's title, the site's name or logo, and often the author and the date.</p>
+      </section>
+
+      <section>
+        <h2>How to make an Open Graph image</h2>
+        <ol class="og-steps">
+          {steps.map((s) => <li><strong>{s.t}.</strong> {s.d}</li>)}
+        </ol>
+        <p>Then check the link with each network's own tool: Facebook's Sharing Debugger and LinkedIn's Post Inspector read the page again and show what they'll use.</p>
+      </section>
+
+      <section>
+        <h2>Open Graph image size and meta tags</h2>
+        <p>Use <strong>1200 × 630 pixels</strong> (1.91 : 1). The large previews on X, Facebook and LinkedIn are that shape, and a smaller image can be shown as a small thumbnail instead. Keep the file under 5 MB: JPG for photos, PNG for flat colors and text.</p>
+        <p>X's small card crops the middle square of the image. Keep what matters away from the left and right edges: turn on <em>Show X's square crop</em> above to see it.</p>
+        <div class="og-table-wrap">
+          <table class="og-table">
+            <thead><tr><th>Meta tag</th><th>Value</th></tr></thead>
+            <tbody>{metaRows.map((r) => <tr><td><code>{r.tag}</code></td><td>{r.value}</td></tr>)}</tbody>
+          </table>
+        </div>
+        <p>The networks read only a full URL: <code>https://example.com/og/post.png</code>, not <code>/og/post.png</code>. They also keep a copy of each preview, so give a changed image a new file name.</p>
+      </section>
+
+      <section>
+        <h2>Questions</h2>
+        <div class="og-faq">
+          {ogFaq.map((f) => (
+            <details>
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="og-more">
+        <h2>More free tools</h2>
+        <div class="og-more-grid">
+          <a href="/email-testing"><strong>Email testing</strong><span>Paste an HTML email and see it in Outlook, Gmail and Apple Mail, light and dark.</span></a>
+          <a href="/playground"><strong>Playground</strong><span>Write a design in JSX and see it as an email, a page, a PDF and an image.</span></a>
+          <a href="/templates"><strong>Designs</strong><span>Emails, pages, PDFs and images made with Hyper Elements, with their code.</span></a>
+        </div>
+      </section>
+    </div>
+  </article>
+</Base>
+
+<script>
+  import "../../og-image/main";
+</script>

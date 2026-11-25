@@ -1,4 +1,4 @@
-/** A migrated module run: its component `T`, with React and the new components, checked by validate(). */
+/** A migrated module run: its component `T`, with React and the new elements, checked by validate(). */
 import { createRequire } from "node:module";
 import ts from "typescript";
 

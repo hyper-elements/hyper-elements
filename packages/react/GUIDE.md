@@ -1,20 +1,23 @@
-# Writing templates with the new components (`@hyper-elements/react`)
+# Writing designs with the new elements (`@hyper-elements/react`)
 
-<!-- Written from the component definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
+<!-- Written from the element definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
+<!-- hyper-elements guide f82a37d3 -->
 
-Everything needed to write a template, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).
+Everything needed to write a design, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).
 
-## How a template is written
+## How a design is written
 
-- Import from `@hyper-elements/react`. A template has one root: `Email`, `Page`, `Document` or `Canvas`.
+- Import from `@hyper-elements/react`. A design has one root: `Email`, `Page`, `Document` or `Canvas`.
 - Styles go in `style={{ … }}`, never as props: `<Heading style={{ fontSize: 24, color: "#111827" }}>`. A number is px; `padding` takes `16`, `[12, 24]` or `"12px 24px"`. A box's text styles are inherited by what it holds.
 - There are no margins: space between blocks is their parent's `gap` (`<Column style={{ gap: 16 }}>`), space inside a box its `padding`.
 - A root, a `Section` and a `Column` stack their children. A `Row` puts its children side by side (each `Column` at its `style.width`, or an equal share) and stacks them on phones. `Grid columns={3}` makes rows of three. A `Section` is a band whose background spans the window; a `Column` with a background is a card.
-- Text is components, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
+- Text is elements, not HTML: `Heading level={1}` and `Text` hold text; inside them `Span` styles a run, `Link href` links one, `LineBreak` breaks the line and `MergeTag name` writes a merge tag. No raw HTML (`<b>`, `<br>`, `<div>`) and no `html` prop.
 - `Image src={{ src, width, height }}` (the file's size in px) with `alt`; `style.width` sets the size shown.
+- An image's `src` is a public `https` URL the reader's email client can fetch: the project's own (its CDN, its other templates, its site) or one the person gives you. Never make one up: `example.com`, a guessed path or a file on this computer shows as a broken image. Where the design needs an image that doesn't exist yet, use a placeholder that loads, at the image's size: `https://placehold.co/1200x600/png?text=Product+screenshot` (width x height in px). Then tell the person which images to replace. A `data:` URI works in a Page, Document or Canvas, but Gmail doesn't show one in an Email.
 - Lists: `<List type="number">` of `ListItem`s. Tables: a `Table` of `TableRow`s (`header` on the first) of `TableCell`s, with `cellPadding` and `rowBorder` in the Table's `style`.
 - Phones: `style={{ fontSize: 24, mobile: { fontSize: 20 } }}` (the styles listed under "Phones", where `text` is fontSize, lineHeight, letterSpacing and textAlign), `hidden={{ mobile: true }}`; in an Email or a Page. Hover: `style={{ hover: { backgroundColor: "#374151" } }}` (those under "Hover").
-- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out template (each block, its width, its text).
+- `await render(element)` gives `{ html, text, diagnostics }`; errors throw an `ElementsError` with the same `diagnostics`. `validate(element)` runs the checks without rendering; `outline(element)` prints the laid-out design (each block, its width, its text).
+- Templates (fixed parts, typed fields and checks): `@hyper-elements/react/template`.
 - Email clients: `@hyper-elements/email-clients`. `validate(email, { plugins: [await emailClients()] })` adds what classic Outlook, Gmail, Apple Mail and others remove or change, naming its `clients`, with a `fix` (without it, one note: `email/more-checks`). To test an email in them, `await renderInEmailClients(email)` gives a preview per client: HTML that shows the email as that client does, in Chromium. It takes any other HTML email too.
 
 ```tsx
@@ -50,16 +53,16 @@ Each of these made an agent's first try fail:
 
 ## Themes
 
-A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, components, styles, formats })`, given to a root as `theme`.
+A theme is the brand, written once: `defineTheme({ colors, spacing, fontSizes, lineHeights, fonts, radii, elements, styles, formats })`, given to a root as `theme`.
 
-- In a template `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme, and only there, a token is `"{colors.primary}"`: everywhere in a template (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.
+- In a design `token("colors.primary")` is a token's value, or part of one (`border: { width: 1, style: "solid", color: token("colors.border") }`); inside a theme, and only there, a token is `"{colors.primary}"`: everywhere in a design (a root's `style`, a scope's `tokens`) it is `token()`. Names are letters and digits: nest `gray.900`.
 - Roles: `colors.background` is the root's background; `colors.foreground`, `fonts.body`, `fontSizes.body` and `lineHeights.body` are its body text (color, font, size and line height), which Text, table cells and list items inherit: set body text here, not on `Text` (a style on `Text` misses table cells). `fonts.heading` is a Heading's font, `colors.primary` and `colors.primaryForeground` a Button's (`colors.primary` a Link's) and `fontSizes.body` its size too, `colors.border` a Divider's.
-- `components.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
+- `elements.Button: { … }` is every Button's default style; `by: { level: { 1: { fontSize: 40 } } }` sets one by a prop's value (a type scale); `variants: { secondary: { … } }` are picked with `variant="secondary"` (a list merges in order).
 - `styles: { card: { … } }` are named styles: `style={{ apply: ["card"], padding: 8 }}`. A key an element sets itself also replaces the theme's phone and hover values for it.
 - `tokens` on a Section, Row, Column or Grid overrides tokens inside it: an inverted band is `<Section tokens={{ colors: { background: "#111827", foreground: "#ffffff" } }}>`.
 - `formats: { email: { … } }` overrides it for one kind of root; `extendTheme(base, overrides)` makes a brand's or a customer's theme from a shared one; `declare module "@hyper-elements/react" { interface Register { theme: typeof brand } }` types every name.
 
-## A whole template
+## A whole design
 
 ```tsx
 import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListItem, MergeTag, Text, Row, Span, Table, TableCell, TableRow, token } from "@hyper-elements/react";
@@ -68,7 +71,7 @@ import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListIte
 const acme = defineTheme({
   colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
   fonts: { body: "Inter, Arial, sans-serif" },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
     Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
   },
@@ -119,7 +122,7 @@ export default function Receipt() {
 
 ## A Canvas as an image
 
-`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the template names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the template gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`.
+`renderImage(element, options)` (`@hyper-elements/react/image`) writes a `Canvas` as a PNG (`format: "svg"` an SVG, `scale: 2` twice the pixels). Nothing is fetched: `fonts` gives each font file by the family the design names (TTF, OTF or WOFF, not WOFF2; one per weight and style used), `images` each image file by the `src` the design gives. It gives `{ image, width, height, diagnostics }` (what it drew otherwise: a weight not given, a hover); errors throw an `ElementsError`.
 
 ```tsx
 import { readFile } from "node:fs/promises";
@@ -138,7 +141,7 @@ const { image, diagnostics } = await renderImage(
 );
 ```
 
-## Components
+## Elements
 
 \* required. *text* styles: color, fontFamily, fontSize, fontWeight, fontStyle, lineHeight, letterSpacing, textAlign, textTransform. *box* styles: width, maxWidth, padding, backgroundColor, border, borderRadius.
 
@@ -160,8 +163,8 @@ const { image, diagnostics } = await renderImage(
 ### Blocks
 
 - **Svg**: Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. Not in an Email. Holds shapes. Props: width* (a number from 0), height* (a number from 0), viewBox (text), title (text). Style: padding, backgroundColor, border, borderRadius, flex. Phones: padding, border.
-- **Text**: A paragraph of text. Holds text, inline, Image. Props: dir (ltr|rtl|auto). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
-- **Heading**: A heading, from level 1 (the page's title) to 6. Holds text, inline. Props: level (1|2|3|4|5|6), dir (ltr|rtl|auto). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
+- **Text**: A paragraph of text. Holds text, inline, Image. Props: dir (ltr|rtl|auto), fit ({ sizes, maxLines }). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
+- **Heading**: A heading, from level 1 (the page's title) to 6. Holds text, inline. Props: level (1|2|3|4|5|6), dir (ltr|rtl|auto), fit ({ sizes, maxLines }). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
 - **Button**: A link drawn as a button. Holds text, Span, MergeTag, LineBreak. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: text, box, textDecoration (none|underline|line-through), boxSizing (border-box|content-box), alignSelf (start|center|end), flex. Hover: color, backgroundColor. Phones: text, width, maxWidth, padding, border, alignSelf.
 - **Image**: An image in the content. Without a width it takes its own size, no wider than its parent. Props: src* (asset), alt (text), title (text). Style: width, maxWidth, height, border, borderRadius, flex, alignSelf (start|center|end), verticalAlign (top|middle). Phones: width, maxWidth, border, alignSelf.
 - **Divider**: A horizontal line. Style: borderTop, width, padding. Phones: width, padding.
@@ -170,7 +173,7 @@ const { image, diagnostics } = await renderImage(
 - **Video**: A YouTube or Vimeo video: its player on a page; in an email (which can't play one), its thumbnail, linked to it. Props: src* (video), thumbnail (asset), title (text). Style: width, maxWidth, flex. Phones: width, maxWidth.
 - **Social**: Links to social profiles: a line of the networks' icons, each linked to its profile. Props: icons* (a list of icons, each { name, href }), iconType (circle|rounded|squared), size (an integer from 1). Style: gap, justifyContent (start|center|end), flex. Phones: gap.
 - **Menu**: A line of links (a site's sections, a footer's), onto more lines where they don't fit, with a separator between them on desktop; or links down a column. Props: items* (a list of items, each { text, href }), separator (text), layout (horizontal|vertical). Style: color, fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, textTransform (none|uppercase|lowercase|capitalize), separatorColor, padding, justifyContent (start|center|end), flex. Phones: fontSize, lineHeight, letterSpacing.
-- **Html**: Markup written as it is, for what no component says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text. Props: html* (text), text (text).
+- **Html**: Markup written as it is, for what no element says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text. Props: html* (text), text (text).
 
 ### Inline
 

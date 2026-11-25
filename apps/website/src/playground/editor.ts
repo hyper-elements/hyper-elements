@@ -131,7 +131,7 @@ export interface Problem {
   source?: string;
 }
 
-/** What the editor completes: each component, and inside a tag its props. Given once the runtime describes them. */
+/** What the editor completes: each element, and inside a tag its props. Given once the runtime describes them. */
 export interface Vocabulary {
   components: Array<{ name: string; summary: string; props: Array<{ name: string; detail: string }>; styles: Array<{ name: string; detail: string }> }>;
 }
@@ -245,7 +245,7 @@ export class Editor {
     this.vocabulary = vocabulary;
   }
 
-  /** A component's name after `<`; a prop's inside that component's tag. */
+  /** An element's name after `<`; a prop's inside that element's tag. */
   private complete(context: CompletionContext) {
     const { components } = this.vocabulary;
     if (!components.length) return null;

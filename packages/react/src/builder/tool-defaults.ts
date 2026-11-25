@@ -208,6 +208,70 @@ export const SocialDefaults: Record<string, any> = {
   spacing: 5
 };
 
+/** A cell's rich text as the editor writes one: a paragraph of these words (none for an empty cell). */
+const cellText = (words: string) =>
+  `{"root":{"children":[{"children":[${words ? `{"detail":0,"format":0,"mode":"normal","style":"","text":"${words}","type":"extended-text","version":1}` : ""}],"format":"","indent":0,"type":"extended-paragraph","version":1,"textFormat":0}],"format":"","indent":0,"type":"root","version":1}}`;
+const emptyCell = { textJson: cellText(""), text: "", width: 50 };
+
+/** The table. */
+export const TableDefaults: Record<string, any> = {
+  table: {
+    headers: [{ cells: [{ textJson: cellText("Add header text"), text: "<p>Add header text</p>", width: 50 }, emptyCell], height: 50 }],
+    rows: [
+      { cells: [{ textJson: cellText("Add text"), text: "<p>Add text</p>", width: 50 }, emptyCell], height: 50 },
+      { cells: [emptyCell, emptyCell], height: 50 }
+    ],
+    footers: [{ cells: [emptyCell, emptyCell], height: 50 }]
+  },
+  columns: 2,
+  rows: 2,
+  border: {
+    borderTopWidth: "1px",
+    borderTopStyle: "solid",
+    borderTopColor: "#CCC",
+    borderLeftWidth: "1px",
+    borderLeftStyle: "solid",
+    borderLeftColor: "#CCC",
+    borderRightWidth: "1px",
+    borderRightStyle: "solid",
+    borderRightColor: "#CCC",
+    borderBottomWidth: "1px",
+    borderBottomStyle: "solid",
+    borderBottomColor: "#CCC"
+  },
+  stripedRows: false,
+  stripedRowsBackgroundColor: "#CCC",
+  enableHeader: true,
+  repeatHeaderOnEachPage: true,
+  headerBackgroundColor: "#DDDDDD",
+  headerFontWeight: 700,
+  headerFontSize: "14px",
+  headerTextAlign: "left",
+  headerVerticalAlign: "middle",
+  headerPadding: "10px",
+  contentBackgroundColor: "#FFFFFF",
+  contentFontSize: "14px",
+  contentTextAlign: "left",
+  contentVerticalAlign: "middle",
+  contentLineHeight: "140%",
+  contentPadding: "10px",
+  enableFooter: false,
+  repeatFooterOnEachPage: true,
+  footerBackgroundColor: "#DDDDDD",
+  footerFontWeight: 700,
+  footerFontSize: "14px",
+  footerTextAlign: "left",
+  footerVerticalAlign: "middle",
+  footerPadding: "10px",
+  linkStyle: {
+    body: true,
+    linkColor: "#0000ee",
+    linkHoverColor: "#0000ee",
+    linkUnderline: true,
+    linkHoverUnderline: true
+  }
+};
+
 export const TextDefaults: Record<string, any> = {
   fontSize: "14px",
   textAlign: "left",

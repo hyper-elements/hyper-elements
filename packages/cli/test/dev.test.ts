@@ -128,7 +128,7 @@ export default function A() { return <Email><Text>{[greeting, word, ui, built].j
     const latest = await dev.state();
     expect(latest.history.at(-1)).toEqual({ version: latest.version, changed: latest.changed });
     expect(latest.history.some((render: any) => render.changed.includes("../../packages/built/dist/index.js")), dev.stderr()).toBe(true);
-    expect(dev.stderr()).toMatch(/Rendered 1 template in \d+ ms, after a change to [^\n]*\.\.\/\.\.\/packages\/built\/dist\/index\.js/);
+    expect(dev.stderr()).toMatch(/Rendered 1 design in \d+ ms, after a change to [^\n]*\.\.\/\.\.\/packages\/built\/dist\/index\.js/);
 
     // A build that clears dist/ and writes it again is seen too.
     rmSync(join(dir, "packages/built/dist"), { recursive: true });
@@ -210,7 +210,7 @@ export default function Loop() { for (;;) {} return <Email><Text>never</Text></E
       if (state.error) break;
       await wait(25);
     }
-    expect(state.error, dev.stderr()).toContain("holds no template");
+    expect(state.error, dev.stderr()).toContain("holds no design");
     write(dir, { "emails/a.tsx": email("Back") });
     await devUntil(dev, (_, text) => text.includes("Back"), "emails/a.tsx");
   });
@@ -340,7 +340,7 @@ describe("dev's server", () => {
     if (!WINDOWS) {
       dev.child.kill("SIGINT");
       expect(await dev.exited).toBe(0);
-      expect(dev.stdout()).toBe(`Serving the templates at ${dev.base} until Ctrl-C\n`);
+      expect(dev.stdout()).toBe(`Serving the designs at ${dev.base} until Ctrl-C\n`);
       expect(readdirSync(tmpdir())).not.toContain(folder!.split(/[\\/]/).pop());
       expect(leftovers(dir)).toEqual([]);
     }

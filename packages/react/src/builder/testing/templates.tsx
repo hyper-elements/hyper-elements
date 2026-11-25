@@ -31,6 +31,9 @@ import {
   Section,
   Social,
   Span,
+  Table,
+  TableCell,
+  TableRow,
   Video,
 } from "../../primitives";
 
@@ -210,5 +213,168 @@ export const blocks = (
   </Page>
 );
 
+/**
+ * A Document's tables, which its builder holds as its table: a header, rows and a footer; the line between rows, cell
+ * padding and backgrounds; a cell's own width, alignment, color, size and vertical alignment; links, breaks and runs in
+ * cells; a table whose cells all have the same lines around them, collapsed; and a table's letter spacing, which its
+ * header row doesn't take.
+ */
+export const lineItems = (
+  <Document size="Letter" style={{ fontFamily: "Helvetica, Arial, sans-serif", fontSize: 13, color: "#111827" }}>
+    <Heading>
+      Invoice <MergeTag name="number" />
+    </Heading>
+    <Table style={{ cellPadding: [6, 8], rowBorder: { width: 1, style: "solid", color: "#e5e7eb" }, backgroundColor: "#ffffff" }}>
+      <TableRow header style={{ backgroundColor: "#f3f4f6", color: "#374151" }}>
+        <TableCell style={{ width: "60%" }}>Item</TableCell>
+        <TableCell>Qty</TableCell>
+        <TableCell style={{ textAlign: "right" }}>Amount</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>
+          Design <Span style={{ fontStyle: "italic" }}>review</Span>
+        </TableCell>
+        <TableCell>2</TableCell>
+        <TableCell style={{ textAlign: "right" }}>$200.00</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>
+          <Link href="https://x.test/hosting">Hosting</Link>
+          <LineBreak />
+          Monthly
+        </TableCell>
+        <TableCell style={{ verticalAlign: "middle" }}>1</TableCell>
+        <TableCell style={{ textAlign: "right", color: "#b91c1c" }}>$49.00</TableCell>
+      </TableRow>
+      <TableRow footer style={{ fontWeight: 700 }}>
+        <TableCell>Total</TableCell>
+        <TableCell />
+        <TableCell style={{ textAlign: "right", fontSize: 15 }}>$249.00</TableCell>
+      </TableRow>
+    </Table>
+    <Table style={{ borderCollapse: "collapse", fontSize: 11 }}>
+      <TableRow>
+        <TableCell style={{ border: "1px solid #9ca3af", padding: 4 }}>Due</TableCell>
+        <TableCell style={{ border: "1px solid #9ca3af", padding: 4, backgroundColor: "#fef3c7" }}>Dec 1</TableCell>
+      </TableRow>
+    </Table>
+    <Table style={{ letterSpacing: 1 }}>
+      <TableRow header style={{ letterSpacing: 0 }}>
+        <TableCell>Note</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Spaced out</TableCell>
+      </TableRow>
+    </Table>
+  </Document>
+);
+
+/**
+ * Tables at the edges: words drawn transparent, rows with tight lines (an empty cell right to left in one), a cell right
+ * to left, a cell's own size at its row's line, a smaller one over two lines, runs larger than their cell's (in a header too), a footer only with its
+ * own widths, a header see-through over its table's color, a row of a clear rgba() over it, a column of no width,
+ * columns all of none, columns nearly half each, an underlined cell and a table's own border.
+ */
+export const tableEdges = (
+  <Document size="A3">
+    <Table>
+      <TableRow style={{ lineHeight: 1 }}>
+        <TableCell style={{ color: "transparent" }}>Hidden</TableCell>
+        <TableCell dir="rtl">שלום 123</TableCell>
+      </TableRow>
+      <TableRow style={{ lineHeight: 1 }}>
+        <TableCell>Label</TableCell>
+        <TableCell dir="rtl" />
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ fontSize: 24, lineHeight: 1 }}>Hello</TableCell>
+        <TableCell style={{ textDecoration: "underline" }}>Linked look</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>
+          <Span style={{ fontSize: 24 }}>Large</Span> amount
+        </TableCell>
+        <TableCell style={{ fontSize: 12 }}>
+          First
+          <LineBreak />
+          Second
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell />
+        <TableCell> </TableCell>
+      </TableRow>
+      <TableRow style={{ height: 10 }}>
+        <TableCell />
+        <TableCell> </TableCell>
+      </TableRow>
+    </Table>
+    <Table>
+      <TableRow header>
+        <TableCell>
+          Head <Span style={{ fontSize: 20 }}>big</Span>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Body</TableCell>
+      </TableRow>
+    </Table>
+    <Table>
+      <TableRow footer>
+        <TableCell style={{ width: "80%" }}>Footer</TableCell>
+        <TableCell>Only</TableCell>
+      </TableRow>
+    </Table>
+    <Table style={{ backgroundColor: "#dbeafe", border: "2px solid #ff0000" }}>
+      <TableRow header style={{ backgroundColor: "transparent" }}>
+        <TableCell style={{ width: 0 }}>Narrow</TableCell>
+        <TableCell>Wide</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>A</TableCell>
+        <TableCell>B</TableCell>
+      </TableRow>
+      <TableRow style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}>
+        <TableCell>C</TableCell>
+        <TableCell>D</TableCell>
+      </TableRow>
+    </Table>
+    <Table style={{ backgroundColor: "#fee2e2" }}>
+      <TableRow style={{ backgroundColor: "rgba(0, 0, 0, 0)" }}>
+        <TableCell>Clear over pink</TableCell>
+      </TableRow>
+    </Table>
+    <Table>
+      <TableRow>
+        <TableCell style={{ width: 0 }}>None</TableCell>
+        <TableCell style={{ width: 0 }}>Wide</TableCell>
+      </TableRow>
+    </Table>
+    <Table>
+      <TableRow>
+        <TableCell style={{ width: "49.8%" }}>Nearly</TableCell>
+        <TableCell>Half</TableCell>
+      </TableRow>
+    </Table>
+    <Table>
+      <TableRow header style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+        <TableCell>Title</TableCell>
+      </TableRow>
+      <TableRow header style={{ color: "#111111" }}>
+        <TableCell>Labels</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell>Body</TableCell>
+      </TableRow>
+      <TableRow footer style={{ backgroundColor: "#111111", color: "#ffffff" }}>
+        <TableCell>Total</TableCell>
+      </TableRow>
+      <TableRow footer style={{ color: "#111111" }}>
+        <TableCell>Note</TableCell>
+      </TableRow>
+    </Table>
+  </Document>
+);
+
 /** Every template the round-trip tests take, by name. */
-export const TEMPLATES: Record<string, React.ReactElement> = { sample, everyTool, invoice, text, blocks };
+export const TEMPLATES: Record<string, React.ReactElement> = { sample, everyTool, invoice, text, blocks, lineItems, tableEdges };

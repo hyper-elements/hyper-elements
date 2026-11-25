@@ -57,7 +57,7 @@ const kinds = ["Email engine, free previews", "Builder and testing", "Email code
 const matrix: MatrixRow[] = [
   { k: "Results your agent can read", m: [["yes", "Findings as JSON"], ["part", "Images, API by request"], ["no", "Images"], ["part", "Images, API"]] },
   { k: "Free previews on every change", m: [["yes", "Unlimited"], ["no", "Contact sales"], ["no", "Paid per preview"], ["no", "Paid plan"]] },
-  { k: "Previews of real email clients", m: [["yes", "Modeled, up to 99% match"], ["yes", "Screenshots"], ["yes", "Screenshots"], ["yes", "Screenshots"]] },
+  { k: "Previews of real email clients", m: [["yes", "Modeled, 98% accurate on average"], ["yes", "Screenshots"], ["yes", "Screenshots"], ["yes", "Screenshots"]] },
   { k: "Your email stays on your machine", m: [["yes"], ["no"], ["no"], ["no"]] },
   { k: "In your tests and CI", m: [["yes", "npm package, CLI"], ["part", "API by request"], ["no", "Not documented"], ["yes", "API, SMTP"]] },
   { k: "Build emails", m: [["yes", "React components"], ["yes", "Builder"], ["yes", "Code editor"], ["no"]] },
@@ -79,7 +79,7 @@ const findings = showcase.email.diagnostics
   .filter((d) => d.code !== "email/phone-styles" && !seen.has(d.message.split(" on this ")[0]) && seen.add(d.message.split(" on this ")[0]))
   .slice(0, 4);
 const agentTools = [
-  { t: "An agent skill", code: site.skill, d: "Teaches your agent the components, the checks and how to fix what they find" },
+  { t: "An agent skill", code: site.skill, d: "Teaches your agent the elements, the checks and how to fix what they find" },
   { t: "A CLI made for loops", code: "npx hyper-elements check --json", d: "JSON lines and exit codes: it fixes each error until the run passes" },
   { t: "WebMCP in the browser", code: "check_html_email", d: "Browser agents check any HTML email on the email testing page" },
   { t: "2.6× faster", code: "", d: "An agent reached a passing email 2.6× faster than with React Email, in our benchmark", href: "/docs/benchmark" },
@@ -94,7 +94,7 @@ const faq = [
   },
   {
     q: "Which Litmus alternative works best with AI coding agents?",
-    a: "Hyper Elements. Its agent skill teaches an agent the components and the checks, its CLI returns JSON and exit codes an agent acts on, and its previews report what each email client changed as data, where a screenshot is a picture an agent has to interpret. Browser agents can call its WebMCP tool, check_html_email, on the email testing page. In our benchmark, an agent reached a passing email 2.6× faster with Hyper Elements than with React Email.",
+    a: "Hyper Elements. Its agent skill teaches an agent the elements and the checks, its CLI returns JSON and exit codes an agent acts on, and its previews report what each email client changed as data, where a screenshot is a picture an agent has to interpret. Browser agents can call its WebMCP tool, check_html_email, on the email testing page. In our benchmark, an agent reached a passing email 2.6× faster with Hyper Elements than with React Email.",
   },
   {
     q: "Is there a free Litmus alternative?",
@@ -102,7 +102,7 @@ const faq = [
   },
   {
     q: "How accurate are Hyper Elements' previews?",
-    a: "Each preview is modeled on the real client, not a screenshot of it. How closely it matches the real client: 97% for classic Outlook, 99% for Outlook.com, Gmail, Yahoo Mail and AOL Mail, and 97 to 98% for Outlook for Mac, the Gmail app and Apple Mail. Use them on every change, and real-device screenshots or a real inbox for a final check across many clients.",
+    a: "We reverse-engineered each client, classic Outlook included, by testing thousands of emails in the real client and measuring what it does to them. The previews are 98% accurate on average, with classic Outlook drawn with Word's rules, as Outlook draws email. Every release is tested against the real clients again. For clients the previews don't cover yet, such as the Outlook app and Samsung Email, use real-device screenshots.",
   },
   {
     q: "Can I preview emails I didn't build with Hyper Elements?",
@@ -110,7 +110,7 @@ const faq = [
   },
   {
     q: "Can I check emails in CI?",
-    a: "Yes. npx hyper-elements check fails the run on a template's errors, and npx hyper-elements preview email.html --findings writes a preview per client and reports what each one changed, so a test, a CI job or a coding agent can check every change.",
+    a: "Yes. npx hyper-elements check fails the run on a design's errors, and npx hyper-elements preview email.html --findings writes a preview per client and reports what each one changed, so a test, a CI job or a coding agent can check every change.",
   },
   {
     q: "Is my email uploaded anywhere?",
@@ -160,7 +160,7 @@ const faq = [
         <div class="lx-side us">
           <p class="lx-who"><span class="lx-dot" aria-hidden="true"></span>Hyper Elements</p>
           <ul>{versus.us.map((t) => <li>{t}</li>)}</ul>
-          <p class="lx-acc">Its previews match the real clients up to 99%.</p>
+          <p class="lx-acc">Its previews are 98% accurate on average against the real clients.</p>
           <a class="btn btn-primary btn-sm lx-try" href="/email-testing">Try the free previews <span class="arrow">→</span></a>
         </div>
       </div>

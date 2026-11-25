@@ -1,0 +1,451 @@
+{
+  "id": "launch-r-date",
+  "title": "Launch graphic, revision: date",
+  "brief": "designs/ holds Orbit 3.0's finished launch graphic, in both formats (`node tools/render-launch.mjs` draws it). Change the launch date to 2026-12-10. Nothing else changes.",
+  "values": {
+    "headline": "Meet Orbit 3.0: release notes that write themselves",
+    "features": [
+      "Drafts from merged PRs",
+      "Your voice, every release",
+      "Ships to Slack and email"
+    ],
+    "launchDate": "2026-12-10",
+    "screenshot": {
+      "src": "art/shot-launch.png",
+      "width": 1200,
+      "height": 750
+    },
+    "artwork": {
+      "src": "art/art-launch.png",
+      "width": 1080,
+      "height": 680
+    }
+  },
+  "specs": {
+    "square": {
+      "size": [
+        1080,
+        1080
+      ],
+      "safeMargin": 48,
+      "background": {
+        "color": "#0b1020"
+      },
+      "texts": [
+        {
+          "id": "headline",
+          "text": "Meet Orbit 3.0: release notes that write themselves",
+          "font": "Inter-Bold.ttf",
+          "weight": 700,
+          "style": "normal",
+          "sizes": [
+            72,
+            64,
+            56,
+            48
+          ],
+          "color": "#f7f7fb",
+          "maxLines": 3,
+          "align": "left"
+        },
+        {
+          "id": "features-0",
+          "text": "Drafts from merged PRs",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 30,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "features-1",
+          "text": "Your voice, every release",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 30,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "features-2",
+          "text": "Ships to Slack and email",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 30,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "date",
+          "text": "December 10, 2026",
+          "font": "Inter-Bold.ttf",
+          "weight": 700,
+          "style": "normal",
+          "size": 28,
+          "color": "#2dd4bf",
+          "maxLines": 1,
+          "align": "left"
+        }
+      ],
+      "fills": [],
+      "images": [
+        {
+          "id": "logo",
+          "file": "orbit-logo-white.png",
+          "width": 126,
+          "within": {
+            "left": 72,
+            "top": 72,
+            "width": 126,
+            "height": 64
+          }
+        },
+        {
+          "id": "screenshot",
+          "file": "shot-launch.png",
+          "width": 472,
+          "within": {
+            "left": 72,
+            "top": 665,
+            "width": 936,
+            "height": 343
+          }
+        }
+      ],
+      "order": [
+        [
+          "logo",
+          "headline"
+        ],
+        [
+          "headline",
+          "features-0"
+        ],
+        [
+          "features-0",
+          "features-1"
+        ],
+        [
+          "features-1",
+          "features-2"
+        ],
+        [
+          "features-2",
+          "date"
+        ]
+      ],
+      "launch": {
+        "format": "square",
+        "regions": {
+          "logo": {
+            "left": 72,
+            "top": 72,
+            "width": 126,
+            "height": 64
+          },
+          "headline": {
+            "left": 72,
+            "top": 168,
+            "width": 936,
+            "height": 264,
+            "sizes": [
+              72,
+              64,
+              56,
+              48
+            ],
+            "maxLines": 3,
+            "lineHeight": 1.1
+          },
+          "features": {
+            "left": 72,
+            "top": 448,
+            "width": 936,
+            "height": 133,
+            "size": 30,
+            "lineHeight": 1.3,
+            "gap": 8
+          },
+          "date": {
+            "left": 72,
+            "top": 597,
+            "width": 936,
+            "height": 36,
+            "size": 28,
+            "lineHeight": 1.25
+          },
+          "art": {
+            "left": 72,
+            "top": 665,
+            "width": 936,
+            "height": 343
+          }
+        },
+        "shot": {
+          "left": 96,
+          "top": 689,
+          "width": 888,
+          "height": 295
+        },
+        "shotSize": [
+          472,
+          295
+        ],
+        "screenshotAspect": [
+          1.2,
+          2
+        ],
+        "artwork": "art-launch.png",
+        "fonts": [
+          "Inter-Regular.ttf",
+          "Inter-Bold.ttf"
+        ],
+        "changed": "date",
+        "artworkSha256": "20967b6fadce43f0192baf1602152e13bd17fc03f47b54a123d64907d82c39cc",
+        "artworkSrc": "art/art-launch.png"
+      }
+    },
+    "landscape": {
+      "size": [
+        1200,
+        630
+      ],
+      "safeMargin": 48,
+      "background": {
+        "color": "#0b1020"
+      },
+      "texts": [
+        {
+          "id": "headline",
+          "text": "Meet Orbit 3.0: release notes that write themselves",
+          "font": "Inter-Bold.ttf",
+          "weight": 700,
+          "style": "normal",
+          "sizes": [
+            56,
+            48,
+            40
+          ],
+          "color": "#f7f7fb",
+          "maxLines": 3,
+          "align": "left"
+        },
+        {
+          "id": "features-0",
+          "text": "Drafts from merged PRs",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 24,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "features-1",
+          "text": "Your voice, every release",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 24,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "features-2",
+          "text": "Ships to Slack and email",
+          "font": "Inter-Regular.ttf",
+          "weight": 400,
+          "style": "normal",
+          "size": 24,
+          "color": "#c7d2fe",
+          "maxLines": 1,
+          "align": "left"
+        },
+        {
+          "id": "date",
+          "text": "December 10, 2026",
+          "font": "Inter-Bold.ttf",
+          "weight": 700,
+          "style": "normal",
+          "size": 24,
+          "color": "#2dd4bf",
+          "maxLines": 1,
+          "align": "left"
+        }
+      ],
+      "fills": [],
+      "images": [
+        {
+          "id": "logo",
+          "file": "orbit-logo-white.png",
+          "width": 126,
+          "within": {
+            "left": 56,
+            "top": 56,
+            "width": 126,
+            "height": 64
+          }
+        },
+        {
+          "id": "screenshot",
+          "file": "shot-launch.png",
+          "width": 456,
+          "within": {
+            "left": 640,
+            "top": 56,
+            "width": 504,
+            "height": 518
+          }
+        }
+      ],
+      "order": [
+        [
+          "logo",
+          "headline"
+        ],
+        [
+          "headline",
+          "features-0"
+        ],
+        [
+          "features-0",
+          "features-1"
+        ],
+        [
+          "features-1",
+          "features-2"
+        ],
+        [
+          "features-2",
+          "date"
+        ]
+      ],
+      "launch": {
+        "format": "landscape",
+        "regions": {
+          "logo": {
+            "left": 56,
+            "top": 56,
+            "width": 126,
+            "height": 64
+          },
+          "headline": {
+            "left": 56,
+            "top": 144,
+            "width": 548,
+            "height": 186,
+            "sizes": [
+              56,
+              48,
+              40
+            ],
+            "maxLines": 3,
+            "lineHeight": 1.1
+          },
+          "features": {
+            "left": 56,
+            "top": 346,
+            "width": 548,
+            "height": 106,
+            "size": 24,
+            "lineHeight": 1.3,
+            "gap": 6
+          },
+          "date": {
+            "left": 56,
+            "top": 468,
+            "width": 548,
+            "height": 30,
+            "size": 24,
+            "lineHeight": 1.25
+          },
+          "art": {
+            "left": 640,
+            "top": 56,
+            "width": 504,
+            "height": 518
+          }
+        },
+        "shot": {
+          "left": 664,
+          "top": 80,
+          "width": 456,
+          "height": 470
+        },
+        "shotSize": [
+          456,
+          285
+        ],
+        "screenshotAspect": [
+          1.2,
+          2
+        ],
+        "artwork": "art-launch.png",
+        "fonts": [
+          "Inter-Regular.ttf",
+          "Inter-Bold.ttf"
+        ],
+        "changed": "date",
+        "artworkSha256": "20967b6fadce43f0192baf1602152e13bd17fc03f47b54a123d64907d82c39cc",
+        "artworkSrc": "art/art-launch.png"
+      }
+    }
+  },
+  "run": {
+    "render": "tools/render-launch.mjs",
+    "folders": [
+      "../image/fonts",
+      "../image/assets",
+      "../image/tools",
+      "art"
+    ],
+    "checker": [
+      {
+        "from": "check-revision.mjs",
+        "to": "tools/check.mjs"
+      },
+      {
+        "from": "check-launch.mjs",
+        "to": "tools/check-launch.mjs"
+      },
+      {
+        "from": "../image/check/check.mjs",
+        "to": "tools/image-check.mjs"
+      },
+      {
+        "from": "../image/check/ocr.mjs",
+        "to": "tools/ocr.mjs"
+      },
+      {
+        "from": "../image/check/pixels.mjs",
+        "to": "tools/pixels.mjs"
+      },
+      {
+        "from": "../image/check/trace.mjs",
+        "to": "tools/trace.mjs"
+      }
+    ],
+    "specs": {
+      "square": "tools/spec-square.json",
+      "landscape": "tools/spec-landscape.json"
+    },
+    "files": {
+      "tools/render-launch.mjs": "launch/render-launch.mjs",
+      "tools/brand-launch.json": "launch/brand.json"
+    },
+    "kits": [
+      "launch-he-revise",
+      "launch-satori-revise",
+      "launch-playwright-revise"
+    ],
+    "prompt": "Make the change BRIEF.md asks for to the finished launch graphic in designs/, following CLAUDE.md. It's done when `node tools/check.mjs` passes."
+  }
+}

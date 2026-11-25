@@ -2,7 +2,7 @@
  * The Elements tree: what every converter produces. It's in Elements 0.2's
  * components (`{ type, props, children }` with their names and a Row `layout`
  * given by name, "TwoEqual"), the converters' intermediate form: it's printed
- * as source (print.ts) and rewritten in the new components (new-components.ts),
+ * as source (print.ts) and rewritten in the new elements (new-components.ts),
  * never rendered as it is.
  */
 

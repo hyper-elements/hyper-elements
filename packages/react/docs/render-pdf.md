@@ -12,11 +12,11 @@ npm install @hyper-elements/react @react-pdf/renderer react
 
 | Package | Version | Why |
 |---------|---------|-----|
-| `@hyper-elements/react` | `^0.3.0` | The components, and this entry |
+| `@hyper-elements/react` | `^0.3.0` | The elements, and this entry |
 | `@react-pdf/renderer` | `^4.9.0` | Draws the pages (optional: only for `/pdf`) |
 | `react` | `>=18` | |
 
-The tree `prepare()` lays out says its format (its layout version), and `renderPdf` reads the one it's built with. Where the `@hyper-elements/react` it loads writes another (a second install beside it), it throws an `ElementsError` (`pdf/version`) rather than drawing the template wrong.
+The tree `prepare()` lays out says its format (its layout version), and `renderPdf` reads the one it's built with. Where the `@hyper-elements/react` it loads writes another (a second install beside it), it throws an `ElementsError` (`pdf/version`) rather than drawing the design wrong.
 
 Node.js only: it writes the PDF on the server.
 
@@ -50,14 +50,14 @@ const { pdf, diagnostics } = await renderPdf(<Invoice />, {
 await writeFile("invoice.pdf", pdf);
 ```
 
-`renderPdf(element, options)` returns `{ pdf, diagnostics }`: the file's bytes, and the warnings and notes. Errors reject with an `ElementsError` listing them. The same template writes the same bytes (`date`, a fixed date by default, is when the PDF says it was made).
+`renderPdf(element, options)` returns `{ pdf, diagnostics }`: the file's bytes, and the warnings and notes. Errors reject with an `ElementsError` listing them. The same design writes the same bytes (`date`, a fixed date by default, is when the PDF says it was made).
 
 ## Fonts and images are given as bytes
 
-Nothing is fetched. Give each file the template needs:
+Nothing is fetched. Give each file the design needs:
 
-- **Fonts** in `fonts`: `{ family, src, weight?, style? }`, one entry per file, `src` a TTF, OTF or WOFF file's bytes. `family` is the name the template's `fontFamily` stacks use. The files in a Document's `fonts` prop are its HTML's: `renderPdf` doesn't load them, `data:` URIs included.
-- **Images** in `images`, by the URL the template gives them (`{ "https://…/logo.png": bytes }`), or as `data:` URIs in the template. A PDF draws PNG and JPEG. A Video shows its thumbnail where its file is given (its own, or a YouTube video's by the URL `img.youtube.com/vi/<id>/0.jpg`), else its title, linked to the video.
+- **Fonts** in `fonts`: `{ family, src, weight?, style? }`, one entry per file, `src` a TTF, OTF or WOFF file's bytes. `family` is the name the design's `fontFamily` stacks use. The files in a Document's `fonts` prop are its HTML's: `renderPdf` doesn't load them, `data:` URIs included.
+- **Images** in `images`, by the URL the design gives them (`{ "https://…/logo.png": bytes }`), or as `data:` URIs in the design. A PDF draws PNG and JPEG. A Video shows its thumbnail where its file is given (its own, or a YouTube video's by the URL `img.youtube.com/vi/<id>/0.jpg`), else its title, linked to the video.
 
 Text whose `fontFamily` has no file given is drawn in a standard PDF font: Helvetica, Times or Courier, whichever is closest.
 
@@ -65,8 +65,8 @@ Text whose `fontFamily` has no file given is drawn in a standard PDF font: Helve
 
 | Code | Severity | When |
 |------|----------|------|
-| `pdf/root` | error | The template isn't a Document |
-| `pdf/version` | error | The `@hyper-elements/react` loaded lays the template out in another layout version than `/pdf` reads |
+| `pdf/root` | error | The design isn't a Document |
+| `pdf/version` | error | The `@hyper-elements/react` loaded lays the design out in another layout version than `/pdf` reads |
 | `pdf/image` | error | An image isn't given, or its file isn't a PNG or JPEG |
 | `pdf/image` | warning | An image is SVG: its alt text is shown in its box |
 | `pdf/font` | warning | A font in the Document's `fonts` isn't given; a file given is WOFF2; or text in a standard PDF font has characters it can't draw (it draws Western European ones only) |
@@ -79,7 +79,7 @@ Text whose `fontFamily` has no file given is drawn in a standard PDF font: Helve
 ## Known limits
 
 - **WOFF2 isn't drawn**: react-pdf would embed its letters blank. Give TTF, OTF or WOFF.
-- **SVG images aren't drawn**: give a PNG or JPEG. An `Svg` (the component) is drawn as vectors.
+- **SVG images aren't drawn**: give a PNG or JPEG. An `Svg` (the element) is drawn as vectors.
 - **The standard PDF fonts draw Western European characters only.** For any other script, give a font file that has it. Whether a file given has every character isn't checked.
 - **Nothing flows from one page to the next**: content taller than its page is cut off. Split it with a `PageBreak` or into `Document.Page`s.
 - **No hover, no video player**: a Button shows its own colors, a Video its thumbnail or title.

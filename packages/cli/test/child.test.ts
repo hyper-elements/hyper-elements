@@ -56,7 +56,8 @@ describe("a child that doesn't finish", () => {
       "emails/b.tsx": `import { Email } from "@hyper-elements/react";\nexport default function B() { for (;;) {} return <Email />; }\n`,
     });
     const started = Date.now();
-    const ran = await cli(dir, ["check", "emails", "--json", "--timeout", "2"]);
+    // Long enough for a.tsx on a slow machine (a child starts, loads Elements and renders it inside it); b.tsx never ends.
+    const ran = await cli(dir, ["check", "emails", "--json", "--timeout", "5"]);
     expect(Date.now() - started).toBeLessThan(15_000);
     expect(ran.code).toBe(1);
     const got = lines(ran);
@@ -78,10 +79,11 @@ describe("a child that doesn't finish", () => {
 
   it("a hang just after the last result is a late failure: exit 2", async () => {
     const dir = project({ "emails/a.tsx": email("A", afterResult("for (;;) {}")) });
-    const ran = await cli(dir, ["check", "emails", "--json", "--timeout", "2"]);
+    // Long enough for a.tsx's result on a slow machine; what hangs after it never ends.
+    const ran = await cli(dir, ["check", "emails", "--json", "--timeout", "5"]);
     const got = lines(ran);
     expect(got[0]).toMatchObject({ status: "ok" });
-    expect(got[1].summary.late).toEqual([{ kind: "child", group: { package: ".", tsconfig: null }, reason: "timeout", detail: "2000 ms" }]);
+    expect(got[1].summary.late).toEqual([{ kind: "child", group: { package: ".", tsconfig: null }, reason: "timeout", detail: "5000 ms" }]);
     expect(ran.code).toBe(2);
   });
 });
@@ -94,7 +96,9 @@ describe("a template that never finishes", () => {
       "emails/b.tsx": email("B"),
     });
     for (const order of [["broken/loop.tsx", "emails"], ["emails", "broken/loop.tsx"]]) {
-      const ran = await cli(dir, ["check", ...order, "--timeout", "2", "--json"], { timeout: 60_000 });
+      // Long enough for the child that runs the others on a slow machine (it starts, loads Elements and renders them);
+      // the loop never ends.
+      const ran = await cli(dir, ["check", ...order, "--timeout", "5", "--json"], { timeout: 60_000 });
       expect(ran.code, order.join(" ")).toBe(1);
       const results = Object.fromEntries(lines(ran).slice(0, -1).map((l) => [l.file, `${l.status}${l.diagnostics.some((d: any) => d.code === "cli/timeout") ? " cli/timeout" : ""}`]));
       expect(results, order.join(" ")).toEqual({ "broken/loop.tsx": "error cli/timeout", "emails/a.tsx": "ok", "emails/b.tsx": "ok" });

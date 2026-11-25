@@ -1,0 +1,84 @@
+{
+  "id": "news-launch",
+  "title": "Orbit 3.0 is here",
+  "brief": "An issue of Orbit's newsletter, The Orbit Dispatch, made with Orbit's newsletter kit (see CLAUDE.md for its rules).\n\n- Preview text: \"Everything new in Orbit 3.0, in two minutes.\"\n- Heading: \"Orbit 3.0 is here\"\n- Intro: \"The biggest release since Orbit began: notes that write themselves, and an editor twice as fast.\"\n- Two stories, one after the other. Each is an image, a title, a sentence and a button:\n  - Image https://assets.orbit.dev/img/orbit-app.png (1200\u00d7700 file), alt text \"Orbit's release notes, drafted\". Title \"Release notes that write themselves\". Text \"Orbit drafts them from every pull request you merge, in your team's voice.\". Button \"See what's new\" to https://orbit.dev/releases/3-0?utm_source=newsletter.\n  - Image https://assets.orbit.dev/img/newsletter-hero.png (1200\u00d7500 file), alt text \"The new editor\". Title \"A faster editor\". Text \"Typing, search and preview are all twice as fast as before.\". Button \"Try the editor\" to https://app.orbit.dev/editor?utm_source=newsletter.\n- Orbit's header (the logo) and footer (the address, and the unsubscribe link) are the kit's: use them as they are.",
+  "spec": {
+    "preview": "Everything new in Orbit 3.0, in two minutes.",
+    "texts": [
+      "Orbit 3.0 is here",
+      "The biggest release since Orbit began: notes that write themselves, and an editor twice as fast.",
+      "Release notes that write themselves",
+      "A faster editor",
+      "Orbit drafts them from every pull request you merge, in your team's voice.",
+      "Typing, search and preview are all twice as fast as before.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "See what's new",
+        "href": "https://orbit.dev/releases/3-0?utm_source=newsletter",
+        "background": "#4f46e5"
+      },
+      {
+        "text": "Try the editor",
+        "href": "https://app.orbit.dev/editor?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "orbit-app.png",
+      "newsletter-hero.png"
+    ],
+    "columns": []
+  },
+  "content": {
+    "preview": "Everything new in Orbit 3.0, in two minutes.",
+    "heading": "Orbit 3.0 is here",
+    "intro": "The biggest release since Orbit began: notes that write themselves, and an editor twice as fast.",
+    "stories": [
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/orbit-app.png",
+          "width": 1200,
+          "height": 700,
+          "alt": "Orbit's release notes, drafted"
+        },
+        "title": "Release notes that write themselves",
+        "text": "Orbit drafts them from every pull request you merge, in your team's voice.",
+        "button": {
+          "text": "See what's new",
+          "href": "https://orbit.dev/releases/3-0?utm_source=newsletter"
+        }
+      },
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/newsletter-hero.png",
+          "width": 1200,
+          "height": 500,
+          "alt": "The new editor"
+        },
+        "title": "A faster editor",
+        "text": "Typing, search and preview are all twice as fast as before.",
+        "button": {
+          "text": "Try the editor",
+          "href": "https://app.orbit.dev/editor?utm_source=newsletter"
+        }
+      }
+    ]
+  },
+  "run": {
+    "kits": [
+      "he",
+      "react-email",
+      "mjml",
+      "html"
+    ]
+  }
+}

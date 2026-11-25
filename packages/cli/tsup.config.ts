@@ -4,7 +4,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   // preview/browser.js is the only file that imports playwright-core: main.js loads it only for --findings,
   // --screenshots and --install-browser.
-  entry: { bin: "src/bin.ts", main: "src/main.ts", child: "src/child.ts", watchdog: "src/watchdog.ts", "preview/browser": "src/preview/browser.ts" },
+  entry: { bin: "src/bin.ts", main: "src/main.ts", child: "src/child.ts", watchdog: "src/watchdog.ts", "guard-hooks": "src/guard-hooks.ts", "preview/browser": "src/preview/browser.ts" },
   format: ["esm"],
   target: "node20",
   platform: "node",
@@ -14,7 +14,7 @@ export default defineConfig({
   // the published manifest names no private package). tsx and TypeScript are dependencies, loaded where they're
   // needed; React, React DOM and Elements are the project's, loaded beside each template (never bundled).
   noExternal: ["@hyper-elements/template-loader"],
-  external: ["typescript", /^tsx/, "react", "react-dom", /^@hyper-elements\//, "playwright-core", "./main.js", "./child.js", "./watchdog.js", "./preview/browser.js"],
+  external: ["typescript", /^tsx/, "react", "react-dom", /^@hyper-elements\//, "playwright-core", "./main.js", "./child.js", "./watchdog.js", "./guard-hooks.js", "./preview/browser.js"],
   // dev's page, as text in main.js.
   loader: { ".html": "text" },
   esbuildOptions(options) {

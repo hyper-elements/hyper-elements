@@ -6,7 +6,7 @@
 import type { Node } from "@hyper-elements/core";
 import React from "react";
 import { describe, expect, it } from "vitest";
-import { Button, Column, Document, Email, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Video } from "../primitives";
+import { Button, Column, Document, Email, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Table, TableCell, TableRow, Video } from "../primitives";
 import { collectTemplate } from "../primitives/collect";
 import { fromDesign, toDesign } from "./index";
 import { BUILDER_KEYS, BUILDER_PHONE_KEYS, HIDDEN } from "./manifest";
@@ -80,6 +80,11 @@ const everyHidden = [
   </Page>,
   <Document key="document" margin={[10, 20, 30, 40]}>
     <Text>Document</Text>
+    <Table style={{ width: 400, maxWidth: 500, border: "2px solid #000000", borderCollapse: "collapse", rowBorder: "1px solid #cccccc" }}>
+      <TableRow>
+        <TableCell>Cell</TableCell>
+      </TableRow>
+    </Table>
   </Document>,
 ];
 

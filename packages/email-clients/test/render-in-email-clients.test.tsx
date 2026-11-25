@@ -4,7 +4,7 @@
  * markup, and a CSP that lets no script run but the models and the runtime.
  */
 import React from "react";
-import { Button, Email, Html, Page, render, Text, type ElementsPlugin } from "@hyper-elements/react";
+import { Button, Canvas, Document, Email, Html, Page, render, Text, type ElementsPlugin } from "@hyper-elements/react";
 import { SCRIPT_SHA256 } from "@hyper-elements/email-client-models";
 import { checkCore, checkProtocol, CORE_RANGE, loadCore, MODEL_PROTOCOLS } from "../src/core";
 import { forgetModelsPackage, loadModelsPackage } from "../src/models";
@@ -83,8 +83,12 @@ describe("renderInEmailClients()", () => {
   });
 
   it("rejects a root that isn't an Email, a template with errors, and a client it doesn't know", async () => {
-    const page = await renderInEmailClients(<Page width={600}><Text>Hi</Text></Page>).catch((e: unknown) => e);
-    expect((page as { diagnostics: unknown }).diagnostics).toEqual([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
+    // Each has a block map now, as an Email has: the root is read from its first entry.
+    for (const other of [<Page width={600}><Text>Hi</Text></Page>, <Document><Text>Hi</Text></Document>, <Canvas width={600} height={300}><Text>Hi</Text></Canvas>]) {
+      expect((await render(other, { blockMap: true })).blocks?.entries[0]?.type).toBe(other.type === Page ? "Page" : other.type === Document ? "Document" : "Canvas");
+      const refused = await renderInEmailClients(other).catch((e: unknown) => e);
+      expect((refused as { diagnostics: unknown }).diagnostics).toEqual([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
+    }
     const broken = await renderInEmailClients(<Email width={600}><Text style={{ marginBottom: 4 } as never}>Hi</Text></Email>).catch((e: unknown) => e);
     expect((broken as { diagnostics: Array<{ code: string }> }).diagnostics.map((d) => d.code)).toContain("style/unknown");
     await expect(renderInEmailClients(welcome, { emailClients: ["hotmail" as never] })).rejects.toThrow(TypeError);
@@ -224,7 +228,7 @@ describe("the version check", () => {
     const { BLOCK_MAP_VERSION: _, ...older } = core;
     expect(mismatch(older)).toEqual({
       name: "email-clients/version-mismatch",
-      message: `@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no BLOCK_MAP_VERSION (render()'s blockMap). Install a matching pair: npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.4`,
+      message: `@hyper-elements/email-clients needs @hyper-elements/react ${CORE_RANGE}; the one installed has no BLOCK_MAP_VERSION (render()'s blockMap). Install a matching pair: npm i @hyper-elements/react@${CORE_RANGE} @hyper-elements/email-clients@^0.5`,
     });
     // 0.3.1's format: no block types, which the findings need.
     expect(mismatch({ ...core, BLOCK_MAP_VERSION: 1 })!.message).toContain("a blockMap format it reads (this core's is 1, it reads 2)");

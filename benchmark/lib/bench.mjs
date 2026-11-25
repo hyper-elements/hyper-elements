@@ -245,7 +245,9 @@ async function session(dir, prompt, transcript, { render = [suite.render], allow
 
   const u = final.usage ?? {};
   return {
-    pass: !!check.pass, parts: check.parts ?? null, failed: check.results?.filter((x) => !x.ok).map((x) => `${x.name}: ${x.detail}`) ?? [check.error],
+    pass: !!check.pass, parts: check.parts ?? null,
+    // The template suite's authoring check: the hostile bodies refused, and those that escaped.
+    ...(check.measures ? { measures: check.measures } : {}), failed: check.results?.filter((x) => !x.ok).map((x) => `${x.name}: ${x.detail}`) ?? [check.error],
     exit: r.code, signal: r.signal, isError: !!final.is_error, result: String(final.result ?? "").slice(0, 300),
     wallMs: wall, durationMs: final.duration_ms, apiMs: final.duration_api_ms, turns: final.num_turns, costUsd: final.total_cost_usd,
     inputTokens: u.input_tokens ?? 0, cacheWriteTokens: u.cache_creation_input_tokens ?? 0, cacheReadTokens: u.cache_read_input_tokens ?? 0, outputTokens: u.output_tokens ?? 0,
@@ -262,6 +264,21 @@ async function session(dir, prompt, transcript, { render = [suite.render], allow
     // Reached outside its run directory: tried (denied) doesn't invalidate a run; got does.
     outside: outsideAccess(dir, commands, toolResults, t0),
   };
+}
+
+/**
+ * The template suite's guardrails (`guardrails` in its suite.json), run on a finished email: the violations that
+ * escaped into it, by name, whether or not the email check passed. None where there's no email to measure.
+ */
+async function violationsOf(dir, tool, env) {
+  if (!existsSync(join(dir, "out/email.html"))) return null;
+  const r = await sh("node", [tool, "--json"], { cwd: dir, timeout: 120_000, env });
+  try {
+    const { results } = JSON.parse(r.out.trim().split("\n").pop());
+    return results.filter((x) => !x.ok).map((x) => x.name);
+  } catch {
+    return { error: (r.err || r.out).slice(0, 300) };
+  }
 }
 
 /**
@@ -322,6 +339,7 @@ async function one(kit, brief, rep) {
     };
   }
   if (diagnostics) row.emailClients = await emailClientsOf(dir, diagnostics);
+  if (suite.guardrails) row.violations = await violationsOf(dir, suite.guardrails, env);
   Object.assign(row, { sourceTokens: enc.encode(source).length, sourceChars: source.length, sourceFiles: Object.keys(built).length, copies, ...provenance });
   // The skill suite: this run's own engine and docs, in place of the global engine.
   if (runProvenance[kit]) Object.assign(row, { engine: runProvenance[kit].engine, docs: runProvenance[kit].docs });

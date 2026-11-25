@@ -55,7 +55,8 @@
       },
       "runs": [
        "Summer timetable, out now"
-      ]
+      ],
+      "key": "root.children[0].children[0]"
      },
      {
       "kind": "text",
@@ -76,9 +77,11 @@
        "Oban to Stornoway,",
        "\n",
        "every morning."
-      ]
+      ],
+      "key": "root.children[0].children[1]"
      }
-    ]
+    ],
+    "key": "root.children[0]"
    },
    {
     "kind": "box",
@@ -100,6 +103,7 @@
       "children": [
        {
         "kind": "drawing",
+        "key": "root.children[1].children[0]/drawing",
         "width": 120,
         "height": 40,
         "viewBox": "0 0 120 40",
@@ -133,7 +137,8 @@
          }
         ]
        }
-      ]
+      ],
+      "key": "root.children[1].children[0]"
      },
      {
       "kind": "text",
@@ -153,9 +158,11 @@
       },
       "runs": [
        "merrow.example"
-      ]
+      ],
+      "key": "root.children[1].children[1]"
      }
-    ]
+    ],
+    "key": "root.children[1]"
    }
   ],
   "fonts": []

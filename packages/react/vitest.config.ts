@@ -20,8 +20,15 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     // src/pdf and src/image (and their tests) import this package by name, as its users do: its main entry, here its source.
-    alias: [{ find: /^@hyper-elements\/react$/, replacement: fileURLToPath(new URL('./src/primitives/index.ts', import.meta.url)) }],
+    alias: [
+      { find: /^@hyper-elements\/react$/, replacement: fileURLToPath(new URL('./src/primitives/index.ts', import.meta.url)) },
+      { find: /^@hyper-elements\/react\/inspect$/, replacement: fileURLToPath(new URL('./src/inspect/index.ts', import.meta.url)) },
+      // Templates' tests require lint's rules: its source (lint depends on this package, so it isn't a dependency here).
+      { find: /^@hyper-elements\/lint$/, replacement: fileURLToPath(new URL('../lint/src/index.ts', import.meta.url)) },
+    ],
   },
+  // What lint's build writes in for its version.
+  define: { __VERSION__: JSON.stringify('test') },
   test: {
     coverage: {
       exclude: [

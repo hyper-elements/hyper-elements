@@ -1,0 +1,26 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "target": "ES2022",
+    "types": [
+      "vitest/globals",
+      "node"
+    ],
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    ".preview",
+    ".single"
+  ]
+}

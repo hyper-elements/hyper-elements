@@ -1,0 +1,4 @@
+{
+  "header": "<td id=\"brand-header\" style=\"padding: 24px 32px 8px;\"><img src=\"https://assets.orbit.dev/img/orbit-logo.png\" width=\"126\" height=\"64\" alt=\"Orbit\" style=\"display: block; border: 0;\"></td>",
+  "footer": "<table role=\"presentation\" id=\"brand-footer\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"width: 100%; max-width: 600px;\"><tbody><tr><td style=\"padding: 24px 32px; color: #6b7280; font-family: Helvetica, Arial, sans-serif; font-size: 13px; line-height: 20px;\">Orbit Labs, 500 Market St, San Francisco. <a href=\"https://orbit.dev/unsubscribe?utm_source=newsletter\" style=\"color: #6b7280;\">Unsubscribe</a></td></tr></tbody></table>"
+}

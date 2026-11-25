@@ -91,7 +91,7 @@ describe("the engines are the project's", () => {
     const ran = await cli(dir, ["render", "cards", "--json"]);
     expect(ran.code).toBe(1);
     expect(lines(ran)[0]).toMatchObject({ root: "Canvas", status: "error", outputs: [], diagnostics: [] });
-    expect(lines(ran)[0].error).toBe("A Canvas's image needs satori and @resvg/resvg-js, not installed where this template is: npm i satori @resvg/resvg-js");
+    expect(lines(ran)[0].error).toBe("A Canvas's image needs satori and @resvg/resvg-js, not installed where this design is: npm i satori @resvg/resvg-js");
   });
 
   it("a Canvas with satori but not @resvg/resvg-js: its error names the one missing", async () => {
@@ -99,7 +99,7 @@ describe("the engines are the project's", () => {
     copyElements(dir);
     const ran = await cli(dir, ["render", "cards", "--json"]);
     expect(ran.code).toBe(1);
-    expect(lines(ran)[0].error).toBe("A Canvas's image needs @resvg/resvg-js, not installed where this template is: npm i @resvg/resvg-js");
+    expect(lines(ran)[0].error).toBe("A Canvas's image needs @resvg/resvg-js, not installed where this design is: npm i @resvg/resvg-js");
   });
 
   it.skipIf(ON_BUN)("a Document without @react-pdf/renderer: its error names it", async () => {
@@ -108,7 +108,7 @@ describe("the engines are the project's", () => {
     const ran = await cli(dir, ["render", "docs", "--json"]);
     expect(ran.code).toBe(1);
     expect(lines(ran)[0]).toMatchObject({ root: "Document", status: "error", outputs: [] });
-    expect(lines(ran)[0].error).toBe("A Document's PDF needs @react-pdf/renderer, not installed where this template is: npm i @react-pdf/renderer");
+    expect(lines(ran)[0].error).toBe("A Document's PDF needs @react-pdf/renderer, not installed where this design is: npm i @react-pdf/renderer");
   });
 
   it("with them, the copy renders as the linked package does", async () => {

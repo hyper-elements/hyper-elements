@@ -27,7 +27,7 @@ const DIR = join(__dirname, "__compat__");
 const DESIGNS = join(__dirname, "../builder/__fixtures__/designs");
 const UPDATE = !!process.env.UPDATE_COMPAT;
 
-/** A component of a template's own, as an author writes one: props, a render, Elements' components inside. */
+/** A custom element, as an author writes one: props, a render, Elements' components inside. */
 const ProductCard = component({
   type: "acme.ProductCard",
   label: "Product card",
@@ -117,6 +117,7 @@ async function recordExports(): Promise<Record_> {
     "./builder": await import("../builder/index"),
     "./pdf": await import("../pdf/index"),
     "./image": await import("../image/index"),
+    "./template": await import("../template/index"),
   };
   return Object.fromEntries(Object.entries(entries).map(([entry, module]) => [entry, Object.keys(module).sort()]));
 }

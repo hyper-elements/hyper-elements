@@ -6,7 +6,7 @@
  * baseline see every one; gallery.test.tsx renders every one in each root it's written for.
  *
  * Most are written for any root that shows on a screen, `(Root) => …`, and drawn as an Email and as
- * a Page. Between them they use every component in both.
+ * a Page. Between them they use every element in both.
  *
  * All of them come from Merrow Line, a fictional ferry company with passengers from everywhere and
  * paperwork to match. Chalk paper, harbour ink and one funnel red, for what to press. Familjen

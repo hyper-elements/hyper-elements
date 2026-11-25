@@ -11,8 +11,11 @@
  * templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
 import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font } from "@hyper-elements/core/image";
+import { measure, type ImageLayout } from "./layout";
+
+export type { FitResult, GlyphResult, ImageLayout, LaidOutNode } from "./layout";
 import type { FontFace } from "@hyper-elements/core";
-import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
+import { ElementsError, prepare, type Diagnostic, type ResolvedNode, type Snapshot } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 
 export interface ImageFont {
@@ -33,6 +36,11 @@ export interface ImageOptions {
   format?: "png" | "svg";
   /** Pixels per px, for a sharper PNG (2 for a phone's screen). */
   scale?: number;
+  /**
+   * A font missing (a family, a weight, a character) or content past the Canvas is an error, not a warning: what a
+   * template's design is drawn with, and the CLI's renders (Decision 19).
+   */
+  strict?: boolean;
 }
 
 export interface ImageResult {
@@ -45,23 +53,77 @@ export interface ImageResult {
   diagnostics: Diagnostic[];
 }
 
-/** A Canvas written as an image. Rejects with an `ElementsError` listing the problems if it has errors. */
-export async function renderImage(element: ReactElement, options: ImageOptions = {}): Promise<ImageResult> {
-  const { root, diagnostics } = canvasOf(element);
-  const found: Diagnostic[] = [];
-  const fonts = fontsOf(root, options.fonts ?? [], found);
-  const images = imageSources(root, options.images ?? {}, found);
-  if (found.some((d) => d.severity === "error")) throw new ElementsError([...diagnostics, ...found]);
-
-  found.push(...missingFaces(root, fonts));
+/**
+ * A Canvas written as an image. It's measured first with its fonts: fitted text drawn at the size that fits, and what
+ * runs past the Canvas or has no font said. Rejects with an `ElementsError` listing the problems if it has errors. A
+ * template's snapshot is drawn `strict`, and the measured rules its template requires are decided here.
+ */
+export async function renderImage(element: ReactElement | Snapshot, options: ImageOptions = {}): Promise<ImageResult> {
+  const { context, diagnostics, found, pending, strict } = canvasFor(element, options);
+  const { layout, sizes } = await measure(context, { strict, scale: options.scale ?? 1 });
+  const all = [...diagnostics, ...found, ...layout.diagnostics];
+  decide(pending, all);
+  if (all.some((d) => d.severity === "error")) throw new ElementsError(all);
+  const { root } = context;
   const width = Number(root.props.width);
   const height = Number(root.props.height);
-  const families = new Set(fonts.map((font) => font.family.toLowerCase()));
-  const canvas = writeCanvas(root, { families, fallback: fonts[0]?.family ?? "", fonts, image: (src) => images.get(src) });
+  const canvas = writeCanvas(root, { families: context.families, fallback: context.fallback, fonts: context.fonts, image: context.image, sizes });
   const scale = options.scale ?? 1;
-  if (options.format === "svg") return { image: await satoriResvg(canvas, { format: "svg", scale }), width, height, diagnostics: [...diagnostics, ...found] };
+  if (options.format === "svg") return { image: await satoriResvg(canvas, { format: "svg", scale }), width, height, diagnostics: all };
   const image = await satoriResvg(canvas, { format: "png", scale });
-  return { image, width: Math.round(width * scale), height: Math.round(height * scale), diagnostics: [...diagnostics, ...found] };
+  return { image, width: Math.round(width * scale), height: Math.round(height * scale), diagnostics: all };
+}
+
+/**
+ * A Canvas measured with its fonts, nothing drawn: each fitted node's size, each node's box, the glyphs no font covers,
+ * and what runs past the Canvas (Decision 18). What a template's `checkLayout()` reads. Rejects as `renderImage()` does
+ * for a design it can't read; the measured findings are in `diagnostics`.
+ */
+export async function layoutImage(element: ReactElement | Snapshot, options: Omit<ImageOptions, "format"> = {}): Promise<ImageLayout> {
+  const { context, diagnostics, found, strict } = canvasFor(element, options);
+  const { layout } = await measure(context, { strict, scale: options.scale ?? 1 });
+  return { ...layout, diagnostics: [...diagnostics, ...found, ...layout.diagnostics] };
+}
+
+/**
+ * The Canvas a design is, read with its fonts and images, ready to measure. Throws for what can't be read. The design
+ * is collected once: its tree and its template's undecided rules come from the same read. A template's design is
+ * measured and drawn strict, whatever its rules.
+ */
+function canvasFor(element: ReactElement | Snapshot, options: Omit<ImageOptions, "format">) {
+  const { root, diagnostics, pending } = canvasOf(element);
+  const strict = options.strict === true || pending.template !== undefined;
+  const found: Diagnostic[] = [];
+  const fonts = fontsOf(root, options.fonts ?? [], found, strict);
+  const images = imageSources(root, options.images ?? {}, found);
+  // What can't be drawn at all stops it here (an image with no file, no font at all); what strict makes an error is
+  // measured with the rest, so every finding is said at once.
+  if (found.some((d) => d.severity === "error" && (d.code === "image/image" || d.path === "root"))) throw new ElementsError([...diagnostics, ...found]);
+  found.push(...missingFaces(root, fonts, strict));
+  const families = new Set(fonts.map((font) => font.family.toLowerCase()));
+  return { context: { root, fonts, families, fallback: fonts[0]?.family ?? "", image: (src: string) => images.get(src) }, diagnostics, found, pending, strict };
+}
+
+/** Given to prepare(): this entry decides a template's measured rules, so they're handed over, not refused. */
+const DECIDES = Symbol.for("hyper-elements.decides-measured");
+
+/**
+ * A snapshot's or a template design's template, and the measured rules it requires that its check left undecided:
+ * this entry decides them. prepare() hands them over when asked with DECIDES.
+ */
+interface Pending {
+  rules: Array<{ rule: string; format?: string }>;
+  template?: { id: string };
+}
+
+/** Each measured rule a template requires: failed where its code was found (raised to an error), else passed. */
+function decide(pending: Pending, diagnostics: Diagnostic[]): void {
+  for (const { rule } of pending.rules) {
+    for (let i = 0; i < diagnostics.length; i++) {
+      const d = diagnostics[i];
+      if (d.code === rule) diagnostics[i] = { ...d, severity: "error", message: `${d.message} (required by ${pending.template?.id ?? "the template"})` };
+    }
+  }
 }
 
 export interface TemplateAssets {
@@ -76,20 +138,23 @@ export interface TemplateAssets {
  * gives it in `fonts` and `images`. A data: URI is read as it is (a font's, where no file is given in `fonts` for its
  * family). Rejects a template as renderImage() does: with errors, or with a root other than a Canvas.
  */
-export function templateAssets(element: ReactElement): TemplateAssets {
+export function templateAssets(element: ReactElement | Snapshot): TemplateAssets {
   const { root } = canvasOf(element);
   return { fonts: [...facesOf(root)], images: [...new Set(imagesOf(root).map(({ src }) => src))] };
 }
 
-/** The Canvas a template is, with prepare()'s diagnostics; a template with errors, or another root, throws. */
-function canvasOf(element: ReactElement): { root: ResolvedNode; diagnostics: Diagnostic[] } {
-  const { root, diagnostics, layout } = prepare(element);
+/** The Canvas a template is, with prepare()'s diagnostics and what its template left to decide; a template with errors, or another root, throws. */
+function canvasOf(element: ReactElement | Snapshot): { root: ResolvedNode; diagnostics: Diagnostic[]; pending: Pending } {
+  const prepared = prepare(element, { [DECIDES]: true } as never) as ReturnType<typeof prepare> & { [DECIDES]?: Array<{ rule: string; format?: string }> };
+  const { root, diagnostics, layout } = prepared;
+  const pending: Pending = { rules: [...(prepared[DECIDES] ?? [])], ...(prepared.template ? { template: prepared.template } : {}) };
   readable(layout, "image");
   if (!root) throw new ElementsError(diagnostics);
   if (root.type !== "Canvas") {
     throw new ElementsError([...diagnostics, { code: "image/root", severity: "error", message: `Image output is a Canvas's: this template is a ${root.type}`, path: "root" }]);
   }
-  return { root, diagnostics };
+  // What prepare() says of fit is the HTML preview's (its largest size); the image measures it.
+  return { root, diagnostics: diagnostics.filter((d) => !(d.code === "web/degraded" && /\.props\.fit$/.test(d.path))), pending };
 }
 
 /**
@@ -124,10 +189,11 @@ const woff2 = (bytes: ArrayBuffer | Uint8Array) => String.fromCharCode(...new Ui
 /** The Canvas's own font faces (its `fonts` prop): the files renderImage's fonts option gives, or data: URIs. */
 const facesOf = (root: ResolvedNode): FontFace[] => (root.props.fonts as FontFace[] | undefined) ?? [];
 
-function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[]): Font[] {
+function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[], strict = false): Font[] {
+  const level = strict ? ("error" as const) : ("warning" as const);
   const drawn = (family: string, bytes: ArrayBuffer | Uint8Array) => {
     if (!woff2(bytes)) return true;
-    found.push({ code: "image/font", severity: "warning", message: `${family}'s file is WOFF2: an image draws TTF, OTF and WOFF files. Its text is drawn in another font meanwhile`, path: "root.props.fonts" });
+    found.push({ code: "image/font", severity: level, message: `${family}'s file is WOFF2: an image draws TTF, OTF and WOFF files. Its text is drawn in another font meanwhile`, path: "root.props.fonts" });
     return false;
   };
   const out: Font[] = given.filter((font) => drawn(font.family, font.src)).map((font) => ({ family: font.family, data: buffer(font.src), weight: weight(font.weight), style: font.style ?? "normal" }));
@@ -140,7 +206,7 @@ function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[]): F
       out.push({ family: face.family, data: buffer(Uint8Array.from(Buffer.from(data, "base64"))), weight: weight(Array.isArray(face.weight) ? face.weight[0] : face.weight), style: face.style ?? "normal" });
       continue;
     }
-    found.push({ code: "image/font", severity: "warning", message: `Image output loads no fonts: give ${face.family}'s file in renderImage's fonts option. Its text is drawn in another font meanwhile`, path: "root.props.fonts" });
+    found.push({ code: "image/font", severity: level, message: `Image output loads no fonts: give ${face.family}'s file in renderImage's fonts option. Its text is drawn in another font meanwhile`, path: "root.props.fonts" });
   }
   if (!out.length && hasText(root)) {
     found.push({ code: "image/font", severity: "error", message: "An image draws its text with the fonts it's given, and has none: give a font file in renderImage's fonts option", path: "root" });
@@ -149,7 +215,7 @@ function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[]): F
 }
 
 /** Text in a weight or style of a family that isn't given: drawn in the nearest given (a browser would fake it). */
-function missingFaces(root: ResolvedNode, fonts: Font[]): Diagnostic[] {
+function missingFaces(root: ResolvedNode, fonts: Font[], strict = false): Diagnostic[] {
   const out = new Map<string, Diagnostic>();
   const given = new Map<string, Font[]>();
   for (const font of fonts) given.set(font.family.toLowerCase(), [...(given.get(font.family.toLowerCase()) ?? []), font]);
@@ -167,7 +233,7 @@ function missingFaces(root: ResolvedNode, fonts: Font[]): Diagnostic[] {
           const has = faces.map((face) => `${face.weight}${face.style === "italic" ? " italic" : ""}`).join(", ");
           out.set(key, {
             code: "image/font-weight",
-            severity: "warning",
+            severity: strict ? "error" : "warning",
             message: `Text in ${family} at ${weight}${style === "italic" ? " italic" : ""}, which is given at ${has} only: it's drawn in the nearest. Give that file in renderImage's fonts option`,
             path: node.path,
             ...(node.id ? { nodeId: node.id } : {}),

@@ -11,20 +11,20 @@ pnpm --filter @hyper-elements/website check:playground   # after build: the play
 
 ## Every preview is real output
 
-Nothing on the site is a mockup. `scripts/generate.mjs` renders every example in `examples/` with Hyper Elements itself: the templates (`templates/`), one example per component (`components/`), and the home page's own examples (`showcase/`). It writes:
+Nothing on the site is a mockup. `scripts/generate.mjs` renders every example in `examples/` with Hyper Elements itself: the designs other pages show (`templates/`: the home page, `/ai`, the comparisons and the playground's starters), one example per component (`components/`), and the home page's own examples (`showcase/`). It writes:
 
 | Output | What |
 |--------|------|
 | `src/generated/examples.json` | Each example's source, HTML, plain text, outline and diagnostics |
 | `src/generated/reference/*.md` | One page per component, split from the package's own `REFERENCE.md` |
-| `public/generated/templates/` | Each Document template as a real PDF and each Canvas template as a real PNG |
+| `public/generated/templates/` | Each Document design as a real PDF and each Canvas design as a real PNG |
 
 `src/generated/migrate/before.tsx` and `after.tsx` aren't written by `generate`: they're a React Email template and what `@hyper-elements/migrate` wrote for it, committed by hand. Run the migrate CLI on `before.tsx` and replace `after.tsx` when the converter changes.
 
 Everything generated is committed, so the site builds without the engine. Run `generate` after changing an example or the engine:
 
 1. Build the engine first, from the repo root: `pnpm build`. The script renders with `packages/react`'s built `dist/`.
-2. Run `pnpm --filter @hyper-elements/website generate`. The PDFs and PNGs need the templates' fonts as TTF files, so the first run fetches them from Google Fonts into `node_modules/.cache`; later runs use the cache.
+2. Run `pnpm --filter @hyper-elements/website generate`. The PDFs and PNGs need the designs' fonts as TTF files, so the first run fetches them from Google Fonts into `node_modules/.cache`; later runs use the cache.
 
 An example that doesn't render fails the script with the engine's own error.
 
@@ -39,7 +39,7 @@ and dark) are images of the launch email (`examples/showcase/email.tsx`) in each
 are. Replace them when the launch email changes.
 
 The Email client emulator page's images (`public/generated/email-clients/*.png`) are its welcome email and two
-templates, plus the launch email for the home page's emulator tile, each drawn by `@hyper-elements/email-clients` in classic
+designs, plus the launch email for the home page's emulator tile, each drawn by `@hyper-elements/email-clients` in classic
 Outlook, Gmail, Apple Mail and the Gmail app and captured in Chromium.
 Rebuild them after a release of the emulator, with the packages built and Playwright's Chromium installed:
 `pnpm --filter @hyper-elements/website generate:email-clients`.
@@ -50,6 +50,49 @@ by `scripts/compare-previews.mjs`. Its one email in two themes is `examples/bran
 `examples/showcase/brand-north.tsx` and `brand-bloom.tsx`. Redraw them after `generate` when one of those examples changes:
 `pnpm --filter @hyper-elements/website generate:compare`.
 
+The templates docs' examples (`/docs/templates` and its reference pages, and `packages/react/docs/templates.md`)
+are run for real: `scripts/templates-guide.mjs` runs the docs' commands with the built CLI on
+`examples/templates-guide/` (a launch graphic, a newsletter, a brand email, a digest of blocks and an invoice) in a
+temporary project. It writes the images the docs show (`public/generated/templates-guide/`: the graphic in its formats,
+its parts diagram from the boxes `layoutImage()` measured, the emails as Chromium draws them, the brand email's and
+the invoice's diagrams of locked and open parts from the boxes Chromium lays out, and `concept-*.svg`, one small
+picture per idea: a field, an image field, formats, a slot, blocks, a rule) and each command's output
+(`src/generated/templates-guide.json`). It fails if a doc's copy of an example file, an excerpt of one (a block that
+starts `// from <file>`), or the output a page quotes isn't what the example is or what the command printed. Run it
+again after a change to the examples, the template entry or the CLI's output, with the packages built and
+Playwright's Chromium installed: `pnpm --filter @hyper-elements/website generate:templates-guide`. The launch's own
+pictures (`examples/templates-guide/designs/art/`: the artwork, the product screenshot and the banner) are drawn from
+SVG by `node scripts/templates-guide-art.mjs`, and committed.
+
+The Core concepts pages (Designs, Layout, Styles, Rendering, Themes, Custom elements, Command line and the two
+reference pages) get their pictures the same way: `scripts/core-concepts.mjs` typechecks the designs in
+`examples/core-concepts/`, renders each with the built CLI in a temporary project, draws it in Chromium at desktop and
+phone width, and outlines its parts from the boxes of the `id`s the examples give them
+(`public/generated/core-concepts/`). It also runs the commands and scripts those pages show
+(`src/generated/core-concepts.json`), and fails where a page differs from them: a code block under
+`<!-- example: <file> -->` is that file's lines in order (less its `id`s), one under `<!-- output: <name> -->` is what
+that command printed (`part-of`: some of its lines; `json`: one of its lines, laid out), and a picture's `<img>` gives
+the size it was drawn at. Run it after `pnpm build`:
+`pnpm --filter @hyper-elements/website generate:core-concepts` (a folder's name after it draws only that page's
+pictures, without the docs check). Both scripts' drawing helpers are `scripts/pictures.mjs`.
+
+## The Open Graph image generator
+
+`/tools/open-graph-image-generator` makes a 1200 × 630 share image in the visitor's browser. Its six designs are
+templates in `examples/og-image/`, each one self-contained so the page can show it as code to copy. A worker draws them
+(`src/og-image/worker.ts`, with `engine.ts`): `scripts/og-image-runtime.mjs` bundles it from the packages' sources with
+the playground's shims, and `scripts/og-image-integration.mjs` serves it at `/tools/og-image/runtime.js`. The worker
+returns an SVG, which the page shows and turns into a PNG or a JPEG on a canvas (`src/og-image/main.ts`), so resvg's
+WebAssembly loads only in a browser that won't do that. The visitor's photo and logo are read on the page and sent only
+to the worker.
+
+The designs name their fonts and the sample photo at `https://hyperelements.dev/tools/og-image/…`, so a copied design
+works anywhere: the worker reads them from this site, and the files are `public/tools/og-image/`, written once by
+`node scripts/og-image-assets.mjs` (Google Fonts' TTFs with only Latin, Greek and Cyrillic, and the sample photo drawn
+from SVG) and committed. After changing a design, draw each one's picture for the page and its fields again
+(`public/generated/og-image/`, `src/generated/og-image.json`): `pnpm --filter @hyper-elements/website generate:og-image`.
+After `build`, `pnpm --filter @hyper-elements/website check:og-image` holds the page to what it says in Chromium.
+
 Images the examples use live in `public/img/` and are referenced as `https://hyperelements.dev/img/…`, so a copied example works anywhere. Previews load them from the site itself.
 
 ## Pages
@@ -58,9 +101,9 @@ Images the examples use live in `public/img/` and are referenced as `https://hyp
 |-------|--------|
 | `/` | `src/pages/index.astro` |
 | `/docs/…` | `src/content/docs/**/*.md`, in the order of `docsNav` in `src/lib/site.ts` |
-| `/docs/components/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
+| `/docs/elements/…` | `src/generated/reference/*.md`, with the live example from `examples/components/` |
 | `/components` | The component gallery |
-| `/templates`, `/templates/<slug>` | `examples/templates/*.tsx` |
+| `/templates`, `/templates/<folder>/<name>` | The templates (`templates/` at the repository's root): `templates/_scripts/website.tsx` draws each in every sample brand into `src/generated/gallery.json` (`pnpm --filter @hyper-elements/website generate:gallery`). An image template is drawn in the visitor's browser, by a worker bundled from the packages' sources (`src/gallery/worker.ts`, `scripts/gallery-runtime.mjs`). The templates' fonts and images, `/generated/gallery/assets/`, come from `templates/_assets/` (`scripts/gallery-assets-integration.mjs`). Each HTML preview, which a card or a template's page loads when a visitor picks a brand, is written when the site is built, from `gallery.json` (`src/pages/generated/gallery/[preview].html.ts`). `/templates/<slug>` sends an old gallery design to the playground |
 | `/playground` | `src/pages/playground.astro`, `src/playground/` and `playground/` (see below) |
 | `/email-testing` | `src/pages/email-testing.astro` and `src/email-testing/`: existing HTML checked and previewed with the email-clients package |
 | `/ai`, `/migrate` | Landing pages |
@@ -73,14 +116,14 @@ Names and links (package names, GitHub, install commands) are in `src/lib/site.t
 
 ## The playground
 
-`/playground` renders a template in the visitor's browser with the engine itself: an Email, a Page, a Document (print HTML and a PDF) or a Canvas (a PNG or an SVG), with its diagnostics, its outline and, for an Email, the email client checks and previews.
+`/playground` renders a design in the visitor's browser with the engine itself: an Email, a Page, a Document (print HTML and a PDF) or a Canvas (a PNG or an SVG), with its diagnostics, its outline and, for an Email, the email client checks and previews.
 
 - **The engine it runs is this repository's, from its sources.** `scripts/playground-runtime.mjs` bundles `packages/*/src` with esbuild into the scripts the page's sandbox loads (`/playground/runtime/*.js`), so the playground needs no `pnpm build` and always runs the checkout it's built from. It does need the workspace installed: React, react-pdf and Satori are resolved from `packages/react` and `packages/internal/core`, as `generate` resolves them.
 - **The code runs in a sandbox**: a frame with an origin of its own and no network, in a worker that's closed after each render. `playground/README.md` says how, and what the page does with what comes back. Read it before changing a frame's `sandbox` or how a preview's document is made.
-- **Templates** (the playground's Template menu, `starters` in its API) are the site's examples, listed in `src/lib/playground.ts`. The browser check's own templates are in `scripts/fixtures/`.
+- **Designs** (the playground's Design menu, `starters` in its API) are the site's examples, listed in `src/lib/playground.ts`. The browser check's own designs are in `scripts/fixtures/`.
 - **Agents** drive it by a link (`#code=`), by `window.hyperElementsPlayground` or by WebMCP tools (`src/playground/agent.ts`). The page documents all three under the bench.
 
-After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It opens the built page in Chromium (Playwright's, from `packages/react`) and checks that every root renders, that a broken template shows its diagnostics, that a mismatched closing tag and a misspelled import are errors with their lines, that code from a link can't reach the site's origin or the network and isn't kept as the visitor's draft, that markup in a template doesn't run in the preview, and that a loop is stopped. It makes no requests off this machine.
+After `build`, run `pnpm --filter @hyper-elements/website check:playground`. It opens the built page in Chromium (Playwright's, from `packages/react`) and checks that every root renders, that a broken design shows its diagnostics, that a mismatched closing tag and a misspelled import are errors with their lines, that code from a link can't reach the site's origin or the network and isn't kept as the visitor's draft, that markup in a design doesn't run in the preview, and that a loop is stopped. It makes no requests off this machine.
 
 ## Email testing
 
@@ -119,6 +162,19 @@ HTML editing, live thumbnails, opening and returning from full previews, panel-o
 agent access, responsive layout, discovery links,
 and isolation of hostile HTML. `check:playground` also runs because these pages share the runtime.
 
+## Social cards
+
+A page that gives `Base.astro` no `image` of its own shares a generated card: a 1200×630 PNG at
+`/og/cards/<the page's path>.png` with the page's title and its section. The card is a template, `src/og/card.tsx`
+(the logo, colors and layout locked; the title fitted in three lines), with the Inter fonts in `src/og/fonts/`.
+`scripts/og-cards.mjs` draws one for each built page that links to one, from the packages' sources as the playground
+does, so it needs no `pnpm build`. A title the card can't hold fails the build with the template's diagnostic; shorten
+the title (or give the page its own `image`). `dev` draws a card when it's asked for.
+
+The home page, `/email-testing`, the alternatives pages with a visual of their own and blog posts with a `hero` keep
+their own images. After `build`, `pnpm --filter @hyper-elements/website check:og-cards` checks every page's social image
+is in the site, and each card is a 1200×630 PNG.
+
 ## Writing docs
 
 A page is Markdown with a quoted `title` and `description` in its frontmatter, no H1, and links as `/docs/<slug>`. Add it to `docsNav` in `src/lib/site.ts` to put it in the sidebar, llms.txt and the previous/next links. Every code sample should run against the engine: the pages here were checked that way.
@@ -131,7 +187,7 @@ On Vercel, only `main` deploys: `vercel.json` turns off deployments for every ot
 
 ## Blog articles
 
-Write Markdown in `src/content/blog/` with `title`, `description`, `slug`, `date`, `hero` and `heroAlt` frontmatter. `slug` is the URL segment, and `date` is the editorial date (set it to the intended publication day at review). Store article images under `public/img/blog/`. The index and article pages reuse the site layout, theme and code highlighting. Article pages set their own social image and canonical URL; the sitemap includes them at build time.
+Write Markdown in `src/content/blog/` with `title`, `description`, `slug`, `date`, `hero` and `heroAlt` frontmatter (a post without a `hero` shows none, and shares its generated card). `slug` is the URL segment, and `date` is the editorial date (set it to the intended publication day at review). Store article images under `public/img/blog/`. The index and article pages reuse the site layout, theme and code highlighting. Article pages set their own social image and canonical URL; the sitemap includes them at build time.
 
 Review articles and infrastructure through a pull request. Opening a PR does not publish the article; only merging to main can deploy it. Conceptual article artwork is an illustration, not an output preview.
 

@@ -4,13 +4,16 @@ How long a coding agent takes to make a correct email or social image with Hyper
 reach for otherwise, and how many tokens it spends. The email and image results are on
 [hyperelements.dev/docs/benchmark](https://hyperelements.dev/docs/benchmark).
 
-Three suites, each with its own briefs, kits and checker, run by one harness (`lib/`):
+Four suites, each with its own briefs, kits and checker, run by one harness (`lib/`):
 
 - **email** (`suites/email`): Hyper Elements, React Email, MJML and hand-written HTML.
 - **image** (`suites/image`): Hyper Elements' `<Canvas>`, an HTML page screenshotted by Playwright, and drawing with
   `@napi-rs/canvas`.
 - **skill** (`suites/skill`): evals of Hyper Elements' agent guide and skill: this checkout's against the last
   release's, with Hyper Elements only. Its results aren't published.
+- **template** (`suites/template`): a brand's newsletter and launch graphic, made from its reusable kit (a Hyper
+  Elements template, against a React Email layout, MJML includes and a hand-written HTML starter; or against Satori
+  and Playwright templates): what each lets past the brand's guardrails, revising one, and writing the kit itself.
 
 ## How a run works
 
@@ -108,6 +111,106 @@ that only read the file.
 - **Runtime facts** (`npm run runtime`, no API): per kit, what `npm install` adds (and Playwright's browser), and
   from the references, a fresh process's import and first render, a warm render, and whether the same template gives
   the same bytes.
+
+## Template suite
+
+What a brand's guardrails are worth: whether an issue made with a team's reusable newsletter keeps the brand, and
+what it costs to write that newsletter. The brand is Orbit's (`suites/template/brand.json`: its palette, fonts, header,
+footer, link domains and UTM tag).
+
+- **Production** (the `email` group: five newsletter briefs, `briefs/news-*.json`, each its copy, two stories with
+  their images and buttons, and its links). Four kits, each starting from the reusable newsletter Orbit's
+  maintainers wrote (so how well an agent writes one doesn't change these numbers):
+  - `he`: the newsletter as a template, `templates/newsletter.tsx` (`orbit.Newsletter`): the header, footer and theme
+    fixed, the body a slot of Column, Heading, Text, Image, Button and Link with no styles of its own and at least one
+    Button, and rules for the root's props and the links' domains and tag. The agent writes `designs/newsletter.tsx`,
+    a design whose root is the template; `tools/render.mjs` renders it with Elements, and the template refuses a body
+    that breaks a rule.
+  - `react-email`: `emails/brand.tsx`, a `Layout` with the header and footer, a palette and styles, and the brand's
+    rules written in CLAUDE.md.
+  - `mjml`: `emails/head.mjml`, `header.mjml` and `footer.mjml`, included (`tools/render.mjs` lets MJML 5 read
+    includes from `emails/` only), and the same written rules.
+  - `html`: `emails/starter.html`, a hand-written email with the header and footer and a BODY comment saying how to
+    style the issue, and the same written rules.
+
+  The bar is the email suite's checker (`tools/check.mjs`). After each run, the harness runs the guardrails
+  (`suites/template/check-guardrails.mjs`, copied in as `tools/guardrails.mjs`) on the finished email and records the
+  ones it broke in the row's `violations`. In Chromium, they check:
+  - the header and footer are the kit's own (their HTML, generated class names and whitespace dropped, against the
+    kit's `tools/brand-reference.json`);
+  - an unsubscribe link and a hidden preview text;
+  - every link on Orbit's domains, with `utm_source=newsletter`;
+  - every text color and fill from the palette, every text in the brand's fonts;
+  - alt text on every image, and a button in the body.
+- **Authoring** (the `authoring` group: `briefs/authoring.json`, a written spec of the guardrails). Each `*-author`
+  kit's agent writes the reusable newsletter itself: the `he-author` kit a template; the others a layout, includes or
+  a starter file, with written rules. The check (`check-authoring.mjs`, the run's `tools/check.mjs`) gives it a
+  reference issue through the kit's adapter (`tools/adapter.mjs`), which must render and pass the email checker and
+  the guardrails: that's the run's pass. It then gives it four hostile bodies (`tools/bodies/`: a literal color, a raw
+  HTML block, an off-domain link, a body with no call to action). A body refused with a diagnostic is the guardrail
+  holding; one taken is an escaped violation, its HTML given to the guardrails to see which it broke, and a literal
+  color in its source is a source finding. The row's `measures` give each.
+- **The report** gives, per kit, the issues with violations and which, and the authoring runs' hostile bodies
+  refused and escaped.
+- **The checkers' own test** (`npm run selftest:template`, no API):
+  - every kit's reference issue of every brief (`suites/template/reference/<kit>.mjs`, from the brief's content)
+    renders, passes the email checker and keeps all ten guardrails;
+  - ten references broken on purpose each fail the guardrail named (a changed header or footer, no unsubscribe link
+    or preview text, a link off the domains or without its tag, a color or font off the brand, an image without alt,
+    no button), and the template refuses three broken issues with the code named;
+  - the maintainers' newsletter of each kit, given the authoring check: the template refuses all four hostile bodies,
+    and every other kit takes each, which breaks the guardrail it names.
+
+  `--write-references` writes each kit's `tools/brand-reference.json` from its first brief's reference.
+
+**The launch graphic** (the `launch` groups): Orbit's launch graphic in two formats, square (1080×1080) and landscape
+(1200×630), from `suites/template/launch/brand.json` (the card, the logo, each format's regions, the fonts and colors,
+the screenshot's shapes). The pictures are files (`art/`, drawn by `art/make.mjs`: product screenshots, and artwork
+standing in for an image provider), so no model call varies; the briefs are written by `launch/make-briefs.mjs`.
+
+- **Kits**, each with the maintainers' reusable template (so authoring quality doesn't change the other stages):
+  - `launch-he`: a template (`orbit.LaunchGraphic`, a Canvas with both formats, the headline fitted, the screenshot
+    an image field with its aspect range, the artwork another, its measured rules required). The agent writes
+    `designs/launch.tsx`, a design whose root is the template; `cards/render.tsx` checks it and draws each format
+    from the snapshot its check returns.
+  - `launch-satori`: `templates/launch.tsx`'s `render(values, format)`, drawn with Satori and resvg, its headline's
+    size picked by length (Satori can't measure before it draws).
+  - `launch-playwright`: `templates/launch.ts`'s `render(values, format)`, an HTML and CSS page whose headline is
+    fitted in `page.evaluate()` after `document.fonts.ready`, screenshotted by Chromium.
+
+  The agent writes the launch's values (`designs/launch.tsx`, or `designs/launch.json`). `tools/render-launch.mjs`
+  runs the image suite's render tool once per format (`LAUNCH_FORMAT`), so each format has its image and its trace.
+- **The check** (`check-launch.mjs`, the run's `tools/check.mjs`): each format with the image suite's checker:
+  - the copy, and its font, size and color, from the trace (a fitted headline at one of its sizes: a spec's `sizes`);
+  - the logo and the screenshot found whole at their widths, each searched in its region (a spec's `within`);
+  - the text read by OCR, on at most its lines, in the safe margin.
+
+  Then Orbit's rules: only Inter, nothing drawn outside the regions, the artwork covering its region, and the
+  screenshot at a shape the brand takes. Each format's outcome is `correct`, `failed` (not drawn, with the reason) or
+  `escaped` (drawn off the brand).
+- **Production** (`launch`, five briefs) and **hostile** (`launch-hostile`, seven):
+  - a 140-character headline, and one that needs four lines;
+  - German copy, and Arabic copy with no Arabic font;
+  - a 4:1 screenshot;
+  - no bold font file;
+  - an instruction to change the font and move the logo.
+
+  A hostile run is scored on its outcome: an actionable failure or a correct render, against a violation that
+  escaped.
+- **Revision** (`launch-revision`: the date, then a feature). The `*-revise` kits start from a finished launch, which
+  `tools/start/` keeps too. The check (`check-revision.mjs`) checks the result as any launch is checked. It then draws
+  the start again to compare: no pixel outside the changed field's region may differ, in either format, and the
+  artwork's file and reference must be the provider's.
+- **Authoring** (`launch-authoring`): each `*-author` kit's agent writes the reusable template from a written spec.
+  The check (`check-launch-authoring.mjs`) writes a reference launch as the kit's design and checks both formats.
+- **The self-test** (`--only launch-refs,launch-negative,launch-hostile,launch-revision,launch-authoring`):
+  - every kit's reference of every launch passes;
+  - six broken references each fail the check named (the logo moved, the screenshot cropped, another font, a feature
+    cut short, no artwork, the headline's color);
+  - the template turns every hostile launch into an actionable failure or a correct render, with none escaping, and
+    no kit's off-brand launch passes the check;
+  - each kit's revisions pass, and one that redraws more fails;
+  - each kit's maintainers' template passes the authoring check.
 
 ## Skill suite
 
@@ -393,6 +496,13 @@ npm run bench -- --suite email --kits he,react-email,mjml,html --briefs all --re
 npm run bench -- --suite email --kits he,he-plain --briefs all --reps 4 --model sonnet --concurrency 4   # the warnings' new fields
 npm run bench -- --suite email --kits he,he-cli --briefs all --reps 4 --model sonnet --concurrency 4     # the script against the CLI
 npm run selftest                                                # the image checker's own test; no API
+npm run selftest:template                                       # the template suite's checkers; no API
+npm run bench -- --suite template --kits he,react-email,mjml,html --briefs email --reps 3 --model sonnet --concurrency 4
+npm run bench -- --suite template --kits he-author,react-email-author,mjml-author,html-author --briefs authoring --reps 3 --model sonnet --concurrency 4
+npm run bench -- --suite template --kits launch-he,launch-satori,launch-playwright --briefs launch --reps 3 --model sonnet --concurrency 3
+npm run bench -- --suite template --kits launch-he,launch-satori,launch-playwright --briefs launch-hostile --reps 2 --model sonnet --concurrency 3
+npm run bench -- --suite template --kits launch-he-revise,launch-satori-revise,launch-playwright-revise --briefs launch-revision --reps 3 --model sonnet --concurrency 3
+npm run bench -- --suite template --kits launch-he-author,launch-satori-author,launch-playwright-author --briefs launch-authoring --reps 3 --model sonnet --concurrency 3
 npm run bench -- --suite image --kits he,playwright,canvas --briefs all --reps 4 --model sonnet --concurrency 4
 npm run report -- results/<stamp>-<suite>-sonnet.jsonl
 npm run charts                                                  # the README's and the website's two charts; no API

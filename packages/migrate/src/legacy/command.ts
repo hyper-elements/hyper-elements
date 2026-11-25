@@ -101,7 +101,7 @@ export async function migrateLegacy(paths: string[], args: Args, io: LegacyIo, h
     }
     for (const r of migrated) await writeFile(r.file, r.code!);
   }
-  for (const r of current) io.stdout(`${name(r.file)}: already uses the new components: left as it is\n`);
+  for (const r of current) io.stdout(`${name(r.file)}: already uses the new elements: left as it is\n`);
   for (const r of migrated) {
     io.stdout(`${name(r.file)}: ${r.stayed ? "stays as it was" : args.flag("write") ? "migrated" : "would be migrated"}${r.report.length ? `, with ${r.report.length} note${r.report.length === 1 ? "" : "s"}` : ""}\n`);
     for (const line of r.report) io.stdout(`  - ${line}\n`);
@@ -118,6 +118,6 @@ async function writeReport(args: Args, io: LegacyIo, results: Array<{ file: stri
   const files = results.map((r) => ({ file: relative(io.cwd, r.file), notes: r.report }));
   const text = path.endsWith(".json")
     ? `${JSON.stringify({ from: "unlayer-elements", files }, null, 2)}\n`
-    : `# Migration to the new components\n\n${files.map((f) => `## ${f.file}\n\n${f.notes.length ? f.notes.map((n) => `- ${n}`).join("\n") : "Nothing to note."}\n`).join("\n")}`;
+    : `# Migration to the new elements\n\n${files.map((f) => `## ${f.file}\n\n${f.notes.length ? f.notes.map((n) => `- ${n}`).join("\n") : "Nothing to note."}\n`).join("\n")}`;
   await writeFile(resolve(io.cwd, path), text);
 }

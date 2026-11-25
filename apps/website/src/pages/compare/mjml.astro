@@ -24,14 +24,14 @@ const matrix: Row[] = [
   { k: "Brand theme with tokens", he: "yes", heNote: "defineTheme()", re: "part", reNote: "mj-attributes" },
   { k: "Variants from the theme", he: "yes", heNote: "variant=\"secondary\"", re: "part", reNote: "mj-class" },
   { k: "Typed props, loops and conditions", he: "yes", heNote: "TypeScript", re: "no", reNote: "Add a templating language" },
-  { k: "Your own components", he: "yes", heNote: "component()", re: "part", reNote: "mj-include" },
-  { k: "Template checked when it renders", he: "yes", heNote: "With the fix", re: "part", reNote: "Tags and attributes" },
+  { k: "Your own elements", he: "yes", heNote: "defineElement()", re: "part", reNote: "mj-include" },
+  { k: "Email checked when it renders", he: "yes", heNote: "With the fix", re: "part", reNote: "Tags and attributes" },
   { k: "Plain-text version", he: "yes", re: "no" },
   { k: "Agent skill and JSON CLI", he: "yes", re: "part", reNote: "CLI" },
   { k: "Local preview server", he: "yes", re: "part", reNote: "Editor extension" },
   { k: "Visual editor", he: "yes", heNote: "Drag and drop (Unlayer)", re: "part", reNote: "Third-party builders" },
   { k: "Responsive tables that work in Outlook", he: "yes", re: "yes" },
-  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one template", re: "no", reNote: "Email only" },
+  { k: "Web pages, PDFs and images", he: "yes", heNote: "From one design", re: "no", reNote: "Email only" },
   { k: "Any email provider", he: "yes", re: "yes" },
   { k: "Open source, MIT", he: "yes", re: "yes" },
 ];
@@ -40,7 +40,7 @@ const matrix: Row[] = [
 const faq = [
   {
     q: "What are the alternatives to MJML?",
-    a: "The main ones are Hyper Elements, React Email and Maizzle. Hyper Elements and React Email write emails as React components; Hyper Elements also works out the layout, checks the email, previews it in email clients, keeps it on brand with a theme, and renders the same template as a page, a PDF or an image. Maizzle builds HTML emails with Tailwind CSS.",
+    a: "The main ones are Hyper Elements, React Email and Maizzle. Hyper Elements and React Email write emails as React components; Hyper Elements also works out the layout, checks the email, previews it in email clients, keeps it on brand with a theme, and renders the same design as a page, a PDF or an image. Maizzle builds HTML emails with Tailwind CSS.",
   },
   {
     q: "Which handles Outlook better, MJML or Hyper Elements?",
@@ -48,7 +48,7 @@ const faq = [
   },
   {
     q: "How do I put data in an email?",
-    a: "In Hyper Elements a template is a function: its props are typed, and loops and conditions are plain TypeScript. MJML has no variables, loops or conditions; its docs suggest adding a templating language such as Handlebars or Liquid.",
+    a: "In Hyper Elements an email is a function: its props are typed, and loops and conditions are plain TypeScript. MJML has no variables, loops or conditions; its docs suggest adding a templating language such as Handlebars or Liquid.",
   },
   {
     q: "Can I preview my MJML emails in Outlook and Gmail?",
@@ -60,7 +60,7 @@ const faq = [
   },
   {
     q: "Do I need a React app to use Hyper Elements?",
-    a: "No. Templates are React components in TypeScript or JavaScript, but render() runs on your server and returns HTML and plain text, to send with any email provider. Nothing runs in the reader's browser.",
+    a: "No. Emails are React components in TypeScript or JavaScript, but render() runs on your server and returns HTML and plain text, to send with any email provider. Nothing runs in the reader's browser.",
   },
   {
     q: "Which is faster for a coding agent?",

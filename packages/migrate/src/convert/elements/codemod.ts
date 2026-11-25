@@ -133,7 +133,7 @@ const NOT_A_RUN = /^(image |<hr>|<ul>|<ol>|<dl>|<table>|style display: inline-(b
 export interface MigrateElementsOptions {
   /** Module specifiers today's components are imported from (default: the package, and the converter's intermediate one). */
   from?: string[];
-  /** Where the new components are imported from (default "@hyper-elements/react"). */
+  /** Where the new elements are imported from (default "@hyper-elements/react"). */
   to?: string;
   /**
    * The project's modules that pass today's components on (an index re-exporting them), by the specifier the module
@@ -157,11 +157,11 @@ export interface MigrateElementsResult {
   stayed?: boolean;
   /** The lines of `report` about Rows whose Columns are written one under another (their layout can't be read): they move. */
   stacked?: string[];
-  /** The module already uses the new components (the new package's import, or the migration wrote it): it comes back as it was. */
+  /** The module already uses the new elements (the new package's import, or the migration wrote it): it comes back as it was. */
   current?: boolean;
 }
 
-/** The old package. It was never published with the new components, so an import of it is always of today's. */
+/** The old package. It was never published with the new elements, so an import of it is always of today's. */
 const ROOT = "@unlayer/react-elements";
 /** The old package, and where the React Email converter's intermediate source imports today's components from (never resolved). */
 export const DEFAULT_FROM = [ROOT, TODAYS_COMPONENTS];
@@ -170,7 +170,7 @@ const DEFAULT_TO = "@hyper-elements/react";
 /** The line the migration writes at the top of a module it migrated (as the React Email converter writes its own). */
 export const MIGRATED_HEADER = "// Migrated from Unlayer Elements by @hyper-elements/migrate.";
 /**
- * That line, among the comments a module starts with: the migration wrote it, in the new components. (Not the React
+ * That line, among the comments a module starts with: the migration wrote it, in the new elements. (Not the React
  * Email converter's: the source it hands the migration, in today's components, starts with that.)
  */
 const WRITTEN_BY_MIGRATE = /^\/\/ Migrated from Unlayer Elements by @hyper-elements\/migrate\./m;
@@ -181,7 +181,7 @@ const COMPONENTS = new Set(["Email", "Page", "Document", "PageBreak", "Row", "Co
 /** What the codemod migrates of today's exports: its components and its layouts. */
 export const MIGRATED = new Set([...COMPONENTS, "ColumnLayouts"]);
 const ROOTS = new Set(["Email", "Page", "Document"]);
-/** A color the new components take, as it's written: a hex, rgb(), rgba() or a name (not CSS's own words, such as currentColor). */
+/** A color the new elements take, as it's written: a hex, rgb(), rgba() or a name (not CSS's own words, such as currentColor). */
 const WRITTEN_COLOR = /^(#[\da-f]{3,8}|rgba?\([^)]*\)|(?!(?:currentcolor|inherit|initial|unset|revert)$)[a-z]+)$/i;
 /** A record's own value for a key (never one from Object.prototype, as `constructor` would be). */
 const own = <T>(record: Record<string, T> | undefined, key: string): T | undefined => (record && Object.prototype.hasOwnProperty.call(record, key) ? record[key] : undefined);
@@ -321,7 +321,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     return expression;
   };
 
-  // A module the migration wrote says so in its first lines: it's on the new components, whatever is in it, so a
+  // A module the migration wrote says so in its first lines: it's on the new elements, whatever is in it, so a
   // second run changes nothing.
   if (WRITTEN_BY_MIGRATE.test(source.slice(0, file.statements[0]?.getStart() ?? source.length))) return { code: source, report: [], current: true };
 
@@ -387,7 +387,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
         }
       } else {
         specifiers.push(element.getText());
-        report.push(`${where(element)}: ${(element.propertyName ?? element.name).text} is Unlayer Elements' API, which Hyper Elements doesn't have: it stays imported from ${specifier} for you to replace (render the new components with render())`);
+        report.push(`${where(element)}: ${(element.propertyName ?? element.name).text} is Unlayer Elements' API, which Hyper Elements doesn't have: it stays imported from ${specifier} for you to replace (render the new elements with render())`);
       }
     }
     if (specifiers.length) kept.push(`{ ${specifiers.join(", ")} }`);
@@ -395,7 +395,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   }
 
   // A root chosen at run time (`web ? Page : Email`): what's in it would go into today's root, which doesn't draw the
-  // new components, and its props can't be read. The template stays as it was: today's components keep working.
+  // new elements, and its props can't be read. The template stays as it was: today's components keep working.
   let rootAsValue: ts.Node | undefined;
   const findRootValue = (n: ts.Node): void => {
     if (rootAsValue || ts.isImportDeclaration(n)) return;
@@ -407,7 +407,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   };
   findRootValue(file);
   if (rootAsValue) {
-    return { code: source, stayed: true, report: [`${where(rootAsValue)}: its root is chosen at run time (${rootAsValue.parent.getText(file).slice(0, 60)}), which isn't migrated: this template stays as it was, and Hyper Elements doesn't have Unlayer Elements' components. Write it with one root, or by hand in the new components`] };
+    return { code: source, stayed: true, report: [`${where(rootAsValue)}: its root is chosen at run time (${rootAsValue.parent.getText(file).slice(0, 60)}), which isn't migrated: this template stays as it was, and Hyper Elements doesn't have Unlayer Elements' components. Write it with one root, or by hand in the new elements`] };
   }
 
   // The names the module declares itself (a component of its own called Section, Next's Link): a new component whose
@@ -567,7 +567,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     const value = props.get(name);
     if (isLiteral(value) && (value.literal === "" || value.literal === "transparent")) return undefined;
     if (isLiteral(value) && typeof value.literal === "string" && value.code === undefined && !WRITTEN_COLOR.test(value.literal.trim())) {
-      report.push(`its ${name} ${JSON.stringify(value.literal)} isn't a color the new components take (a hex, rgb(), rgba() or a name): left out`);
+      report.push(`its ${name} ${JSON.stringify(value.literal)} isn't a color the new elements take (a hex, rgb(), rgba() or a name): left out`);
       return undefined;
     }
     return value;
@@ -610,7 +610,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     return isLiteral(href) && href.code === undefined ? lit({ href: href.literal, target: opens }) : { code: `{ href: ${code(href)}, target: ${JSON.stringify(opens)} }` };
   };
   /**
-   * A corner radius as the new components take it: px, or [topLeft, topRight, bottomRight, bottomLeft]. CSS's shorthand
+   * A corner radius as the new elements take it: px, or [topLeft, topRight, bottomRight, bottomLeft]. CSS's shorthand
    * and rem or em (at 16px) are written out; what's left can't be read, which is reported.
    */
   const radiusOf = (value: Value | undefined, at: ts.Node): Value | undefined => {
@@ -699,7 +699,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
       report.push(`${where(at)}: its ${drawn} comes from an expression (${code(value)}): it's written as text, so markup in it would show; write that with Span, Link and LineBreak`);
       return [`{${code(value)}}`];
     }
-    // What the new components hold is written with them; what they don't is named, each on a line of the report.
+    // What the new elements hold is written with them; what they don't is named, each on a line of the report.
     const parsed = inlineHtml(markup, holes, nameOf);
     const all = [parsed, ...nested];
     if (keepsMarkup && all.some(({ dropped }) => dropped.some((left) => NOT_A_RUN.test(left)))) {
@@ -728,9 +728,9 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   /** A block today's components pad (an Image, a Button, ...) in a Column the new one sits in, with that padding. */
   const wrapped = (props: Props, block: string, alignment: Value | undefined, at: ts.Node) => {
     const m = phone(props, at);
-    // A block sits on phones where it does on desktop: the new components have no phone alignment for one.
+    // A block sits on phones where it does on desktop: the new elements have no phone alignment for one.
     const phoneAlign = alignOf(m.get("textAlign"));
-    if (phoneAlign && (!alignment || code(phoneAlign) !== code(alignment))) report.push(`${where(at)}: its alignment on phones (mobile textAlign) is left out: the new components place a block on phones where it is on desktop`);
+    if (phoneAlign && (!alignment || code(phoneAlign) !== code(alignment))) report.push(`${where(at)}: its alignment on phones (mobile textAlign) is left out: the new elements place a block on phones where it is on desktop`);
     return element("Column", [
       styleAttr([["padding", n(padding(props))], ["alignItems", alignment]]),
       mobileAttr([["padding", n(m.get("containerPadding"))]]),
@@ -827,7 +827,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
             ], written),
           ]
         : written;
-    // A page ends between the new components' Sections, not in one.
+    // A page ends between the new elements' Sections, not in one.
     const pageBreak = `<${nameOf("PageBreak")} />`;
     const pages = inner.join("").split(pageBreak);
     const balanced = (part: string) => (part.match(/<[A-Z][\w.]*[\s>]/g) ?? []).length - (part.match(/\/>/g) ?? []).length === (part.match(/<\/[A-Z]/g) ?? []).length;
@@ -912,13 +912,13 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   /** Today's font weight (a number, a numeric string, normal, bold, lighter or bolder) as the new one's: 100 to 900 in hundreds, normal or bold. */
   function fontWeight(value: Value | undefined, at: ts.Node): Value | undefined {
     if (value && !isLiteral(value)) {
-      report.push(`${where(at)}: its fontWeight is computed (${value.code}): it's kept as it is, and the new components take a number from 100 to 900 in hundreds, "normal" or "bold", not a string of digits ("700")`);
+      report.push(`${where(at)}: its fontWeight is computed (${value.code}): it's kept as it is, and the new elements take a number from 100 to 900 in hundreds, "normal" or "bold", not a string of digits ("700")`);
       return value;
     }
     if (!isLiteral(value) || value.literal === "normal" || value.literal === "bold") return value;
     if (value.literal === "lighter" || value.literal === "bolder") {
       const weight = value.literal === "bolder" ? 700 : 100;
-      report.push(`${where(at)}: its fontWeight ${value.literal} is ${weight}, what it is beside normal text (the new components have no weight relative to the text around it)`);
+      report.push(`${where(at)}: its fontWeight ${value.literal} is ${weight}, what it is beside normal text (the new elements have no weight relative to the text around it)`);
       return lit(weight);
     }
     const number = typeof value.literal === "number" ? value.literal : typeof value.literal === "string" && value.literal.trim() ? Number(value.literal) : NaN;
@@ -927,7 +927,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
       return undefined;
     }
     const weight = Math.min(900, Math.max(100, Math.round(number / 100) * 100));
-    if (weight !== number) report.push(`${where(at)}: its fontWeight ${value.literal} is ${weight}: the new components take 100 to 900 in hundreds`);
+    if (weight !== number) report.push(`${where(at)}: its fontWeight ${value.literal} is ${weight}: the new elements take 100 to 900 in hundreds`);
     return lit(weight);
   }
 
@@ -937,7 +937,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
    */
   function lineHeightOf(value: Value | undefined, at: ts.Node): Value | undefined {
     if (value && !isLiteral(value)) {
-      report.push(`${where(at)}: its lineHeight is computed (${value.code}): it's kept as it is, and the new components take a multiple of the font size (1.5), a percentage ("150%") or px ("24px"), not a string of digits ("1.5")`);
+      report.push(`${where(at)}: its lineHeight is computed (${value.code}): it's kept as it is, and the new elements take a multiple of the font size (1.5), a percentage ("150%") or px ("24px"), not a string of digits ("1.5")`);
       return value;
     }
     if (!isLiteral(value) || typeof value.literal === "number") return value;
@@ -1273,7 +1273,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
   function divider(node: ts.JsxElement | ts.JsxSelfClosingElement, props: Props) {
     const lineStyle = props.get("borderTopStyle");
     const drawable = !isLiteral(lineStyle) || lineStyle.code !== undefined || /^(solid|dashed|dotted|none)$/.test(String(lineStyle.literal));
-    if (!drawable) report.push(`${where(node)}: its borderTopStyle ${JSON.stringify((lineStyle as { literal: unknown }).literal)} isn't one the new components draw (solid, dashed, dotted or none): it's solid`);
+    if (!drawable) report.push(`${where(node)}: its borderTopStyle ${JSON.stringify((lineStyle as { literal: unknown }).literal)} isn't one the new elements draw (solid, dashed, dotted or none): it's solid`);
     const border = line(props.get("borderTopWidth") ?? lit("1px"), drawable ? lineStyle : undefined, props.get("borderTopColor") ?? lit("#BBBBBB"));
     const width = props.get("width");
     const m = phone(props, node);
@@ -1495,7 +1495,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
         return video(node, props);
       default:
         props.forEach((_, prop) => props.used.add(prop));
-        report.push(`${where(node)}: <${name}> isn't migrated: it's left out (write it with the new components, or keep this template on Unlayer Elements' API)`);
+        report.push(`${where(node)}: <${name}> isn't migrated: it's left out (write it with the new elements, or keep this template on Unlayer Elements' API)`);
         return `{/* @hyper-elements/migrate: <${name}> isn't migrated: ${node.getText().replace(/\*\//g, "* /").slice(0, 120)}… */}`;
     }
   }
@@ -1556,7 +1556,7 @@ export async function migrateElements(source: string, options: MigrateElementsOp
     const component = `<${local.get(opening.tagName.getText()) ?? opening.tagName.getText()}>`;
     const settings = phones.get(props)?.settings;
     const left = [...props.unused().filter((name) => name !== "key"), ...(settings?.unused().map((name) => `mobile.${name}`) ?? [])];
-    if (left.length) report.push(`${where(opening)}: ${component}'s ${left.join(", ")} ${left.length > 1 ? "aren't migrated: they're" : "isn't migrated: it's"} left out (the new components have nothing ${left.length > 1 ? "they become" : "it becomes"})`);
+    if (left.length) report.push(`${where(opening)}: ${component}'s ${left.join(", ")} ${left.length > 1 ? "aren't migrated: they're" : "isn't migrated: it's"} left out (the new elements have nothing ${left.length > 1 ? "they become" : "it becomes"})`);
   }
   // In the order of the lines (a stable sort: lines of one place stay in the order they were found).
   const lineOf = (entry: string) => Number(/^line (\d+):/.exec(entry)?.[1] ?? 0);

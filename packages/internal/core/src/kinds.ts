@@ -47,11 +47,21 @@ export type InputOf<K> = K extends Kind<infer I, Json> ? I : never;
 export type OutputOf<K> = K extends Kind<unknown, infer O> ? O : never;
 
 const ok = <T>(value: T): Parsed<T> => ({ ok: true, value });
+
+/** Plain data copied and frozen at every depth: what a definition keeps of a default, a count or a list. */
+export function deepFrozen<T>(value: T): T {
+  if (Array.isArray(value)) return Object.freeze(value.map(deepFrozen)) as unknown as T;
+  if (typeof value === "object" && value !== null && Object.getPrototypeOf(value) === Object.prototype) {
+    return Object.freeze(Object.fromEntries(Object.entries(value).map(([key, item]) => [key, deepFrozen(item)]))) as T;
+  }
+  return value;
+}
 const fail = (message: string): Parsed<never> => ({ ok: false, message });
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
+/** A kind, frozen: no code that runs after a component uses it can swap its parse(). */
 function kind<In, Out extends Json>(spec: Omit<Kind<In, Out>, "__in">): Kind<In, Out> {
-  return spec;
+  return Object.freeze(spec);
 }
 
 // ─── Numbers and lengths ────────────────────────────────────────────────────
@@ -86,9 +96,10 @@ function px(input: unknown, min: number, what: string): Parsed<number> {
 export type LengthOf<U extends LengthUnit> = number | `${number}${Exclude<U, "px">}`;
 
 export function length<const U extends LengthUnit = "px">(
-  units: readonly U[] = ["px"] as unknown as readonly U[],
+  givenUnits: readonly U[] = ["px"] as unknown as readonly U[],
   options: { min?: number } = {}
 ): Kind<LengthInput<U>, LengthOf<U>> {
+  const units = Object.freeze([...givenUnits]);
   const min = options.min ?? 0;
   const accepts = `a length (${units.map((u) => (u === "px" ? "a number of px" : u)).join(", ")})`;
   return kind<LengthInput<U>, LengthOf<U>>({
@@ -368,7 +379,9 @@ export function radius(): Kind<RadiusInput, Radius> {
 
 // ─── Choices, text, flags ───────────────────────────────────────────────────
 
-export function enumOf<const V extends readonly (string | number)[]>(values: V): Kind<V[number], V[number]> {
+export function enumOf<const V extends readonly (string | number)[]>(given: V): Kind<V[number], V[number]> {
+  // Its own copy: changing the caller's array afterwards changes nothing it accepts.
+  const values = Object.freeze([...given]) as unknown as V;
   const accepts = `one of ${values.map((v) => JSON.stringify(v)).join(", ")}`;
   return kind({
     name: "enum",
@@ -380,7 +393,8 @@ export function enumOf<const V extends readonly (string | number)[]>(values: V):
 }
 
 /** Text, at most `maxLength` long; with a `pattern`, text it finds something in (`mismatch` says what's missing). */
-export function text(options: { maxLength?: number; pattern?: RegExp; mismatch?: string } = {}): Kind<string, string> {
+export function text(given: { maxLength?: number; pattern?: RegExp; mismatch?: string } = {}): Kind<string, string> {
+  const options = Object.freeze({ ...given });
   return kind({
     name: "text",
     editor: "text",
@@ -518,9 +532,10 @@ export type FontFace = { family: string; src: string; format?: FontFormat; weigh
 /** Web fonts: the faces a template loads, each a family's file for a weight and style. */
 /** A list of items, each an object of the given fields, all of them required (a menu's links, a line of icons). */
 export function items<const F extends Record<string, Kind<any, Json>>>(
-  fields: F,
+  given: F,
   noun: string
 ): Kind<Array<{ [K in keyof F]: InputOf<F[K]> }>, Array<{ [K in keyof F]: OutputOf<F[K]> }>> {
+  const fields = Object.freeze({ ...given }) as F;
   const names = Object.keys(fields);
   const shape = `{ ${names.join(", ")} }`;
   const accepts = `a list of ${noun}s, each ${shape}`;
@@ -551,6 +566,204 @@ export function items<const F extends Record<string, Kind<any, Json>>>(
       type: "array",
       items: { type: "object", required: names, properties: Object.fromEntries(names.map((name) => [name, fields[name].jsonSchema()])), additionalProperties: false },
     }),
+  });
+}
+
+/**
+ * A list of values of one kind (a template's three features, its stories), with as few as `min` and as many as `max`.
+ * Each item is parsed by `item`, and a problem names the item ("item 2: …").
+ */
+export function list<K extends Kind<any, Json>>(item: K, options: { min?: number; max?: number } = {}): Kind<Array<InputOf<K>>, Array<OutputOf<K>>> {
+  const { min, max } = options;
+  const counts = min !== undefined && max !== undefined ? (min === max ? `exactly ${min}` : `${min} to ${max}`) : min !== undefined ? `at least ${min}` : max !== undefined ? `at most ${max}` : "";
+  const accepts = `a list of ${item.accepts}${counts ? `, ${counts} of them` : ""}`;
+  return kind({
+    name: "list",
+    editor: "items",
+    accepts,
+    parse(input) {
+      if (!Array.isArray(input)) return fail(`expected ${accepts}, not ${show(input)}`);
+      if (min !== undefined && input.length < min) return fail(`has ${input.length} item${input.length === 1 ? "" : "s"}; it takes ${counts}`);
+      if (max !== undefined && input.length > max) return fail(`has ${input.length} items; it takes ${counts}`);
+      const out: Array<OutputOf<K>> = [];
+      for (const [index, value] of input.entries()) {
+        const parsed = item.parse(value);
+        if (!parsed.ok) return fail(`item ${index + 1}: ${parsed.message}`);
+        out.push(parsed.value as OutputOf<K>);
+      }
+      return ok(out);
+    },
+    jsonSchema: () => ({ type: "array", items: item.jsonSchema(), ...(min !== undefined ? { minItems: min } : {}), ...(max !== undefined ? { maxItems: max } : {}) }),
+  });
+}
+
+/** A field of an object: its kind, and whether it must be given (one with a `default` takes it where it isn't). */
+export interface ObjectField {
+  kind: Kind<any, Json>;
+  required?: boolean;
+  default?: Json;
+}
+
+/**
+ * An object of named fields (a story's title, link and image), each parsed by its kind: a required one must be given,
+ * one with a default takes it where it isn't, and a key that isn't a field is refused.
+ */
+export function object<const F extends Record<string, ObjectField>>(given: F): Kind<Record<string, unknown>, { [key: string]: Json }> {
+  // Its own copies, frozen: a field's default or required flag can't change after it's made.
+  const fields = Object.freeze(
+    Object.fromEntries(Object.entries(given).map(([name, field]) => [name, Object.freeze({ kind: field.kind, ...(field.required ? { required: true } : {}), ...(field.default !== undefined ? { default: deepFrozen(field.default) } : {}) })]))
+  ) as unknown as F;
+  const names = Object.keys(fields);
+  const accepts = `an object of ${names.length ? names.join(", ") : "no fields"}`;
+  return kind({
+    name: "object",
+    editor: "items",
+    accepts,
+    parse(input) {
+      if (!isObject(input)) return fail(`expected ${accepts}, not ${show(input)}`);
+      const extra = Object.keys(input).find((key) => !Object.prototype.hasOwnProperty.call(fields, key));
+      if (extra) return fail(`"${extra}" isn't one of its fields (${names.join(", ")})`);
+      const out: { [key: string]: Json } = {};
+      for (const name of names) {
+        const field = fields[name];
+        const value = input[name];
+        if (value === undefined) {
+          if (field.default !== undefined) out[name] = field.default;
+          else if (field.required) return fail(`${name} is missing`);
+          continue;
+        }
+        const parsed = field.kind.parse(value);
+        if (!parsed.ok) return fail(`${name}: ${parsed.message}`);
+        out[name] = parsed.value;
+      }
+      return ok(out);
+    },
+    jsonSchema: () => ({
+      type: "object",
+      properties: Object.fromEntries(names.map((name) => [name, fields[name].kind.jsonSchema()])),
+      ...(names.some((name) => fields[name].required) ? { required: names.filter((name) => fields[name].required) } : {}),
+      additionalProperties: false,
+    }),
+  });
+}
+
+/**
+ * A list of blocks, each one of several types (a hero, a feature, a quote) with the counts: each item `{ type, …its
+ * fields }`, parsed by its type's object kind, with `type` put back. An unknown or missing type is refused, naming them.
+ */
+export function blocks(given: Record<string, Kind<any, Json>>, options: { min?: number; max?: number } = {}): Kind<Array<{ type: string; [key: string]: unknown }>, Array<{ [key: string]: Json }>> {
+  const types = Object.freeze({ ...given });
+  const names = Object.keys(types);
+  const { min, max } = options;
+  const accepts = `a list of blocks, each { type, … } with type ${names.map((n) => JSON.stringify(n)).join(" or ")}`;
+  return kind({
+    name: "blocks",
+    editor: "items",
+    accepts,
+    parse(input) {
+      if (!Array.isArray(input)) return fail(`expected ${accepts}, not ${show(input)}`);
+      if (min !== undefined && input.length < min) return fail(`has ${input.length} block${input.length === 1 ? "" : "s"}; it takes at least ${min}`);
+      if (max !== undefined && input.length > max) return fail(`has ${input.length} blocks; it takes at most ${max}`);
+      const out: Array<{ [key: string]: Json }> = [];
+      for (const [index, item] of input.entries()) {
+        const at = `block ${index + 1}`;
+        if (!isObject(item)) return fail(`${at}: expected { type, … }, not ${show(item)}`);
+        const { type, ...rest } = item;
+        if (typeof type !== "string" || !Object.prototype.hasOwnProperty.call(types, type)) return fail(`${at}: its type is ${names.map((n) => JSON.stringify(n)).join(" or ")}, not ${show(type)}`);
+        const parsed = types[type].parse(rest);
+        if (!parsed.ok) return fail(`${at} (${type}): ${parsed.message}`);
+        out.push({ type, ...(parsed.value as { [key: string]: Json }) });
+      }
+      return ok(out);
+    },
+    jsonSchema: () => ({
+      type: "array",
+      items: {
+        oneOf: names.map((name) => {
+          const branch = types[name].jsonSchema() as { properties?: Record<string, unknown>; required?: string[] };
+          return { type: "object", required: ["type", ...(branch.required ?? [])], properties: { type: { const: name }, ...(branch.properties ?? {}) }, additionalProperties: false };
+        }),
+      },
+      ...(min !== undefined ? { minItems: min } : {}),
+      ...(max !== undefined ? { maxItems: max } : {}),
+    }),
+  });
+}
+
+/** A Heading's or a Text's fitting in a Canvas: the sizes it may be drawn at, and the lines it may take. */
+export type FitInput = { sizes?: readonly number[] | { min: number; max: number; step: number }; maxLines?: number };
+export type Fit = { sizes?: number[]; maxLines?: number };
+
+const MAX_FIT_SIZES = 32;
+
+/**
+ * `fit`: `sizes`, a list of px sizes or a range `{ min, max, step }` (read largest first, at most 32), and `maxLines`,
+ * at least one of the two. The image entry draws the largest size that fits; without sizes it only checks the lines.
+ */
+export function fit(): Kind<FitInput, Fit> {
+  const accepts = "{ sizes, maxLines }";
+  return kind<FitInput, Fit>({
+    name: "fit",
+    editor: "number",
+    accepts,
+    parse(input) {
+      if (!isObject(input)) return fail(`expected ${accepts}, not ${show(input)}`);
+      const extra = Object.keys(input).find((key) => key !== "sizes" && key !== "maxLines");
+      if (extra) return fail(`"${extra}" isn't part of fit; it takes sizes and maxLines`);
+      const { sizes, maxLines } = input as { sizes?: unknown; maxLines?: unknown };
+      if (sizes === undefined && maxLines === undefined) return fail("fit takes sizes, maxLines, or both");
+      const out: Fit = {};
+      if (maxLines !== undefined) {
+        if (typeof maxLines !== "number" || !Number.isInteger(maxLines) || maxLines < 1) return fail(`maxLines is a whole number from 1, not ${show(maxLines)}`);
+        out.maxLines = maxLines;
+      }
+      if (sizes !== undefined) {
+        let list: number[];
+        if (Array.isArray(sizes)) list = sizes as number[];
+        else if (isObject(sizes)) {
+          const { min, max, step } = sizes as { min?: unknown; max?: unknown; step?: unknown };
+          if ([min, max, step].some((n) => typeof n !== "number" || !(n > 0)) || (min as number) > (max as number)) return fail("a range of sizes is { min, max, step }, each above 0, min no more than max");
+          list = [];
+          for (let size = max as number; size >= (min as number) - 1e-9 && list.length <= MAX_FIT_SIZES; size -= step as number) list.push(Math.round(size * 100) / 100);
+        } else return fail(`sizes is a list of px sizes or { min, max, step }, not ${show(sizes)}`);
+        if (!list.length || list.some((n) => typeof n !== "number" || !(n > 0))) return fail("sizes are px sizes above 0");
+        const sorted = [...new Set(list)].sort((a, b) => b - a);
+        if (sorted.length > MAX_FIT_SIZES) return fail(`fit tries at most ${MAX_FIT_SIZES} sizes; this gives ${sorted.length}`);
+        out.sizes = sorted;
+      }
+      return ok(out);
+    },
+    jsonSchema: () => ({
+      type: "object",
+      properties: {
+        sizes: { anyOf: [{ type: "array", items: { type: "number", exclusiveMinimum: 0 }, minItems: 1, maxItems: MAX_FIT_SIZES }, { type: "object", required: ["min", "max", "step"], properties: { min: { type: "number" }, max: { type: "number" }, step: { type: "number" } }, additionalProperties: false }] },
+        maxLines: { type: "integer", minimum: 1 },
+      },
+      additionalProperties: false,
+    }),
+  });
+}
+
+const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+/** A calendar date, as ISO's `YYYY-MM-DD` ("2026-12-03"): a real day, with no time or time zone. */
+export function date(): Kind<string, string> {
+  const accepts = "a date as YYYY-MM-DD";
+  return kind({
+    name: "date",
+    editor: "text",
+    accepts,
+    parse(input) {
+      const match = typeof input === "string" ? DATE.exec(input) : null;
+      if (!match) return fail(`expected ${accepts}, not ${show(input)}`);
+      const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+      // By arithmetic, not a Date: a render reads no clock, and needs none to know February's length.
+      const leap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+      const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month - 1];
+      if (days === undefined || day < 1 || day > days) return fail(`${input} isn't a day of the calendar`);
+      return ok(input as string);
+    },
+    jsonSchema: () => ({ type: "string", format: "date" }),
   });
 }
 

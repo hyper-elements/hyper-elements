@@ -1,5 +1,5 @@
 /**
- * The gallery's templates, by name: each written for a fictional brand with the new components
+ * The gallery's templates, by name: each written for a fictional brand with the new elements
  * only. Storybook shows them under Templates; gallery.test.tsx renders every one.
  */
 import { casaAlberoPage } from "./casa-albero-page";

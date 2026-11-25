@@ -7,7 +7,7 @@
 
 Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them.
 
-Holds: Rect, Circle, Ellipse, Line, Polygon, Path. Drawn in: page.
+Holds: Rect, Circle, Ellipse, Line, Polygon, Path. Not in an Email.
 
 Props:
 - `width`: a number from 0 (required)
@@ -16,10 +16,10 @@ Props:
 - `title`: text. What it shows, read out by screen readers.
 
 `style`:
-- `padding`: *insets*
-- `backgroundColor`: *color*
-- `border`: *border*
-- `borderRadius`: *radius*
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `padding`: *insets* (Spacing)
+- `backgroundColor`: *color* (Background)
+- `border`: *border* (Border)
+- `borderRadius`: *radius* (Border)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `padding`, `border`.

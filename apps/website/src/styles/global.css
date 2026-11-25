@@ -268,6 +268,12 @@ a.card:hover { border-color: var(--line-3); }
 .phone { width: 375px; max-width: 100%; border-radius: 40px; padding: 10px; background: #161616; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1), var(--shadow); }
 .phone iframe { display: block; width: 100%; border: 0; border-radius: 30px; background: #fff; height: 640px; }
 .view-text { margin: 0; padding: 20px; overflow: auto; font: 400 13px/1.7 var(--mono); color: var(--text); white-space: pre-wrap; height: 100%; }
+/* A full preview is as tall as what it shows: no view scrolls on its own. */
+.preview.full .view-phone, .preview.full .view-text { height: auto; overflow: visible; }
+.preview.full .view-file:has(img) { height: auto; }
+.preview.full .view-file img { height: auto; }
+/* An image template drawn in the visitor's browser (src/scripts/gallery-images.ts): nothing shown until it's drawn. */
+img[data-draw]:not([src]) { visibility: hidden; }
 .diags { list-style: none; margin: 0; padding: 16px; display: grid; gap: 10px; overflow: auto; height: 100%; align-content: start; }
 .diags li { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--hover); font-size: 14px; }
 .diags .sev { font: 600 10.5px var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin-right: 8px; }

@@ -3,7 +3,7 @@
  * other output), text in the font a stack names that's given (else the first given), images from their bytes, an
  * Svg's shapes as a drawing. No engine is named here: an engine's adapter draws what this writes (satori.ts).
  */
-import { assetParts, fontStack, htmlText, type Asset, type Border, type BorderSide, type Radius, type ResolvedNode } from "../index";
+import { assetParts, fontStack, htmlText, lineHeightPx, type Asset, type Border, type BorderSide, type Radius, type ResolvedNode } from "../index";
 import type { Block, DrawnCanvas, Font, Picture, Run, Shape, Style } from "./model";
 
 export interface WriteContext {
@@ -14,6 +14,8 @@ export interface WriteContext {
   fonts: Font[];
   /** An image's source as a data URI (nothing is fetched), or undefined where there's none. */
   image(src: string): string | undefined;
+  /** A fitted node's size, by its path, where it's drawn at another than its largest (the image entry's fitting). */
+  sizes?: ReadonlyMap<string, number>;
 }
 
 const shown = (node: ResolvedNode) => !node.hidden?.desktop;
@@ -57,8 +59,14 @@ export function writeCanvas(root: ResolvedNode, context: WriteContext): DrawnCan
 
 const gap = (node: ResolvedNode): Style => (typeof node.style.gap === "number" ? { gap: px(node.style.gap) } : {});
 
+/** A block keyed: its node's path, or the path with a suffix for a block the writer adds. */
+const keyed = <B extends Block>(block: B, key: string): B => ((block.key = key), block);
+
 class Writer {
   constructor(private readonly context: WriteContext) {}
+
+  /** While a fitted node's text is written: its size as resolved, and the size it's drawn at (its runs follow it). */
+  private fitting?: { from: number; to: number };
 
   /** The family a stack is drawn in: the first given in it, else the first given. */
   family(stack: string): string {
@@ -67,13 +75,14 @@ class Writer {
 
   text(node: ResolvedNode): Style {
     const text = node.text;
+    const size = this.context.sizes?.get(node.path) ?? (this.fitting && text.fontSize === this.fitting.from ? this.fitting.to : undefined);
     return {
       color: text.color,
       fontFamily: this.family(String(text.fontFamily)),
-      fontSize: px(text.fontSize),
+      fontSize: px(size ?? text.fontSize),
       fontWeight: text.fontWeight as number,
       fontStyle: text.fontStyle,
-      lineHeight: px(text.lineHeightPx),
+      lineHeight: px(size === undefined ? text.lineHeightPx : lineHeightPx(text.lineHeight, size)),
       letterSpacing: text.letterSpacing ? px(text.letterSpacing) : undefined,
       textAlign: text.textAlign,
       textTransform: text.textTransform === "none" ? undefined : text.textTransform,
@@ -109,7 +118,13 @@ class Writer {
     return { left: "flex-start", justify: "flex-start", center: "center", right: "flex-end" }[stack.text.textAlign];
   }
 
+  /** A node's own block, keyed by its path. */
   block(node: ResolvedNode, parent: ResolvedNode, row = false): Block | undefined {
+    const drawn = this.drawn(node, parent, row);
+    return drawn && keyed(drawn, node.path);
+  }
+
+  drawn(node: ResolvedNode, parent: ResolvedNode, row = false): Block | undefined {
     const width = node.width !== null ? px(node.width) : undefined;
     const placed: Style = row
       ? { width, flexShrink: 0, flexGrow: 0, alignSelf: node.definition.sizing === "shrink" ? flex(parent.style.alignItems ?? "start") : undefined }
@@ -119,7 +134,7 @@ class Writer {
       case "Heading":
         return this.paragraph(node, { ...placed, ...this.box(node) });
       case "Button":
-        return { kind: "box", style: { display: "flex", justifyContent: "center", ...placed, ...this.box(node), width }, children: [this.paragraph(node, { textAlign: "center" })] };
+        return { kind: "box", style: { display: "flex", justifyContent: "center", ...placed, ...this.box(node), width }, children: [keyed(this.paragraph(node, { textAlign: "center" }), `${node.path}/content`)] };
       case "Image":
         return this.image(node, placed);
       case "Divider": {
@@ -176,10 +191,11 @@ class Writer {
       style: { display: "flex", flexDirection: "column", ...this.box(node), ...placed, ...gap(node) },
       children: nodes(node).map((item, i): Block => ({
         kind: "box",
+        key: item.path,
         style: { display: "flex", flexDirection: "row" },
         children: [
-          { kind: "text", style: { display: "flex", ...this.text(item), width: px(indent), flexShrink: 0, textAlign: "left" }, runs: [node.props.type === "number" ? `${start + i}.` : "•"] },
-          { kind: "box", style: { display: "flex", flexDirection: "column", flexGrow: 1, flexShrink: 1 }, children: this.itemParts(item) },
+          { kind: "text", key: `${item.path}/marker`, style: { display: "flex", ...this.text(item), width: px(indent), flexShrink: 0, textAlign: "left" }, runs: [node.props.type === "number" ? `${start + i}.` : "•"] },
+          { kind: "box", key: `${item.path}/content`, style: { display: "flex", flexDirection: "column", flexGrow: 1, flexShrink: 1 }, children: this.itemParts(item) },
         ],
       })),
     };
@@ -217,6 +233,7 @@ class Writer {
         const line = r < rows.length - 1 && rowBorder ? `${px(rowBorder.width)} ${rowBorder.style} ${rowBorder.color}` : undefined;
         return {
           kind: "box",
+          key: row.path,
           style: { display: "flex", flexDirection: "row", ...this.box(row), borderBottom: line },
           children: nodes(row).map((cell): Block => {
             const span = Math.max(1, Number(cell.props.colSpan ?? 1));
@@ -225,8 +242,9 @@ class Writer {
             const padding = cellPadding ? `${px(cellPadding.top)} ${px(cellPadding.right)} ${px(cellPadding.bottom)} ${px(cellPadding.left)}` : undefined;
             return {
               kind: "box",
+              key: cell.path,
               style: { display: "flex", flexDirection: "column", padding, ...this.box(cell), width: width !== undefined ? px(width) : undefined, flexGrow: width === undefined ? 1 : 0, flexShrink: 0 },
-              children: [this.paragraph(cell, row.props.header ? { fontWeight: 700 } : {})],
+              children: [keyed(this.paragraph(cell, row.props.header ? { fontWeight: 700 } : {}), `${cell.path}/cell`)],
             };
           }),
         };
@@ -237,7 +255,18 @@ class Writer {
   /** A block of text: its runs, a line break starting a new line. */
   paragraph(node: ResolvedNode, style: Style): Block {
     const breaks = node.children.some((child) => typeof child !== "string" && child.type === "LineBreak");
-    return { kind: "text", style: aligned({ display: "flex", flexWrap: "wrap", ...this.text(node), ...style, whiteSpace: breaks ? "pre-wrap" : undefined }), runs: this.runs(node) };
+    const textStyle = this.text(node);
+    // A fitted node's runs in its own size follow it to the size it's drawn at.
+    const size = this.context.sizes?.get(node.path);
+    const outer = this.fitting;
+    if (size !== undefined) this.fitting = { from: node.text.fontSize, to: size };
+    try {
+      // Fitted text never shrinks to fit what holds it: its box is its lines, which fitting counts.
+      const fixed = node.props.fit !== undefined ? { flexShrink: 0 } : {};
+      return { kind: "text", style: aligned({ display: "flex", flexWrap: "wrap", ...textStyle, ...style, ...fixed, whiteSpace: breaks ? "pre-wrap" : undefined }), runs: this.runs(node) };
+    } finally {
+      this.fitting = outer;
+    }
   }
 
   runs(node: ResolvedNode): Run[] {
@@ -250,8 +279,11 @@ class Writer {
             return "\n";
           case "MergeTag":
             return `{{${child.props.name}}}`;
-          case "Image":
-            return this.image(child, {});
+          case "Image": {
+            // An inline Image is a block of its own in the line: keyed, so its box is read.
+            const picture = this.image(child, {});
+            return picture && keyed(picture, child.path);
+          }
           default: {
             const style: Style = { ...this.text(child), textAlign: undefined };
             if (child.style.textDecoration !== undefined) style.textDecoration = String(child.style.textDecoration);
@@ -278,7 +310,8 @@ class Writer {
   layer(node: ResolvedNode, placed: Style): Block {
     const [base, ...over] = nodes(node);
     const height = typeof node.style.height === "number" ? node.style.height : undefined;
-    const under = base && (base.type === "Image" && height !== undefined ? this.image(base, {}, height) : this.block(base, node));
+    const cover = base && base.type === "Image" && height !== undefined ? this.image(base, {}, height) : undefined;
+    const under = base && (cover ? keyed(cover, base.path) : this.block(base, node));
     return {
       kind: "box",
       style: { display: "flex", position: "relative", ...this.box(node), ...placed, overflow: node.style.borderRadius !== undefined ? "hidden" : undefined },
@@ -286,6 +319,7 @@ class Writer {
         under,
         ...over.map((child): Block => ({
           kind: "box",
+          key: `${child.path}/overlay`,
           style: { display: "flex", flexDirection: "column", position: "absolute", top: 0, right: 0, bottom: 0, left: 0, justifyContent: flex(node.style.alignItems ?? "start"), alignItems: flex(node.style.justifyItems ?? "stretch") },
           children: present([this.block(child, node)]),
         })),
@@ -302,6 +336,6 @@ class Writer {
       kind: KINDS[shape.type],
       attributes: { ...shape.props, fill: paint(shape.style.fill), stroke: paint(shape.style.stroke), strokeWidth: shape.style.strokeWidth, opacity: shape.style.opacity },
     }));
-    return { kind: "box", style: { display: "flex", ...this.box(node), ...placed, width: undefined }, children: [{ kind: "drawing", width, height, viewBox: viewBox ?? `0 0 ${width} ${height}`, shapes }] };
+    return { kind: "box", style: { display: "flex", ...this.box(node), ...placed, width: undefined }, children: [{ kind: "drawing", key: `${node.path}/drawing`, width, height, viewBox: viewBox ?? `0 0 ${width} ${height}`, shapes }] };
   }
 }

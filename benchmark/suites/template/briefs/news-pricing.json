@@ -1,0 +1,84 @@
+{
+  "id": "news-pricing",
+  "title": "Simpler plans",
+  "brief": "An issue of Orbit's newsletter, The Orbit Dispatch, made with Orbit's newsletter kit (see CLAUDE.md for its rules).\n\n- Preview text: \"One plan for teams, and a free one for everyone else.\"\n- Heading: \"Simpler plans\"\n- Intro: \"We've folded five plans into two, and nobody pays more.\"\n- Two stories, one after the other. Each is an image, a title, a sentence and a button:\n  - Image https://assets.orbit.dev/img/gradient.png (1200\u00d7500 file), alt text \"The two new plans\". Title \"Two plans, no surprises\". Text \"Free for you, one price per seat for your team.\". Button \"See the plans\" to https://orbit.dev/pricing?utm_source=newsletter.\n  - Image https://assets.orbit.dev/img/hyper-elements-overview.png (1672\u00d7941 file), alt text \"Orbit for large teams\". Title \"For larger teams\". Text \"Single sign-on, audit logs and a person to call.\". Button \"Book a demo\" to https://orbit.dev/demo?utm_source=newsletter.\n- Orbit's header (the logo) and footer (the address, and the unsubscribe link) are the kit's: use them as they are.",
+  "spec": {
+    "preview": "One plan for teams, and a free one for everyone else.",
+    "texts": [
+      "Simpler plans",
+      "We've folded five plans into two, and nobody pays more.",
+      "Two plans, no surprises",
+      "For larger teams",
+      "Free for you, one price per seat for your team.",
+      "Single sign-on, audit logs and a person to call.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "See the plans",
+        "href": "https://orbit.dev/pricing?utm_source=newsletter",
+        "background": "#4f46e5"
+      },
+      {
+        "text": "Book a demo",
+        "href": "https://orbit.dev/demo?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "gradient.png",
+      "hyper-elements-overview.png"
+    ],
+    "columns": []
+  },
+  "content": {
+    "preview": "One plan for teams, and a free one for everyone else.",
+    "heading": "Simpler plans",
+    "intro": "We've folded five plans into two, and nobody pays more.",
+    "stories": [
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/gradient.png",
+          "width": 1200,
+          "height": 500,
+          "alt": "The two new plans"
+        },
+        "title": "Two plans, no surprises",
+        "text": "Free for you, one price per seat for your team.",
+        "button": {
+          "text": "See the plans",
+          "href": "https://orbit.dev/pricing?utm_source=newsletter"
+        }
+      },
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/hyper-elements-overview.png",
+          "width": 1672,
+          "height": 941,
+          "alt": "Orbit for large teams"
+        },
+        "title": "For larger teams",
+        "text": "Single sign-on, audit logs and a person to call.",
+        "button": {
+          "text": "Book a demo",
+          "href": "https://orbit.dev/demo?utm_source=newsletter"
+        }
+      }
+    ]
+  },
+  "run": {
+    "kits": [
+      "he",
+      "react-email",
+      "mjml",
+      "html"
+    ]
+  }
+}

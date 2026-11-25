@@ -54,7 +54,7 @@ const pct = (n: number, max: number) => `width: ${((n / max) * 100).toFixed(1)}%
 
 const label: Record<Mark, string> = { yes: "Yes", part: "Partly", no: "No" };
 
-// On brand: the themed emails are ThemeShots; the template beside them names no colors or fonts.
+// On brand: the themed emails are ThemeShots; the design beside them names no colors or fonts.
 const brandCode = `<Email theme={north}>
   <Column style={{ apply: ["card"] }}>
     <Heading level={1}>The winter collection…</Heading>
@@ -66,7 +66,7 @@ const brandCode = `<Email theme={north}>
   </Column>
 </Email>`;
 const brandParts = [
-  { t: "Tokens", d: "Colors, fonts, sizes, spacing and corners, checked when the template is read" },
+  { t: "Tokens", d: "Colors, fonts, sizes, spacing and corners, checked when the design is read" },
   { t: "Defaults and variants", d: "Every Button, Heading and Divider styled once, with named versions" },
   { t: "Everywhere", d: "The same theme brands emails, pages, PDFs and images" },
 ];
@@ -87,7 +87,7 @@ const checkPoints = [
   { t: "With the fix", d: "Each one says what to write instead, so an agent fixes it itself" },
 ];
 
-// Beyond email: a page, a PDF and an image, real output of the site's templates, as images (scripts/compare-previews.mjs; the
+// Beyond email: a page, a PDF and an image, real output of the site's designs, as images (scripts/compare-previews.mjs; the
 // Canvas is its own PNG from generate), so their copy isn't read as this page's text.
 const outputs = [
   { kind: "Web page", ex: template("casa-albero-page"), img: "/generated/compare/casa-albero-page.jpg", w: 900, h: 855, href: "/docs/outputs/page" },
@@ -246,7 +246,7 @@ const jsonLd = [
     <div class="wrap">
       <div class="sec-head reveal">
         <h2 class="h-section">On brand, in every email</h2>
-        <p class="sec-sub">Write your brand once as a theme. The template names no colors or fonts; swap the theme and the same email is someone else's.</p>
+        <p class="sec-sub">Write your brand once as a theme. The design names no colors or fonts; swap the theme and the same email is someone else's.</p>
       </div>
       <ThemeShots />
       <div class="brand-row reveal">
@@ -288,7 +288,7 @@ const jsonLd = [
     <div class="wrap">
       <div class="beyond-head reveal">
         <h2>Beyond email</h2>
-        <p>Change a template's root and the same content becomes a web page, a PDF or an image.</p>
+        <p>Change a design's root and the same content becomes a web page, a PDF or an image.</p>
       </div>
       <div class="outs">
         {outputs.map((o) => (
@@ -421,7 +421,7 @@ const jsonLd = [
   .emu-clients li { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg); font-size: 13px; color: var(--text); }
   .emu-clients b { font: 500 12px var(--mono); color: var(--ok); }
 
-  /* On brand: the template and the theme's parts, beside the same email in two themes. */
+  /* On brand: the design and the theme's parts, beside the same email in two themes. */
   .brand-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 20px; }
   .brand-code, .brand-side { min-width: 0; }
   .brand-side { display: flex; flex-direction: column; gap: 10px; }

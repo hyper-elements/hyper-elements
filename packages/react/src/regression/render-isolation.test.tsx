@@ -177,6 +177,25 @@ describe("a render", () => {
     }
   });
 
+  it("of a template's design reads none either, and the same values give the same bytes", async () => {
+    const { launch, digest } = await import("../template/examples");
+    const sources: Array<[object, string]> = [[globalThis.crypto, "getRandomValues"], [globalThis.crypto, "randomUUID"], [Math, "random"], [Date, "now"]];
+    const spies = sources.filter(([owner, name]) => typeof (owner as Record<string, unknown>)?.[name] === "function").map(([owner, name]) => vi.spyOn(owner as any, name as any));
+    try {
+      const Launch = launch as unknown as React.FC<Record<string, unknown>>;
+      const first = await render(<Launch format="square" {...launch.example} />);
+      const again = await render(<Launch format="square" {...launch.example} />);
+      expect(again.html).toBe(first.html);
+      expect(launch.check(launch.example).valid).toBe(true);
+      launch.describe();
+      const designed = await render(digest.design(digest.example));
+      expect((await render(digest.design(digest.example))).html).toBe(designed.html);
+      for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+    }
+  });
+
   // Its nonce comes from the clock and a count of renders: where the clock stands still (fake timers) or there's
   // none, a template renders as it does with one, and so does a template worked out inside a component of it.
   it("renders the same where the clock stands still or there's none", async () => {

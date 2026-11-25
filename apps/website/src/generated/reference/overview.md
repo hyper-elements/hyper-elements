@@ -1,13 +1,13 @@
 ---
-title: "Components"
+title: "Elements"
 group: "Overview"
 order: -1
-summary: "Every component, what it holds, and every prop and style it takes."
+summary: "Every element, what it holds, and every prop and style it takes."
 ---
 
-Every component, what it holds, and every prop and style it takes, with its default and what it does. [Templates and roots](/docs/templates) shows how a template is written; `validate()` checks one against what's here.
+Every element, what it holds, and every prop and style it takes, with its default and what it does. [Designs](/docs/designs) shows how a design is written; `validate()` checks one against what's here.
 
-Every component also takes:
+Every element also takes:
 
 - `style={{ … }}`: the styles listed under it. A number is px (`padding: 16` is `16px`).
 - `style={{ mobile: { … } }}`: style overrides on phones, in an `Email` or a `Page`, for the styles listed under "`style.mobile`".
@@ -16,7 +16,7 @@ Every component also takes:
 - `id`: an id of your own, written into the HTML.
 
 
-A template is one of these, and the root decides the output: `render()` writes an Email's HTML, a Page's HTML, and a Document's print HTML. `renderPdf()` (`@hyper-elements/react/pdf`) writes a Document's PDF, and `renderImage()` (`@hyper-elements/react/image`) a Canvas's PNG or SVG (`render()` writes a Canvas's HTML, to look at).
+A design is one of these, and the root decides the output: `render()` writes an Email's HTML, a Page's HTML, and a Document's print HTML. `renderPdf()` (`@hyper-elements/react/pdf`) writes a Document's PDF, and `renderImage()` (`@hyper-elements/react/image`) a Canvas's PNG or SVG (`render()` writes a Canvas's HTML, to look at).
 
 
 Bands and boxes that arrange blocks. None is required: a root stacks its children.
@@ -28,7 +28,17 @@ Content, stacked down whatever holds it.
 Inside text: a styled run, a link, a line break, a merge tag.
 
 
-Only inside the component named: a list's items, a table's rows and cells, a document's pages, header and footer.
+Only inside the element named: a list's items, a table's rows and cells, a document's pages, header and footer.
 
 
 Only inside an Svg, in its viewBox's units.
+
+
+`await render(design, { blockMap: true })` also gives `blocks`, for a tool that previews a design and needs to know which block of it it's looking at: `{ version, unit: "utf8", entries: [{ path, nodeId?, type, offset }] }`. Every root has one: an Email, a Page, a Document (its print HTML) and a Canvas (as HTML).
+
+- Each block written as an element has an entry: its place in the design (`root.children[2]`, as diagnostics give it), its `id` where it has one, its element (`type`, as laid out: a Grid's rows are `Row`s), and the UTF-8 byte offset in `html` just after its outermost element's tag name (`<table`, `<div`). In an Email, that's the first element every email client but classic Outlook reads, else its first in Outlook's own markup.
+- Entries are in the order of their offsets; at one offset, the outer block comes first. A `LineBreak`, a `MergeTag` and a `PageNumber` have none, nor, in an Email, a `Layer`'s `Image` (drawn as the Layer's background).
+- A Document's `PageHeader` and `PageFooter`, and what they hold, are written on every page: they have an entry on each, with the same `path`. A `Document.Page`'s entry is its page's box.
+- The HTML is the same bytes as without the option. Merge tags are written before the offsets are taken, and the offsets count the whole document, `<head>` included.
+- `version` is `BLOCK_MAP_VERSION`, which changes only when this format does.
+- Not with `pretty`, which indents the HTML after the offsets are taken (`render/block-map-pretty`).

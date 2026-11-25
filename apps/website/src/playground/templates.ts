@@ -8,6 +8,8 @@ export interface StarterInfo {
   title: string;
   description: string;
   root: "Email" | "Page" | "Document" | "Canvas";
+  /** A recreation's company (templates/_companies/<company>.ts): its brand is offered for it. */
+  company?: string;
 }
 export interface Starter extends StarterInfo {
   source: string;

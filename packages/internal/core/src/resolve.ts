@@ -30,6 +30,8 @@ export interface ResolvedText {
 export interface ResolvedNode {
   /** The author's id, if any. */
   id?: string;
+  /** The template field it shows (`headline`, `stories[1].image`), where the template's render binds one. */
+  field?: string;
   /**
    * Where it is in the tree as laid out ("root.children[2]"): its place in the template, but inside a Grid (laid out
    * as Rows of cells) and inside what a custom component renders. The document's `templatePath` gives the template's.
@@ -168,7 +170,9 @@ function styleOf(node: Node, definition: ComponentDefinition, props: Record<stri
   const style: Record<string, Json> = { ...((definition.defaultStyle ?? {}) as Record<string, Json>) };
   const by = definition.defaultStyleBy;
   if (by) Object.assign(style, by.values[String(props[by.prop])] ?? {});
-  return { ...style, ...node.style };
+  // Fitted text is laid out at its largest size: what the HTML preview draws, and where the image entry starts.
+  const fitted = (props.fit as { sizes?: number[] } | undefined)?.sizes;
+  return { ...style, ...node.style, ...(fitted?.length ? { fontSize: fitted[0] } : {}) };
 }
 
 function textOf(parent: ResolvedText, style: Record<string, Json>): ResolvedText {
@@ -192,6 +196,7 @@ function resolveNode(node: Node, path: string, parentText: ResolvedText, availab
   const style = styleOf(node, definition, props, context);
   return {
     ...(node.id ? { id: node.id } : {}),
+    ...(node.field ? { field: node.field } : {}),
     path,
     type: node.type,
     definition,

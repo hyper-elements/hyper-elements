@@ -7,15 +7,15 @@ npx @hyper-elements/migrate emails --write --report migration.md
 npm install @hyper-elements/react@^0.3.0
 ```
 
-Run it from your project folder (it uses your project's React, React Email and `tsconfig` paths). Each template becomes the components from `@hyper-elements/react`, with its styles in `style={{ }}`, and keeps its props, loops and conditions. Components it uses from the same file or other files of yours (a shared `Layout`, a `Footer`) are inlined, so their markup converts too.
+Run it from your project folder (it uses your project's React, React Email and `tsconfig` paths). Each template becomes the elements from `@hyper-elements/react`, with its styles in `style={{ }}`, and keeps its props, loops and conditions. Components it uses from the same file or other files of yours (a shared `Layout`, a `Footer`) are inlined, so their markup converts too.
 
 JavaScript templates keep JavaScript helpers. The document's `dir` becomes `Email`'s `dir` prop. Its `lang` isn't carried over yet: the report notes it, and you set `lang` on `Email` yourself.
 
-Anything the components can't express (content with `display: none`, markup the converter can't map) is kept as an `Html` block marked `TODO(convert)`, and the template is still written. A template that can't be written in the components at all fails: nothing is written for it, the report says why, and the run exits with code `2`. See [what to do about one](#a-template-that-fails).
+Anything the elements can't express (content with `display: none`, markup the converter can't map) is kept as an `Html` block marked `TODO(convert)`, and the template is still written. A template that can't be written in the elements at all fails: nothing is written for it, the report says why, and the run exits with code `2`. See [what to do about one](#a-template-that-fails).
 
 ## What the check guarantees
 
-The goal is an editable Unlayer template with the same content, not pixel parity. Every template is written; the original and the migrated version are rendered with the template's `PreviewProps`, then again with each boolean prop flipped, and compared.
+The goal is an editable design with the same content, not pixel parity. Every template is written; the original and the migrated version are rendered with the template's `PreviewProps`, then again with each boolean prop flipped, and compared.
 
 **Content** must be the same, or the template is flagged `✗` and the command exits with code `2` (it's still written: content that differs is a converter bug, since anything it can't map is kept as HTML):
 
@@ -50,11 +50,11 @@ const { design } = toDesign(element); // open in the visual editor with loadDesi
 
 `--out` refuses symlinked destinations and directories inside the output folder, and cannot replace input templates. Use `--write` to replace originals. It doesn't replace files already in the output folder that the run didn't produce either, unless you pass `--overwrite` (with `--strict`, it still never writes a template that failed the check).
 
-`--design` also writes each template's design JSON next to it, ready for `loadDesign()`. Text props become merge tags (`{{name}}`) where the template shows them as given; `--no-merge-tags` keeps the `PreviewProps` values. CSS, font URLs, backgrounds and all image sources retain sample values even when merge tags are enabled.
+`--design` also writes each template's builder design next to it, ready for `loadDesign()`. Text props become merge tags (`{{name}}`) where the template shows them as given; `--no-merge-tags` keeps the `PreviewProps` values. CSS, font URLs, backgrounds and all image sources retain sample values even when merge tags are enabled.
 
 ## A template that fails
 
-Rewrite the part the report names by hand with the components ([GUIDE.md](../GUIDE.md)), then check it against the React Email original (from git, if `--write` replaced it) with `npx @hyper-elements/migrate compare <original> <migrated>`.
+Rewrite the part the report names by hand with the elements ([GUIDE.md](../GUIDE.md)), then check it against the React Email original (from git, if `--write` replaced it) with `npx @hyper-elements/migrate compare <original> <migrated>`.
 
 ## Open React Email templates in the Unlayer editor
 
@@ -68,7 +68,7 @@ npx @hyper-elements/migrate emails --out unlayer --design --report unlayer/repor
 editor.loadDesign(await fetch("/unlayer/welcome.design.json").then((r) => r.json()));
 ```
 
-A template's web fonts (Google Fonts, `<Font>`) aren't part of the design JSON: the editor loads and exports a web font only when it's registered when the editor is created. The report lists each template's fonts in that shape, so pass them on:
+A template's web fonts (Google Fonts, `<Font>`) aren't part of the builder design: the editor loads and exports a web font only when it's registered when the editor is created. The report lists each template's fonts in that shape, so pass them on:
 
 ```js
 const report = await fetch("/unlayer/report.json").then((r) => r.json());
@@ -78,15 +78,15 @@ const editor = unlayer.createEditor({ id: "editor", displayMode: "email", fonts:
 
 From the library, `verifyConversion(...).editorFonts` and `convertReactEmail(...).editorFonts()` return the same list.
 
-The [react-email-in-editor example](../../../examples/react-email-in-editor) runs this end to end: it migrates two templates and opens them in the hosted editor, with a picker for every template it wrote. Spacing between sections becomes padding, and a column that only holds space (around a card, beside an image) holds an invisible divider, so the editor shows the design as it looks rather than empty-column placeholders.
+The [react-email-in-editor example](../../../examples/react-email-in-editor) runs this end to end: it migrates two templates and opens them in the hosted editor, with a picker for every template it wrote. Spacing between sections becomes padding, and a column that only holds space (around a card, beside an image) holds an invisible divider, so the editor shows the email as it looks rather than empty-column placeholders.
 
-For a right-to-left design, call `unlayer.setTextDirection("rtl")` when loading it. The design keeps `body.values.textDirection`; `lang` belongs to the rendered document and is not stored in the editor's design JSON.
+For a right-to-left builder design, call `unlayer.setTextDirection("rtl")` when loading it. The builder design keeps `body.values.textDirection`; `lang` belongs to the rendered document and is not stored in the editor's design JSON.
 
 ## Agent rules
 
 - To move React Email templates to Elements, run `npx @hyper-elements/migrate <folder> --report migration.md` first, read the report, then run it again with `--write`. Don't rewrite templates by hand when the command can do it: it keeps their logic and checks the result.
 - Exit code `2` means a template failed to convert or lost content: report that to the user with the file and the reason from the report. Don't pass `--force` to hide it.
-- Blocks marked `TODO(convert)` in a migrated template are kept as HTML. Converting one by hand: replace it with the new components ([GUIDE.md](../GUIDE.md)), then check it with `npx @hyper-elements/migrate compare <original> <migrated>`. Exit code `2` lists missing or extra content.
+- Blocks marked `TODO(convert)` in a migrated template are kept as HTML. Converting one by hand: replace it with the new elements ([GUIDE.md](../GUIDE.md)), then check it with `npx @hyper-elements/migrate compare <original> <migrated>`. Exit code `2` lists missing or extra content.
 - After converting any template by hand, run the same `compare` before reporting it done.
 - React Email → Elements, when writing by hand: `Text`, `Section`, `Row` and `Column` keep their names; `Container` width → `Email` `width`; `Img` → `Image`, with its file's size in `src={{ src, width, height }}`; `Hr` → `Divider`; `Preview` → `Email` `previewText`; margins → the parent's `gap`; Tailwind classes and inline styles → `style={{ }}`.
 

@@ -148,3 +148,76 @@ export const mapped = render(ok, { blockMap: true }).then((r) => {
   return [blocks?.version === BLOCK_MAP_VERSION, blocks?.unit === "utf8", entry?.path, entry?.nodeId, offset] as const;
 });
 export const fields = (d: Diagnostic): [readonly string[] | undefined, string | undefined, string | undefined] => [d.clients, d.fix, d.see];
+
+// ─── Templates: a template's props and values come from its fields ─────────
+
+import { field, template, type TemplateProps, type Values } from "../template/index";
+import { prop } from "./index";
+
+const Launch = template({
+  id: "acme.Launch",
+  version: "1.0.0",
+  label: "Launch",
+  root: "Canvas",
+  formats: { square: { width: 1080, height: 1080 }, landscape: { width: 1200, height: 675 } },
+  fields: {
+    headline: prop.text({ label: "Headline", required: true, maxLength: 90 }),
+    features: prop.list(prop.text({ label: "Feature" }), { label: "Features", min: 3, max: 3 }),
+    launchDate: prop.date({ label: "Launch date", required: true }),
+    promo: prop.object({ text: prop.text({ label: "Text", required: true }) }, { label: "Promo" }),
+    locale: prop.choice(["en-US", "de-DE"], { label: "Language", default: "en-US" }),
+    photo: field.image({ label: "Photo", required: true, fit: "cover" }),
+  },
+  example: { headline: "Hi", launchDate: "2026-12-03", photo: { src: "https://a.example/p.png", width: 10, height: 10 } },
+  render(v, { format }) {
+    // Values: a list is always an array, an optional object may be undefined, a default is always there.
+    const features: string[] = v.features;
+    const promo: { text: string } | undefined = v.promo;
+    const locale: "en-US" | "de-DE" = v.locale;
+    const width: number = v.photo.width;
+    // @ts-expect-error a format is one of its names
+    const wrong: "other" = format;
+    void [features, promo, locale, width, wrong];
+    return <Email />;
+  },
+});
+
+export const launchDesign = (
+  <Launch format="square" headline="Orbit" launchDate="2026-12-03" features={["a", "b", "c"]} photo={{ src: "https://a.example/p.png", width: 10, height: 10 }} />
+);
+// @ts-expect-error a required field is a required prop
+export const missingHeadline = <Launch launchDate="2026-12-03" photo={{ src: "https://a.example/p.png", width: 10, height: 10 }} />;
+// @ts-expect-error a field it doesn't have isn't a prop
+export const unknownProp = <Launch headline="Orbit" launchDate="2026-12-03" photo={{ src: "https://a.example/p.png", width: 10, height: 10 }} headlineFont="Comic Sans" />;
+// @ts-expect-error a text field takes text
+export const numberForText = <Launch headline={3} launchDate="2026-12-03" photo={{ src: "https://a.example/p.png", width: 10, height: 10 }} />;
+// @ts-expect-error format is one of its format names
+export const unknownFormat = <Launch format="portrait" headline="Orbit" launchDate="2026-12-03" photo={{ src: "https://a.example/p.png", width: 10, height: 10 }} />;
+export const launchProps: TemplateProps<typeof Launch> = { headline: "Orbit", launchDate: "2026-12-03", photo: { src: "https://a.example/p.png", width: 10, height: 10 } };
+export const launchValues = (values: Values<typeof Launch>): string[] => values.features;
+
+// A slot takes JSX; blocks are a union keyed by type.
+const WithSlot = template({
+  id: "acme.WithSlot",
+  version: "1.0.0",
+  label: "With slot",
+  root: "Email",
+  fields: {
+    body: field.slot({ label: "Body", required: true, allow: [Column, Text] }),
+    sections: prop.blocks(
+      { hero: prop.object({ title: prop.text({ label: "Title", required: true }) }, { label: "Hero" }), quote: prop.object({ text: prop.text({ label: "Text", required: true }) }, { label: "Quote" }) },
+      { label: "Sections" }
+    ),
+  },
+  example: { body: <Column /> },
+  render: (v) => {
+    const titles: string[] = v.sections.map((block) => (block.type === "hero" ? block.title : block.text));
+    void titles;
+    return <Email>{v.body}</Email>;
+  },
+});
+export const slotDesign = <WithSlot body={<Column><Text>Hi</Text></Column>} sections={[{ type: "hero", title: "One" }, { type: "quote", text: "Two" }]} />;
+// @ts-expect-error a slot takes JSX, not text
+export const slotText = <WithSlot body="text" />;
+// @ts-expect-error a block's type is one of its types
+export const badBlock = <WithSlot body={<Column />} sections={[{ type: "video", title: "x" }]} />;

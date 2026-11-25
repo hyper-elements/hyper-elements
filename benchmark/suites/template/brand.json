@@ -1,0 +1,35 @@
+{
+  "name": "Orbit",
+  "palette": {
+    "page": "#f1f2f6",
+    "card": "#ffffff",
+    "ink": "#1f2937",
+    "muted": "#6b7280",
+    "accent": "#4f46e5",
+    "onAccent": "#ffffff"
+  },
+  "fonts": [
+    "Helvetica",
+    "Arial",
+    "sans-serif"
+  ],
+  "fontStack": "Helvetica, Arial, sans-serif",
+  "logo": {
+    "src": "https://assets.orbit.dev/img/orbit-logo.png",
+    "width": 252,
+    "height": 128,
+    "shown": 126,
+    "alt": "Orbit"
+  },
+  "address": "Orbit Labs, 500 Market St, San Francisco",
+  "unsubscribe": "https://orbit.dev/unsubscribe?utm_source=newsletter",
+  "domains": [
+    "orbit.dev",
+    "*.orbit.dev"
+  ],
+  "params": {
+    "utm_source": "newsletter"
+  },
+  "header": "brand-header",
+  "footer": "brand-footer"
+}

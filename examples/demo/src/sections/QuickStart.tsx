@@ -14,7 +14,7 @@ const steps = [
   {
     num: "2",
     title: "Build",
-    desc: "Compose with JSX components",
+    desc: "Compose with JSX elements",
     code: `<Email>
   <Row>
     <Column>

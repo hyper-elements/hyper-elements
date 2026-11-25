@@ -14,6 +14,16 @@
       "category": "development"
     },
     {
+      "name": "brand-templates",
+      "source": "./skills/brand-templates",
+      "description": "Make emails, pages, PDFs and images from your team's Hyper Elements templates, inside the guardrails they set (fixed parts, typed fields, slots of approved components, rules checked on the result), and write such templates from a brand brief.",
+      "homepage": "https://www.hyperelements.dev/docs/templates",
+      "repository": "https://github.com/hyper-elements/hyper-elements",
+      "license": "MIT",
+      "keywords": ["templates", "brand", "email", "guardrails", "agents"],
+      "category": "development"
+    },
+    {
       "name": "hyper-elements",
       "source": "./skills/hyper-elements",
       "description": "Write emails, web pages, printed documents, PDFs and images in code with Hyper Elements, React components that render email-safe HTML, page HTML, PDFs and PNG or SVG images.",

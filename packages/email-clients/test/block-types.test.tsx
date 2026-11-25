@@ -25,5 +25,5 @@ it("refuses a block map whose entries don't say their component", async () => {
       <Text>Hi</Text>
     </Email>
   ).catch((e: unknown) => e as Error);
-  expect(error).toMatchObject({ name: "email-clients/version-mismatch", message: expect.stringContaining("has no block types in render()'s blockMap. Install a matching pair: npm i @hyper-elements/react@^0.4.0") });
+  expect(error).toMatchObject({ name: "email-clients/version-mismatch", message: expect.stringContaining("has no block types in render()'s blockMap. Install a matching pair: npm i @hyper-elements/react@^0.5.0") });
 });

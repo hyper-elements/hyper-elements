@@ -48,15 +48,15 @@ const options = [
   { flag: "(none)", d: "Converts and checks every template. Writes nothing." },
   { flag: "--write", d: "Replaces each template. Only files git can restore, so git can undo it." },
   { flag: "--out <dir>", d: "Writes the migrated templates to another folder instead." },
-  { flag: "--design", d: "Also writes design JSON for Unlayer's visual editor." },
+  { flag: "--design", d: "Also writes builder design JSON for Unlayer's visual editor." },
   { flag: "--strict", d: "Fails a template with any difference at all, and doesn't write it." },
   { flag: "--report <file>", d: "Writes the report as JSON or Markdown." },
 ];
 
 const more = [
-  { t: "From Unlayer Elements", d: "A codemod moves templates written with Unlayer Elements to the new components.", code: "--from unlayer-elements", href: "/docs/migrate/unlayer-elements" },
+  { t: "From Unlayer Elements", d: "A codemod moves templates written with Unlayer Elements to the new elements.", code: "--from unlayer-elements", href: "/docs/migrate/unlayer-elements" },
   { t: "Check a hand migration", d: "Compare a template you converted yourself with its original, the same way.", code: "compare <original> <migrated>", href: `${guide}#check-a-template-you-migrated-yourself` },
-  { t: "From code", d: "Convert a template from an agent, a build step or a server, and get its HTML and design.", code: "convertReactEmail(Welcome)", href: `${guide}#from-code` },
+  { t: "From code", d: "Convert a template from an agent, a build step or a server, and get its HTML and builder design.", code: "convertReactEmail(Welcome)", href: `${guide}#from-code` },
 ];
 ---
 <Base title="Migrate from React Email" description="Move React Email templates to Hyper Elements in one command, and your agent writes emails 2.6× faster with 3.4× fewer output tokens. Each template is checked against the original.">
@@ -307,7 +307,7 @@ const more = [
   .ticks li { position: relative; padding-left: 24px; color: var(--text); font-size: 15px; line-height: 1.5; }
   .ticks li::before { content: "✓"; position: absolute; left: 0; top: 0; font: 500 13px/1.7 var(--mono); color: var(--text-3); }
 
-  /* Options, as ruled rows like the components page's. */
+  /* Options, as ruled rows like the elements page's. */
   .opts { border-bottom: 1px solid var(--line); }
   .opts-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding-bottom: 20px; }
   .opts-head h2 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }

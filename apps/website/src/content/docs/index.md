@@ -1,9 +1,9 @@
 ---
 title: "Introduction"
-description: "Hyper Elements is a set of React components that render one template to email-safe HTML, a web page, a PDF or an image."
+description: "Hyper Elements is a set of React components that render one design to email-safe HTML, a web page, a PDF or an image."
 ---
 
-Hyper Elements is a set of React components for emails, web pages, printed documents and images. You write a template once in JSX, and `render()` gives you the HTML its root asks for, with a plain-text version beside it, on your own server and with no network calls.
+Hyper Elements is a set of React components for emails, web pages, printed documents and images. You write a design once in JSX, and `render()` gives you the HTML its root asks for, with a plain-text version beside it, on your own server and with no network calls.
 
 [![React components flow through Hyper Elements into email HTML and plain text, responsive web HTML, PDF documents, and PNG or SVG images.](/img/hyper-elements-overview.png)](/img/hyper-elements-overview.png "Open the overview diagram at full size")
 
@@ -23,7 +23,7 @@ const welcome = (
 const { html, text } = await render(welcome);
 ```
 
-## One template, four outputs
+## One design, four outputs
 
 The root decides the output. Change the root and the same content renders somewhere else.
 
@@ -40,11 +40,11 @@ The root decides the output. Change the root and the same content renders somewh
 - **Writing Outlook conditional comments.** Outlook-only markup goes inside `<!--[if mso]>`, and nothing other clients need goes in one.
 - **Inlining styles.** Layout, colors, fonts, sizes and spacing are written inline, so the email holds its desktop layout where a client drops `<style>`.
 - **Keeping a plain-text version in sync.** Every `render()` returns `text` beside `html`.
-- **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds a component's phone styles.
+- **Writing media queries.** A `Row` stacks its children on phones by default, and `style={{ mobile: { } }}` holds an element's phone styles.
 - **Running headless Chrome for a PDF.** `@hyper-elements/react/pdf` writes a `Document` as a PDF with no browser.
 - **Guessing what an email client will do.** `validate()` checks every prop and style, and says what the output can't show as asked, with the path to the value. With `@hyper-elements/email-clients`, it names the clients each problem is about, and its email client emulator, `renderInEmailClients()`, shows the email as each email client shows it, on your machine. See [Email client emulator](/docs/email-client-emulator).
 
-## The shape of a template
+## The shape of a design
 
 ```text
 <Email>            the root: Email, Page, Document or Canvas
@@ -66,8 +66,8 @@ A root, a `Section` and a `Column` stack what they hold, so a block doesn't need
 
 | Package | What it does |
 |---------|--------------|
-| `@hyper-elements/react` | The components, `render()`, `validate()`, `outline()`, `formatDiagnostics()`, `component()` and `prop`, and `ElementsError` |
-| `@hyper-elements/react/builder` | `toDesign()` and `fromDesign()`: a template as the Unlayer builder's design JSON, and a design back as a template |
+| `@hyper-elements/react` | The elements, `render()`, `validate()`, `outline()`, `formatDiagnostics()`, `defineElement()` and `prop`, and `ElementsError` |
+| `@hyper-elements/react/builder` | `toDesign()` and `fromDesign()`: a design as the Unlayer builder's design JSON, and a builder design back as a design |
 | `@hyper-elements/react/pdf` | `renderPdf()`: a `Document` as a PDF, with react-pdf, no browser |
 | `@hyper-elements/react/image` | `renderImage()`: a `Canvas` as PNG or SVG, with Satori and resvg |
 | `@hyper-elements/email-clients` | `emailClients()`: the email client checks, as a plugin for `validate()` and `render()`; `renderInEmailClients()`: the email client emulator, the email as each email client shows it, on your machine |
@@ -84,10 +84,10 @@ The source is on GitHub at [hyper-elements/hyper-elements](https://github.com/hy
 ## Where to go next
 
 - [Quickstart](/docs/quickstart): install, write an email, render it and send it.
-- [Templates and roots](/docs/templates): the four roots, their props, and your own components.
+- [Designs](/docs/designs): the four roots, their props, and your own functions.
 - [Layout](/docs/layout): Section, Row, Column, Grid and Layer.
-- [Styles, phones and hover](/docs/styles): `style`, `mobile`, `hidden`, `hover` and fonts.
+- [Styles](/docs/styles): `style`, `mobile`, `hidden`, `hover` and fonts.
 - [Rendering](/docs/rendering): `render()`, `validate()`, `outline()` and merge tags.
 - [Diagnostics](/docs/diagnostics): what the checks report, and how to use them in CI.
-- [Custom components](/docs/custom-components): `component()` and `<Html>`.
+- [Custom elements](/docs/custom-elements): `defineElement()` and `<Html>`.
 - Outputs: [Email](/docs/outputs/email), [Page](/docs/outputs/page), [PDF](/docs/outputs/pdf), [Image](/docs/outputs/image).

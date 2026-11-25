@@ -27,8 +27,9 @@ export interface RenderOptions extends PageOptions, EmailOptions, PluginsOption 
   /** The HTML indented, for reading it; for sending, the compact HTML (white space may change how some email clients show it). */
   pretty?: boolean;
   /**
-   * For tools that preview an Email: also return `blocks`, where each block is in `html` (its template path and the
-   * UTF-8 byte offset just after its outermost element's tag name). The HTML is the same either way. Not with `pretty`.
+   * For tools that preview a design: also return `blocks`, where each block is in `html` (its template path and the
+   * UTF-8 byte offset just after its outermost element's tag name), for every root (a Document's print HTML, a Canvas
+   * as HTML). The HTML is the same either way. Not with `pretty`.
    */
   blockMap?: boolean;
 }
@@ -44,7 +45,7 @@ export interface RenderResult {
   bodyStyle: string;
   /** Warnings and notes (errors are thrown). */
   diagnostics: Diagnostic[];
-  /** With `blockMap`, for an Email: where each block is in `html`. */
+  /** With `blockMap`: where each block is in `html`. */
   blocks?: BlockMap;
 }
 

@@ -53,7 +53,7 @@ Give satori's range as above. pnpm and yarn otherwise add satori's newest versio
 
 `/image` is an entry of `@hyper-elements/react`. Its engines are optional peer dependencies, so a project that doesn't import `/image` installs nothing for them, and the main entry never loads them.
 
-It runs in Node.js only. If it loads a second copy of `@hyper-elements/react` that lays templates out in another version, `renderImage()` throws an `ElementsError` (`image/version`) rather than drawing the template wrong.
+It runs in Node.js only. If it loads a second copy of `@hyper-elements/react` that lays designs out in another version, `renderImage()` throws an `ElementsError` (`image/version`) rather than drawing the design wrong.
 
 > **Note:** Satori runs WebAssembly, which a Content-Security-Policy without `'wasm-unsafe-eval'` blocks. That's one reason image output is its own entry, `@hyper-elements/react/image`, which the main entry never loads.
 
@@ -80,7 +80,7 @@ Its content is laid out as on a page, with no phone layout. Beside the text styl
 
 ## renderImage()
 
-`renderImage(element, options)` returns `{ image, width, height, diagnostics }`: the file's bytes, its size in pixels, and the warnings and notes. Errors reject with an `ElementsError` listing them. The same template writes the same bytes.
+`renderImage(element, options)` returns `{ image, width, height, diagnostics }`: the file's bytes, its size in pixels, and the warnings and notes. Errors reject with an `ElementsError` listing them. The same design writes the same bytes.
 
 | Option | What it takes |
 |--------|---------------|
@@ -96,10 +96,10 @@ await writeFile("card.svg", image);
 
 ### Fonts and images
 
-Nothing is fetched. Give each file the template needs, as bytes:
+Nothing is fetched. Give each file the design needs, as bytes:
 
 - **Fonts** in `fonts`: `{ family, src, weight?, style? }`, one entry per file. `src` is a TTF, OTF or WOFF file's bytes, and `family` is the name your `fontFamily` stacks use. A Canvas's own `fonts` given as `data:` URIs are drawn too. Ones given by URL aren't loaded.
-- **Images** in `images`, by the URL the template gives them (`{ "https://…/photo.png": bytes }`), or as `data:` URIs in the template: PNG, JPEG, GIF or SVG.
+- **Images** in `images`, by the URL the design gives them (`{ "https://…/photo.png": bytes }`), or as `data:` URIs in the design: PNG, JPEG, GIF or SVG.
 
 An image with text needs at least one font. Text whose `fontFamily` has no file given is drawn in the first font given.
 
@@ -107,8 +107,8 @@ An image with text needs at least one font. Text whose `fontFamily` has no file 
 
 | Code | Severity | When |
 |------|----------|------|
-| `image/root` | error | The template isn't a Canvas |
-| `image/version` | error | A second copy of `@hyper-elements/react` lays the template out in another version |
+| `image/root` | error | The design isn't a Canvas |
+| `image/version` | error | A second copy of `@hyper-elements/react` lays the design out in another version |
 | `image/font` | error | The Canvas has text and no font is given |
 | `image/font` | warning | A font in the Canvas's `fonts` isn't given, or a file given is WOFF2 |
 | `image/font-weight` | warning | Text in a weight or style of a family that isn't given. It's drawn in the nearest file given |
@@ -117,6 +117,12 @@ An image with text needs at least one font. Text whose `fontFamily` has no file 
 | `canvas/overflow` | warning | The content looks taller than the Canvas. An estimate: text isn't measured yet |
 
 `validate()` from `@hyper-elements/react` reports `image/unsupported` and `canvas/overflow` without rendering. The font and image checks need the files, so only `renderImage()` makes them.
+
+## Fitting text, measuring and strict
+
+A Heading or a Text in a Canvas takes `fit={{ sizes, maxLines }}`: `renderImage()` measures it with the fonts given and draws the largest size at which its lines, its widest piece that can't break (a word, or words a no-break space holds together; Chinese and Japanese text breaks between its characters) and any fixed-height box around it fit, or fails with `image/fit` naming the lines and roughly what to cut. Several fitted nodes are sized in document order, each tried with the ones after it at their smallest size. `sizes` is a list of px sizes or `{ min, max, step }`; with only `maxLines` it checks the size the text has. The HTML preview draws the largest size.
+
+`layoutImage(design, { fonts, images, scale, strict })` measures without drawing: each block's box, each fitted node's sizes and the one chosen, and the characters no font covers. `strict: true` makes a missing font, weight or character, and content past the Canvas, errors; a template's design is drawn strict.
 
 ## Limits
 

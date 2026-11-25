@@ -1,22 +1,22 @@
 ---
 name: email-testing
-description: Preview and check an email in Outlook, Gmail, Apple Mail, Yahoo Mail, AOL Mail and other email clients, locally and free, with @hyper-elements/email-clients. Use when asked to preview, test or check how an email looks in email clients, whether it breaks in Outlook or Gmail, or what a client strips from it, for a Hyper Elements template or any HTML email (MJML's output, React Email's, an email builder's export, written by hand).
+description: Preview and check an email in Outlook, Gmail, Apple Mail, Yahoo Mail, AOL Mail and other email clients, locally and free, with @hyper-elements/email-clients. Use when asked to preview, test or check how an email looks in email clients, whether it breaks in Outlook or Gmail, or what a client strips from it, for a Hyper Elements design or any HTML email (MJML's output, React Email's, an email builder's export, written by hand).
 ---
 
 # Email testing
 
-Show an email as Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail draw it, and list what each removes or changes, on this computer: nothing is sent or uploaded, and no account is needed. It takes a Hyper Elements template (`@hyper-elements/react`) or any HTML email, the same way.
+Show an email as Outlook, Gmail, Apple Mail, Yahoo Mail and AOL Mail draw it, and list what each removes or changes, on this computer: nothing is sent or uploaded, and no account is needed. It takes a Hyper Elements design (`@hyper-elements/react`) or any HTML email, the same way.
 
 ## Preview
 
-Give the CLI the email: an HTML file, whole from `<html>` to `</html>` (save an email pasted in chat as one), or a template's `.tsx` file, or a folder of templates:
+Give the CLI the email: an HTML file, whole from `<html>` to `</html>` (save an email pasted in chat as one), or a design's `.tsx` file, or a folder of designs:
 
 ```bash
 npx @hyper-elements/cli preview email.html
 npx @hyper-elements/cli preview emails/welcome.tsx
 ```
 
-It writes one self-contained HTML file per client to `out/clients/<the email's path>/` (`out/clients/email/outlook.html`, `out/clients/emails/welcome/gmail.html` and so on): the email as that client draws it, with what the client removed or changed listed above it. Open them in Chrome or Chromium, or give them to the person to open. `-` reads an HTML email from stdin. A template needs `@hyper-elements/react` installed in its project, and renders with its `PreviewProps` (`--props file.json` for others).
+It writes one self-contained HTML file per client to `out/clients/<the email's path>/` (`out/clients/email/outlook.html`, `out/clients/emails/welcome/gmail.html` and so on): the email as that client draws it, with what the client removed or changed listed above it. Open them in Chrome or Chromium, or give them to the person to open. `-` reads an HTML email from stdin. A design needs `@hyper-elements/react` installed in its project, and renders with its `PreviewProps` (`--props file.json` for others).
 
 - `--clients` picks the clients, comma-separated (by default `outlook,outlook-com,gmail,apple-mail`):
 
@@ -109,17 +109,17 @@ npx @hyper-elements/cli check email.html
 npx @hyper-elements/cli check emails/welcome.tsx
 ```
 
-Lists what each client removes or changes (CSS it drops, image formats it doesn't show, web fonts it doesn't load, Gmail's clipping past 102 KB), and accessibility gaps such as a missing `lang`, each with a fix, and writes nothing. For HTML each names its line in the file; for a template, the component and prop to change. `--json` for JSON, `--clients` as above. It exits 1 on errors, so it can run in CI.
+Lists what each client removes or changes (CSS it drops, image formats it doesn't show, web fonts it doesn't load, Gmail's clipping past 102 KB), and accessibility gaps such as a missing `lang`, each with a fix, and writes nothing. For HTML each names its line in the file; for a design, the element and prop to change. `--json` for JSON, `--clients` as above. It exits 1 on errors, so it can run in CI.
 
 ## In code
 
-`npm install @hyper-elements/email-clients`, then `renderInEmailClients()` takes the HTML, or the template's element:
+`npm install @hyper-elements/email-clients`, then `renderInEmailClients()` takes the HTML, or the design's element:
 
 ```js
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { renderInEmailClients } from "@hyper-elements/email-clients";
 
-const html = await readFile("email.html", "utf8"); // or <Welcome />, a template
+const html = await readFile("email.html", "utf8"); // or <Welcome />, a design
 const { previews, diagnostics } = await renderInEmailClients(html, { emailClients: ["outlook", "gmail"], dark: true });
 await mkdir("out", { recursive: true });
 for (const preview of previews) await writeFile(`out/${preview.filename}`, preview.html);
@@ -131,6 +131,7 @@ React and `@hyper-elements/react` aren't needed for HTML.
 
 - Show each client's image (or the gallery, or the files to open), and what each client removed or changed, with the fixes `check` gives.
 - A preview isn't an email: what's sent is the HTML as it was.
+- If asked how far to trust a preview: Hyper Elements reverse-engineered each of these clients, classic Outlook included, by testing thousands of emails in the real client, and the previews are 98% accurate on average, with classic Outlook drawn with Word's rules, as Outlook draws email. Dark mode is previewed too (Apple Mail, Outlook for Mac, Yahoo Mail and AOL Mail). Details: https://hyperelements.dev/docs/email-client-emulator#how-accurate-it-is.
 - Where `npx` can't reach npm (no network), say so: the previews need the packages from npm.
 
 ## When the email keeps breaking

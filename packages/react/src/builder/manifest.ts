@@ -49,6 +49,12 @@ export const HIDDEN: Readonly<Record<string, readonly Hidden[]>> = {
   video: own("props.thumbnail", "props.title", "style.width", "style.maxWidth"),
   html: own("props.text"),
   page_break: [],
+  // A Table: its width (the builder's fills its column), how its cells' borders meet, and its line between
+  // rows, which the builder's border draws around every row (it's read back as that line only while the border is it).
+  table: [
+    { path: "style.border", key: "tableBorder", prefixed: "the builder's table border is around every cell; a Table's is around the table" },
+    ...own("style.width", "style.maxWidth", "style.borderCollapse", "style.rowBorder"),
+  ],
 };
 
 /** What every content item has in the builder. */
@@ -81,6 +87,12 @@ export const BUILDER_KEYS: Readonly<Record<string, readonly string[]>> = {
   video: [...CONTENT, "video", "href", "textAlign"],
   html: [...CONTENT, "html"],
   page_break: [...CONTENT, "color"],
+  table: [
+    ...CONTENT, "table", "columns", "rows", "border", "stripedRows", "stripedRowsBackgroundColor", "linkStyle", "_languages",
+    "enableHeader", "repeatHeaderOnEachPage", "headerFontFamily", "headerBackgroundColor", "headerFontWeight", "headerFontSize", "headerColor", "headerTextAlign", "headerVerticalAlign", "headerPadding",
+    "contentFontFamily", "contentBackgroundColor", "contentFontWeight", "contentFontSize", "contentColor", "contentTextAlign", "contentVerticalAlign", "contentLineHeight", "contentLetterSpacing", "contentPadding",
+    "enableFooter", "repeatFooterOnEachPage", "footerFontFamily", "footerBackgroundColor", "footerFontWeight", "footerFontSize", "footerColor", "footerTextAlign", "footerVerticalAlign", "footerPadding",
+  ],
 };
 
 /** The phone values the builder has (in `_override.mobile`), by tool. */
@@ -98,4 +110,5 @@ export const BUILDER_PHONE_KEYS: Readonly<Record<string, readonly string[]>> = {
   video: ["containerPadding", "textAlign", "hideMobile"],
   html: ["containerPadding", "hideMobile"],
   page_break: ["hideMobile"],
+  table: ["containerPadding", "hideMobile"],
 };

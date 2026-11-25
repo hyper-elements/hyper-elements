@@ -1,0 +1,7 @@
+{
+  "name": "a literal color",
+  "body": "    <mj-section>\n      <mj-column>\n        <mj-text>Two things from the Orbit team this month.</mj-text>\n        <mj-image src=\"https://assets.orbit.dev/img/newsletter-hero.png\" alt=\"The new editor\" />\n        <mj-text css-class=\"title\">A faster editor</mj-text>\n        <mj-text color=\"#ff0066\">Typing, search and preview are all twice as fast.</mj-text>\n        <mj-button href=\"https://app.orbit.dev/editor?utm_source=newsletter\">Try the editor</mj-button>\n      </mj-column>\n    </mj-section>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "breaks": "palette colors"
+}

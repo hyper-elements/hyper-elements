@@ -34,20 +34,20 @@ const note = showcase.email.diagnostics.find((d) => d.code === "email/outlook-de
 const kinds: Record<string, string> = { Email: "Email", Page: "Web page", Document: "PDF", Canvas: "Image" };
 const items = [
   { ...showcase.page, title: "Product launch", href: "/docs/outputs/page" },
-  ...templates.slice(0, 3).map((t) => ({ ...t, href: `/templates/${t.slug}` })),
+  ...templates.slice(0, 3).map((t) => ({ ...t, href: `/playground#starter=${t.slug}` })),
   { ...showcase.document, title: "Release notes", href: "/docs/outputs/pdf" },
-  ...templates.slice(3).map((t) => ({ ...t, href: `/templates/${t.slug}` })),
+  ...templates.slice(3).map((t) => ({ ...t, href: `/playground#starter=${t.slug}` })),
 ];
 const strip = [...items, ...items];
 ---
-<Base jsonLd={jsonLd}>
+<Base jsonLd={jsonLd} image="/og.png">
   <section class="hero">
     <div class="wrap hero-inner">
       <a class="pill" href={site.github}><span class="badge">v{site.version}</span>Open source, MIT licensed <span aria-hidden="true">→</span></a>
       <h1 class="h-display"><span class="grad">The content engine</span><br /><span class="grad-accent">for agents.</span></h1>
       <p class="lede">Your agent writes React. Hyper Elements turns it into emails, pages, PDFs and images, checks it in every client, and tells the agent how to fix what's wrong.</p>
       <div class="hero-cta">
-        <a class="btn btn-primary" href="/components">Explore components <span class="arrow">→</span></a>
+        <a class="btn btn-primary" href="/elements">Explore elements <span class="arrow">→</span></a>
         <Cmd text={site.install} />
       </div>
     </div>
@@ -70,7 +70,7 @@ const strip = [...items, ...items];
       </a>
       <div class="fact">
         <span class="fact-k">Renders</span>
-        <span class="fact-v">One template</span>
+        <span class="fact-v">One design</span>
         <span class="fact-s">Email, web page, PDF or image</span>
       </div>
       <div class="fact">
@@ -105,7 +105,7 @@ const strip = [...items, ...items];
     <div class="wrap">
       <div class="sec-head reveal">
         <h2 class="h-section">How it works</h2>
-        <p class="sec-sub">A short template and its real HTML. Resize it: rows stack and phone styles apply.</p>
+        <p class="sec-sub">A short design and its real HTML. Resize it: rows stack and phone styles apply.</p>
       </div>
       <div class="reveal"><WriteThis /></div>
     </div>
@@ -182,9 +182,9 @@ Safe to cache and prerender.</span></pre>
           <p class="tile-note">Every value escaped. No eval: runs under a strict CSP.</p>
         </article>
         <article class="tile t-wide reveal">
-          <h3>Custom components</h3>
+          <h3>Your own elements</h3>
           <div class="comp">
-            <pre class="mini nowrap"><span class="d">const</span> ProductCard = component({"{"}
+            <pre class="mini nowrap"><span class="d">const</span> ProductCard = defineElement({"{"}
   type: "acme.ProductCard",
   props: {"{"} name: prop.text({"{"} required: true {"}"}),
            photo: prop.image({"{"} required: true {"}"}) {"}"},
@@ -203,10 +203,10 @@ Safe to cache and prerender.</span></pre>
 
   <section class="section templates-band">
     <div class="wrap band-head reveal">
-      <h2 class="h-section">Templates</h2>
-      <a class="btn btn-ghost" href="/templates">All templates <span class="arrow">→</span></a>
+      <h2 class="h-section">Designs</h2>
+      <a class="btn btn-ghost" href="/templates">All designs <span class="arrow">→</span></a>
     </div>
-    <div class="marquee" aria-label="Templates">
+    <div class="marquee" aria-label="Designs">
       <div class="marquee-track">
         {strip.map((t, i) => (
           <a class="m-card" href={t.href} aria-hidden={i >= items.length ? "true" : undefined} tabindex={i >= items.length ? -1 : undefined}>

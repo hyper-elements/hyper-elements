@@ -51,6 +51,8 @@ function inside(child: string, folder: string): boolean {
 }
 
 export interface Planned {
+  reserve(input: Input): string | undefined;
+  release(id: number): void;
   /** By input id: each output's destination, by extension. */
   byInput: Map<number, Record<string, string>>;
 }
@@ -72,7 +74,8 @@ export function outputBase(inputs: Input[], cwd: string, given?: string): string
   }
   for (const input of inputs) {
     if (input.stdin) continue;
-    const path = relative(base, input.file);
+    // A values file's outputs are named from it, not from its template module.
+    const path = relative(base, input.values?.file ?? input.file);
     if (path === ".." || path.startsWith(`..${sep}`) || isAbsolute(path)) {
       const where = given === undefined ? "the current folder" : `--base ${given}`;
       throw new UsageError(`${input.display} is outside ${where}, which outputs keep their path relative to: run from a folder that holds it, or give --base.`);
@@ -87,8 +90,11 @@ export function outputBase(inputs: Input[], cwd: string, given?: string): string
  */
 export function inputHeldBy(folder: string, inputs: Input[]): Input | undefined {
   const real = canonicalPath(folder);
-  return inputs.find((input) => !input.stdin && (inside(input.real, real) || inside(canonicalPath(input.file), real)));
+  return inputs.find((input) => !input.stdin && filesOf(input).some((file) => inside(file, real)));
 }
+
+/** An input's own files, by real path: its module, and for a values file (or a design made from a template) that file too. */
+const filesOf = (input: Input): string[] => [input.real, canonicalPath(input.file), ...(input.values ? [canonicalPath(input.values.file)] : [])];
 
 /**
  * Checks `--out` (`holding: false`: all but whether it holds an input, for `preview`, whose folders are checked
@@ -109,36 +115,49 @@ export function planDestinations(inputs: Input[], base: string, out: string, cwd
     if (project) projects.add(canonicalPath(project));
   }
   for (const project of projects) if (foldPath(project) === foldPath(target)) refuse("a project's root (it holds a package.json)");
-  if (options.holding !== false) for (const input of inputs) if (inside(input.real, target) || inside(canonicalPath(input.file), target)) refuse(`a folder holding an input (${input.display})`);
+  if (options.holding !== false) for (const input of inputs) if (filesOf(input).some((file) => inside(file, target))) refuse(`a folder holding an input (${input.display})`);
 
   const byInput = new Map<number, Record<string, string>>();
   const taken = new Map<string, Input>();
   const inputsByKey = new Map<string, Input>();
-  for (const input of inputs) {
-    inputsByKey.set(foldPath(input.real), input);
-    inputsByKey.set(foldPath(canonicalPath(input.file)), input);
-  }
-  for (const input of inputs) {
-    const folder = relative(base, dirname(input.file));
-    const stem = basename(input.file, extname(input.file));
+  for (const input of inputs) for (const file of filesOf(input)) inputsByKey.set(foldPath(file), input);
+  /** An input's names, all reserved, or why not (nothing reserved then). */
+  const place = (input: Input): string | undefined => {
+    // A values file's input: named from the values file, with its format (`launch.square.png`).
+    const folder = relative(base, input.output?.folder ?? dirname(input.file));
+    const stem = input.output ? `${input.output.stem}${input.templateFormat ? `.${input.templateFormat}` : ""}` : basename(input.file, extname(input.file));
     const paths: Record<string, string> = {};
+    const keys: string[] = [];
     for (const extension of extensions) {
       const path = join(resolve(cwd, out), folder, `${stem}.${extension}`);
       const key = foldPath(canonicalPath(path));
       const other = taken.get(key);
-      if (other && other !== input) {
-        throw new UsageError(`${other.display} and ${input.display} would both write ${displayPath(cwd, path)}: rename one, or render them in separate runs. Nothing was written.`);
-      }
+      if (other && other !== input) return `${other.display} and ${input.display} would both write ${displayPath(cwd, path)}: rename one, or render them in separate runs. Nothing was written.`;
       const source = inputsByKey.get(key);
-      if (source) throw new UsageError(`${input.display}'s output ${displayPath(cwd, path)} is an input (${source.display}): give another --out. Nothing was written.`);
+      if (source) return `${input.display}'s output ${displayPath(cwd, path)} is an input (${source.display}): give another --out. Nothing was written.`;
       const held = inputHeldBy(dirname(path), inputs);
-      if (held) throw new UsageError(`${input.display}'s output ${displayPath(cwd, path)} would go in ${held.display}'s folder (a symbolic link under --out leads there): give another --out. Nothing was written.`);
-      taken.set(key, input);
+      if (held) return `${input.display}'s output ${displayPath(cwd, path)} would go in ${held.display}'s folder (a symbolic link under --out leads there): give another --out. Nothing was written.`;
+      keys.push(key);
       paths[extension] = path;
     }
+    for (const key of keys) taken.set(key, input);
     byInput.set(input.id, paths);
+    return undefined;
+  };
+  for (const input of inputs) {
+    const problem = place(input);
+    if (problem) throw new UsageError(problem);
   }
-  return { byInput };
+  return {
+    byInput,
+    // A TSX template design's names are known once its capture says its formats (Decision 31): its own are released,
+    // and its expansion's reserved after every other input's.
+    reserve: place,
+    release(id: number) {
+      byInput.delete(id);
+      for (const [key, input] of taken) if (input.id === id) taken.delete(key);
+    },
+  };
 }
 
 /** Temporary outputs being written, deleted on an interrupt. */

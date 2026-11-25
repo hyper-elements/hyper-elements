@@ -1,0 +1,7 @@
+{
+  "name": "an off-domain link",
+  "body": "<p style=\"margin: 0 0 12px; color: #1f2937; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;\">Two things from the Orbit team this month.</p>\n<img src=\"https://assets.orbit.dev/img/newsletter-hero.png\" width=\"536\" alt=\"The new editor\" style=\"display: block; width: 100%; max-width: 536px; height: auto; margin: 8px 0; border: 0;\">\n<h2 style=\"margin: 16px 0 8px; color: #1f2937; font-family: Helvetica, Arial, sans-serif; font-size: 20px; line-height: 28px;\">A faster editor</h2>\n<p style=\"margin: 0 0 12px; color: #1f2937; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px;\">Typing, search and preview are all twice as fast.</p>\n<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin: 0 0 16px;\"><tr><td style=\"background-color: #4f46e5; border-radius: 6px;\"><a href=\"https://elsewhere.example/editor\" style=\"display: inline-block; padding: 12px 20px; color: #ffffff; font-family: Helvetica, Arial, sans-serif; font-size: 16px; line-height: 24px; text-decoration: none;\">Try the editor</a></td></tr></table>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "breaks": "link domains"
+}

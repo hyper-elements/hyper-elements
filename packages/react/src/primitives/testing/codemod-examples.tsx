@@ -672,7 +672,7 @@ export const mercury = (() => {
 // main's examples/MorningBrewDigest.fixture.tsx
 //
 // What the codemod reported:
-// - line 37: <Email>'s linkStyle isn't migrated: it's left out (the new components have nothing it becomes)
+// - line 37: <Email>'s linkStyle isn't migrated: it's left out (the new elements have nothing it becomes)
 // - line 246: written as a Row of its links, spaced as Unlayer Elements' Menu spaces them (the new Menu leaves out the space that one puts between its links): in the visual editor it's a row of text, not a Menu
 export const brew = (() => {
   // Morning-Brew-style daily digest. Friendly, editorial, readable.

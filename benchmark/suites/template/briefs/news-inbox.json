@@ -1,0 +1,84 @@
+{
+  "id": "news-inbox",
+  "title": "Designing for every inbox",
+  "brief": "An issue of Orbit's newsletter, The Orbit Dispatch, made with Orbit's newsletter kit (see CLAUDE.md for its rules).\n\n- Preview text: \"What we learned rendering a million emails.\"\n- Heading: \"Designing for every inbox\"\n- Intro: \"Notes from a year of making emails that look right everywhere.\"\n- Two stories, one after the other. Each is an image, a title, a sentence and a button:\n  - Image https://assets.orbit.dev/img/newsletter-hero.png (1200\u00d7500 file), alt text \"Emails in three inboxes\". Title \"The guide\". Text \"Tables, fonts and dark mode: what holds up, and what doesn't.\". Button \"Read the guide\" to https://orbit.dev/blog/every-inbox?utm_source=newsletter.\n  - Image https://assets.orbit.dev/img/orbit-app.png (1200\u00d7700 file), alt text \"Orbit's email preview\". Title \"Preview before you send\". Text \"Orbit now shows each email as the big clients draw it.\". Button \"Open Orbit\" to https://app.orbit.dev/preview?utm_source=newsletter.\n- Orbit's header (the logo) and footer (the address, and the unsubscribe link) are the kit's: use them as they are.",
+  "spec": {
+    "preview": "What we learned rendering a million emails.",
+    "texts": [
+      "Designing for every inbox",
+      "Notes from a year of making emails that look right everywhere.",
+      "The guide",
+      "Preview before you send",
+      "Tables, fonts and dark mode: what holds up, and what doesn't.",
+      "Orbit now shows each email as the big clients draw it.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "Read the guide",
+        "href": "https://orbit.dev/blog/every-inbox?utm_source=newsletter",
+        "background": "#4f46e5"
+      },
+      {
+        "text": "Open Orbit",
+        "href": "https://app.orbit.dev/preview?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "newsletter-hero.png",
+      "orbit-app.png"
+    ],
+    "columns": []
+  },
+  "content": {
+    "preview": "What we learned rendering a million emails.",
+    "heading": "Designing for every inbox",
+    "intro": "Notes from a year of making emails that look right everywhere.",
+    "stories": [
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/newsletter-hero.png",
+          "width": 1200,
+          "height": 500,
+          "alt": "Emails in three inboxes"
+        },
+        "title": "The guide",
+        "text": "Tables, fonts and dark mode: what holds up, and what doesn't.",
+        "button": {
+          "text": "Read the guide",
+          "href": "https://orbit.dev/blog/every-inbox?utm_source=newsletter"
+        }
+      },
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/orbit-app.png",
+          "width": 1200,
+          "height": 700,
+          "alt": "Orbit's email preview"
+        },
+        "title": "Preview before you send",
+        "text": "Orbit now shows each email as the big clients draw it.",
+        "button": {
+          "text": "Open Orbit",
+          "href": "https://app.orbit.dev/preview?utm_source=newsletter"
+        }
+      }
+    ]
+  },
+  "run": {
+    "kits": [
+      "he",
+      "react-email",
+      "mjml",
+      "html"
+    ]
+  }
+}

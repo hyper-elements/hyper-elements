@@ -41,14 +41,19 @@
   "TableRow",
   "Text",
   "Video",
+  "captureFragment",
   "component",
+  "defineElement",
   "defineTheme",
   "extendTheme",
   "formatDiagnostics",
   "outline",
   "prepare",
   "prop",
+  "readFragment",
   "render",
+  "slotMark",
+  "snapshot",
   "token",
   "validate"
  ],
@@ -61,7 +66,24 @@
   "templateAssets"
  ],
  "./image": [
+  "layoutImage",
   "renderImage",
   "templateAssets"
+ ],
+ "./template": [
+  "CORE_RULES",
+  "DESCRIBE_VERSION",
+  "check",
+  "checkLayout",
+  "field",
+  "fitInside",
+  "formatDate",
+  "open",
+  "readValuesFile",
+  "sniffImage",
+  "template",
+  "templateOf",
+  "templateRequest",
+  "toValuesFile"
  ]
 }

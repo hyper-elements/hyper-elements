@@ -33,7 +33,7 @@ export default function CTABanner() {
         </h2>
 
         <p className="text-lg text-text-secondary mb-12 max-w-xl mx-auto leading-relaxed">
-          14+ components, 3 render modes, TypeScript-first. Everything you need for production-ready emails, pages, and documents.
+          14+ elements, 3 render modes, TypeScript-first. Everything you need for production-ready emails, pages, and documents.
         </p>
 
         {/* Install command */}

@@ -4,7 +4,7 @@ metaTitle: "Lint: accessibility and quality checks for emails and pages"
 description: "@hyper-elements/lint checks an email or a page for what makes it hard to read: links that don't say where they go, images without alternate text, faint or small text, headings out of order, merge syntax typed by hand."
 ---
 
-`@hyper-elements/lint` checks an email or a page for what makes it hard to read or use: links that don't say where they go, images without alternate text, text too faint or too small, headings out of order, merge syntax typed into the copy by hand. Elements' own checks say whether a template is correct, and the [email client emulator](/docs/email-client-emulator) what each email client does to it; lint says whether it's good.
+`@hyper-elements/lint` checks an email or a page for what makes it hard to read or use: links that don't say where they go, images without alternate text, text too faint or too small, headings out of order, merge syntax typed into the copy by hand. Elements' own checks say whether a design is correct, and the [email client emulator](/docs/email-client-emulator) what each email client does to it; lint says whether it's good.
 
 ```bash
 npm i -D @hyper-elements/lint
@@ -24,11 +24,11 @@ diagnostics[0];
 //   see: "https://www.hyperelements.dev/docs/lint#link-text" }
 ```
 
-Its findings are [diagnostics](/docs/diagnostics) like Elements' own: warnings and notes, never errors, so lint never stops a render. On an Email they're `email/lint-<rule>`, on a Page `page/lint-<rule>`; a Document and a Canvas get none. Each says where in the template it is, what to do, and links to its rule below.
+Its findings are [diagnostics](/docs/diagnostics) like Elements' own: warnings and notes, never errors, so lint never stops a render. On an Email they're `email/lint-<rule>`, on a Page `page/lint-<rule>`; a Document and a Canvas get none. Each says where in the design it is, what to do, and links to its rule below.
 
-## It reads the template, not the HTML
+## It reads the design, not the HTML
 
-Lint reads the laid-out template, as each output writes it, so it knows what a reader gets:
+Lint reads the laid-out design, as each output writes it, so it knows what a reader gets:
 
 - **At desktop and at phone width.** A block hidden on phones isn't checked there, and text gets the size it's shown at on each: 16px on desktop and 12px on phones is small on phones. A finding names the width it's found at where it's only one.
 - **What's behind the text.** Contrast is checked against the nearest background, with see-through ones mixed in, as WCAG does. Text over a `Layer`'s image isn't checked where the image is drawn.
@@ -81,9 +81,9 @@ diagnostics[0];
 //   fix: "…", see: "https://www.hyperelements.dev/docs/lint#image-alt" }
 ```
 
-Its findings are `lint/<rule>`, each with its line and column. It takes the same options as `lint()`. On HTML with an `<html>` or a `<body>`, a whole document, it also checks the heading order, one `<h1>`, the language and the title. Outlook's conditional comments (`<!--[if mso]>`) are skipped: what's in them is Outlook's copy of what's outside them. An `Html` block's markup in a template gets the same rules, at the block's `html`, with its line.
+Its findings are `lint/<rule>`, each with its line and column. It takes the same options as `lint()`. On HTML with an `<html>` or a `<body>`, a whole document, it also checks the heading order, one `<h1>`, the language and the title. Outlook's conditional comments (`<!--[if mso]>`) are skipped: what's in them is Outlook's copy of what's outside them. An `Html` block's markup in a design gets the same rules, at the block's `html`, with its line.
 
-HTML can't say what a template can. `lintHtml()` doesn't check contrast or text size (that needs the CSS cascade), and doesn't check merge syntax: in HTML, a hand-typed `{{name}}` and a `MergeTag`'s output look the same.
+HTML can't say what a design can. `lintHtml()` doesn't check contrast or text size (that needs the CSS cascade), and doesn't check merge syntax: in HTML, a hand-typed `{{name}}` and a `MergeTag`'s output look the same.
 
 ## Rules
 

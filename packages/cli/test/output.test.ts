@@ -147,7 +147,7 @@ export default function A() { return <Email><Section color="red" /></Email>; }
     expect(ran.code).toBe(1);
     expect(ran.stdout).toMatch(/^✗ emails\/a\.tsx \(Email\)\n {4}error prop\/unknown at root\.children\[0\]\.props\.color: /m);
     expect(ran.stdout).toMatch(/^✓ emails\/b\.tsx \(Email\)$/m);
-    expect(ran.stdout).toMatch(/^2 templates: 1 error, \d+ warnings?, 0 skipped$/m);
+    expect(ran.stdout).toMatch(/^2 designs: 1 error, \d+ warnings?, 0 skipped$/m);
   });
 
   it("says no place for a diagnostic at no path in the template, rather than `at :`", async () => {

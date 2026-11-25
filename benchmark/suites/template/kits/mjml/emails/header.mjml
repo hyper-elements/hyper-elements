@@ -1,0 +1,6 @@
+<!-- Orbit's header: the logo. Include it first in mj-body, as it is. -->
+<mj-section css-class="brand-header" padding="24px 32px 8px">
+  <mj-column>
+    <mj-image src="https://assets.orbit.dev/img/orbit-logo.png" width="126px" height="64px" alt="Orbit" align="left" padding="0" />
+  </mj-column>
+</mj-section>

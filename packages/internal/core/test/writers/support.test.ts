@@ -8,7 +8,7 @@
  * (print, PDF, image) joins by its entry in OUTPUTS: until each of its
  * components' styles and props declares it, this fails.
  */
-import { COMPONENTS, CONDITIONS, componentRoots, describeComponents, ROOT_NAMES, STYLE_GROUPS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
+import { checkDocument, COMPONENTS, CONDITIONS, componentRoots, describeComponents, ROOT_NAMES, STYLE_GROUPS, type ComponentDefinition, type Json, type ResolvedNode, type Support, type SupportByTarget, type Target } from "../../src";
 import { prepareTemplate, renderTemplate } from "../../src/writers";
 
 /** Each output with a writer, and the root that renders to it. */
@@ -378,5 +378,33 @@ describe("roots", () => {
     expect(email.map((c) => c.type)).not.toContain("Svg");
     expect(email.map((c) => c.type)).not.toContain("PageNumber");
     expect(email.find((c) => c.type === "Text")!.properties.find((p) => p.path === "style.fontSize")).toMatchObject({ mobile: true, roots: ["Email"], group: "Typography" });
+  });
+});
+
+/** `fit` (Decision 10): a Canvas's, which its HTML preview draws at its largest size, and no other root's. */
+describe("fit on Heading and Text", () => {
+  const canvas = (node: Record<string, unknown>) => ({ root: { type: "Canvas", props: { width: 600, height: 300 }, children: [node] } });
+  const under = (root: string, node: Record<string, unknown>) => ({ root: { type: root, props: root === "Document" ? {} : { width: 600 }, children: [node] } });
+
+  it("draws the largest size in a Canvas's HTML, with web/degraded saying only the image measures it", () => {
+    for (const type of ["Heading", "Text"]) {
+      const plain = renderTemplate(canvas({ type, children: ["Fitted words"] }));
+      const fitted = renderTemplate(canvas({ type, props: { fit: { sizes: [61, 40], maxLines: 2 } }, children: ["Fitted words"] }));
+      expect(fitted.html).not.toBe(plain.html);
+      expect(fitted.html).toContain("font-size:61px");
+      expect(fitted.diagnostics.map((d) => d.code)).toContain("web/degraded");
+    }
+  });
+
+  it("is prop/not-supported under an Email, a Page and a Document", () => {
+    for (const root of ["Email", "Page", "Document"]) {
+      const { diagnostics } = checkDocument(under(root, { type: "Text", props: { fit: { maxLines: 2 } }, children: ["x"] }));
+      expect(diagnostics.map((d) => [d.code, d.path])).toContainEqual(["prop/not-supported", "root.children[0].props.fit"]);
+    }
+  });
+
+  it("refuses sizes beside an authored fontSize (style/fit), and takes maxLines beside one", () => {
+    expect(checkDocument(canvas({ type: "Text", props: { fit: { sizes: [40, 30] } }, style: { fontSize: 20 }, children: ["x"] })).diagnostics.map((d) => d.code)).toContain("style/fit");
+    expect(checkDocument(canvas({ type: "Text", props: { fit: { maxLines: 2 } }, style: { fontSize: 20 }, children: ["x"] })).diagnostics.map((d) => d.code)).not.toContain("style/fit");
   });
 });

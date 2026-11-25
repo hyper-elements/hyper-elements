@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { parseArgs, UsageError } from "../src/args";
 import { cacheFolder, decodeDataUri, osCache } from "../src/assets";
 import { foldPath } from "../src/destinations";
+import { supported } from "../src/elements";
 import { errorLine } from "../src/errors";
 import { hasDefaultExport } from "../src/inputs";
 import { cleanFiles, formatToken, hostName, loaderModuleText, parseToken, stale, startTime } from "../src/loader-module";
@@ -219,7 +220,7 @@ describe("render's PDF and image options", () => {
   });
 
   it("refuses what they don't take", () => {
-    for (const argv of [["render", "a", "--format", "jpg"], ["render", "a", "--scale", "0"], ["render", "a", "--scale", "two"], ["render", "a", "--refresh", "--offline"], ["check", "a", "--html"], ["check", "a", "--offline"]]) {
+    for (const argv of [["render", "a", "--format", "jpg"], ["render", "a", "--scale", "0"], ["render", "a", "--scale", "two"], ["render", "a", "--refresh", "--offline"], ["check", "a", "--html"], ["check", "a", "--format", "svg"], ["outline", "a", "--offline"]]) {
       expect(() => parseArgs(argv), argv.join(" ")).toThrow(UsageError);
     }
   });
@@ -246,3 +247,30 @@ describe("the asset cache's folder", () => {
   });
 });
 
+
+describe("the Elements versions the CLI renders with", () => {
+  it("takes 0.4 and 0.5 (templates), not 0.3 or 0.6", () => {
+    for (const version of ["0.4.0", "0.4.9", "0.5.0", "0.5.3-beta.1"]) expect(supported(version), version).toBe(true);
+    for (const version of ["0.3.1", "0.6.0", "1.0.0", "x"]) expect(supported(version), version).toBe(false);
+  });
+});
+
+describe("design's arguments", () => {
+  it("new takes a template, -o and --set/--source (repeated); set a file and field=value pairs", () => {
+    const made = parseArgs(["design", "new", "t.tsx", "-o", "d/a.values.json", "--set", "a=1", "--set", "b=@x.png", "--source", "b=s.json", "--draft"]);
+    expect(made.design).toEqual({ action: "new", output: "d/a.values.json", draft: true, sets: [{ path: "a", value: "1" }, { path: "b", value: "@x.png" }], sources: [{ path: "b", value: "s.json" }] });
+    const set = parseArgs(["design", "set", "d/a.values.json", "features[1]=Faster", "title=a=b"]);
+    expect(set.positional).toEqual(["set", "d/a.values.json"]);
+    expect(set.design?.sets).toEqual([{ path: "features[1]", value: "Faster" }, { path: "title", value: "a=b" }]);
+    expect(parseArgs(["design", "set", "d/a.values.json", "--source", "art=s.json"]).design?.sources).toEqual([{ path: "art", value: "s.json" }]);
+    for (const argv of [["design"], ["design", "new", "t.tsx"], ["design", "new", "t.tsx", "-o", "a.json"], ["design", "set", "a.values.json"], ["design", "set", "a.values.json", "novalue"], ["design", "new", "t.tsx", "-o", "a.values.json", "--set", "=1"]]) {
+      expect(() => parseArgs(argv), argv.join(" ")).toThrow(UsageError);
+    }
+  });
+
+  it("--template-format takes a format's name", () => {
+    expect(parseArgs(["check", "a.values.json", "--template-format", "square"]).templateFormat).toBe("square");
+    expect(() => parseArgs(["check", "a.values.json", "--template-format", "Square"])).toThrow(UsageError);
+    expect(() => parseArgs(["preview", "a.tsx", "--template-format", "square"])).toThrow(UsageError);
+  });
+});

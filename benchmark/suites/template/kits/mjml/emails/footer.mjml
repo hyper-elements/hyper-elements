@@ -1,0 +1,6 @@
+<!-- Orbit's footer: the address and the unsubscribe link. Include it last in mj-body, as it is. -->
+<mj-section css-class="brand-footer" background-color="#f1f2f6" padding="24px 32px">
+  <mj-column>
+    <mj-text color="#6b7280" font-size="13px" line-height="20px" padding="0">Orbit Labs, 500 Market St, San Francisco. <a href="https://orbit.dev/unsubscribe?utm_source=newsletter" style="color: #6b7280;">Unsubscribe</a></mj-text>
+  </mj-column>
+</mj-section>

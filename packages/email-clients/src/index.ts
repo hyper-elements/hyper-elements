@@ -75,8 +75,8 @@ export interface EmailClientsResult<D = Diagnostic> {
  *
  * Given an HTML email as a string (the whole email, from <html> to </html>), it previews it as given, as data in the
  * file, with the preview options only (emailClients, dark, fonts, widths, computers): a fragment, or render()'s options,
- * is a TypeError. It loads no core and no React. HTML not built with Hyper Elements is emulated less closely in some
- * clients: those previews are approximate. It rejects with the import's error where @hyper-elements/email-client-models
+ * is a TypeError. It loads no core and no React. HTML from any tool is drawn with the same reverse-engineered client
+ * models as a Hyper Elements email. It rejects with the import's error where @hyper-elements/email-client-models
  * can't be loaded, and with `email-clients/version-mismatch` where the one installed speaks another protocol.
  */
 export function renderInEmailClients(html: string, options?: Pick<EmailClientsOptions, "emailClients" | "dark" | "fonts" | "widths" | "computers">): Promise<EmailClientsResult<EmailHtmlDiagnostic>>;
@@ -94,16 +94,17 @@ export async function renderInEmailClients(input: React.ReactElement | string, o
   checkClients(clients, "renderInEmailClients({ emailClients })");
   const { variants, skipped } = variantsOf(clients, dark, EMAIL_CLIENTS, widths, computers);
   const own: ElementsPlugin[] = plugins.some((plugin) => plugin?.name === PLUGIN_NAME) ? [] : [await emailClients({ clients })];
-  // The compact HTML: white space changes how some clients draw an email. A core that passed the check gives a block
-  // map for an Email, and none for another root: only an Email is previewed.
+  // The compact HTML: white space changes how some clients draw an email.
   const rendered = await core.render(element, { ...renderOptions, plugins: [...plugins, ...own], pretty: false, blockMap: true });
   const blocks = rendered.blocks;
-  if (!blocks) {
-    throw new core.ElementsError([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
-  }
+  const notAnEmail = () => new core.ElementsError([{ code: "email-clients/not-an-email", severity: "error", message: "renderInEmailClients() previews an Email; this template's root is another (a Page, a Document or a Canvas)", path: "root" }]);
+  // An older core gives no map for a root other than an Email.
+  if (!blocks) throw notAnEmail();
   // The findings read each block's component from its entry: a map without them (a core whose BLOCK_MAP_VERSION
   // claims a format it doesn't write) would leave them silently empty.
   if (!blocks.entries.every((entry) => typeof entry.type === "string")) throw versionMismatch(["block types in render()'s blockMap"]);
+  // Only an Email is previewed: the map's first entry is the root, with its component (a map without one isn't an Email's).
+  if (blocks.entries[0]?.type !== "Email") throw notAnEmail();
   const previews = await previewsOf(rendered.html, blocks, variants, models, { fonts, source: "render" });
   return { previews, skipped, diagnostics: rendered.diagnostics };
 }

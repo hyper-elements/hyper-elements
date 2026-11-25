@@ -7,4 +7,4 @@
 
 Starts a new line inside text.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.

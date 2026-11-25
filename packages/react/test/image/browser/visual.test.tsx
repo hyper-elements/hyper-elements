@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { chromium } from "playwright";
 import type { ReactElement } from "react";
 import { Canvas, Circle, Column, Heading, Rect, render, Row, Svg, Text } from "@hyper-elements/react";
-import { renderImage } from "../../../src/image";
+import { layoutImage, renderImage } from "../../../src/image";
 
 const FONT = readFileSync(join(dirname(createRequire(import.meta.url).resolve("pdfjs-dist/package.json")), "standard_fonts", "LiberationSans-Regular.ttf"));
 const fonts = [{ family: "Liberation", src: `data:font/ttf;base64,${FONT.toString("base64")}` }];
@@ -25,8 +25,9 @@ type Line = [number, number, number, number];
  * Each image's pixels, Chromium's and the image's, decoded in Chromium; how many differ; and each image's lines of
  * text (rows of pixels unlike the top left one's, one line where they touch).
  */
-async function compare(template: ReactElement): Promise<{ differ: number; total: number; size: number[]; lines: Line[][] }> {
-  const { html } = await render(template);
+async function compare(template: ReactElement, reference: ReactElement = template): Promise<{ differ: number; total: number; size: number[]; lines: Line[][] }> {
+  // The reference Chromium draws: the same design, or (for fitted text) the design at the sizes the image chose.
+  const { html } = await render(reference);
   const { image, width, height } = await renderImage(template);
   const browser = await chromium.launch({ args: ["--disable-lcd-text", "--font-render-hinting=none"] });
   try {
@@ -134,5 +135,25 @@ describe("an image and the Canvas's HTML in Chromium", () => {
     expect(image.length).toBe(4);
     expect(chromium.length).toBe(image.length);
     image.forEach(([left, right], i) => expect([left, right].map((edge, k) => Math.abs(edge - chromium[i][k]) <= 1), `line ${i}: ${[left, right]} in the image, ${chromium[i].slice(0, 2)} in Chromium`).toEqual([true, true]));
+  });
+
+  it("draw fitted text as Chromium draws the same text at the size the image chose", async () => {
+    const words = "Five days of new things, one a day, every day of the week";
+    const design = (fit: boolean, size?: number) => (
+      <Canvas width={480} height={240} fonts={fonts} style={{ backgroundColor: "#0f172a", padding: 24, color: "#ffffff", fontFamily: "Liberation" }}>
+        <Heading level={1} {...(fit ? { fit: { sizes: [48, 40, 32, 28, 24, 20], maxLines: 2 } } : {})} style={{ ...(size ? { fontSize: size } : {}), lineHeight: 1.2, fontWeight: 400 }}>
+          {words}
+        </Heading>
+      </Canvas>
+    );
+    const { fits } = await layoutImage(design(true));
+    const chosen = fits[0].chosen!;
+    expect(chosen).toBeLessThan(48);
+    const result = await compare(design(true), design(false, chosen));
+    const [chromium, image] = result.lines;
+    expect(image.length).toBe(2);
+    expect(chromium.length).toBe(image.length);
+    // Each line's letters start, end and sit within a pixel of Chromium's.
+    image.forEach((line, i) => expect(line.map((edge, k) => Math.abs(edge - chromium[i][k]) <= 1), `line ${i}: ${line} in the image, ${chromium[i]} in Chromium`).toEqual([true, true, true, true]));
   });
 });

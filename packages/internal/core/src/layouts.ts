@@ -51,6 +51,7 @@ function arrangeGrid(node: Node): Node {
   return {
     type: "Column",
     ...(node.id ? { id: node.id } : {}),
+    ...(node.field ? { field: node.field } : {}),
     style: { ...box, ...(rowGap !== undefined ? { gap: rowGap } : {}) },
     ...(mobileBox || mobileRowGap !== undefined ? { mobile: { ...mobileBox, ...(mobileRowGap !== undefined ? { gap: mobileRowGap } : {}) } } : {}),
     ...(node.hidden ? { hidden: node.hidden } : {}),

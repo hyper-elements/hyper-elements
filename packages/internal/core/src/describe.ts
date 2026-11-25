@@ -15,6 +15,8 @@ export interface PropertyDescription {
   path: string;
   label: string;
   description?: string;
+  /** How to fill it well (a prop's, where its spec gives it): plain English, never enforced. */
+  guidance?: string;
   kind: string;
   accepts: string;
   editor: EditorKind;
@@ -144,6 +146,7 @@ function describe(definition: ComponentDefinition, registry: Registry, reach: Ma
       path: `props.${key}`,
       label: spec.label,
       ...(spec.description ? { description: spec.description } : {}),
+      ...(spec.guidance ? { guidance: spec.guidance } : {}),
       kind: spec.kind.name,
       accepts: spec.kind.accepts,
       editor: spec.kind.editor,

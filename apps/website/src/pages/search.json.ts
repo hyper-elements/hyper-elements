@@ -2,14 +2,16 @@ import type { APIRoute } from "astro";
 import { docsInOrder, referenceInOrder } from "../lib/llms";
 import { docHref } from "../lib/site";
 import { emailTestingDescription } from "../lib/email-testing";
+import { ogDescription, ogPath, ogTitle } from "../lib/og-image";
 
-/** What the ⌘K search looks through: every docs page and its sections, and every component. */
+/** What the ⌘K search looks through: every docs page and its sections, and every element. */
 export const GET: APIRoute = async () => {
   const docs = await docsInOrder();
   const reference = await referenceInOrder();
   const slugify = (s: string) => s.toLowerCase().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-");
   const items: { title: string; sub: string; href: string }[] = [
     { title: "Email testing playground", sub: emailTestingDescription, href: "/email-testing" },
+    { title: ogTitle, sub: ogDescription, href: ogPath },
   ];
   for (const d of docs) {
     const e = d.entry!;
@@ -19,6 +21,6 @@ export const GET: APIRoute = async () => {
       items.push({ title: h, sub: e.data.title, href: `${docHref(d.slug)}#${slugify(h)}` });
     }
   }
-  for (const r of reference) items.push({ title: r.data.title, sub: `Component · ${r.data.summary}`, href: `/docs/components/${r.id}` });
+  for (const r of reference) items.push({ title: r.data.title, sub: `Element · ${r.data.summary}`, href: `/docs/elements/${r.id}` });
   return new Response(JSON.stringify(items), { headers: { "content-type": "application/json" } });
 };

@@ -121,16 +121,30 @@ for (const format of ['esm', 'cjs']) {
 }
 
 // 2. Beside core 0.3.1: npm reports the unmet peer; installed anyway, the first call says what to install.
+// npm reports it only where the registry has a core in this package's range. Where the range was raised for a minor
+// that isn't published yet (the range is raised in the change that releases it), npm has nothing to weigh the peer
+// against: it installs, and leaves that core out without a word. The check is skipped until the release is out.
+const range = JSON.parse(readFileSync(join(here, 'package.json'), 'utf8')).peerDependencies['@hyper-elements/react'];
+let rangeOnNpm = true;
 try {
-  project(['@hyper-elements/react@0.3.1', extension, ...REACT]);
-  fail('npm installed it beside core 0.3.1 without reporting the unmet peer');
-} catch (error) {
-  if (!/ERESOLVE|peer(Optional)? @hyper-elements\/react/.test(String(error.stderr ?? error.message))) throw error;
+  rangeOnNpm = run('npm', ['view', `@hyper-elements/react@${range}`, 'version'], here).trim() !== '';
+} catch {
+  rangeOnNpm = false;
+}
+if (rangeOnNpm) {
+  try {
+    project(['@hyper-elements/react@0.3.1', extension, ...REACT]);
+    fail('npm installed it beside core 0.3.1 without reporting the unmet peer');
+  } catch (error) {
+    if (!/ERESOLVE|peer(Optional)? @hyper-elements\/react/.test(String(error.stderr ?? error.message))) throw error;
+  }
+} else {
+  console.info(`PACK_NOTE: no @hyper-elements/react@${range} is on npm yet, so npm doesn't report core 0.3.1 as an unmet peer: that check is skipped`);
 }
 const older = project(['@hyper-elements/react@0.3.1', extension, ...REACT], ['--legacy-peer-deps']);
 for (const format of ['esm', 'cjs']) {
   const out = older[format];
-  if (out.error !== 'email-clients/version-mismatch' || !out.message.includes('PLUGIN_API (plugins)') || !out.message.includes('npm i @hyper-elements/react@^0.4.0 @hyper-elements/email-clients@^0.4')) fail(`${format} beside core 0.3.1: ${JSON.stringify(out)}`);
+  if (out.error !== 'email-clients/version-mismatch' || !out.message.includes('PLUGIN_API (plugins)') || !out.message.includes('npm i @hyper-elements/react@^0.5.0 @hyper-elements/email-clients@^0.5')) fail(`${format} beside core 0.3.1: ${JSON.stringify(out)}`);
 }
 
 // 3. Alone: no core, no React.
@@ -150,7 +164,7 @@ for (const format of ['esm', 'cjs']) {
   // Nothing in this email; at most a note about the captured checks on HTML (models 1.8.0 and later run them).
   if (JSON.stringify(out.previews) !== JSON.stringify(all) || !out.inline || out.diagnostics.some((d) => d.code !== 'email/captured-checks')) fail(`${format}, installed alone wrote ${JSON.stringify(out)}`);
   if (JSON.stringify(out.approximate) !== JSON.stringify(approximate)) fail(`${format}, installed alone marked ${JSON.stringify(out.approximate)} approximate`);
-  if (out.template?.name !== 'email-clients/version-mismatch' || !out.template.message.includes("isn't installed") || !out.template.message.includes('npm i @hyper-elements/react@^0.4.0')) fail(`${format}, installed alone, a template call gave ${JSON.stringify(out.template)}`);
+  if (out.template?.name !== 'email-clients/version-mismatch' || !out.template.message.includes("isn't installed") || !out.template.message.includes('npm i @hyper-elements/react@^0.5.0')) fail(`${format}, installed alone, a template call gave ${JSON.stringify(out.template)}`);
 }
 writeFileSync(join(alone.dir, 'index.ts'), HTML_TS);
 const tsc = join(here, 'node_modules/.bin/tsc');

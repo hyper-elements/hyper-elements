@@ -69,8 +69,13 @@ export type ConditionStyles<D> = D extends ComponentDefinition<any, infer S, inf
 
 /** What every primitive takes beside its own props. */
 interface Extras<Style, Conditions> {
-  /** Stable id; one is assigned in document order when it's left out. */
+  /** Stable id: an anchor or a reference. None is generated when it's left out. */
   id?: string;
+  /**
+   * The template field it shows, in a template's render (`headline`, `features[1]`, `stories[1].image`): what the
+   * template's checks read for its image rules and where its diagnostics point. Several nodes may show one field.
+   */
+  field?: string;
   /**
    * Its style, and inside it its styles on phones (`mobile`) and on hover (`hover`), where it takes them. A value may be
    * a theme's token (`token("colors.primary")`), and `apply` merges the theme's named styles under it, in order.
@@ -110,7 +115,7 @@ function createPrimitive<D extends ComponentDefinition<any, any>>(definition: D)
     const collection = collectingPrimitives();
     if (!collection) {
       throw new Error(
-        `[Elements] <${definition.type}> is part of a template: render the template with render(), not this component on its own`
+        `[Elements] <${definition.type}> is part of a design: render the design with render(), not this element on its own`
       );
     }
     return recordPrimitive(collection, definition.type, props as Record<string, unknown>);

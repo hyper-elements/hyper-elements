@@ -9,7 +9,8 @@
 //     GUIDE.md, REFERENCE.md and SKILL.md as they were at a git ref, into docs-sets/<name>/ (a kit's `docsFrom`)
 //
 // The first form also installs the checkout's command line, packages/cli, where it's built (the email suite's `he-cli`
-// kit runs it): node_modules/@hyper-elements/cli and node_modules/.bin/hyper-elements.
+// kit runs it): node_modules/@hyper-elements/cli and node_modules/.bin/hyper-elements, with its copy of
+// @hyper-elements/lint (packages/lint, built).
 //
 // Its dist/ is copied (renamed), its agent guide copied with the package's new name, and the checkout's commit recorded
 // (source.json), so every result says which engine code made it.
@@ -76,16 +77,19 @@ async function install(src, dest, { skill } = {}) {
     if (/\.(js|cjs|d\.ts|d\.cts)$/.test(f)) await writeFile(join(dest, "dist", f), renamed(await readFile(from, "utf8")));
     else await copyFile(from, join(dest, "dist", f));
   }
-  const { version } = JSON.parse(await readFile(join(src, "package.json"), "utf8"));
+  // Its module type too: its .js entries are ES modules, which Node reads as CommonJS in a package without it.
+  const { version, type } = JSON.parse(await readFile(join(src, "package.json"), "utf8"));
   const entry = (name) => ({ types: `./dist/${name}.d.ts`, import: `./dist/${name}.js`, require: `./dist/${name}.cjs` });
-  // `inspect` too: the command line reads a template's root with it.
-  const entries = ["image", "pdf", "builder", "inspect"].filter((e) => existsSync(join(src, "dist", `${e}.js`)));
+  // `inspect` too: the command line reads a template's root with it; and `template`, the template suite's (0.5).
+  const entries = ["image", "pdf", "builder", "inspect", "template"].filter((e) => existsSync(join(src, "dist", `${e}.js`)));
   await writeFile(join(dest, "package.json"), JSON.stringify({
-    name: "@hyper-elements/react", version,
+    name: "@hyper-elements/react", version, ...(type ? { type } : {}),
     exports: { ".": entry("primitives"), ...Object.fromEntries(entries.map((e) => [`./${e}`, entry(e)])), "./package.json": "./package.json" },
     peerDependencies: { react: ">=18", "react-dom": ">=18", satori: "^0.33.5", "@resvg/resvg-js": "^2.6.2", "@react-pdf/renderer": "^4.9.0" },
   }, null, 2));
   for (const f of ["GUIDE.md", "REFERENCE.md"]) await writeFile(join(dest, f), docText(await readFile(join(src, f), "utf8")));
+  // The templates guide, for the template suite's kits (TEMPLATES.md), where the checkout has one.
+  if (existsSync(join(src, "docs/templates.md"))) await writeFile(join(dest, "TEMPLATES.md"), docText(await readFile(join(src, "docs/templates.md"), "utf8")));
   if (skill) await writeFile(join(dest, "SKILL.md"), docText(await readFile(skill, "utf8")));
   return version;
 }
@@ -101,6 +105,15 @@ export async function installCli(src, nodeModules) {
   await cp(join(src, "dist"), join(dest, "dist"), { recursive: true });
   const { name, version, type, bin, engines } = JSON.parse(await readFile(join(src, "package.json"), "utf8"));
   await writeFile(join(dest, "package.json"), JSON.stringify({ name, version, type, bin, engines }, null, 2));
+  // Its own copy of lint (a dependency it falls back to where a project has none), from the same checkout, built.
+  const lint = join(src, "..", "lint");
+  if (existsSync(join(lint, "dist/index.js"))) {
+    const to = join(nodeModules, "@hyper-elements/lint");
+    await rm(to, { recursive: true, force: true });
+    await cp(join(lint, "dist"), join(to, "dist"), { recursive: true });
+    const manifest = JSON.parse(await readFile(join(lint, "package.json"), "utf8"));
+    await writeFile(join(to, "package.json"), JSON.stringify({ name: manifest.name, version: manifest.version, type: manifest.type, exports: manifest.exports }, null, 2));
+  }
   await mkdir(join(nodeModules, ".bin"), { recursive: true });
   for (const [command, file] of Object.entries(bin)) {
     await chmod(join(dest, file), 0o755);

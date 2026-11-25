@@ -1,0 +1,133 @@
+{
+  "name": "Orbit",
+  "background": "#0b1020",
+  "colors": {
+    "headline": "#f7f7fb",
+    "features": "#c7d2fe",
+    "date": "#2dd4bf"
+  },
+  "fonts": [
+    "Inter-Regular.ttf",
+    "Inter-Bold.ttf"
+  ],
+  "logo": {
+    "file": "orbit-logo-white.png",
+    "src": "assets/orbit-logo-white.png",
+    "width": 252,
+    "height": 128,
+    "shown": 126
+  },
+  "screenshotAspect": [
+    1.2,
+    2.0
+  ],
+  "formats": {
+    "square": {
+      "width": 1080,
+      "height": 1080,
+      "padding": 72,
+      "logo": {
+        "left": 72,
+        "top": 72,
+        "width": 126,
+        "height": 64
+      },
+      "headline": {
+        "left": 72,
+        "top": 168,
+        "width": 936,
+        "height": 264,
+        "sizes": [
+          72,
+          64,
+          56,
+          48
+        ],
+        "maxLines": 3,
+        "lineHeight": 1.1
+      },
+      "features": {
+        "left": 72,
+        "top": 448,
+        "width": 936,
+        "height": 133,
+        "size": 30,
+        "lineHeight": 1.3,
+        "gap": 8
+      },
+      "date": {
+        "left": 72,
+        "top": 597,
+        "width": 936,
+        "height": 36,
+        "size": 28,
+        "lineHeight": 1.25
+      },
+      "art": {
+        "left": 72,
+        "top": 665,
+        "width": 936,
+        "height": 343
+      },
+      "shot": {
+        "left": 96,
+        "top": 689,
+        "width": 888,
+        "height": 295
+      }
+    },
+    "landscape": {
+      "width": 1200,
+      "height": 630,
+      "padding": 56,
+      "logo": {
+        "left": 56,
+        "top": 56,
+        "width": 126,
+        "height": 64
+      },
+      "headline": {
+        "left": 56,
+        "top": 144,
+        "width": 548,
+        "height": 186,
+        "sizes": [
+          56,
+          48,
+          40
+        ],
+        "maxLines": 3,
+        "lineHeight": 1.1
+      },
+      "features": {
+        "left": 56,
+        "top": 346,
+        "width": 548,
+        "height": 106,
+        "size": 24,
+        "lineHeight": 1.3,
+        "gap": 6
+      },
+      "date": {
+        "left": 56,
+        "top": 468,
+        "width": 548,
+        "height": 30,
+        "size": 24,
+        "lineHeight": 1.25
+      },
+      "art": {
+        "left": 640,
+        "top": 56,
+        "width": 504,
+        "height": 518
+      },
+      "shot": {
+        "left": 664,
+        "top": 80,
+        "width": 456,
+        "height": 470
+      }
+    }
+  }
+}

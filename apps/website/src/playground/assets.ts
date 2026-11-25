@@ -1,8 +1,9 @@
 // The files a Document's PDF or a Canvas's image is drawn with. The sandbox can't fetch (it has no network), so the
 // page does, for what the template names, and only from where it says here:
 //
-//   fonts   the fallback from this site; a named family from Fontsource's files on jsDelivr, by its name alone
-//   images  this site's own (/img/…); any other over https, without cookies or a referrer
+//   fonts   the fallback from this site; a font with its own address (a template's brand fonts) from there, the
+//           site's own from this site; any other named family from Fontsource's files on jsDelivr, by its name alone
+//   images  this site's own (/img/…, and the templates' assets); any other over https, without cookies or a referrer
 import type { FontFile, FontNeed } from "../../playground/protocol";
 
 const MAX_FONTS = 12;
@@ -75,8 +76,39 @@ export interface Assets {
   missing: string[];
 }
 
-/** The site's own images, which the examples name by its address. */
-const ownImage = (url: string): string | undefined => /^https:\/\/(www\.)?hyperelements\.dev\/img\/[\w./-]+$/.exec(url) && !url.includes("..") ? new URL(url).pathname : undefined;
+/**
+ * The site's own files, which the examples and the templates name by its address: images under /img/, and the templates'
+ * fonts and images under /generated/gallery/assets/. They load from this site, wherever it runs, so a local or preview build
+ * shows its own files, not the live site's.
+ */
+export const ownFile = (url: string): string | undefined =>
+  /^https:\/\/(www\.)?hyperelements\.dev\/(img|generated\/gallery\/assets)\/[\w./-]+$/.exec(url) && !url.includes("..") ? new URL(url).pathname : undefined;
+const ownImage = ownFile;
+
+/** The templates' assets' address on the live site, as it's written in their HTML. */
+export const GALLERY_ASSETS = /https:\/\/(?:www\.)?hyperelements\.dev\/generated\/gallery\/assets\/[\w./-]+/g;
+
+/** Where a font need's file comes from: its own address (this site's where it's the site's), else Fontsource by its family. */
+const fontSource = (need: FontNeed): { key: string; url: string; init?: RequestInit } | undefined => {
+  if (need.url && /^https:\/\//.test(need.url)) {
+    const own = ownFile(need.url);
+    return own ? { key: `font ${own}`, url: own } : { key: `font ${need.url}`, url: need.url, init: { credentials: "omit", referrerPolicy: "no-referrer", mode: "cors" } };
+  }
+  const url = fontUrl(need);
+  return url ? { key: `font ${url}`, url, init: { credentials: "omit", referrerPolicy: "no-referrer" } } : undefined;
+};
+
+/** A font file of the site's own as a data: URL, for an HTML preview whose policy loads fonts only over https or as data. */
+export async function fontDataUrl(url: string): Promise<string | undefined> {
+  const own = ownFile(url);
+  if (!own || !/\.(ttf|otf|woff2?)$/i.test(own)) return undefined;
+  const bytes = await fetched(`font ${own}`, own, MAX_FONT_BYTES);
+  if (!bytes) return undefined;
+  const type = /\.otf$/i.test(own) ? "font/otf" : /\.woff2$/i.test(own) ? "font/woff2" : /\.woff$/i.test(own) ? "font/woff" : "font/ttf";
+  let binary = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return `data:${type};base64,${btoa(binary)}`;
+}
 
 export async function fetchAssets(needs: { fonts: FontNeed[]; images: string[] } | undefined, options: { fallback: boolean }): Promise<Assets> {
   const missing: string[] = [];
@@ -90,12 +122,18 @@ export async function fetchAssets(needs: { fonts: FontNeed[]; images: string[] }
     if (regular) fonts.push({ family: FALLBACK, weight: 400, style: "normal", src: regular });
     if (bold) fonts.push({ family: FALLBACK, weight: 700, style: "normal", src: bold });
   }
-  const wanted = (needs?.fonts ?? []).filter((need) => fontUrl(need)).slice(0, MAX_FONTS);
-  const loaded = await Promise.all(wanted.map((need) => fetched(`font ${fontUrl(need)}`, fontUrl(need)!, MAX_FONT_BYTES, { credentials: "omit", referrerPolicy: "no-referrer" })));
+  const wanted = (needs?.fonts ?? []).filter((need) => fontSource(need)).slice(0, MAX_FONTS);
+  const loaded = await Promise.all(
+    wanted.map((need) => {
+      const source = fontSource(need)!;
+      return fetched(source.key, source.url, MAX_FONT_BYTES, source.init);
+    }),
+  );
   const unfound = new Set<string>();
   wanted.forEach((need, i) => {
     const src = loaded[i];
-    if (src) fonts.push({ ...need, src });
+    const { url: _, ...face } = need;
+    if (src) fonts.push({ ...face, src });
     else unfound.add(need.family);
   });
   // A family none of whose files came: said once.

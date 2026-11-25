@@ -338,7 +338,7 @@ describe("buttons, nested one-column rows and imported fonts", () => {
       expect(contents.some((c: any) => c.type === "image")).toBe(true);
     }
     expect(runtime.fonts).toContainEqual({ url: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" });
-    // The converter finds the stylesheet (the new components have no stylesheet to link: the editor registers it).
+    // The converter finds the stylesheet (the new elements have no stylesheet to link: the editor registers it).
     expect(codemod.fonts).toContainEqual({ url: "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" });
   });
 });

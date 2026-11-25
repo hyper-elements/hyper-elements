@@ -1,6 +1,6 @@
 {
   "name": "@hyper-elements/react",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "React components for transactional emails, landing pages, invoices and PDFs: email-safe HTML, responsive web HTML, and print-ready PDF HTML from one component tree.",
   "license": "MIT",
   "author": "Unlayer",
@@ -103,6 +103,16 @@
         "default": "./dist/image.cjs"
       }
     },
+    "./template": {
+      "import": {
+        "types": "./dist/template.d.ts",
+        "default": "./dist/template.js"
+      },
+      "require": {
+        "types": "./dist/template.d.cts",
+        "default": "./dist/template.cjs"
+      }
+    },
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -118,6 +128,9 @@
       ],
       "image": [
         "./dist/image.d.ts"
+      ],
+      "template": [
+        "./dist/template.d.ts"
       ]
     }
   },
@@ -128,6 +141,7 @@
     "dist/inspect.*",
     "dist/pdf.*",
     "dist/image.*",
+    "dist/template.*",
     "README.md",
     "GUIDE.md",
     "REFERENCE.md",

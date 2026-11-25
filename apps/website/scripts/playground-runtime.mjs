@@ -29,11 +29,12 @@ const lintVersion = JSON.parse(await readFile(join(lintDir, "package.json"), "ut
 export const RUNTIME_BUNDLES = ["runner", "core", "pdf", "image", "clients"];
 
 /** This repository's packages, from their sources. */
-const SOURCES = {
+export const SOURCES = {
   "@hyper-elements/react": join(reactDir, "src/primitives/index.ts"),
   "@hyper-elements/react/inspect": join(reactDir, "src/inspect/index.ts"),
   "@hyper-elements/react/pdf": join(reactDir, "src/pdf/index.ts"),
   "@hyper-elements/react/image": join(reactDir, "src/image/index.ts"),
+  "@hyper-elements/react/template": join(reactDir, "src/template/index.ts"),
   "@hyper-elements/core": join(coreDir, "src/index.ts"),
   "@hyper-elements/core/pdf": join(coreDir, "src/pdf/index.ts"),
   "@hyper-elements/core/image": join(coreDir, "src/image/index.ts"),
@@ -71,10 +72,15 @@ const USES_BUFFER = /packages\/(?:internal\/)?(core|react)\/src\/(pdf|image)\/[^
 /** fflate's asynchronous functions without the Worker they start (see the plugin). */
 const FFLATE = join(sandbox, "shims/fflate.ts");
 
-const plugin = (name) => ({
+/**
+ * The plugin that bundles a runtime from the sources for a browser. `shared`: the React and Elements of the core
+ * bundle, loaded before it, not copies; `local`: the folders whose own files import packages/react's React (the
+ * Open Graph image generator's bundle, scripts/og-image-runtime.mjs, gives its own).
+ */
+export const plugin = (name, { shared = name !== "core" && name !== "runner", local = [sandbox] } = {}) => ({
   name: "playground-runtime",
   setup(b) {
-    if (name !== "core" && name !== "runner") {
+    if (shared) {
       b.onResolve({ filter: /^(react|react\/jsx-runtime|@hyper-elements\/react)$/ }, ({ path }) => ({ path: join(sandbox, "shims", SHARED[path]) }));
     }
     b.onResolve({ filter: /^(@hyper-elements\/(react|email-clients|lint)|@hyper-elements\/core)(\/.*)?$/ }, ({ path }) => (SOURCES[path] ? { path: SOURCES[path] } : undefined));
@@ -83,8 +89,8 @@ const plugin = (name) => ({
     b.onResolve({ filter: /^(node:crypto|@react-pdf\/renderer|@resvg\/resvg-js|harfbuzzjs)$/ }, (args) => (args.pluginData?.real ? undefined : { path: join(sandbox, "shims", SHIMS[args.path]) }));
     // Node's own modules, named only where an engine runs in Node.
     b.onResolve({ filter: /^(node:)?(fs|fs\/promises|path|url|module)$/ }, () => ({ path: join(sandbox, "shims/empty.cjs") }));
-    // The sandbox's own files import the React that packages/react is developed with.
-    b.onResolve({ filter: /^react(\/.*)?$/ }, (args) => (args.pluginData?.real || !args.importer.startsWith(sandbox) ? undefined : b.resolve(args.path, { resolveDir: reactDir, kind: args.kind, pluginData: { real: true } })));
+    // The sandbox's own files (and `local`'s) import the React that packages/react is developed with.
+    b.onResolve({ filter: /^react(\/.*)?$/ }, (args) => (args.pluginData?.real || !local.some((dir) => args.importer.startsWith(dir)) ? undefined : b.resolve(args.path, { resolveDir: reactDir, kind: args.kind, pluginData: { real: true } })));
     // fflate's asynchronous functions start a Worker, which the code the sandbox runs doesn't have: each import of
     // fflate gets the copy its importer would, with those functions made from its synchronous ones (shims/fflate.ts).
     b.onResolve({ filter: /^fflate$/ }, async (args) => {

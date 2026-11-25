@@ -1,0 +1,8 @@
+{
+  "name": "no call to action",
+  "body": "<>\n  <Text style={styles.text}>Two things from the Orbit team this month.</Text>\n  <Img src=\"https://assets.orbit.dev/img/newsletter-hero.png\" width=\"536\" alt=\"The new editor\" style={styles.image} />\n  <Heading as=\"h2\" style={styles.title}>A faster editor</Heading>\n  <Text style={styles.text}>Typing, search and preview are all twice as fast.</Text>\n  \n</>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "imports": "Heading, Img, Link, Text",
+  "breaks": "call to action"
+}

@@ -71,7 +71,8 @@
         },
         "runs": [
          "Slow Signals · Episode 48"
-        ]
+        ],
+        "key": "root.children[0].children[0].children[0]"
        },
        {
         "kind": "box",
@@ -97,7 +98,8 @@
           },
           "runs": [
            "The quiet economics of lighthouses"
-          ]
+          ],
+          "key": "root.children[0].children[0].children[1].children[0]"
          },
          {
           "kind": "text",
@@ -114,9 +116,11 @@
           },
           "runs": [
            "With Hannah Okoye, who kept the Fair Isle South light for twenty-three years."
-          ]
+          ],
+          "key": "root.children[0].children[0].children[1].children[1]"
          }
-        ]
+        ],
+        "key": "root.children[0].children[0].children[1]"
        },
        {
         "kind": "box",
@@ -146,7 +150,8 @@
           },
           "runs": [
            "52 min"
-          ]
+          ],
+          "key": "root.children[0].children[0].children[2].children[0]"
          },
          {
           "kind": "text",
@@ -168,11 +173,14 @@
           },
           "runs": [
            "Wherever you listen"
-          ]
+          ],
+          "key": "root.children[0].children[0].children[2].children[1]"
          }
-        ]
+        ],
+        "key": "root.children[0].children[0].children[2]"
        }
-      ]
+      ],
+      "key": "root.children[0].children[0]"
      },
      {
       "kind": "box",
@@ -185,6 +193,7 @@
       "children": [
        {
         "kind": "drawing",
+        "key": "root.children[0].children[1]/drawing",
         "width": 360,
         "height": 502,
         "viewBox": "0 0 360 502",
@@ -467,9 +476,11 @@
          }
         ]
        }
-      ]
+      ],
+      "key": "root.children[0].children[1]"
      }
-    ]
+    ],
+    "key": "root.children[0]"
    }
   ],
   "fonts": []

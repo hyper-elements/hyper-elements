@@ -1,6 +1,6 @@
-# Make React and AI-generated email templates visually editable with toDesign
+# Make React and AI-generated emails visually editable with toDesign
 
-Use `@hyper-elements/react` when a developer or AI agent writes a template in React and another person needs to edit its content in Unlayer's visual editor. Templates already written with React Email open the same way: see [Open React Email templates in the Unlayer editor](./migrate-from-react-email.md#open-react-email-templates-in-the-unlayer-editor). `toDesign()` from `@hyper-elements/react/builder` creates design data from a template written with the components from `@hyper-elements/react`; `loadDesign()` opens it; the editor's `exportHtml()` callback returns the updated design and HTML; `fromDesign()` reads the saved design back as a template.
+Use `@hyper-elements/react` when a developer or AI agent writes a design in React and another person needs to edit its content in Unlayer's visual editor. Templates already written with React Email open the same way: see [Open React Email templates in the Unlayer editor](./migrate-from-react-email.md#open-react-email-templates-in-the-unlayer-editor). `toDesign()` from `@hyper-elements/react/builder` creates a builder design from a design written with the elements from `@hyper-elements/react`; `loadDesign()` opens it; the editor's `exportHtml()` callback returns the updated builder design and HTML; `fromDesign()` reads the saved builder design back as a design.
 
 ## Generate Unlayer design JSON from React
 
@@ -27,7 +27,7 @@ await mkdir("output", { recursive: true });
 await writeFile("output/design.json", JSON.stringify(design, null, 2));
 ```
 
-Expected: `design` is a serializable object with `body.rows`, `body.values`, `counters`, and `schemaVersion`, saved as `output/design.json`. It contains design structure, not HTML. `report` lists what the editor can't hold as it is, one line each, and is empty here. For the full invoice used in the other guides, [render-email.ts](../../../examples/content-workflows/src/render-email.ts) writes `output/invoice.design.json`.
+Expected: `design` is a serializable object with `body.rows`, `body.values`, `counters`, and `schemaVersion`, saved as `output/design.json`. It contains the builder design's structure, not HTML. `report` lists what the editor can't hold as it is, one line each, and is empty here. For the full invoice used in the other guides, [render-email.ts](../../../examples/content-workflows/src/render-email.ts) writes `output/invoice.design.json`.
 
 ## Load and edit the invoice
 
@@ -98,9 +98,9 @@ Open <http://127.0.0.1:3001/editor.html>. This is the full [editor.html](../../.
 
 Expected: the editor loads the invoice after `editor:ready`; after `design:loaded`, the download button becomes enabled. Change a paragraph and export. The browser downloads `edited.design.json` and `edited.html`. Save the JSON in your application and pass it to `loadDesign()` next time to preserve edits. The sample downloads files instead of assuming an application backend. See [editor installation](https://docs.unlayer.com/builder/installation) and [loading/saving designs](https://docs.unlayer.com/builder/load-and-save-designs) for hosted integration setup.
 
-## Read an edited design back
+## Read an edited builder design back
 
-`fromDesign()` turns a saved design, edited in the editor or not, back into a template: an element to render, and its source.
+`fromDesign()` turns a saved builder design, edited in the editor or not, back into a design: an element to render, and its source.
 
 ```tsx
 import { readFile } from "node:fs/promises";
@@ -112,15 +112,15 @@ const { element, code, report } = fromDesign(saved, { displayMode: "email" });
 const { html, text } = await render(element);
 ```
 
-`element` renders the edited design; `code` is the same template as JSX in the new components; `report` lists what the template can't hold. Pass the `displayMode` the design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. A design's markup is kept as it is, so where designs can hold untrusted content, pass your sanitizer: `fromDesign(saved, { toSafeHtml })`.
+`element` renders the edited builder design; `code` is the same design as JSX in the new elements; `report` lists what the design can't hold. Pass the `displayMode` the builder design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. A builder design's markup is kept as it is, so where builder designs can hold untrusted content, pass your sanitizer: `fromDesign(saved, { toSafeHtml })`.
 
 ## Constraints
 
-- `toDesign()` is synchronous, and takes an `Email`, a `Page` or a `Document`; a `Canvas` has no design. It renders the template once with React, as `render()` does, so hooks, Context, Fragments and your own components work, at the root too.
-- A component that is async or suspends makes `toDesign()` throw, as it makes `render()` reject: fetch data before building the tree, as in the [shared invoice factory](../../../examples/content-workflows/src/invoice.tsx). So does plain markup (a `<div>`, a `<b>`) among the components: use the components, or an `Html` block for raw HTML, which the editor edits as HTML.
-- The editor holds what its tools can. A style or prop a tool has no field for is a hidden property of that tool: kept in the design and drawn by Elements, with no control for it in the editor. What no tool shows (a `Layer`, an `Svg`, a `Table`, a box nested in a column, your own `component()`) goes as an HTML block of its rendered markup, which an editor user can move but not edit, and `report` says so.
-- Match the editor's `displayMode` to the design (`email` in this example). Preserve the generated schema version and counters rather than constructing guessed design JSON. Editor support for individual tools/features depends on its version and project configuration.
-- Exported JSON preserves design content and settings; it does not preserve React functions, business logic, hooks, or event handlers. What `fromDesign()` gives back is the design as it stands, with the sample values in it and none of the original's props, loops or conditions. What the editor can't arrange comes back with the same look, flatter: a `Section` around several `Row`s as a `Section` each, a box's padding on its blocks, a `Grid` as `Row`s of `Column`s.
-- After handing a design to an editor user, persist their latest JSON. Regenerating it from the original React source and reloading it would overwrite visual changes. Keep the template source and saved edited designs as separate application records.
+- `toDesign()` is synchronous, and takes an `Email`, a `Page` or a `Document`; a `Canvas` has no builder design. It renders the design once with React, as `render()` does, so hooks, Context, Fragments and your own components work, at the root too.
+- A component that is async or suspends makes `toDesign()` throw, as it makes `render()` reject: fetch data before building the tree, as in the [shared invoice factory](../../../examples/content-workflows/src/invoice.tsx). So does plain markup (a `<div>`, a `<b>`) among the elements: use the elements, or an `Html` block for raw HTML, which the editor edits as HTML.
+- The editor holds what its tools can. A style or prop a tool has no field for is a hidden property of that tool: kept in the builder design and drawn by Elements, with no control for it in the editor. What no tool shows (a `Layer`, an `Svg`, a box nested in a column, your own `defineElement()`) goes as an HTML block of its rendered markup, which an editor user can move but not edit, and `report` says so. A `Table` is the editor's table, and `fromDesign()` reads it back as a `Table`. In an `Email` or a `Page`, a table the editor's table would draw otherwise (a line between rows only, a cell spanning columns, a border around it, a width) stays an HTML block, which draws it exactly, and `report` says why.
+- Match the editor's `displayMode` to the builder design (`email` in this example). Preserve the generated schema version and counters rather than constructing guessed design JSON. Editor support for individual tools/features depends on its version and project configuration.
+- Exported JSON preserves the builder design's content and settings; it does not preserve React functions, business logic, hooks, or event handlers. What `fromDesign()` gives back is the builder design as it stands, with the sample values in it and none of the original's props, loops or conditions. What the editor can't arrange comes back with the same look, flatter: a `Section` around several `Row`s as a `Section` each, a box's padding on its blocks, a `Grid` as `Row`s of `Column`s.
+- After handing a builder design to an editor user, persist their latest JSON. Regenerating it from the original React source and reloading it would overwrite visual changes. Keep the design's source and saved edited builder designs as separate application records.
 
-For agent-authored templates, start with the [task selection guide](./README.md) and validate generated code with the same runnable example checks. For delivery, pass the edited HTML to your [email provider](./email-providers.md), with a plain-text alternative that matches those edits: `render(element)` on what `fromDesign()` returns gives both.
+For agent-authored designs, start with the [task selection guide](./README.md) and validate generated code with the same runnable example checks. For delivery, pass the edited HTML to your [email provider](./email-providers.md), with a plain-text alternative that matches those edits: `render(element)` on what `fromDesign()` returns gives both.

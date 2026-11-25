@@ -1,0 +1,8 @@
+{
+  "name": "a raw HTML block",
+  "body": "<Column>\n  <Html html={'<div style=\"color: #ff0066; font-family: Comic Sans MS, cursive;\">Raw markup, past the brand</div>'} />\n  <Button href=\"https://app.orbit.dev/editor?utm_source=newsletter\">Try the editor</Button>\n</Column>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "imports": "Button, Column, Heading, Html, Image, Text",
+  "breaks": "brand fonts"
+}

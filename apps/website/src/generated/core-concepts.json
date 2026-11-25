@@ -1,0 +1,108 @@
+{
+  "outputs": {
+    "receiptOutline": "Email 600px: background #f4f4f5\n  Image 96px [Orbit] https://hyperelements.dev/img/orbit-logo.png\n  Column 600px: background #ffffff\n    Heading h1 536px \"Thanks for your order, {{first_name}}\"\n    Text 536px \"Order #10482 shipped. / Track it (https://example.com/orders/10482)\"\n    Table 536px\n      TableRow 536px\n        TableCell 268px \"Item\"\n        TableCell 268px \"Price\"\n      TableRow 536px\n        TableCell 268px \"Linen shirt\"\n        TableCell 268px \"$48.00\"\n    Row 536px: 2 side by side, stacked on phones\n      Column 260px\n        Text 260px \"Shipping to\"\n        Text 260px \"Ada Lovelace, London\"\n      Column 260px\n        Text 260px \"Next steps\"\n        List 260px\n          ListItem 236px \"We pack it\"\n          ListItem 236px \"You track it\"\n    Button: background #15132e \"View your order\" → https://example.com/orders/10482\n  Text 600px \"Orbit Inc., 1 Market St, San Francisco\"",
+    "receiptText": "[Orbit]\n\nTHANKS FOR YOUR ORDER, {{first_name}}\n\nOrder #10482 shipped.\nTrack it (https://example.com/orders/10482)\n\nItem | Price\nLinen shirt | $48.00\n\nShipping to\n\nAda Lovelace, London\n\nNext steps\n\n1. We pack it\n2. You track it\n\nView your order (https://example.com/orders/10482)\n\nOrbit Inc., 1 Market St, San Francisco",
+    "customRefused": "✗ custom/_refused/huge.tsx (Email)\n    error prop/invalid at root.children[0].props.size: size: expected one of \"compact\", \"large\", not \"huge\"\n1 design: 1 error, 0 warnings, 0 skipped",
+    "customInspect": "✓ custom/shop.tsx (Email)\n  root Email: props.width, props.lang, props.previewText\n  root.children[0] Row: style.gap\n  root.children[0].children[0] acme.ProductCard: props.name, props.photo, props.href, props.price\n  root.children[0].children[1] acme.ProductCard: props.name, props.photo, props.href, props.size, props.soldOut\n1 design: 0 errors, 0 warnings, 0 skipped",
+    "cliCheck": "✓ emails/receipt.tsx (Email)\n    info email/outlook-degraded at root.children[1].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[4].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/phone-styles at root: On phones, the email's phone styles don't apply: it keeps its desktop styles (Rows still stack) [gmail-app-other] See: https://www.caniemail.com/features/css-at-media/\n✓ emails/welcome.tsx (Email)\n    info email/outlook-degraded at root.children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n2 designs: 0 errors, 0 warnings, 0 skipped",
+    "cliRender": "✓ emails/welcome.tsx (Email) → out/emails/welcome.html, out/emails/welcome.txt\n    info email/outlook-degraded at root.children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n1 design: 0 errors, 0 warnings, 0 skipped",
+    "cliOutline": "Email 600px: background #f4f4f5\n  Column 600px: background #ffffff\n    Heading h1 536px \"Welcome, Ada\"\n    Text 536px \"Your account is ready.\"\n    Button: background #0879a1 \"Create a project\" → https://example.com/new",
+    "cliPreview": "✓ emails/welcome.tsx (Email)\n    info email/outlook-degraded at root.children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n  outlook: out/clients/emails/welcome/outlook.html\n  outlook-com: out/clients/emails/welcome/outlook-com.html\n  outlook-com.mac: out/clients/emails/welcome/outlook-com.mac.html\n  gmail: out/clients/emails/welcome/gmail.html\n  gmail.mac: out/clients/emails/welcome/gmail.mac.html\n  apple-mail: out/clients/emails/welcome/apple-mail.html\n  apple-mail.iphone: out/clients/emails/welcome/apple-mail.iphone.html\n1 design: 0 errors, 0 warnings, 0 skipped",
+    "cliJson": "{\"version\":1,\"command\":\"check\",\"file\":\"drafts/broken.tsx\",\"input\":\"template\",\"root\":\"Email\",\"status\":\"error\",\"outputs\":[],\"diagnostics\":[{\"code\":\"style/unknown\",\"severity\":\"error\",\"message\":\"\\\"marginBottom\\\" isn't a style a Text takes: use the parent's gap, or padding. See Text in @hyper-elements/react/GUIDE.md\",\"path\":\"root.children[0].style.marginBottom\"}]}\n{\"version\":1,\"summary\":{\"templates\":1,\"errors\":1,\"warnings\":0,\"skipped\":0,\"late\":[]},\"exitCode\":1}",
+    "rowOutline": "Email 600px\n  Row 600px: 3 side by side, stacked on phones\n    Column 180px: background #eef2ff\n      Text 180px \"Fixed\"\n    Column 259px: background #eef2ff\n      Text 259px \"Two shares\"\n    Column 129px: background #eef2ff\n      Text 129px \"One share\""
+  },
+  "sizes": {
+    "designs-email.svg": {
+      "width": 600,
+      "height": 400
+    },
+    "designs-page.svg": {
+      "width": 600,
+      "height": 400
+    },
+    "designs-document.svg": {
+      "width": 600,
+      "height": 400
+    },
+    "designs-canvas.svg": {
+      "width": 600,
+      "height": 400
+    },
+    "designs-shared.svg": {
+      "width": 880,
+      "height": 226
+    },
+    "styles-mobile.svg": {
+      "width": 880,
+      "height": 240
+    },
+    "styles-hidden.svg": {
+      "width": 880,
+      "height": 199
+    },
+    "styles-values.svg": {
+      "width": 720,
+      "height": 176
+    },
+    "styles-phones.svg": {
+      "width": 880,
+      "height": 250
+    },
+    "rendering-receipt.svg": {
+      "width": 880,
+      "height": 559
+    },
+    "rendering-pdf.svg": {
+      "width": 720,
+      "height": 409
+    },
+    "rendering-image.svg": {
+      "width": 720,
+      "height": 423
+    },
+    "rendering-flow.svg": {
+      "width": 880,
+      "height": 318
+    },
+    "themes-welcome.svg": {
+      "width": 987,
+      "height": 360
+    },
+    "custom-cards.svg": {
+      "width": 800,
+      "height": 332
+    },
+    "cli-preview.svg": {
+      "width": 880,
+      "height": 481
+    },
+    "cli-dev.png": {
+      "width": 1200,
+      "height": 760
+    },
+    "layout-row.svg": {
+      "width": 880,
+      "height": 308
+    },
+    "layout-spacing.svg": {
+      "width": 720,
+      "height": 287
+    },
+    "layout-section.svg": {
+      "width": 880,
+      "height": 321
+    },
+    "layout-grid.svg": {
+      "width": 880,
+      "height": 310
+    },
+    "layout-layer.svg": {
+      "width": 720,
+      "height": 312
+    },
+    "layout-alignment.svg": {
+      "width": 720,
+      "height": 240
+    }
+  }
+}

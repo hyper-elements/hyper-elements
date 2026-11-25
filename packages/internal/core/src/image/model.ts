@@ -15,6 +15,8 @@ export type Run = string | { kind: "span"; style: Style; runs: Run[] } | Picture
 
 export interface Picture {
   kind: "image";
+  /** Its node's path, where it's a node's own block (`root.children[1]`); a block the writer adds has a suffix (`/overlay`). */
+  key?: string;
   /** The image's file, as a data URI (nothing is fetched). */
   src: string;
   alt: string;
@@ -29,10 +31,10 @@ export interface Shape {
 
 /** A block in the Canvas. */
 export type Block =
-  | { kind: "box"; style: Style; children: Block[] }
-  | { kind: "text"; style: Style; runs: Run[] }
+  | { kind: "box"; key?: string; style: Style; children: Block[] }
+  | { kind: "text"; key?: string; style: Style; runs: Run[] }
   | Picture
-  | { kind: "drawing"; width: number; height: number; viewBox: string; shapes: Shape[] };
+  | { kind: "drawing"; key?: string; width: number; height: number; viewBox: string; shapes: Shape[] };
 
 export interface Font {
   /** The family as the template names it. */

@@ -7,20 +7,22 @@
  */
 import type { ElementsPlugin, PluginInput } from "@hyper-elements/react";
 import { settingsOf, type LintOptions } from "./options";
-import { lintInput } from "./template";
+import { describeRules, lintInput, type LintRuleDescriptor } from "./template";
 
 export { rules, type LintRoot, type Rule, type RuleSetting } from "./rules";
 export type { LintOptions } from "./options";
+export type { LintRuleDescriptor } from "./template";
 
 /** This package's version, for a tool to say which copy it ran. */
 export const version: string = __VERSION__;
 
 /**
  * The lint plugin: `validate(template, { plugins: [lint()] })`. Its findings are `email/lint-<rule>` on an Email and
- * `page/lint-<rule>` on a Page, warnings and notes only; a Document or a Canvas gets none. Throws a `TypeError` for an
- * option it doesn't know (a rule, a severity, a kind).
+ * `page/lint-<rule>` on a Page, warnings and notes only; a Document or a Canvas gets none. Its `rules` describe every
+ * rule under these options: the roots it reports under, whether it runs, what it checks and the fix. Throws a
+ * `TypeError` for an option it doesn't know (a rule, a severity, a kind).
  */
-export function lint(options?: LintOptions): ElementsPlugin {
-  const { settings, kind } = settingsOf(options, "lint()");
-  return Object.freeze({ name: "lint", api: 1 as const, check: (input: PluginInput) => lintInput(input, settings, kind) });
+export function lint(options?: LintOptions): ElementsPlugin & { readonly rules: readonly LintRuleDescriptor[] } {
+  const { settings } = settingsOf(options, "lint()");
+  return Object.freeze({ name: "lint", api: 1 as const, rules: describeRules(settings), check: (input: PluginInput) => lintInput(input, settings) });
 }

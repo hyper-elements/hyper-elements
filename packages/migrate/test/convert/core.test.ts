@@ -4,7 +4,7 @@ import * as Elements from "@hyper-elements/react";
 import { toDesign } from "@hyper-elements/react/builder";
 import { autoTableWidths, el, editorFonts, pinImageWidths, shareEditorFonts, expr, fallbackHtml, hole, NewComponentsError, printJsx, readTemplate, ReportBuilder, TODAYS_COMPONENTS, toNewComponents, treeToNewComponents, treeToTsx, boxSides, toPx, SLOT_OPEN, SLOT_CLOSE } from "../../src/convert/index";
 
-/** What a module the codemod writes may import: the new components, and React. */
+/** What a module the codemod writes may import: the new elements, and React. */
 const MODULES = { "@hyper-elements/react": Elements as unknown as Record<string, unknown>, react: React as unknown as Record<string, unknown> };
 
 const tree = el("Email", { contentWidth: "600px" }, [
@@ -33,7 +33,7 @@ describe("printing", () => {
     expect(jsx).toContain("{items.map((item) => (<Paragraph key={item.id}>Hi {item.name}</Paragraph>))}");
   });
 
-  it("prints phone props, and keeps them in the new components", async () => {
+  it("prints phone props, and keeps them in the new elements", async () => {
     const tree = el("Email", {}, [el("Row", {}, [el("Column", { mobile: { padding: "8px 16px" } }, [el("Image", { src: { url: "https://example.com/image.png", width: 640 }, width: "120px", mobile: { autoWidth: true }, hideOnMobile: true })])])]);
     const code = await treeToTsx(tree);
     expect(code).toContain('padding: "8px 16px"');
@@ -62,7 +62,7 @@ describe("report", () => {
   });
 });
 
-describe("the new components", () => {
+describe("the new elements", () => {
   it("are what a tree is written in, read back as an element without running the module", async () => {
     const { code, notes } = await treeToNewComponents(tree);
     expect(code).toMatch(/from "@hyper-elements\/react";/);
@@ -110,7 +110,7 @@ describe("the new components", () => {
     expect(error).toBeInstanceOf(NewComponentsError);
     expect((error as NewComponentsError).reason).toMatch(/its root is chosen at run time/);
     expect((error as NewComponentsError).intermediate).toBe(chosen);
-    expect((error as Error).message).toMatch(/^it can't be written in the new components: line 3: its root is chosen at run time/);
+    expect((error as Error).message).toMatch(/^it can't be written in the new elements: line 3: its root is chosen at run time/);
     // One of today's components used other than as an element stays imported from today's: it can't run.
     const used = todays("const parts = [Paragraph];\nexport default function T() {\n  return <Email><Row><Column><Paragraph html=\"Hi\" /></Column></Row></Email>;\n}");
     await expect(toNewComponents(used)).rejects.toThrow(/it still uses Unlayer Elements' Paragraph \(line 1: Paragraph stays imported from/);

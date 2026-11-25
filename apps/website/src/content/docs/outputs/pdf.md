@@ -62,7 +62,7 @@ npm install @hyper-elements/react @react-pdf/renderer react react-dom
 
 `/pdf` is an entry of `@hyper-elements/react`. Its engine is an optional peer dependency, so a project that doesn't import `/pdf` installs nothing for it, and the main entry never loads it.
 
-It runs in Node.js only. If it loads a second copy of `@hyper-elements/react` that lays templates out in another version, `renderPdf()` throws an `ElementsError` (`pdf/version`) rather than drawing the template wrong.
+It runs in Node.js only. If it loads a second copy of `@hyper-elements/react` that lays designs out in another version, `renderPdf()` throws an `ElementsError` (`pdf/version`) rather than drawing the design wrong.
 
 ## The Document
 
@@ -79,8 +79,8 @@ A Document's width comes from its size and margin: an A4 page with 48px margins 
 
 The content goes on pages in one of two ways:
 
-- **Runs split by [`PageBreak`](/docs/components/pagebreak).** What follows a `PageBreak` starts the next page.
-- **[`Document.Page`](/docs/components/document-page)s.** Each one is a page, its children stacked inside the Document's margins.
+- **Runs split by [`PageBreak`](/docs/elements/pagebreak).** What follows a `PageBreak` starts the next page.
+- **[`Document.Page`](/docs/elements/document-page)s.** Each one is a page, its children stacked inside the Document's margins.
 
 ```tsx
 <Document size="Letter" orientation="landscape">
@@ -96,7 +96,7 @@ The content goes on pages in one of two ways:
 
 ### Header, footer and page numbers
 
-One [`PageHeader`](/docs/components/pageheader) and one [`PageFooter`](/docs/components/pagefooter) are drawn on every page, inside its margins. A second of either is an error. A [`PageNumber`](/docs/components/pagenumber) in their text, or anywhere in the Document's text, is the number of the page it's on, and `<PageNumber total />` is how many pages there are.
+One [`PageHeader`](/docs/elements/pageheader) and one [`PageFooter`](/docs/elements/pagefooter) are drawn on every page, inside its margins. A second of either is an error. A [`PageNumber`](/docs/elements/pagenumber) in their text, or anywhere in the Document's text, is the number of the page it's on, and `<PageNumber total />` is how many pages there are.
 
 A table row with `footer` ends the table.
 
@@ -116,7 +116,7 @@ Open it in a browser to look at the pages, or print it. If you print it to PDF w
 
 `renderPdf(element, options)` returns `{ pdf, diagnostics }`: the file's bytes, and the warnings and notes. Errors reject with an `ElementsError` listing them. Its pages, header, footer and page numbers are the print HTML's, laid out at the same widths.
 
-The same template writes the same bytes. The `date` option is when the PDF says it was made: a fixed date by default, which is what keeps the bytes the same. Pass `new Date()` if you want the real one.
+The same design writes the same bytes. The `date` option is when the PDF says it was made: a fixed date by default, which is what keeps the bytes the same. Pass `new Date()` if you want the real one.
 
 | Option | What it takes |
 |--------|---------------|
@@ -126,10 +126,10 @@ The same template writes the same bytes. The `date` option is when the PDF says 
 
 ### Fonts and images
 
-Nothing is fetched. Give each file the template needs, as bytes:
+Nothing is fetched. Give each file the design needs, as bytes:
 
 - **Fonts** in `fonts`: `{ family, src, weight?, style? }`, one entry per file. `src` is a TTF, OTF or WOFF file's bytes. `family` is the name your `fontFamily` stacks use. The files in a Document's `fonts` prop are for its HTML: `renderPdf()` doesn't load them, `data:` URIs included.
-- **Images** in `images`, by the URL the template gives them (`{ "https://…/logo.png": bytes }`), or as `data:` URIs in the template. A PDF draws PNG and JPEG.
+- **Images** in `images`, by the URL the design gives them (`{ "https://…/logo.png": bytes }`), or as `data:` URIs in the design. A PDF draws PNG and JPEG.
 
 Text whose `fontFamily` has no file given is drawn in a standard PDF font: Helvetica, Times or Courier, whichever is closest. Those draw Western European characters only. For any other script, give a font file that has it.
 
@@ -139,8 +139,8 @@ A `Video` shows its thumbnail where its file is given (its own, or a YouTube vid
 
 | Code | Severity | When |
 |------|----------|------|
-| `pdf/root` | error | The template isn't a Document |
-| `pdf/version` | error | A second copy of `@hyper-elements/react` lays the template out in another version |
+| `pdf/root` | error | The design isn't a Document |
+| `pdf/version` | error | A second copy of `@hyper-elements/react` lays the design out in another version |
 | `pdf/image` | error | An image isn't given, or its file isn't a PNG or JPEG |
 | `pdf/image` | warning | An image is SVG: its alt text is shown in its box |
 | `pdf/font` | warning | A font in the Document's `fonts` isn't given, a file given is WOFF2, or text in a standard PDF font has characters it can't draw |
@@ -154,6 +154,6 @@ A `Video` shows its thumbnail where its file is given (its own, or a YouTube vid
 
 - **Nothing flows from one page to the next.** Content taller than its page is cut off, and you get `document/overflow`. Split it with a `PageBreak` or into `Document.Page`s, and test with your longest real data.
 - **WOFF2 isn't drawn.** react-pdf would embed its letters blank. Give TTF, OTF or WOFF.
-- **SVG images aren't drawn.** Give a PNG or JPEG. An `Svg` component is drawn as vectors.
+- **SVG images aren't drawn.** Give a PNG or JPEG. An `Svg` element is drawn as vectors.
 - **The standard PDF fonts draw Western European characters only.** Whether a font file you give has every character isn't checked.
 - **No hover and no video player.** A Button shows its own colors, a Video its thumbnail or title.

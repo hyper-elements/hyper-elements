@@ -74,7 +74,10 @@ for (const t of spec.texts) {
   else if (file?.replace(/\.[^.]+$/, "") !== t.font.replace(/\.[^.]+$/, "")) problems.push(`it's drawn with ${file ?? `a font file not in fonts/ (${face.name} ${face.weight})`}, not ${t.font}`);
   if (weightOf(s.fontWeight) !== t.weight) problems.push(`fontWeight is ${s.fontWeight ?? 400}, not ${t.weight}`);
   if ((s.fontStyle ?? "normal") !== t.style) problems.push(`fontStyle is ${s.fontStyle ?? "normal"}, not ${t.style}`);
-  if (Math.abs(s.fontSize - t.size) > 0.5) problems.push(`fontSize is ${s.fontSize}px, not ${t.size}px`);
+  // A fitted text (the template suite's) is drawn at one of the sizes it may take: `sizes`, in place of `size`.
+  if (t.sizes) {
+    if (!t.sizes.some((size) => Math.abs(s.fontSize - size) <= 0.5)) problems.push(`fontSize is ${s.fontSize}px, not one of ${t.sizes.join(", ")}px`);
+  } else if (Math.abs(s.fontSize - t.size) > 0.5) problems.push(`fontSize is ${s.fontSize}px, not ${t.size}px`);
   const c = parseColor(s.color);
   if (!c || deltaE(lab(c), lab(parseColor(t.color))) > 2) problems.push(`color is ${s.color ?? "black"}, not ${t.color}`);
   check(`font "${t.id}"`, problems.length === 0, problems.join("; "));
@@ -133,7 +136,8 @@ if (bgColor) {
 const boxes = {};
 for (const im of spec.images) {
   const src = assetImg(im.file);
-  const found = findImage(img, src, im.width, { circle: !!(im.round || im.rounded) });
+  // `within` (the template suite's): where the image is to be found, so a busy picture elsewhere can't outscore it.
+  const found = im.within ? findWithin(img, src, im.width, im.within, { circle: !!(im.round || im.rounded) }) : findImage(img, src, im.width, { circle: !!(im.round || im.rounded) });
   measures[`image:${im.id}`] = { score: +found.score.toFixed(3), color: found.color, box: found.box };
   const problems = [];
   if (found.score < 0.85 || !found.colorOk) {
@@ -155,6 +159,21 @@ for (const im of spec.images) {
     if (square.length) problems.push(im.round ? "it isn't round: its corners are drawn" : "its corners aren't rounded");
   }
   check(`image "${im.id}"`, problems.length === 0, problems.join("; "));
+}
+
+/** findImage in a box of the card (with 16px around it), its box given back in the card's coordinates. */
+function findWithin(card, src, width, within, options) {
+  const left = Math.max(0, Math.floor(within.left - 16)), top = Math.max(0, Math.floor(within.top - 16));
+  const right = Math.min(card.width, Math.ceil(within.left + within.width + 16)), bottom = Math.min(card.height, Math.ceil(within.top + within.height + 16));
+  const w = right - left, h = bottom - top;
+  const rgb = new Uint8Array(w * h * 3), alpha = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    rgb.set(card.rgb.subarray(((top + y) * card.width + left) * 3, ((top + y) * card.width + left + w) * 3), y * w * 3);
+    alpha.set(card.alpha.subarray((top + y) * card.width + left, (top + y) * card.width + left + w), y * w);
+  }
+  const found = findImage({ width: w, height: h, rgb, alpha }, src, width, options);
+  const b = found.box;
+  return b ? { ...found, box: { ...b, left: b.left + left, right: b.right + left, top: b.top + top, bottom: b.bottom + top } } : found;
 }
 
 // ─── Text as shown: OCR on the ink mask ──────────────────────────────────

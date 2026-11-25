@@ -1,0 +1,7 @@
+{
+  "name": "a raw HTML block",
+  "body": "    <mj-raw><div style=\"color: #ff0066; font-family: Comic Sans MS, cursive;\">Raw markup, past the brand</div></mj-raw>\n    <mj-section>\n      <mj-column>\n        <mj-button href=\"https://app.orbit.dev/editor?utm_source=newsletter\">Try the editor</mj-button>\n      </mj-column>\n    </mj-section>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "breaks": "brand fonts"
+}

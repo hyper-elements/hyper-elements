@@ -26,7 +26,7 @@ const features = [
   {
     title: "Typed Styles",
     description:
-      "No raw HTML attributes. Every component takes a typed style object, with values like fontSize, padding, and borderRadius, and a mistake gets a clear error.",
+      "No raw HTML attributes. Every element takes a typed style object, with values like fontSize, padding, and borderRadius, and a mistake gets a clear error.",
     icon: (
       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />

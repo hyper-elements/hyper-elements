@@ -33,9 +33,11 @@ const output = (entry: string, engines: string[]): Options => ({
 export default defineConfig([
   { ...shared, entry: { primitives: 'src/primitives/index.ts' }, clean: true },
   { ...shared, entry: { builder: 'src/builder/index.ts' } },
-  // What each root takes, and what a template holds, as data (describeComponents(), inspect()): the definitions and
+  // What each root takes, and what a template holds, as data (describeElements(), inspect()): the definitions and
   // validation, with no writer it doesn't reach.
   { ...shared, entry: { inspect: 'src/inspect/index.ts' } },
   output('pdf', ['@react-pdf/renderer']),
   output('image', ['satori', '@resvg/resvg-js']),
+  // Templates: reusable designs with guardrails. No engine; the main entry is external, as for /pdf and /image.
+  output('template', ['@hyper-elements/react/inspect']),
 ]);

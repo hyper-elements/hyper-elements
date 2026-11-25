@@ -23,7 +23,7 @@ The email comparison uses Hyper Elements, MJML, React Email and hand-written HTM
 | Median turns | 9 | 9 | 8.5 | 18 |
 
 - **Fastest.** Hyper Elements was 1.3× faster than MJML, 1.8× faster than hand-written HTML and 2.6× faster than React Email at the median, and the fastest on four of the five briefs (MJML was faster on the launch email). Within a brief it was faster in 40 of 52 pairings with MJML (one-sided Mann–Whitney, p < 0.01), 48 of 52 with HTML and 51 of 52 with React Email (p < 0.001 for each).
-- **Fewest output tokens.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short template; the engine writes the tables.
+- **Fewest output tokens.** 1.5× fewer than MJML, 2.7× fewer than HTML and 3.4× fewer than React Email. The agent writes a short design; the engine writes the tables.
 - **Right the first time.** Every Hyper Elements and MJML email passed the first time the agent ran the checks, against 6 of 16 hand-written HTML emails and 12 of 16 React Email ones.
 
 How Hyper Elements differs from React Email and MJML beyond speed (layout, checks, email client previews, themes) is on [Hyper Elements vs React Email](/compare/react-email) and [Hyper Elements vs MJML](/compare/mjml).

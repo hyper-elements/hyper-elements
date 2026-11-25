@@ -1,0 +1,290 @@
+[
+  {
+    "name": "clean",
+    "id": "og.Clean",
+    "label": "Clean",
+    "description": "White, a large headline, and a band of your color.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#4f46e5"
+      }
+    ]
+  },
+  {
+    "name": "cover",
+    "id": "og.Cover",
+    "label": "Cover",
+    "description": "Your photo across the whole image, and the headline over it in white.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "photo",
+        "kind": "image",
+        "label": "Photo",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#f59e0b"
+      }
+    ]
+  },
+  {
+    "name": "split",
+    "id": "og.Split",
+    "label": "Split",
+    "description": "The headline on a panel of your color, and your photo beside it.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "photo",
+        "kind": "image",
+        "label": "Photo",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#14532d"
+      }
+    ]
+  },
+  {
+    "name": "midnight",
+    "id": "og.Midnight",
+    "label": "Midnight",
+    "description": "Near-black, with a glow of your color and a grid of fine lines.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#7c5cff"
+      }
+    ]
+  },
+  {
+    "name": "journal",
+    "id": "og.Journal",
+    "label": "Journal",
+    "description": "Warm paper, a serif headline, and your photo in a frame.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "photo",
+        "kind": "image",
+        "label": "Photo",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#b45309"
+      }
+    ]
+  },
+  {
+    "name": "docs",
+    "id": "og.Docs",
+    "label": "Docs",
+    "description": "Graph paper, the page's path in a monospace face, and corner marks in your color.",
+    "fields": [
+      {
+        "path": "headline",
+        "kind": "text",
+        "label": "Headline",
+        "required": true
+      },
+      {
+        "path": "site",
+        "kind": "text",
+        "label": "Site name",
+        "required": false
+      },
+      {
+        "path": "author",
+        "kind": "text",
+        "label": "Author",
+        "required": false
+      },
+      {
+        "path": "date",
+        "kind": "text",
+        "label": "Date",
+        "required": false
+      },
+      {
+        "path": "logo",
+        "kind": "image",
+        "label": "Logo",
+        "required": false
+      },
+      {
+        "path": "accent",
+        "kind": "color",
+        "label": "Color",
+        "required": false,
+        "default": "#0891b2"
+      }
+    ]
+  }
+]

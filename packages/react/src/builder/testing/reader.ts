@@ -106,6 +106,58 @@ function runs(node: ResolvedNode, self = false): Seen["runs"] {
   return merged;
 }
 
+/**
+ * A Table's rows as a reader gets them: whether each heads or ends the table and the least it's as tall (its height,
+ * or its cells' line and padding), and each cell's words and runs (its own decoration on them), images, direction,
+ * width, padding, background (the first that paints of its own, its row's and its table's), lines around it, and
+ * where its words start in it; how the cells' lines meet (one line, or two side by side); the table's own border.
+ */
+function tableRows(table: ResolvedNode): Json {
+  const cells = (row: ResolvedNode) => row.children.filter((c): c is ResolvedNode => typeof c !== "string" && !c.hidden?.desktop);
+  const images = (node: ResolvedNode): Json[] => node.children.flatMap((c) => (typeof c === "string" ? [] : c.type === "Image" ? [{ src: c.props.src, alt: c.props.alt ?? "" }] : images(c)));
+  // (Its own reading of a clear color, apart from the adapter's, so a test of the adapter can't agree with itself.)
+  const clear = (c: string) => c === "transparent" || /^#(?:[0-9a-f]{3}0|[0-9a-f]{6}00)$/i.test(c) || /^(?:rgba|hsla)\(\s*[^)]*?[,/]\s*0*\.?0+\s*\)$/i.test(c);
+  const paint = (...colors: unknown[]) => (colors.find((c) => typeof c === "string" && c !== "" && !clear(c.trim())) as string | undefined) ?? null;
+  /** A cell's runs with its own decoration on each, as a reader sees them: runs side by side in one style one. */
+  const decorated = (cell: ResolvedNode) => {
+    const own = cell.style.textDecoration;
+    const out: NonNullable<Seen["runs"]> = [];
+    for (const run of runs(cell) ?? []) {
+      const style = own === undefined || run.text === "\n" || run.style.textDecoration !== undefined ? run.style : { ...run.style, textDecoration: own };
+      const last = out[out.length - 1];
+      if (last && JSON.stringify(last.style) === JSON.stringify(style)) last.text += run.text;
+      else out.push({ ...run, style });
+    }
+    return out;
+  };
+  /** Whether a cell has a line in it: words (a line break is one, and a non-breaking space, which doesn't collapse) or an image. */
+  const worded = (cell: ResolvedNode) => images(cell).length > 0 || (runs(cell) ?? []).some((run) => run.text.replace(/[ \t\n\r\f]/g, "") !== "" || run.text === "\n");
+  const rows = table.children.filter((c): c is ResolvedNode => typeof c !== "string" && !c.hidden?.desktop);
+  const lined = rows.some((row) => cells(row).some((cell) => cell.style.border !== undefined));
+  return {
+    frame: (table.style.border as Json | undefined) ?? null,
+    collapse: lined ? ((table.style.borderCollapse as string | undefined) ?? "separate") : null,
+    rows: rows.map((row) => ({
+      header: !!row.props.header,
+      footer: !!row.props.footer,
+      // (A cell's line is its tallest run's; a cell with no words, nor an image, has none: it's as tall as its padding.)
+      height: round(Math.max(typeof row.style.height === "number" ? row.style.height : 0, ...cells(row).map((cell) => (worded(cell) ? Math.max(cell.text.lineHeightPx, ...(runs(cell) ?? []).map((run) => Number(run.style.lineHeight ?? 0))) : 0) + pad(cell).top + pad(cell).bottom))),
+      cells: cells(row).map((cell) => ({
+        runs: decorated(cell) as Json,
+        // Its own size, which sets how far apart its lines are, whatever its runs' sizes.
+        fontSize: cell.text.fontSize,
+        images: images(cell),
+        dir: (cell.props.dir as string | undefined) ?? null,
+        width: cell.width === null ? null : round(cell.width),
+        padding: pad(cell) as unknown as Json,
+        background: paint(cell.style.backgroundColor, row.style.backgroundColor, table.style.backgroundColor),
+        border: (cell.style.border as Json | undefined) ?? null,
+        verticalAlign: (cell.style.verticalAlign as string | undefined) ?? "top",
+      })),
+    })) as Json,
+  };
+}
+
 /** What a reader gets from a template, block by block. */
 export function seen(element: React.ReactElement, { markup = new Set<string>() }: { markup?: ReadonlySet<string> } = {}): Seen[] {
   const { root, diagnostics } = prepare(element);
@@ -132,6 +184,12 @@ export function seen(element: React.ReactElement, { markup = new Set<string>() }
     // What the builder holds as an HTML block of its markup (`markup`, the paths toDesign() said) is read as one.
     const locked = markup.has(node.path);
     const linkOfWords = node.type === "Link" && !node.children.some((c) => typeof c !== "string" && c.type === "Image");
+    // A Table the builder holds as its table: read cell by cell.
+    if (node.type === "Table" && !locked) {
+      out.push({ kind: "Table", x: round(x), width: node.width === null ? null : round(node.width), above: round(pending), own: { rows: tableRows(node) }, behind, ...visible });
+      pending = 0;
+      return;
+    }
     if (locked || LEAVES.has(node.type) || node.type === "Link") {
       const p = pad(node);
       const own: Record<string, Json> = {};

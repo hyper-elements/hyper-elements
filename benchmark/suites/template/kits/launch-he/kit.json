@@ -1,0 +1,1 @@
+{"extends": "launch-he-author", "sources": ["designs/launch.tsx"], "docs": ["GUIDE.md", "TEMPLATES.md"]}

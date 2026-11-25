@@ -5,9 +5,9 @@ description: "Render emails in Next.js App Router route handlers and Server Comp
 
 Hyper Elements runs on the server, so it fits the App Router as it is. No client bundle, no extra build step, and for emails, pages and PDFs no entry in `next.config.ts`: Next.js bundles it into your server code like any other package. Images (`@hyper-elements/react/image`) need one, as their engines can't be bundled: `serverExternalPackages: ["@resvg/resvg-js", "satori"]` (see [Image output](/docs/outputs/image#install)). Only the HTML and text strings ever reach the browser.
 
-## A template
+## A design
 
-A template is a plain component. Nothing in it is specific to Next.js, so the same tree renders from a route handler, a Server Component, a background job or a test.
+A design is a plain component. Nothing in it is specific to Next.js, so the same tree renders from a route handler, a Server Component, a background job or a test.
 
 ```tsx
 // src/emails/welcome-email.tsx
@@ -67,7 +67,7 @@ This is the shape production code usually takes. Swap the `Response` for a call 
 
 ## A Server Component
 
-An async Server Component awaits `render()` and passes the strings on. The template never ships to the browser.
+An async Server Component awaits `render()` and passes the strings on. The design never ships to the browser.
 
 ```tsx
 // src/app/email-preview/page.tsx
@@ -86,7 +86,7 @@ export default async function EmailPreviewPage() {
 
 `PreviewDashboard` here is your own Client Component. It receives strings, not React elements.
 
-## Design JSON from a route
+## A builder design from a route
 
 `toDesign()` from `@hyper-elements/react/builder` works in the same places. It's synchronous:
 
@@ -132,6 +132,36 @@ export async function GET() {
 
 > **Note:** Next.js 14 can't bundle Elements for the edge runtime. For emails, the Node.js runtime is the safe default on every version.
 
+## An OpenGraph image from a template
+
+A page's social card can be a [template](/docs/templates) drawn by `@hyper-elements/react/image` in an `opengraph-image.tsx` route: the pages `generateStaticParams` names are drawn when the app builds, any other when it's asked for. The template's check runs before anything is drawn. A title past the template's `maxLength` fails the request with the template's diagnostics instead of drawing a broken card.
+
+```tsx
+// app/blog/[slug]/opengraph-image.tsx
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { renderImage } from "@hyper-elements/react/image";
+import { Card } from "@/lib/card"; // a template: template({ id: "acme.Card", root: "Canvas", fields: { title: … }, … })
+import { posts } from "@/lib/posts";
+
+export const size = { width: 1200, height: 630 };
+export const contentType = "image/png";
+
+export function generateStaticParams() {
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const post = posts.find((p) => p.slug === slug);
+  const font = await readFile(join(process.cwd(), "assets/Inter-Regular.ttf"));
+  const { image } = await renderImage(<Card title={post?.title ?? "Not found"} />, { fonts: [{ family: "Inter", src: font }] });
+  return new Response(new Uint8Array(image), { headers: { "content-type": "image/png" } });
+}
+```
+
+The image engines load a native module at run time, so they go in `serverExternalPackages: ["@resvg/resvg-js", "satori"]` in `next.config.ts`. With Cache Components (Next.js 16), a route segment can't export `runtime` (the Node.js runtime is the default), and the drawing goes in a function with `"use cache"` that returns the PNG's bytes, so the pages `generateStaticParams` names are prerendered.
+
 ## Prerendering and Cache Components
 
 Since Next.js 16, `create-next-app` turns on Cache Components. Pages and GET route handlers that read no request data are then prerendered when the app builds, and the build fails if one reads a random number or the current date.
@@ -142,7 +172,7 @@ A handler or page that reads request data (a search param, a header) isn't prere
 
 ## Tested versions
 
-CI builds a real Next.js app on each version and checks that the route handler and the Server Component each come out as a real email (email tables, not a web layout, with the words in the HTML and the plain text) and as a design with its rows:
+CI builds a real Next.js app on each version and checks that the route handler and the Server Component each come out as a real email (email tables, not a web layout, with the words in the HTML and the plain text) and as a builder design with its rows:
 
 | Next.js | React | What's checked |
 |---|---|---|

@@ -1,0 +1,8 @@
+{
+  "name": "an off-domain link",
+  "body": "<Column>\n  <Text>Two things from the Orbit team this month.</Text>\n  <Image src={{ src: \"https://assets.orbit.dev/img/newsletter-hero.png\", width: 1200, height: 500 }} alt=\"The new editor\" />\n  <Heading level={2}>A faster editor</Heading>\n  <Text>Typing, search and preview are all twice as fast.</Text>\n  <Button href=\"https://elsewhere.example/editor\">Try the editor</Button>\n</Column>",
+  "preview": "What's new at Orbit this month, in two minutes.",
+  "heading": "The Orbit Dispatch",
+  "imports": "Button, Column, Heading, Html, Image, Text",
+  "breaks": "link domains"
+}

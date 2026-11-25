@@ -1,0 +1,33 @@
+---
+// A template's preview in one brand, for the gallery: its email, page or print HTML, or an image drawn in the
+// visitor's browser (src/scripts/gallery-images.ts), all of it, as tall as it is at the column's width (up to three times as tall as wide, faded at its foot past that).
+import { previewHtml } from "../lib/examples";
+import { brandsFor, firstView, previewWidth, type TemplateInfo } from "../lib/gallery";
+interface Props { t: TemplateInfo; brand?: string }
+const { t } = Astro.props;
+const brand = brandsFor(t).find((b) => b.id === Astro.props.brand) ?? brandsFor(t)[0];
+const width = t.root === "Page" ? 1100 : t.root === "Email" ? 640 : previewWidth(t, brand.id);
+const view = firstView(t, brand.id);
+const bg = brand.colors.background;
+// Before the frame has loaded and been measured: a page's share of its width, or an email's guess.
+const guess = t.root === "Document" ? 1.32 : t.root === "Page" ? 1.2 : 1.6;
+---
+{view && (
+  <div class="kthumb" aria-hidden="true">
+    {t.root === "Canvas" ? (
+      <img class="kt-image" data-draw={`${t.key}/${t.designs?.[0]?.name}`} data-draw-brand={brand.id} width={view.size?.[0]} height={view.size?.[1]} alt="" />
+    ) : (
+      <div class="thumb view-frame" data-fit={width} data-fit-full style={`aspect-ratio:1/${guess};--frame-bg:${bg}`}>
+        <div class="scaler">
+          <iframe title="" tabindex="-1" srcdoc={previewHtml(view.html)} width={width} height={Math.round(width * guess)} loading="lazy"></iframe>
+        </div>
+      </div>
+    )}
+  </div>
+)}
+<style>
+  .kthumb { pointer-events: none; overflow: hidden; }
+  .kt-image { display: block; width: 100%; height: auto; }
+  .kthumb :global(.view-frame[data-capped]) { position: relative; }
+  .kthumb :global(.view-frame[data-capped])::after { content: ""; position: absolute; inset: auto 0 0; height: 72px; background: linear-gradient(transparent, var(--frame-bg)); }
+</style>

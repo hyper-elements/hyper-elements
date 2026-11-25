@@ -113,9 +113,12 @@ try {
   if (result.probe.rows !== 1) {
     throw new Error("toDesign() did not produce the expected design");
   }
+  if (result.probe.templateId !== "acme.ProbeCard" || !String(result.probe.templateHtml).includes("Template in the browser")) {
+    throw new Error("A template design (/template) did not render in the browser");
+  }
 
   console.info(
-    "BROWSER_RUNTIME_OK: package imports, and render() and toDesign() run in Chromium without a process global",
+    "BROWSER_RUNTIME_OK: package imports, and render(), toDesign() and a template run in Chromium without a process global",
   );
 } catch (error) {
   console.error(

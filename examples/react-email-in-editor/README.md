@@ -22,7 +22,7 @@ Open <http://127.0.0.1:3002/editor.html> and pick a template. Every block is edi
 | File | What it is |
 |------|------------|
 | `welcome.design.json`, `order-receipt.design.json` | Unlayer designs, ready for `loadDesign()` |
-| `welcome.tsx`, `order-receipt.tsx` | The same templates as Elements components, from `@hyper-elements/react`. The run and `report.json` list what looks different |
+| `welcome.tsx`, `order-receipt.tsx` | The same templates written with the elements from `@hyper-elements/react`. The run and `report.json` list what looks different |
 | `report.json` | Each template's check result, differences and web fonts; `editor.html` lists the templates and registers their fonts from it |
 
 ## Your own templates

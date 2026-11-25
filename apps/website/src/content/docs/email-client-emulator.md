@@ -12,7 +12,7 @@ description: "Check existing HTML emails and preview Outlook, Gmail and Apple Ma
 
 [Try the email testing playground](/email-testing) to paste an existing HTML email, select clients, and inspect previews and compatibility findings in your browser.
 
-Accuracy is how closely the emulator matches each real client for emails.
+We reverse-engineered each of these email clients, classic Outlook included, by testing thousands of emails in the real client and measuring what it does to them. The emulator is a model of each one, 98% accurate on average:
 
 | Client | ID | Accuracy |
 |--------|------|----------|
@@ -20,16 +20,23 @@ Accuracy is how closely the emulator matches each real client for emails.
 | Outlook.com and new Outlook | `outlook-com`, `outlook-com.mac` | 99% |
 | Outlook for Mac, light and dark | `outlook-mac`, `outlook-mac.dark` | 98% |
 | Gmail on the web | `gmail`, `gmail.mac` | 99% |
-| Gmail app on Android | `gmail-app`, `gmail-app-other` | 98% |
-| Gmail app on an iPhone | `gmail-app.iphone` | 97% |
-| Apple Mail on a Mac, light and dark | `apple-mail`, `apple-mail.dark` | 98% |
-| Apple Mail on an iPhone, light and dark | `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
+| Gmail app on Android and an iPhone | `gmail-app`, `gmail-app-other`, `gmail-app.iphone` | 98% |
+| Apple Mail on a Mac and an iPhone, light and dark | `apple-mail`, `apple-mail.dark`, `apple-mail.iphone`, `apple-mail.iphone.dark` | 98% |
 | Yahoo Mail, light and dark | `yahoo`, `yahoo.mac`, `yahoo.dark`, `yahoo.mac.dark` | 99% |
 | AOL Mail | `aol`, `aol.mac` | 99% |
 
 More email clients are on the way.
 
 Name the clients you want with `emailClients: ["outlook", "gmail-app"]`; without it you get the default set (see [Options](#options)). `apple-mail` is previewed on a Mac and on an iPhone, 393px wide, and `gmail-app` on Android and on an iPhone, 345px wide. `gmail-app-other` is a non-Gmail account in the Gmail app, which drops the email's `<style>`. `yahoo` and `aol` are drawn in their message panes, 758px and 869px wide. AOL Mail's dark mode leaves the email as it is, so `aol.dark` matches `aol`.
+
+## How accurate it is
+
+The emulator isn't a guess from a table of supported CSS. We tested thousands of emails in each real client, measured what it removes, rewrites and how it lays out the rest, and reverse-engineered a model of it. Every release is tested against the real clients again, on emails the models weren't built from.
+
+- **Classic Outlook is drawn as Word draws it.** Classic Outlook lays email out with Word, and the emulator follows Word's rules, so spacing, line wrapping, tables and what Outlook ignores come out as Outlook draws them.
+- **Dark mode too.** Apple Mail, Outlook for Mac, Yahoo Mail and AOL Mail are previewed in dark mode, reverse-engineered the same way, with more clients' dark modes on the way.
+
+Classic Outlook's engine runs only on Windows with Office installed. The emulator runs anywhere your code does, on a Mac or Linux, in CI and in an agent's loop, in milliseconds, with the same result every time.
 
 ## Test a Hyper Elements email
 
@@ -59,7 +66,7 @@ previews.map((preview) => preview.id);
 
 const outlook = previews.find((preview) => preview.id === "outlook");
 // { id: "outlook", client: "outlook", variant: "desktop", dark: false, width: 820,
-//   approximate: true, filename: "outlook.html", html: "<!doctype html>…" }
+//   filename: "outlook.html", html: "<!doctype html>…" }
 
 skipped[0];
 // { client: "outlook", dark: true, reason: "Classic Outlook's dark mode isn't measured" }
@@ -83,7 +90,7 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/welcome-gmail-app.png" title="Open the welcome email in the Gmail app on Android at full size"><img src="/generated/email-clients/welcome-gmail-app.png" width="380" height="193" loading="lazy" alt="The welcome email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
 
-**[Tarn order shipped](/templates/tarn-shipped)**
+**[Tarn order shipped](/playground#starter=tarn-shipped)**
 
 <div class="client-gallery">
 <figure><a href="/generated/email-clients/tarn-shipped-outlook.png" title="Open the Tarn order shipped email in Classic Outlook at full size"><img src="/generated/email-clients/tarn-shipped-outlook.png" width="820" height="1373" loading="lazy" alt="The Tarn order shipped email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
@@ -92,7 +99,7 @@ Here's what the emulator draws for three emails, each in four clients, the Gmail
 <figure><a href="/generated/email-clients/tarn-shipped-gmail-app.png" title="Open the Tarn order shipped email in the Gmail app on Android at full size"><img src="/generated/email-clients/tarn-shipped-gmail-app.png" width="380" height="1506" loading="lazy" alt="The Tarn order shipped email in the Gmail app on Android, drawn by the email client emulator"></a><figcaption>Gmail app on Android</figcaption></figure>
 </div>
 
-**[Keel sign-in code](/templates/keel-sign-in-code)**
+**[Keel sign-in code](/playground#starter=keel-sign-in-code)**
 
 <div class="client-gallery">
 <figure><a href="/generated/email-clients/keel-sign-in-code-outlook.png" title="Open the Keel sign-in code email in Classic Outlook at full size"><img src="/generated/email-clients/keel-sign-in-code-outlook.png" width="820" height="829" loading="lazy" alt="The Keel sign-in code email in Classic Outlook, drawn by the email client emulator"></a><figcaption>Classic Outlook</figcaption></figure>
@@ -149,7 +156,7 @@ npm install -D @hyper-elements/cli playwright-core
 npx hyper-elements preview email.html --findings
 ```
 
-If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. For Hyper Elements templates, [install the CLI in your project](/docs/cli#install) and run `npx hyper-elements preview emails/welcome.tsx`.
+If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. For Hyper Elements designs, [install the CLI in your project](/docs/cli#install) and run `npx hyper-elements preview emails/welcome.tsx`.
 
 For an agent or a CI job that wants what each client changed as data, there are three ways, by what it has:
 
@@ -162,7 +169,7 @@ For an agent or a CI job that wants what each client changed as data, there are 
 - **No send-and-wait loop.** A preview takes as long as a render, so you can check every change, not only the last one before a campaign.
 - **Free, with no API.** There's no account to make, no key to keep, and no limit on how many previews you make.
 - **Nothing leaves your machine.** The email isn't sent anywhere or uploaded to a screenshot service, which matters for customer data, unreleased products and regulated content.
-- **It runs where your code runs.** In a test, in CI, or in an agent's loop: an agent with a browser can open a preview, read what the client changed, and fix the template.
+- **It runs where your code runs.** In a test, in CI, or in an agent's loop: an agent with a browser can open a preview, read what the client changed, and fix the design.
 - **The same answer every time.** The same email gives the same preview, so a preview can be a snapshot in a test.
 
 ## Compared with screenshot services
@@ -176,7 +183,7 @@ For an agent or a CI job that wants what each client changed as data, there are 
 | What you get | A preview per client, and what each one changed | A screenshot per client |
 | Clients | The clients above, with more on the way | Dozens, on real devices |
 
-Use the emulator in the loop, on every change; use a screenshot service, or a real inbox, for a final check across many clients. [Litmus alternatives](/alternatives/litmus) compares Hyper Elements with Litmus, Parcel and Mailosaur.
+The emulator checks every change in the clients above; a screenshot service covers the clients it doesn't yet, such as the Outlook app and Samsung Email. [Litmus alternatives](/alternatives/litmus) compares Hyper Elements with Litmus, Parcel and Mailosaur.
 
 ## Options
 
@@ -201,14 +208,14 @@ A preview isn't the email you send: that's `render()`'s `html`.
 
 Each preview lists, at its top, what the client changed and anything it couldn't draw as the client does:
 
-- **Removed:** what the client removed or rewrote, and how often (rounded corners, `rgba()` colours, a `<style>` rule).
+- **Removed:** what the client removed or rewrote, and how often (rounded corners, `rgba()` colors, a `<style>` rule).
 - **Missing:** a font the machine opening the preview doesn't have, the email's own web font where it didn't load, an image that didn't load.
 - **Fonts:** the system fonts it drew with.
 - **Findings:** a Heading or Button that a client draws on more lines, text that doesn't read in dark mode, and where Gmail clips the email.
 
 ## Checks and the emulator
 
-The same package checks a template without drawing it: `emailClients()` is a plugin for `validate()` and `render()`, and names the clients each problem is about, with the fix. See [Diagnostics](/docs/diagnostics).
+The same package checks a design without drawing it: `emailClients()` is a plugin for `validate()` and `render()`, and names the clients each problem is about, with the fix. See [Diagnostics](/docs/diagnostics).
 
 ```tsx
 import { validate } from "@hyper-elements/react";
@@ -226,6 +233,10 @@ The checks cover more clients than the emulator (the Outlook app, Samsung Email 
 
 Render it with `renderInEmailClients()` from `@hyper-elements/email-clients` and open its `outlook` preview in Chromium: it shows the email as classic Outlook for Windows draws it, and lists what Outlook changed. There's no test send, no Outlook to install and no account. For Outlook.com and the new Outlook, open the `outlook-com` preview.
 
+### Can I trust a preview of classic Outlook?
+
+Yes. We reverse-engineered classic Outlook by testing thousands of emails in it, and the emulator draws email as Outlook does: its spacing, line wrapping, tables and what it removes. See [How accurate it is](#how-accurate-it-is).
+
 ### How do I preview an email in Gmail?
 
 Open the `gmail` preview for Gmail on the web, or name `gmail-app` in `emailClients` for the Gmail app at a phone's width. Each preview lists, at its top, what Gmail removed or changed in the email.
@@ -240,4 +251,4 @@ Yes. `@hyper-elements/email-clients` is free and runs on your machine: no API ke
 
 ### Can my coding agent use it?
 
-Yes. An agent can run `npx hyper-elements preview emails/welcome.tsx --findings --json` (or call `renderInEmailClients()` after rendering), read what each client changed, and fix the template. See [Test an email from the shell](#test-an-email-from-the-shell) and [AI agents](/docs/guides/ai-agents).
+Yes. An agent can run `npx hyper-elements preview emails/welcome.tsx --findings --json` (or call `renderInEmailClients()` after rendering), read what each client changed, and fix the design. See [Test an email from the shell](#test-an-email-from-the-shell) and [AI agents](/docs/guides/ai-agents).

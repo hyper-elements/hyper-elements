@@ -1,0 +1,8 @@
+{
+  "preview": "A word from a customer, then two things that shipped this week",
+  "body": [
+    { "type": "quote", "text": "Orbit writes the notes I never had time to.", "by": "Sam, Harbor Labs" },
+    { "type": "story", "title": "Publishing to Slack", "text": "Send each release's notes to a channel as they're published." },
+    { "type": "story", "title": "Notes in your voice", "text": "Orbit learns how your team writes from the notes you've published." }
+  ]
+}

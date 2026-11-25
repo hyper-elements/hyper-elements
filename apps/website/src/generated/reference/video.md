@@ -7,7 +7,7 @@
 
 A YouTube or Vimeo video: its player on a page; in an email (which can't play one), its thumbnail, linked to it.
 
-Holds: nothing. Drawn in: email, page.
+Holds: nothing.
 
 Props:
 - `src`: *video* (required). The video's YouTube or Vimeo link.
@@ -15,8 +15,8 @@ Props:
 - `title`: text (default `"Video"`). The player's title on a page, the thumbnail's alternate text in an email.
 
 `style`:
-- `width`: a length (a number of px, %)
-- `maxWidth`: a length (a number of px, %)
-- `flex`: *flex*. In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 
 `style.mobile` (on phones): `width`, `maxWidth`.

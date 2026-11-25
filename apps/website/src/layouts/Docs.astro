@@ -22,22 +22,22 @@ const reference = (await getCollection("reference")).filter((e) => e.id !== "ove
 const componentNav = componentGroups
   .map((group) => ({
     title: group === "Reference" ? "Reference" : group,
-    items: reference.filter((e) => e.data.group === group).map((e) => ({ slug: `components/${e.id}`, label: e.data.title })),
+    items: reference.filter((e) => e.data.group === group).map((e) => ({ slug: `elements/${e.id}`, label: e.data.title })),
   }))
   .filter((g) => g.items.length);
 
-// Previous and next follow the guide's order, then the components'.
-const flat = [...docsNav.flatMap((g) => g.items), { slug: "components", label: "Components" }, ...componentNav.flatMap((g) => g.items)];
+// Previous and next follow the guide's order, then the elements'.
+const flat = [...docsNav.flatMap((g) => g.items), { slug: "elements", label: "Elements" }, ...componentNav.flatMap((g) => g.items)];
 const at = flat.findIndex((i) => i.slug === slug);
 const prev = at > 0 ? flat[at - 1] : null;
 const next = at >= 0 && at < flat.length - 1 ? flat[at + 1] : null;
-const group = eyebrow ?? [...docsNav, ...componentNav].find((g) => g.items.some((i) => i.slug === slug))?.title ?? (slug === "components" ? "Components" : "");
+const group = eyebrow ?? [...docsNav, ...componentNav].find((g) => g.items.some((i) => i.slug === slug))?.title ?? (slug === "elements" ? "Elements" : "");
 // For search engines: what the page is, and where it sits in the docs.
 const url = new URL(docHref(slug), site.url).href;
-// Every crumb is a page: Docs, the component index for a component's page, then the page itself.
+// Every crumb is a page: Docs, the element index for an element's page, then the page itself.
 const crumbs = [
   { name: "Docs", url: new URL("/docs", site.url).href },
-  ...(slug.startsWith("components/") ? [{ name: "Components", url: new URL("/docs/components", site.url).href }] : []),
+  ...(slug.startsWith("elements/") ? [{ name: "Elements", url: new URL("/docs/elements", site.url).href }] : []),
   ...(slug ? [{ name: title, url }] : []),
 ];
 // A page's "## Common questions" section (each question a ### heading, its answer the text under it), as an FAQPage.
@@ -73,7 +73,7 @@ const isCurrent = (s: string) => s === slug;
           </div>
         ))}
         <div class="side-group">
-          <p class="side-title"><a href="/docs/components" aria-current={isCurrent("components") ? "page" : undefined}>Components</a></p>
+          <p class="side-title"><a href="/docs/elements" aria-current={isCurrent("elements") ? "page" : undefined}>Elements</a></p>
           {componentNav.map((g) => (
             <details class="side-sub" open={g.items.some((i) => isCurrent(i.slug)) || undefined}>
               <summary>{g.title}</summary>
@@ -242,6 +242,8 @@ const isCurrent = (s: string) => s === slug;
   .prose :global(a) { color: var(--text); text-decoration: underline; text-decoration-color: var(--line-3); text-underline-offset: 3px; }
   .prose :global(a:hover) { text-decoration-color: var(--text); }
   .prose :global(strong) { color: var(--text); font-weight: 600; }
+  /* A command's output wraps: its long lines are messages to read, not code to keep on one line. */
+  .prose :global(pre[data-language="text"]), .prose :global(pre[data-language="text"] code), .prose :global(pre[data-language="json"]), .prose :global(pre[data-language="json"] code) { white-space: pre-wrap; overflow-wrap: anywhere; }
   .prose > :global(pre) { margin: 0 0 22px; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px !important; font: 400 13.5px/1.7 var(--mono); overflow: auto; background: #0e0e0e !important; }
   .prose :global(blockquote) { margin: 0 0 22px; padding: 14px 18px; border: 1px solid var(--line); border-left: 3px solid var(--line-3); border-radius: 10px; background: rgba(239, 70, 56, 0.05); color: var(--text-2); }
   .prose :global(blockquote p:last-child) { margin-bottom: 0; }
@@ -261,6 +263,31 @@ const isCurrent = (s: string) => s === slug;
   @media (max-width: 760px) { .prose :global(.client-gallery) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 560px) { .prose :global(.client-gallery) { grid-template-columns: minmax(0, 1fr); } .prose :global(.client-gallery img[width="380"]) { max-width: 380px; } }
   .prose :global(.client-gallery a) { cursor: zoom-in; }
+  /* A design's rendered images side by side (the templates guide): a square beside a landscape at one height, or two alike. */
+  .prose :global(.output-gallery) { display: grid; grid-template-columns: minmax(0, 630fr) minmax(0, 1200fr); gap: 12px; align-items: start; margin: 0 0 28px; }
+  .prose :global(.output-gallery.even) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prose :global(.output-gallery figure) { margin: 0; min-width: 0; }
+  .prose :global(.output-gallery img) { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; }
+  .prose :global(.output-gallery figcaption) { margin-top: 6px; font-size: 13px; line-height: 1.4; color: var(--text-3); }
+  .prose :global(.output-gallery.single) { grid-template-columns: minmax(0, 560px); }
+  @media (max-width: 560px) { .prose :global(.output-gallery), .prose :global(.output-gallery.even) { grid-template-columns: minmax(0, 1fr); } }
+  /* A diagram: one image at the text's width. */
+  .prose :global(figure.diagram) { margin: 0 0 28px; }
+  .prose :global(figure.diagram img) { display: block; width: 100%; height: auto; border-radius: 12px; }
+  /* A grid of ideas: each a picture, its name and a sentence, linked to its reference. */
+  .prose :global(.concept-grid) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0 0 28px; }
+  .prose :global(.concept-grid.single) { grid-template-columns: minmax(0, 420px); }
+  .prose :global(a.concept), .prose :global(figure.concept) { display: block; margin: 0; min-width: 0; color: inherit; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .prose :global(a.concept:hover) { border-color: var(--line-3); }
+  .prose :global(.concept img) { display: block; width: 100%; height: auto; border-radius: 0; }
+  .prose :global(.concept strong) { display: block; padding: 12px 14px 2px; font-size: 16px; color: var(--text); }
+  .prose :global(.concept span) { display: block; padding: 0 14px 14px; font-size: 14px; line-height: 1.5; color: var(--text-2); }
+  @media (max-width: 560px) { .prose :global(.concept-grid) { grid-template-columns: minmax(0, 1fr); } }
+  /* A long listing, folded until it's wanted. */
+  .prose :global(details) { margin: 0 0 24px; border: 1px solid var(--line); border-radius: 8px; }
+  .prose :global(details > summary) { padding: 10px 14px; cursor: pointer; font-size: 14px; color: var(--text-2); }
+  .prose :global(details[open] > summary) { border-bottom: 1px solid var(--line); }
+  .prose :global(details > :not(summary)) { margin: 12px 14px; }
   .lightbox { width: min(980px, calc(100vw - 32px)); max-width: none; height: calc(100vh - 48px); max-height: none; margin: auto; padding: 0; border: 1px solid var(--line-2); border-radius: var(--radius); background: var(--bg-1); color: var(--text); box-shadow: var(--shadow); overflow: hidden; }
   .lightbox[open] { display: flex; flex-direction: column; }
   .lightbox::backdrop { background: rgba(0, 0, 0, 0.72); }

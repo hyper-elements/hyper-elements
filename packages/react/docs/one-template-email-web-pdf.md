@@ -1,6 +1,6 @@
-# One React invoice template to email, web, and PDF
+# One React invoice design to email, web, and PDF
 
-Use `@hyper-elements/react` when a receipt or invoice needs an email, a browser view, and a downloadable PDF with the same content. Write the content once with the components from `@hyper-elements/react`, and select `Email`, `Page`, or `Document` as its root. `await render(element)` writes the HTML that root asks for. Playwright prints the document HTML to a PDF, or [`@hyper-elements/react/pdf`](./react-to-pdf.md#without-a-browser) writes one without a browser.
+Use `@hyper-elements/react` when a receipt or invoice needs an email, a browser view, and a downloadable PDF with the same content. Write the content once with the elements from `@hyper-elements/react`, and select `Email`, `Page`, or `Document` as its root. `await render(element)` writes the HTML that root asks for. Playwright prints the document HTML to a PDF, or [`@hyper-elements/react/pdf`](./react-to-pdf.md#without-a-browser) writes one without a browser.
 
 ## Install and run
 
@@ -24,7 +24,7 @@ npx playwright install chromium
 
 Use `"jsx": "react-jsx"` in your TypeScript configuration. Copy the [example source files](../../../examples/content-workflows/src) and run `npx tsx src/render-all.ts` from that project's root.
 
-## Define the shared React template
+## Define the shared React design
 
 [src/invoice.tsx](../../../examples/content-workflows/src/invoice.tsx):
 
@@ -45,7 +45,7 @@ export const sampleInvoice: InvoiceData = {
   receiptUrl: "https://example.com/account/invoices/INV-1001",
 };
 
-// A plain synchronous factory returns the template's root, which says what render() writes.
+// A plain synchronous factory returns the design's root, which says what render() writes.
 export function invoiceTemplate(data: InvoiceData, mode: "email" | "web" | "document") {
   const receiptUrl = new URL(data.receiptUrl);
   if (receiptUrl.protocol !== "https:") throw new Error("receiptUrl must use HTTPS");
@@ -101,4 +101,4 @@ Expected: six files in `examples/content-workflows/output/` when run via the wor
 
 Shared content does not imply identical pixels. Email uses table-oriented HTML and client-specific fallbacks; web uses responsive layouts; document output uses print styling and a fixed page size. A `Document`'s content does not flow from page to page: what is taller than its page is cut off, and `render()` warns about it in `diagnostics` (`document/overflow`). Split long invoices with `PageBreak` or `Document.Page`. A browser preview does not prove inbox compatibility.
 
-For an authenticated web receipt, serve the web HTML from an authorized route with `Content-Type: text/html`; do not publish customer invoices at predictable public URLs. These examples use fictitious data. Use [provider integrations](./email-providers.md) to send the email and [visual editing](./visual-editing.md) to hand the template to an editor user.
+For an authenticated web receipt, serve the web HTML from an authorized route with `Content-Type: text/html`; do not publish customer invoices at predictable public URLs. These examples use fictitious data. Use [provider integrations](./email-providers.md) to send the email and [visual editing](./visual-editing.md) to hand the design to an editor user.

@@ -78,7 +78,7 @@ describe("renderInEmailClients(html)", () => {
     expect(file).toContain(`content="${contentSecurityPolicy({ runtime: RUNTIME, models: { script: "", sha256: SCRIPT_SHA256 } }, "https://cdn.jsdelivr.net")}"`);
   });
 
-  it("says in the header that it's the HTML given, not built with Hyper Elements, and how close the model is", async () => {
+  it("says in the header that it's the HTML given, not built with Hyper Elements, and drawn with the same models", async () => {
     const { previews } = await renderInEmailClients(receipt, { emailClients: ["outlook", "apple-mail"] });
     // The header's text alone: the config also has an `approximate` field.
     const [outlook, apple] = previews.map((p) => /<header class="note">([\s\S]*?)<\/header>/.exec(p.html)![1]!);
@@ -87,8 +87,8 @@ describe("renderInEmailClients(html)", () => {
       expect(file).not.toContain("render()'s html");
       expect(file).toContain("This email wasn't built with Hyper Elements");
     }
-    expect(outlook).toContain("the model is approximate for it");
-    expect(apple).not.toContain("approximate");
+    for (const file of [outlook, apple]) expect(file).toContain("drawn with the same models");
+    expect(outlook).not.toContain("approximate");
   });
 
   it("takes a whole email: a doctype is optional, a fragment, a tag only inside a comment and a non-string are refused", async () => {

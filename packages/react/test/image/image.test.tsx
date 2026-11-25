@@ -162,13 +162,15 @@ describe("renderImage", () => {
     const said = (diagnostics: Array<{ code: string; message: string }>) => diagnostics.filter((d) => /^(image|canvas)\//.test(d.code) && d.code !== "image/font").map((d) => [d.code, d.message.split(":")[0].split(" (")[0]]);
     const expected = [
       ["canvas/overflow", "The Canvas's content looks about"],
+      ["image/overflow", "Content runs past the Canvas"],
       ["image/unsupported", "A hover isn't possible in an image"],
       ["image/unsupported", "A Video isn't possible in an image"],
       ["image/unsupported", "Markup isn't possible in an image"],
     ];
     const tidy = (list: string[][]) => list.map(([code, message]) => [code, message.replace(/ \d+%.*/, "")]).sort();
     expect(tidy(said((await renderImage(template, { fonts })).diagnostics))).toEqual(tidy(expected));
-    expect(tidy(said(validate(template).diagnostics))).toEqual(tidy(expected));
+    // validate() estimates; only the image entry measures (image/overflow).
+    expect(tidy(said(validate(template).diagnostics))).toEqual(tidy(expected.filter(([code]) => code !== "image/overflow")));
   });
 
   it("cuts off content far past the Canvas's edge as any other (resvg would end the process for it), drawing the same image", async () => {

@@ -5,7 +5,7 @@ import { checkHtml } from "./html-rules";
 import { contrast, hex, over, parseColor } from "./color";
 import type { Settings } from "./options";
 import { quote } from "./quote";
-import { ruleById, rules } from "./rules";
+import { ruleById, rules, type LintRoot, type Rule } from "./rules";
 import { readHtml } from "./tokenize";
 import { hrefOf, imagesIn, nameOf, ownsText, readTree, WIDTHS, wordsOf, type Info, type Tree, type Width } from "./tree";
 
@@ -39,7 +39,7 @@ export interface Found {
  * `on` says whether a rule runs: on the template (by its roots), or on an `Html` block's markup (`html`, by where it runs
  * on HTML).
  */
-export function checkTree(tree: Tree, kind: "marketing" | "transactional" | undefined, on: (id: string, html?: boolean) => boolean): Found[] {
+export function checkTree(tree: Tree, on: (id: string, html?: boolean) => boolean): Found[] {
   const found: Found[] = [];
   const seen = new Set<string>();
   const index = new Map(tree.nodes.map((info, i) => [info.node, i]));
@@ -78,7 +78,7 @@ export function checkTree(tree: Tree, kind: "marketing" | "transactional" | unde
       add("preview-text", root, `The Email's previewText is ${n} character${n === 1 ? "" : "s"} (${quote(preview)}): inboxes fill the rest with its first words`, "props.previewText");
     }
   }
-  if (isEmail && kind === "marketing") {
+  if (on("unsubscribe")) {
     const has = tree.nodes.some(({ node }) => {
       if (node.type === "MergeTag") return UNSUBSCRIBE.test(String(node.props.name ?? ""));
       if (node.type !== "Link" && node.type !== "Button") return false;
@@ -192,16 +192,46 @@ function runChecks(info: Info, add: (info: Info, id: string, message: string) =>
   }
 }
 
+const ROOTS: readonly LintRoot[] = ["Email", "Page"];
+/** Whether a rule runs on a template with this root: on the template by its roots, or on an Html block's markup (`html`). */
+const runsUnder = (rule: Rule, root: LintRoot, html?: boolean): boolean => (html ? rule.html === "both" : rule.roots.includes(root));
+
+/** A rule as `lint()`'s options configure it, for a tool to check a rule it needs runs, and to show what it checks. */
+export interface LintRuleDescriptor {
+  /** The rule's id (`unsubscribe`, `contrast`). */
+  readonly id: string;
+  /** The roots it can report under: its roots, and both for a rule that also runs on an `Html` block's markup. */
+  readonly roots: readonly LintRoot[];
+  /** Whether it runs under these options: false where its setting is `off`, or it needs a `kind` they don't give. */
+  readonly enabled: boolean;
+  /** What it checks, in a sentence. */
+  readonly summary: string;
+  /** What to do about a finding. */
+  readonly fix: string;
+}
+
+/** Every rule, in the registry's order, as the settings configure it; frozen all the way down. */
+export function describeRules(settings: Settings): readonly LintRuleDescriptor[] {
+  return Object.freeze(
+    rules.map((rule) =>
+      Object.freeze({
+        id: rule.id,
+        roots: Object.freeze(ROOTS.filter((root) => runsUnder(rule, root) || runsUnder(rule, root, true))),
+        enabled: settings.get(rule.id) !== "off",
+        summary: rule.summary,
+        fix: rule.fix,
+      })
+    )
+  );
+}
+
 /** Findings as diagnostics core keeps: `email/lint-<id>` or `page/lint-<id>`, with the rule's severity, fix and docs. */
-export function lintInput(input: PluginInput, settings: Settings, kind: "marketing" | "transactional" | undefined): PluginDiagnostic[] {
+export function lintInput(input: PluginInput, settings: Settings): PluginDiagnostic[] {
   const tree = readTree(input.root);
   if (!tree) return [];
   const prefix = tree.rootType === "Email" ? "email" : "page";
-  const on = (id: string, html?: boolean) => {
-    const rule = ruleById(id)!;
-    return settings.get(id) !== "off" && (html ? rule.html === "both" : rule.roots.includes(tree.rootType));
-  };
-  return checkTree(tree, kind, on).map(({ id, node, message, under }) => {
+  const on = (id: string, html?: boolean) => settings.get(id) !== "off" && runsUnder(ruleById(id)!, tree.rootType, html);
+  return checkTree(tree, on).map(({ id, node, message, under }) => {
     const rule = ruleById(id)!;
     const d: PluginDiagnostic = { code: `${prefix}/lint-${id}`, severity: settings.get(id) as "info" | "warning", message, path: under ? `${node.path}.${under}` : node.path, fix: rule.fix, see: rule.see };
     if (node.id) d.nodeId = node.id;

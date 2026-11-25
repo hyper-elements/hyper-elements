@@ -1,0 +1,176 @@
+{
+  "file": {
+    "version": 1,
+    "template": {
+      "module": "../templates/launch-graphic.tsx",
+      "id": "acme.LaunchGraphic",
+      "version": "1.0.0",
+      "sha256": "dbaf51a5c359b5c306c88b0fdcfd3b2e77520cd94e1ea6d93f4704e5b585a149"
+    },
+    "formats": [
+      "square",
+      "landscape"
+    ],
+    "values": {
+      "headline": "Meet Orbit 3.0: release notes that write themselves",
+      "features": [
+        "Drafts from merged PRs",
+        "Your voice, every release",
+        "Ships to Slack and email"
+      ],
+      "launchDate": "2026-12-03",
+      "locale": "en-US",
+      "screenshot": {
+        "src": "./art/screenshot.png",
+        "width": 1600,
+        "height": 1000
+      },
+      "artwork": {
+        "src": "./art/shapes.png",
+        "width": 1600,
+        "height": 1200
+      }
+    },
+    "assets": {
+      "screenshot": {
+        "sha256": "e6d0855049bd208ec6547327d004a3fef0610cf8469beda9fde9343cc2b7fe4b"
+      },
+      "artwork": {
+        "sha256": "196b33139609f87a5d20def48fc11741378297fa16922f5fc832f0ab83fcfeb3"
+      }
+    }
+  },
+  "fileShown": "{\n  \"version\": 1,\n  \"template\": {\n    \"module\": \"../templates/launch-graphic.tsx\",\n    \"id\": \"acme.LaunchGraphic\",\n    \"version\": \"1.0.0\",\n    \"sha256\": \"dbaf51a5c359…\"\n  },\n  \"formats\": [\n    \"square\",\n    \"landscape\"\n  ],\n  \"values\": {\n    \"headline\": \"Meet Orbit 3.0: release notes that write themselves\",\n    \"features\": [\n      \"Drafts from merged PRs\",\n      \"Your voice, every release\",\n      \"Ships to Slack and email\"\n    ],\n    \"launchDate\": \"2026-12-03\",\n    \"locale\": \"en-US\",\n    \"screenshot\": {\n      \"src\": \"./art/screenshot.png\",\n      \"width\": 1600,\n      \"height\": 1000\n    },\n    \"artwork\": {\n      \"src\": \"./art/shapes.png\",\n      \"width\": 1600,\n      \"height\": 1200\n    }\n  },\n  \"assets\": {\n    \"screenshot\": {\n      \"sha256\": \"e6d0855049bd…\"\n    },\n    \"artwork\": {\n      \"sha256\": \"196b33139609…\"\n    }\n  }\n}",
+  "describeArtwork": "{\n  \"path\": \"artwork\",\n  \"kind\": \"image\",\n  \"fit\": \"cover\",\n  \"maxCrop\": 0.6,\n  \"regions\": { \"square\": { \"box\": [952, 420], \"pixels\": [952, 420] }, \"landscape\": { \"box\": [552, 566], \"pixels\": [552, 566] } },\n  \"suggested\": { \"width\": 952, \"height\": 566, \"crop\": { \"square\": \"cuts 26% of the height\", \"landscape\": \"cuts 42% of the width\" } }\n}",
+  "fit": [
+    {
+      "format": "square",
+      "fits": [
+        {
+          "path": "root.children[0].children[1].children[1]",
+          "field": "headline",
+          "sizes": [
+            72,
+            64,
+            56
+          ],
+          "chosen": 72
+        }
+      ]
+    },
+    {
+      "format": "landscape",
+      "fits": [
+        {
+          "path": "root.children[0].children[0].children[1].children[1]",
+          "field": "headline",
+          "sizes": [
+            40
+          ],
+          "chosen": 40,
+          "next": {
+            "size": 46,
+            "lines": 4
+          }
+        }
+      ]
+    }
+  ],
+  "steps": {
+    "new": {
+      "command": "npx hyper-elements design new templates/launch-graphic.tsx -o designs/orbit.values.json --values brief.json --set screenshot=@designs/art/screenshot.png --set artwork=@designs/art/shapes.png",
+      "code": 0,
+      "output": "✓ designs/orbit.values.json\n    info template/rule-not-run at rules: image/overflow (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/glyph (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/fit (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n  set headline\n  set features\n  set launchDate\n  set locale\n  set screenshot\n  set artwork"
+    },
+    "check": {
+      "command": "npx hyper-elements check designs/orbit.values.json",
+      "code": 0,
+      "output": "✓ designs/orbit.values.json [square] (Canvas)\n  artwork (square): 952×420, needs 952×420px\n  screenshot (square): 512×320, needs 512×320px\n  fit headline: 72px (fits at 72, 64, 56)\n  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.\n  review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.\n  review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n  review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n✓ designs/orbit.values.json [landscape] (Canvas)\n  artwork (landscape): 552×566, needs 552×566px\n  screenshot (landscape): 456×285, needs 456×285px\n  fit headline: 52px (fits at 52, 46, 40)\n  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.\n  review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.\n  review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n  review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "render": {
+      "command": "npx hyper-elements render designs/orbit.values.json",
+      "code": 0,
+      "output": "✓ designs/orbit.values.json [square] (Canvas) → out/designs/orbit.square.png\n✓ designs/orbit.values.json [landscape] (Canvas) → out/designs/orbit.landscape.png\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "long": {
+      "command": "npx hyper-elements design set designs/orbit.values.json \"headline=Meet Orbit 3.0: release notes that write themselves, in your voice\"",
+      "code": 0,
+      "output": "✓ designs/orbit.values.json\n    info template/rule-not-run at rules: image/overflow (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/glyph (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/fit (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n  changed headline"
+    },
+    "longCheck": {
+      "command": "npx hyper-elements check designs/orbit.values.json --json",
+      "code": 0,
+      "output": "{\"version\":1,\"command\":\"check\",\"file\":\"designs/orbit.values.json\",\"input\":\"values\",\"root\":\"Canvas\",\"status\":\"ok\",\"outputs\":[],\"diagnostics\":[],\"templateFormat\":\"square\",\"template\":{\"id\":\"acme.LaunchGraphic\",\"version\":\"1.0.0\",\"module\":\"templates/launch-graphic.tsx\",\"trusted\":true},\"fits\":[{\"path\":\"root.children[0].children[1].children[1]\",\"field\":\"headline\",\"sizes\":[72,64,56],\"chosen\":72}],\"regions\":{\"artwork\":{\"square\":{\"box\":[952,420],\"pixels\":[952,420]}},\"screenshot\":{\"square\":{\"box\":[512,320],\"pixels\":[512,320]}}},\"rules\":[{\"rule\":\"image/overflow\",\"source\":\"core\",\"format\":\"square\",\"status\":\"passed\",\"diagnostics\":[]},{\"rule\":\"image/glyph\",\"source\":\"core\",\"format\":\"square\",\"status\":\"passed\",\"diagnostics\":[]},{\"rule\":\"image/fit\",\"source\":\"core\",\"format\":\"square\",\"status\":\"passed\",\"diagnostics\":[]}],\"review\":[{\"field\":\"artwork\",\"guidance\":\"Bold flat shapes in the brand's colors. No text, logos or people.\"},{\"template\":\"acme.LaunchGraphic\",\"guidance\":\"For product launches only. Sentence case, no emoji, no exclamation marks.\"},{\"field\":\"screenshot\",\"guidance\":\"Of unknown origin: no source is recorded for this image (give one with design set … --source)\"},{\"field\":\"artwork\",\"guidance\":\"Of unknown origin: no source is recorded for this image (give one with design set … --source)\"}]}\n{\"version\":1,\"command\":\"check\",\"file\":\"designs/orbit.values.json\",\"input\":\"values\",\"root\":\"Canvas\",\"status\":\"ok\",\"outputs\":[],\"diagnostics\":[],\"templateFormat\":\"landscape\",\"template\":{\"id\":\"acme.LaunchGraphic\",\"version\":\"1.0.0\",\"module\":\"templates/launch-graphic.tsx\",\"trusted\":true},\"fits\":[{\"path\":\"root.children[0].children[0].children[1].children[1]\",\"field\":\"headline\",\"sizes\":[40],\"chosen\":40,\"next\":{\"size\":46,\"lines\":4}}],\"regions\":{\"artwork\":{\"landscape\":{\"box\":[552,566],\"pixels\":[552,566]}},\"screenshot\":{\"landscape\":{\"box\":[456,285],\"pixels\":[456,285]}}},\"rules\":[{\"rule\":\"image/overflow\",\"source\":\"core\",\"format\":\"landscape\",\"status\":\"passed\",\"diagnostics\":[]},{\"rule\":\"image/glyph\",\"source\":\"core\",\"format\":\"landscape\",\"status\":\"passed\",\"diagnostics\":[]},{\"rule\":\"image/fit\",\"source\":\"core\",\"format\":\"landscape\",\"status\":\"passed\",\"diagnostics\":[]}],\"review\":[{\"field\":\"artwork\",\"guidance\":\"Bold flat shapes in the brand's colors. No text, logos or people.\"},{\"template\":\"acme.LaunchGraphic\",\"guidance\":\"For product launches only. Sentence case, no emoji, no exclamation marks.\"},{\"field\":\"screenshot\",\"guidance\":\"Of unknown origin: no source is recorded for this image (give one with design set … --source)\"},{\"field\":\"artwork\",\"guidance\":\"Of unknown origin: no source is recorded for this image (give one with design set … --source)\"}]}\n{\"version\":1,\"summary\":{\"templates\":2,\"errors\":0,\"warnings\":0,\"skipped\":0,\"late\":[]},\"exitCode\":0}"
+    },
+    "banner": {
+      "command": "npx hyper-elements design set designs/orbit.values.json screenshot=@designs/art/banner.png",
+      "code": 1,
+      "output": "✗ designs/orbit.values.json: not written\n    error template/asset-aspect at values.screenshot: Product screenshot is 1600×400, 4:1; it takes 2:1 or narrower"
+    },
+    "unfit": {
+      "command": "npx hyper-elements design set designs/orbit.values.json \"headline=Meet Orbit 3.0: release notes that write themselves, in your own voice\"",
+      "code": 0,
+      "output": "✓ designs/orbit.values.json\n    info template/rule-not-run at rules: image/overflow (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/glyph (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n    info template/rule-not-run at rules: image/fit (required by acme.LaunchGraphic) is decided when the image is measured: renderImage() of this snapshot, or checkLayout()\n  changed headline"
+    },
+    "unfitCheck": {
+      "command": "npx hyper-elements check designs/orbit.values.json",
+      "code": 1,
+      "output": "✓ designs/orbit.values.json [square] (Canvas)\n  artwork (square): 952×420, needs 952×420px\n  screenshot (square): 512×320, needs 512×320px\n  fit headline: 64px (fits at 64, 56)\n  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.\n  review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.\n  review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n  review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n✗ designs/orbit.values.json [landscape] (Canvas)\n    error image/fit at root.children[0].children[0].children[1].children[1]: This Heading doesn't fit: it takes 4 lines at 40px, its smallest size, and fits 3: cut about 18 characters (required by acme.LaunchGraphic) Fix: Shorten the text, or give the template a smaller size\n  rule image/fit (landscape): failed\n  artwork (landscape): 552×566, needs 552×566px\n  screenshot (landscape): 456×285, needs 456×285px\n  fit headline: no size fits\n  review artwork: Bold flat shapes in the brand's colors. No text, logos or people.\n  review acme.LaunchGraphic: For product launches only. Sentence case, no emoji, no exclamation marks.\n  review screenshot: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n  review artwork: Of unknown origin: no source is recorded for this image (give one with design set … --source)\n2 designs: 1 error, 0 warnings, 0 skipped"
+    },
+    "newsletterCheck": {
+      "command": "npx hyper-elements check designs/june.tsx",
+      "code": 0,
+      "output": "✓ designs/june.tsx (Email)\n    info email/outlook-degraded at root.children[2].children[0].children[4].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n  review body: One to three short sections, each a Heading and a Text.\n  review acme.Newsletter: Orbit's monthly newsletter. Friendly and plain: sentence case, no exclamation marks, no emoji.\n1 design: 0 errors, 0 warnings, 0 skipped"
+    },
+    "newsletterRender": {
+      "command": "npx hyper-elements render designs/june.tsx",
+      "code": 0,
+      "output": "✓ designs/june.tsx (Email) → out/designs/june.html, out/designs/june.txt\n    info email/outlook-degraded at root.children[2].children[0].children[4].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n1 design: 0 errors, 0 warnings, 0 skipped"
+    },
+    "offBrand": {
+      "command": "npx hyper-elements check designs/off-brand.tsx",
+      "code": 1,
+      "output": "✗ designs/off-brand.tsx (Email)\n    error template/slot-style at root.children[2].children[0].children[0].style.color: acme.Newsletter's body takes no styles of its own (styles: \"none\"): use the theme's named styles (style={{ apply: [...] }}) and variants, not color\n    error template/slot-element at root.children[2].children[0].children[1]: A Table isn't one of the elements acme.Newsletter's body takes (Column, Heading, Text, Button, Link)\n  review body: One to three short sections, each a Heading and a Text.\n  review acme.Newsletter: Orbit's monthly newsletter. Friendly and plain: sentence case, no exclamation marks, no emoji.\n1 design: 1 error, 0 warnings, 0 skipped"
+    },
+    "emailCheck": {
+      "command": "npx hyper-elements check designs/welcome.tsx designs/launch-week.tsx",
+      "code": 0,
+      "output": "✓ designs/welcome.tsx (Email)\n    info email/outlook-degraded at root.children[1].children[0].children[2].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n  review acme.BrandEmail: Any email Orbit sends. The header and footer are Orbit's; the body is yours.\n✓ designs/launch-week.tsx (Email)\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[1].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[2].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[5].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n  review acme.BrandEmail: Any email Orbit sends. The header and footer are Orbit's; the body is yours.\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "emailRender": {
+      "command": "npx hyper-elements render designs/welcome.tsx designs/launch-week.tsx",
+      "code": 0,
+      "output": "✓ designs/welcome.tsx (Email) → out/designs/welcome.html, out/designs/welcome.txt\n    info email/outlook-degraded at root.children[1].children[0].children[2].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n✓ designs/launch-week.tsx (Email) → out/designs/launch-week.html, out/designs/launch-week.txt\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[0].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[1].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[1].children[2].style.borderRadius: borderRadius on this Column in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n    info email/outlook-degraded at root.children[1].children[0].children[5].style.borderRadius: borderRadius on this Button in classic Outlook: square corners [outlook] See: https://www.caniemail.com/features/css-border-radius/\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "offSite": {
+      "command": "npx hyper-elements check designs/off-site.tsx",
+      "code": 1,
+      "output": "✗ designs/off-site.tsx (Email)\n    error template/link-domain at root.children[1].children[0].children[1].props.href: northwind.example.net isn't one of acme.BrandEmail's domains (orbit.example, *.orbit.example) (required by acme.BrandEmail)\n  rule links: failed\n  review acme.BrandEmail: Any email Orbit sends. The header and footer are Orbit's; the body is yours.\n1 design: 1 error, 0 warnings, 0 skipped"
+    },
+    "invoiceNew": {
+      "command": "npx hyper-elements design new templates/invoice.tsx -o designs/northwind.values.json --values invoice.json",
+      "code": 0,
+      "output": "✓ designs/northwind.values.json\n  set number\n  set issued\n  set due\n  set customer\n  set lines\n  set note"
+    },
+    "invoiceRender": {
+      "command": "npx hyper-elements render designs/northwind.values.json --html",
+      "code": 0,
+      "output": "✓ designs/northwind.values.json [a4] (Document) → out/designs/northwind.a4.pdf, out/designs/northwind.a4.html\n✓ designs/northwind.values.json [letter] (Document) → out/designs/northwind.letter.pdf, out/designs/northwind.letter.html\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "invoiceRefused": {
+      "command": "npx hyper-elements design set designs/northwind.values.json number=NW-12",
+      "code": 1,
+      "output": "✗ designs/northwind.values.json: not written\n    error template/value at values.number: Invoice number: doesn't match ^INV-\\d{4}$"
+    },
+    "digestRender": {
+      "command": "npx hyper-elements render designs/digest-monday.values.json designs/digest-friday.values.json",
+      "code": 0,
+      "output": "✓ designs/digest-monday.values.json (Email) → out/designs/digest-monday.html, out/designs/digest-monday.txt\n✓ designs/digest-friday.values.json (Email) → out/designs/digest-friday.html, out/designs/digest-friday.txt\n2 designs: 0 errors, 0 warnings, 0 skipped"
+    },
+    "digestRefused": {
+      "command": "npx hyper-elements design set designs/digest-monday.values.json \"body=[{\\\"type\\\":\\\"video\\\"}]\"",
+      "code": 1,
+      "output": "✗ designs/digest-monday.values.json: not written\n    error template/value at values.body[0]: A block is { type, … } with type \"story\" or \"quote\" or \"button\", not \"video\""
+    }
+  }
+}

@@ -23,6 +23,11 @@ export interface Node {
   id?: string;
   /** A defined component: "Email", "Row", "Heading", … */
   type: string;
+  /**
+   * The template field it shows (`headline`, `features[1]`, `stories[1].image`), on a built-in in a template's own
+   * render: several nodes may show one. Writers ignore it; a template's checks read it.
+   */
+  field?: string;
   /** Meaning: href, src, alt, level. */
   props?: Record<string, Json>;
   /** Appearance, in the value kinds the component's definition gives. */

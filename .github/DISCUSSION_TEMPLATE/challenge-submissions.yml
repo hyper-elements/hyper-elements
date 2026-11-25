@@ -1,0 +1,98 @@
+
+title: "[Challenge Submission] "
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Hyper Elements Challenge Submission
+
+        Submit your project to an official Hyper Elements
+        community challenge.
+
+        Current challenge: Hyper Elements Template Challenge
+        Deadline: November 29, 2026, at 23:59 UTC.
+
+        Before submitting, please review the
+        [official challenge FAQ](https://unlayer.notion.site/Hyper-Elements-Template-Challenge-FAQ-4170ceb4c8e180ddb512d69e3792585d).
+
+  - type: dropdown
+    id: challenge
+    attributes:
+      label: Which challenge are you entering?
+      description: Select the challenge for your submission.
+      options:
+        - Hyper Elements Template Challenge (November 2026)
+    validations:
+      required: true
+
+  - type: input
+    id: project-name
+    attributes:
+      label: Project name
+      description: Give your project a name.
+      placeholder: My Hyper Elements Template
+    validations:
+      required: true
+
+  - type: textarea
+    id: project-description
+    attributes:
+      label: Project description
+      description: Briefly explain what you built and its purpose.
+      placeholder: Describe your project here.
+    validations:
+      required: true
+
+  - type: input
+    id: repository
+    attributes:
+      label: Public GitHub repository URL
+      description: Link to the repository containing your source code and README.
+      placeholder: https://github.com/username/project
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: How did you use Hyper Elements?
+      description: Explain how Hyper Elements is incorporated into your implementation.
+      placeholder: Describe how Hyper Elements was used in your project.
+    validations:
+      required: true
+
+  - type: input
+    id: live-preview
+    attributes:
+      label: Live preview URL (optional)
+      description: Include a live demo if available. Deployment is not required.
+      placeholder: https://example.com
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ### Repository README requirements
+
+        Your public GitHub repository must contain a README with:
+
+        - A description of the project
+        - A screenshot, GIF, or video of the completed template
+        - An explanation of how Hyper Elements was used
+        - Instructions to run or reproduce the template
+
+        A live deployment is optional.
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Submission confirmation
+      options:
+        - label: I have starred the [Hyper Elements repository](https://github.com/hyper-elements/hyper-elements).
+          required: true
+        - label: My repository is public and contains the complete source code and required README.
+          required: true
+        - label: My submission meets the requirements of the selected challenge.
+          required: true

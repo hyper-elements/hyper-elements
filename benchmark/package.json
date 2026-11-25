@@ -12,6 +12,7 @@
     "report": "node lib/report.mjs",
     "charts": "node lib/charts.mjs",
     "selftest": "node suites/image/check/selftest.mjs",
+    "selftest:template": "node suites/template/selftest.mjs",
     "runtime": "node lib/runtime.mjs",
     "preflight": "node lib/preflight.mjs",
     "test": "node --test \"test/*.test.mjs\""

@@ -16,7 +16,7 @@ Run it from your project folder, with Node.js 20.6 or later. It uses your projec
 
 ## What it converts
 
-Each template becomes the components from `@hyper-elements/react`, with its styles in `style={{ }}`:
+Each template becomes the elements from `@hyper-elements/react`, with its styles in `style={{ }}`:
 
 | React Email | Hyper Elements |
 |---|---|
@@ -40,7 +40,7 @@ JavaScript templates keep JavaScript. A `.js` file with JSX can't be loaded: ren
 
 ## How it checks the result
 
-The goal is an editable template with the same content, not pixel parity. The original and the migrated template are rendered with the template's `PreviewProps`, then again with each boolean prop flipped, and compared in two parts.
+The goal is an editable design with the same content, not pixel parity. The original and the migrated template are rendered with the template's `PreviewProps`, then again with each boolean prop flipped, and compared in two parts.
 
 ### Content must match
 
@@ -91,8 +91,8 @@ Files that aren't templates (shared components, helpers, a framework's routes) a
 |---|---|
 | `--write` | Replace each template with its migrated version. Only templates git can restore: committed, with no changes since. |
 | `--out <dir>` | Write migrated templates to `<dir>` instead, keeping the folder layout. Relative imports still resolve. |
-| `--design` | Also write `<name>.design.json` next to each template, for the visual editor's `loadDesign()`. Text props shown as given become merge tags (`{{name}}`). |
-| `--no-merge-tags` | Keep the `PreviewProps` values in the design JSON instead of merge tags. |
+| `--design` | Also write the builder design, `<name>.design.json`, next to each template, for the visual editor's `loadDesign()`. Text props shown as given become merge tags (`{{name}}`). |
+| `--no-merge-tags` | Keep the `PreviewProps` values in the builder design instead of merge tags. |
 | `--report <file>` | Write the migration report: JSON for a `.json` file, Markdown for any other. |
 | `--strict` | Fail a template with any difference, in its content, its look, or a style the migration couldn't keep, and don't write it. |
 | `--force` | With `--strict`, write templates the check fails anyway. |
@@ -126,9 +126,9 @@ A run never ends with `0` without checking what it was given. That makes it safe
 npx @hyper-elements/migrate compare emails/welcome.tsx emails/welcome.elements.tsx
 ```
 
-`compare` renders both with the original's `PreviewProps`, then with each true/false prop flipped, and checks the HTML and the design JSON: every word, link, image and `alt` text is still there, no new words appear, and the visual editor gets every block. What looks different is listed. Exit `0` when the content is the same, `2` with missing or extra content (with `--strict`, with any difference).
+`compare` renders both with the original's `PreviewProps`, then with each true/false prop flipped, and checks the HTML and the builder design: every word, link, image and `alt` text is still there, no new words appear, and the visual editor gets every block. What looks different is listed. Exit `0` when the content is the same, `2` with missing or extra content (with `--strict`, with any difference).
 
-Use it after you convert a `TODO(convert)` block by hand: replace it with the new components, then run `compare` against the original (from git, if `--write` replaced it).
+Use it after you convert a `TODO(convert)` block by hand: replace it with the new elements, then run `compare` against the original (from git, if `--write` replaced it).
 
 ## How well it works
 
@@ -162,14 +162,14 @@ The report lists every difference for each template. The common ones:
 
 ## A template that can't be converted
 
-A template that can't be written in the components at all fails: nothing is written for it, the report says why, and the run exits `2`. Rewrite that part by hand, then check it against the React Email original with `npx @hyper-elements/migrate compare <original> <migrated>`.
+A template that can't be written in the elements at all fails: nothing is written for it, the report says why, and the run exits `2`. Rewrite that part by hand, then check it against the React Email original with `npx @hyper-elements/migrate compare <original> <migrated>`.
 
 ## After migrating
 
 Install the package, since the migrated templates import it:
 
 ```bash
-npm install @hyper-elements/react@^0.4.0
+npm install @hyper-elements/react@^0.5.0
 ```
 
 When a run writes templates where it isn't installed, it ends with the install command for your package manager (npm, pnpm, yarn or bun, by your lockfile).
@@ -198,7 +198,7 @@ npx @hyper-elements/migrate emails --out unlayer --design --report unlayer/repor
 editor.loadDesign(await fetch("/unlayer/welcome.design.json").then((r) => r.json()));
 ```
 
-Web fonts aren't part of the design JSON: the editor loads and exports a web font only when it's registered when the editor is created. The JSON report lists each template's fonts in that shape:
+Web fonts aren't part of the builder design: the editor loads and exports a web font only when it's registered when the editor is created. The JSON report lists each template's fonts in that shape:
 
 ```js
 const report = await fetch("/unlayer/report.json").then((r) => r.json());
@@ -219,13 +219,13 @@ import { convertReactEmail, NewComponentsError } from "@hyper-elements/migrate/r
 import Welcome from "./emails/welcome";
 
 const conversion = await convertReactEmail(Welcome); // rendered with its PreviewProps, and checked against it
-const tsx = conversion.code;                  // the template in the components
+const tsx = conversion.code;                  // the design in the elements
 const html = await conversion.html();
 const design = conversion.design();           // open in the visual editor with loadDesign()
 const customFonts = conversion.editorFonts(); // register when creating the editor: fonts: { customFonts }
 conversion.report.missingText;                // [] when nothing was lost
 ```
 
-`convertReactEmail()` converts what a template renders: loops and conditions become the content they produced (the CLI keeps them). Where that can't be written in the components, it throws a `NewComponentsError`, whose `reason` says why.
+`convertReactEmail()` converts what a template renders: loops and conditions become the content they produced (the CLI keeps them). Where that can't be written in the elements, it throws a `NewComponentsError`, whose `reason` says why.
 
 > **Warning:** The command runs your templates to check them: a template's module code runs, and its component renders, as React Email's preview does. Run it only on code you trust. It makes no network requests.

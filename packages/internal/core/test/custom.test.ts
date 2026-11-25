@@ -125,7 +125,7 @@ describe("custom components", () => {
   it("have namespaced names that never clash", () => {
     expect(() => defineCustomComponent({ type: "Card", label: "Card", props: {}, expand: () => ({}) })).toThrow(/namespace/);
     const Other = defineCustomComponent({ type: "acme.Card", label: "Other", props: {}, expand: () => ({}) });
-    expect(() => new Registry([Card, Other])).toThrow(/Two custom components/);
+    expect(() => new Registry([Card, Other])).toThrow(/Two elements made with defineElement\(\) are named acme\.Card/);
   });
 
   it("are described like built-in components", () => {
@@ -143,7 +143,7 @@ describe("custom components", () => {
 });
 
 describe("roots", () => {
-  /** A component of a template's own with a prop only a Page takes, and one that renders it. */
+  /** A custom element with a prop only a Page takes, and one that renders it. */
   const Banner = defineCustomComponent({
     type: "acme.Banner",
     label: "Banner",
@@ -191,7 +191,7 @@ describe("roots", () => {
     const PageOnly = { ...defineCustomComponent({ type: "acme.Strip", label: "Strip", props: {}, expand: () => ({ type: "Text", children: ["Strip"] }) }), roots: ["Page"] as const };
     expect(errors(under("Page", { type: "acme.Strip" }), { components: [PageOnly] })).toEqual([]);
     expect(errors(under("Document", { type: "acme.Strip" }), { components: [PageOnly] })).toEqual([
-      ["component/not-supported", "root.children[0]", "A acme.Strip goes in a Page, not in a Document"],
+      ["element/not-supported", "root.children[0]", "A acme.Strip goes in a Page, not in a Document"],
     ]);
     expect(describeComponent("acme.Strip", { components: [PageOnly] })!.roots).toEqual(["Page"]);
     // A PageNumber keeps its own code and message, and an Svg in an Email is still its output's.
@@ -202,6 +202,6 @@ describe("roots", () => {
     const svg = { type: "Svg", props: { viewBox: "0 0 10 10", width: 10, height: 10 } };
     expect(errors(under("Email", svg), {})).toEqual([]);
     const { document } = checkDocument(under("Email", svg));
-    expect(expandDocument(document!, new Registry(), "email").diagnostics.map((d) => d.code)).not.toContain("component/not-supported");
+    expect(expandDocument(document!, new Registry(), "email").diagnostics.map((d) => d.code)).not.toContain("element/not-supported");
   });
 });

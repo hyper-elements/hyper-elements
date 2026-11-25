@@ -14,6 +14,8 @@ export interface Diagnostic {
   path: string;
   /** The node's id, once it has one. */
   nodeId?: string;
+  /** The template field the node shows (`headline`, `stories[1].image`), where it's bound to one: it or what holds it. */
+  field?: string;
   /** The email clients it's about (a plugin's, such as email-clients'); absent: none in particular. */
   clients?: readonly string[];
   /** What to change. */

@@ -15,7 +15,8 @@
     "build-storybook": "pnpm -r --filter \"./packages/**\" run build-storybook",
     "postbuild-storybook": "./build-storybook-hub.sh",
     "storybook:hub": "pnpm run build-storybook && npx http-server storybook-static -p 6006 -o",
-    "test": "pnpm -r --filter \"./packages/**\" run test",
+    "test": "pnpm -r --filter \"./packages/**\" --filter ./templates run test",
+    "typecheck:templates": "pnpm --filter ./templates typecheck",
     "test:coverage": "pnpm -r --filter \"./packages/**\" run test:coverage"
   },
   "devDependencies": {

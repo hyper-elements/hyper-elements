@@ -909,7 +909,7 @@ T.PreviewProps = { seats: 5 };`);
       T.PreviewProps = { name: "Ana", url: "https://example.com" };`);
     expect(conversion.intermediate).toMatch(/function _escapeHtml\(/);
     expect(conversion.intermediate).toMatch(/Paragraph as UnlayerParagraph/);
-    // In the new components too: the template's Section stays its own.
+    // In the new elements too: the template's Section stays its own.
     expect(conversion.code).toMatch(/Section as ElementsSection/);
     const check = await verifyNewComponents(Original, Migrated);
     expect([check.missing, check.added, check.styles, check.variants]).toEqual([[], [], [], []]);
@@ -991,7 +991,7 @@ export default function T() { return <Html><Body><Container>
   <Text style={{ position: "absolute", width: "1px", height: "1px", overflow: "hidden", clip: "rect(0 0 0 0)" }}>Screen reader note</Text>
   <Text style={{ position: "absolute", left: "-9999px" }}>Offscreen filler</Text>
 </Container></Body></Html>; }`);
-    // Kept as React Email writes it (its Text), in an Html block: not a block of the new components'.
+    // Kept as React Email writes it (its Text), in an Html block: not a block of the new elements'.
     expect(conversion.code).not.toMatch(/<ElementsText[^>]*>\s*(Screen reader note|Offscreen filler)/);
     expect(conversion.code).toMatch(/<Html>\s*<div[^>]*>\s*<Text[^>]*>\s*Screen reader note/);
     const check = await verifyNewComponents(Original, Migrated);
@@ -1019,12 +1019,12 @@ export default function T() { return <Html><Body><Container style={{ width: "100
 });
 
 describe("style values from props", () => {
-  it("aren't content where the check's text props with markup give one the new components refuse (a color)", async () => {
+  it("aren't content where the check's text props with markup give one the new elements refuse (a color)", async () => {
     const { Original, Migrated, conversion } = await templates(`import { Html, Body, Text } from "@react-email/components";
 export default function T({ code, color }: { code: string; color: string }) { return <Html><Body><Text style={{ color }}>{code}</Text></Body></Html>; }
 T.PreviewProps = { code: "482913", color: "#e11d48" };`);
     expect(conversion.code).toContain("color: color");
-    // React Email writes the color with markup in a style no one reads as text; the new components refuse it.
+    // React Email writes the color with markup in a style no one reads as text; the new elements refuse it.
     const check = await verifyNewComponents(Original, Migrated);
     expect(check.variants).toEqual([]);
   });
@@ -1072,7 +1072,7 @@ export default function T() {
     expect(conversion.intermediate).toMatch(/width:220px;[^"]*margin-left:auto;margin-right:auto/);
     const check = await verifyNewComponents(Original, Migrated);
     expect(check.layout).toEqual([]);
-    // The new components' text has no box for a link: its width and border are left out, and said so, in both modes.
+    // The new elements' text has no box for a link: its width and border are left out, and said so, in both modes.
     const runtime = await convertReactEmail(Original);
     for (const notes of [conversion.notes, runtime.report.info.map((i) => i.detail)]) expect(notes).toContainEqual(expect.stringMatching(/style width: 220px \(on <a>\) is left out/));
   });
@@ -1152,7 +1152,7 @@ T.PreviewProps = { url: "https://example.com", target: "_self" };`);
     for (const target of ["_self", undefined]) {
       const check = await verifyNewComponents(Original, Migrated, { props: { url: "https://example.com", target } });
       expect(check.styles).toEqual([]);
-      // A target with markup (the check's text props with markup) is one the new components refuse: not text, not content.
+      // A target with markup (the check's text props with markup) is one the new elements refuse: not text, not content.
       expect(check.variants).toEqual([]);
     }
   });
@@ -1316,7 +1316,7 @@ T.PreviewProps = { name: "Ana", note: "Thanks!", stars: ["https://example.com/s1
     for (const props of [Original.PreviewProps, { name: "Bo", stars: [], lines: ["Only"], plan: "team" }]) {
       const check = await verifyNewComponents(Original, Migrated, { props });
       expect([check.missing, check.added, check.missingAttributes, check.addedAttributes, check.designWarnings]).toEqual([[], [], [], [], []]);
-      // The text with images in it is an Html block of its markup (the new components' text holds no image), the text
+      // The text with images in it is an Html block of its markup (the new elements' text holds no image), the text
       // with lines stays editable text, and the component of the template's own is an Html block.
       expect(blockTypes(check.design)).toEqual(["html", "html", "paragraph", "html"]);
     }

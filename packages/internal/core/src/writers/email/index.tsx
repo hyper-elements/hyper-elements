@@ -31,7 +31,7 @@
 import { Diagnostics, type Diagnostic } from "../../diagnostics";
 import type { ResolvedDocument, ResolvedNode } from "../../resolve";
 import { Fragment, h, raw, withStylesheet, type Html } from "../jsx";
-import { BLOCK_MAP_VERSION, BlockMarks, MARK_PAIRS, markBlock, readMarks, withBlockMarks, type BlockMap } from "../shared/block-map";
+import { blockMapOf, markBlock, withBlockMarks, writeMarked, type BlockMap, type BlockMarks } from "../shared/block-map";
 import { utf8Bytes } from "../shared/bytes";
 import { Stylesheet } from "../shared/classes";
 import { attrs, css, escapeText, styleAttr } from "../shared/css";
@@ -173,15 +173,7 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & 
     return { sheet, markup };
   };
   // With a block map, written with marks (again with another pair where the template's text holds one), which come out again.
-  let written = options.blockMap ? null : write(null);
-  let marked: ReturnType<typeof readMarks> = null;
-  for (let pair = 0; !written; pair++) {
-    if (pair === MARK_PAIRS) throw new Error("[Elements] blockMap can't mark this email: its text holds every pair of the noncharacters U+FDD0 to U+FDEF");
-    const marks = new BlockMarks(pair);
-    const attempt = write(marks);
-    marked = readMarks(marks, attempt.markup);
-    if (marked) written = { sheet: attempt.sheet, markup: marked.text };
-  }
+  const { written, found } = writeMarked(options.blockMap, write, "email");
   const { sheet, markup: email } = written;
 
   const background = root.style.backgroundColor as string | undefined;
@@ -232,18 +224,5 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & 
     `<head>${head}</head><body${styleAttr(bodyDeclarations)}>`;
   const html = `${shell}${body}</body></html>`;
 
-  return { html, head, body, bodyStyle, stylesheet, diagnostics: d.list, ...(marked ? { blocks: blockMap(resolved, marked.found, email, utf8Bytes(shell + preheader + opening)) } : {}) };
-}
-
-/** Each mark's block, at its offset in UTF-8 bytes: `start` bytes before the email's markup, and its markup up to the mark. */
-function blockMap(resolved: ResolvedDocument, found: Array<{ node: ResolvedNode; at: number }>, email: string, start: number): BlockMap {
-  const templatePath = resolved.templatePath ?? ((path: string) => path);
-  let offset = start;
-  let from = 0;
-  const entries = found.map(({ node, at }) => {
-    offset += utf8Bytes(email.slice(from, at));
-    from = at;
-    return { path: templatePath(node.path), ...(node.id ? { nodeId: node.id } : {}), type: node.type, offset };
-  });
-  return { version: BLOCK_MAP_VERSION, unit: "utf8", entries };
+  return { html, head, body, bodyStyle, stylesheet, diagnostics: d.list, ...(found ? { blocks: blockMapOf(resolved, found, email, utf8Bytes(shell + preheader + opening)) } : {}) };
 }

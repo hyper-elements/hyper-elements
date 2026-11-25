@@ -8,7 +8,7 @@ import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
 import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
-import { a, nearest } from "./nearest";
+import { a, nearest, show } from "./nearest";
 import { COMPONENTS } from "./components";
 import { aliasHint, holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
 
@@ -18,7 +18,7 @@ export interface CheckResult {
   diagnostics: Diagnostic[];
 }
 
-const NODE_KEYS = ["id", "type", "props", "style", "mobile", "hover", "hidden", "children", "variant", "tokens", "theme"];
+const NODE_KEYS = ["id", "type", "field", "props", "style", "mobile", "hover", "hidden", "children", "variant", "tokens", "theme"];
 /** The body text styles a box passes down, each with the role a theme sets it with. */
 const BODY_ROLES = { color: ["color", "colors.foreground"], fontFamily: ["font", "fonts.body"], fontSize: ["size", "fontSizes.body"], lineHeight: ["line height", "lineHeights.body"] } as const;
 type InheritedKey = keyof typeof BODY_ROLES;
@@ -27,6 +27,8 @@ const INHERITED = Object.keys(BODY_ROLES) as InheritedKey[];
 const SCOPES = new Set(["Section", "Row", "Column", "Grid"]);
 /** An id is written into HTML ids and CSS selectors. */
 const ID = /^[A-Za-z][A-Za-z0-9_-]*$/;
+/** A template field's path: a name, then `[index]` into a list or `.name` into an object (`stories[1].image`). */
+export const FIELD_PATH = /^[A-Za-z_][A-Za-z0-9_]*(?:\[(?:0|[1-9][0-9]*)\]|\.[A-Za-z_][A-Za-z0-9_]*)*$/;
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -183,12 +185,12 @@ function conditionHint(definition: ComponentDefinition, key: string): string | u
   const own = CUSTOM_TYPE.test(definition.type);
   const hoverStyles = definition.hover ?? [];
   const toHover = own
-    ? `a template's own component takes only its place in a Row in its style: set hover styles in what it renders`
+    ? `a custom element takes only its place in a Row in its style: set hover styles in what it renders`
     : hoverStyles.length
       ? `hover styles go in its style's hover block, style={{ hover: { … } }} (it takes ${hoverStyles.join(", ")})`
       : `${a(definition.type).replace(/^A/, "a")} takes no hover styles (a Button's and a Link's colors do)`;
   const toPhone = own
-    ? `a template's own component takes only its place in a Row in its style: set phone styles in what it renders`
+    ? `a custom element takes only its place in a Row in its style: set phone styles in what it renders`
     : `phone styles go in its style's mobile block, style={{ mobile: { … } }}`;
   if (name === "hover") return toHover;
   if (name === "mobile" || name === "phone" || name === "phones" || key.trim().startsWith("@media")) return toPhone;
@@ -226,18 +228,18 @@ function unknownProp(definition: ComponentDefinition, key: string, environment?:
 function placementMessage(parent: ComponentDefinition, child: ComponentDefinition): string {
   if (child.categories.includes("section")) return `A ${child.type} goes directly in an Email or Page, not in a ${parent.type}`;
   if (child.categories.includes("root")) return `A ${child.type} is a root: it can't be inside a ${parent.type}`;
-  const takes = [...(parent.children.text ? ["text"] : []), ...(parent.children.categories ?? []).map((c) => `${c} components`), ...(parent.children.types ?? [])];
+  const takes = [...(parent.children.text ? ["text"] : []), ...(parent.children.categories ?? []).map((c) => `${c} elements`), ...(parent.children.types ?? [])];
   return takes.length ? seeing(`A ${parent.type} takes ${takes.join(", ")}; a ${child.type} can't go in it`, parent.type) : `A ${parent.type} has no children`;
 }
 
 function readNode(input: unknown, path: string, parent: ComponentDefinition | null, context: Context): Node | null {
   const { d } = context;
   if (!isObject(input)) {
-    d.error("node/invalid", `Expected a component ({ "type": … }), not ${JSON.stringify(input) ?? String(input)}`, path);
+    d.error("node/invalid", `Expected an element ({ "type": … }), not ${JSON.stringify(input) ?? String(input)}`, path);
     return null;
   }
   if (typeof input.type !== "string") {
-    d.error("node/type", 'A component has a "type" ("Row", "Heading", …)', `${path}.type`);
+    d.error("node/type", 'An element has a "type" ("Row", "Heading", …)', `${path}.type`);
     return null;
   }
   const definition = context.registry.get(input.type);
@@ -245,7 +247,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     const custom = CUSTOM_TYPE.test(input.type);
     d.error(
       "node/unknown-type",
-      custom ? `"${input.type}" is a custom component this document wasn't given: pass it in the components option` : `"${input.type}" isn't a component Elements knows`,
+      custom ? `"${input.type}" is a custom element this document wasn't given: pass it in the components option` : `"${input.type}" isn't an element Elements knows`,
       `${path}.type`
     );
     return null;
@@ -261,7 +263,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   const root = context.root;
   if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
     const { code, message } = definition.notAllowed ?? {
-      code: "component/not-supported",
+      code: "element/not-supported",
       message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
     };
     d.error(code, message(root.type), path);
@@ -274,10 +276,10 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (typeof input.id !== "string" || !ID.test(input.id)) {
       d.error("id/invalid", `An id starts with a letter and holds letters, digits, "_" and "-", not ${JSON.stringify(input.id)}`, `${path}.id`);
     } else if (context.idPrefix === null) {
-      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a custom component, ids are kept only when the component is given one (a block used many times can't own an id)`, `${path}.id`);
+      d.add("id/dropped", "info", `The id "${input.id}" is left out: inside a custom element, ids are kept only when the element is given one (a block used many times can't own an id)`, `${path}.id`);
     } else {
       const full = context.idPrefix ? `${context.idPrefix}-${input.id}` : input.id;
-      if (context.used.has(full)) d.error("id/duplicate", `The id "${full}" is already used by another component`, `${path}.id`);
+      if (context.used.has(full)) d.error("id/duplicate", `The id "${full}" is already used by another element`, `${path}.id`);
       else {
         id = full;
         context.used.add(full);
@@ -286,11 +288,28 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
   }
 
   for (const key of Object.keys(input)) {
-    if (!NODE_KEYS.includes(key)) d.error("node/unknown-key", `"${key}" isn't part of a component (${NODE_KEYS.join(", ")})`, `${path}.${key}`, id);
+    if (!NODE_KEYS.includes(key)) d.error("node/unknown-key", `"${key}" isn't part of an element (${NODE_KEYS.join(", ")})`, `${path}.${key}`, id);
   }
 
   const node: Node = id === undefined ? { type: definition.type } : { id, type: definition.type };
   const custom = CUSTOM_TYPE.test(definition.type);
+
+  // The template field it shows: a built-in's, in the template's own render. What a custom component renders is the
+  // component's, not the template's, so a binding there isn't read.
+  if (input.field !== undefined) {
+    if (typeof input.field !== "string" || !FIELD_PATH.test(input.field)) {
+      d.error("template/field-path", `A field is a template field's path (headline, features[1], stories[1].image), not ${show(input.field)}`, `${path}.field`, id);
+    } else if (context.idPrefix !== undefined) {
+      d.add("field/dropped", "info", `The field "${input.field}" is left out: a binding is read only on a built-in in the template's own render, not in what a custom element renders`, `${path}.field`, id);
+    } else node.field = input.field;
+  }
+
+  // fit with sizes sets the font size: one written beside it says another. Only as authored: once a theme is merged,
+  // the node's style holds the size the theme gives its element, which fit's sizes replace.
+  const fitGiven = isObject(input.props) ? (input.props as Record<string, unknown>).fit : undefined;
+  if (context.mode === "authored" && isObject(fitGiven) && fitGiven.sizes !== undefined && isObject(input.style) && (input.style as Record<string, unknown>).fontSize !== undefined) {
+    d.error("style/fit", "fit sets its font size from its sizes: leave fontSize out (fit with only maxLines checks the size it has)", `${path}.style.fontSize`, id);
+  }
   const isRoot = definition.categories.includes("root");
   const saved = { environment: context.environment, inherited: context.inherited };
 
@@ -360,7 +379,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     origins = themed.origins;
     from = themed.from;
   } else if (custom && isObject(input.style) && "apply" in input.style) {
-    d.error("style/apply-place", `A template's own component takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
+    d.error("style/apply-place", `A custom element takes no named styles: apply them in what it renders, or give it a prop for them`, `${path}.style.apply`, id);
     const { apply: _, ...rest } = input.style;
     themedInput = rest;
   }
@@ -468,7 +487,7 @@ function readProps(input: unknown, definition: ComponentDefinition, path: string
       d.error("prop/not-supported", `${a(definition.type)}'s "${key}" is for ${rootList(spec.roots!)}, not ${a(root!.type).replace(/^A/, "a")}`, `${path}.${key}`, id);
       continue;
     }
-    // A token in a template's prop (a template's own component's color): its value where the node is.
+    // A token in a template's prop (a custom element's color): its value where the node is.
     let given: unknown = value;
     if (context?.mode === "authored" && holdsToken(value)) {
       const problems: Problem[] = [];
@@ -495,7 +514,7 @@ const UNSUPPORTED_CSS: Record<string, string> = {
   marginBottom: "use the parent's gap, or padding",
   marginLeft: "use padding",
   marginRight: "use padding",
-  display: "the component sets it",
+  display: "the element sets it",
   position: "use a Layer for content placed over other content",
   backgroundImage: "put a Layer around it, its first child an Image (the Layer's height crops it to cover), the rest over it",
   background: "backgroundColor for a color; for an image, a Layer: its first child an Image, the rest over it",
@@ -586,7 +605,7 @@ function readChildren(input: unknown, definition: ComponentDefinition, path: str
   const { d } = context;
   if (input === undefined) return [];
   if (!Array.isArray(input)) {
-    d.error("children/invalid", "children is an array of components and text", path, id);
+    d.error("children/invalid", "children is an array of elements and text", path, id);
     return [];
   }
   const out: Child[] = [];

@@ -25,6 +25,10 @@ export interface TemplateContext {
   emailClients?: EmailClientsModule;
   /** inspect()'s result, which the child reads the root from. */
   inspection: { root: string | null; valid: boolean; diagnostics: Diagnostic[] };
+  /** A template's design (a values file, a template module): drawn strict (Decision 19). */
+  strict?: boolean;
+  /** A template format's scale, where `--scale` gives none. */
+  scale?: number;
 }
 
 export type CommandResult = Pick<ResultMessage, "status" | "diagnostics" | "outputs" | "binary" | "error" | "previews" | "inspection" | "usage">;

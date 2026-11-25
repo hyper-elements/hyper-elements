@@ -1,0 +1,28 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`slots > allow: "all" > resolves, for each root, to describeElements({ root })'s built-ins less the roots and Html 1`] = `
+[
+  "Button",
+  "Column",
+  "Divider",
+  "Grid",
+  "Heading",
+  "Image",
+  "Layer",
+  "LineBreak",
+  "Link",
+  "List",
+  "ListItem",
+  "Menu",
+  "MergeTag",
+  "Row",
+  "Section",
+  "Social",
+  "Span",
+  "Table",
+  "TableCell",
+  "TableRow",
+  "Text",
+  "Video",
+]
+`;

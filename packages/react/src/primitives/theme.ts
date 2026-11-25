@@ -47,15 +47,23 @@ export type TokenPath = RegisteredTheme extends undefined ? string : TokenPaths<
 /** A named style's name: the registered theme's, else any string. */
 export type StyleName = RegisteredTheme extends undefined ? string : RegisteredTheme extends { styles: infer S } ? keyof S & string : never;
 
-/** A variant's name for a component: the registered theme's, else any string. */
+/** The variants' names a theme's type gives an element under one key (`elements`, or `components`, its name before). */
+type VariantsUnder<T, K extends string, C extends string> = T extends { [G in K]: infer Defaults }
+  ? C extends keyof Defaults
+    ? Defaults[C] extends { variants: infer V }
+      ? keyof V & string
+      : never
+    : never
+  : never;
+
+/**
+ * A variant's name for an element: the registered theme's, else any string. Its variants under either key, as the
+ * theme merges them; for each element named (`VariantName<"Button" | "Heading">` is either's).
+ */
 export type VariantName<C extends string> = RegisteredTheme extends undefined
   ? string
-  : RegisteredTheme extends { components: infer Cs }
-    ? C extends keyof Cs
-      ? Cs[C] extends { variants: infer V }
-        ? keyof V & string
-        : never
-      : never
+  : C extends string
+    ? VariantsUnder<RegisteredTheme, "elements", C> | VariantsUnder<RegisteredTheme, "components", C>
     : never;
 
 /** A component's `variant` prop: a name, or a list merged in order. */
@@ -72,11 +80,13 @@ type TokenTree = { [name: string]: string | number | readonly (string | number)[
 /** A style in a theme: styles (a value, or an alias anywhere in it), `apply`, and phone and hover blocks. */
 export type ThemeStyle = { apply?: readonly string[]; mobile?: { [style: string]: unknown }; hover?: { [style: string]: unknown }; [style: string]: unknown };
 
-/** A component's defaults in a theme: its style, by one prop's value (`by`), and its variants. */
-export type ComponentTheme = ThemeStyle & {
+/** An element's defaults in a theme: its style, by one prop's value (`by`), and its variants. */
+export type ElementTheme = ThemeStyle & {
   by?: { [prop: string]: { [value: string]: ThemeStyle } };
   variants?: { [name: string]: ThemeStyle };
 };
+/** @deprecated Renamed `ElementTheme`. */
+export type ComponentTheme = ElementTheme;
 
 /** What `defineTheme()` takes. */
 export interface ThemeInput {
@@ -86,7 +96,10 @@ export interface ThemeInput {
   lineHeights?: TokenTree;
   fonts?: TokenTree;
   radii?: TokenTree;
-  components?: { [type: string]: ComponentTheme };
+  /** Each built-in element's defaults: its style, by one prop's value (`by`), and its variants. */
+  elements?: { [type: string]: ElementTheme };
+  /** @deprecated Renamed `elements`. Still read; given with it, an element in `elements` wins. */
+  components?: { [type: string]: ElementTheme };
   styles?: { [name: string]: ThemeStyle };
   formats?: { email?: Omit<ThemeInput, "formats">; page?: Omit<ThemeInput, "formats">; document?: Omit<ThemeInput, "formats">; canvas?: Omit<ThemeInput, "formats"> };
 }
@@ -141,7 +154,7 @@ function refs(theme: Record<string, unknown>): Record<string, unknown> {
 }
 
 /**
- * A theme: tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`), each component's defaults (`components`, with
+ * A theme: tokens (`colors`, `spacing`, `fontSizes`, `lineHeights`, `fonts`, `radii`), each element's defaults (`elements`, with
  * `by` one prop's value and `variants`), named styles (`styles`), and overrides for one kind of root (`formats`).
  * Inside a theme, a token refers to another as `"{colors.primary}"`. Data, frozen; a root takes it with `theme`.
  */
@@ -156,6 +169,8 @@ export function defineTheme<const T extends ThemeInput>(theme: T): Theme<T> {
  * anything else (a list) replaced. An override can't remove a key.
  */
 export function extendTheme<const B extends ThemeInput, const O extends ThemeInput>(base: B, overrides: O): Theme<Merged<B, O>> {
+  // Each name is merged with its own (`elements` with `elements`, `components` with `components`), as its type says: an
+  // element given under both is put under one where the theme is read.
   return defineTheme(mergeTheme(clone(base) as Json, clone(overrides) as Json) as ThemeInput) as unknown as Theme<Merged<B, O>>;
 }
 

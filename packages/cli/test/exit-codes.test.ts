@@ -29,7 +29,7 @@ describe("exit 0", () => {
     const ran = await cli(dir, ["check", "emails/a.tsx", "emails/value.ts", "--json"]);
     expect(ran.code).toBe(0);
     expect(lines(ran).map((l) => l.status ?? l.exitCode)).toEqual(["ok", "skipped", 0]);
-    expect(ran.stderr).not.toContain("no templates");
+    expect(ran.stderr).not.toContain("no designs");
   });
 
   it("for --help or -h after a command, wherever among its options: the help, on stdout", async () => {
@@ -111,11 +111,11 @@ describe("exit 2", () => {
       expect.objectContaining({ file: "emails/named.tsx", status: "skipped", diagnostics: [expect.objectContaining({ code: "cli/not-a-template" })] }),
       expect.objectContaining({ summary: expect.objectContaining({ templates: 1, skipped: 1 }), exitCode: 2 }),
     ]);
-    expect(one.stderr).toContain("hyper-elements: no templates");
+    expect(one.stderr).toContain("hyper-elements: no designs");
     const folder = await cli(dir, ["render", "emails"]);
     expect(folder.code).toBe(2);
     for (const name of ["named.tsx", "element.tsx", "value.ts"]) expect(folder.stdout).toContain(`- emails/${name} skipped`);
-    expect(folder.stdout).toContain("3 templates: 0 errors, 0 warnings, 3 skipped");
+    expect(folder.stdout).toContain("3 designs: 0 errors, 0 warnings, 3 skipped");
     expect(folder.stderr).toContain("none of the 3 inputs is one");
     expect(exists(join(dir, "out"))).toBe(false);
   });
@@ -137,7 +137,7 @@ describe("exit 2", () => {
     expect(ran.code).toBe(2);
     expect(lines(ran)[0].diagnostics[0]).toMatchObject({ code: "cli/elements-version" });
     expect(lines(ran)[0].diagnostics[0].message).toContain("0.3.1");
-    expect(lines(ran)[0].diagnostics[0].message).toContain(">=0.4.0 <0.5.0");
+    expect(lines(ran)[0].diagnostics[0].message).toContain(">=0.4.0 <0.6.0");
   });
 
   it("for outputs that collide", async () => {

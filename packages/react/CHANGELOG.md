@@ -4,6 +4,95 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A block map for every root
+
+`render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),
+as it did for an Email: each block's place in the design and the UTF-8 byte offset in `html` just after its outermost
+element's tag name, with the HTML the same bytes as without the option. A Document's `PageHeader` and `PageFooter`,
+written on every page, have an entry on each page, with the same `path`; a `Document.Page`'s entry is its page's box. A `PageNumber`, like a `LineBreak` and a
+`MergeTag`, has none. The format is the same, so `BLOCK_MAP_VERSION` stays 2. Before, `blocks` was undefined for a root
+other than an Email.
+
+`@hyper-elements/email-clients` 0.5.3 and earlier read a missing map as "not an Email": with this core, they'd preview a
+Page, a Document or a Canvas instead of refusing it. Update it with this release, whose `renderInEmailClients()` reads
+the root from the map's first entry.
+
+### Templates: a tagged link's host is checked, and images can be held to the brand's hosts
+
+- `links.domains` checks a link with a sending service's tag (`{{…}}`) too, wherever its host is written out:
+  `https://evil.example/landing?id={{contact.id}}` is `template/link-domain`, where it was only a note for review.
+  Only a host that is itself a tag (`{{unsubscribe_url}}`, `https://{{host}}/`) can't be checked: it stays a note
+  (`template/link-tag`), or is refused with `tags: "deny"`. What's written of the rest is checked the same way: a
+  relative `/path/{{id}}` is `template/link-relative`, and `tel:{{phone}}` is `template/link-scheme` unless
+  `links.schemes` lists it.
+- `rules.images.domains` is a new rule: every image a design loads (an Image, a Video's thumbnail, a Social's icons, in
+  fixed parts, slots and blocks) comes from one of the hosts listed, or it's `template/image-domain`. So is an image
+  whose host is a tag, an inline `data:` image and a relative one. It's off unless given, so templates without it
+  check as before. `describe()` lists it in `rules.images`.
+
+### GUIDE.md: where an image comes from, and an id to compare
+
+- The guide says an image's `src` is a public URL the reader's email client can fetch, never a made-up one
+  (`example.com`, a guessed path, a local file), and where there's no image yet, to use a placeholder that loads at
+  the image's size and say which images to replace.
+- Its first lines carry `hyper-elements guide <id>`, an id made from the guide's text. The `hyper-elements` agent skill
+  carries the same id, so an agent compares the two to know whether the skill it has is the guide for the version
+  installed, and reads `GUIDE.md` where they differ. The skill also has the agent install `@hyper-elements/react`
+  where the project doesn't have it.
+
+### Elements, not components
+
+What a design is made of is called an element now, as the library's name says: the built-in ones (`Button`,
+`Text`, `Row`…) and custom ones. The names before keep working, deprecated, so nothing has to change:
+
+| Now | Before (deprecated) |
+|-----|---------------------|
+| `defineElement()` | `component()` |
+| `CustomElement`, `ElementSpec`, `ElementTheme` | `CustomComponent`, `ComponentSpec`, `ComponentTheme` |
+| `defineTheme({ elements: { Button: … } })` | `defineTheme({ components: { Button: … } })` |
+| `describeElements()`, `describeElement()` (`/inspect`) | `describeComponents()`, `describeComponent()` |
+| `ElementDescription`, `ElementsDescription` | `ComponentDescription`, `ComponentsDescription` |
+| `describeElements({ elements: [Card] })` | `describeComponents({ components: [Card] })` |
+
+- `describeElements()` gives its list as `elements`. `describeComponents()` gives the same list as `components`, as
+  before.
+- A theme may give an element's defaults under either key, or both: an element given under both is merged key by key,
+  `elements` winning. A theme's `formats` and `extendTheme()` merge across the two names key by key too, so a shared
+  theme written with `components` can be extended with `elements` (`extendTheme()` keeps each name as it's written).
+  A problem in a theme is said at the key it's written under (`root.theme.components.Button`), and for an element
+  given under both, under `elements`.
+- `VariantName` reads an element's variants under either key.
+- `inspect()`'s theme lists each element's variants as `elements`, and as `components` too, the same list.
+- Messages say "element". One diagnostic code changes with them: `component/not-supported` is now
+  `element/not-supported`. Code that matches on the old code needs the new one. The other codes are unchanged.
+
+### A Table is the builder's table
+
+`toDesign()` writes a `Table` as the Unlayer builder's table instead of an HTML block. The table's header and footer
+rows, each cell's words and each column's share go in, with what its rows share (text styles, background, padding) as
+the table's fields and each cell's own styles. A table with an image in a cell, or a row, a cell or words in a cell
+hidden on phones or desktops, is still an HTML block.
+
+- In a `Document`, the builder's document mode keeps an HTML block but doesn't draw or export it, so a Document's
+  tables were missing from the builder's page and its PDF. A Document's `Table` is the builder's table all the same,
+  and `report` says what it draws otherwise: the builder draws one border around every cell, so a line between rows
+  is drawn above the first row and below the last too, a cell spanning columns is a cell for each column, a header
+  row below the table's first rows is a row in bold, and other borders are left out.
+- In an `Email` or a `Page`, an HTML block draws a table exactly, so a `Table` is the builder's table only where the
+  builder draws it as it is. One it would draw otherwise (a line between rows only, a cell spanning columns, a border
+  around the table, a width, a column of a fixed width, phone values, a half-transparent background) stays an HTML
+  block, as before, and `report` says why.
+
+`fromDesign()` reads the builder's table back as a `Table`, one made in the builder too, where it was left out before;
+a cell's paragraphs are its lines.
+
+### An HTML block shows what's behind it
+
+An HTML block `toDesign()` writes for what no tool shows (a `Layer`, a `Table` the builder doesn't draw as it is, your
+own `defineElement()`…) no longer paints the root's background in an `Email`. The builder draws the email's color,
+and a `Section`'s own, behind the block, so a block in a white `Section` of a grey email was a grey band there. Its
+markup is otherwise the same.
+
 ### What a PDF or an image looks for
 
 `@hyper-elements/react/pdf` and `@hyper-elements/react/image` export `templateAssets(element)`: the fonts and images

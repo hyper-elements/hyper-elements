@@ -4,7 +4,7 @@
  * canvases and shapes follow in their own steps.
  */
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
-import { attributes, asset, boolean, breakpoints, enumOf, insets, length, line, link, number, text, video } from "./kinds";
+import { attributes, asset, boolean, breakpoints, enumOf, fit, insets, length, line, link, number, text, video } from "./kinds";
 import type { Json } from "./model";
 import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
@@ -16,9 +16,25 @@ import { Canvas, SHAPES, Svg } from "./canvas";
 /** A prop each output writes as given. */
 const WRITTEN: SupportByTarget = { email: { level: "full", source: "writer" }, web: { level: "full", source: "writer" } };
 
+/**
+ * Text fitted in a Canvas: the image entry draws the largest of `sizes` at which it fits its lines and its box (Decision
+ * 10). The HTML preview draws the largest size; only @hyper-elements/react/image measures it.
+ */
+const FIT = {
+  fit: prop(fit(), {
+    roots: ["Canvas"],
+    support: {
+      email: { level: "none", shows: "nothing: fit is a Canvas's", source: "writer" },
+      web: { level: "partial", shows: "its largest size: only @hyper-elements/react/image measures it", source: "writer" },
+    },
+    label: "Fit",
+    description: "In a Canvas: sizes it may be drawn at (a list of px, or { min, max, step }), largest first, and the lines it may take (maxLines). The image draws the largest size that fits.",
+  }),
+};
+
 /** A block of text's own direction, beside its neighbours' (an Arabic paragraph in an English email). */
 const TEXT_DIR = {
-  dir: prop(enumOf(["ltr", "rtl", "auto"]), { support: WRITTEN, label: "Text direction", description: "Its text's direction, where it differs from the template's; it starts on that side unless aligned otherwise." }),
+  dir: prop(enumOf(["ltr", "rtl", "auto"]), { support: WRITTEN, label: "Text direction", description: "Its text's direction, where it differs from the design's; it starts on that side unless aligned otherwise." }),
 };
 
 const SPACING_EDITOR = { title: "Spacing", paths: ["style.padding"] };
@@ -186,7 +202,7 @@ export const Text = defineComponent({
   label: "Text",
   description: "A paragraph of text.",
   categories: ["block"],
-  props: TEXT_DIR,
+  props: { ...TEXT_DIR, ...FIT },
   style: TEXT_BLOCK_STYLE,
   children: { ...TEXT_CHILDREN, types: ["Image"] },
   sizing: "stretch",
@@ -203,6 +219,7 @@ export const Heading = defineComponent({
   props: {
     level: prop(enumOf([1, 2, 3, 4, 5, 6]), { support: WRITTEN, label: "Level", default: 1 }),
     ...TEXT_DIR,
+    ...FIT,
   },
   style: TEXT_BLOCK_STYLE,
   defaultStyle: { fontWeight: 700, lineHeight: 1.25 },
@@ -515,7 +532,7 @@ export const Html = defineComponent({
   type: "Html",
   label: "HTML",
   description:
-    "Markup written as it is, for what no component says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text.",
+    "Markup written as it is, for what no element says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text.",
   categories: ["block"],
   props: {
     html: prop(text(), { support: WRITTEN, label: "HTML", required: true, description: "The markup, written as it is: only markup you trust. Or give it as JSX inside the block, which React writes." }),

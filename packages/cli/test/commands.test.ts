@@ -1,32 +1,54 @@
 /**
- * `describe`, `inspect` and `migrate`: describe's --json is describeComponents()'s (or describeComponent()'s) result as
- * it is, from the project's Elements; inspect's --json holds inspect()'s; migrate runs the project's migrate (else
+ * `describe`, `inspect` and `migrate`: describe's --json is describeElements()'s (or describeElement()'s) result as
+ * it is, from the project's Elements (one from before those names is given in the same shape); inspect's --json holds inspect()'s; migrate runs the project's migrate (else
  * npx's) with the arguments unchanged, and exits with its code.
  */
 import { spawn } from "node:child_process";
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { createElement } from "react";
 import { describe, expect, it } from "vitest";
-import { describeComponent, describeComponents, inspect } from "../../react/src/inspect/index";
-import { alive, BIN, cli, cliEnv, email, lines, project, RUNTIME, until, WINDOWS } from "./helpers";
+import { describeElement, describeElements, inspect } from "../../react/src/inspect/index";
+import { alive, BIN, cli, cliEnv, email, lines, project, REPO, RUNTIME, until, WINDOWS } from "./helpers";
 
 describe("describe", () => {
-  it("--json is describeComponents()'s result as it is, with its own version, and no summary", async () => {
+  it("--json is describeElements()'s result as it is, with its own version, and no summary", async () => {
     const dir = project({});
     const ran = await cli(dir, ["describe", "--json"]);
     expect(ran.code, ran.stderr).toBe(0);
-    expect(lines(ran)).toEqual([JSON.parse(JSON.stringify(describeComponents()))]);
+    expect(lines(ran)).toEqual([JSON.parse(JSON.stringify(describeElements()))]);
     expect(lines(ran)[0].version).toBe(2);
   });
 
-  it("--root narrows it, and a component is describeComponent()'s", async () => {
+  it("gives an Elements from before describeElements() in the same shape: its list as `elements`", async () => {
+    // Its /inspect has describeComponents() and describeComponent() alone, as 0.4.5's does.
+    const dir = project({}, { modules: ["react", "react-dom"] });
+    const own = join(dir, "node_modules", "@hyper-elements", "react");
+    mkdirSync(own, { recursive: true });
+    const real = join(REPO, "packages", "react");
+    const { version } = JSON.parse(readFileSync(join(real, "package.json"), "utf8")) as { version: string };
+    writeFileSync(join(own, "package.json"), JSON.stringify({ name: "@hyper-elements/react", version, type: "module", exports: { ".": "./index.js", "./inspect": "./inspect.js", "./package.json": "./package.json" } }));
+    writeFileSync(join(own, "index.js"), "export {};\n");
+    const built = pathToFileURL(join(real, "dist", "inspect.js")).href;
+    writeFileSync(join(own, "inspect.js"), `export { describeComponents, describeComponent, inspect } from ${JSON.stringify(built)};\n`);
+    const ran = await cli(dir, ["describe", "--root", "Email", "--json"]);
+    expect(ran.code, ran.stderr).toBe(0);
+    expect(lines(ran)).toEqual([JSON.parse(JSON.stringify(describeElements({ root: "Email" })))]);
+    expect(Object.keys(lines(ran)[0])).toEqual(Object.keys(describeElements({ root: "Email" })));
+    const button = await cli(dir, ["describe", "Button", "--json"]);
+    expect(lines(button)).toEqual([JSON.parse(JSON.stringify(describeElement("Button")))]);
+    const text = await cli(dir, ["describe", "--root", "Email"]);
+    expect(text.stdout).toMatch(/^Roots: Email\n\n(.|\n)*Button \(/);
+  });
+
+  it("--root narrows it, and an element is describeElement()'s", async () => {
     const dir = project({});
     const email = await cli(dir, ["describe", "--root", "Email", "--json"]);
-    expect(lines(email)).toEqual([JSON.parse(JSON.stringify(describeComponents({ root: "Email" })))]);
+    expect(lines(email)).toEqual([JSON.parse(JSON.stringify(describeElements({ root: "Email" })))]);
     const button = await cli(dir, ["describe", "Button", "--root", "Email", "--json"]);
     expect(button.code, button.stderr).toBe(0);
-    expect(lines(button)).toEqual([JSON.parse(JSON.stringify(describeComponent("Button", { root: "Email" })))]);
+    expect(lines(button)).toEqual([JSON.parse(JSON.stringify(describeElement("Button", { root: "Email" })))]);
     const text = await cli(dir, ["describe", "Button"]);
     expect(text.code).toBe(0);
     expect(text.stdout).toMatch(/^Button \(.*Email.*\): /);
@@ -35,12 +57,12 @@ describe("describe", () => {
     expect(all.stdout).toMatch(/^Roots: Email\n/);
   });
 
-  it("exits 2 for a component or a root there isn't, and where no Elements resolves", async () => {
+  it("exits 2 for an element or a root there isn't, and where no Elements resolves", async () => {
     const dir = project({});
     const unknown = await cli(dir, ["describe", "Carousel", "--json"]);
     expect(unknown.code).toBe(2);
     expect(unknown.stdout).toBe("");
-    expect(unknown.stderr).toMatch(/no component "Carousel"/);
+    expect(unknown.stderr).toMatch(/no element "Carousel"/);
     const root = await cli(dir, ["describe", "--root", "Slide"]);
     expect(root.code).toBe(2);
     expect(root.stderr).toMatch(/--root takes Email, Page, Document, Canvas/);
@@ -83,7 +105,7 @@ describe("inspect", () => {
     expect(lines(ran)[0]).toMatchObject({ command: "inspect", status: "error", inspection: null, error: "Cannot find module './missing'" });
   });
 
-  it("text lists each component at its path", async () => {
+  it("text lists each element at its path", async () => {
     const dir = project({ "emails/a.tsx": email("Hello") });
     const ran = await cli(dir, ["inspect", "emails/a.tsx"]);
     expect(ran.code, ran.stderr).toBe(0);

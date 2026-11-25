@@ -4,8 +4,8 @@
     "jsx": "react-jsx",
     "lib": ["ES2020", "ES2022.Object", "DOM"],
     "types": ["react", "react-dom", "vitest/globals", "node"],
-    "paths": { "@hyper-elements/react": ["./src/primitives/index.ts"] },
+    "paths": { "@hyper-elements/react": ["./src/primitives/index.ts"], "@hyper-elements/react/inspect": ["./src/inspect/index.ts"], "@hyper-elements/lint": ["../lint/src/index.ts"] },
     "noEmit": true
   },
-  "include": ["src/primitives/types.test-d.tsx", "src/primitives/template.test.tsx", "src/primitives/custom.test.tsx", "src/pdf/**/*", "src/image/**/*", "test/**/*"]
+  "include": ["src/primitives/types.test-d.tsx", "src/primitives/template.test.tsx", "src/primitives/custom.test.tsx", "src/pdf/**/*", "src/image/**/*", "src/template/**/*", "test/**/*", "../lint/src/globals.d.ts"]
 }

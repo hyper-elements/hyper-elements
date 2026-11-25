@@ -1,9 +1,9 @@
 ---
 title: "Sending email"
-description: "Render a template once on your server, then hand its HTML and plain text to Resend, AWS SES, Postmark, SendGrid or Nodemailer."
+description: "Render a design once on your server, then hand its HTML and plain text to Resend, AWS SES, Postmark, SendGrid or Nodemailer."
 ---
 
-Hyper Elements renders. Your email provider delivers. You render once on your server, get two strings, and pass them to any provider's SDK. The provider never sees React, and you never write a second plain-text template by hand.
+Hyper Elements renders. Your email provider delivers. You render once on your server, get two strings, and pass them to any provider's SDK. The provider never sees React, and you never write a second plain-text version by hand.
 
 ## Render once
 
@@ -29,7 +29,7 @@ const { html, text, diagnostics } = await render(<Welcome plan="Pro" />);
 
 - `html` is the complete document, from its doctype to `</html>`, with the email shell and its head styles. Send that string as the HTML body. Keep the head styles.
 - `text` is the plain-text alternative. Send it as the text body.
-- `diagnostics` holds warnings. A template with errors rejects with an `ElementsError` that lists them, so a broken template never reaches a send call.
+- `diagnostics` holds warnings. A design with errors rejects with an `ElementsError` that lists them, so a broken design never reaches a send call.
 
 `render()` is async, so everything that calls it awaits it. The `Email`'s `title` prop sets the HTML `<title>`. That's separate from the subject line, which you give the provider.
 
@@ -227,7 +227,7 @@ const { html, text } = await render(<Welcome plan="Pro" />, {
 
 What the function returns goes into the HTML as it is, with the name in it escaped.
 
-A link's target can be a merge tag too. Write it in your provider's syntax: `mergeTag` changes `MergeTag` components, not the `href` strings you write.
+A link's target can be a merge tag too. Write it in your provider's syntax: `mergeTag` changes `MergeTag` elements, not the `href` strings you write.
 
 ```tsx
 <Link href="*|UNSUB|*">Unsubscribe</Link>
@@ -244,4 +244,4 @@ A link's target can be a merge tag too. Write it in your provider's syntax: `mer
 - A provider's "accepted" response is not inbox delivery. Record the message ID and use the provider's delivery and bounce events for the final status.
 - Check the result in the email clients you care about.
 
-> **Note:** Design JSON from `toDesign()` is for the [visual editor](/docs/guides/visual-editor), not an email body. Send `html` and `text`.
+> **Note:** The builder design from `toDesign()` is for the [visual editor](/docs/guides/visual-editor), not an email body. Send `html` and `text`.

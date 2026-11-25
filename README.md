@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Build emails, web pages, PDFs, and images with React.</strong><br />
-  One component system for developers and AI agents.
+  One set of elements for developers and AI agents.
 </p>
 
 <p align="center">
@@ -21,16 +21,16 @@
   <a href="#quick-start">Quick start</a> ·
   <a href="#build-with-ai-agents">AI agents</a> ·
   <a href="#preview-and-test-emails-in-outlook-and-gmail-locally">Test in email clients</a> ·
-  <a href="https://hyperelements.dev/templates">Templates</a> ·
+  <a href="https://hyperelements.dev/templates">Designs</a> ·
   <a href="https://hyperelements.dev/docs">Documentation</a> ·
   <a href="https://hyperelements.dev">Website</a>
 </p>
 
-Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed components. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
+Hyper Elements is an open-source React library for generating content. Write a receipt, invoice, landing page, or social card with typed elements. The engine handles layout and the markup each output needs, including email tables and responsive web HTML.
 
 - **Reuse your work across formats.** Share content, styles, and components between an email, its web version, and a PDF.
-- **Keep every output on brand.** Define colors, fonts, sizes, and component styles once in a theme, and every email, page, PDF, and image that uses it follows.
-- **Give agents useful feedback.** Validate templates, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
+- **Keep every output on brand.** Define colors, fonts, sizes, and element styles once in a theme, and every email, page, PDF, and image that uses it follows.
+- **Give agents useful feedback.** Validate designs, inspect layouts as text, and get diagnostics that explain where a problem is and how to fix it.
 - **Test existing HTML emails locally.** Check and preview Outlook, Gmail and Apple Mail with the companion JavaScript library or CLI. Works with HTML from MJML, React Email or any email builder; no React required, no test sends, no account, nothing uploaded.
 - **Render in your own app.** Generate output on your server, with no browser, hosted service, or API key required.
 
@@ -77,7 +77,7 @@ const { html: pageHtml } = await render(<Page width={960}>{content}</Page>);
 
 ## Choose your output
 
-Use the same layout and content components under the root for your destination:
+Use the same layout and content elements under the root for your destination:
 
 | Build | Root | Render to |
 | --- | --- | --- |
@@ -96,35 +96,39 @@ Give Claude Code, Codex, Cursor, or another coding agent the guide:
 npx skills add hyper-elements/hyper-elements
 ```
 
-It offers two skills: [`hyper-elements`](./skills/hyper-elements/SKILL.md), the guide for writing templates, and
-[`email-testing`](./skills/email-testing/SKILL.md), for previewing and checking any email (a template or HTML from
-anywhere) in Outlook, Gmail and the other clients. `--skill email-testing` installs that one alone.
+It offers three skills: [`hyper-elements`](./skills/hyper-elements/SKILL.md), the guide for writing designs;
+[`email-testing`](./skills/email-testing/SKILL.md), for previewing and checking any email (a design or HTML from
+anywhere) in Outlook, Gmail and the other clients; and [`brand-templates`](./skills/brand-templates/SKILL.md), for
+designs made from your team's templates, within their guardrails, and for writing templates. `--skill email-testing`
+installs that one alone.
 
 In Claude Code they're plugins too: `/plugin marketplace add hyper-elements/hyper-elements`, then
-`/plugin install email-testing@hyper-elements` or `/plugin install hyper-elements@hyper-elements`.
+`/plugin install email-testing@hyper-elements`, `/plugin install brand-templates@hyper-elements` or
+`/plugin install hyper-elements@hyper-elements`.
 
 Or add this to your project's `AGENTS.md` or agent rules:
 
 ```text
-Before writing a Hyper Elements template, read
+Designs use Hyper Elements (@hyper-elements/react). If it isn't installed, install it
+with react and react-dom. Before writing a design, read
 node_modules/@hyper-elements/react/GUIDE.md.
-Validate the template, fix errors, review warnings, and inspect outline() before rendering.
+Validate the design, fix errors, review warnings, and inspect outline() before rendering.
 ```
 
-The package includes `GUIDE.md` and `REFERENCE.md`, generated from its component definitions so they match the version you installed. Web-based agents can use [llms.txt](https://hyperelements.dev/llms.txt) or [llms-full.txt](https://hyperelements.dev/llms-full.txt).
+The package includes `GUIDE.md` and `REFERENCE.md`, generated from its element definitions so they match the version you installed. Web-based agents can use [llms.txt](https://hyperelements.dev/llms.txt) or [llms-full.txt](https://hyperelements.dev/llms-full.txt).
 
 ### A feedback loop the agent can read
 
-`validate()` returns diagnostics with a code, severity, template path, and an actionable message. `outline()` shows the layout without making the agent read generated HTML. Try both on the quick-start component:
+`validate()` returns diagnostics with a code, severity, path in the design, and an actionable message. `outline()` shows the layout without making the agent read generated HTML. Try both on the quick-start component:
 
 ```tsx
 import { outline, validate } from "@hyper-elements/react";
 
-const template = <Email width={600}><OrderUpdate name="Ada" /></Email>;
-const report = validate(template);
+const design = <Email width={600}><OrderUpdate name="Ada" /></Email>;
+const report = validate(design);
 
 console.log(report.diagnostics);
-if (report.valid) console.log(outline(template));
+if (report.valid) console.log(outline(design));
 ```
 
 ```text
@@ -137,7 +141,7 @@ Email 600px
 
 An agent can spot missing content, incorrect widths, and layout mistakes before rendering, then see the email in each email client with the emulator below.
 
-The same loop runs from the shell, with no script, using [`@hyper-elements/cli`](./packages/cli) (`npm install -D @hyper-elements/cli`): `npx hyper-elements check emails/ --json` validates each template, `outline` prints its layout, `render` writes its HTML and plain text, and `preview` writes each email client's preview. Add `--findings` with the [browser setup below](#preview-and-test-emails-in-outlook-and-gmail-locally) to draw the previews and collect findings. Exit codes are stable (`1` when a template has errors) for agents and CI.
+The same loop runs from the shell, with no script, using [`@hyper-elements/cli`](./packages/cli) (`npm install -D @hyper-elements/cli`): `npx hyper-elements check emails/ --json` validates each design, `outline` prints its layout, `render` writes its HTML and plain text, and `preview` writes each email client's preview. Add `--findings` with the [browser setup below](#preview-and-test-emails-in-outlook-and-gmail-locally) to draw the previews and collect findings. Exit codes are stable (`1` when a design has errors) for agents and CI.
 
 [Agent setup and examples →](https://hyperelements.dev/docs/guides/ai-agents)
 
@@ -169,7 +173,7 @@ for (const preview of previews) await writeFile(`out/${preview.filename}`, previ
 console.log(diagnostics);
 ```
 
-Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. Each preview lists what the client changed. The same API takes a Hyper Elements template: `await renderInEmailClients(<Email><OrderUpdate name="Ada" /></Email>)`.
+Run `node preview-email.mjs`, then open `out/outlook.html` in Chromium or Chrome. Each preview lists what the client changed. The same API takes a Hyper Elements design: `await renderInEmailClients(<Email><OrderUpdate name="Ada" /></Email>)`.
 
 You can also check and preview an HTML email from the shell, with no script or React installation:
 
@@ -187,7 +191,7 @@ npx hyper-elements preview email.html --findings
 
 If you need Chromium, download it once with `npx hyper-elements preview --install-browser`. See [browser setup and findings](https://hyperelements.dev/docs/cli#preview).
 
-For emails built with Hyper Elements, the emulator is 97–99% accurate against the real clients. An email sign-in code, drawn by the emulator in four email clients:
+Tested on Hyper Elements emails and on HTML emails built any other way, the emulator is 98% accurate on average against the real clients. Here's an example email template, a sign-in code, as the emulator draws it in four email clients:
 
 <p align="center">
   <img src="./apps/website/public/generated/email-clients/keel-sign-in-code-outlook.png" alt="A sign-in code email in classic Outlook, drawn by the Hyper Elements email client emulator" width="230" />
@@ -226,7 +230,7 @@ All 60 isolated runs passed the same text, font, image and layout checks: five b
 
 ## Keep building
 
-- **Start from a design:** [Templates](https://hyperelements.dev/templates) · [Component gallery](https://hyperelements.dev/components)
+- **Start from an example:** [Designs](https://hyperelements.dev/templates) · [Element gallery](https://hyperelements.dev/elements)
 - **Learn the API:** [Writing guide](./packages/react/GUIDE.md) · [Full reference](./packages/react/REFERENCE.md)
 - **Stay on brand:** [Themes](https://hyperelements.dev/docs/themes)
 - **Test in email clients:** [Email client emulator](https://hyperelements.dev/docs/email-client-emulator) · [Email client checks](https://hyperelements.dev/docs/diagnostics)

@@ -1,7 +1,7 @@
 /**
  * The docs an author or an agent reads first: GUIDE.md (the guide), REFERENCE.md and the agent skill
  * at the repository's root (skills/hyper-elements/SKILL.md, the guide) are what the definitions write
- * (UPDATE_REFERENCE=1 rewrites them), each has every component the entry exports, and the README's template, which
+ * (UPDATE_REFERENCE=1 rewrites them), each has every component the entry exports, and the README's design, which
  * the guide shows too, is readme-example.tsx, which renders with no errors or warnings.
  */
 import { readFileSync, writeFileSync } from "node:fs";
@@ -50,23 +50,44 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
     expect(frontmatter![1]).not.toMatch(/: | #/);
     expect(frontmatter![1]).toMatch(/emails.*pages.*documents.*PDFs.*images/);
     const guide = read("GUIDE.md");
-    expect(skill.endsWith(guide.slice(guide.indexOf("## How a template is written")))).toBe(true);
+    expect(skill.endsWith(guide.slice(guide.indexOf("## How a design is written")))).toBe(true);
     expect(skill).toContain("## Templates from Unlayer Elements");
     expect(skill).toContain("npx @hyper-elements/migrate src/emails --from unlayer-elements");
+    expect(skill).toContain("npm install @hyper-elements/react react react-dom");
+  });
+
+  it("the skill and GUIDE.md name the same guide id, which an agent compares to know the skill is the installed guide", () => {
+    const id = /hyper-elements guide ([0-9a-f]{8})/;
+    const inGuide = id.exec(read("GUIDE.md").split("\n").slice(0, 5).join("\n"));
+    const inSkill = id.exec(read(SKILL));
+    expect(inGuide).not.toBeNull();
+    expect(inSkill?.[1]).toBe(inGuide![1]);
+    // A different guide gives a different id.
+    expect(primitivesGuide(example().replace("ships tomorrow", "ships today"))).not.toContain(inGuide![0]);
+  });
+
+  it("says where an image's src comes from: a real URL or a placeholder that loads, never a made-up one", () => {
+    const guide = read("GUIDE.md");
+    expect(guide).toMatch(/Never make one up: `example\.com`/);
+    expect(guide).toContain("https://placehold.co/");
+    expect(read(SKILL)).toContain("https://placehold.co/");
   });
 
   it("says what a list prop's items are, and the mistakes agents made on their first try", () => {
     const guide = read("GUIDE.md");
     expect(guide).toContain("items* (a list of items, each { text, href })");
     expect(guide).toContain("icons* (a list of icons, each { name, href })");
-    expect(guide).toMatch(/## Common mistakes\n[\s\S]*A `Menu`'s items are `\{ text, href \}`[\s\S]*## A whole template/);
+    expect(guide).toMatch(/## Common mistakes\n[\s\S]*A `Menu`'s items are `\{ text, href \}`[\s\S]*## A whole design/);
   });
 
-  it("keeps the guide short enough to read whole before writing a template", () => {
-    // Raised by what themes took (their section, and the template's theme): 20,000 and 22,000 before. Then by the
-    // command line's line beside the render example: 22,500 and 24,500 before.
-    expect(read("GUIDE.md").length).toBeLessThan(22_750);
-    expect(read(SKILL).length).toBeLessThan(24_750);
+  it("keeps the guide short enough to read whole before writing a design", () => {
+    // Raised by what themes took (their section, and the design's theme): 20,000 and 22,000 before. Then by the
+    // command line's line beside the render example: 22,500 and 24,500 before. The skill's by what an agent does
+    // before writing (install the package, compare the guide's id): 24,750 before. Both by where an image's src comes
+    // from (agents made one up, and the email showed broken images): 22,800 and 25,500 before. Then by the line
+    // pointing to templates: 23,400 and 26,100 before.
+    expect(read("GUIDE.md").length).toBeLessThan(23_520);
+    expect(read(SKILL).length).toBeLessThan(26_220);
   });
 });
 
@@ -102,7 +123,7 @@ describe("roots", () => {
   });
 });
 
-describe("the README's template", () => {
+describe("the README's design", () => {
   it("is readme-example.tsx, as an author imports it", () => {
     expect(read("README.md")).toContain(example().trim());
     expect(read("GUIDE.md")).toContain(example().trim());

@@ -175,16 +175,110 @@ describe("to the builder and back", () => {
 
   it("fills its place with a block locked as markup in a Page, where a page's own margins would shrink it in a flex box", () => {
     const locked = (element: React.ReactElement) => JSON.stringify(toDesign(element).design).match(/\\"[^"]*max-width:600px[^"]*\\"/)?.[0];
+    // A table with an image in a cell is an HTML block of its markup in the builder.
     const table = (
       <primitives.Table>
         <primitives.TableRow>
-          <primitives.TableCell>Locked</primitives.TableCell>
+          <primitives.TableCell>
+            <primitives.Image src={{ src: "https://example.com/icon.png", width: 20, height: 20 }} alt="" />
+          </primitives.TableCell>
         </primitives.TableRow>
       </primitives.Table>
     );
     expect(locked(<primitives.Page width={600}>{table}</primitives.Page>)).toContain("width:100%;max-width:600px;margin:0 auto;");
     // Only there: an email's markup fills its place already, and a page written on its own keeps its markup.
     expect(locked(<primitives.Email width={600}>{table}</primitives.Email>)).not.toContain("width:100%;max-width:600px;margin:0 auto;");
+  });
+
+  for (const Root of [primitives.Email, primitives.Page, primitives.Document]) {
+    it(`draws a table cell holding a line break alone, in a ${Root === primitives.Email ? "Email" : Root === primitives.Page ? "Page" : "Document"}, as the line it is`, () => {
+      expectRoundTrip(
+        <Root>
+          <primitives.Table>
+            <primitives.TableRow>
+              <primitives.TableCell>
+                <primitives.LineBreak />
+              </primitives.TableCell>
+            </primitives.TableRow>
+          </primitives.Table>
+        </Root>
+      );
+    });
+  }
+
+  it("keeps a Document's table row height of its own, and none toDesign() made up, beside empty cells", () => {
+    const { Document, Span, Table, TableCell, TableRow, Text } = primitives;
+    const cases = [
+      // A made-up height from a line height the builder holds as a whole percentage, a px off.
+      <Table key="rounded" style={{ lineHeight: "19px" }}>
+        <TableRow>
+          <TableCell />
+        </TableRow>
+      </Table>,
+      // A cell whose only words are a space, in a Span of a larger size: it has none, and its made-up height is a line at
+      // the cell's own size.
+      <Table key="large-space">
+        <TableRow>
+          <TableCell>
+            <Span style={{ fontSize: 30 }}> </Span>
+          </TableCell>
+        </TableRow>
+      </Table>,
+      // A row of its own height whose only words are a space, in a Span: it has none.
+      <Table key="space">
+        <TableRow style={{ height: 10 }}>
+          <TableCell>
+            <Span style={{ color: "#ff0000" }}> </Span>
+          </TableCell>
+        </TableRow>
+      </Table>,
+      // Empty rows of a line's height of their own, and a px more: the builder's line, and none made up.
+      <Table key="line">
+        <TableRow style={{ height: 24 }}>
+          <TableCell />
+        </TableRow>
+        <TableRow style={{ height: 25 }}>
+          <TableCell />
+        </TableRow>
+      </Table>,
+      // An empty cell taller than its row's words, with the row's own height and without.
+      <Table key="tall">
+        <TableRow style={{ height: 50 }}>
+          <TableCell style={{ fontSize: 80, padding: 10 }} />
+          <TableCell>A</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell style={{ fontSize: 80, padding: 10 }} />
+          <TableCell>B</TableCell>
+        </TableRow>
+      </Table>,
+    ];
+    for (const table of cases) {
+      expectRoundTrip(
+        <Document>
+          {table}
+          <Text>After</Text>
+        </Document>
+      );
+    }
+  });
+
+  it("reads a table row with no words as tall as its padding, as a browser draws an empty cell", () => {
+    const [table] = seen(
+      <primitives.Document>
+        <primitives.Table style={{ cellPadding: 5 }}>
+          <primitives.TableRow>
+            <primitives.TableCell>Words</primitives.TableCell>
+          </primitives.TableRow>
+          <primitives.TableRow>
+            <primitives.TableCell />
+          </primitives.TableRow>
+        </primitives.Table>
+      </primitives.Document>
+    );
+    const rows = (table.own as { rows: { rows: Array<{ height: number }> } }).rows.rows;
+    expect(rows.map((row) => row.height)).toEqual([rows[0].height, 10]);
+    expect(rows[0].height).toBeGreaterThan(10);
   });
 
   it("writes a page on its own without that width", async () => {
@@ -208,7 +302,8 @@ describe("to the builder and back", () => {
           }
         }
         expect(failed).toEqual([]);
-      });
+        // (A longer run, ROUNDTRIP_SEEDS=1000, takes its time: about 5ms a template.)
+      }, Math.max(5000, SEEDS * 20));
     }
   });
 });

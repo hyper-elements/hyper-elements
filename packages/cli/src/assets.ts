@@ -196,7 +196,7 @@ export async function loadAssets(sources: TemplateAssets, options: AssetOptions)
     if (src.startsWith("/")) {
       if (publicDir === undefined) publicDir = publicFolder(folder) ?? null;
       if (publicDir === null) {
-        return leftOut("a root-relative path is read from the public folder, and there's none: no public/ beside a package.json from the template's folder up to the workspace root", "give the folder with --public <dir>");
+        return leftOut("a root-relative path is read from the public folder, and there's none: no public/ beside a package.json from the design's folder up to the workspace root", "give the folder with --public <dir>");
       }
       path = resolve(publicDir, `.${urlPath(src)}`);
       if (path !== publicDir && !path.startsWith(publicDir.endsWith(sep) ? publicDir : publicDir + sep)) return leftOut(`it leads out of the public folder ${display(options.cwd, publicDir)}`);

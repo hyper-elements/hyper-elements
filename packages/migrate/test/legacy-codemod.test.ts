@@ -14,7 +14,7 @@ import { errors } from "./migrated";
 
 /**
  * The codemod, which every case here also runs a second time on what it wrote: that comes back as it is, whichever
- * version of the package is installed (0.2 still, 0.3.0, or none known), as the module already uses the new components.
+ * version of the package is installed (0.2 still, 0.3.0, or none known), as the module already uses the new elements.
  */
 async function migrateElements(source: string, options: MigrateElementsOptions = {}) {
   const result = await migrateOnce(source, options);
@@ -119,7 +119,7 @@ export const T = ({ rows = [["x"]] }: { rows?: string[][] }) => <Email><Row><Col
     expect(code).not.toMatch(/htmlText|escapeHtml/);
   });
 
-  it("writes a radius as the new components take it, keeps links from code, and a Button's new window", async () => {
+  it("writes a radius as the new elements take it, keeps links from code, and a Button's new window", async () => {
     const { code, report } = await migrateElements(`import { Email, Row, Column, Paragraph, Button } from "@unlayer/react-elements";
 export const T = ({ url }: { url: string }) => (
   <Email><Row><Column borderRadius="8px 8px 0px 0px">
@@ -202,7 +202,7 @@ export const T = ({ items = ["a"] }: { items?: string[] }) => <Email><Row><Colum
     expect(errors(own.code)).toEqual([]);
   });
 
-  it("writes lengths in rem, em and following the window as the px the new components take", async () => {
+  it("writes lengths in rem, em and following the window as the px the new elements take", async () => {
     const { code } = await migrate(`export const T = () => <Email><Row><Column mobile={{ padding: "0px calc(56px - 2.5vw) 32px calc(8px - 3.75vw)" }}>
       <Paragraph fontSize="0.875rem" letterSpacing="-0.05em">A</Paragraph>
       <Paragraph html='<span style="font-size:0.875rem;letter-spacing:-0.05em">B</span> <span style="letter-spacing:0.1em">C</span>' />
@@ -260,7 +260,7 @@ export const T = ({ name }: { name: string }) => <Email><Row><Column>
     expect(errors(code)).toEqual([]);
   });
 
-  it("imports the new components it uses from the package, and keeps today's other exports where they were, for you to replace", async () => {
+  it("imports the new elements it uses from the package, and keeps today's other exports where they were, for you to replace", async () => {
     const { code, report } = await migrateElements(`import { Email, Row, Column, Paragraph, renderToHtml } from "@unlayer/react-elements";
 export const html = () => renderToHtml(<Email><Row><Column><Paragraph>Hi</Paragraph></Column></Row></Email>);`);
     expect(code).toContain('import { Email, Section, Text } from "@hyper-elements/react";');
@@ -494,13 +494,13 @@ export const Other = (Row: () => null) => <Row />;`);
     expect(video.report.join("\n")).toMatch(/isn't YouTube or Vimeo/);
     const line = await migrate(`export const T = () => <Email><Row><Column><Divider borderTopStyle="double" /></Column></Row></Email>;`, "Email, Row, Column, Divider");
     expect(line.code).not.toContain("double");
-    expect(line.report.join("\n")).toMatch(/isn't one the new components draw/);
+    expect(line.report.join("\n")).toMatch(/isn't one the new elements draw/);
     const color = await migrate(`export const T = () => <Email><Row><Column><Heading color="currentColor" text="x" /></Column></Row></Email>;`, "Email, Row, Column, Heading");
     expect(color.code).not.toContain("currentColor");
-    expect(color.report.join("\n")).toMatch(/isn't a color the new components take/);
+    expect(color.report.join("\n")).toMatch(/isn't a color the new elements take/);
   });
 
-  it("leaves a template as it was where its root is chosen at run time, as today's root doesn't draw the new components", async () => {
+  it("leaves a template as it was where its root is chosen at run time, as today's root doesn't draw the new elements", async () => {
     const source = `import { Email, Page, Row, Column } from "@unlayer/react-elements";
 export const T = ({ web }: { web: boolean }) => {
   const Root = web ? Page : Email;
@@ -562,18 +562,18 @@ export const Nav = () => <Link href="/">Home</Link>;`);
     expect(flat).toContain('<Linkhref={{href:"https://example.com/sale",target:"_blank"}}><Imagesrc="https://example.com/a.png"');
     expect(flat).toContain('<Linkhref={{href:"https://example.com/b",target:"_self"}}><Imagesrc="https://example.com/b.png"');
     expect(flat).toContain('<Textdir="ltr"');
-    expect(report).toEqual(["line 5: <Paragraph>'s values isn't migrated: it's left out (the new components have nothing it becomes)"]);
+    expect(report).toEqual(["line 5: <Paragraph>'s values isn't migrated: it's left out (the new elements have nothing it becomes)"]);
   });
 
-  it("reports an Image's or a Button's alignment on phones, which the new components don't have, and writes none", async () => {
+  it("reports an Image's or a Button's alignment on phones, which the new elements don't have, and writes none", async () => {
     const { code, report } = await migrate(`export const T = () => <Email><Row><Column>
       <Image src="https://example.com/a.png" textAlign="left" mobile={{ textAlign: "center" }} />
       <Button href="https://example.com" mobile={{ textAlign: "left" }}>Go</Button>
     </Column></Row></Email>;`);
     expect(squash(code)).not.toMatch(/mobile=\{\{[^}]*alignItems/);
     expect(report).toEqual([
-      "line 3: its alignment on phones (mobile textAlign) is left out: the new components place a block on phones where it is on desktop",
-      "line 4: its alignment on phones (mobile textAlign) is left out: the new components place a block on phones where it is on desktop",
+      "line 3: its alignment on phones (mobile textAlign) is left out: the new elements place a block on phones where it is on desktop",
+      "line 4: its alignment on phones (mobile textAlign) is left out: the new elements place a block on phones where it is on desktop",
     ]);
   });
 
@@ -596,7 +596,7 @@ export const T = ({ show }: { show: boolean }) => <Email>{show && <Spacer />}{sh
     expect(errors(code, { show: true })).toEqual([]);
   });
 
-  it("writes font weights and a Menu's link targets as the new components take them, so the template validates", async () => {
+  it("writes font weights and a Menu's link targets as the new elements take them, so the template validates", async () => {
     const { code, report } = await migrate(`const MORE = [{ text: "Blog", href: "/blog", target: "_blank" }];
 export const T = () => (
   <Email>
@@ -614,14 +614,14 @@ export const T = () => (
     expect(squashed).toContain('<Linkhref="/top"');
     expect(squashed).toContain('<Linkhref={{href:"/blog",target:"_blank"}}');
     expect(report.filter((line) => !line.includes("written as a Row of its links"))).toEqual([
-      "line 7: its fontWeight 650 is 700: the new components take 100 to 900 in hundreds",
+      "line 7: its fontWeight 650 is 700: the new elements take 100 to 900 in hundreds",
       'line 8: a Menu item\'s target "_top" is left out: a link opens in a new window ("_blank") or in its own ("_self")',
       "line 9: MORE's items are written here, each target part of its link",
     ]);
     expect(errors(code)).toEqual([]);
   });
 
-  it("says a computed font weight and computed Menu items are kept as they are, with what the new components take", async () => {
+  it("says a computed font weight and computed Menu items are kept as they are, with what the new elements take", async () => {
     const { code, report } = await migrate(`export const T = ({ weight, links }: { weight: "700"; links: Array<{ text: string; href: string; target?: string }> }) => (
   <Email>
     <Heading fontWeight={weight}>Title</Heading>
@@ -631,7 +631,7 @@ export const T = () => (
     expect(squash(code)).toContain("fontWeight:weight");
     expect(squash(code)).toContain("items={links}");
     expect(report.filter((line) => !line.includes("Unlayer Elements' Menu puts a space"))).toEqual([
-      'line 4: its fontWeight is computed (weight): it\'s kept as it is, and the new components take a number from 100 to 900 in hundreds, "normal" or "bold", not a string of digits ("700")',
+      'line 4: its fontWeight is computed (weight): it\'s kept as it is, and the new elements take a number from 100 to 900 in hundreds, "normal" or "bold", not a string of digits ("700")',
       "line 5: this Menu's items are computed (links): they're kept as they are, and an item's target is part of its link now ({ text, href: { href, target } }), not a field of its own",
     ]);
   });
@@ -868,7 +868,7 @@ export const html = () => renderToHtml(<T />);`);
     expect((await migrateOnce(script.code, { typescript: false })).current).toBe(true);
   });
 
-  it("doesn't mark the React Email converter's source, which comes back on the new components unmarked", async () => {
+  it("doesn't mark the React Email converter's source, which comes back on the new elements unmarked", async () => {
     const source = SHARED.replace('"@unlayer/react-elements"', '"@unlayer/react-elements/legacy"');
     const { code } = await migrateOnce(`// Migrated from React Email by @hyper-elements/migrate (codemod mode).\n${source}`);
     expect(code).toContain('target: "_blank"');
@@ -1048,7 +1048,7 @@ describe("hyper-elements-migrate --from unlayer-elements", () => {
   });
 
   it("leaves its own output as it is on a second run", async () => {
-    // What it writes of this imports no name only the new components have: a Button and the Column it's put in.
+    // What it writes of this imports no name only the new elements have: a Button and the Column it's put in.
     const TEMPLATE = `import { Email, Button } from "@unlayer/react-elements";\nexport default function T() { return <Email><Button href="https://example.com/confirm">Confirm</Button></Email>; }\n`;
     const dir = project({ "emails/welcome.tsx": TEMPLATE });
     commit(dir);
@@ -1058,7 +1058,7 @@ describe("hyper-elements-migrate --from unlayer-elements", () => {
     commit(dir);
     const again = io(dir);
     expect(await main(["emails", "--from", "unlayer-elements", "--write"], again)).toBe(0);
-    expect(again.out).toBe("emails/welcome.tsx: already uses the new components: left as it is\n");
+    expect(again.out).toBe("emails/welcome.tsx: already uses the new elements: left as it is\n");
     expect(fs.readFileSync(path.join(dir, "emails/welcome.tsx"), "utf8")).toBe(migrated);
     expect(migrated).toContain('"https://example.com/confirm"');
   });
@@ -1085,7 +1085,7 @@ describe("hyper-elements-migrate --from unlayer-elements", () => {
     expect(await main(["emails", "--from", "unlayer-elements"], sink)).toBe(0);
     expect(sink.err).toBe("");
     for (const file of ["plain", "through", "both"]) expect(sink.out).toContain(`emails/${file}.tsx: would be migrated`);
-    expect(sink.out).toContain("emails/done.tsx: already uses the new components: left as it is\n");
+    expect(sink.out).toContain("emails/done.tsx: already uses the new elements: left as it is\n");
   });
 
   it("fails a template that imports today's components through a namespace another module passes on, naming both, instead of skipping it", async () => {

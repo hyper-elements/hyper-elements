@@ -4,7 +4,7 @@ import { Button, Column, defineTheme, Email, Heading, Image, Link, List, ListIte
 const acme = defineTheme({
   colors: { background: "#f4f4f5", foreground: "#18181b", primary: "#111827", primaryForeground: "#ffffff", muted: "#71717a", border: "#e4e4e7" },
   fonts: { body: "Inter, Arial, sans-serif" },
-  components: {
+  elements: {
     Heading: { by: { level: { 1: { fontSize: 24, mobile: { fontSize: 20 } } } } },
     Button: { borderRadius: 6, hover: { backgroundColor: "#374151" } },
   },

@@ -1,28 +1,30 @@
 ---
 import Base from "./Base.astro";
 import { site } from "../lib/site";
+import { cardPath } from "../og/cards.mjs";
 interface Props {
   title: string; description: string; slug: string; date: Date;
-  hero: string; heroAlt: string;
+  /** The post's own picture, also its social image; without one, its social image is its generated card. */
+  hero?: string; heroAlt?: string;
   headings: { depth: number; slug: string; text: string }[];
 }
 const { title, description, slug, date, hero, heroAlt, headings } = Astro.props;
 const url = new URL(`/blog/${slug}`, site.url).href;
 const jsonLd = {
   "@context": "https://schema.org", "@type": "TechArticle", headline: title,
-  description, url, image: new URL(hero, site.url).href, inLanguage: "en",
+  description, url, image: new URL(hero ?? cardPath(`/blog/${slug}`), site.url).href, inLanguage: "en",
   author: { "@type": "Organization", name: site.name, url: site.url },
   isPartOf: { "@type": "Blog", name: "Hyper Elements developer tutorials", url: new URL("/blog", site.url).href },
 };
 ---
-<Base title={title} description={description} ogType="article" jsonLd={jsonLd} image={hero} imageAlt={heroAlt} imageWidth={1600} imageHeight={912}>
+<Base title={title} description={description} ogType="article" jsonLd={jsonLd} {...(hero ? { image: hero, imageAlt: heroAlt, imageWidth: 1600, imageHeight: 912 } : {})}>
   <article class="wrap blog-article">
     <header>
       <a class="eyebrow" href="/blog">← All tutorials</a>
       <h1>{title}</h1>
       <p class="lede">{description}</p>
       <p class="byline"><time datetime={date.toISOString().slice(0, 10)}>{date.toLocaleDateString("en-GB", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" })}</time></p>
-      <img class="hero" src={hero} alt={heroAlt} width="1600" height="912" fetchpriority="high" />
+      {hero && <img class="hero" src={hero} alt={heroAlt} width="1600" height="912" fetchpriority="high" />}
     </header>
     <nav class="contents" aria-label="In this tutorial">
       <p>In this tutorial</p>

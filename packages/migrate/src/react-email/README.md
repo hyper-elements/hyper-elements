@@ -43,7 +43,7 @@ Where the template can't be written in Hyper Elements' components, `convertReact
 
 ## Mapping
 
-The converter writes a template in Unlayer Elements' components first (the names below), and moves it to the new ones at once (`report.info` lists what that changes, `report.notes` what it leaves out: a background image, say, which the new components don't have).
+The converter writes a template in Unlayer Elements' components first (the names below), and moves it to the new ones at once (`report.info` lists what that changes, `report.notes` what it leaves out: a background image, say, which the new elements don't have).
 
 | React Email | Hyper Elements |
 |---|---|

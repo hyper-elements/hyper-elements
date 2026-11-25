@@ -1,0 +1,39 @@
+{
+  "name": "@hyper-elements/templates-folder",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Templates for Hyper Elements, as designs, with the sample brands they're drawn in. Not published: copy one from hyperelements.dev/templates.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "readme": "tsx _scripts/readme.ts",
+    "single-file": "tsx _scripts/single-file.ts",
+    "preview": "tsx _scripts/preview.tsx",
+    "logos": "tsx _scripts/logos.tsx"
+  },
+  "devDependencies": {
+    "@hyper-elements/lint": "workspace:*",
+    "@hyper-elements/react": "workspace:*",
+    "@react-pdf/renderer": "4.9.0",
+    "@resvg/resvg-js": "2.6.2",
+    "@types/node": "^24.9.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "satori": "0.33.5",
+    "tsx": "^4.20.5",
+    "typescript": "^5.6.3",
+    "vitest": "^3.2.4"
+  },
+  "hyperElements": {
+    "templates": [
+      "*/*/template.tsx",
+      "_brand.ts",
+      "_brands/*.ts",
+      "_companies/*.ts"
+    ]
+  }
+}

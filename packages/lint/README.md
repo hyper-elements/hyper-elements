@@ -38,6 +38,10 @@ lint({ rules: { "text-size": "off", contrast: "info" }, kind: "marketing" });
 A rule, severity or kind it doesn't know throws a `TypeError` when `lint()` is called. `rules` lists every rule (its id,
 default severity, roots, summary, fix and docs link).
 
+The plugin's own `rules` describe each rule under its options: `lint({ kind: "marketing" }).rules` gives every rule's
+id, the roots it reports under, whether it's `enabled` (false where it's `"off"`, and for `unsubscribe` without
+`kind: "marketing"`), its summary and its fix, in the same order, frozen.
+
 ## Any HTML email
 
 ```ts
@@ -60,5 +64,5 @@ rules.
 HTML only, `role-button`. Each is
 described at [hyperelements.dev/docs/lint](https://www.hyperelements.dev/docs/lint).
 
-Works with `@hyper-elements/react` 0.4. Lint imports nothing of it at run time: it reads the tree the plugin is handed.
+Works with `@hyper-elements/react` 0.4 and 0.5. Lint imports nothing of it at run time: it reads the tree the plugin is handed.
 MIT licensed.

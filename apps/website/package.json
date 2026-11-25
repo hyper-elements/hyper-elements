@@ -11,13 +11,19 @@
     "dev": "astro dev --port 4321",
     "build": "astro build",
     "preview": "astro preview --port 4321",
-    "generate": "node scripts/generate.mjs && node scripts/generate-email-testing.mjs",
+    "generate": "node scripts/generate.mjs && node scripts/generate-email-testing.mjs && pnpm run generate:gallery",
+    "generate:gallery": "pnpm --dir ../../templates exec tsx _scripts/website.tsx",
     "generate:email-testing": "node scripts/generate-email-testing.mjs",
     "generate:email-clients": "node scripts/email-client-previews.mjs",
     "generate:compare": "node scripts/compare-previews.mjs",
+    "generate:templates-guide": "node scripts/templates-guide.mjs",
+    "generate:core-concepts": "node scripts/core-concepts.mjs",
+    "generate:og-image": "node scripts/og-image.mjs",
     "check:blog": "node scripts/check-blog.mjs",
+    "check:og-cards": "node scripts/check-og-cards.mjs",
     "check:playground": "node scripts/check-playground.mjs",
-    "check:email-testing": "node scripts/check-email-testing.mjs"
+    "check:email-testing": "node scripts/check-email-testing.mjs",
+    "check:og-image": "node scripts/check-og-image.mjs"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -33,9 +39,13 @@
     "@hyper-elements/email-clients": "workspace:*",
     "@hyper-elements/react": "workspace:*",
     "@lezer/highlight": "^1.2.5",
+    "@resvg/resvg-js": "2.6.2",
     "@resvg/resvg-wasm": "2.6.2",
     "astro": "^7.4.7",
     "esbuild": "^0.25.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "satori": "0.33.5",
     "sucrase": "3.35.1"
   }
 }

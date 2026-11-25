@@ -8,10 +8,10 @@ import { template } from "../lib/examples";
 const loop = [
   { n: "01", t: "Write", d: "One way to write each thing: styles in style={{}}, space as gap." },
   { n: "02", t: "Validate", d: "validate() lists every problem with its code, its path and the fix." },
-  { n: "03", t: "Outline", d: "outline() prints the laid-out template as text, to check without looking." },
+  { n: "03", t: "Outline", d: "outline() prints the laid-out design as text, to check without looking." },
   { n: "04", t: "Render", d: "render(), renderPdf() or renderImage(). The same input gives the same output." },
 ];
-// One template per root, from the gallery: outline() reads the same for each.
+// One design per root, from the gallery: outline() reads the same for each.
 const outlines = [
   { id: "email", label: "Email", t: template("tarn-shipped") },
   { id: "page", label: "Page", t: template("casa-albero-page") },
@@ -19,14 +19,14 @@ const outlines = [
   { id: "image", label: "Image", t: template("gridline-workshop-banner") },
 ];
 const name = (src: string) => src.match(/export default function (\w+)/)?.[1] ?? "Template";
-const prompt = `Read ${site.url}/llms.txt. Then write a Hyper Elements template for [an email, a page, a PDF or an image]. Run validate() and fix every error, then show me outline().`;
+const prompt = `${site.skillPromptStart} write a Hyper Elements design for [an email, a page, a PDF or an image]. Run validate() and fix every error, then show me outline().`;
 ---
 <Base title="For AI agents" description="Hyper Elements for coding agents: one way to write each thing, validate() with the fix for each problem, outline() to check a layout, and the docs as llms.txt.">
   <section class="a-hero">
     <div class="wrap">
       <p class="eyebrow">For AI agents</p>
       <h1 class="h-page"><span class="grad">Built for coding agents</span></h1>
-      <p class="lede">Your agent writes the template, checks it with validate() and outline(), and renders an email, a page, a PDF or an image.</p>
+      <p class="lede">Your agent writes the design, checks it with validate() and outline(), and renders an email, a page, a PDF or an image.</p>
       <div class="a-cta">
         <Cmd text={site.skill} />
         <a class="btn btn-ghost" href="/llms.txt">llms.txt</a>
@@ -50,14 +50,14 @@ const prompt = `Read ${site.url}/llms.txt. Then write a Hyper Elements template 
   <section class="section">
     <div class="wrap split">
       <div class="reveal">
-        <p class="eyebrow">Give it the guide</p>
-        <h2 class="h-section">The docs ship in the package.</h2>
-        <p class="lede">GUIDE.md is written from the components' own definitions, so it matches the version you installed.</p>
+        <p class="eyebrow">Give it the skill</p>
+        <h2 class="h-section">One command, before anything is installed.</h2>
+        <p class="lede">The skill has your agent install {site.pkg}, then checks it against GUIDE.md, the guide the package ships, written from the elements' own definitions for the version you installed.</p>
       </div>
       <div class="stack reveal">
-        <CodeBlock lang="markdown" file="CLAUDE.md" code={`@node_modules/@hyper-elements/react/GUIDE.md`} />
-        <CodeBlock lang="markdown" file="AGENTS.md (Codex, Cursor and others)" code={`Before writing a Hyper Elements template, read
-node_modules/@hyper-elements/react/GUIDE.md.`} />
+        <CodeBlock lang="bash" file="terminal (Claude Code, Codex, Cursor and others)" code={site.skill} />
+        <p class="stack-or">Or, without the skill, a rule:</p>
+        <CodeBlock lang="markdown" file="CLAUDE.md or AGENTS.md" code={site.agentRule} />
       </div>
     </div>
   </section>
@@ -89,7 +89,7 @@ node_modules/@hyper-elements/react/GUIDE.md.`} />
       <div class="prompt-card panel reveal">
         <p class="eyebrow">Test an email in the clients</p>
         <h2 class="h-section">Outlook, Gmail, Yahoo and Apple Mail, in the chat.</h2>
-        <p class="lede prompt-lede">The email-testing skill has your agent preview any email, a template or HTML from anywhere, and show you each client's screenshot with what it changed. Free, on your computer.</p>
+        <p class="lede prompt-lede">The email-testing skill has your agent preview any email, a design or HTML from anywhere, and show you each client's screenshot with what it changed. Free, on your computer.</p>
         <p class="prompt-text">{site.emailTestingPrompt}</p>
         <div class="prompt-actions">
           <button class="btn btn-primary" type="button" data-copy={site.emailTestingPrompt}>Copy prompt</button>
@@ -117,6 +117,7 @@ node_modules/@hyper-elements/react/GUIDE.md.`} />
   .loop .n { font: 500 12px var(--mono); color: var(--text-3); display: block; margin-bottom: 18px; }
   .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; }
   .stack { display: grid; gap: 14px; min-width: 0; }
+  .stack-or { margin: 6px 0 0; font-size: 14px; color: var(--text-3); }
   .outlines { overflow: hidden; background: #0e0e0e; min-width: 0; }
   .outlines .views { flex: none; height: 420px; }
   .outlines .view-text { color: #d4d4d4; font-size: 12.5px; }

@@ -54,7 +54,8 @@ const bun = typeof (process.versions as Record<string, string | undefined>).bun 
 interface DrawEntry {
   templateAssets(element: unknown): TemplateAssets;
   renderPdf?(element: unknown, options: { fonts: FontFile[]; images: Record<string, Uint8Array> }): Promise<{ pdf: Uint8Array; diagnostics: Diagnostic[] }>;
-  renderImage?(element: unknown, options: { fonts: FontFile[]; images: Record<string, Uint8Array>; format?: "png" | "svg"; scale?: number }): Promise<{ image: Uint8Array; diagnostics: Diagnostic[] }>;
+  renderImage?(element: unknown, options: { fonts: FontFile[]; images: Record<string, Uint8Array>; format?: "png" | "svg"; scale?: number; strict?: boolean }): Promise<{ image: Uint8Array; diagnostics: Diagnostic[] }>;
+  layoutImage?(element: unknown, options: { fonts: FontFile[]; images: Record<string, Uint8Array>; scale?: number; strict?: boolean }): Promise<{ fits: unknown[]; nodes: unknown[]; diagnostics: Diagnostic[] }>;
 }
 
 export async function renderTemplate(context: TemplateContext): Promise<CommandResult> {
@@ -105,7 +106,7 @@ async function renderDrawn(context: TemplateContext, root: "Document" | "Canvas"
     };
   }
   if (Array.isArray(entry)) {
-    return { status: "error", diagnostics: [], error: `A ${root}'s ${drawn.file} needs ${entry.join(" and ")}, not installed where this template is: npm i ${entry.join(" ")}` };
+    return { status: "error", diagnostics: [], error: `A ${root}'s ${drawn.file} needs ${entry.join(" and ")}, not installed where this design is: npm i ${entry.join(" ")}` };
   }
 
   const loaded = await loadAssets(entry.templateAssets(element), {
@@ -126,7 +127,9 @@ async function renderDrawn(context: TemplateContext, root: "Document" | "Canvas"
       file = result.pdf;
       found = result.diagnostics;
     } else {
-      const result = await entry.renderImage!(element, { fonts: loaded.fonts, images: loaded.images, format: options.format ?? "png", ...(options.scale !== undefined ? { scale: options.scale } : {}) });
+      // A template's design is drawn strict, at its format's scale where --scale gives none (Decision 19).
+      const scale = options.scale ?? context.scale;
+      const result = await entry.renderImage!(element, { fonts: loaded.fonts, images: loaded.images, format: options.format ?? "png", ...(scale !== undefined ? { scale } : {}), ...(context.strict ? { strict: true } : {}) });
       file = result.image;
       found = result.diagnostics;
     }
@@ -153,7 +156,7 @@ async function renderDrawn(context: TemplateContext, root: "Document" | "Canvas"
  * The project's `/pdf` or `/image`, as the template resolves it: the entry; "old" for an Elements without
  * templateAssets() (its HTML is written, as before); or the engines it imports that aren't installed.
  */
-async function loadEntry(context: TemplateContext, root: "Document" | "Canvas"): Promise<DrawEntry | "old" | string[]> {
+export async function loadEntry(context: TemplateContext, root: "Document" | "Canvas"): Promise<DrawEntry | "old" | string[]> {
   const { entry: specifier, engines } = DRAWN[root];
   let mod: unknown;
   try {

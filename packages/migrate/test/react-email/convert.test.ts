@@ -95,11 +95,11 @@ export default function T() {
   });
 });
 
-describe("runtime mode in the new components", () => {
+describe("runtime mode in the new elements", () => {
   it("throws a NewComponentsError, with why and the template in today's components, where the new ones can't render it", async () => {
     const { Body, Button, Html, Text } = await import("@react-email/components");
     const h = React.createElement;
-    // React Email writes the link; the new components write no script links.
+    // React Email writes the link; the new elements write no script links.
     const Template = () => h(Html, null, h(Body, null, h(Text, null, "Hi"), h(Button, { href: "javascript:void(0)" }, "Go")));
     const error = await convertReactEmail(Template).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(NewComponentsError);
@@ -1367,7 +1367,7 @@ Total.PreviewProps = { total: "$84.00", taxRate: 20 };`;
       const { default: Original } = await import(originalFile);
       const { default: Migrated } = await import(file);
       expect(intermediate).toMatch(/htmlAttribute\("hidden"/);
-      // In the new components: shown where the condition doesn't hide it; the element always hidden left out.
+      // In the new elements: shown where the condition doesn't hide it; the element always hidden left out.
       expect(code).toMatch(/\{\(\(taxRate === 0 \|\| undefined\) \?\? false\) === false \? \(\s*<Span>/);
       expect(code).not.toContain("never shown");
       for (const taxRate of [20, 0]) {

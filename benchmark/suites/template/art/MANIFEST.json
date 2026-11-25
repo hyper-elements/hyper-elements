@@ -1,0 +1,46 @@
+{
+  "art-hiring.png": {
+    "sha256": "e0fc607d2eb2246f0366705a5415f2a93eb3305deaafe7365d79092ed889ef9d",
+    "source": "drawn by make.mjs: generated artwork"
+  },
+  "art-inbox.png": {
+    "sha256": "f8075c98488628d30b3128b61293c2ef7fe91eeb9a4aa3b4e6a8f3fac6640e3c",
+    "source": "drawn by make.mjs: generated artwork"
+  },
+  "art-launch.png": {
+    "sha256": "20967b6fadce43f0192baf1602152e13bd17fc03f47b54a123d64907d82c39cc",
+    "source": "drawn by make.mjs: generated artwork"
+  },
+  "art-pricing.png": {
+    "sha256": "394f537384251916166b78477f2683587b213dfef7687e419df5db9d0c344f01",
+    "source": "drawn by make.mjs: generated artwork"
+  },
+  "art-summit.png": {
+    "sha256": "e3647e4ad07c7a349e409df8878d2c24f144be406361860596626d36126c0087",
+    "source": "drawn by make.mjs: generated artwork"
+  },
+  "shot-hiring.png": {
+    "sha256": "b8c2a7fc07e711558c34f05efe98cb868e6b4c34f95914bbfb86ced3ffd48658",
+    "source": "drawn by make.mjs: a product screenshot"
+  },
+  "shot-inbox.png": {
+    "sha256": "1610f4558d25b8ef6015daca62de036c5cb685baa0032cff412e1c7eaf91bca7",
+    "source": "drawn by make.mjs: a product screenshot"
+  },
+  "shot-launch.png": {
+    "sha256": "26796c37ec9b70d87b134c4a8653a0b97e73d728dca39da5dc0d57e008b3915d",
+    "source": "drawn by make.mjs: a product screenshot"
+  },
+  "shot-pricing.png": {
+    "sha256": "3989def068b84747825272b9c95aaa2c0f81cbd33ced27ec7e875053f405481a",
+    "source": "drawn by make.mjs: a product screenshot"
+  },
+  "shot-summit.png": {
+    "sha256": "d02c648e4cc12823ce3873845346e5aa5d06d940051b486237c56541d1ca2d71",
+    "source": "drawn by make.mjs: a product screenshot"
+  },
+  "shot-wide.png": {
+    "sha256": "fe043358a9ace60da88312aeccf5076992c7b54ea88e103acf876b897859d855",
+    "source": "drawn by make.mjs: a product screenshot"
+  }
+}

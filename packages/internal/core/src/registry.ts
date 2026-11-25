@@ -4,8 +4,8 @@
  * built-in ones, plus `expand`: what it is, as primitives.
  */
 import { COMPONENTS } from "./components";
-import { TARGETS, type ComponentDefinition, type PropSpecs, type Target, type TargetSupport } from "./define";
-import type { OutputOf } from "./kinds";
+import { TARGETS, type ComponentDefinition, type PropSpec, type PropSpecs, type Target, type TargetSupport } from "./define";
+import { deepFrozen, type OutputOf } from "./kinds";
 import type { Diagnostic } from "./diagnostics";
 import type { Json } from "./model";
 import { placementStyle } from "./styles";
@@ -58,16 +58,18 @@ export interface CustomComponentSpec<P extends PropSpecs> {
 
 export function defineCustomComponent<const P extends PropSpecs>(spec: CustomComponentSpec<P>): CustomDefinition<P> {
   if (!CUSTOM_TYPE.test(spec.type)) {
-    throw new Error(`[Elements] A custom component's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
+    throw new Error(`[Elements] An element's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
   }
   const section = spec.placement === "section";
-  const paths = Object.keys(spec.props).map((key) => `props.${key}`);
-  return {
+  const props = ownSpecs(spec.props);
+  const paths = Object.keys(props).map((key) => `props.${key}`);
+  // Its own copies, frozen: no code that runs after it's made can change its props, defaults or expand.
+  return Object.freeze({
     type: spec.type,
     label: spec.label,
     description: spec.description ?? spec.label,
     categories: section ? ["section"] : ["block"],
-    props: spec.props,
+    props,
     style: section ? ({} as typeof placementStyle) : placementStyle,
     children: {},
     sizing: "stretch",
@@ -76,7 +78,25 @@ export function defineCustomComponent<const P extends PropSpecs>(spec: CustomCom
     editor: paths.length ? { groups: [{ title: spec.label, paths }] } : undefined,
     custom: true,
     expand: spec.expand,
+  }) as CustomDefinition<P>;
+}
+
+/**
+ * Prop specs owned: a new record of shallow, frozen copies of each, their data (a default, a list's `item`, an object's
+ * `fields`) copied and frozen too. A spec's `kind` is kept by reference: its parse() is code, and kinds are frozen.
+ */
+export function ownSpecs<P extends PropSpecs>(specs: P): P {
+  const own = (spec: PropSpec): PropSpec => {
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(spec)) {
+      if (key === "kind") out.kind = value;
+      else if (key === "item") out.item = own(value as PropSpec);
+      else if ((key === "fields" || key === "blocks") && value && typeof value === "object") out[key] = ownSpecs(value as PropSpecs);
+      else out[key] = deepFrozen(value);
+    }
+    return Object.freeze(out) as unknown as PropSpec;
   };
+  return Object.freeze(Object.fromEntries(Object.entries(specs).map(([name, spec]) => [name, own(spec)]))) as P;
 }
 
 export function isCustom(definition: ComponentDefinition): definition is CustomDefinition {
@@ -92,10 +112,10 @@ export class Registry {
 
   add(definition: CustomDefinition<any>): void {
     if (!isCustom(definition) || !CUSTOM_TYPE.test(definition.type)) {
-      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a custom component (make one with component())`);
+      throw new Error(`[Elements] ${JSON.stringify((definition as { type?: unknown })?.type)} isn't a custom element (make one with defineElement())`);
     }
     const known = this.custom.get(definition.type);
-    if (known && known !== definition) throw new Error(`[Elements] Two custom components are named ${definition.type}`);
+    if (known && known !== definition) throw new Error(`[Elements] Two elements made with defineElement() are named ${definition.type}`);
     this.custom.set(definition.type, definition as CustomDefinition);
   }
 
@@ -121,7 +141,7 @@ export function propsWithDefaults(definition: ComponentDefinition, props: Record
 }
 
 export interface ComponentsOption {
-  /** Custom components (made with `component()`) the document may use. */
+  /** Custom elements (made with `defineElement()`) the document may use. */
   components?: readonly CustomDefinition<any>[];
 }
 

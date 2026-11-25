@@ -1,15 +1,15 @@
 # Build and send transactional email in React
 
-Use `@hyper-elements/react` for React receipts, order confirmations, welcome emails, and password reset emails. Write the template with the components from `@hyper-elements/react`, `await render()` it into HTML and plain text in your server or job worker, then pass both strings to an email provider. Elements does not deliver messages.
+Use `@hyper-elements/react` for React receipts, order confirmations, welcome emails, and password reset emails. Write the design with the elements from `@hyper-elements/react`, `await render()` it into HTML and plain text in your server or job worker, then pass both strings to an email provider. Elements does not deliver messages.
 
-## Install and choose a template
+## Install and choose a design
 
 ```bash
 npm install @hyper-elements/react react react-dom
 npm install --save-dev tsx typescript @types/node @types/react @types/react-dom
 ```
 
-The runnable [invoice template](./one-template-email-web-pdf.md#define-the-shared-react-template) contains all imports, typed data, an email preheader, a validated receipt link, and customer fields passed as text, which Elements escapes. Its source is [src/invoice.tsx](../../../examples/content-workflows/src/invoice.tsx). For a password reset, replace its copy and receipt link with your application's expiring, single-use reset URL; token generation and verification belong to your application.
+The runnable [invoice design](./one-template-email-web-pdf.md#define-the-shared-react-design) contains all imports, typed data, an email preheader, a validated receipt link, and customer fields passed as text, which Elements escapes. Its source is [src/invoice.tsx](../../../examples/content-workflows/src/invoice.tsx). For a password reset, replace its copy and receipt link with your application's expiring, single-use reset URL; token generation and verification belong to your application.
 
 ## Create the provider-ready message
 
@@ -43,7 +43,7 @@ export async function deliveryMessage() {
 }
 ```
 
-`render()` resolves to `{ html, text, diagnostics, … }`. `html` is a complete HTML document, including the email shell and styles: send that string as the provider's HTML body. `text` is the alternative text body. The `Email`'s `title` prop sets the HTML `<title>`, which is separate from the provider's email subject. `diagnostics` holds warnings; a template with errors rejects with an `ElementsError` listing them. `render()` is async, so everything that calls it awaits it.
+`render()` resolves to `{ html, text, diagnostics, … }`. `html` is a complete HTML document, including the email shell and styles: send that string as the provider's HTML body. `text` is the alternative text body. The `Email`'s `title` prop sets the HTML `<title>`, which is separate from the provider's email subject. `diagnostics` holds warnings; a design with errors rejects with an `ElementsError` listing them. `render()` is async, so everything that calls it awaits it.
 
 ## Render HTML, plain text, and design JSON
 
@@ -64,7 +64,7 @@ await writeFile("output/invoice.design.json", JSON.stringify(design, null, 2));
 console.info("Wrote output/invoice.email.html, invoice.txt and invoice.design.json");
 ```
 
-`toDesign()` from `@hyper-elements/react/builder` writes the design JSON for the [visual editor](./visual-editing.md), and it is synchronous.
+`toDesign()` from `@hyper-elements/react/builder` writes the Unlayer design JSON for the [visual editor](./visual-editing.md), and it is synchronous.
 
 Run the checked-in example from the repository root:
 
@@ -78,10 +78,10 @@ Expected: `examples/content-workflows/output/invoice.email.html`, `invoice.txt`,
 
 ## Constraints before delivery
 
-- Keep rendering and provider credentials on the server. Fetch data before calling the synchronous template factory.
+- Keep rendering and provider credentials on the server. Fetch data before calling the synchronous design factory.
 - Use absolute HTTPS URLs for receipt/reset links and publicly accessible images, and give an `Image` its file's size (`src={{ src, width, height }}`). Text passed as children is escaped. An `Html` block's `html` prop is written as it is: keep customer data out of it.
 - Use a verified sender and a provider configured for transactional messages. Add application-level deduplication/retries so retrying a job does not send duplicate receipts.
 - Retain the HTML head styles. Verify the result in your target email clients; [repository compatibility checks](../../../README.md#email-client-compatibility-notes) have defined limits.
 - A provider acceptance response is not inbox delivery. Record its message ID and use the provider's delivery/bounce events for the final status.
 
-Need the same receipt on the web or as a PDF? Continue with [one template, three outputs](./one-template-email-web-pdf.md). Need visual changes after code generation? Use [design JSON](./visual-editing.md).
+Need the same receipt on the web or as a PDF? Continue with [one design, three outputs](./one-template-email-web-pdf.md). Need visual changes after code generation? Use [Unlayer design JSON](./visual-editing.md).

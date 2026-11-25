@@ -6,7 +6,7 @@
 import { Resvg } from "@resvg/resvg-js";
 import { createElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import satori from "satori";
-import type { Block, Engine, Picture, Run } from "./model";
+import type { Block, DrawnCanvas, Engine, Picture, Run, Style } from "./model";
 
 /** The tree without styles left undefined (Satori reads every key it's given) and empty children. */
 function clean(node: ReactNode): ReactNode {
@@ -18,7 +18,7 @@ function clean(node: ReactNode): ReactNode {
   return createElement(node.type as string, { ...props, key: node.key, ...(kept ? { style: kept } : {}) }, ...list);
 }
 
-const picture = (item: Picture, key?: number): ReactElement => createElement("img", { key, src: item.src, alt: item.alt, style: item.style });
+const picture = (item: Picture, key?: number): ReactElement => createElement("img", { key: item.key ?? key, src: item.src, alt: item.alt, style: item.style });
 
 const run = (item: Run, key: number): ReactNode => {
   if (typeof item === "string") return item;
@@ -26,14 +26,16 @@ const run = (item: Run, key: number): ReactNode => {
   return picture(item, key);
 };
 
-const block = (item: Block, key?: number): ReactElement => {
+/** Each block as a Satori element, keyed by its node's path where it has one (what a layout reads back its box by). */
+const block = (item: Block, index?: number): ReactElement => {
+  const key = item.key ?? index;
   switch (item.kind) {
     case "box":
       return createElement("div", { key, style: item.style }, ...item.children.map(block));
     case "text":
       return createElement("div", { key, style: item.style }, ...item.runs.map(run));
     case "image":
-      return picture(item, key);
+      return picture(item, index);
     case "drawing":
       return createElement(
         "svg",
@@ -115,3 +117,99 @@ export const satoriResvg: Engine = async (canvas, output) => {
   const trimmed = withinReach(svg, resvg, canvas.width, canvas.height);
   return new Uint8Array((trimmed === undefined ? resvg : new Resvg(trimmed, options)).render().asPng());
 };
+
+/** A block's box as laid out, in px from the Canvas's top left. */
+export interface LaidOutBox {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+const toFonts = (fonts: DrawnCanvas["fonts"]) => fonts.map((font) => ({ name: font.family, data: font.data, weight: font.weight, style: font.style }));
+
+/**
+ * A Canvas laid out, nothing drawn: each keyed block's box (by its key, its node's path), and the text no given font
+ * covers, as Satori asks for it (a language and a segment), answered with no font so the layout is as it draws.
+ */
+export async function satoriLayout(canvas: DrawnCanvas, options: { natural?: boolean } = {}): Promise<{ boxes: Map<string, LaidOutBox>; missing: Array<{ language: string; segment: string }> }> {
+  // Natural: the Canvas's height left open, so nothing shrinks to fit it, and content past it shows where it ends.
+  const style = options.natural ? { ...canvas.style, height: undefined, overflow: undefined } : canvas.style;
+  // The Canvas's own box too, by its path.
+  const tree = clean(createElement("div", { key: "root", style }, ...canvas.children.map(block)));
+  const boxes = new Map<string, LaidOutBox>();
+  const missing: Array<{ language: string; segment: string }> = [];
+  await satori(tree as ReactElement, {
+    width: canvas.width,
+    ...(options.natural ? {} : { height: canvas.height }),
+    fonts: toFonts(canvas.fonts),
+    onNodeDetected: (node) => {
+      if (typeof node.key === "string" && node.key !== "null") boxes.set(node.key, { left: node.left, top: node.top, width: node.width, height: node.height });
+    },
+    loadAdditionalAsset: async (language: string, segment: string) => {
+      missing.push({ language, segment });
+      return [];
+    },
+  });
+  return { boxes, missing };
+}
+
+/**
+ * Words measured at once, each in a flex item of its own with no width, in its style: each one's advance width, what
+ * Satori wraps by (a node's box doesn't show a word wider than it; this does).
+ */
+/** The spaces a line breaks at (not the ones that hold words together: U+00A0, U+2007, U+202F). */
+const BREAKING_SPACE = /[ \t\n\r\u1680\u2000-\u2006\u2008-\u200a\u2028\u2029\u205f\u3000]+/g;
+
+/**
+ * Each text's widest piece Satori can't break, in px: what must fit in a line's width. The text is laid out in a box
+ * too narrow for any of it, so it breaks wherever Satori breaks a line (between words, after a hyphen, between
+ * Chinese or Japanese characters, never at a no-break space), and its widest line is its widest piece. The spaces it
+ * breaks at are made zero-width first, so a piece isn't measured with the space after it.
+ */
+export async function satoriWidest(texts: Array<{ text: string; style: Style }>, fonts: DrawnCanvas["fonts"]): Promise<number[]> {
+  if (!texts.length) return [];
+  const found = new Map<string, number>();
+  const items = texts.map(({ text, style }, i) =>
+    createElement("div", { key: `c${i}`, style: { display: "flex", flexDirection: "column", alignItems: "flex-start", width: 1 } }, createElement("div", { key: `w${i}`, style: { display: "flex", ...style } }, text.replace(BREAKING_SPACE, "\u200b")))
+  );
+  await satori(clean(createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-start" } }, ...items)) as ReactElement, {
+    width: 100000,
+    fonts: toFonts(fonts),
+    onNodeDetected: (node) => {
+      if (typeof node.key === "string") found.set(node.key, node.width);
+    },
+    loadAdditionalAsset: async () => [],
+  });
+  return texts.map((_, i) => found.get(`w${i}`) ?? 0);
+}
+
+export async function satoriWords(words: Array<{ text: string; style: Style }>, fonts: DrawnCanvas["fonts"]): Promise<number[]> {
+  if (!words.length) return [];
+  const found = new Map<string, number>();
+  const items = words.map(({ text, style }, i) => createElement("div", { key: `w${i}`, style: { display: "flex", ...style } }, text));
+  await satori(clean(createElement("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-start" } }, ...items)) as ReactElement, {
+    width: 100000,
+    fonts: toFonts(fonts),
+    onNodeDetected: (node) => {
+      if (typeof node.key === "string") found.set(node.key, node.width);
+    },
+    loadAdditionalAsset: async () => [],
+  });
+  return words.map((_, i) => found.get(`w${i}`) ?? 0);
+}
+
+/** The segments of some text, in a style, that no given font covers (an empty list: every character is covered). */
+export async function satoriMissing(text: string, style: Style, fonts: DrawnCanvas["fonts"]): Promise<string[]> {
+  const segments: string[] = [];
+  await satori(createElement("div", { style: { display: "flex", ...Object.fromEntries(Object.entries(style).filter(([, v]) => v !== undefined)) } }, text) as ReactElement, {
+    width: 100000,
+    fonts: toFonts(fonts),
+    loadAdditionalAsset: async (_language: string, segment: string) => {
+      segments.push(segment);
+      return [];
+    },
+  });
+  return segments;
+}
+

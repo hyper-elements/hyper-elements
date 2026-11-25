@@ -3,7 +3,7 @@ title: "Quickstart"
 description: "Install Hyper Elements, write a welcome email in JSX, render it to HTML and plain text, and send it with Resend."
 ---
 
-This page takes you from an empty project to a sent email: install, write a template, render it, send it, and check it.
+This page takes you from an empty project to a sent email: install, write a design, render it, send it, and check it.
 
 ## Install
 
@@ -27,7 +27,7 @@ bun add @hyper-elements/react react react-dom
 
 ## Write your first email
 
-A template is a React component that returns one root. Everything comes from `@hyper-elements/react`.
+A design is a React component that returns one root. Everything comes from `@hyper-elements/react`.
 
 ```tsx
 // emails/welcome.tsx
@@ -69,7 +69,7 @@ import { Welcome } from "./emails/welcome";
 const { html, text, diagnostics } = await render(<Welcome name="Ada" />);
 ```
 
-`html` is the whole email document. `text` is the plain-text version, written from the same template:
+`html` is the whole email document. `text` is the plain-text version, written from the same design:
 
 ```text
 [Acme]
@@ -83,7 +83,7 @@ Create a project (https://example.com/projects/new)
 Acme Inc., 1 Market St, San Francisco
 ```
 
-`diagnostics` holds warnings and notes. This template gets one note, saying where the email client checks are:
+`diagnostics` holds warnings and notes. This design gets one note, saying where the email client checks are:
 
 ```text
 info email/more-checks at root: Email client checks (what classic Outlook, Gmail, Apple Mail and other clients remove or change, from caniemail's tables and captures of the real clients) come from @hyper-elements/email-clients Fix: npm i @hyper-elements/email-clients, then validate(email, { plugins: [await emailClients()] })
@@ -92,7 +92,7 @@ info email/more-checks at root: Email client checks (what classic Outlook, Gmail
 With that plugin passed, you get the client notes instead: here, that classic Outlook draws the Column's and the
 Button's corners square.
 
-A template with errors doesn't render: `render()` rejects with an `ElementsError` that lists each one. See [Diagnostics](/docs/diagnostics).
+A design with errors doesn't render: `render()` rejects with an `ElementsError` that lists each one. See [Diagnostics](/docs/diagnostics).
 
 ## Send it
 
@@ -163,7 +163,7 @@ const { valid, diagnostics } = validate(<Welcome name="Ada" />);
 
 To check that the email is easy to read too (links that say where they go, alternate text, contrast, text size, a `lang`), add [lint](/docs/lint)'s plugin: `npm i -D @hyper-elements/lint`, then `validate(<Welcome name="Ada" />, { plugins: [lint()] })`.
 
-`outline()` prints the laid-out template, each block with its width, so you can check the layout without reading HTML:
+`outline()` prints the laid-out design, each block with its width, so you can check the layout without reading HTML:
 
 ```tsx
 import { outline } from "@hyper-elements/react";
@@ -185,7 +185,7 @@ The heading is 536px: the 600px column less 32px of padding on each side.
 
 ## From the shell
 
-`@hyper-elements/cli` runs the same checks, renders and previews from the shell, with no script of your own. It takes a module's default export as the template, with its `PreviewProps` as props, so add two lines to `emails/welcome.tsx`:
+`@hyper-elements/cli` runs the same checks, renders and previews from the shell, with no script of your own. It takes a module's default export as the design, with its `PreviewProps` as props, so add two lines to `emails/welcome.tsx`:
 
 ```tsx
 Welcome.PreviewProps = { name: "Ada" };
@@ -199,20 +199,20 @@ npx hyper-elements render emails/               # out/emails/welcome.html and ou
 npx hyper-elements preview emails/welcome.tsx   # the email in each email client: out/clients/emails/welcome/outlook.html, …
 ```
 
-A template with errors exits with code `1`, which fails a CI job. See [Command line](/docs/cli).
+A design with errors exits with code `1`, which fails a CI job. See [Command line](/docs/cli).
 
 ## With an AI agent
 
-The package ships a guide to writing templates, `GUIDE.md`. In Claude Code, add this line to your project's `CLAUDE.md` and every session starts out knowing the components:
+The package ships a guide to writing designs, `GUIDE.md`. In Claude Code, add this line to your project's `CLAUDE.md` and every session starts out knowing the elements:
 
 ```text
 @node_modules/@hyper-elements/react/GUIDE.md
 ```
 
-For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements template, read node_modules/@hyper-elements/react/GUIDE.md." Then have the agent check what it writes, with `validate()` or `npx hyper-elements check emails/ --json`. See [Diagnostics](/docs/diagnostics) and [Command line](/docs/cli).
+For Codex, Cursor and other agents, add to `AGENTS.md` (or a rule): "Before writing a Hyper Elements design, read node_modules/@hyper-elements/react/GUIDE.md." Then have the agent check what it writes, with `validate()` or `npx hyper-elements check emails/ --json`. See [Diagnostics](/docs/diagnostics) and [Command line](/docs/cli).
 
 ## Next
 
-- [Templates and roots](/docs/templates)
+- [Designs](/docs/designs)
 - [Layout](/docs/layout)
 - [Rendering](/docs/rendering)

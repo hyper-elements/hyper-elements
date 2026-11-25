@@ -264,9 +264,74 @@ describe("what the builder draws around a design's rows", () => {
     expect(report).toEqual(["body: Rubik, Montserrat: web fonts the builder loads from a stylesheet, which a root doesn't take (its fonts are font files): left out, so text shows in the next font of its stack"]);
   });
 
-  it("says a table isn't read, which Elements has a component for", () => {
-    const { report } = fromDesign({ body: { rows: [{ cells: [1], columns: [{ contents: [{ type: "table", values: {} }], values: {} }], values: {} }], values: {} } });
-    expect(report).toEqual(["rows[0].columns[0].contents[0]: a table of the builder's isn't read into a Table yet: left out"]);
+  it("reads a table made in the builder as a Table: its header, its words, its grey lines around every cell and its rows' height", async () => {
+    // As the builder's document mode saves a new table, its words typed in.
+    const cell = (words: string, width = 50) => ({ textJson: JSON.stringify({ root: { children: [{ children: words ? [{ detail: 0, format: 0, mode: "normal", style: "", text: words, type: "extended-text", version: 1 }] : [], format: "", indent: 0, type: "extended-paragraph", version: 1, textFormat: 0 }], format: "", indent: 0, type: "root", version: 1 } }), text: words ? `<p>${words}</p>` : "", width });
+    const table = {
+      type: "table",
+      values: {
+        table: { headers: [{ cells: [cell("Name", 70), cell("Price", 30)], height: 50 }], rows: [{ cells: [cell("Coffee", 70), cell("$3", 30)], height: 50 }], footers: [{ cells: [cell("", 70), cell("", 30)], height: 50 }] },
+        containerPadding: "10px",
+        columns: 2,
+        rows: 1,
+        _meta: { htmlID: "u_content_table_1", htmlClassNames: "u_content_table" },
+      },
+    };
+    const { element, code, report } = fromDesign({ schemaVersion: 28, body: { rows: [{ cells: [1], columns: [{ contents: [table], values: {} }], values: {} }], values: {} } }, { displayMode: "document" });
+    expect(report).toEqual([]);
+    expect(code).toContain('<Table style={{ fontSize: 14, lineHeight: 1.4, backgroundColor: "#ffffff", cellPadding: 10, borderCollapse: "collapse" }}>');
+    // Its header's words at the page's line height, as the builder draws a header (only its content has a field for one).
+    expect(code).toContain('<TableRow header style={{ backgroundColor: "#dddddd", lineHeight: "normal", height: 50 }}>');
+    expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc", width: "70%" }}>Name</TableCell>');
+    expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc" }}>$3</TableCell>');
+    // Its footer is off, as a new table's is: not drawn, not read.
+    expect(code).not.toContain("footer");
+    const { html } = await render(element);
+    for (const words of ["Name", "Price", "Coffee", "$3"]) expect(html).toContain(words);
+  });
+
+  /** A design of one builder's table with these values over its defaults. */
+  const oneTable = (values: Record<string, unknown>) => ({ schemaVersion: 28, body: { rows: [{ cells: [1], columns: [{ contents: [{ type: "table", values }], values: {} }], values: {} }], values: {} } });
+
+  it("reads lines made in the builder above and below each row as the builder draws them, around the table too", async () => {
+    const red = { borderTopWidth: "2px", borderTopStyle: "solid", borderTopColor: "#ff0000", borderBottomWidth: "2px", borderBottomStyle: "solid", borderBottomColor: "#ff0000", borderLeftWidth: "0px", borderRightWidth: "0px" };
+    const { element, code, report } = fromDesign(oneTable({ enableHeader: false, border: red, table: { headers: [], rows: [{ cells: [{ text: "<p>One</p>", width: 100 }], height: 30 }], footers: [] } }), { displayMode: "document" });
+    expect(report).toEqual([]);
+    // Not the line between rows, which a one-row table doesn't draw.
+    expect(code).not.toContain("rowBorder");
+    expect(code).toContain('border: { top: "2px solid #ff0000", bottom: "2px solid #ff0000" }');
+    expect((await render(element)).html).toMatch(/border-top:2px solid #f00;border-bottom:2px solid #f00/);
+  });
+
+  it("says a header or a footer not repeated on each page isn't read: Elements prints them on every page", () => {
+    const cell = { text: "<p>Words</p>", width: 100 };
+    const { report } = fromDesign(oneTable({ enableFooter: true, repeatHeaderOnEachPage: false, repeatFooterOnEachPage: false, table: { headers: [{ cells: [cell], height: 30 }], rows: [{ cells: [cell], height: 30 }], footers: [{ cells: [cell], height: 30 }] } }), { displayMode: "document" });
+    expect(report).toEqual([
+      "rows[0].columns[0].contents[0]: its header not repeated on each page isn't something a Table holds: it's printed on every page the table runs to",
+      "rows[0].columns[0].contents[0]: its footer not repeated on each page isn't something a Table holds: it's printed on every page the table runs to",
+    ]);
+  });
+
+  it("says nothing of a header or a footer not repeated in an email or a web design, which has no pages", () => {
+    const cell = { text: "<p>Words</p>", width: 100 };
+    for (const displayMode of ["email", "web"] as const) {
+      const { code, report } = fromDesign(oneTable({ enableFooter: true, repeatHeaderOnEachPage: false, repeatFooterOnEachPage: false, table: { headers: [{ cells: [cell], height: 30 }], rows: [{ cells: [cell], height: 30 }], footers: [{ cells: [cell], height: 30 }] } }), { displayMode });
+      expect(code).toContain("<TableRow header");
+      expect(code).toContain("<TableRow footer");
+      expect(report).toEqual([]);
+    }
+  });
+
+  it("says a cell's paragraphs, which are its lines, lose their own spacing and alignment", () => {
+    const { code, report } = fromDesign(oneTable({ enableHeader: false, table: { headers: [], rows: [{ cells: [{ text: '<p style="text-align:left">Left</p><p style="text-align:right;margin-top:20px">Right</p>', width: 100 }], height: 30 }], footers: [] } }), { displayMode: "document" });
+    expect(code).toContain("Left<LineBreak />Right");
+    expect(report).toEqual(["rows[0].columns[0].contents[0]: a table cell's paragraphs are lines of the cell: their own spacing, indent, alignment and line height are left out"]);
+  });
+
+  it("says a cell's paragraph font size in other units than px, which it doesn't read, and keeps its words", () => {
+    const { code, report } = fromDesign(oneTable({ enableHeader: false, table: { headers: [], rows: [{ cells: [{ text: '<p style="font-size:1.2em">Bigger</p>', width: 100 }], height: 30 }], footers: [] } }), { displayMode: "document" });
+    expect(code).toContain('<TableCell style={{ verticalAlign: "middle", border: "1px solid #cccccc" }}>Bigger</TableCell>');
+    expect(report).toEqual(["rows[0].columns[0].contents[0]: a table cell's text has what a TableCell doesn't hold (a paragraph's font size 1.2em): left out"]);
   });
 });
 
@@ -397,7 +462,7 @@ describe("malformed design JSON", () => {
       expect(validate(back.element).valid).toBe(true);
       expect(back.report.length).toBeGreaterThan(0);
     }
-    expect(fromDesign({ body: { rows: [{ columns: [{ contents: [{ type: "timer", values: {} }] }] }] } }).report).toEqual(["rows[0].columns[0].contents[0]: a timer of the builder's has no component in Elements: left out"]);
+    expect(fromDesign({ body: { rows: [{ columns: [{ contents: [{ type: "timer", values: {} }] }] }] } }).report).toEqual(["rows[0].columns[0].contents[0]: a timer of the builder's has no element in Elements: left out"]);
   });
 
   it("writes no code from a design's data: the code it prints, run, is the template it gives", () => {

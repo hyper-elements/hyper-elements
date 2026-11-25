@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseArgs } from "../src/args";
 import { DEFAULT_PREVIEW_CLIENTS, PREVIEW_CLIENTS } from "../../email-clients/src/clients";
+import { cli, lines, project, REPO } from "./helpers";
 
 // Line endings as Git checks them out on Windows (CRLF) read as LF.
 const skill = readFileSync(join(__dirname, "../../../skills/email-testing/SKILL.md"), "utf8").replace(/\r\n/g, "\n");
@@ -43,5 +44,41 @@ describe("the email-testing skill", () => {
     const table = [...skill.matchAll(/^\s*\| `([a-z-]+)` \|/gm)].map((m) => m[1]);
     expect(table.sort()).toEqual([...PREVIEW_CLIENTS].sort());
     expect(skill).toContain(`by default \`${DEFAULT_PREVIEW_CLIENTS.join(",")}\``);
+  });
+});
+
+// ─── brand-templates ────────────────────────────────────────────────────────
+
+const brand = readFileSync(join(__dirname, "../../../skills/brand-templates/SKILL.md"), "utf8").replace(/\r\n/g, "\n");
+const EXAMPLE = join(__dirname, "../../../skills/brand-templates/example.tsx");
+
+describe("the brand-templates skill", () => {
+  it("has the frontmatter a skill needs, and both parts", () => {
+    const frontmatter = /^---\nname: (.+)\ndescription: (.+)\n---\n/.exec(brand);
+    expect(frontmatter?.[1]).toBe("brand-templates");
+    expect(frontmatter?.[2]).not.toMatch(/: | #/);
+    expect(brand).toContain("## Using a template");
+    expect(brand).toContain("## Writing a template");
+  });
+
+  it("gives only commands and options the CLI takes, in both parts", () => {
+    const using = brand.slice(brand.indexOf("## Using a template"), brand.indexOf("## Writing a template"));
+    const writing = brand.slice(brand.indexOf("## Writing a template"));
+    for (const part of [using, writing]) {
+      const found = [...part.matchAll(/npx hyper-elements ([^`\n]+)/g)].map((m) => m[1].trim().split(/\s+/));
+      expect(found.length).toBeGreaterThanOrEqual(2);
+      for (const argv of found) expect(() => parseArgs(argv), argv.join(" ")).not.toThrow();
+    }
+  });
+
+  it("its example template checks with the built CLI: exit 0, nothing skipped, each required rule passed", async () => {
+    const dir = project({ "templates/newsletter.tsx": readFileSync(EXAMPLE, "utf8") }, { modules: { react: "react", "react-dom": "react-dom", "@hyper-elements/react": "@hyper-elements/react", "@hyper-elements/lint": join(REPO, "packages", "lint") } });
+    const ran = await cli(dir, ["check", "templates/newsletter.tsx", "--json"]);
+    expect(ran.code, ran.stdout + ran.stderr).toBe(0);
+    const [line, summary] = lines(ran);
+    expect(line).toMatchObject({ input: "template", status: "ok", template: { id: "acme.Newsletter" } });
+    expect(summary.summary.skipped).toBe(0);
+    expect(line.rules.length).toBeGreaterThanOrEqual(4);
+    for (const rule of line.rules) expect(rule.status, rule.rule).toBe("passed");
   });
 });

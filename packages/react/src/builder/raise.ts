@@ -4,12 +4,14 @@
  * values that draw it as the new engine does: a Section a
  * full-width row, a Row a row of its children as columns (their shares and gap as the columns' widths and padding), a
  * box directly in the root or a Section a row of its own, content directly in the root a one-column row, a text block
- * its HTML. What a tool has no field for is a hidden property of it (hide.ts); what no tool shows (a Layer, an Svg, a
- * Table, a box nested in a column, a template's own component) is an HTML block of the new engine's own markup, and said.
+ * its HTML, a Table the builder's table (table.ts). What a tool has no field for is a hidden property of it
+ * (hide.ts); what no tool shows (a Layer, an Svg, a box nested in a column, a custom element), or a table
+ * the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new engine's own markup,
+ * and said.
  */
 import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
-import { collectTemplate } from "../primitives/collect";
+import { collectTemplate, snapshotData } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
 import { block, columnWith, rowWith, type Block, type Body, type BodyFields, type Row } from "./design";
 import { hiddenOf, leftOut, merge } from "./hide";
@@ -36,7 +38,11 @@ const BROWSER_TEXT: Record<string, unknown> = { fontSize: 16, fontStyle: "normal
 
 export function raise(element: React.ReactElement): Raised {
   const report: string[] = [];
-  const { document, diagnostics, components } = collectTemplate(element);
+  // The builder takes a design's element; a snapshot is the guardrail path's, which the builder isn't part of.
+  if (snapshotData(element)) return { body: null, report: ["builder/snapshot: toDesign() takes a design's element, not a snapshot"] };
+  const { document, diagnostics, components, template } = collectTemplate(element);
+  // A template's guardrails aren't the builder's: it takes the design a template builds, as a plain root.
+  if (template) return { body: null, report: [`builder/template: the design's root is the template ${template.id}: the builder takes the design it builds, toDesign(Template.design(values))`] };
   if (!document || diagnostics.some((d) => d.severity === "error")) return { body: null, report: diagnostics.filter((d) => d.severity === "error").map((d) => `${d.path}: ${d.message}`) };
   const root = document.root;
   if (root.type !== "Email" && root.type !== "Page" && root.type !== "Document") {

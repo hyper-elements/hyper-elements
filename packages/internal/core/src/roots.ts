@@ -29,7 +29,7 @@ export const ROOT_PROPS = {
       web: { level: "full", source: "writer" },
     },
     label: "Web fonts",
-    description: "The font files the template loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.",
+    description: "The font files the design loads: a family's file for each weight and style it uses. Text names a family in its fontFamily stack, before the fonts to show where it can't load.",
   }),
 };
 

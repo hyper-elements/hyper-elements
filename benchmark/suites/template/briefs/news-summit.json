@@ -1,0 +1,84 @@
+{
+  "id": "news-summit",
+  "title": "Orbit Summit recap",
+  "brief": "An issue of Orbit's newsletter, The Orbit Dispatch, made with Orbit's newsletter kit (see CLAUDE.md for its rules).\n\n- Preview text: \"The talks, slides and demos from Orbit Summit.\"\n- Heading: \"Orbit Summit recap\"\n- Intro: \"Two days, thirty talks and one very long demo. Here's what you missed.\"\n- Two stories, one after the other. Each is an image, a title, a sentence and a button:\n  - Image https://assets.orbit.dev/img/event-hero.png (1200\u00d7600 file), alt text \"The Orbit Summit stage\". Title \"Watch every talk\". Text \"All thirty talks are online, with captions and chapters.\". Button \"Watch the talks\" to https://orbit.dev/summit/talks?utm_source=newsletter.\n  - Image https://assets.orbit.dev/img/gradient.png (1200\u00d7500 file), alt text \"A slide from the keynote\". Title \"Slides and code\". Text \"Every deck and demo repository, in one place.\". Button \"Get the slides\" to https://orbit.dev/summit/slides?utm_source=newsletter.\n- Orbit's header (the logo) and footer (the address, and the unsubscribe link) are the kit's: use them as they are.",
+  "spec": {
+    "preview": "The talks, slides and demos from Orbit Summit.",
+    "texts": [
+      "Orbit Summit recap",
+      "Two days, thirty talks and one very long demo. Here's what you missed.",
+      "Watch every talk",
+      "Slides and code",
+      "All thirty talks are online, with captions and chapters.",
+      "Every deck and demo repository, in one place.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "Watch the talks",
+        "href": "https://orbit.dev/summit/talks?utm_source=newsletter",
+        "background": "#4f46e5"
+      },
+      {
+        "text": "Get the slides",
+        "href": "https://orbit.dev/summit/slides?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "event-hero.png",
+      "gradient.png"
+    ],
+    "columns": []
+  },
+  "content": {
+    "preview": "The talks, slides and demos from Orbit Summit.",
+    "heading": "Orbit Summit recap",
+    "intro": "Two days, thirty talks and one very long demo. Here's what you missed.",
+    "stories": [
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/event-hero.png",
+          "width": 1200,
+          "height": 600,
+          "alt": "The Orbit Summit stage"
+        },
+        "title": "Watch every talk",
+        "text": "All thirty talks are online, with captions and chapters.",
+        "button": {
+          "text": "Watch the talks",
+          "href": "https://orbit.dev/summit/talks?utm_source=newsletter"
+        }
+      },
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/gradient.png",
+          "width": 1200,
+          "height": 500,
+          "alt": "A slide from the keynote"
+        },
+        "title": "Slides and code",
+        "text": "Every deck and demo repository, in one place.",
+        "button": {
+          "text": "Get the slides",
+          "href": "https://orbit.dev/summit/slides?utm_source=newsletter"
+        }
+      }
+    ]
+  },
+  "run": {
+    "kits": [
+      "he",
+      "react-email",
+      "mjml",
+      "html"
+    ]
+  }
+}

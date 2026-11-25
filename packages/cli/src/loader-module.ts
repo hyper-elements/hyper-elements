@@ -183,16 +183,28 @@ export function loaderModuleText(template: string, token: string, format: "esm" 
 }
 
 /**
- * The text of a loader module that loads no template, for `describe`: Elements as a TypeScript module in that folder
- * would load it. It's a `.ts` file: tsx compiles it as its package's type says (`require` in a CommonJS package).
+ * The text of a loader module that loads no template: Elements as a module in that folder would load it. For
+ * `describe` it's a `.ts` file (tsx compiles it as its package's type says: `require` in a CommonJS package). For a
+ * slot's capture it's named after the template module (`beside`), so it's written in that file's language: type
+ * annotations only in TypeScript, `module.exports` in a `.cjs` file.
  */
-export function elementsLoaderText(token: string, format: "esm" | "cjs", bun: boolean): string {
+export function elementsLoaderText(token: string, format: "esm" | "cjs", bun: boolean, beside = "loader.ts"): string {
   const cjs = format === "cjs" && !bun;
+  const type = /\.[cm]?tsx?$/.test(beside) ? ": string" : "";
+  if (beside.endsWith(".cjs")) {
+    return [
+      `// ${token}`,
+      `module.exports.template = {};`,
+      bun ? `module.exports.load = (specifier) => import(specifier);` : `module.exports.load = (specifier) => require(specifier);`,
+      `module.exports.resolve = (specifier) => require.resolve(specifier);`,
+      "",
+    ].join("\n");
+  }
   return [
     `// ${token}`,
     `export const template = {};`,
-    cjs ? `export const load = (specifier: string) => require(specifier);` : `export const load = (specifier: string) => import(specifier);`,
-    cjs ? `export const resolve = (specifier: string) => require.resolve(specifier);` : `export const resolve = (specifier: string) => import.meta.resolve(specifier);`,
+    cjs ? `export const load = (specifier${type}) => require(specifier);` : `export const load = (specifier${type}) => import(specifier);`,
+    cjs ? `export const resolve = (specifier${type}) => require.resolve(specifier);` : `export const resolve = (specifier${type}) => import.meta.resolve(specifier);`,
     "",
   ].join("\n");
 }

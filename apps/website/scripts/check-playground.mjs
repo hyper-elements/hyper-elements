@@ -774,10 +774,26 @@ export default <Canvas width={400} height={120}><Text>A Canvas</Text></Canvas>;
     assert.equal(await api(page, "getCode"), code, "render_hyper_elements leaves the editor alone");
     const good = await tool("render_hyper_elements", { code: "<Email><Text>Hi</Text></Email>", root: "Page", include: ["html", "outline"] });
     assert.deepEqual([good.ok, good.root, /^Page /.test(good.outline), /<html/.test(good.html)], [true, "Page", true, true]);
+    // A template (@hyper-elements/react/template) imported and used as the design's root: its check runs, then its
+    // design renders. A value it refuses is said with its code; the control.
+    const card = (title) =>
+      [
+        'import { Email, Heading, prop } from "@hyper-elements/react";',
+        'import { template } from "@hyper-elements/react/template";',
+        "const Card = template({ id: \"acme.Card\", version: \"1.0.0\", label: \"Card\", root: \"Email\",",
+        "  fields: { title: prop.text({ label: \"Title\", required: true, maxLength: 20 }) }, example: { title: \"Hi\" },",
+        "  render: (v) => <Email><Heading field=\"title\">{v.title}</Heading></Email> });",
+        `export default () => <Card title=${JSON.stringify(title)} />;`,
+      ].join("\n");
+    const templated = await tool("render_hyper_elements", { code: card("From a template"), include: ["html"] });
+    assert.deepEqual([templated.ok, /From a template/.test(templated.html)], [true, true], "A template imported in the playground renders its design");
+    const refused = await tool("render_hyper_elements", { code: card("A title much longer than twenty characters") });
+    assert.equal(refused.ok, false);
+    assert.equal(refused.diagnostics[0].code, "template/value", "A value the template refuses is said with its code");
     const showing = await tool("show_hyper_elements_preview", { code: "<Email><Text>Shown by a tool</Text></Email>", device: "phone" });
     assert.match(showing.shareUrl, /#(z|code)=.*device=phone/);
     await shown(page).getByText("Shown by a tool").waitFor();
-    assert.match((await tool("get_hyper_elements_reference", {})).guide, /## Components/);
+    assert.match((await tool("get_hyper_elements_reference", {})).guide, /## Elements/);
     assert.equal((await tool("get_playground_code", {})).code, "<Email><Text>Shown by a tool</Text></Email>");
     assert.match(await page.evaluate(() => window.hyperElementsPlayground.help()), /hyperElementsPlayground\.render\(code, options\)/);
     await page.close();

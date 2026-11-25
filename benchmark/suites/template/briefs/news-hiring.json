@@ -1,0 +1,84 @@
+{
+  "id": "news-hiring",
+  "title": "We're hiring",
+  "brief": "An issue of Orbit's newsletter, The Orbit Dispatch, made with Orbit's newsletter kit (see CLAUDE.md for its rules).\n\n- Preview text: \"Six roles open on the Orbit team.\"\n- Heading: \"We're hiring\"\n- Intro: \"Orbit is growing, and we'd like you to grow it with us.\"\n- Two stories, one after the other. Each is an image, a title, a sentence and a button:\n  - Image https://assets.orbit.dev/img/orbit-app.png (1200\u00d7700 file), alt text \"Orbit's product team at work\". Title \"Open roles\". Text \"Engineering, design and support, remote or in San Francisco.\". Button \"See open roles\" to https://orbit.dev/careers?utm_source=newsletter.\n  - Image https://assets.orbit.dev/img/event-hero.png (1200\u00d7600 file), alt text \"The Orbit team at the summit\". Title \"Meet the team\". Text \"Who we are, how we work and what we're building next.\". Button \"Meet the team\" to https://orbit.dev/team?utm_source=newsletter.\n- Orbit's header (the logo) and footer (the address, and the unsubscribe link) are the kit's: use them as they are.",
+  "spec": {
+    "preview": "Six roles open on the Orbit team.",
+    "texts": [
+      "We're hiring",
+      "Orbit is growing, and we'd like you to grow it with us.",
+      "Open roles",
+      "Meet the team",
+      "Engineering, design and support, remote or in San Francisco.",
+      "Who we are, how we work and what we're building next.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "See open roles",
+        "href": "https://orbit.dev/careers?utm_source=newsletter",
+        "background": "#4f46e5"
+      },
+      {
+        "text": "Meet the team",
+        "href": "https://orbit.dev/team?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "orbit-app.png",
+      "event-hero.png"
+    ],
+    "columns": []
+  },
+  "content": {
+    "preview": "Six roles open on the Orbit team.",
+    "heading": "We're hiring",
+    "intro": "Orbit is growing, and we'd like you to grow it with us.",
+    "stories": [
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/orbit-app.png",
+          "width": 1200,
+          "height": 700,
+          "alt": "Orbit's product team at work"
+        },
+        "title": "Open roles",
+        "text": "Engineering, design and support, remote or in San Francisco.",
+        "button": {
+          "text": "See open roles",
+          "href": "https://orbit.dev/careers?utm_source=newsletter"
+        }
+      },
+      {
+        "image": {
+          "src": "https://assets.orbit.dev/img/event-hero.png",
+          "width": 1200,
+          "height": 600,
+          "alt": "The Orbit team at the summit"
+        },
+        "title": "Meet the team",
+        "text": "Who we are, how we work and what we're building next.",
+        "button": {
+          "text": "Meet the team",
+          "href": "https://orbit.dev/team?utm_source=newsletter"
+        }
+      }
+    ]
+  },
+  "run": {
+    "kits": [
+      "he",
+      "react-email",
+      "mjml",
+      "html"
+    ]
+  }
+}

@@ -12,7 +12,7 @@
  */
 import { assetParts, LAYOUT_VERSION, pdfFamily, reactPdf, thumbnailOf, writeDocument, type Asset, type Font } from "@hyper-elements/core/pdf";
 import type { FontFace } from "@hyper-elements/core";
-import { ElementsError, prepare, type Diagnostic, type ResolvedNode } from "@hyper-elements/react";
+import { ElementsError, prepare, type Diagnostic, type ResolvedNode, type Snapshot } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 
 export interface PdfFont {
@@ -44,7 +44,7 @@ export interface PdfResult {
 const FIXED_DATE = new Date(Date.UTC(2026, 0, 1));
 
 /** A Document written as a PDF. Rejects with an `ElementsError` listing the problems if it has errors. */
-export async function renderPdf(element: ReactElement, options: PdfOptions = {}): Promise<PdfResult> {
+export async function renderPdf(element: ReactElement | Snapshot, options: PdfOptions = {}): Promise<PdfResult> {
   const { root, diagnostics } = documentOf(element);
   const found: Diagnostic[] = [];
   const fonts = fontFiles(root, options.fonts ?? [], found);
@@ -68,13 +68,13 @@ export interface TemplateAssets {
  * (renderPdf() reads only the font files it's given). Rejects a template as renderPdf() does: with errors, or with a
  * root other than a Document.
  */
-export function templateAssets(element: ReactElement): TemplateAssets {
+export function templateAssets(element: ReactElement | Snapshot): TemplateAssets {
   const { root } = documentOf(element);
   return { fonts: [...facesOf(root)], images: [...new Set(imagesOf(root).map(({ src }) => src))] };
 }
 
 /** The Document a template is, with prepare()'s diagnostics; a template with errors, or another root, throws. */
-function documentOf(element: ReactElement): { root: ResolvedNode; diagnostics: Diagnostic[] } {
+function documentOf(element: ReactElement | Snapshot): { root: ResolvedNode; diagnostics: Diagnostic[] } {
   const { root, diagnostics, layout } = prepare(element);
   readable(layout, "pdf");
   if (!root) throw new ElementsError(diagnostics);

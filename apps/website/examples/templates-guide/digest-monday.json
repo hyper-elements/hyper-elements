@@ -1,0 +1,8 @@
+{
+  "preview": "Faster exports, what a customer said about them, and the changelog",
+  "body": [
+    { "type": "story", "title": "Faster exports", "text": "Exports finish in half the time, with no settings to change." },
+    { "type": "quote", "text": "Our release notes went out before the standup ended.", "by": "Dana, Northwind Traders" },
+    { "type": "button", "label": "Read the changelog", "href": "https://orbit.example/changelog" }
+  ]
+}

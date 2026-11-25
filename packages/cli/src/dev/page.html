@@ -55,7 +55,7 @@ a { color: var(--accent); }
 <body>
 <header><h1>Hyper Elements dev</h1><span id="status" data-state="connecting">Connecting…</span></header>
 <div class="layout">
-  <nav id="templates" aria-label="Templates"></nav>
+  <nav id="templates" aria-label="Designs"></nav>
   <main id="view"><p class="empty">Rendering…</p></main>
 </div>
 <script>
@@ -162,7 +162,7 @@ a { color: var(--accent); }
     const parts = [];
     if (state.error) parts.push(el("p", { class: "banner", text: state.error }));
     for (const late of state.late || []) {
-      parts.push(el("p", { class: "banner", text: late.kind === "throw" ? `Template code threw outside a render: ${late.message}` : `A child process ended badly after its results (${late.reason}: ${late.detail})` }));
+      parts.push(el("p", { class: "banner", text: late.kind === "throw" ? `Design code threw outside a render: ${late.message}` : `A child process ended badly after its results (${late.reason}: ${late.detail})` }));
     }
     if (template) {
       parts.push(el("h2", { text: template.file }));
@@ -170,7 +170,7 @@ a { color: var(--accent); }
       if (template.error) parts.push(el("p", { class: "banner", "data-error": "", text: template.error }));
       parts.push(diagnostics(template), outputs(template), links(template));
     } else if (!state.error) {
-      parts.push(el("p", { class: "empty", text: "No templates." }));
+      parts.push(el("p", { class: "empty", text: "No designs." }));
     }
     view.replaceChildren(...parts.filter(Boolean));
   }
@@ -184,7 +184,7 @@ a { color: var(--accent); }
       return setStatus("offline", "Can't reach the dev server");
     }
     if (state.rendering) setStatus("rendering", "Rendering…");
-    else if (state.version) setStatus("ready", `Rendered ${state.templates.length} template${state.templates.length === 1 ? "" : "s"} in ${state.ms} ms`);
+    else if (state.version) setStatus("ready", `Rendered ${state.templates.length} design${state.templates.length === 1 ? "" : "s"} in ${state.ms} ms`);
     document.documentElement.dataset.version = String(state.version || 0);
     draw();
   }

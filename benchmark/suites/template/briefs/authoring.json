@@ -1,0 +1,56 @@
+{
+  "id": "authoring",
+  "title": "Orbit's newsletter kit",
+  "brief": "Orbit's newsletter, The Orbit Dispatch, is written each month by people and agents who aren't designers. Build the reusable part of it: what every issue is made with, so that an issue can't go off Orbit's brand.\n\nAn issue gives three things: its preview text, its heading, and its body (an intro, then stories: each an image, a title, a sentence and a button).\n\nWhat every issue must keep, whatever its body:\n\n- Orbit's header, the logo (https://assets.orbit.dev/img/orbit-logo.png, 252\u00d7128, shown 126px wide, alt \"Orbit\"), at the top, the same in every issue.\n- Orbit's footer, the same in every issue: \"Orbit Labs, 500 Market St, San Francisco\" and an \"Unsubscribe\" link to https://orbit.dev/unsubscribe?utm_source=newsletter.\n- A white 600px card on a #f1f2f6 page.\n- Colors only from Orbit's palette: page #f1f2f6, card #ffffff, text #1f2937, muted #6b7280, accent #4f46e5 (buttons), and #ffffff on the accent. Nothing in a body may change them.\n- Text in Helvetica, Arial, sans-serif. Nothing in a body may change it.\n- Every link on orbit.dev or a subdomain, with ?utm_source=newsletter.\n- Alt text on every image, a preview text, and at least one button in the body.\n- No markup a body brings of its own.\n\nMake the newsletter refuse a body that would break one of these where your tool can; where it can't, write the rule down for whoever writes an issue.",
+  "spec": {
+    "preview": "What's new at Orbit this month, in two minutes.",
+    "texts": [
+      "The Orbit Dispatch",
+      "Two things from the Orbit team this month.",
+      "A faster editor",
+      "Typing, search and preview are all twice as fast.",
+      "Orbit Labs, 500 Market St, San Francisco"
+    ],
+    "buttons": [
+      {
+        "text": "Try the editor",
+        "href": "https://app.orbit.dev/editor?utm_source=newsletter",
+        "background": "#4f46e5"
+      }
+    ],
+    "links": [
+      {
+        "text": "Unsubscribe",
+        "href": "https://orbit.dev/unsubscribe?utm_source=newsletter"
+      }
+    ],
+    "images": [
+      "orbit-logo.png",
+      "newsletter-hero.png"
+    ],
+    "columns": []
+  },
+  "run": {
+    "kits": [
+      "he-author",
+      "react-email-author",
+      "mjml-author",
+      "html-author"
+    ],
+    "prompt": "Build Orbit's reusable newsletter as BRIEF.md describes, following CLAUDE.md. It's done when `node tools/check.mjs` passes.",
+    "checker": [
+      {
+        "from": "check-authoring.mjs",
+        "to": "tools/check.mjs"
+      },
+      {
+        "from": "../email/check.mjs",
+        "to": "tools/email-check.mjs"
+      },
+      {
+        "from": "check-guardrails.mjs",
+        "to": "tools/guardrails.mjs"
+      }
+    ]
+  }
+}

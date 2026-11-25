@@ -1,8 +1,9 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 import React, { createContext, useContext } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Button, Column, component, ElementsError, Email, Heading, Image, Page, prop, render, Row, Section, Text, validate } from "./index";
-import { describeComponent, type ExpandProps } from "@hyper-elements/core";
+import { Button, Column, component, defineElement, ElementsError, Email, Heading, Image, Page, prop, render, Row, Section, Text, validate } from "./index";
+import { describeComponent, type ExpandProps, type Kind, type PropSpec } from "@hyper-elements/core";
+import type { ComponentSpec, ComponentTheme, CustomComponent, CustomElement, ElementSpec, ElementTheme } from "./index";
 import { collectTemplate } from "./collect";
 
 const treeOf = (element: React.ReactElement) => collectTemplate(element).document!;
@@ -49,6 +50,23 @@ const shop = (
     </Row>
   </Page>
 );
+
+describe("defineElement(), and component(), its name before", () => {
+  it("are one function, and the types before are the new ones", () => {
+    expect(component).toBe(defineElement);
+    type Props = { title: PropSpec<Kind<string, string>, true> };
+    expectTypeOf<CustomComponent<Props>>().toEqualTypeOf<CustomElement<Props>>();
+    expectTypeOf<ComponentSpec<Props>>().toEqualTypeOf<ElementSpec<Props>>();
+    expectTypeOf<ComponentTheme>().toEqualTypeOf<ElementTheme>();
+    const Note = defineElement({ type: "acme.Note", label: "Note", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Text>{title}</Text> });
+    expectTypeOf(Note).toEqualTypeOf<CustomElement<typeof Note.definition.props>>();
+    expect(validate(<Email><Note title="a" /></Email>).valid).toBe(true);
+  });
+
+  it("says to render the template when an element is rendered on its own", () => {
+    expect(() => renderToStaticMarkup(<ProductCard name="a" photo="https://example.com/a.png" href="#" />)).toThrow("not this element on its own");
+  });
+});
 
 describe("component()", () => {
   it("is one node in the template, with its props normalized", () => {
@@ -205,7 +223,7 @@ describe("component()", () => {
       </Page>
     );
     expect(validate(template)).toMatchObject({ valid: false, diagnostics: [{ code: "custom/duplicate", severity: "error", path: "jsx" }] });
-    await expect(render(template)).rejects.toThrow(/Two different custom components are named acme\.Card/);
+    await expect(render(template)).rejects.toThrow(/Two different elements made with defineElement\(\) are named acme\.Card/);
     // One component used twice is one component.
     expect(validate(<Page><A title="one" /><A title="two" /></Page>).valid).toBe(true);
     // component() called in a component makes one per render: the message says where to call it.

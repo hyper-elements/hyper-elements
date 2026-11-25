@@ -8,7 +8,9 @@ import { fileURLToPath } from "node:url";
 import type { Diagnostic } from "./protocol";
 
 /** The Elements versions this CLI renders with: the peer range in its package.json. */
-export const ELEMENTS_RANGE = ">=0.4.0 <0.5.0";
+export const ELEMENTS_RANGE = ">=0.4.0 <0.6.0";
+/** The release of @hyper-elements/react that adds templates (/template): values files and template modules need it. */
+export const TEMPLATES_RELEASE = "0.5.0";
 
 export interface ElementsMain {
   render(element: unknown, options?: Record<string, unknown>): Promise<{ html: string; text: string; diagnostics: Diagnostic[] }>;
@@ -19,12 +21,46 @@ export interface ElementsMain {
 
 export interface ElementsInspect {
   inspect(element: unknown): { root: string | null; valid: boolean; diagnostics: Diagnostic[] };
+  /** Elements before `describeElements()` had these alone; they're kept, deprecated, after it. */
   describeComponents(options?: { root?: string }): { version: number; roots: string[]; components: Array<{ type: string }> };
   describeComponent(type: string, options?: { root?: string }): { version: number; type: string } | undefined;
+  describeElements?(options?: { root?: string }): { version: number; roots: string[]; elements: Array<{ type: string }> };
+  describeElement?(type: string, options?: { root?: string }): { version: number; type: string } | undefined;
+}
+
+/** `@hyper-elements/react/template`, as the project has it (0.5): what values files and template modules are read with. */
+export interface TemplateModule {
+  readValuesFile(file: unknown, template: unknown): { values?: Record<string, unknown>; migrated?: Record<string, unknown>; formats?: string[]; assets: Record<string, unknown>; diagnostics: Diagnostic[] };
+  toValuesFile(template: unknown, values: unknown, options: { module: string; formats?: string[]; sha256?: string; assets?: Record<string, unknown> }): Record<string, unknown>;
+  checkLayout(template: unknown, values: unknown, options: Record<string, unknown>): { regions: Record<string, unknown>; fits: unknown[]; rules: unknown[]; diagnostics: Diagnostic[] };
+  sniffImage(bytes: Uint8Array): { width: number; height: number; type: string; alpha: boolean } | undefined;
+  templateOf(value: unknown): TemplateObject | undefined;
+}
+
+/** A template object (`template()`), as the CLI reads it. */
+export interface TemplateObject {
+  id: string;
+  version: string;
+  root: string;
+  formats?: Record<string, { scale?: number }>;
+  fields: Record<string, unknown>;
+  example: Record<string, unknown>;
+  check(values: unknown, options?: { format?: string; fragments?: Record<string, unknown> }): {
+    valid: boolean;
+    values?: Record<string, unknown>;
+    diagnostics: Diagnostic[];
+    review: Array<{ field?: string; template?: string; guidance: string }>;
+    rules: Array<{ rule: string; source: string; format?: string; status: string; diagnostics: Diagnostic[] }>;
+    snapshots: Record<string, unknown>;
+    template: { id: string; version: string };
+  };
+  update(values: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown>;
+  describe(): unknown;
 }
 
 export interface ReactModule {
   createElement(type: unknown, props?: Record<string, unknown> | null): unknown;
+  isValidElement?(value: unknown): boolean;
 }
 
 export interface EmailClientsModule {
@@ -74,5 +110,5 @@ export function supported(version: string): boolean {
   const match = /^(\d+)\.(\d+)\.(\d+)/.exec(version);
   if (!match) return false;
   const [major, minor] = [Number(match[1]), Number(match[2])];
-  return major === 0 && minor === 4;
+  return major === 0 && (minor === 4 || minor === 5);
 }

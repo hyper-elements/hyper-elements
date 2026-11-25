@@ -21,7 +21,7 @@ npm install @hyper-elements/react satori@^0.33.5 @resvg/resvg-js react react-dom
 npm install -D tsx
 ```
 
-The Satori range is intentional: it is the compatibility range in the [image renderer’s installation docs](/docs/outputs/image#install), not a pin to an old Hyper Elements release. Keep that engine requirement aligned with the current docs when upgrading. Image rendering is a separate entry point; the ordinary component import does not load these engines.
+The Satori range is intentional: it is the compatibility range in the [image renderer’s installation docs](/docs/outputs/image#install), not a pin to an old Hyper Elements release. Keep that engine requirement aligned with the current docs when upgrading. Image rendering is a separate entry point; the ordinary element import does not load these engines.
 
 Add `"type": "module"` to `package.json`, preserving its other fields. Create `tsconfig.json` with the following content. In an existing project, merge this JSX setting rather than replacing its configuration.
 
@@ -51,7 +51,7 @@ card.tsx
 
 ## How do I turn post data into a React image template?
 
-Save this as `card.tsx`. A [Canvas](/docs/components/canvas) has explicit pixel dimensions. Its children stack vertically, and `justifyContent: "space-between"` spreads them through the available height. Text belongs in `Heading` and `Text`, not loose HTML elements.
+Save this as `card.tsx`. A [Canvas](/docs/elements/canvas) has explicit pixel dimensions. Its children stack vertically, and `justifyContent: "space-between"` spreads them through the available height. Text belongs in `Heading` and `Text`, not loose HTML elements.
 
 `card.tsx`
 

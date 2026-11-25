@@ -8,8 +8,14 @@ export interface LintOptions {
   kind?: "marketing" | "transactional";
 }
 
-/** Each rule's severity under the options, `off` for one that doesn't run. */
+/**
+ * Each rule's severity under the options, `off` for one that doesn't run: its setting is `off`, or the options lack
+ * the kind it needs. What the checks run and what the plugin's `rules` call enabled both read this, and nothing else.
+ */
 export type Settings = ReadonlyMap<string, RuleSetting>;
+
+/** The rules that run on one kind of email only: `unsubscribe` on a marketing one. */
+const KIND_ONLY: ReadonlyMap<string, NonNullable<LintOptions["kind"]>> = new Map([["unsubscribe", "marketing"]]);
 
 const SETTINGS: readonly string[] = ["off", "info", "warning"];
 const KINDS: readonly string[] = ["marketing", "transactional"];
@@ -21,7 +27,7 @@ const show = (v: unknown): string => {
 };
 
 /** The settings the options give, or a TypeError naming what's wrong. */
-export function settingsOf(options: unknown, caller: string): { settings: Settings; kind: LintOptions["kind"] } {
+export function settingsOf(options: unknown, caller: string): { settings: Settings } {
   if (options !== undefined && (options === null || typeof options !== "object" || Array.isArray(options))) {
     throw new TypeError(`[lint] ${caller} takes an options object ({ rules, kind }), not ${show(options)}`);
   }
@@ -37,5 +43,6 @@ export function settingsOf(options: unknown, caller: string): { settings: Settin
       settings.set(id, value as RuleSetting);
     }
   }
-  return { settings, kind: o.kind as LintOptions["kind"] };
+  for (const [id, kind] of KIND_ONLY) if (o.kind !== kind) settings.set(id, "off");
+  return { settings };
 }

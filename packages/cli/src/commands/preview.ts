@@ -17,14 +17,14 @@ export async function previewTemplate(context: TemplateContext): Promise<Command
         cliDiagnostic(
           "email-clients-missing",
           "error",
-          "preview draws an email as each email client does with @hyper-elements/email-clients, which isn't installed where this template is",
+          "preview draws an email as each email client does with @hyper-elements/email-clients, which isn't installed where this design is",
           "npm i -D @hyper-elements/email-clients",
         ),
       ],
     };
   }
   if (root !== "Email") {
-    return { status: "skipped", diagnostics: [cliDiagnostic("not-an-email", "info", `preview draws an Email as the email clients do; this template's root is ${root === null ? "none Elements knows" : `a ${root}`}`)] };
+    return { status: "skipped", diagnostics: [cliDiagnostic("not-an-email", "info", `preview draws an Email as the email clients do; this design's root is ${root === null ? "none Elements knows" : `a ${root}`}`)] };
   }
   let result;
   try {
