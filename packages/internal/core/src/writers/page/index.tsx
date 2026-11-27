@@ -113,14 +113,15 @@ const COMPONENTS: Record<string, Component> = {
   Html: HtmlBlock,
 };
 
-/** What a node's component gets. `inRtl`: its parent's text runs right to left. */
-function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl = false): Props {
+/** What a node's component gets. `root`: the template's. `inRtl`: its parent's text runs right to left. */
+function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, root: ResolvedNode, inRtl = false): Props {
   const rtl = node.props.dir === "rtl" || (inRtl && node.props.dir !== "ltr");
-  const render: Props["render"] = (child, childPlacement) => write(child, node, childPlacement, options, rtl);
+  const render: Props["render"] = (child, childPlacement) => write(child, node, childPlacement, options, root, rtl);
   return {
     node,
     style: node.style,
     parent,
+    root,
     placement,
     classes: () => classesFor(node, parent),
     children: () => {
@@ -138,10 +139,10 @@ function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declaratio
 /** What writes no element of its own, so has no place in the block map: a line break, a merge tag (its markup is the template's), a page number. */
 const UNMAPPED = new Set(["LineBreak", "MergeTag", "PageNumber"]);
 
-function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl: boolean): Html {
+function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, root: ResolvedNode, inRtl: boolean): Html {
   const component = COMPONENTS[node.type];
   if (!component) throw new Error(`[Elements] The page exporter can't render a ${node.type}`);
-  const html = component(propsOf(node, parent, placement, options, inRtl));
+  const html = component(propsOf(node, parent, placement, options, root, inRtl));
   return UNMAPPED.has(node.type) ? html : markBlock(html, node);
 }
 
@@ -152,7 +153,7 @@ export function renderPage(resolved: ResolvedDocument, options: PageOptions & { 
   const writer = document ? Document : root.type === "Canvas" ? Canvas : Page;
   const writeBody = (marks: BlockMarks | null) => {
     const sheet = new Stylesheet(options.classPrefix);
-    const markup = withStylesheet(sheet, () => withBlockMarks(marks, () => String(markBlock(writer(propsOf(root, root, [], options)), root))));
+    const markup = withStylesheet(sheet, () => withBlockMarks(marks, () => String(markBlock(writer(propsOf(root, root, [], options, root)), root))));
     return { sheet, markup };
   };
   // With a block map, written with marks (again with another pair where the template's text holds one), which come out again.
