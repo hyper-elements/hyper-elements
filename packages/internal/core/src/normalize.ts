@@ -7,7 +7,7 @@ import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
 import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
-import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
+import { CUSTOM_TYPE, isCustom, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
 import { a, nearest, show } from "./nearest";
 import { COMPONENTS } from "./components";
 import { aliasHint, holdsToken, readScope, readTheme, resolveValue, scopePaths, themedStyle, themeNames, ThemeEnvironment, type Problem, type ThemeData } from "./theme";
@@ -152,6 +152,15 @@ function rootTakes(roots: readonly RootName[] | undefined, root: ComponentDefini
   return !roots || !root || roots.includes(root.type as RootName);
 }
 
+/**
+ * The root a component's `roots` and its props' are checked against: the template's, or for a custom element, the one
+ * its registry checks them as (`customRootsAs`, an output drawn as another root's), in its place.
+ */
+function limitsRoot(definition: ComponentDefinition, context: Context): ComponentDefinition | undefined {
+  const as = context.registry.customRootsAs;
+  return context.root && as && isCustom(definition) ? context.registry.get(as) : context.root;
+}
+
 /** Whether a component and a root share an output: where they don't, it's the output's `target/unsupported`, as today. */
 function sharesOutput(definition: ComponentDefinition, root: ComponentDefinition): boolean {
   return Object.keys(definition.targets).some((target) => target in root.targets);
@@ -261,12 +270,13 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     return null;
   }
   const root = context.root;
-  if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
+  const limits = limitsRoot(definition, context);
+  if (root && limits && !rootTakes(definition.roots, limits) && sharesOutput(definition, root)) {
     const { code, message } = definition.notAllowed ?? {
       code: "element/not-supported",
       message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
     };
-    d.error(code, message(root.type), path);
+    d.error(code, message(limits.type), path);
     return null;
   }
 
@@ -350,7 +360,7 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     d.error("prop/unknown", `${a(definition.type)} has no prop "variant"${isRoot ? ": a root has no variants (its theme sets its style)" : ""}`, `${path}.variant`, id);
   }
 
-  const props = readProps(input.props, definition, `${path}.props`, id, d, context.root, context);
+  const props = readProps(input.props, definition, `${path}.props`, id, d, limitsRoot(definition, context), context);
   if (props) node.props = props;
 
   // The theme merged into the node's style, as if the author had written it: then read as an authored style is.

@@ -145,6 +145,9 @@ export function givenId(values: Values): string | undefined {
   return typeof id === "string" && id && !/^u_(row|column|body|content_[a-z0-9_]+)_?\d*$/.test(id) ? id.replace(/["'<>&`\s\u0000-\u001f\u007f]/g, "") || undefined : undefined;
 }
 
+/** An id a template takes: a letter, then letters, digits, "_" and "-". The builder's can be any text ("faq.answer"). */
+export const TEMPLATE_ID = /^[A-Za-z][\w-]*$/;
+
 /**
  * Where a block, column or row is hidden: on desktop, or on phones, by its overrides (legacy reads only these: a flat
  * `hideDesktop` or `hideMobile` in its values hides nothing).

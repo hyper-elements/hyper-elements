@@ -85,12 +85,14 @@ export type {
   VideoProps,
   HtmlProps,
 } from "./components";
+export { defineElement, type CustomElement, type CustomProps, type ElementSpec, type RenderContext, type ThemeValues } from "./custom";
+// What props are made with: framework-neutral, apart from the elements.
 export {
-  defineElement,
+  checkValue,
+  defineProperty,
   prop,
-  type CustomElement,
-  type CustomProps,
-  type ElementSpec,
+  type CheckedValue,
+  type PropertyDefinition,
   type FieldInput,
   type FieldInputs,
   type FieldValue,
@@ -98,9 +100,7 @@ export {
   type BlocksSpec,
   type ListSpec,
   type ObjectSpec,
-  type RenderContext,
-  type ThemeValues,
-} from "./custom";
+} from "./properties";
 // The earlier names, deprecated and kept so designs written with them still work.
 export { component, type ComponentSpec, type CustomComponent } from "./custom";
 export { defineTheme, extendTheme, token } from "./theme";
@@ -108,4 +108,4 @@ export type { Alias, ComponentTheme, ElementTheme, Register, StyleName, Theme, T
 export { captureFragment, readFragment, slotMark, snapshot, type CapturedNode, type FragmentCapture, type Snapshot, type SnapshotOptions } from "./snapshot";
 export { outline, prepare, render, validate, type RenderOptions, type RenderResult, type ResolvedNode, type TemplateUsed, type ValidateOptions, type ValidationResult } from "./render";
 export { BLOCK_MAP_VERSION, ElementsError, formatDiagnostics, PLUGIN_API } from "@hyper-elements/core";
-export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, Severity } from "@hyper-elements/core";
+export type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginNode, PluginOutput, PluginsOption, RootName, Severity } from "@hyper-elements/core";

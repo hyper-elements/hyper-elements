@@ -133,6 +133,7 @@ Use it like any element:
 | `description` | Optional: what it's for |
 | `props` | Its props, made with `prop.*` |
 | `placement` | `"block"` (the default) goes where a block goes. `"section"` goes where a Section goes, and renders a Section |
+| `roots` | Optional: the roots it goes in, so the formats it's for (`["Email", "Page"]`). Without it, every root. See [Only in some formats](#only-in-some-formats) |
 | `render` | The block as built-in elements, from its props with defaults applied |
 
 `render` is a pure function of its props: no hooks, and nothing read from outside its props, so it renders anywhere. It returns one element, which takes your element's place.
@@ -143,8 +144,8 @@ Its second argument is `{ theme }`: the [theme](/docs/themes)'s tokens as values
 
 | Helper | Takes |
 |--------|-------|
-| `prop.text()` | Text |
-| `prop.color()` | A color |
+| `prop.text()` | Text, or one of the texts its `enum` lists |
+| `prop.color()` | A color, opaque alone with `transparency: false` |
 | `prop.image()` | An image: a URL, or `{ src, width, height }` |
 | `prop.link()` | A link: a URL or a merge tag, or `{ href, target }` |
 | `prop.boolean()` | `true` or `false` |
@@ -154,13 +155,37 @@ Its second argument is `{ theme }`: the [theme](/docs/themes)'s tokens as values
 | `prop.fontFamily()` | A font stack |
 | `prop.fontWeight()` | A font weight |
 
-Each takes `label`, and optionally a `description`, `required: true` or a `default`. Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, and `render` gets its value where the instance is.
+Each takes `label`, and optionally a `description`, `required: true` or a `default`. An option a helper doesn't take is refused where it's written. A visual editor edits a prop with its editor for the prop's kind, from what the prop says (a number's `min` and `max`). For an editor of your own, `defineProperty()` defines a property: a name, the helper it's made on, and the options its editor takes, each made with a helper too (`const currency = defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"], default: "$" }) } })`). Called, it's a prop that takes what its base takes and its own options: `price: currency({ label: "Price", min: 0, symbol: "€" })`. The value is its base's, and an editor that has no control by the property's name shows the kind's. In Unlayer's builder an element is a tool, with a field for each prop: see [Visual editing](/docs/guides/visual-editor#your-own-elements-as-tools). Their types carry through to `render`'s props and to the JSX. A color, length or font prop also takes a theme's token in JSX, and `render` gets its value where the instance is.
 
 ### On each instance
 
 Beside its own props, an instance takes `id`, `hidden`, and `style={{ flex }}` for its share of a Row. Its `flex` and `hidden` go onto the element it renders. It takes no `variant` or named styles: apply those in what it renders.
 
 An `id` inside a custom element is written after its instance's: an `id="photo"` in the card is `first-photo` in `<ProductCard id="first" />`. Without an instance `id`, ids inside are left out (with an `id/dropped` note), so two instances never share an id.
+
+### Only in some formats
+
+A custom element goes in every root: an `Email`, a `Page`, a `Document` and a `Canvas`. `roots` names the ones it's for:
+
+```tsx
+import { Text, defineElement, prop } from "@hyper-elements/react";
+
+export const InvoiceLine = defineElement({
+  type: "acme.InvoiceLine",
+  label: "Invoice line",
+  roots: ["Document"],
+  props: { item: prop.text({ label: "Item", required: true }) },
+  render: ({ item }) => <Text>{item}</Text>,
+});
+```
+
+Under another root, `validate()` and `render()` give an error at its place, inside another element too:
+
+```text
+error element/not-supported at root.children[0]: A acme.InvoiceLine goes in a Document, not in an Email
+```
+
+`describeElements()` lists it under its roots alone, and in Unlayer's builder its tool is offered in theirs (see [Visual editing](/docs/guides/visual-editor#your-own-elements-as-tools)). What it renders keeps its own limits: a `PageNumber` in it goes in a `Document` alone, whatever its `roots` say. A single prop can name its roots too (`prop.text({ label: "Note", roots: ["Document"] })`): given under another root, it's a `prop/not-supported` error.
 
 ### A section-level element
 

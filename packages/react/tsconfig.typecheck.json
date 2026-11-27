@@ -7,5 +7,5 @@
     "paths": { "@hyper-elements/react": ["./src/primitives/index.ts"], "@hyper-elements/react/inspect": ["./src/inspect/index.ts"], "@hyper-elements/lint": ["../lint/src/index.ts"] },
     "noEmit": true
   },
-  "include": ["src/primitives/types.test-d.tsx", "src/primitives/template.test.tsx", "src/primitives/custom.test.tsx", "src/pdf/**/*", "src/image/**/*", "src/template/**/*", "test/**/*", "../lint/src/globals.d.ts"]
+  "include": ["src/primitives/types.test-d.tsx", "src/primitives/template.test.tsx", "src/primitives/custom.test.tsx", "src/builder/**/*", "src/pdf/**/*", "src/image/**/*", "src/template/**/*", "test/**/*", "../lint/src/globals.d.ts"]
 }

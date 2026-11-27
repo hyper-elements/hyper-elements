@@ -4,7 +4,7 @@
  * built-in ones, plus `expand`: what it is, as primitives.
  */
 import { COMPONENTS } from "./components";
-import { TARGETS, type ComponentDefinition, type PropSpec, type PropSpecs, type Target, type TargetSupport } from "./define";
+import { ROOT_NAMES, TARGETS, type ComponentDefinition, type PropSpec, type PropSpecs, type RootName, type Target, type TargetSupport } from "./define";
 import { deepFrozen, type OutputOf } from "./kinds";
 import type { Diagnostic } from "./diagnostics";
 import type { Json } from "./model";
@@ -12,6 +12,8 @@ import { placementStyle } from "./styles";
 
 /** A namespace, a dot, a capitalized name: "acme.ProductCard". Built-in types never look like this. */
 export const CUSTOM_TYPE = /^[a-z][a-z0-9-]*\.[A-Z][A-Za-z0-9]*$/;
+/** The name of an editor of a team's own: a namespace, a dot, a word ("acme.currency"). No editing app's own looks like this. */
+export const OWN_EDITOR = /^[a-z][a-z0-9-]*\.[A-Za-z][\w-]*$/;
 
 /** Props that always have a value: required ones, and ones with a default (see `prop`). */
 type RequiredOrDefaulted<P extends PropSpecs> = {
@@ -53,12 +55,35 @@ export interface CustomComponentSpec<P extends PropSpecs> {
   props: P;
   /** Where it goes: where a block goes (default), or where a Section goes. */
   placement?: "block" | "section";
+  /** The roots it goes in (default: every one). Under another, it's an `element/not-supported` error naming these. */
+  roots?: readonly RootName[];
   expand(props: ExpandProps<P>, context: ExpandContext): unknown;
 }
 
 export function defineCustomComponent<const P extends PropSpecs>(spec: CustomComponentSpec<P>): CustomDefinition<P> {
   if (!CUSTOM_TYPE.test(spec.type)) {
     throw new Error(`[Elements] An element's type is a namespace, a dot and a capitalized name ("acme.ProductCard"), not ${JSON.stringify(spec.type)}`);
+  }
+  for (const [key, prop] of Object.entries(spec.props)) {
+    // A property of a team's own is a prop once it's called.
+    if (typeof prop === "function") throw new Error(`[Elements] ${spec.type}: ${key} is a property's definition: call it for the prop (${key}: currency({ label: "…" }))`);
+    if (typeof prop.label !== "string") throw new Error(`[Elements] ${spec.type}: ${key} needs a label: what an editor shows for it`);
+    // A prop's editor is its kind's, or the one of the property of a team's own it is: one way to say it.
+    if ("editorOptions" in prop) throw new Error(`[Elements] ${spec.type}: ${key} gives editorOptions: a prop is edited with its kind's editor, or is a property of your own (defineProperty()), whose options are the property's`);
+    const editor: unknown = prop.editor;
+    if (typeof editor === "function") throw new Error(`[Elements] ${spec.type}: the editor of ${key} is a property's definition: that's the prop itself (${key}: currency({ label: "…" }))`);
+    if (typeof editor === "string") throw new Error(`[Elements] ${spec.type}: ${key} names the editor ${JSON.stringify(editor)}: a prop is edited with its kind's editor, or is a property of your own (defineProperty()): ${key}: currency({ label: "…" })`);
+    if (editor !== undefined) {
+      // One of a team's own, as a property a team defines gives it.
+      const { name, edits } = (editor ?? {}) as { name?: unknown; edits?: unknown };
+      if (!OWN_EDITOR.test(String(name))) throw new Error(`[Elements] ${spec.type}: the editor of ${key} is one a property gives (defineProperty()), named like "acme.currency", not ${JSON.stringify(name)}`);
+      if (edits !== prop.kind.editor) throw new Error(`[Elements] ${spec.type}: the editor ${String(name)} edits a ${String(edits)}, and ${key} is a ${prop.kind.editor}`);
+    }
+  }
+  // Some of the roots, each named once: none would be an element that goes nowhere.
+  const roots: unknown = spec.roots;
+  if (roots !== undefined && (!Array.isArray(roots) || !roots.length || roots.some((root) => !ROOT_NAMES.includes(root)) || new Set(roots).size !== roots.length)) {
+    throw new Error(`[Elements] ${spec.type}: roots names the roots it goes in, each once (${ROOT_NAMES.map((root) => JSON.stringify(root)).join(", ")}), not ${JSON.stringify(roots)}`);
   }
   const section = spec.placement === "section";
   const props = ownSpecs(spec.props);
@@ -75,6 +100,7 @@ export function defineCustomComponent<const P extends PropSpecs>(spec: CustomCom
     sizing: "stretch",
     // Rendered as the primitives it expands to, which are checked for each target themselves.
     targets: Object.fromEntries(TARGETS.map((target) => [target, {}])) as Record<Target, TargetSupport>,
+    ...(spec.roots !== undefined ? { roots: Object.freeze([...spec.roots]) } : {}),
     editor: paths.length ? { groups: [{ title: spec.label, paths }] } : undefined,
     custom: true,
     expand: spec.expand,
@@ -106,7 +132,11 @@ export function isCustom(definition: ComponentDefinition): definition is CustomD
 export class Registry {
   private readonly custom = new Map<string, CustomDefinition>();
 
-  constructor(components: readonly CustomDefinition<any>[] = []) {
+  /** See ComponentsOption.customRootsAs. */
+  readonly customRootsAs: RootName | undefined;
+
+  constructor(components: readonly CustomDefinition<any>[] = [], customRootsAs?: RootName) {
+    this.customRootsAs = customRootsAs;
     for (const definition of components) this.add(definition);
   }
 
@@ -143,8 +173,14 @@ export function propsWithDefaults(definition: ComponentDefinition, props: Record
 export interface ComponentsOption {
   /** Custom elements (made with `defineElement()`) the document may use. */
   components?: readonly CustomDefinition<any>[];
+  /**
+   * The root a custom element's `roots`, and its props', are checked against, in place of the document's: for an
+   * output drawn as another root's (a builder of documents draws each block as a page's, and the block is in a
+   * Document). A built-in's are checked against the document's root still: its root's writer is what writes it.
+   */
+  customRootsAs?: RootName;
 }
 
 export function registryOf(options: ComponentsOption | Registry | undefined): Registry {
-  return options instanceof Registry ? options : new Registry(options?.components);
+  return options instanceof Registry ? options : new Registry(options?.components, options?.customRootsAs);
 }

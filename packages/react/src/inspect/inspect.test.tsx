@@ -39,6 +39,11 @@ describe("describeElements()", () => {
     const Card = defineElement({ type: "acme.Card", label: "Card", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Column><Heading>{title}</Heading></Column> });
     expect(describeElements({ elements: [Card] }).elements.map((c) => c.type)).toContain("acme.Card");
     expect(describeElement("acme.Card", { elements: [Card], root: "Page" })!.properties.map((p) => p.path)).toEqual(["props.title", "style.flex"]);
+    expect(describeElement("acme.Card", { elements: [Card] })!.roots).toEqual(["Email", "Page", "Document", "Canvas"]);
+    // One that names its roots is described in those alone, and under another root it isn't there.
+    const Promo = defineElement({ type: "acme.Promo", label: "Promo", roots: ["Email", "Page"], props: {}, render: () => <Text>Sale</Text> });
+    expect(describeElement("acme.Promo", { elements: [Promo] })).toMatchObject({ type: "acme.Promo", roots: ["Email", "Page"] });
+    expect(describeElement("acme.Promo", { elements: [Promo], root: "Document" })).toBeUndefined();
   });
 
   it("keeps the names before: describeComponents() gives the same list as `components`, and takes `components`", () => {

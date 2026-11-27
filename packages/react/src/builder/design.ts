@@ -25,7 +25,7 @@ import { merge } from "./hide";
 import type { Values } from "./values";
 
 /** The builder's tools toDesign() writes blocks as, by their type in the design. */
-export type Tool = "heading" | "paragraph" | "button" | "image" | "divider" | "menu" | "social" | "video" | "html" | "page_break" | "table";
+export type Tool = "heading" | "paragraph" | "button" | "image" | "divider" | "menu" | "social" | "video" | "html" | "page_break" | "table" | "custom";
 
 /** Where a row or a block is hidden: the builder's `_override.mobile.hideMobile` and `_override.desktop.hideDesktop`. */
 export interface Hiding {
@@ -38,6 +38,8 @@ export interface Block {
   tool: Tool;
   hiding: Hiding;
   values: Values;
+  /** A custom tool's name (custom.ts), where it's one's block. */
+  custom?: string;
 }
 
 /** A block of a tool, hidden where `hiding` says, its values to come. */
@@ -103,7 +105,7 @@ export interface Body {
   footers?: Row[];
 }
 
-type DesignRow = { cells: number[]; columns: Array<{ contents: Array<{ type: string; values: Values }>; values: Values }>; values: Values };
+type DesignRow = { cells: number[]; columns: Array<{ contents: Array<{ type: string; slug?: string; values: Values }>; values: Values }>; values: Values };
 export type Design = { counters?: Record<string, number>; schemaVersion?: number; body: { rows: DesignRow[]; values: Values; headers?: DesignRow[]; footers?: DesignRow[] } };
 
 /** The schema version whose document margin is the one written (an older one's "96px" the builder reads as its preset). */
@@ -129,6 +131,8 @@ const TOOLS: Record<Tool, Values> = {
   html: HtmlDefaults,
   page_break: { color: "#6b7280" },
   table: TableDefaults,
+  // A custom tool's defaults are its own, in the builder it's registered in.
+  custom: {},
 };
 
 /** What the builder lets a user do with a row or a block. */
@@ -171,8 +175,8 @@ function designRow(row: Row, htmlID: string, htmlClassNames: string, next: (key:
 }
 
 /** A block as the builder's item: its tool's defaults, where it's hidden, its id and class. */
-function content(block: Block, next: (key: string) => number): { type: string; values: Values } {
-  const base = `u_content_${block.tool}`;
+function content(block: Block, next: (key: string) => number): { type: string; slug?: string; values: Values } {
+  const base = `u_content_${block.custom ? `custom_${block.custom}` : block.tool}`;
   const override = hidingOverride(block.hiding);
   const values = {
     containerPadding: "10px",
@@ -181,7 +185,7 @@ function content(block: Block, next: (key: string) => number): { type: string; v
     _meta: { htmlID: `${base}_${next(base)}`, htmlClassNames: base },
     ...EDITABLE,
   };
-  return { type: block.tool, values: merge(values, block.values) };
+  return { type: block.tool, ...(block.custom ? { slug: block.custom } : {}), values: merge(values, block.values) };
 }
 
 /** The body's values: its fields over the builder's defaults, an Email's preview text, its id. */

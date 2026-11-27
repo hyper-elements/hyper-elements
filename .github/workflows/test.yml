@@ -69,7 +69,8 @@ jobs:
       # ── Type contract ───────────────────────────────────────────
       # tsc gate over the components' prop types, render()'s and component()'s
       # (src/primitives/types.test-d.tsx and the other files in
-      # tsconfig.typecheck.json, which include /pdf and /image and their tests)
+      # tsconfig.typecheck.json, which include /builder, /pdf and /image and their
+      # tests: a test's expectTypeOf is checked here, not when vitest runs it)
       # and the core's sources. The build only type-checks each entry's import
       # graph, so this catches a relaxed or broken input type.
       - name: Type contract
@@ -128,15 +129,25 @@ jobs:
       # once as inert data (snapshot(), slotMark(), captureFragment() and readFragment(), with their plain-data
       # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
       # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
-      # bytes for the two together, templates and the `elements` key (349,212 measured); 350,800 bytes for a block
-      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured).
+      # bytes for the two together, templates and the `elements` key (349,212 measured);
+      # 355,100 bytes for those with defineProperty(): a team's own property as data (one of prop's
+      # helpers, its editor's name and its options, each checked by its kind), a text's enum, what's refused of one,
+      # prop's helpers and the list, blocks and object refusing an option they don't take (an editor named by its name
+      # among them), and a color's transparency (355,065 bytes measured); 355,200 bytes for prop's helpers and
+      # defineProperty() in modules of their own, apart from defineElement()'s React and render (78 bytes more, each
+      # module's path comment; 355,143 measured); 355,600 bytes with main's #266 merged in (a Document's page writer, the
+      # collecting render and render(); 399 bytes more, 355,542 measured); 356,350 bytes for checkValue(), what a field
+      # holds checked as its prop checks it (758 bytes more, 356,300 measured); 357,200 bytes with main's block map of
+      # every root merged in, the page writer marking its blocks as the email writer does (829 bytes more, 357,129 measured);
+      # 358,100 bytes for defineElement()'s roots, the formats an element is for (checked where it's defined, kept frozen,
+      # and a custom element's roots and its props' checkable as another root's; 887 bytes more, 358,016 measured).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=350800
+          MAX_SIZE=358100
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -169,14 +180,37 @@ jobs:
       # it as it is, an HTML block with the reason said where it doesn't (3,431 bytes measured);
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
-      # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (844 bytes more, 522,115 measured).
+      # 521,700 bytes for templates and the builder's table together (521,210 measured).
+      # 537,800 for a template's own elements as the builder's custom tools too (custom.ts: their blocks in a
+      # design both ways, and registerTools(), with a field for every kind of prop and a team's own editors; and what
+      # the builder keeps on such a block that isn't read, said as a built-in block's is), and fromDesign()'s code
+      # writing each such element by the name its type ends with, with its namespace where that's another's too
+      # (537,771 bytes measured); 542,100 for a block that can't be drawn as it's set said, not drawn otherwise: a value
+      # its prop doesn't take said in the canvas, its tool's validator checking a block's values and expanding its
+      # element with them (an error in the builder's audit), a text the builder gives as HTML (safeHtml) read as typed
+      # where its prop takes it only so, and an element its tool can't draw at the room its column leaves it (a theme's
+      # token in its render) kept an HTML block by toDesign() (4,310 bytes more; 542,081 measured); 542,200 with main's
+      # #266 merged in (66 bytes more, 542,147 measured); 548,100 for the tools' fields keeping only a value their prop
+      # takes (field.ts: registerTools()'s own text field, giving a tool the text as it's typed, and a team's control
+      # checked; what isn't kept said under the field, and an export failing while a field holds it, or naming the block
+      # it can't draw) in place of reading a text the builder gives as HTML, and a value its field can't read refused (7,401 bytes
+      # more, 549,548 measured); 550,400 for an input method's composition kept once it's done, what a failed export says
+      # written as plain text, and a color that can't be see-through telling the builder's picker so (775 bytes more,
+      # 550,323 measured); 569,400 for a field for a list, an object and a list of blocks (list.ts: an item per box, a
+      # field for each part, moved, removed and added, its value kept only where its prop takes it), the schema of
+      # what's kept for the builder's AI, and the tools in a document builder (19,004 bytes more, 569,327 measured); 571,600 for
+      # the list field keeping what its user didn't change and giving an edit left as the panel moves, fromDesign()
+      # leaving out a block its element can't render, and toDesign() refusing two elements that are one tool (2,207 bytes
+      # more, 571,534 measured); 572,450 with main's block map of every root merged in, in the writers it shares (845 bytes
+      # more, 572,379 measured); 573,600 for a tool offered in the display modes of its element's roots, an element that
+      # goes only in a Canvas refused, and a block in a document drawn as a page's with its element's roots checked as a
+      # Document's (1,117 bytes more, 573,496 measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=522500
+          MAX_SIZE=573600
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

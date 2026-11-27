@@ -103,8 +103,78 @@ Document a Video's thumbnail (its own, or a YouTube video's). It reads the templ
 so the two can't differ, and rejects a template as they do (with errors, or another root). `renderPdf()` and
 `renderImage()` are unchanged.
 
+### Added
+
+- **Your own elements as tools of Unlayer's builder.** An element made with `defineElement()` can be a custom tool there,
+  edited by its props and drawn by Elements, with no tool written by hand. `registerTools(unlayer, elements)`
+  (`@hyper-elements/react/builder`) registers each as a tool in the builder's custom JavaScript and returns their
+  names. A tool's name is from its type (`acme.ProductCard` is `acme_product_card`, as `toolName()` gives it for an
+  element or its type). It has a field for each prop, with the builder's editor for its kind: a whole number in its
+  counter between the prop's `min` and `max`, one that isn't whole as text, a length in px in the counter, a font
+  weight in a dropdown. It's drawn in the canvas and in what the builder exports. `toDesign(element, { customTools:
+  true })` writes each of a template's own elements as its tool's block, where it was an HTML block of its markup;
+  `fromDesign(design, { elements })` reads those blocks back as the elements, its code writing each by the name its
+  type ends with (`<ProductCard />`), or with its namespace where that's another's too (`AcmeCard`), and listing their
+  types to import. Without the options, both do what they did. `registerTools()`'s `tools` takes the builder's own settings for a tool: `properties` that aren't the
+  element's props (a picker), and what the builder's `registerTool()` takes (`transformer`, `usageLimit`…). Each
+  field keeps only a value its prop takes: one it doesn't (a price below its `min`) stays in the field with why under
+  it, and the block keeps the value it had. A text, and a number or a length the builder keeps as text, is edited in a
+  text field of `registerTools()`'s own, which gives a tool the text as it's typed whether the builder's `safeHtml` is
+  on or off, and keeps what an input method composes once its user is done. A list, an object or a list of blocks
+  (`prop.list()`, `prop.object()`, `prop.blocks()`) is edited in a field of `registerTools()`'s own: a box for each item,
+  with a field for each of its parts, to move, remove or add, its value given to the block once its user leaves a text
+  and kept only where its prop takes it. Each field `registerTools()` draws itself, and a team's control where the
+  builder keeps the prop's value or its text, gives the builder's AI the schema of what's kept. A color that can't be see-through gives the builder's picker `allowTransparent: false`. The
+  tools are a document builder's too: there, the canvas and the export draw an element as a Page's markup, which the
+  builder prints with its own page size and margins (`displayMode: "document"`). A block saved with a value its prop doesn't take, or with none for a prop its element needs, says what's
+  wrong in the canvas and is an error in the builder's audit; its export fails, naming the block and why, as does an
+  export while a field holds a value that isn't kept. What a failed export says is plain text, with `<`, `>` and `&`
+  written as JSON escapes them (`\u003c`), as the builder writes it in place of the HTML. `fromDesign()` leaves such a block out and says so, as it does a block its element can't render with its values (two that don't go together); a saved number is read as it's written in decimal, as its field reads it. `toDesign()` refuses two elements that are one tool in the builder, as `registerTools()` does. An element
+  its tool can't draw on its own, at the room the builder gives its block (one with a theme's token in its `render`),
+  stays an HTML block, and `toDesign()`'s report says why.
+- **`checkValue()`: a field checked as its prop checks it.** `checkValue(spec, held)` checks what a field holds against
+  the prop it edits (an element's `definition.props.price`): `{ ok: true, value }`, or `{ ok: false, message }` with why
+  (`"expected a number from 0, not -5"`). An empty field is the prop not given, and a number's field holds its digits
+  as text. It imports no React, so any editing app checks a field the same way, with the same words.
+- **A property of your own, for an editor of your own.** `defineProperty()` defines a property once, as data: a name,
+  the helper of `prop` it's made on, and the options its editor takes, each made with a helper too (`const currency =
+  defineProperty({ name: "acme.currency", base: prop.number, options: { symbol: prop.text({ enum: ["$", "€", "£"],
+  default: "$" }) } })`). Called, it's a prop, which takes what its base takes and its own options: `price: currency({
+  label: "Price", min: 0, symbol: "€" })`. The value is its base's, with the prop's own limits; an option the property
+  doesn't have, or a value that isn't the option's, is a type error, and refused where it's written. Any other prop is
+  edited with its kind's editor, from what the prop says (a number's `min` and `max`): there's no editor to name.
+  `describeElements()` gives a property's prop as `property` (its name, and its options as the prop has them),
+  beside `editor` (its kind's), which an editor with no control by that name shows. The name stays in the types as
+  it's written, in the property's, each prop's it makes and an element's with one (`price.editor.name` is
+  `"acme.currency"`), with the prop's options as its editor is given them, so an editing app can tell from an
+  element's type which properties it needs editors for. In Unlayer's builder you give your
+  property's control to `registerTools()` in `editors`, under the property's name, as it's written
+  (`{ render, mount }`): `EditorWidget<typeof currency>` types its value and options from the property, and it's given
+  the prop's value as the prop has it, or none where the block has one the prop doesn't take. What it gives back is
+  kept only where the prop takes it.
+- **A text that's one of a few.** `prop.text({ label: "Tone", enum: ["calm", "loud"] })` takes one of the texts its
+  `enum` lists: typed as those in `render`'s props and in JSX, checked as a `prop.choice()` is, and edited in a
+  dropdown in Unlayer's builder.
+- **A color that's opaque alone.** `prop.color({ label: "Text", transparency: false })` refuses a color that lets what's
+  under it show (an rgba, an 8-digit hex, `transparent`). A color may be see-through by default, as before.
+- **An element's prop with no label is refused** where the element is defined, and is a type error. `label` was
+  already required by `prop`'s types.
+- **An option a prop's helper doesn't take is refused** where it's written (`prop.number({ label: "Stars", mn: 1 })`),
+  as it was a type error already: a JavaScript caller's mistyped option was dropped without a word.
+- **The formats an element is for.** `defineElement({ …, roots: ["Email", "Page"] })` names the roots an element goes
+  in; without `roots`, it goes in every one, as before. Under another root, `validate()` and `render()` give an
+  `element/not-supported` error at its place (`A acme.InvoiceLine goes in a Document, not in an Email`), inside
+  another element too, and `describeElements()` lists it under those roots alone. A list with no root, one that isn't
+  a root's name, or a root twice is refused where the element is defined. In Unlayer's builder, its tool is offered in
+  the display modes of its roots (`email` for an Email, `web` for a Page, `document` for a Document), and
+  `registerTools()` refuses an element that goes only in a Canvas. In a document builder, which draws a block as a
+  page's, an element's `roots` and its props' are checked as a Document's. `RootName` is exported from the main entry.
+
 ### Fixed
 
+- **A font weight prop's type.** `render` got a `prop.fontWeight()`'s value typed as any number, which a style's
+  `fontWeight` doesn't take. It's typed as the weights it can be (100 to 900), so `style={{ fontWeight: weight }}`
+  compiles.
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow
