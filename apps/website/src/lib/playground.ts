@@ -80,7 +80,7 @@ const fromExample = (example: Example, said: Partial<Starter> = {}): Starter => 
 });
 
 // The order within each root.
-const ORDER = ["oyen-launch", "tarn-shipped", "quarry-welcome", "pith-weekly", "saltworks-invitation", "keel-sign-in-code", "casa-albero-page", "pell-ashby-invoice", "shipwright-ticket", "slow-signals-card", "fernway-spring-sale", "gridline-workshop-banner", "crumb-club-thumbnail", "morning-pages-quote"];
+const ORDER = ["oyen-launch", "launch-day", "tarn-shipped", "quarry-welcome", "pith-weekly", "saltworks-invitation", "keel-sign-in-code", "casa-albero-page", "pell-ashby-invoice", "shipwright-ticket", "slow-signals-card", "fernway-spring-sale", "gridline-workshop-banner", "crumb-club-thumbnail", "morning-pages-quote"];
 const templates = Object.values(examples.templates).sort((a, b) => ORDER.indexOf(a.slug) - ORDER.indexOf(b.slug));
 const byRoot = (root: StarterRoot) => templates.filter((t) => t.root === root).map((t) => fromExample(t));
 

@@ -26,7 +26,7 @@ export const template = (slug: string) => (data.templates as Record<string, Exam
 
 // Outputs mixed, so no one kind leads: an email, an image, a document, a page, then around again.
 const order = [
-  "oyen-launch", "fernway-spring-sale", "pell-ashby-invoice", "casa-albero-page",
+  "oyen-launch", "launch-day", "fernway-spring-sale", "pell-ashby-invoice", "casa-albero-page",
   "tarn-shipped", "crumb-club-thumbnail", "quarry-welcome", "slow-signals-card", "shipwright-ticket",
   "pith-weekly", "gridline-workshop-banner", "saltworks-invitation", "morning-pages-quote", "keel-sign-in-code",
 ];
