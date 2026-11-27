@@ -81,13 +81,14 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
   });
 
   it("keeps the guide short enough to read whole before writing a design", () => {
-    // Raised by what themes took (their section, and the design's theme): 20,000 and 22,000 before. Then by the
-    // command line's line beside the render example: 22,500 and 24,500 before. The skill's by what an agent does
-    // before writing (install the package, compare the guide's id): 24,750 before. Both by where an image's src comes
-    // from (agents made one up, and the email showed broken images): 22,800 and 25,500 before. Then by the line
-    // pointing to templates: 23,400 and 26,100 before.
-    expect(read("GUIDE.md").length).toBeLessThan(23_520);
-    expect(read(SKILL).length).toBeLessThan(26_220);
+    // Raised by what themes took (their section, and the design's theme): 20,000 and 22,000 before. Raised again by
+    // a Page's styles (the Pages section, and each element's page style groups): 22,500 and 24,500 before. Then by the
+    // command line's line beside the render example: 26,500 and 28,500 before. The skill's by what an agent does
+    // before writing (install the package, compare the guide's id), and both by where an image's src comes from (agents
+    // made one up, and the email showed broken images): 26,750 and 28,750 before. Then by the line pointing to
+    // templates: 27,400 and 30,000 before.
+    expect(read("GUIDE.md").length).toBeLessThan(27_520);
+    expect(read(SKILL).length).toBeLessThan(30_120);
   });
 });
 

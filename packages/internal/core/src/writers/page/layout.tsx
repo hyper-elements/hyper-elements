@@ -5,12 +5,28 @@
 import type { ResolvedNode } from "../../resolve";
 import type { Style } from "../jsx";
 import { length, type Declarations } from "../shared/css";
+import { laysOutAsRow, pageLayout as pageLayoutOf } from "../../css-serialize";
 
-export const FLEX_ALIGN: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" };
+export const FLEX_ALIGN: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end", stretch: "stretch", baseline: "baseline" };
 const TEXT_ALIGN: Record<string, string> = { left: "flex-start", justify: "flex-start", center: "center", right: "flex-end" };
 /** The same in a stack whose text runs right to left, where a stack starts on its right. */
 const TEXT_ALIGN_RTL: Record<string, string> = { left: "flex-end", justify: "flex-start", center: "center", right: "flex-start" };
-export const JUSTIFY: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end", "space-between": "space-between" };
+export const JUSTIFY: Record<string, string> = {
+  start: "flex-start",
+  center: "center",
+  end: "flex-end",
+  "space-between": "space-between",
+  // A Page's justifyContent takes these too.
+  "space-around": "space-around",
+  "space-evenly": "space-evenly",
+  stretch: "stretch",
+};
+
+/** Whether a node is a Row that lays its children out as one (its widths and shares), not as its page styles say. */
+export const inRow = (node: ResolvedNode) => node.type === "Row" && laysOutAsRow(node.style);
+
+/** Whether a node's page styles lay its children out as a flex row or a grid (on a Page), not as its component does. */
+export const pageLayout = (node: ResolvedNode) => pageLayoutOf(node.style);
 
 /**
  * Where a child sits across a stack (root, Section, Column): one that fills
@@ -69,7 +85,8 @@ export function box(node: ResolvedNode, withWidth = true): Style {
     backgroundColor: style.backgroundColor,
     border: style.border,
     borderRadius: style.borderRadius,
-    overflow: style.overflow === "hidden" ? "hidden" : undefined,
+    // visible is CSS's own; a Page's overflow may also be clip, scroll or auto.
+    overflow: style.overflow !== undefined && style.overflow !== "visible" ? style.overflow : undefined,
   };
 }
 

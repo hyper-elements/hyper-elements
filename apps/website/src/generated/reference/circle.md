@@ -1,7 +1,7 @@
 ---
 "title": "Circle"
 "group": "Shapes"
-"order": 35
+"order": 36
 "summary": "A circle centered at cx, cy in its Svg."
 ---
 

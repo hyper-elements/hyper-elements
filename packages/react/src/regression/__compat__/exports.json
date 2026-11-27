@@ -1,6 +1,7 @@
 {
  ".": [
   "BLOCK_MAP_VERSION",
+  "Box",
   "Button",
   "Canvas",
   "Circle",

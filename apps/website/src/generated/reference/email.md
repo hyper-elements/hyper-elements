@@ -7,7 +7,7 @@
 
 An email. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `600`)

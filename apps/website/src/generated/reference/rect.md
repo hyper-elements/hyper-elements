@@ -1,7 +1,7 @@
 ---
 "title": "Rect"
 "group": "Shapes"
-"order": 34
+"order": 35
 "summary": "A rectangle at x, y in its Svg, rounded by rx."
 ---
 

@@ -7,7 +7,7 @@
 
 A web page. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
@@ -21,15 +21,15 @@ Props:
 `style`:
 - `color`: *color* (default `"#000000"`, inherited, Typography)
 - `fontFamily`: *fontFamily* (default `"Arial, Helvetica, sans-serif"`, inherited, Typography)
-- `fontSize`: a length (a number of px) (default `16`, inherited, Typography)
+- `fontSize`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (default `16`, inherited, Typography)
 - `fontWeight`: *fontWeight* (default `400`, inherited, Typography)
 - `fontStyle`: one of "normal", "italic" (inherited, Typography)
-- `lineHeight`: *lineHeight* (default `1.5`, inherited, Typography)
-- `letterSpacing`: a length (a number of px) (inherited, Typography)
+- `lineHeight`: *lineHeight*; on a Page, a multiple of the font size (1.5), a percentage ("150%"), px ("24px") or "normal" (the font's own), or on a Page a length ("1.5rem", "1.25em", "calc(1em + 4px)") (default `1.5`, inherited, Typography)
+- `letterSpacing`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, vw, vh, calc(), min(), max(), clamp()) (inherited, Typography)
 - `textAlign`: one of "left", "center", "right", "justify" (default `"left"`, inherited, Typography)
 - `textTransform`: one of "none", "uppercase", "lowercase", "capitalize" (inherited, Typography)
 - `backgroundColor`: *color* (Background). The window's background, behind the content.
-- `gap`: a length (a number of px) (Spacing). Space between children.
-- `alignItems`: one of "start", "center", "end", "stretch" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
+- `gap`: a length (a number of px); on a Page, a length (a number of px), or on a Page a length (a number of px, rem, em, %, vw, vh, calc(), min(), max(), clamp()) (Spacing). Space between children.
+- `alignItems`: one of "start", "center", "end", "stretch"; on a Page, one of "start", "center", "end", "stretch", "baseline" (Layout). Where children sit across the layout's direction (vertically in a Row, horizontally in a Column), as CSS align-items. Across a Column it places what has its own size (a Button, an Image, an Svg, a box with a width); a block of text fills the width, so its words move with its textAlign.
 
 `style.mobile` (on phones): `gap`.

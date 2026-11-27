@@ -1,13 +1,13 @@
 ---
 "title": "Document.Page"
 "group": "Parts"
-"order": 27
+"order": 28
 "summary": "One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins."
 ---
 
 One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Section, Row, Column, Box, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)

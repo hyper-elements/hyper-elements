@@ -1,7 +1,7 @@
 ---
 "title": "MergeTag"
 "group": "Inline"
-"order": 26
+"order": 27
 "summary": "A value the sending service fills in (a name, a link), written in the service's own syntax."
 ---
 

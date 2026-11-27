@@ -9,7 +9,7 @@
 import React from "react";
 import { prepareTemplate, shownAnywhere, type ResolvedNode } from "@hyper-elements/core";
 import * as primitives from "./index";
-import { BLOCK_MAP_VERSION, Button, Canvas, Column, Document, Email, ElementsError, Heading, Html, Image, Layer, Link, List, ListItem, MergeTag, Page, PageBreak, PageFooter, PageHeader, PageNumber, render, Row, Section, Span, Text, type BlockMap } from "./index";
+import { BLOCK_MAP_VERSION, Box, Button, Canvas, Column, Document, Email, ElementsError, Heading, Html, Image, Layer, Link, List, ListItem, MergeTag, Page, PageBreak, PageFooter, PageHeader, PageNumber, render, Row, Section, Span, Text, type BlockMap } from "./index";
 import { collectTemplate } from "./collect";
 import Receipt from "./readme-example";
 import * as examples from "./testing/codemod-examples";
@@ -272,6 +272,29 @@ describe("render(page, { blockMap: true }): a Page, a Document's print HTML and 
       ["root.children[1]", undefined, "Html"],
       ["root.children[2]", undefined, "Button"],
     ]);
+  });
+
+  it("maps a Page's Boxes and blocks with page styles, written with their styles as without a map", async () => {
+    const element = (
+      <Page width={1200}>
+        <Box as="header" style={{ flexDirection: "row", gap: 16, position: "sticky", top: 0 }}>
+          <Text style={{ whiteSpace: "nowrap", opacity: 0.8 }}>Brand</Text>
+        </Box>
+        <Section style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1.5rem" }}>
+          <Heading level={2} style={{ gridColumn: "span 2" }}>
+            Title
+          </Heading>
+          <Image src={{ src: "https://example.test/a.png", width: 600, height: 400 }} alt="A" style={{ objectFit: "cover", aspectRatio: "3 / 2" }} />
+        </Section>
+      </Page>
+    );
+    const { plain, mapped, blocks } = await both(element);
+    const { blocks: _, ...rest } = mapped;
+    expect(rest).toEqual(plain);
+    expect(plain.html).toContain("position:sticky");
+    expect(misplaced(mapped.html, blocks)).toEqual([]);
+    expect(blocks.entries.map((e) => e.path).sort()).toEqual(writtenPaths(element));
+    expect(blocks.entries.map((e) => e.type)).toEqual(["Page", "Box", "Text", "Section", "Heading", "Image"]);
   });
 
   it("maps a Document's header and footer on every page", async () => {

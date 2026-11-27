@@ -1,7 +1,7 @@
 ---
 "title": "Line"
 "group": "Shapes"
-"order": 37
+"order": 38
 "summary": "A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke)."
 ---
 

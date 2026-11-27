@@ -22,25 +22,30 @@ export const Page: Component = ({ node: root, style, rtl, render }) => {
   // The theme's tokens, as CSS custom properties for the page's own CSS and Html blocks.
   const tokens = customPropertiesClass(root.customProperties);
   const nodes = root.children.filter(isNode);
-  if (!nodes.some((node) => node.type === "Section")) {
+  // A Box written as the page's main, wherever it is: the page's own wrapper is a div then (a page has one main).
+  const holdsMain = (node: ResolvedNode): boolean => (node.type === "Box" && node.props.as === "main") || node.children.some((child) => isNode(child) && holdsMain(child));
+  const Main = nodes.some(holdsMain) ? "div" : "main";
+  // A Section and a Box span the window.
+  const spans = (node: ResolvedNode) => node.type === "Section" || node.type === "Box";
+  if (!nodes.some(spans)) {
     return (
-      <main class={tokens} phone={phone} style={[{ maxWidth: width, margin: "0 auto" }, stack, wrap, textDeclarations(root.text, undefined)]}>
+      <Main class={tokens} phone={phone} style={[{ maxWidth: width, margin: "0 auto" }, stack, wrap, textDeclarations(root.text, undefined)]}>
         {content(nodes)}
-      </main>
+      </Main>
     );
   }
 
-  // Sections span the window: the other children are kept to the content width, in runs between them. A run
+  // Sections and Boxes span the window: the other children are kept to the content width, in runs between them. A run
   // hides where all of its children do, so the gap beside it goes too.
   const parts: Array<ResolvedNode | ResolvedNode[]> = [];
   for (const node of nodes) {
     const last = parts[parts.length - 1];
-    if (node.type === "Section") parts.push(node);
+    if (spans(node)) parts.push(node);
     else if (Array.isArray(last)) last.push(node);
     else parts.push([node]);
   }
   return (
-    <main class={tokens} phone={phone} style={[stack, wrap, textDeclarations(root.text, undefined)]}>
+    <Main class={tokens} phone={phone} style={[stack, wrap, textDeclarations(root.text, undefined)]}>
       {parts.map((part) =>
         Array.isArray(part) ? (
           <div class={hidingClasses(runHidden(part))} phone={phone} style={[{ width: "100%", maxWidth: width, margin: "0 auto" }, stack]}>
@@ -50,6 +55,6 @@ export const Page: Component = ({ node: root, style, rtl, render }) => {
           render(part, [])
         )
       )}
-    </main>
+    </Main>
   );
 };

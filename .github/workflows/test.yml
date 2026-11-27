@@ -116,27 +116,26 @@ jobs:
       # said (every root's formats, `by` values, root variants, a theme at a document's
       # top level), about 42KB; defineTheme(), extendTheme()
       # and token(), about 4KB), its JSX API (about 17KB) and the
-      # render that collects a template (about 5KB). Raise it on purpose, with what grew:
-      # 322KB for plain text's one-pass scan of service tags in large headings and
-      # the email's encoding of URLs in CSS; 317,000 bytes for a Table's free column
-      # written for classic Outlook apart (its own col and first-row cell, without width: auto);
-      # 318,100 bytes for a theme's `elements` read beside `components`, its name before (1,021
-      # bytes measured, with the messages that say "element");
-      # then, for templates, raised from 317,000 bytes before the `elements` key: 327,400 bytes (10,352 more) for templates' part of the main entry: the list, object and
-      # date kinds and their prop helpers, the field key, and a template design's request handed
-      # to its template by the render that collects it; 345,100 bytes (17,692 more) for snapshots: a design captured
-      # once as inert data (snapshot(), slotMark(), captureFragment() and readFragment(), with their plain-data
-      # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
-      # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
-      # bytes for the two together, templates and the `elements` key (349,212 measured); 350,800 bytes for a block
-      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured).
+      # render that collects a template (about 5KB), and a Page's styles (Box, the CSS value kinds
+      # that check each page style (with calc() typed as CSS types it), their serializer, the flex
+      # and grid layout model (CSS grid's placement and track sizing, border overrides) and outline(),
+      # about 82KB). Raise it on purpose, with what grew: 400KB with the email client checks moved
+      # out (to @hyper-elements/email-clients) and plain text's one-pass scan of service tags in
+      # large headings and the email's encoding of URLs in CSS; 403,000 bytes for grid lines read
+      # by name and a Table's free column written for classic Outlook apart;
+      # 404,100 bytes for a theme's `elements` read beside `components`, its name before
+      # (1,021 bytes measured, with the messages that say "element");
+      # then main's templates (349,800 bytes there, from 317,000 before them and the `elements` key):
+      # the list, object and date kinds, snapshots, the blocks kind, frozen kinds and definitions, and fitted text in a
+      # Canvas; 435,300 bytes for them and this branch's page styles together (434,633 measured);
+      # main's block map of every root (829 bytes more there, 350,800 bytes); 436,300 bytes with it (435,861 measured).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=350800
+          MAX_SIZE=436300
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -145,38 +144,41 @@ jobs:
           echo "✅ Main entry bundle within budget"
 
       # The builder adapter's entry (/builder: toDesign and fromDesign) has its
-      # own budget: about 476KB unminified ESM. The adapter itself (about 159KB: the
+      # own budget: about 563KB unminified ESM. The adapter itself (about 159KB: the
       # hidden properties' manifest, writing designs over each tool's defaults,
       # reading designs, their values, runs and rich text, the JSX printer); the core
       # and writers it lays out and writes locked markup with, plugins (the email
       # client checks are email-clients'), render()'s blockMap, the roots check and themes (with their guard on
       # JavaScript's own names, body text roles, the token() hint and the checks that a
-      # theme's mistakes are said) among
-      # them (about 279KB); the main
+      # theme's mistakes are said), and a Page's styles (Box, their CSS value kinds and
+      # serializer, the flex and grid layout model, a Page's padding and gaps as px) among
+      # them (about 293KB); the main
       # entry's JSX API it reads templates with (about 11KB) and the render that
       # collects them (about 5KB). It imports only its own files, the main entry's
       # and React (src/builder/imports.test.ts). Raise it on purpose, with what
-      # grew: 485.5KB for the same scan and encoding, in the writers it shares;
-      # 479,000 bytes for a Table's free column written for classic Outlook apart;
-      # 480,000 bytes for a theme's `elements` beside `components` (984 bytes measured);
-      # then, for templates, raised from 479,000 bytes before the `elements` key: 484,500 bytes (5,503 more) for the same kinds, field key and template hand-off,
-      # and builder/template for a template design; 486,200 bytes (1,639 more) for the blocks kind, frozen kinds and
-      # definitions, and refusing a snapshot; 489,600 bytes (3,380 more) for the fit kind and prop, which the builder
-      # reads with the other definitions; 490,600 bytes for the two together (490,122 measured).
+      # grew: 563.5KB with the client checks moved out and the same scan and encoding;
+      # 566,500 bytes for grid lines read by name and a Table's free column written for
+      # classic Outlook apart;
+      # 567,500 bytes for a theme's `elements` beside `components` (984 bytes measured);
+      # 598,500 bytes for a Table as the builder's table tool and back, 31,000 bytes on main
+      # (480,000 to 511,000 there):
       # 506,000 for a Document's Table as the builder's table and back (about 11KB
       # to write it, 9.5KB to read it, 2.5KB of the table's defaults, 2KB beside them);
       # 509,500 for an Email's and a Page's Table as the builder's table where it draws
       # it as it is, an HTML block with the reason said where it doesn't (3,431 bytes measured);
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
-      # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (844 bytes more, 522,115 measured).
+      # 521,700 bytes for templates and the builder's table together (521,210 measured) on main;
+      # main's templates being the same kinds, field key and
+      # template hand-off, builder/template, the blocks kind, frozen kinds and definitions, refusing a snapshot, and the fit
+      # kind; 609,000 bytes for them and this branch's page styles together (608,241 measured);
+      # main's block map of every root (844 bytes more there, 522,500 bytes); 609,800 bytes with it (609,151 measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=522500
+          MAX_SIZE=609800
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

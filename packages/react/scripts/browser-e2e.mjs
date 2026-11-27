@@ -48,6 +48,9 @@
 //      without them fails those checks).
 //  14. Locked block — a block the builder keeps as markup fills its place
 //      in a block, a flex box and a grid.
+//  15. Page styles — every page style (a Box's, and an Image's picture),
+//      and lengths in rem, em, vh and calc(), compute in Chromium to what
+//      they say: the writer's declarations don't hide them.
 //
 // A negative control (a document with a bare <p>) must FAIL the margin
 // check — so a green run also proves the gate can detect the regressions
@@ -59,7 +62,7 @@ import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
 const React = (await import("react")).default;
-const {render, Email, Page, Document, Row, Column, Text, Heading, Button, Divider, Image, Layer} = await import("../dist/primitives.js");
+const {render, Email, Page, Document, Row, Column, Text, Heading, Button, Divider, Image, Layer, Box, Span} = await import("../dist/primitives.js");
 const { toDesign } = await import("../dist/builder.js");
 
 /** A template's HTML, as render() writes it. */
@@ -734,6 +737,56 @@ async function checkPagePhoneWidth(page) {
   else pass("page-phone-width", "breakpoints.mobile: phone styles and hiding apply at 600px and not at 601px");
 }
 
+/** Section 15: each page style computes in Chromium to what it says, written after the writers' own declarations. */
+async function checkPageStyles(page) {
+  // [id, the element, what it computes to: property → value]
+  const cases = [
+    ["grid", { display: "grid", gridTemplateColumns: "100px 200px", gridTemplateRows: "50px", gridAutoFlow: "column", rowGap: 7, columnGap: "1rem", alignContent: "center", justifyItems: "end" },
+      { display: "grid", gridTemplateColumns: "100px 200px", gridTemplateRows: "50px", gridAutoFlow: "column", rowGap: "7px", columnGap: "16px", alignContent: "center", justifyItems: "end" }],
+    ["areas", { display: "grid", gridTemplateAreas: ["a b"] }, { gridTemplateAreas: '"a b"' }],
+    ["flex", { display: "flex", flexDirection: "row", flexWrap: "wrap" }, { display: "flex", flexDirection: "row", flexWrap: "wrap" }],
+    ["place", { alignSelf: "center", justifySelf: "end", order: 2, flexGrow: 2, flexShrink: 0, flexBasis: "10rem", gridColumn: "span 2", gridRow: "1 / 3" },
+      { alignSelf: "center", justifySelf: "end", order: "2", flexGrow: "2", flexShrink: "0", flexBasis: "160px", gridColumnStart: "span 2", gridRowStart: "1", gridRowEnd: "3" }],
+    ["size", { minHeight: "10vh", maxHeight: 300, aspectRatio: "16 / 9", width: "calc(50% - 10px)" }, { minHeight: "80px", maxHeight: "300px", aspectRatio: "16 / 9" }],
+    ["position", { position: "sticky", top: "1rem", zIndex: 3 }, { position: "sticky", top: "16px", zIndex: "3" }],
+    ["inset", { position: "relative", inset: "1px 2px 3px 4px" }, { top: "1px", right: "2px", bottom: "3px", left: "4px" }],
+    ["sides", { padding: 4, paddingTop: "2rem", paddingLeft: "1em" }, { paddingTop: "32px", paddingLeft: "16px", paddingRight: "4px" }],
+    ["text", { whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", fontSize: "1.5rem", lineHeight: "2em", letterSpacing: "0.1em" },
+      { whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden", fontSize: "24px", lineHeight: "48px", letterSpacing: "2.4px" }],
+    ["clamp", { lineClamp: 2 }, { webkitLineClamp: "2", overflow: "hidden" }],
+    ["background", { backgroundImage: "linear-gradient(#000000, #ffffff)", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" },
+      { backgroundImage: "linear-gradient(rgb(0, 0, 0), rgb(255, 255, 255))", backgroundSize: "cover", backgroundPosition: "50% 50%", backgroundRepeat: "no-repeat" }],
+    ["border", { borderWidth: "2px", borderStyle: "solid", borderColor: "#ff0000", borderLeft: "3px dashed #00ff00", outline: "2px solid #0000ff" },
+      { borderTopWidth: "2px", borderTopStyle: "solid", borderTopColor: "rgb(255, 0, 0)", borderLeftStyle: "dashed", borderLeftWidth: "3px", outlineStyle: "solid", outlineColor: "rgb(0, 0, 255)" }],
+    ["effects", { opacity: 0.5, boxShadow: "0 1px 2px #000000", transform: "translateX(10px)", transformOrigin: "top left", transition: "opacity 150ms ease", filter: "blur(2px)", backdropFilter: "blur(4px)", mixBlendMode: "multiply", cursor: "pointer", pointerEvents: "none" },
+      { opacity: "0.5", boxShadow: "rgb(0, 0, 0) 0px 1px 2px 0px", transform: "matrix(1, 0, 0, 1, 10, 0)", transformOrigin: "0px 0px", transitionDuration: "0.15s", filter: "blur(2px)", backdropFilter: "blur(4px)", mixBlendMode: "multiply", cursor: "pointer", pointerEvents: "none" }],
+    ["mask", { maskImage: "linear-gradient(#000000, transparent)" }, { maskImage: "linear-gradient(rgb(0, 0, 0), rgba(0, 0, 0, 0))" }],
+  ];
+  const html = await renderHtml(
+    h(Page, { width: 800 },
+      h(Box, { style: { maxWidth: 800, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 } },
+        ...cases.map(([id, style]) => h(Box, { id, style }, h(Text, null, "a"), h(Text, null, "b"))),
+        h(Image, { id: "picture", src: IMAGE_SRC, alt: "", style: { objectFit: "cover", objectPosition: "right top", aspectRatio: "1 / 1" } }),
+        h(Column, { id: "column-grid", style: { display: "grid", gridTemplateColumns: "1fr 1fr" } }, h(Text, null, "a")),
+        h(Text, null, "Bold ", h(Span, { id: "strong", as: "strong" }, "words"))
+      )
+    )
+  );
+  await page.setViewportSize(DESKTOP);
+  await page.setContent(html);
+  const problems = [];
+  for (const [id, , expected] of [...cases, ["picture", null, { objectFit: "cover", objectPosition: "100% 0%", aspectRatio: "1 / 1" }], ["column-grid", null, { display: "grid" }]]) {
+    const computed = await page.evaluate(([id, keys]) => { const style = getComputedStyle(document.getElementById(id)); return Object.fromEntries(keys.map((key) => [key, style[key]])); }, [id, Object.keys(expected)]);
+    for (const [key, value] of Object.entries(expected)) {
+      if (computed[key] !== value) problems.push(`#${id} ${key}: ${computed[key]}, expected ${value}`);
+    }
+  }
+  const tag = await page.evaluate(() => document.getElementById("strong").tagName);
+  if (tag !== "STRONG") problems.push(`Span as="strong" is a <${tag.toLowerCase()}>`);
+  if (problems.length) fail("page-styles", problems);
+  else pass("page-styles", `${cases.length + 2} boxes of page styles compute to what they say, rem, em, vh and calc() too; Span as gives its element`);
+}
+
 const browser = await chromium.launch();
 try {
   const page = await browser.newPage({ viewport: DESKTOP });
@@ -744,6 +797,7 @@ try {
   await checkDeviceOverrides(page);
   await checkRowSidePadding(page);
   await checkLockedBlock(page);
+  await checkPageStyles(page);
   await checkHover(page);
   await checkRtl(page);
   await checkStyleBaseline(page);
