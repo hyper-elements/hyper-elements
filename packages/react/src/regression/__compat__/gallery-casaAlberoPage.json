@@ -150,7 +150,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "2px",
@@ -187,7 +198,14 @@
            "fontFamily": {
             "label": "Cormorant Garamond",
             "value": "'Cormorant Garamond', Garamond, Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "-2px",
            "_override": {
@@ -225,7 +243,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -393,7 +422,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "2px",
@@ -484,7 +524,14 @@
            "fontFamily": {
             "label": "Cormorant Garamond",
             "value": "'Cormorant Garamond', Garamond, Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "-1px",
            "_override": {
@@ -542,7 +589,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -576,7 +634,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -610,7 +679,14 @@
            "fontFamily": {
             "label": "Cormorant Garamond",
             "value": "'Cormorant Garamond', Garamond, Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -705,7 +781,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "2px",
@@ -742,7 +829,14 @@
            "fontFamily": {
             "label": "Cormorant Garamond",
             "value": "'Cormorant Garamond', Garamond, Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "-1px",
            "_override": {
@@ -795,7 +889,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -882,7 +987,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "2px",
@@ -1087,7 +1203,14 @@
            "fontFamily": {
             "label": "Cormorant Garamond",
             "value": "'Cormorant Garamond', Garamond, Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Cormorant%20Garamond'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fcormorantgaramond%2Fv21%2Fco3ZmX5slCNuHLi8bLeY9MK7whWMhyjYrEtImSqn7B6D.woff2)%20format('woff2')%3Bfont-weight%3A300%20700%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "-1px",
            "_override": {
@@ -1124,7 +1247,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 300,
            "letterSpacing": "0px",
@@ -1193,7 +1327,18 @@
            "fontFamily": {
             "label": "Jost",
             "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "0px"
@@ -1332,7 +1477,18 @@
      "fontFamily": {
       "label": "Jost",
       "value": "Jost, Futura, 'Century Gothic', 'Helvetica Neue', Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Jost'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fjost%2Fv20%2F92zatBhPNqw73oTd4jQmfxI.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+      "weights": [
+       100,
+       200,
+       300,
+       400,
+       500,
+       600,
+       700,
+       800,
+       900
+      ]
      },
      "textColor": "#2b2420",
      "language": {},

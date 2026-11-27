@@ -105,6 +105,12 @@ so the two can't differ, and rejects a template as they do (with errors, or anot
 
 ### Fixed
 
+- **A block's font weight in the builder.** A font from the root's `fonts` went to the builder with its stylesheet
+  but no list of weights, so the builder's font weight field offered only 400 and 700, and selecting a block at
+  another weight (a `Text` at 600) saved it at 400. `toDesign()` now lists on each of those fonts the weights its
+  faces have and its blocks are at, with the 400 and 700 the builder offered before, as plain numbers the builder
+  names ("Semi Bold"). `fromDesign()` reads a design the same with the list or without it. A system font such as
+  Arial has no stylesheet, and the builder offers it 400 and 700 whatever its design says.
 - **A Table's free column in classic Outlook.** Beside columns with their own px, an Email wrote the column with no
   width as `width: auto`, for every client to give it what's left. Word reads `width: auto` as no width, leaves the
   cell's `width` attribute unused and gives the column the widest column's width, so its text wrapped in a narrow

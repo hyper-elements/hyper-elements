@@ -2,7 +2,7 @@
 import { createElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { toDesign } from "../builder";
-import { Email, Image, Section, Text } from "../primitives";
+import { Document, Email, Heading, Image, Section, Table, TableCell, TableRow, Text } from "../primitives";
 import { forTheEditor } from "./editorDesign";
 
 const FACE = { family: "Geist", src: "https://fonts.example/geist.woff2", format: "woff2", weight: "100 900" };
@@ -38,8 +38,29 @@ describe("forTheEditor", () => {
     const [font] = fonts.customFonts;
     expect(font.label).toBe("Geist");
     expect(decodeURIComponent(font.url ?? "")).toContain("https://fonts.example/geist.woff2");
-    expect(font.weights.map((weight) => weight.value)).toEqual([100, 200, 300, 400, 500, 600, 700, 800, 900]);
+    expect(font.weights).toEqual([100, 200, 300, 400, 500, 600, 700, 800, 900]);
     expect(JSON.stringify(design.body.values)).toContain("data:text/css");
     expect(JSON.stringify(given)).toBe(before);
+  });
+
+  it("gives the font picker each font's weights as the design lists them, and its faces' for a font no block is in", async () => {
+    vi.stubGlobal("fetch", () => Promise.reject(new Error("offline")));
+    const faces = [
+      { family: "Geist", src: "https://fonts.example/geist-400.woff2", weight: 400 },
+      { family: "Geist", src: "https://fonts.example/geist-600.woff2", weight: 600 },
+      { family: "Lora", src: "https://fonts.example/lora.woff2", weight: [300, 500] },
+    ];
+    // A Heading at 500, which no face of Geist has.
+    const medium = createElement(Email, { fonts: faces, style: { fontFamily: "Geist, Arial, sans-serif" } }, createElement(Heading, { style: { fontWeight: 500 } }, "Title"));
+    const { fonts } = await forTheEditor(medium, toDesign(medium).design, "https://stories.example/");
+    expect(fonts.customFonts.map((font) => [font.label, font.weights])).toEqual([["Geist", [400, 500, 600, 700]], ["Lora", [300, 400, 500, 700]]]);
+  });
+
+  it("takes a font's stack and weights from a table, where it's only a table's", async () => {
+    vi.stubGlobal("fetch", () => Promise.reject(new Error("offline")));
+    const table = createElement(Table, { style: { fontFamily: "Geist, Arial, sans-serif", fontWeight: 600 } }, createElement(TableRow, null, createElement(TableCell, null, "Words")));
+    const document = createElement(Document, { fonts: [{ family: "Geist", src: "https://fonts.example/geist-400.woff2", weight: 400 }] }, table);
+    const { fonts } = await forTheEditor(document, toDesign(document).design, "https://stories.example/");
+    expect(fonts.customFonts.map(({ label, value, weights }) => [label, value, weights])).toEqual([["Geist", "Geist, Arial, sans-serif", [400, 600, 700]]]);
   });
 });

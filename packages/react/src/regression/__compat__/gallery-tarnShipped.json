@@ -91,7 +91,18 @@
            "fontFamily": {
             "label": "Fraunces",
             "value": "Fraunces, Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Fraunces'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffraunces%2Fv38%2F6NU78FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0KxC9TeP2Xz5c.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Fraunces'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffraunces%2Fv38%2F6NU58FyLNQOQZAnv9ZwNjucMHVn85Ni7emAe9lKqZTnbB-gzTK0K1ChjeveQ7ZXk8g.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Fraunces'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffraunces%2Fv38%2F6NU78FyLNQOQZAnv9bYEvDiIdE9Ea92uemAk_WBq8U_9v0c2Wa0KxC9TeP2Xz5c.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Fraunces'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffraunces%2Fv38%2F6NU58FyLNQOQZAnv9ZwNjucMHVn85Ni7emAe9lKqZTnbB-gzTK0K1ChjeveQ7ZXk8g.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "-0.5px",
@@ -141,7 +152,16 @@
            "fontFamily": {
             "label": "Figtree",
             "value": "Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.4px",
@@ -251,7 +271,16 @@
            "fontFamily": {
             "label": "Figtree",
             "value": "Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -319,7 +348,16 @@
      "fontFamily": {
       "label": "Figtree",
       "value": "Figtree, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Figtree'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffigtree%2Fv9%2F_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2)%20format('woff2')%3Bfont-weight%3A300%20900%3Bfont-style%3Anormal%7D",
+      "weights": [
+       300,
+       400,
+       500,
+       600,
+       700,
+       800,
+       900
+      ]
      },
      "textColor": "#2a2522",
      "language": {},

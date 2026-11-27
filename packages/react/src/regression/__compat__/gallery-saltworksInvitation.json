@@ -94,7 +94,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -144,7 +150,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -238,7 +250,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -275,7 +293,14 @@
            "fontFamily": {
             "label": "Syne",
             "value": "Syne, 'Arial Black', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800
+            ]
            },
            "letterSpacing": "-4px",
            "_override": {
@@ -313,7 +338,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -481,7 +512,14 @@
            "fontFamily": {
             "label": "Syne",
             "value": "Syne, 'Arial Black', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800
+            ]
            },
            "fontWeight": 800,
            "letterSpacing": "-5px",
@@ -542,7 +580,14 @@
            "fontFamily": {
             "label": "Syne",
             "value": "Syne, 'Arial Black', 'Helvetica Neue', Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Syne'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsyne%2Fv24%2F8vIH7w4qzmVxm2BL9G78HEY.woff2)%20format('woff2')%3Bfont-weight%3A400%20800%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800
+            ]
            },
            "fontWeight": 700,
            "letterSpacing": "0px",
@@ -581,7 +626,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -706,7 +757,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -793,7 +850,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -915,7 +978,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
@@ -977,7 +1046,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1071,7 +1146,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -1174,7 +1255,13 @@
            "fontFamily": {
             "label": "Instrument Sans",
             "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1237,7 +1324,13 @@
      "fontFamily": {
       "label": "Instrument Sans",
       "value": "'Instrument Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Instrument%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Finstrumentsans%2Fv4%2FpxiTypc9vsFDm051Uf6KVwgkfoSxQ0GsQv8ToedPibnr0SZe1ZuWi3g.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+      "weights": [
+       400,
+       500,
+       600,
+       700
+      ]
      },
      "textColor": "#16161d",
      "language": {},

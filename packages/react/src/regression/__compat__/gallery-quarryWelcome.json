@@ -90,7 +90,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 500,
            "letterSpacing": "-0.3px",
@@ -140,7 +145,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -234,7 +244,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -271,7 +286,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "-1.4px",
            "_override": {
@@ -309,7 +333,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -441,7 +474,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -672,7 +710,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -725,7 +768,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "0px"
           }
@@ -757,7 +809,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -926,7 +987,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -979,7 +1045,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "0px"
           }
@@ -1011,7 +1086,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1180,7 +1264,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1233,7 +1322,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "letterSpacing": "0px"
           }
@@ -1265,7 +1363,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1372,7 +1479,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
@@ -1434,7 +1550,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1544,7 +1669,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1578,7 +1712,16 @@
            "fontFamily": {
             "label": "IBM Plex Sans",
             "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1612,7 +1755,12 @@
            "fontFamily": {
             "label": "IBM Plex Mono",
             "value": "'IBM Plex Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F63fjptAgt5VM-kVkqdyU8n1i8q131nj-o.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'IBM%20Plex%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexmono%2Fv20%2F-F6qfjptAgt5VM-kVkqdyU8n3twJwlBFgsAXHNk.woff2)%20format('woff2')%3Bfont-weight%3A500%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1675,7 +1823,16 @@
      "fontFamily": {
       "label": "IBM Plex Sans",
       "value": "'IBM Plex Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'IBM%20Plex%20Sans'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fibmplexsans%2Fv23%2FzYXzKVElMYYaJe8bpLHnCwDKr932-G7dytD-Dmu1syxeKYbSB4Zh.woff2)%20format('woff2')%3Bfont-weight%3A100%20700%3Bfont-style%3Anormal%7D",
+      "weights": [
+       100,
+       200,
+       300,
+       400,
+       500,
+       600,
+       700
+      ]
      },
      "textColor": "#eceae4",
      "language": {},

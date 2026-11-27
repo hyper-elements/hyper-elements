@@ -91,7 +91,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -141,7 +151,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -312,7 +332,15 @@
            "fontFamily": {
             "label": "Bodoni Moda",
             "value": "'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "letterSpacing": "-2px",
            "_override": {
@@ -349,7 +377,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -485,7 +523,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -522,7 +570,15 @@
            "fontFamily": {
             "label": "Bodoni Moda",
             "value": "'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "letterSpacing": "-0.6px",
            "_override": {
@@ -559,7 +615,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -598,7 +664,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -632,7 +708,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -666,7 +752,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -700,7 +796,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
@@ -862,7 +968,15 @@
            "fontFamily": {
             "label": "Bodoni Moda",
             "value": "'Bodoni Moda', Didot, 'Bodoni 72', Georgia, serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTQ7PxzY382XsXX63LUYJSKSKjWXFBP.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Bodoni%20Moda'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fbodonimoda%2Fv28%2FaFTS7PxzY382XsXX63LUYJSPeKrcW3JNsao.woff2)%20format('woff2')%3Bfont-weight%3A400%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "-0.3px",
@@ -901,7 +1015,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -1063,7 +1187,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "1.6px",
@@ -1235,7 +1369,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1313,7 +1457,17 @@
            "fontFamily": {
             "label": "Source Serif 4",
             "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+            "weights": [
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1376,7 +1530,17 @@
      "fontFamily": {
       "label": "Source Serif 4",
       "value": "'Source Serif 4', Georgia, 'Times New Roman', serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFI2_tTDB4M7-auWDN0ahZJW1gb8te1Xb7G.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Anormal%7D%40font-face%7Bfont-family%3A'Source%20Serif%204'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fsourceserif4%2Fv15%2FvEFK2_tTDB4M7-auWDN0ahZJW1gewtW_WpzEpMs.woff2)%20format('woff2')%3Bfont-weight%3A200%20900%3Bfont-style%3Aitalic%7D",
+      "weights": [
+       200,
+       300,
+       400,
+       500,
+       600,
+       700,
+       800,
+       900
+      ]
      },
      "textColor": "#1d1b18",
      "language": {},

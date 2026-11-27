@@ -58,7 +58,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 700,
            "letterSpacing": "0px",
@@ -108,7 +114,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -277,7 +287,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -368,7 +382,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -402,7 +422,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -457,7 +481,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -491,7 +521,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -546,7 +580,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -580,7 +620,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -635,7 +679,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -669,7 +719,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -724,7 +778,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -758,7 +818,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -854,7 +918,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1117,7 +1185,11 @@
            "fontFamily": {
             "label": "DM Mono",
             "value": "'DM Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'DM%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fdmmono%2Fv16%2FaFTU7PB1QTsUX8KYthqQBK6PYK0.woff2)%20format('woff2')%3Bfont-weight%3A400%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1206,7 +1278,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
@@ -1256,7 +1334,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1306,7 +1390,13 @@
            "fontFamily": {
             "label": "Familjen Grotesk",
             "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+            "weights": [
+             400,
+             500,
+             600,
+             700
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1376,7 +1466,13 @@
      "fontFamily": {
       "label": "Familjen Grotesk",
       "value": "'Familjen Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D",
+      "weights": [
+       400,
+       500,
+       600,
+       700
+      ]
      },
      "textColor": "#12242e",
      "language": {},

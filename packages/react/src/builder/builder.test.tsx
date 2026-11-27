@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Button, Canvas, Column, component, Document, Email, Grid, Heading, Html, Image, Layer, LineBreak, Link, List, ListItem, Page, PageBreak, PageFooter, PageHeader, PageNumber, Text, prop, Rect, Row, Span, Section, Svg, Table, TableCell, TableRow } from "../primitives";
 import { airbnb, stripe } from "../primitives/testing/codemod-examples";
 import { collectTemplate } from "../primitives/collect";
+import { faceWeights } from "./fonts";
 import { withParagraphMargin } from "./text";
 import { fromDesign, toDesign } from "./index";
 import { textJsonHtml } from "./text-json";
@@ -199,6 +200,59 @@ describe("toDesign", () => {
     const other = JSON.parse(JSON.stringify(design));
     other.body.values.fontFamily = { label: "Lora", value: "Lora, serif", url: "https://fonts.example/lora.css" };
     expect(fromDesign(other).report.join("\n")).toContain("Lora: web fonts the builder loads from a stylesheet");
+  });
+
+  it("lists on each web font the weights its faces have and its blocks are at, as the builder offers them", () => {
+    // The builder offers a web font's own weights only from its `weights`, and puts a selected block at a weight the
+    // list hasn't got back to 400: the faces' 300 and 600, and a Button's 500 that no face has.
+    const faces = [
+      { family: "Geist", src: "https://fonts.example/geist-300.woff2", weight: 300 },
+      { family: "Geist", src: "https://fonts.example/geist-600.woff2", weight: 600 },
+    ];
+    const { design } = toDesign(
+      <Email fonts={faces} style={{ fontFamily: "Geist, Arial, sans-serif" }}>
+        <Heading>Title</Heading>
+        <Text style={{ fontWeight: 600 }}>Words</Text>
+        <Button href="https://example.com" style={{ fontWeight: 500 }}>Go</Button>
+        <Text style={{ fontFamily: "Georgia, serif", fontWeight: 600 }}>More</Text>
+      </Email>
+    );
+    const [heading, text, button, georgia] = blocks(design) as Array<{ values: { fontFamily: { weights?: number[] }; fontWeight: number } }>;
+    expect([heading, text, button].map((block) => block.values.fontWeight)).toEqual([700, 600, 500]);
+    for (const font of [design.body.values.fontFamily, heading.values.fontFamily, text.values.fontFamily, button.values.fontFamily]) expect(font).toMatchObject({ label: "Geist", weights: [300, 400, 500, 600, 700] });
+    // A system font has no `url`, so the builder wouldn't read a list on it.
+    expect(georgia.values.fontFamily).not.toHaveProperty("weights");
+    // The list changes nothing read back.
+    const without = JSON.parse(JSON.stringify(design), (key, value) => (key === "weights" ? undefined : value));
+    const back = fromDesign(design);
+    expect(back.report).toEqual([]);
+    expect(back.code).toBe(fromDesign(without).code);
+  });
+
+  it("keeps the 400 and 700 the builder offers without a list, so a font whose faces have neither offers no fewer", () => {
+    const { design } = toDesign(
+      <Email fonts={[{ family: "Geist", src: "https://fonts.example/geist-600.woff2", weight: 600 }]} style={{ fontFamily: "Geist, Arial, sans-serif" }}>
+        <Text style={{ fontWeight: 600 }}>Words</Text>
+      </Email>
+    );
+    // The body is at 400, which it holds as no weight at all.
+    expect(design.body.values).not.toHaveProperty("fontWeight");
+    for (const font of [design.body.values.fontFamily, blocks(design)[0].values.fontFamily]) expect(font).toMatchObject({ weights: [400, 600, 700] });
+  });
+
+  it("takes each hundred in a variable font's range, and a face's weight only where a block can be at it", () => {
+    expect(faceWeights([150, 850])).toEqual([200, 300, 400, 500, 600, 700, 800]);
+    expect(faceWeights("100 900")).toEqual([100, 200, 300, 400, 500, 600, 700, 800, 900]);
+    expect(faceWeights([1, 1000])).toEqual([100, 200, 300, 400, 500, 600, 700, 800, 900]);
+    expect(faceWeights(undefined)).toEqual([400]);
+    expect(faceWeights("bold")).toEqual([700]);
+    expect(faceWeights(450)).toEqual([]);
+    const { design } = toDesign(
+      <Email fonts={[{ family: "Geist", src: "https://fonts.example/geist.woff2", weight: [150, 850] }]} style={{ fontFamily: "Geist, Arial, sans-serif" }}>
+        <Text style={{ fontWeight: 900 }}>Words</Text>
+      </Email>
+    );
+    expect(blocks(design)[0].values.fontFamily).toMatchObject({ weights: [200, 300, 400, 500, 600, 700, 800, 900] });
   });
 
   it("says what a Document's HTML blocks lose, which the builder's document mode doesn't draw", () => {
@@ -855,6 +909,20 @@ describe("a Table", () => {
     const { design } = toDesign(<Document fonts={[face]}>{<Table style={{ fontFamily: "Geist, Arial, sans-serif" }}><TableRow><TableCell>Words</TableCell></TableRow></Table>}</Document>);
     const [held] = tables(design);
     expect(decodeURIComponent(held.values.contentFontFamily.url)).toContain("src:url(https://fonts.example/geist.woff2)");
+    for (const part of ["header", "content", "footer"]) expect(held.values[`${part}FontFamily`].weights).toEqual([100, 200, 300, 400, 500, 600, 700, 800, 900]);
+    // Each part's weight counts for its own font: the header's 600 though the only face is 400.
+    const [plain] = tables(
+      toDesign(
+        <Document fonts={[{ ...face, weight: 400 }]}>
+          <Table style={{ fontFamily: "Geist, Arial, sans-serif" }}>
+            <TableRow header style={{ fontWeight: 600 }}><TableCell>Item</TableCell></TableRow>
+            <TableRow><TableCell>Words</TableCell></TableRow>
+          </Table>
+        </Document>
+      ).design
+    );
+    expect([plain.values.headerFontWeight, plain.values.contentFontWeight]).toEqual([600, 400]);
+    for (const part of ["header", "content", "footer"]) expect(plain.values[`${part}FontFamily`].weights).toEqual([400, 600, 700]);
     expect(fromDesign(design, { displayMode: "document" }).report.join("\n")).not.toContain("web fonts");
     const other = JSON.parse(JSON.stringify(design));
     tables(other)[0].values.headerFontFamily = { label: "Lora", value: "Lora, serif", url: "https://fonts.example/lora.css" };

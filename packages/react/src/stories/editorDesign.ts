@@ -5,7 +5,7 @@
  * the editor's copy changes: `toDesign` doesn't.
  */
 import type { ReactElement } from "react";
-import { fontStylesheet, type Face } from "../builder/fonts";
+import { fontStylesheet, fontWeights, isFontKey, type Face } from "../builder/fonts";
 import type { Design } from "../builder/write";
 
 /** A source that names no origin of its own: `gallery/oyen/fr2.png`, not `https://…`, `data:…` or `//…`. */
@@ -25,12 +25,6 @@ async function readable(src: string, base: string): Promise<string> {
   }
 }
 
-/** The weights a face covers: its one weight, or each hundred in its range ("100 900"). */
-const weightsOf = (weight: Face["weight"]): number[] => {
-  const [from, to = from] = [weight ?? 400].flat().flatMap((one) => String(one).split(/\s+/)).map(Number);
-  return Array.from({ length: Math.floor((to - from) / 100) + 1 }, (_, i) => from + i * 100);
-};
-
 const IMAGE_IN_HTML = /\bsrc=(["'])(.*?)\1/g;
 
 /** The design for the editor, and its `fonts` option. */
@@ -38,14 +32,17 @@ export async function forTheEditor(template: ReactElement, design: Design, base:
   const faces = (template.props as { fonts?: Face[] }).fonts ?? [];
   const families = [...new Set(faces.map((face) => face.family))];
   const stacks = new Map<string, string>();
+  const weights = new Map<string, number[]>();
 
-  /** The design with `image` applied to each of its image sources; `stacks` has each font it names. */
+  /** The design with `image` applied to each of its image sources; `stacks` and `weights` have each font it names. */
   const walk = (value: unknown, image: (src: string) => string, key?: string, parent?: string): unknown => {
     if (Array.isArray(value)) return value.map((item) => walk(item, image, undefined, key));
     if (value && typeof value === "object") {
       const copy = Object.fromEntries(Object.entries(value).map(([k, v]) => [k, walk(v, image, k, key)]));
-      const { label, value: stack } = copy as { label?: unknown; value?: unknown };
-      if (key === "fontFamily" && typeof label === "string" && typeof stack === "string" && !stacks.has(label)) stacks.set(label, stack);
+      const { label, value: stack, weights: listed } = copy as { label?: unknown; value?: unknown; weights?: unknown };
+      // A text tool's font, and a table's header, content and footer fonts.
+      if (isFontKey(key) && typeof label === "string" && typeof stack === "string" && !stacks.has(label)) stacks.set(label, stack);
+      if (isFontKey(key) && typeof label === "string" && Array.isArray(listed) && !weights.has(label)) weights.set(label, listed);
       return copy;
     }
     if (typeof value !== "string") return value;
@@ -67,7 +64,8 @@ export async function forTheEditor(template: ReactElement, design: Design, base:
         label: family,
         value: stacks.get(family) ?? `'${family}', sans-serif`,
         url: fontStylesheet(family, faces.filter((face) => face.family === family)),
-        weights: [...new Set(faces.filter((face) => face.family === family).flatMap((face) => weightsOf(face.weight)))].sort((a, b) => a - b).map((value) => ({ label: String(value), value })),
+        // The design's own list, so picking the font keeps each block's weight; its faces' for a font no block is in.
+        weights: weights.get(family) ?? fontWeights(faces.filter((face) => face.family === family)),
       })),
     },
   };

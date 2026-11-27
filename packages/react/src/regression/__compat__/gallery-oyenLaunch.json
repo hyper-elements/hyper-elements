@@ -93,7 +93,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 700,
            "letterSpacing": "5px",
@@ -143,7 +154,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -312,7 +334,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -349,7 +382,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "letterSpacing": "-2.6px",
            "_override": {
@@ -387,7 +431,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -493,7 +548,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
@@ -555,7 +621,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -680,7 +757,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -843,7 +931,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -1097,7 +1196,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -1303,7 +1413,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -1358,7 +1479,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "-0.6px",
@@ -1397,7 +1529,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -1491,7 +1634,18 @@
            "fontFamily": {
             "label": "Geist Mono",
             "value": "'Geist Mono', SFMono-Regular, Menlo, Consolas, monospace",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist%20Mono'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeistmono%2Fv6%2For3nQ6H-1_WfwkMZI_qYFrcdmhHkjko.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "1.2px",
@@ -1528,7 +1682,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "letterSpacing": "-4.5px",
            "_override": {
@@ -1566,7 +1731,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1634,7 +1810,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 600,
            "letterSpacing": "0px"
@@ -1728,7 +1915,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 700,
            "letterSpacing": "4px",
@@ -1783,7 +1981,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1817,7 +2026,18 @@
            "fontFamily": {
             "label": "Geist",
             "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+            "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+            "weights": [
+             100,
+             200,
+             300,
+             400,
+             500,
+             600,
+             700,
+             800,
+             900
+            ]
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
@@ -1886,7 +2106,18 @@
      "fontFamily": {
       "label": "Geist",
       "value": "Geist, 'Helvetica Neue', Helvetica, Arial, sans-serif",
-      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D"
+      "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Geist'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Fgeist%2Fv5%2FgyByhwUxId8gMEwcGFWNOITd.woff2)%20format('woff2')%3Bfont-weight%3A100%20900%3Bfont-style%3Anormal%7D",
+      "weights": [
+       100,
+       200,
+       300,
+       400,
+       500,
+       600,
+       700,
+       800,
+       900
+      ]
      },
      "textColor": "#1a1917",
      "language": {},
