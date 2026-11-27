@@ -129,14 +129,20 @@ jobs:
       # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
       # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
       # bytes for the two together, templates and the `elements` key (349,212 measured); 350,800 bytes for a block
-      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured).
+      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured);
+      # 355,500 bytes for a Document's print HTML drawn from its plan, with the PDF's pages (the planned pages' nodes,
+      # writers/page/flowed.ts, and a block of text cut between pages drawn line by line: 4,519 bytes more, 354,900 measured);
+      # 356,200 bytes for its parts that go on filling their page, and a Row's column with nothing on a page kept as its
+      # room (690 bytes more, 355,590 measured); 357,700 bytes for a plan's page numbers measured as the widest they get
+      # (Plan's `numbers`, cut by in writers/page/flowed.ts) and a plan drawn only for the Document it was made from
+      # (designPrint() and the render/plan warning: 1,568 bytes more, 357,158 measured).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=350800
+          MAX_SIZE=357700
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -170,13 +176,19 @@ jobs:
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
       # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (844 bytes more, 522,115 measured).
+      # every root, in the writers it shares (844 bytes more, 522,115 measured); 527,200 bytes for a Document's print
+      # HTML drawn from its plan, in the writers it shares (4,575 bytes more, 526,690 measured); 527,900 bytes for its parts
+      # that go on filling their page, and a Row's column with nothing on a page kept as its room (692 bytes more, 527,382
+      # measured); 529,500 bytes for a plan's page numbers measured as the widest they get and a plan drawn only for the
+      # Document it was made from, in the writers it shares (1,571 bytes more, 528,953 measured); 531,500 bytes for
+      # fromDesign()'s parts, the part of the design each node of the template it reads stands for (1,845 bytes more,
+      # 531,175 measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=522500
+          MAX_SIZE=531500
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

@@ -14,7 +14,7 @@ To test an email in Outlook, Gmail and other clients, a design or any HTML: the 
 ## Before you write a design
 
 - If the project's package.json doesn't list `@hyper-elements/react`, install it: `npm install @hyper-elements/react react react-dom`, or the same with the project's package manager (`pnpm add`, `yarn add`, `bun add`).
-- Once it's installed, its own guide is `node_modules/@hyper-elements/react/GUIDE.md`, written for the version installed. `grep "hyper-elements guide" node_modules/@hyper-elements/react/GUIDE.md` gives its id; this skill's is `hyper-elements guide f82a37d3`. The same id: this skill is that guide, so read on. Another id, or none: read GUIDE.md and follow it where it differs from this skill.
+- Once it's installed, its own guide is `node_modules/@hyper-elements/react/GUIDE.md`, written for the version installed. `grep "hyper-elements guide" node_modules/@hyper-elements/react/GUIDE.md` gives its id; this skill's is `hyper-elements guide fbef1acc`. The same id: this skill is that guide, so read on. Another id, or none: read GUIDE.md and follow it where it differs from this skill.
 
 ## Templates from Unlayer Elements
 
@@ -169,7 +169,7 @@ const { image, diagnostics } = await renderImage(
 
 - **Email**: An email. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), previewText (text), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: text, gap.
 - **Page**: A web page. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), description (text), breakpoints (breakpoints), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: gap.
-- **Document**: A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf. Holds sections, layout, blocks, Document.Page, PageBreak, PageHeader, PageFooter. Props: size (A3|A4|A5|Letter|Legal|Tabloid), orientation (portrait|landscape), margin (insets), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch).
+- **Document**: A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf, where it flows onto new pages. Holds sections, layout, blocks, Document.Page, PageBreak, PageHeader, PageFooter. Props: size (A3|A4|A5|Letter|Legal|Tabloid), orientation (portrait|landscape), margin (insets), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch).
 - **Canvas**: An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image. Holds sections, layout, blocks. Props: width (a length (a number of px)), height (a length (a number of px)), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch), padding, justifyContent (start|center|end|space-between).
 
 ### Sections and layout

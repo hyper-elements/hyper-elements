@@ -185,6 +185,14 @@ export const MenuDefaults: Record<string, any> = {
   padding: "5px 15px"
 };
 
+/** The Page Number block's (a document's only): one line of text whose tokens a document's PDF prints as numbers. */
+export const PageNumberDefaults: Record<string, any> = {
+  text: "Page {{page_number}} of {{page_count}}",
+  fontSize: "14px",
+  textAlign: "left",
+  lineHeight: "140%"
+};
+
 export const ParagraphDefaults: Record<string, any> = {
   fontSize: "14px",
   textAlign: "left",

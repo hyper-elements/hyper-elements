@@ -51,7 +51,7 @@ The builder holds what its tools can. Two things happen to the rest:
 - **HTML blocks.** What no tool shows (a `Layer`, an `Svg`, a box nested in a column, your own `defineElement()`) goes in as an HTML block of its rendered markup. An editor user can move it, not edit it. In a `Document`, the builder keeps an HTML block but doesn't draw or export it, so it isn't in the builder's PDF. The report names each one.
 - **Tables.** A `Table` is the builder's table: its header and footer rows, each cell's words and each column's share, what its rows share (text styles, background, padding) and each cell's own. The builder draws one border around every cell and has no cells across columns, no table width and no phone values. In an `Email` or a `Page`, a table the builder would draw otherwise (a line between rows only, a cell spanning columns, a border around the table, a width, a column of a fixed width) stays an HTML block, which draws it exactly. In a `Document`, where the builder doesn't draw an HTML block, it's the builder's table all the same: a line between rows is drawn above the first row and below the last too, and a cell spanning columns is a cell for each column. A table with an image in a cell, or a row, a cell or words in a cell hidden on phones or desktops, stays an HTML block. The report says each. `fromDesign()` reads a table back as a `Table`, one made in the builder too.
 
-Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. The builder has no page numbers yet, so a `PageNumber` goes in as its token, which the editor's PDF prints as it is. The report says so.
+Two smaller details: a line height goes into the builder's field as a whole percentage, as browsers draw it, so `24px` at 13px becomes `185%`, a twentieth of a pixel taller there. A `PageNumber` goes in as the builder's token, `{{page_number}}` (or `{{page_count}}` for `total`), which a document's PDF prints as the page's number and the page count. `fromDesign()` reads the tokens back as PageNumbers, and the builder's Page Number block as a Text of them.
 
 ## Load it in the builder
 
@@ -97,6 +97,7 @@ const { html, text } = await render(element);
 - `element` renders the builder design. `render(element)` gives HTML and a plain-text body that match the edits, ready to [send](/docs/guides/sending).
 - `code` is the same design as JSX in the new elements.
 - `report` lists what the design can't hold.
+- `parts` names the part of the builder design each node of `element` stands for (its place and its id), by its path: a Document's [page plan](/docs/outputs/pdf#a-builder-designs-pages) names its blocks the same way.
 
 Pass the `displayMode` the builder design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. Without one, a builder design with a header, a footer or a page break becomes a `Document`, any other an `Email`. `name` sets the component's name in `code`. `fromDesign()` reads builder designs made by `toDesign()`, edited in the builder, or made there from scratch. The builder's own HTML blocks come back as `Html` blocks.
 

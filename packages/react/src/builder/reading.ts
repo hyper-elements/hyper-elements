@@ -25,6 +25,8 @@ export interface Context {
   safe(html: string): string;
   document: boolean;
   say(message: string): void;
+  /** Where in the design's body what's read is (`rows[0].columns[1].contents[2]`). */
+  at?: string;
 }
 
 export const ZERO: Sides = { top: 0, right: 0, bottom: 0, left: 0 };

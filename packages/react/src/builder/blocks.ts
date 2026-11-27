@@ -6,7 +6,7 @@
  * they, and so the builder, draw), and a tool that isn't one of Elements' is left out, and said.
  */
 import { Button as ButtonDefinition, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type Node } from "@hyper-elements/core";
-import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TableDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
+import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, PageNumberDefaults, ParagraphDefaults, SocialDefaults, TableDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
 import { parseRuns } from "./read-runs";
 import { readTable } from "./read-table";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, letterSpacing, px, serviceTag, sides, some, webLink, type Values } from "./read-values";
@@ -233,6 +233,9 @@ function html(values: Values, context: Context): Node[] {
   return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), { ...hiddenOn(values), ...hidden.hidden })];
 }
 
+/** Plain text as the HTML of a text block. */
+const escapeText = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 /** Each tool's reader. */
 const READERS = new Map<string, (values: Values, context: Context, slot?: Slot) => Node[]>([
   ["text", (values, context) => textTool("paragraph", values, context, "text")],
@@ -246,6 +249,8 @@ const READERS = new Map<string, (values: Values, context: Context, slot?: Slot) 
   ["video", video],
   ["html", html],
   ["table", readTable],
+  // A line of plain text, which the builder exports as a text block of it (escaped): its tokens are PageNumbers.
+  ["page_number", (values, context) => textTool("paragraph", { ...values, text: escapeText(typeof values.text === "string" ? values.text : "") }, context, "text")],
 ]);
 
 /** Each tool's defaults, which the builder gives a value its item doesn't have. */
@@ -261,6 +266,7 @@ const DEFAULTS = new Map<string, Values>([
   ["video", VideoDefaults],
   ["html", HtmlDefaults],
   ["table", TableDefaults],
+  ["page_number", PageNumberDefaults],
 ]);
 
 /** A builder block as nodes: its component, in a Column for its place where it needs one; none for a tool Elements has no component for. */

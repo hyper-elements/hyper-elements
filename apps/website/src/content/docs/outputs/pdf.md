@@ -142,17 +142,116 @@ A `Video` shows its thumbnail where its file is given (its own, or a YouTube vid
 | `pdf/root` | error | The design isn't a Document |
 | `pdf/version` | error | A second copy of `@hyper-elements/react` lays the design out in another version |
 | `pdf/image` | error | An image isn't given, or its file isn't a PNG or JPEG |
-| `pdf/image` | warning | An image is SVG: its alt text is shown in its box |
+| `pdf/image` | warning | An image is SVG: its alt text is shown in its box (in a line of text, its room is left empty) |
 | `pdf/font` | warning | A font in the Document's `fonts` isn't given, a file given is WOFF2, or text in a standard PDF font has characters it can't draw |
 | `pdf/font-weight` | warning | Text in a weight or style of a family that isn't given. It's drawn in the nearest file given |
 | `pdf/unsupported` | warning | What a PDF can't show that the HTML can: a hover, a Video's player, an `Html` block's markup (its plain text is drawn), a line too wide to wrap (it goes past the edge) |
-| `document/overflow` | warning | A page's content looks taller than the page. An estimate: text isn't measured yet |
+| `pdf/layout` | warning | The installed `@react-pdf/renderer` doesn't say where it laid the PDF out, so content that doesn't fit a page isn't moved on to the next: update it |
+| `pdf/layer` | warning | Text laid over a Layer is taller than the Layer (its first child), which the PDF doesn't draw |
+| `pdf/measure` | warning | A paginator measured a block without drawing it as a guess (react-pdf may lay it out otherwise): its pages from there on may differ from the PDF's. `renderPdf()` and `paginate()` measure it exactly |
+| `document/overflow` | warning | A page's content is taller than its room (the page less its margins, header and footer), measured with its fonts. Named at the first block cut off |
 
-`validate()` from `@hyper-elements/react` reports `pdf/unsupported` and `document/overflow` without rendering. The font and image checks need the files, so only `renderPdf()` makes them.
+`validate()` from `@hyper-elements/react` reports `pdf/unsupported` and `document/overflow` without rendering. Without the fonts its `document/overflow` is an estimate, and it can miss a page that's only a little too tall. The font and image checks need the files, so `renderPdf()`, `paginate()` and a paginator make them, and measure.
+
+### Pages that flow
+
+Content that doesn't fit its page goes on to the next, with the `PageHeader` and `PageFooter` on each page and each `PageNumber` numbered for the pages there are:
+
+- **Text** splits between its lines, leaving two lines at least on each side. Text written right to left is laid out right to left and splits the same way.
+- **A Section, a Column and a List** split between and inside what they hold. A Section's top padding and border stay on its first part, its bottom ones on its last. A part that goes on to the next page fills the rest of its page, its background down to the page's foot.
+- **A Row of Columns** that fits on a page goes on to the next whole. One taller than a page goes on by its columns, each in its own place, a column that has ended keeping its room empty.
+- **A Table** splits between its rows, and its header rows start each page it goes on to.
+- **A Heading** isn't left last on a page: it goes on with what follows it.
+- **A `Document.Page`** that's too long goes on to pages after it, with its background. A `PageBreak` still starts a new page.
+
+A Document whose pages fit is drawn once, as written. One that doesn't is drawn a second time, flowed.
+
+For print HTML with the same pages, draw it from the PDF's plan:
+
+```tsx
+const { pdf, plan } = await renderPdf(design, { fonts });
+const { html } = await render(design, { plan });
+```
+
+`paginate(design, { fonts })` gives the plan alone, measured without drawing the PDF: install `@react-pdf/textkit` beside `@react-pdf/renderer` for that (without it, `paginate()` draws the PDF to measure it). A plan is drawn only for the Document it was made from: `render()` draws one made from another version of it as written, with a `render/plan` warning.
+
+### Pages as a Document is edited
+
+`createPaginator({ fonts, images })` takes `renderPdf()`'s options and makes a paginator for Documents drawn with those fonts. It reads the fonts once and keeps each block of text it lays out, so paginating again after a keystroke lays out only the paragraph that changed. Its `paginate()` answers at once, with `paginate()`'s plan and diagnostics; `{ diagnostics: false }` gives the plan alone, faster:
+
+```tsx
+import { createPaginator } from "@hyper-elements/react/pdf";
+
+const paginator = await createPaginator({ fonts });
+const { plan } = paginator.paginate(design, { diagnostics: false });
+```
+
+It runs in Node, in a browser and in a Worker, to the same plan in each. On a laptop, a 28-page report is paginated again in about 7ms after a keystroke (12ms with its diagnostics). It needs `@react-pdf/textkit`.
+
+### Lines and carets
+
+A paginator's `paginate(design, { layout: true })` also gives its `layout`: `layoutDocument()`'s pages and nodes, each text node with its `text` and its `lineBoxes`, each line's characters in that text, its box, its baseline, and where a caret goes between its characters. `caretAt()`, `caretBox()` and `selectionBoxes()` read it:
+
+```tsx
+import { caretAt, caretBox, selectionBoxes } from "@hyper-elements/react/pdf";
+
+const { layout } = paginator.paginate(design, { layout: true });
+const caret = caretAt(layout, { page: 1, x: 120, y: 300 }); // the nearest: { path, offset, page, affinity }
+const box = caretBox(layout, caret); // where it's drawn: { page, x, y, height }
+const boxes = selectionBoxes(layout, { path: caret.path, start: 0, end: 20 });
+```
+
+Each character is where the PDF draws its glyph. Text written right to left runs from its right, a caret never goes inside a character, and `affinity` says where an offset in two places goes: the end of a line or the start of the next. `caretAt()` gives the side it found, so `caretBox()` of it is where it was found. An empty text, and the end of one that ends in a line break, have a caret too, where the first character would go.
+
+### Pages drawn for a page view
+
+A paginator's `paginate(design, { svg: true })` gives each page drawn as an SVG where its PDF draws everything: boxes, images, and each word from where its characters are. It's shown in px, its coordinates the PDF's points, so the layout's carets are over it. `fontFaces(fonts)` gives the font files as @font-face rules: in a page with them, each glyph is where the PDF draws it.
+
+```tsx
+const { svg } = paginator.paginate(design, { svg: true });
+style.textContent = fontFaces(fonts);
+view.innerHTML = svg.join("");
+```
+
+For a long Document, ask for the pages a view shows: `paginate(design, { layout: { pages: [4, 5] }, svg: { pages: [4, 5] } })` lays out and draws those only, and the plan is still all of it. Each plan page has a `hash` of what's drawn on it: draw again only the pages whose hash changed. With `svg: { shareImages: true }`, each image is defined once in `svgImages`, which goes in the page before them, and the pages draw it from there.
+
+### A builder design's pages
+
+A Document made in the Unlayer editor can follow the same plan, so the editor shows the PDF's pages. `fromDesign()` returns `parts`, the part of the builder design each node of its `element` stands for, and `designPages(plan, parts)` lists each page's parts of the design: where each is in the design's body (`at`) and its id there, in the order they're drawn, each with whether it starts (`first`) and ends (`last`) on the page. A row or a column is listed where the template has a node for it: a plain one-column row is its blocks, so they're listed without the row and its column (each block's `at` still names them).
+
+```tsx
+import { fromDesign } from "@hyper-elements/react/builder";
+import { designPages, paginate } from "@hyper-elements/react/pdf";
+
+const { element, parts } = fromDesign(saved, { displayMode: "document" });
+const pages = designPages((await paginate(element, { fonts })).plan, parts);
+```
+
+The plan splits text between its lines and a Row between its columns: where an editor moves whole blocks to the next page instead, its pages differ there.
+
+### Where everything landed
+
+`layoutDocument(design, { fonts, images })` takes `renderPdf()`'s options and gives the Document as its PDF lays it out:
+
+- `pages`: each page's paper, and its room, the part below its header and above its footer, in px from its top.
+- `nodes`: each block of the design on each page, with its box in px from the page's top left and a block of text's `lines`. A block that goes on to the next page has a node on each page, its `part` (from 0) and, for text, the `chars` of its text it shows. A PageHeader's and a PageFooter's blocks are on every page. `cut` is `"some"` where a cut goes through it and `"all"` where it's past the room: neither is drawn whole.
+- `diagnostics`: `renderPdf()`'s.
+
+```tsx
+import { layoutDocument } from "@hyper-elements/react/pdf";
+
+const { nodes } = await layoutDocument(<Invoice />, { fonts });
+const total = nodes.find((node) => node.id === "total");
+if (total?.page !== 1 || total.cut) throw new Error("The total isn't on page 1");
+```
+
+It draws the PDF to measure it, so it takes as long as `renderPdf()`.
 
 ## Limits
 
-- **Nothing flows from one page to the next.** Content taller than its page is cut off, and you get `document/overflow`. Split it with a `PageBreak` or into `Document.Page`s, and test with your longest real data.
+- **Some blocks stay whole.** An image, an `Svg`, a Button, a block with a set height, and a Row whose columns sit at its middle or end (or wrap) don't split between pages. One taller than a page is cut off where it is, and you get `document/overflow`, measured.
+- **Text that changes direction across a line break** (Arabic quoted in an English paragraph, broken inside the quote) can sit up to a space's width from where the whole paragraph would set it, when the paragraph is split between pages.
+- **The print HTML flows only when it's drawn from a plan.** Plain `render()` has no font files to measure with, so its pages hold what they're given.
 - **WOFF2 isn't drawn.** react-pdf would embed its letters blank. Give TTF, OTF or WOFF.
 - **SVG images aren't drawn.** Give a PNG or JPEG. An `Svg` element is drawn as vectors.
 - **The standard PDF fonts draw Western European characters only.** Whether a font file you give has every character isn't checked.

@@ -99,6 +99,6 @@ Expected: six files in `examples/content-workflows/output/` when run via the wor
 
 ## Constraints
 
-Shared content does not imply identical pixels. Email uses table-oriented HTML and client-specific fallbacks; web uses responsive layouts; document output uses print styling and a fixed page size. A `Document`'s content does not flow from page to page: what is taller than its page is cut off, and `render()` warns about it in `diagnostics` (`document/overflow`). Split long invoices with `PageBreak` or `Document.Page`. A browser preview does not prove inbox compatibility.
+Shared content does not imply identical pixels. Email uses table-oriented HTML and client-specific fallbacks; web uses responsive layouts; document output uses print styling and a fixed page size. In the PDF, a `Document`'s content that doesn't fit its page goes on to the next, its header and footer on each page. So does the print HTML drawn from the PDF's plan (`render(design, { plan })`). Without one, what is taller than its page is cut off, and `render()` warns about it in `diagnostics` (`document/overflow`). Start a page where you want one with `PageBreak` or `Document.Page`. A browser preview does not prove inbox compatibility.
 
 For an authenticated web receipt, serve the web HTML from an authorized route with `Content-Type: text/html`; do not publish customer invoices at predictable public URLs. These examples use fictitious data. Use [provider integrations](./email-providers.md) to send the email and [visual editing](./visual-editing.md) to hand the design to an editor user.

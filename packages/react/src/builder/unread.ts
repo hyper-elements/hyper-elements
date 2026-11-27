@@ -24,6 +24,7 @@ const READ: Record<string, { values: string[]; phone: string[] }> = {
   row: { values: ["columns", "cells", "backgroundColor", "columnsBackgroundColor", "padding", "noStackMobile", "alignItems"], phone: ["padding", "hideMobile", "noStackMobile"] },
   column: { values: ["backgroundColor", "padding", "border", "borderRadius"], phone: ["padding", "border", "hideMobile"] },
   text: { values: TEXT, phone: TEXT_PHONE },
+  page_number: { values: TEXT, phone: TEXT_PHONE },
   heading: { values: [...TEXT, "headingType"], phone: TEXT_PHONE },
   // Its alignment on phones is said where it's read.
   button: { values: [...TEXT, "href", "size", "buttonColors", "border", "padding", "borderRadius", "calculatedWidth", "calculatedHeight"], phone: [...TEXT_PHONE, "padding", "size"] },

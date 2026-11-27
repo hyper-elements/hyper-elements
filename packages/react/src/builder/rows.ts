@@ -13,6 +13,7 @@ import { readBlock, type Context, type Slot } from "./blocks";
 import { readHidden } from "./hide";
 import { sayUnread } from "./unread";
 import { readBorder } from "./values";
+import { isMarked, mark, markAs } from "./parts";
 
 const ZERO: Sides = { top: 0, right: 0, bottom: 0, left: 0 };
 const obj = (value: unknown): Values => (value && typeof value === "object" && !Array.isArray(value) ? (value as Values) : {});
@@ -39,11 +40,11 @@ function blocksOf(column: Values, where: string, at: Where, slot: Omit<Slot, "co
     const path = `${where}.contents[${i}]`;
     const { type, values } = obj(content);
     if (type === "page_break") {
-      if (at.document && !at.part) return [{ type: "PageBreak" }];
+      if (at.document && !at.part) return [mark({ type: "PageBreak" }, path, obj(values))];
       at.context(path).say("a page break is a Document's, between its pages: left out");
       return [];
     }
-    return readBlock(type, obj(values), at.context(path), { ...slot, column: obj(column.values) });
+    return readBlock(type, obj(values), at.context(path), { ...slot, column: obj(column.values) }).map((node) => mark(node, path, obj(values)));
   });
 }
 
@@ -58,7 +59,7 @@ function fold(blocks: Node[], space: Sides): Node[] {
     const holds = ["Text", "Heading", "Divider", "Column"].includes(block.type) && !BOX.some((key) => block.style?.[key] !== undefined);
     if (holds) return { ...block, style: { ...block.style, padding: add((block.style?.padding as Sides | undefined) ?? ZERO, s) } };
     const { hidden, ...shown } = block;
-    return { type: "Column", style: { padding: s }, ...(hidden ? { hidden } : {}), children: [shown] };
+    return markAs({ type: "Column", style: { padding: s }, ...(hidden ? { hidden } : {}), children: [shown] }, block);
   });
 }
 
@@ -162,7 +163,7 @@ export function readRow(row: Values, where: string, at: Where): Node[] {
       const shares = columns.length > 1 && total > 0 && cells.length === columns.length;
       if (columns.length > 1 && !shares) say("its columns' widths can't be read: they share the row equally");
       const id = givenId(values);
-      const children = columns.map((column, c) => columnOf(obj(column.values), blocks[c], shares ? `${Math.round((cells[c] / total) * 10000) / 100}%` : undefined, say));
+      const children = columns.map((column, c) => mark(columnOf(obj(column.values), blocks[c], shares ? `${Math.round((cells[c] / total) * 10000) / 100}%` : undefined, say), `${where}.columns[${c}]`, obj(column.values)));
       const row = stretched(children, stacks);
       const mobile = { ...rowHidden.mobile, ...row.mobile, ...(phonePadding && !band ? { padding: phonePadding } : {}) };
       return [
@@ -176,7 +177,7 @@ export function readRow(row: Values, where: string, at: Where): Node[] {
         },
       ];
     }
-    const column = columnOf(obj(columns[0].values), blocks[0], undefined, say);
+    const column = mark(columnOf(obj(columns[0].values), blocks[0], undefined, say), `${where}.columns[0]`, obj(columns[0].values));
     const space = band ? ZERO : padding;
     // The row's padding on phones, where no band holds it.
     const phone = band ? undefined : phonePadding;
@@ -202,14 +203,19 @@ export function readRow(row: Values, where: string, at: Where): Node[] {
     return [{ type: at.part ? "Column" : "Section", ...(id ? { id } : {}), style, ...(phonePadding ? { mobile: { padding: phonePadding } } : {}), ...(visibility ? { hidden: visibility } : {}), children: nodes }];
   };
 
+  /** What the row makes, each node not one of its blocks or columns (its band, its Row, its space) the row's part. */
+  const asRow = (nodes: Node[]) => nodes.map((node) => (isMarked(node) ? node : mark(node, where, obj(row.values))));
   if (!layout && contents[0].some((node) => node.type === "PageBreak")) {
     const runs: Node[][] = [[]];
+    const breaks: Node[] = [];
     for (const node of contents[0]) {
-      if (node.type === "PageBreak") runs.push([]);
-      else runs[runs.length - 1].push(node);
+      if (node.type === "PageBreak") {
+        breaks.push(node);
+        runs.push([]);
+      } else runs[runs.length - 1].push(node);
     }
     // A row holding only a page break is the Document's page break.
-    return runs.flatMap((run, i) => [...(i ? [{ type: "PageBreak" }] : []), ...(run.length ? banded(content([run])) : [])]);
+    return runs.flatMap((run, i) => [...(i ? [breaks[i - 1]] : []), ...(run.length ? asRow(banded(content([run]))) : [])]);
   }
-  return banded(content(contents));
+  return asRow(banded(content(contents)));
 }

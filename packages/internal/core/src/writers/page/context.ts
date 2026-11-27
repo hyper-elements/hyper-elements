@@ -4,11 +4,17 @@
  * written, so components don't import each other.
  */
 import type { Json } from "../../model";
+import type { Plan } from "../../plan";
 import type { ResolvedNode } from "../../resolve";
 import type { Html } from "../jsx";
 import type { Declarations } from "../shared/css";
 
 export interface PageOptions {
+  /**
+   * A Document's pages as planned (`paginate()` from @hyper-elements/react/pdf): its print HTML then has the same pages
+   * as its PDF, what doesn't fit a page gone on to the next.
+   */
+  plan?: Plan;
   /** How a merge tag is written (default `{{name}}`): into the HTML as it is, the name in it escaped. */
   mergeTag?: (name: string) => string;
   /** What every class name in the stylesheet starts with (default "e"), for HTML embedded where other CSS is. */

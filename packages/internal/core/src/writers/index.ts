@@ -13,6 +13,7 @@ import { pageBreakpoints, renderPage, type PageOptions } from "./page";
 import { renderText } from "./plain-text";
 import { prettyHtml } from "./shared/pretty";
 import type { BlockMap } from "./shared/block-map";
+import { designPrint } from "../plan";
 
 export { renderEmail, EMAIL_PHONE_MARGIN, type EmailHtml, type EmailOptions } from "./email";
 export { renderPage, PAGE_PHONE_WIDTH, pagePhoneWidth, type PageHtml, type PageOptions } from "./page";
@@ -134,8 +135,19 @@ export function validateTemplate(input: unknown, options: ComponentsOption & Plu
 export function renderTemplate(input: unknown, options: RenderOptions & ComponentsOption = {}): RenderResult {
   // Indenting rewrites the HTML after it's written, which would move every offset.
   if (options.blockMap && options.pretty) throw new ElementsError([{ code: "render/block-map-pretty", severity: "error", message: "blockMap gives offsets in the compact HTML; leave pretty off", path: "root" }]);
-  const { resolved, target, diagnostics, plugins } = prepareTemplate(input, options);
-  if (!resolved) throw new ElementsError(diagnostics);
+  const prepared = prepareTemplate(input, options);
+  const { resolved, target, plugins } = prepared;
+  if (!resolved) throw new ElementsError(prepared.diagnostics);
+  // A plan made from another version of the Document (a page view's, a keystroke old): its pages as written instead.
+  const stale = options.plan?.design !== undefined && resolved.root.type === "Document" && options.plan.design !== designPrint(resolved.root);
+  const planned: Diagnostic[] = [];
+  if (stale) {
+    options = { ...options, plan: undefined };
+    planned.push({ code: "render/plan", severity: "warning", message: "This plan was made from another version of the Document (it's changed since), so its pages are drawn as written: paginate it again for the PDF's pages", path: "root" });
+  }
+  // A Document drawn from its plan has its pages planned: what doesn't fit one goes on to the next, and what can't is said
+  // by the plan's maker, measured (paginate(), renderPdf()), not estimated here.
+  const diagnostics = options.plan && resolved.root.type === "Document" ? prepared.diagnostics.filter((d) => d.code !== "document/overflow") : prepared.diagnostics;
   const text = renderText(resolved, options);
   const written = target === "email" ? renderEmail(resolved, options) : { ...renderPage(resolved, options), stylesheet: "", diagnostics: [] };
   // The plugins' checks on the written output, compact (what `pretty` would change isn't what an email client receives).
@@ -148,7 +160,7 @@ export function renderTemplate(input: unknown, options: RenderOptions & Componen
     body: shown(written.body),
     bodyStyle: written.bodyStyle,
     text,
-    diagnostics: [...diagnostics, ...inTemplate(resolved, written.diagnostics), ...outputChecks],
+    diagnostics: [...diagnostics, ...planned, ...inTemplate(resolved, written.diagnostics), ...outputChecks],
     ...(blocks ? { blocks } : {}),
   };
 }

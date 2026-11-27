@@ -44,8 +44,11 @@ import {
   validate,
   Video,
 } from "@hyper-elements/react";
-import { writeDocument } from "@hyper-elements/core/pdf";
-import { renderPdf, templateAssets } from "../../src/pdf";
+import { reactPdf, SourceCache, sourcesKept, writeDocument, type Block } from "@hyper-elements/core/pdf";
+import { images } from "./operators";
+import { png } from "./png";
+import { createPaginator, layoutDocument, paginate, renderPdf, templateAssets, type DocumentNode } from "../../src/pdf";
+import { arabicFonts, arabicSentences } from "./arabic";
 import { toWoff, toWoff2 } from "./woff";
 
 /** What prepare() gives, where a test gives another layout version (another copy of Elements, newer or older). */
@@ -209,22 +212,27 @@ describe("renderPdf", () => {
     });
   });
 
-  it("says an SVG image isn't drawn (react-pdf draws PNG and JPEG), and shows its alt text in its box", async () => {
+  it("says an SVG image isn't drawn (react-pdf draws PNG and JPEG), and shows its alt text in its box, or in a line leaves its room", async () => {
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="#ff0000"/></svg>';
     const template = (
       <Document>
         <Image src={{ src: "https://cdn.acme.test/logo.svg", width: 80, height: 40 }} alt="Acme logo" />
         <Image src={{ src: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`, width: 40, height: 40 }} alt="" />
         <Text>Below</Text>
+        <Text>
+          Status <Image src={{ src: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`, width: 16, height: 16 }} alt="OK" /> ready
+        </Text>
       </Document>
     );
     const { pdf, diagnostics } = await renderPdf(template, { images: { "https://cdn.acme.test/logo.svg": new TextEncoder().encode(svg) } });
-    const message = "A PDF draws PNG and JPEG images, not SVG: give this one as a PNG or JPEG (its file in renderPdf's images option, by its URL, or a data: URI). Its alt text is shown in its box meanwhile";
+    const message = "A PDF draws PNG and JPEG images, not SVG: give this one as a PNG or JPEG (its file in renderPdf's images option, by its URL, or a data: URI). Meanwhile its alt text is shown in its box, or, in a line of text, its room is left empty";
     expect(diagnostics.map((d) => [d.code, d.severity, d.path, d.message])).toEqual([
       ["pdf/image", "warning", "root.children[0].props.src", message],
       ["pdf/image", "warning", "root.children[1].props.src", message],
+      ["pdf/image", "warning", "root.children[3].children[1].props.src", message],
     ]);
-    expect((await read(pdf)).pages[0].words).toBe("Acme logo Below");
+    // In a line, its room (one character of the line, as the print HTML counts it), with nothing in it.
+    expect((await read(pdf)).pages[0].words).toBe("Acme logo Below Status ready");
     // Each in a box of the image's size (40px tall: 30 points), so what's around it is where it was.
     const { root } = prepare(template);
     const { content } = writeDocument(root!, { families: new Set(), fonts: [], image: () => undefined, date: new Date(0) }).pages[0];
@@ -232,6 +240,208 @@ describe("renderPdf", () => {
       ["box", [60, 30]],
       ["box", [30, 30]],
     ]);
+    const line = content[3];
+    expect(line.kind === "text" && line.runs.map((run) => (typeof run === "string" ? run : [run.kind, run.style.width, run.style.height]))).toEqual(["Status ", ["image", 12, 12], " ready"]);
+  });
+
+  it("says where text laid over a Layer is taller than the Layer, which the PDF doesn't draw (nor its page in SVG)", async () => {
+    const design = (
+      <Document>
+        <Layer style={{ width: 160 }}>
+          <Text>Under</Text>
+          <Text>Laid over it, words that go on past the Layer's one line of height</Text>
+        </Layer>
+      </Document>
+    );
+    const { pdf, diagnostics } = await renderPdf(design);
+    expect(diagnostics.map((d) => [d.code, d.severity, d.path])).toContainEqual(["pdf/layer", "warning", "root.children[0].children[1]"]);
+    expect((await read(pdf)).pages[0].words).toBe("Under");
+    const paginated = (await createPaginator()).paginate(design, { svg: true });
+    expect(paginated.diagnostics.map((d) => d.code)).toContain("pdf/layer");
+    expect(paginated.svg![0]).toContain(">Under<");
+    expect(paginated.svg![0]).not.toContain("Laid");
+  });
+
+  it("draws an Image with no width given or known as wide as its file, no wider than its parent, as the print HTML does", async () => {
+    // 40 by 20 pixels: 30 by 15 points. 2,000 by 100: as wide as the page's content (A4, 36 points each side).
+    const { pdf } = await renderPdf(
+      <Document>
+        <Image src={png(40, 20)} alt="Small" />
+        <Image src={png(2000, 100)} alt="Wide" />
+      </Document>
+    );
+    const drawn = await images(await (await getDocument({ data: pdf.slice(), verbosity: 0 }).promise).getPage(1));
+    expect(drawn.map(({ width, height }) => [Math.round(width * 100) / 100, Math.round(height * 100) / 100])).toEqual([
+      [30, 15],
+      [523.28, 26.16],
+    ]);
+  });
+
+  it("draws a Document whose JPEG is cut short, leaving the image out as react-pdf does, its size given or not", async () => {
+    // A JPEG cut off just after its APP1 segment's length.
+    const src = "data:image/jpeg;base64,/9j/4QAi";
+    for (const image of [<Image key="given" src={{ src, width: 40, height: 40 }} alt="Uploaded" />, <Image key="width" src={src} alt="Uploaded" style={{ width: 40 }} />]) {
+      const { pdf } = await renderPdf(<Document>{image}<Text>The rest of the report</Text></Document>);
+      expect((await read(pdf)).pages[0].words).toContain("The rest of the report");
+    }
+  });
+
+  it("draws a pill's rounded background inside its box in a paginator's SVG, its corners no rounder than react-pdf draws them", async () => {
+    const design = (
+      <Document>
+        <Text>Previous row</Text>
+        <Button id="pill" href="https://example.test/paid" style={{ width: 120, backgroundColor: "#345678", borderRadius: 999 }}>
+          Paid
+        </Button>
+      </Document>
+    );
+    const box = (await layoutDocument(design)).nodes.find((node) => node.id === "pill")!;
+    const svg = (await createPaginator()).paginate(design, { svg: true }).svg![0]!;
+    const path = /<path d="([^"]+)" fill="#345678"\/>/.exec(svg)![1];
+    // The x of each point it goes through: a move's, a line across's, an arc's end.
+    const xs = (path.match(/[MHVA][^MHVAZ]*/g) ?? []).flatMap((step) => {
+      const numbers = step.slice(1).trim().split(/[ ,]+/).map(Number);
+      return step[0] === "M" ? [numbers[0]] : step[0] === "H" ? [numbers[0]] : step[0] === "A" ? [numbers[5]] : [];
+    });
+    expect(Math.min(...xs), path).toBeGreaterThanOrEqual(box.x * 0.75 - 0.01);
+    expect(Math.max(...xs), path).toBeLessThanOrEqual((box.x + box.width) * 0.75 + 0.01);
+  });
+
+  it("defines every image of the Document in svgImages, not only those on the pages drawn now", async () => {
+    const late = png(30, 20, true);
+    const design = (
+      <Document>
+        {Array.from({ length: 120 }, (_, i) => (
+          <Text key={i}>Record {i + 1}: a line of a long report, long enough to go on for several pages.</Text>
+        ))}
+        <Image src={late} alt="On a later page" style={{ width: 120 }} />
+      </Document>
+    );
+    const { plan, svg, svgImages } = (await createPaginator()).paginate(design, { diagnostics: false, svg: { pages: [1], shareImages: true } });
+    expect(plan.pages.length).toBeGreaterThan(2);
+    expect(svg![0]).not.toContain("<use");
+    expect(svgImages).toContain(late);
+  });
+
+  it("measures an image on a page too short for it as react-pdf draws it: 0 tall, not less", async () => {
+    const design = (
+      <Document size="A5" margin={{ top: 391, bottom: 391, left: 48, right: 48 }}>
+        <Image id="image" src={png(10, 10)} alt="Logo" />
+        <Text>Caption</Text>
+      </Document>
+    );
+    const preview = (await createPaginator()).paginate(design, { layout: true });
+    const drawn = await layoutDocument(design);
+    expect((await paginate(design)).plan).toEqual((await renderPdf(design)).plan);
+    expect(preview.layout!.nodes.find((node) => node.id === "image")!.height).toBe(drawn.nodes.find((node) => node.id === "image")!.height);
+  });
+
+  it("draws the image a buffer holds now, where one given before is written over (a server's reused buffer)", async () => {
+    const uri = "https://example.test/avatar.png";
+    const bytes = (noise: boolean) => Buffer.from(png(1, 1, noise).split(",")[1], "base64");
+    const design = (
+      <Document>
+        <Image src={{ src: uri, width: 24, height: 24 }} alt="Avatar" />
+      </Document>
+    );
+    const shared = bytes(false);
+    const replacement = bytes(true);
+    expect(shared).not.toEqual(replacement);
+    const before = await renderPdf(design, { images: { [uri]: shared } });
+    shared.set(replacement);
+    const replaced = await renderPdf(design, { images: { [uri]: shared } });
+    const fresh = await renderPdf(design, { images: { [uri]: replacement } });
+    expect(fresh.pdf).not.toEqual(before.pdf);
+    expect(Buffer.from(replaced.pdf).equals(fresh.pdf)).toBe(true);
+  });
+
+  it("keeps the last few large images it read and hashed, not the last 1,000: a server's memory stays level", async () => {
+    // 24 Documents, each with its own photo (1 MB, 1.4 million characters as base64), in a box and in a line, drawn
+    // and paginated with its pages in SVG, each image defined once: its size read, its bytes hashed for its page's hash
+    // and its SVG symbol's id, its number in a line's key.
+    const paginator = await createPaginator();
+    const options = { diagnostics: false, svg: { shareImages: true } } as const;
+    const signed = (photo: string) => (
+      <Document>
+        <Image src={{ src: photo, width: 200 }} alt="Photo" />
+        <Text>
+          Signed <Image src={{ src: photo, width: 16, height: 16 }} alt="" />
+        </Text>
+      </Document>
+    );
+    let last = "";
+    for (let i = 0; i < 24; i++) {
+      last = png(1000 + i, 1000, true);
+      await renderPdf(signed(last));
+      paginator.paginate(signed(last), options);
+    }
+    // At most 16 million characters of them in any one cache (the last 11 or so), where it kept all 24 (34 million).
+    expect(sourcesKept()).toBeLessThanOrEqual(16_000_000);
+    expect(sourcesKept()).toBeGreaterThan(10_000_000);
+    const kept = vi.spyOn(SourceCache.prototype, "set");
+    try {
+      // The last is kept: paginated again, nothing of it is worked out again.
+      paginator.paginate(signed(last), options);
+      expect(kept.mock.calls.filter(([src]) => src === last)).toEqual([]);
+      // A logo too long to keep with them (a 12 MB file, 16.3 million characters), in the header of 16 pages, is kept
+      // apart: its size and its two hashes worked out once each, not on each page, and the photo is still kept.
+      const large = png(4000, 3050, true);
+      expect(large.length).toBeGreaterThan(16_000_000);
+      kept.mockClear();
+      const { plan } = paginator.paginate(
+        <Document>
+          <PageHeader>
+            <Image src={{ src: large, width: 48, height: 36 }} alt="Logo" />
+          </PageHeader>
+          {Array.from({ length: 16 }, (_, i) => (
+            <Document.Page key={i}>
+              <Text>{`Page ${i + 1}`}</Text>
+            </Document.Page>
+          ))}
+        </Document>,
+        options
+      );
+      expect(plan.pages).toHaveLength(16);
+      expect(kept.mock.calls.filter(([src]) => src === large)).toHaveLength(3);
+      kept.mockClear();
+      paginator.paginate(signed(last), options);
+      expect(kept.mock.calls.filter(([src]) => src === last)).toEqual([]);
+    } finally {
+      kept.mockRestore();
+    }
+  });
+
+  it("sizes a whole JPEG with padding after its end as react-pdf draws it, with a width or without", async () => {
+    const original = readFileSync(new URL("../../../../templates/_assets/images/speaker.jpg", import.meta.url));
+    const url = "https://example.test/photo.jpg";
+    for (const width of [120, undefined]) {
+      const design = (
+        <Document size="A5" margin={{ top: 300, bottom: 300, left: 48, right: 48 }}>
+          <Image id="photo" src={url} alt="Speaker" style={{ width }} />
+          <Text>Caption</Text>
+        </Document>
+      );
+      const padded = { images: { [url]: Buffer.concat([original, Buffer.alloc(32)]) } };
+      const drawn = (await layoutDocument(design, padded)).nodes.find((node) => node.id === "photo")!.height;
+      expect(drawn, `width ${width}`).toBeGreaterThan(0);
+      const { pdf } = await renderPdf(design, padded);
+      expect(await images(await (await getDocument({ data: pdf.slice(), verbosity: 0 }).promise).getPage(1)), `width ${width}`).toHaveLength(1);
+      const preview = (await createPaginator(padded)).paginate(design, { layout: true });
+      expect(preview.layout!.nodes.find((node) => node.id === "photo")!.height, `width ${width}`).toBeCloseTo(drawn);
+    }
+  });
+
+  it("measures a PNG cut short (its header whole) as react-pdf draws it, left out: the same plan without drawing", async () => {
+    const bytes = Buffer.from(png(100, 700).split(",")[1], "base64").subarray(0, 33);
+    const design = (
+      <Document size="A5">
+        <Image src={`data:image/png;base64,${bytes.toString("base64")}`} alt="A damaged upload" />
+        {Array.from({ length: 10 }, (_, i) => (
+          <Text key={i}>Record {i + 1}</Text>
+        ))}
+      </Document>
+    );
+    expect((await paginate(design)).plan.pages.map((page) => page.parts.length)).toEqual((await renderPdf(design)).plan.pages.map((page) => page.parts.length));
   });
 
   it("draws a Video's thumbnail given in images: its own, or a YouTube video's by the URL it's derived from", async () => {
@@ -395,19 +605,35 @@ describe("renderPdf", () => {
     expect(validate(<Email><Button href="https://x.test" style={{ hover: { backgroundColor: "#333333" } }}>Go</Button></Email>).diagnostics.filter((d) => d.code.startsWith("pdf/"))).toEqual([]);
   });
 
-  it("says a page whose content can't fit is cut off, an estimate till text is measured (and validate() says it too)", async () => {
+  it("says what can't go on to another page is cut off: a Row of Columns centered across it, taller than its page, measured, at the first text cut (validate() estimates)", async () => {
     const long = (
       <Document>
-        {Array.from({ length: 120 }, (_, i) => (
-          <Text key={i}>Text {i + 1} of a page that goes on for longer than an A4 page can hold.</Text>
-        ))}
+        <Row style={{ alignItems: "center" }}>
+          <Column>
+            {Array.from({ length: 60 }, (_, i) => (
+              <Text key={i}>Text {i + 1} of a Column.</Text>
+            ))}
+          </Column>
+          <Column>
+            <Text>Beside it.</Text>
+          </Column>
+        </Row>
       </Document>
     );
     const { diagnostics } = await renderPdf(long);
-    const overflow = diagnostics.find((d) => d.code === "document/overflow");
-    expect(overflow).toMatchObject({ severity: "warning" });
-    expect(overflow?.message).toMatch(/^Page 1's content \(split it with a PageBreak, or into pages\) looks about \d+% as tall as its room \(an estimate: text isn't measured yet\)\. What doesn't fit is cut off$/);
-    expect(validate(long).diagnostics.map((d) => d.code)).toContain("document/overflow");
+    const overflow = diagnostics.filter((d) => d.code === "document/overflow");
+    // A Row whose columns sit at its middle stays whole. A4 less its margins is 769.89 points; each text is a line of 18
+    // (16px at 1.5), the Row 60 of them (1,080 points, 140% of the room): 42 fit, the 43rd is cut.
+    expect(overflow).toEqual([
+      {
+        code: "document/overflow",
+        severity: "warning",
+        message:
+          "Page 1's content is 140% as tall as its room, measured with its fonts, and what runs past it can't go on to the next page (an image, a block with a set height and a Row whose columns sit at its middle or end stay whole). What doesn't fit is cut off, from here on",
+        path: "root.children[0].children[0].children[42]",
+      },
+    ]);
+    expect(validate(long).diagnostics.find((d) => d.code === "document/overflow")?.message).toMatch(/\(an estimate: text isn't measured yet\)/);
     // A page that fits says nothing, nor does each page of the same content split into pages.
     expect((await renderPdf(<Document><Text>One paragraph.</Text></Document>)).diagnostics).toEqual([]);
     const split = (
@@ -422,6 +648,82 @@ describe("renderPdf", () => {
       </Document>
     );
     expect((await renderPdf(split)).diagnostics.map((d) => d.code)).not.toContain("document/overflow");
+  });
+
+  it("flows what the estimate thinks fits: capitals, wider than it reckons, go on to a second page", async () => {
+    const capitals = (
+      <Document>
+        <Heading level={1}>Capitals</Heading>
+        {Array.from({ length: 26 }, (_, i) => (
+          <Text key={i}>WIDE CAPITAL LETTERS MAKE MUCH LONGER LINES THAN THE ESTIMATE EXPECTS, SO MORE LINES WRAP.</Text>
+        ))}
+      </Document>
+    );
+    expect(validate(capitals).diagnostics.map((d) => d.code)).not.toContain("document/overflow");
+    const { pdf, diagnostics } = await renderPdf(capitals);
+    expect(diagnostics.map((d) => d.code)).not.toContain("document/overflow");
+    // The heading is a line of 30 points (32px at 1.25), each of them two lines of 18: in the room's 769.89 points the
+    // heading and 20 of them fit, and the other 6 go on to page 2 (two lines don't split: two stay on each side).
+    const { pages } = await read(pdf);
+    expect(pages.map((page) => page.words.match(/WIDE/g)?.length)).toEqual([20, 6]);
+  });
+
+  it("draws text written right to left from its right, as its direction says: the period that ends it on its left", async () => {
+    const design = (
+      <Document dir="rtl" style={{ fontFamily: "Noto Arabic" }}>
+        <Text>{arabicSentences(3)}</Text>
+        {/* A paragraph takes its direction from its first run (react-pdf's): one that starts with a Span too. */}
+        <Text>
+          <Span style={{ color: "#b91c1c" }}>مرحبا</Span> {arabicSentences(3)}
+        </Text>
+        <Text dir="ltr">{arabicSentences(3)}</Text>
+        {/* "auto": its first letter's. */}
+        <Text dir="auto">{arabicSentences(3)}</Text>
+        <Text dir="auto">An English sentence, then {arabicSentences(1)}</Text>
+      </Document>
+    );
+    const { root } = prepare(design);
+    const written = writeDocument(root!, { families: new Set(["noto arabic"]), fonts: arabicFonts, image: () => undefined, date: new Date(0) });
+    const { placed } = await reactPdf(written);
+    // Each paragraph's last line as drawn, from the left.
+    const last = (i: number) => {
+      const lines = placed![0].blocks.find((block) => block.path === `root.children[${i}]`)!.lines!;
+      return lines[lines.length - 1].text.trim();
+    };
+    expect(last(0)).toMatch(/^\./);
+    expect(last(1)).toMatch(/^\./);
+    expect(last(2)).toMatch(/\.$/);
+    expect(last(3)).toMatch(/^\./);
+    expect(last(4)).toMatch(/\.$/);
+    // Text left to right is written as before, with no direction of its own.
+    const direction = (block: Block) => ("style" in block ? block.style.direction : undefined);
+    expect(written.pages[0].content.map(direction)).toEqual(["rtl", "rtl", undefined, "rtl", undefined]);
+  });
+
+  it("draws a list item's text beside its marker, its lines inside the page's right margin as a paragraph's are", async () => {
+    const words = "Elements writes the same design to email, the web, print and PDF, so this stands in for a section.";
+    const { pdf } = await renderPdf(
+      <Document>
+        <Text>{words}</Text>
+        <List type="number">
+          <ListItem>{words}</ListItem>
+        </List>
+      </Document>
+    );
+    const document = await getDocument({ data: pdf.slice(), useSystemFonts: false, disableFontFace: true, verbosity: 0 }).promise;
+    const page = await document.getPage(1);
+    const items = (await page.getTextContent()).items.filter((item): item is { str: string; width: number; transform: number[] } & typeof item => "str" in item && item.str.trim() !== "");
+    const ends = (from: string) => items.filter((item) => item.str.startsWith(from)).map((item) => item.transform[4] + item.width);
+    // The page's right margin (48px, 36 points, in from its edge): the item's first line, set 18 points in beside its
+    // marker, ends inside it as the paragraph's does.
+    const margin = page.view[2] - 36;
+    const [paragraph, item, ...more] = ends("Elements");
+    expect(more).toEqual([]);
+    expect(paragraph).toBeLessThanOrEqual(margin + 0.1);
+    expect(item).toBeLessThanOrEqual(margin + 0.1);
+    const marker = items.find((item) => item.str === "1.")!;
+    const first = items.filter((item) => item.str.startsWith("Elements"))[1];
+    expect(first.transform[4] - marker.transform[4]).toBeCloseTo(18, 1);
   });
 
   it("places a Button by its own alignSelf, over its stack's alignItems", () => {
@@ -509,7 +811,7 @@ describe("renderPdf", () => {
     expect(urls).toEqual(["https://acme.test/report", "https://acme.test/", "https://acme.test/blog"]);
   });
 
-  it("cuts a page's content where the page ends, its lines as far apart as laid out (not drawn over each other)", async () => {
+  it("flows a page's content onto the pages it needs, its lines as far apart as laid out on each (not drawn over each other)", async () => {
     const lines = Array.from({ length: 100 }, (_, i) => `Line ${i + 1}`);
     const { pdf } = await renderPdf(
       <Document size="A4" margin={48}>
@@ -521,13 +823,18 @@ describe("renderPdf", () => {
       </Document>
     );
     const document = await getDocument({ data: pdf.slice(), useSystemFonts: false, disableFontFace: true, verbosity: 0 }).promise;
-    expect(document.numPages).toBe(1);
-    const items = (await (await document.getPage(1)).getTextContent()).items as Array<{ str?: string; transform: number[] }>;
-    const baselines = items.filter((item) => item.str?.startsWith("Line")).map((item) => item.transform[5]);
-    // A 12px line at 1.5 is 18px: 13.5 points, from each line to the next.
-    expect(baselines.slice(1).map((y, i) => baselines[i] - y).filter((gap) => Math.abs(gap - 13.5) > 0.05)).toEqual([]);
-    expect(baselines.length).toBeGreaterThan(40);
-    expect(baselines.length).toBeLessThan(lines.length);
+    const drawn: string[][] = [];
+    for (let n = 1; n <= document.numPages; n++) {
+      const items = (await (await document.getPage(n)).getTextContent()).items as Array<{ str?: string; transform: number[] }>;
+      const page = items.filter((item) => item.str?.startsWith("Line"));
+      const baselines = page.map((item) => item.transform[5]);
+      // A 12px line at 1.5 is 18px: 13.5 points, from each line to the next.
+      expect(baselines.slice(1).map((y, i) => baselines[i] - y).filter((gap) => Math.abs(gap - 13.5) > 0.05)).toEqual([]);
+      drawn.push(page.map((item) => item.str!));
+    }
+    // 769.89 points of room hold 57 of them; each line once, in order.
+    expect(drawn.map((page) => page.length)).toEqual([57, 43]);
+    expect(drawn.flat()).toEqual(lines);
   });
 
   it("paints each page white unless it has a background of its own (a viewer may show a transparent page as black)", async () => {
@@ -574,10 +881,10 @@ describe("renderPdf", () => {
     await refused({}, `${reads} none: update @hyper-elements/react`);
   });
 
-  it("depends on its engine in one file: the writer builds pages as plain data, which react-pdf's adapter draws", () => {
+  it("depends on its engine in its adapter's files: the writer builds pages as plain data, which react-pdf's adapter measures and draws", () => {
     const src = join(dirname(fileURLToPath(import.meta.url)), "../../../internal/core/src/pdf");
     const importing = readdirSync(src).filter((file) => /from "@react-pdf\//.test(readFileSync(join(src, file), "utf8")));
-    expect(importing).toEqual(["react-pdf.tsx"]);
+    expect(importing.sort()).toEqual(["react-pdf-measure.ts", "react-pdf.tsx"]);
     // What the writer builds is data: the same after a round trip through JSON (its date aside).
     const { root } = prepare(invoice);
     const pages = writeDocument(root!, { families: new Set(), fonts: [], image: (src) => src, date: new Date(0) });
@@ -675,6 +982,98 @@ describe("renderPdf", () => {
   });
 });
 
+describe("layoutDocument", () => {
+  const report = (
+    <Document title="Report">
+      <PageHeader>
+        <Text>Acme report</Text>
+      </PageHeader>
+      <PageFooter>
+        <Text>
+          Page <PageNumber /> of <PageNumber total />
+        </Text>
+      </PageFooter>
+      <Text id="intro">An introduction long enough to wrap onto a second line of an A4 page, written out so that it does, with some more words.</Text>
+      <PageBreak />
+      {Array.from({ length: 50 }, (_, i) => (
+        <Text key={i}>Text {i + 1} of the second page, which holds more than fits.</Text>
+      ))}
+    </Document>
+  );
+  /** A page's own content: the blocks of the Document's children, not those of its header and footer. */
+  const content = (nodes: DocumentNode[], page: number) => nodes.filter((node) => node.page === page && /^root\.children\[\d+\]$/.test(node.path) && node.type === "Text");
+
+  it("gives each page's paper and room, and each block on each page, in px from the page's top left", async () => {
+    const { pages, nodes } = await layoutDocument(report);
+    expect(pages.length).toBeGreaterThan(2);
+    expect(pages.map(({ page, width, height }) => [page, width, height])).toEqual(pages.map((_, i) => [i + 1, 793.7, 1122.52]));
+    // The header's on every page at the top margin (48px), the footer on every page down to the bottom one.
+    const header = nodes.filter((node) => node.type === "PageHeader");
+    const footer = nodes.filter((node) => node.type === "PageFooter");
+    expect(header.map((node) => [node.page, node.x, node.y])).toEqual(pages.map(({ page }) => [page, 48, 48]));
+    expect(footer.map((node) => node.page)).toEqual(pages.map(({ page }) => page));
+    for (const node of footer) expect(node.y + node.height).toBeCloseTo(1122.52 - 48, 0);
+    // The room is between them.
+    expect(pages[0].room.top).toBeCloseTo(header[0].y + header[0].height, 1);
+    expect(pages[0].room.bottom).toBeCloseTo(footer[0].y, 1);
+    expect(nodes.find((node) => node.id === "intro")).toMatchObject({ path: "root.children[2]", type: "Text", page: 1, x: 48, y: header[0].y + header[0].height, lines: 2 });
+    expect(content(nodes, 1).every((node) => node.cut === undefined)).toBe(true);
+  });
+
+  it("gives each text that goes on to the pages after on the page it's on, each once, in order, none cut", async () => {
+    const { pages, nodes, diagnostics } = await layoutDocument(report);
+    // After the PageBreak (the Document's fourth child), its 50 texts.
+    const texts = pages.flatMap(({ page }) => (page === 1 ? [] : content(nodes, page)));
+    expect(texts.map((node) => node.path)).toEqual(Array.from({ length: 50 }, (_, i) => `root.children[${i + 4}]`));
+    expect(texts.every((node) => node.cut === undefined)).toBe(true);
+    for (const { page, room } of pages) for (const node of content(nodes, page)) expect(node.y + node.height).toBeLessThanOrEqual(room.bottom + 0.01);
+    expect(diagnostics.map((d) => d.code)).not.toContain("document/overflow");
+  });
+
+  it("says what's past a page's room where it can't go on: the text the cut goes through cut in part, all after it, never the header or footer", async () => {
+    const tall = (
+      <Document>
+        <PageFooter>
+          <Text>Footer</Text>
+        </PageFooter>
+        <Row style={{ alignItems: "center" }}>
+          <Column>
+            <Text>{Array.from({ length: 200 }, (_, i) => `Sentence ${i + 1} of a long paragraph in a Row.`).join(" ")}</Text>
+            <Text>After it, in the same Column.</Text>
+          </Column>
+          <Column>
+            <Text>Beside it.</Text>
+          </Column>
+        </Row>
+      </Document>
+    );
+    const { nodes, diagnostics } = await layoutDocument(tall);
+    const cut = Object.fromEntries(nodes.map((node) => [node.path, node.cut]));
+    expect(cut).toEqual({
+      "root.children[0]": undefined,
+      "root.children[0].children[0]": undefined,
+      "root.children[1]": "some",
+      "root.children[1].children[0]": "some",
+      "root.children[1].children[0].children[0]": "some",
+      "root.children[1].children[0].children[1]": "all",
+      // Beside it, at the middle of the Row, which is far taller than the page.
+      "root.children[1].children[1]": "all",
+      "root.children[1].children[1].children[0]": "all",
+    });
+    expect(diagnostics.filter((d) => d.code === "document/overflow").map((d) => d.path)).toEqual(["root.children[1].children[0].children[0]"]);
+  });
+
+  it("rejects as renderPdf does", async () => {
+    await expect(
+      layoutDocument(
+        <Email>
+          <Text>Not a document</Text>
+        </Email>
+      )
+    ).rejects.toThrow(/PDF output is a Document's/);
+  });
+});
+
 describe("templateAssets", () => {
   // Each source the template names, as a tool would load it: a font's file, or an image's.
   const files: Record<string, Uint8Array> = {
@@ -742,10 +1141,12 @@ describe("templateAssets", () => {
     // on CI pdf.js drew none of them, and this says whether the file held them. (Images with the same bytes share one.)
     const written = (Buffer.from(pdf).toString("latin1").match(/\/Subtype\s*\/Image\b/g) ?? []).length;
     expect(written, "image XObjects in the PDF").toBeGreaterThan(0);
-    // Four Images (the logo twice) and both thumbnails. pdf.js's warnings are printed (verbosity 1): an image it can't
-    // read is skipped with only a warning.
-    const { fnArray } = await (await (await getDocument({ data: pdf.slice(), verbosity: 1 }).promise).getPage(1)).getOperatorList();
-    expect(fnArray.filter((fn) => fn === OPS.paintImageXObject), `pdf.js drew these of the ${written} images written`).toHaveLength(6);
+    // Four Images (the logo twice) and both thumbnails, on the pages they go on (each thumbnail is as wide as the page).
+    // pdf.js's warnings are printed (verbosity 1): an image it can't read is skipped with only a warning.
+    const document = await getDocument({ data: pdf.slice(), verbosity: 1 }).promise;
+    let painted = 0;
+    for (let n = 1; n <= document.numPages; n++) painted += (await (await document.getPage(n)).getOperatorList()).fnArray.filter((fn) => fn === OPS.paintImageXObject).length;
+    expect(painted, `pdf.js drew these of the ${written} images written`).toBe(6);
   });
 
   it("rejects a template as renderPdf() does", () => {

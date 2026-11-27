@@ -49,6 +49,22 @@ describe("a Document printed in Chromium", () => {
     ]);
   });
 
+  it("cuts what doesn't fit above the footer: nothing is drawn over the footer or into the bottom margin", async () => {
+    const footer = { type: "PageFooter", children: [text("Footer")] };
+    // The page from the footer's top to the paper's bottom edge, as a screen shows it (in a window an A4 sheet fits).
+    const bottom = async (children: unknown[]) => {
+      const page = await browser.newPage({ viewport: { width: 1000, height: 1200 } });
+      await page.setContent(renderTemplate({ root: { type: "Document", children: [...children, footer] } }).html);
+      const sheet = (await page.locator(".elements-page").boundingBox())!;
+      const top = (await page.getByText("Footer", { exact: true }).boundingBox())!.y;
+      const shot = await page.screenshot({ clip: { x: sheet.x, y: top, width: sheet.width, height: sheet.y + sheet.height - top } });
+      await page.close();
+      return shot;
+    };
+    const many = Array.from({ length: 80 }, (_, i) => text(`Line ${i + 1} of a page that goes on far past its footer.`));
+    expect((await bottom(many)).equals(await bottom([text("Line 1")]))).toBe(true);
+  });
+
   it("prints A4 portrait by default, a page that holds more than fits cut at its bottom margin rather than spilling onto a sheet of its own", async () => {
     const many = Array.from({ length: 80 }, (_, i) => text(`Line ${i + 1}`));
     const { sheets } = await print(renderTemplate({ root: { type: "Document", children: many } }).html);

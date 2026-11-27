@@ -4,6 +4,7 @@
  * every box's width on desktop in px, from the root's width down. Targets
  * only turn this into markup; none of them decides layout on its own.
  */
+import type { PlannedLine } from "./plan";
 import type { ComponentDefinition, Target } from "./define";
 import { Diagnostics, type Diagnostic } from "./diagnostics";
 import { assetParts, readLength, type Asset, type Border, type BorderSide, type FontFamily, type Insets, type LineHeight } from "./kinds";
@@ -64,6 +65,16 @@ export interface ResolvedNode {
   columns?: number[] | null;
   /** On a Table and its rows, where a column of its own px sits beside one with no width: how each column is written. "px" stays that wide in a narrower window, "share" stays its share of the table, "free" takes what they leave (otherwise, none: every column is a share of the table). */
   columnSizes?: Array<"px" | "share" | "free"> | null;
+  /**
+   * In a Document's print HTML drawn from a Plan: a block of text cut between pages, the lines of it this part shows
+   * (as measured, drawn line by line) and the page numbers its characters were counted with (writers/page/flowed.ts).
+   */
+  flowed?: { lines: PlannedLine[]; page: { number: number; total: number } };
+  /**
+   * In a Document's print HTML drawn from a Plan: a part of a block that goes on to the next page, which fills the rest
+   * of its page, as a box broken between pages does in a browser (grown down its stack, stretched across its Row).
+   */
+  fills?: true;
 }
 
 export interface ResolvedDocument {

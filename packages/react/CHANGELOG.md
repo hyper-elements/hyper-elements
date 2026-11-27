@@ -4,6 +4,56 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A Document's PDF goes on to the next page
+
+`renderPdf()` no longer cuts off what doesn't fit a page: it goes on to the next, with the `PageHeader` and
+`PageFooter` on each page and each `PageNumber` numbered for the pages there are.
+- Text splits between its lines, two at least on each side, right to left too.
+- A Section, a Column and a List split between and inside what they hold, keeping their top padding and border on
+  their first part and their bottom ones on the page they end on.
+- A Table splits between its rows, its header rows again on top of each page.
+- A Row of Columns taller than a page goes on by its columns.
+- A Heading goes on with what follows it.
+
+A Document whose pages fit has the same pages as before, with three changes: a list item's text stays inside the
+right margin (it ran up to 17 points into it), an SVG image in a line of text leaves its room empty instead of
+showing its alt text, and the print HTML clips a page's content above its footer. See "Pages that flow" in
+`docs/render-pdf.md`.
+
+- **The same pages everywhere:** `renderPdf()` returns its `plan`, and `render(design, { plan })` draws the print
+  HTML with the PDF's pages.
+- **A plan without drawing:** `paginate(design)` makes the plan without drawing the PDF. Its text is measured with
+  react-pdf's own layout (`@react-pdf/textkit`, a new optional peer).
+- **Where everything landed:** `layoutDocument(design)` gives each page and each block where its PDF lays it out.
+- **For a page view as a Document is edited:**
+  - `createPaginator({ fonts, images })` answers `paginate()` at once (in Node, a browser or a Worker), laying out
+    again only the text that changed.
+  - It can give each page as an SVG drawn where the PDF draws it (`svg`), and each line's box and its carets
+    (`layout`).
+  - `caretAt()`, `caretBox()`, `selectionBoxes()` and `fontFaces()` read and draw them.
+- **New warnings:**
+  - `pdf/measure`: a paginator guessed a block it can't measure exactly.
+  - `pdf/layer`: text over a Layer is taller than the Layer, which the PDF doesn't draw.
+  - `pdf/layout`: the installed react-pdf doesn't say where it laid the PDF out.
+  - `render/plan`: a plan made from another version of the Document.
+
+### A builder design's pages
+
+- **`fromDesign()` returns `parts`:** the part of the builder design each node of its `element` stands for, by its
+  path: where it is in the design's body (`rows[2].columns[0].contents[1]`, a table's `….values.table.rows[3]`) and
+  its id there (`values._meta.htmlID`).
+- **`designPages(plan, parts)`** in `/pdf` turns a plan of that `element` into each page's parts of the design, in the
+  order they're drawn, each with whether it starts and ends on the page. An editor can show a Document's pages as its
+  PDF has them. See "A builder design's pages" in `docs/render-pdf.md`.
+
+### The builder's Page Number block
+
+- **Read back.** `fromDesign()` reads the builder's Page Number block, which only documents have, as a `Text` in the
+  block's styles, its `{{page_number}}` and `{{page_count}}` tokens as `<PageNumber />` and `<PageNumber total />`.
+  Before, it left the block out.
+- **Written as before.** `toDesign()` still writes a `PageNumber` as the token in its text, which a document's PDF
+  prints as the page's number and the page count. Its report no longer says the builder prints the token as it is.
+
 ### A block map for every root
 
 `render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),

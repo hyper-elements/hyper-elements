@@ -19,7 +19,14 @@ export const Section: Component = ({ node, style, parent: root, classes, childre
     <section
       id={node.id}
       class={classes()}
-      style={[stackOf(node), { padding: `${px(top)} ${side(right)} ${px(bottom)} ${side(left)}`, backgroundColor: style.backgroundColor, border: style.border }, textDeclarations(node.text, root.text)]}
+      style={[
+        stackOf(node),
+        { padding: `${px(top)} ${side(right)} ${px(bottom)} ${side(left)}`, backgroundColor: style.backgroundColor, border: style.border },
+        // Across the window, it's placed by nothing but this: a part of it in a Document's print HTML that goes on to the
+        // next page fills the rest of it (writers/page/flowed.ts).
+        node.fills ? { flexGrow: 1 } : {},
+        textDeclarations(node.text, root.text),
+      ]}
     >
       {children()}
     </section>

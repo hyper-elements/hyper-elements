@@ -14,6 +14,7 @@ import { defined, lineHeight, make, obj, placed, same, str, textStyle, unless, Z
 import { holdsWords, opaque } from "./table";
 import { readText } from "./text";
 import { textJsonHtml } from "./text-json";
+import { mark } from "./parts";
 
 type Text = { fontFamily: string; fontSize: number; fontWeight: number; color: string; textAlign: string; lineHeight: Json; letterSpacing: number };
 
@@ -137,7 +138,9 @@ export function readTable(values: Values, context: Context): Node[] {
     const least = Math.max(0, ...cells.map((cell, i) => (holdsWords(cell.node) ? cell.line : 0) + pads[i]));
     const height = px(row.height);
     if (height !== undefined && height > Math.max(1, Math.ceil(least))) style.height = height;
-    return make("TableRow", { props: defined({ header: kind === "header" || undefined, footer: kind === "footer" || undefined }), style, children: cells.map((cell) => cell.node) });
+    const made = make("TableRow", { props: defined({ header: kind === "header" || undefined, footer: kind === "footer" || undefined }), style, children: cells.map((cell) => cell.node) });
+    // Its place in the design: the table's `headers`, `rows` or `footers`.
+    return context.at === undefined ? made : mark(made, `${context.at}.values.table.${kind === "body" ? "rows" : `${kind}s`}[${index}]`);
   };
 
   /** A cell as a TableCell (its words, and its own fields and line height where they aren't its row's), and its line's height. */

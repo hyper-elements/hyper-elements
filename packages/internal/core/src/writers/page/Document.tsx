@@ -10,6 +10,7 @@ import { markBlock } from "../shared/block-map";
 import { px, textDeclarations } from "../shared/css";
 import { isNode, type Component } from "./context";
 import { alignSelf, stackOf } from "./layout";
+import { flowedPages } from "./flowed";
 import { numbering } from "./PageNumber";
 
 /**
@@ -25,15 +26,20 @@ export function documentCss(root: ResolvedNode): string {
   );
 }
 
-export const Document: Component = ({ node: root, style, rtl, render }) => {
+export const Document: Component = ({ node: root, style, rtl, render, options }) => {
   const box = pageBox(root.props);
   const { margin } = box;
-  const { pages, header, footer } = documentPages(root);
+  const written = documentPages(root);
+  const { header, footer } = written;
+  // Its pages as written, or as its plan places its blocks (the same pages as its PDF).
+  const pages = options.plan ? flowedPages(root, options.plan).map(({ from, content }) => ({ page: written.pages[from]?.page, children: content })) : written.pages;
   return (
     <main style={textDeclarations(root.text, undefined)}>
       {pages.map(({ page, children }, index) =>
         numbering({ page: index + 1, total: pages.length }, () => {
-          // A Document.Page's element is its box: in the block map, where the design has one.
+          // A Document.Page's element is its box: in the block map, where the design has one. Its content goes in the room
+          // between the header and the footer, which it never leaves: what doesn't fit is cut there, as in the PDF, not
+          // drawn over the footer and the bottom margin.
           const sheet = (
             <section
               id={page?.id}
@@ -52,7 +58,7 @@ export const Document: Component = ({ node: root, style, rtl, render }) => {
               }}
             >
               {header && render(header, [])}
-              <div style={[{ flex: "1 1 auto", minHeight: 0 }, stackOf(page ?? root), page ? textDeclarations(page.text, root.text) : {}]}>
+              <div style={[{ flex: "1 1 auto", minHeight: 0, overflow: "hidden" }, stackOf(page ?? root), page ? textDeclarations(page.text, root.text) : {}]}>
                 {children.filter(isNode).map((child) => render(child, alignSelf(child, page ?? root, rtl)))}
               </div>
               {footer && render(footer, [])}

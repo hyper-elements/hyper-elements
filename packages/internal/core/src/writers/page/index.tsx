@@ -141,7 +141,9 @@ const UNMAPPED = new Set(["LineBreak", "MergeTag", "PageNumber"]);
 function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl: boolean): Html {
   const component = COMPONENTS[node.type];
   if (!component) throw new Error(`[Elements] The page exporter can't render a ${node.type}`);
-  const html = component(propsOf(node, parent, placement, options, inRtl));
+  // A part of a Document's block that goes on to the next page fills the rest of it (writers/page/flowed.ts).
+  const placed: Declarations = node.fills ? [...placement, parent.type === "Row" ? ["align-self", "stretch"] : ["flex-grow", "1"]] : placement;
+  const html = component(propsOf(node, parent, placed, options, inRtl));
   return UNMAPPED.has(node.type) ? html : markBlock(html, node);
 }
 

@@ -48,7 +48,7 @@ export function runsHtml(node: Node, lost: string[] = []): string {
         case "MergeTag":
           return `{{${escapeHtml(String(child.props?.name ?? ""))}}}`;
         case "PageNumber":
-          // The builder has no page numbers: its tokens in their place, read back as them in a Document.
+          // The builder's tokens, which a document's PDF prints as the page's number and the page count; read back as them in a Document.
           return child.props?.total ? "{{page_count}}" : "{{page_number}}";
         case "Link": {
           if (child.hover && Object.keys(child.hover).length) lost.push("a link's hover");
@@ -99,7 +99,7 @@ function runItems(node: Node, lost: string[], around = "", format = 0): Item[] {
       case "MergeTag":
         return [textItem(`{{${String(child.props?.name ?? "")}}}`, own, format)];
       case "PageNumber":
-        // The builder has no page numbers: its tokens in their place, read back as them in a Document.
+        // The builder's tokens, which a document's PDF prints as the page's number and the page count; read back as them in a Document.
         return [textItem(child.props?.total ? "{{page_count}}" : "{{page_number}}", own, format)];
       case "Link": {
         if (child.hover && Object.keys(child.hover).length) lost.push("a link's hover");

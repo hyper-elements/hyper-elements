@@ -10,8 +10,9 @@ import { readDesign, type DisplayMode } from "./read";
 import { checkTemplate } from "./check";
 import { uniqueIds } from "./ids";
 import { writeDesign, type Design, type DesignResult } from "./write";
+import { partsOf, type DesignPart } from "./parts";
 
-export type { Design, DesignResult, DisplayMode };
+export type { Design, DesignPart, DesignResult, DisplayMode };
 
 /** A template in the new components (an `<Email>`, a `<Page>` or a `<Document>`) as the builder's design JSON. */
 export function toDesign(element: React.ReactElement): DesignResult {
@@ -25,6 +26,17 @@ export interface TemplateResult {
   code: string;
   /** What of the design the template can't hold, and what was left out: one line each. */
   report: string[];
+  /**
+   * The part of the design each node of `element` stands for, by its path in it (`root.children[3]`, as a Document's
+   * plan names it): where it is in the design's body (`rows[2].columns[0].contents[1]`, a table's
+   * `….values.table.rows[3]`, `headers`), and its id there (`values._meta.htmlID`), where it has one. A node made
+   * around a block (its padding) stands for that block, and a block's text for it. With `designPages()` from
+   * `@hyper-elements/react/pdf`, a plan of `element` says which of the design's parts go on each page. It holds for
+   * this `element` and this design: a design written again by toDesign() has ids of its own. A place is in the design
+   * as the builder loads it, a value the design leaves out its tool's default (a table saved without its `table`
+   * value has the table tool's rows).
+   */
+  parts: Record<string, DesignPart>;
 }
 
 export interface FromDesignOptions {
@@ -48,5 +60,5 @@ export function fromDesign(design: unknown, options: FromDesignOptions = {}): Te
   const report: string[] = [];
   const root = checkTemplate(uniqueIds(readDesign(design, options.displayMode, report, options.toSafeHtml)), report);
   const code = printTemplate(root, options.name, report);
-  return { element: toElement(root), code, report };
+  return { element: toElement(root), code, report, parts: partsOf(root) };
 }

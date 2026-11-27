@@ -7,6 +7,7 @@
  * out.
  */
 import { definitionOf, type Child, type Json, type Node } from "@hyper-elements/core";
+import { isMarked, markAs } from "./parts";
 
 type Kind = { parse(value: unknown): { ok: true; value: Json } | { ok: false; message: string } };
 
@@ -65,7 +66,8 @@ function checkNode(node: Node, path: string, report: string[], inText = false): 
         // In text, its words as a Span; elsewhere (around an image), what it holds, in its place.
         report.push(`${path}: its ${key} ${JSON.stringify(value)} isn't one Elements writes: ${inText ? "its words" : "what it holds"} without it`);
         const children = checkChildren(node.children ?? [], path, report, true);
-        return inText ? { type: "Span", children } : children;
+        // What stands in its place stands for the part of the design it did.
+        return inText ? markAs({ type: "Span", children }, node) : children.map((child) => (typeof child === "string" || isMarked(child) ? child : markAs(child, node)));
       }
       report.push(`${path}: its ${part === "props" ? "" : `${part} `}${key} ${JSON.stringify(value)}${parsed && !parsed.ok ? ` (${parsed.message})` : ""} isn't one a ${node.type} takes: left out`);
     }

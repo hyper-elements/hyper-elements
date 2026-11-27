@@ -62,7 +62,15 @@
   "toDesign"
  ],
  "./pdf": [
+  "caretAt",
+  "caretBox",
+  "createPaginator",
+  "designPages",
+  "fontFaces",
+  "layoutDocument",
+  "paginate",
   "renderPdf",
+  "selectionBoxes",
   "templateAssets"
  ],
  "./image": [

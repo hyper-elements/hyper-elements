@@ -168,7 +168,7 @@ try {
 | `id/dropped` | info | An `id` inside one of your own elements used without one of its own is left out |
 | `mobile/not-shown` | warning | Your own element's `mobile` style that nothing it renders has a phone version of |
 | `jsx/compat` | warning | A `compat` prop on a root, which is left out |
-| `document/overflow` | warning | A page's content looks taller than the page (an estimate) |
+| `document/overflow` | warning | A page's content is taller than its room. From `renderPdf()`, measured, once its content has gone on to the next pages: what stays whole (an image, a block with a set height, a Row whose columns sit at its middle) and is taller than a page. From `validate()` and `render()` without a plan, an estimate |
 | `canvas/overflow` | warning | A Canvas's content looks taller than the Canvas (an estimate) |
 
 `renderPdf()` and `renderImage()` add codes of their own (`pdf/…`, `image/…`). See [PDF](/docs/outputs/pdf#diagnostics) and [Image](/docs/outputs/image#diagnostics).

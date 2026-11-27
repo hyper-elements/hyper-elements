@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@react-pdf/renderer": "4.9.0",
+    "@react-pdf/textkit": "7.0.1",
     "@resvg/resvg-js": "2.6.2",
     "@types/jsdom": "27.0.0",
     "@types/node": "^24.9.1",

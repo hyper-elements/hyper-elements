@@ -10,6 +10,7 @@ import type { Context } from "./blocks";
 import { readHidden } from "./hide";
 import { withoutMalformed } from "./malformed";
 import { readRow } from "./rows";
+import { mark } from "./parts";
 import { sayUnread } from "./unread";
 
 export type DisplayMode = "email" | "web" | "document";
@@ -48,15 +49,16 @@ export function readDesign(given: unknown, displayMode: DisplayMode | undefined,
     safe: (html) => (toSafeHtml ? toSafeHtml(html) : html),
     document: mode === "document",
     say: (message) => report.push(`${where}: ${message}`),
+    at: where,
   });
   const children: Child[] = [];
   const place = (list: unknown[], part: string) => list.flatMap((row, r) => readRow(obj(row), `${part}[${r}]`, { context, body: values, document: mode === "document", part: mode === "document" && part !== "rows" }));
   if (mode === "document") {
     const header = place(headers, "headers");
-    if (header.length) children.push({ type: "PageHeader", children: header.filter((c) => c.type !== "PageBreak") });
+    if (header.length) children.push(mark({ type: "PageHeader", children: header.filter((c) => c.type !== "PageBreak") }, "headers"));
     children.push(...place(rows, "rows"));
     const footer = place(footers, "footers");
-    if (footer.length) children.push({ type: "PageFooter", children: footer.filter((c) => c.type !== "PageBreak") });
+    if (footer.length) children.push(mark({ type: "PageFooter", children: footer.filter((c) => c.type !== "PageBreak") }, "footers"));
   } else {
     // Elsewhere the builder draws them as rows, above and below the others.
     children.push(...place(headers, "headers"), ...place(rows, "rows"), ...place(footers, "footers"));

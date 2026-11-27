@@ -112,7 +112,7 @@ const { element, code, report } = fromDesign(saved, { displayMode: "email" });
 const { html, text } = await render(element);
 ```
 
-`element` renders the edited builder design; `code` is the same design as JSX in the new elements; `report` lists what the design can't hold. Pass the `displayMode` the builder design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. A builder design's markup is kept as it is, so where builder designs can hold untrusted content, pass your sanitizer: `fromDesign(saved, { toSafeHtml })`.
+`element` renders the edited builder design; `code` is the same design as JSX in the new elements; `report` lists what the design can't hold; `parts` names the part of the builder design (its place and its id) each node of `element` stands for, by its path, which a Document's [page plan](./render-pdf.md#a-builder-designs-pages) names its blocks by. Pass the `displayMode` the builder design was made in: `email` gives an `Email`, `web` a `Page`, `document` a `Document`. A builder design's markup is kept as it is, so where builder designs can hold untrusted content, pass your sanitizer: `fromDesign(saved, { toSafeHtml })`.
 
 ## Constraints
 

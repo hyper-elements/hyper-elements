@@ -6,7 +6,7 @@ const shared: Options = {
   splitting: false,
   sourcemap: true,
   treeshake: true,
-  external: ['react', '@react-pdf/renderer', 'satori', '@resvg/resvg-js'],
+  external: ['react', '@react-pdf/renderer', '@react-pdf/textkit', 'satori', '@resvg/resvg-js'],
   // The writers' JSX writes strings (src/writers/jsx.ts), not React elements.
   esbuildOptions(options) {
     options.jsxFactory = 'h';

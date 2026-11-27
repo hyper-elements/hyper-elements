@@ -19,3 +19,4 @@ export * from "./expand";
 export * from "./markup";
 export * from "./writers";
 export * from "./theme";
+export * from "./plan";

@@ -28,7 +28,6 @@ export interface Raised {
 
 type Child = { child: Node; path: string };
 
-const holdsPageNumber = (node: Node): boolean => node.type === "PageNumber" || (node.children ?? []).some((child) => typeof child !== "string" && holdsPageNumber(child));
 
 /** What shows a box's edges: where these are set, space around it can't move inside it. */
 const PAINT = ["backgroundColor", "border", "borderRadius"];
@@ -48,7 +47,6 @@ export function raise(element: React.ReactElement): Raised {
   if (root.type !== "Email" && root.type !== "Page" && root.type !== "Document") {
     return { body: null, report: [`root: the builder edits an Email, a Page or a Document, not a ${root.type}`] };
   }
-  if (holdsPageNumber(root)) report.push("root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet");
   // The theme is written as values: what each block holds is what the theme gave it there.
   if (document.theme && Object.keys(document.theme).length) report.push("root: the theme's tokens, variants and named styles are written as the values they give each block: the builder keeps no theme");
   // The scopes around each node, outermost first, for a block drawn on its own (a locked block).

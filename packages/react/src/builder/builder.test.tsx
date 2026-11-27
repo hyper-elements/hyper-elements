@@ -107,7 +107,7 @@ describe("toDesign", () => {
     expect(body.headers[0].values._meta).toEqual({ htmlID: "u_header_1", htmlClassNames: "u_header" });
     expect(blocks(design).map((content) => content.type)).toEqual(["heading", "paragraph", "page_break", "paragraph", "page_break", "paragraph", "page_break", "paragraph"]);
     expect(textJsonHtml(blocks(design)[1].values.textJson).html).toContain(">Page {{page_number}} of {{page_count}}<");
-    expect(report).toEqual([expect.stringContaining("the builder has no page numbers yet")]);
+    expect(report).toEqual([]);
     // A margin that differs from side to side: the widest, the sides hidden.
     const sides = toDesign(<Document margin={[10, 20, 30, 40]}><Text>A</Text><PageBreak /><Text>B</Text></Document>).design.body.values;
     expect([sides.documentMargin, sides.margin]).toEqual(["40px", "10px 20px 30px 40px"]);
@@ -980,10 +980,131 @@ describe("a design read back", () => {
 });
 
 describe("a page number", () => {
-  it("says the editor's PDF prints its token, as the builder has no page numbers yet", () => {
-    const { report } = toDesign(<Document><PageFooter><Text>Page <PageNumber /></Text></PageFooter><Text>x</Text></Document>);
-    expect(report.join("\n")).toContain("the builder has no page numbers yet");
-    expect(toDesign(<Document><Text>x</Text></Document>).report.join("\n")).not.toContain("page numbers");
+  /** A Document's design with its footer's block the builder's Page Number block of these values. */
+  const footed = (values: Values) => {
+    const { design } = toDesign(<Document><PageFooter><Text>footer</Text></PageFooter><Text>x</Text></Document>);
+    const copy = JSON.parse(JSON.stringify(design));
+    copy.body.footers[0].columns[0].contents[0] = { type: "page_number", values };
+    return copy;
+  };
+
+  it("goes to the builder as its tokens, which a document's PDF prints, with nothing to say", () => {
+    const { design, report } = toDesign(<Document><PageFooter><Text>Page <PageNumber /> of <PageNumber total /></Text></PageFooter><Text>x</Text></Document>);
+    expect(report).toEqual([]);
+    expect(textJsonHtml((design.body as any).footers[0].columns[0].contents[0].values.textJson).html).toContain(">Page {{page_number}} of {{page_count}}<");
+  });
+
+  it("is read from the builder's Page Number block as a Text of PageNumbers, in the block's styles", () => {
+    const { code, report } = fromDesign(footed({ text: "Page {{page_number}} of {{page_count}}", fontSize: "11px", textAlign: "right", color: "#666666", containerPadding: "4px" }), { displayMode: "document" });
+    expect(report).toEqual([]);
+    expect(code).toMatch(/<PageFooter>[\s\S]*\{"Page "\}<PageNumber \/>\{" of "\}<PageNumber total \/>[\s\S]*<\/PageFooter>/);
+    expect(code).toContain("fontSize: 11");
+    expect(code).toContain('textAlign: "right"');
+    expect(code).toContain('color: "#666666"');
+  });
+
+  it("is read with the block's own line where it has no text, and its text kept as text", () => {
+    expect(fromDesign(footed({}), { displayMode: "document" }).code).toContain('{"Page "}<PageNumber />{" of "}<PageNumber total />');
+    const { code, report } = fromDesign(footed({ text: "<b>{{page_number}}</b> & co" }), { displayMode: "document" });
+    expect(report).toEqual([]);
+    expect(code).toContain('{"<b>"}<PageNumber />{"</b> & co"}');
+  });
+});
+
+describe("the parts of a design read back", () => {
+  /** A Document's design with a header, a band of two columns, a table, a page break and a footer. */
+  const designed = () => {
+    const { design } = toDesign(
+      <Document>
+        <PageHeader><Text>Acme</Text></PageHeader>
+        <Heading>Report</Heading>
+        <Text>Intro</Text>
+        <Section style={{ backgroundColor: "#eeeeff" }}>
+          <Row><Column><Text>Left</Text></Column><Column><Text>Right</Text></Column></Row>
+        </Section>
+        <Table>
+          <TableRow header><TableCell>Name</TableCell></TableRow>
+          <TableRow><TableCell>One</TableCell></TableRow>
+          <TableRow><TableCell>Two</TableCell></TableRow>
+        </Table>
+        <PageBreak />
+        <Text>After</Text>
+        <PageFooter><Text>Thanks</Text></PageFooter>
+      </Document>,
+    );
+    return JSON.parse(JSON.stringify(design));
+  };
+  /** Each node of the template read back, by its path, as its type: where a part's path points. */
+  const types = (element: React.ReactElement) => {
+    const out: Record<string, string> = {};
+    const visit = (node: any, path: string) => {
+      out[path] = node.type;
+      node.children?.forEach((child: any, i: number) => typeof child !== "string" && visit(child, `${path}.children[${i}]`));
+    };
+    collectTemplate(element).document!.root.children?.forEach((child: any, i: number) => typeof child !== "string" && visit(child, `root.children[${i}]`));
+    return out;
+  };
+
+  it("names each node's part of the design and its id there, by the node's path", () => {
+    const { element, parts, report } = fromDesign(designed(), { displayMode: "document" });
+    expect(report).toEqual([]);
+    const at = types(element);
+    const part = (path: string) => ({ type: at[path], ...parts[path] });
+    expect(part("root.children[0]")).toEqual({ type: "PageHeader", at: "headers" });
+    expect(part("root.children[0].children[0].children[0]")).toEqual({ type: "Text", at: "headers[0].columns[0].contents[0]", id: "u_content_paragraph_5" });
+    expect(part("root.children[1]")).toEqual({ type: "Heading", at: "rows[0].columns[0].contents[0]", id: "u_content_heading_1" });
+    expect(part("root.children[2]")).toEqual({ type: "Text", at: "rows[0].columns[0].contents[1]", id: "u_content_paragraph_1" });
+    // The band and its Row are the row; each Column its column, each block in it its block.
+    expect(part("root.children[3]")).toEqual({ type: "Section", at: "rows[1]", id: "u_row_2" });
+    expect(part("root.children[3].children[0]")).toEqual({ type: "Row", at: "rows[1]", id: "u_row_2" });
+    expect(part("root.children[3].children[0].children[1]")).toEqual({ type: "Column", at: "rows[1].columns[1]", id: "u_column_3" });
+    expect(part("root.children[3].children[0].children[1].children[0]")).toEqual({ type: "Text", at: "rows[1].columns[1].contents[0]", id: "u_content_paragraph_3" });
+    // A table's rows are its header's and its rows, as the design holds them; a cell is its row's.
+    expect(part("root.children[4]")).toEqual({ type: "Table", at: "rows[2].columns[0].contents[0]", id: "u_content_table_1" });
+    expect(part("root.children[4].children[0]")).toEqual({ type: "TableRow", at: "rows[2].columns[0].contents[0].values.table.headers[0]" });
+    expect(part("root.children[4].children[2]")).toEqual({ type: "TableRow", at: "rows[2].columns[0].contents[0].values.table.rows[1]" });
+    expect(part("root.children[4].children[2].children[0]")).toEqual({ type: "TableCell", at: "rows[2].columns[0].contents[0].values.table.rows[1]" });
+    expect(part("root.children[5]")).toEqual({ type: "PageBreak", at: "rows[3].columns[0].contents[0]", id: "u_content_page_break_1" });
+    expect(part("root.children[6]")).toEqual({ type: "Text", at: "rows[4].columns[0].contents[0]", id: "u_content_paragraph_4" });
+    // Every node but the root's parts has one.
+    expect(Object.keys(parts).sort()).toEqual(Object.keys(at).sort());
+  });
+
+  it("names the parts of the template as it's returned: a page break kept in its row, a row of only space, ids made unique", () => {
+    const design = designed();
+    // A column of a block, a page break and a block; and a row of nothing but its padding.
+    design.body.rows[0].columns[0].contents.splice(1, 0, { type: "page_break", values: { _meta: { htmlID: "u_content_page_break_9" } } });
+    design.body.rows.push({ cells: [1], values: { padding: "24px", _meta: { htmlID: "u_row_9" } }, columns: [{ values: {}, contents: [] }] });
+    // Two blocks with the same id of their own: the second is made unique in the template, and keeps the design's.
+    design.body.rows[0].columns[0].contents[0].values._meta.htmlID = "intro";
+    design.body.rows[4].columns[0].contents[0].values._meta.htmlID = "intro";
+    const { element, parts } = fromDesign(design, { displayMode: "document" });
+    const root = collectTemplate(element).document!.root;
+    const at = types(element);
+    expect(parts["root.children[1]"]).toEqual({ at: "rows[0].columns[0].contents[0]", id: "intro" });
+    expect(at["root.children[2]"]).toBe("PageBreak");
+    expect(parts["root.children[2]"]).toEqual({ at: "rows[0].columns[0].contents[1]", id: "u_content_page_break_9" });
+    expect(parts["root.children[3]"]).toEqual({ at: "rows[0].columns[0].contents[2]", id: "u_content_paragraph_1" });
+    const after = root.children!.findIndex((child) => typeof child !== "string" && child.id === "intro-2");
+    expect(parts[`root.children[${after}]`]).toEqual({ at: "rows[4].columns[0].contents[0]", id: "intro" });
+    expect(at[`root.children[${after + 1}]`]).toBe("Column");
+    expect(parts[`root.children[${after + 1}]`]).toEqual({ at: "rows[5]", id: "u_row_9" });
+  });
+
+  it("names a block's part on what's left of it where a link Elements won't write is taken off it", () => {
+    const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+    const image = { type: "image", values: { _meta: { htmlID: "u_content_image_1" }, src: { url: png, width: 40, height: 40 }, action: { name: "web", values: { href: " ", target: "_self" } }, containerPadding: "0px", textAlign: "left" } };
+    const { element, parts, report } = fromDesign({ body: { values: {}, rows: [{ cells: [1], values: {}, columns: [{ values: {}, contents: [image] }] }] } }, { displayMode: "document" });
+    expect(report.join("\n")).toContain("what it holds without it");
+    expect(types(element)["root.children[0]"]).toBe("Image");
+    expect(parts["root.children[0]"]).toEqual({ at: "rows[0].columns[0].contents[0]", id: "u_content_image_1" });
+  });
+
+  it("names a table's rows as the builder loads it: a table saved without its table value has the table tool's rows", () => {
+    const { parts } = fromDesign({ body: { values: {}, rows: [{ cells: [1], values: {}, columns: [{ values: {}, contents: [{ type: "table", values: { _meta: { htmlID: "u_content_table_1" } } }] }] }] } }, { displayMode: "document" });
+    const rows = Object.values(parts).map((part) => part.at).filter((at) => at.includes(".values.table."));
+    expect(new Set(rows).size).toBe((TableDefaults.table.headers?.length ?? 0) + TableDefaults.table.rows.length);
+    expect(rows).toContain("rows[0].columns[0].contents[0].values.table.rows[0]");
   });
 });
 
