@@ -332,6 +332,29 @@ describe("other problems from caniemail's tables", () => {
     expect(video.map((d) => [d.path, d.message])).toEqual([["root.children[0].props.thumbnail", "This Video's thumbnail is a WebP file, which these email clients don't show"]]);
   });
 
+  it("warns of an image whose file is in the email (a data: URI), which every Gmail drops", async () => {
+    const data = async (src: string, clients?: EmailClient[]) => (await validate(image(src), clients)).filter((d) => d.code === "email/image-data");
+    expect(await data("data:image/png;base64,iVBORw0KGgo=")).toEqual([
+      {
+        code: "email/image-data",
+        severity: "warning",
+        message: "This Image is a data: URI, its file in the email, which these email clients don't show (or show only in some formats)",
+        path: "root.children[0].props.src",
+        clients: ["gmail", "gmail-app", "gmail-app-other", "outlook"],
+        fix: "host the file and link to it (an Svg in an Email is one: render()'s assets option)",
+        see: "https://www.caniemail.com/features/image-base64/",
+      },
+    ]);
+    expect((await data("data:image/svg+xml;base64,PHN2Zy8+", ALL))[0]!.clients).toEqual(["gmail", "gmail-app", "gmail-app-other", "hey", "sfr", "laposte", "outlook", "gmx", "web-de"]);
+    // White space before the scheme is skipped by browsers, and by the check.
+    expect(await data(" DATA:image/png;base64,iVBORw0KGgo=")).toHaveLength(1);
+    // A file the email links to, and a URL that only mentions data: further on, are fine.
+    expect(await data("https://example.com/hero.png")).toEqual([]);
+    expect(await data("https://example.com/data:hero.png")).toEqual([]);
+    const video = (await validate(email([{ type: "Video", props: { src: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumbnail: "data:image/jpeg;base64,/9j/4AAQ" } }]))).filter((d) => d.code === "email/image-data");
+    expect(video.map((d) => [d.path, d.message.split(",")[0]])).toEqual([["root.children[0].props.thumbnail", "This Video's thumbnail is a data: URI"]]);
+  });
+
   it("notes once where phone styles don't apply, and warns where something hidden on desktop would show nowhere", async () => {
     const phone = async (children: unknown[]) => (await validate(email(children))).filter((d) => d.code === "email/phone-styles");
     const text = (extra: Record<string, unknown>) => ({ type: "Text", ...extra, children: ["Hi"] });

@@ -38,6 +38,7 @@ import {
   Line as LineDefinition,
   Polygon as PolygonDefinition,
   Path as PathDefinition,
+  G as GDefinition,
   Video as VideoDefinition,
   Span as SpanDefinition,
   Table as TableDefinition,
@@ -162,6 +163,8 @@ export const Ellipse: React.FC<EllipseProps> = createPrimitive(EllipseDefinition
 export const Line: React.FC<LineProps> = createPrimitive(LineDefinition);
 export const Polygon: React.FC<PolygonProps> = createPrimitive(PolygonDefinition);
 export const Path: React.FC<PathProps> = createPrimitive(PathDefinition);
+/** Shapes moved, turned or scaled together (SVG's g), in an Svg. */
+export const G: React.FC<GProps> = createPrimitive(GDefinition);
 export const Video: React.FC<VideoProps> = createPrimitive(VideoDefinition);
 /** Markup written as it is (the builder's HTML block), given as `html` or as JSX in it. */
 export const Html = createPrimitive(HtmlDefinition) as unknown as React.FC<HtmlProps>;
@@ -242,6 +245,8 @@ export interface PolygonStyle extends StyleOf<typeof PolygonDefinition> {}
 export interface PolygonProps extends PropsOf<typeof PolygonDefinition, PolygonStyle>, Variant<"Polygon"> {}
 export interface PathStyle extends StyleOf<typeof PathDefinition> {}
 export interface PathProps extends PropsOf<typeof PathDefinition, PathStyle>, Variant<"Path"> {}
+export interface GStyle extends StyleOf<typeof GDefinition> {}
+export interface GProps extends PropsOf<typeof GDefinition, GStyle>, Variant<"G"> {}
 export interface VideoStyle extends StyleOf<typeof VideoDefinition> {}
 export interface VideoProps extends PropsOf<typeof VideoDefinition, VideoStyle>, Variant<"Video"> {}
 export interface HtmlStyle extends StyleOf<typeof HtmlDefinition> {}

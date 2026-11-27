@@ -24,9 +24,11 @@ export interface Picture {
 }
 
 export interface Shape {
-  kind: "rect" | "circle" | "ellipse" | "line" | "polygon" | "path";
-  /** Its geometry and paint (`x`, `cx`, `points`, `d`, `fill`, `stroke`, …), in its drawing's units. */
+  kind: "rect" | "circle" | "ellipse" | "line" | "polygon" | "path" | "g";
+  /** Its geometry, paint and transform (`x`, `cx`, `points`, `d`, `fill`, `transform`, …), in its drawing's units. */
   attributes: Record<string, unknown>;
+  /** A group's shapes (and groups). */
+  children?: Shape[];
 }
 
 /** A block in the Canvas. */

@@ -128,7 +128,11 @@ try {
 | `id/duplicate` | Two elements with one `id` |
 | `id/invalid` | An `id` that doesn't start with a letter |
 | `mobile/invalid`, `hover/invalid`, `hidden/invalid` | A `mobile`, `hover` or `hidden` value that isn't one they take |
-| `target/unsupported` | An element the output can't draw: an `Svg` or a `PageNumber` in an email (Gmail and classic Outlook drop inline SVG) |
+| `target/unsupported` | An element the output can't draw, such as a `PageNumber` your own element renders in an email |
+| `email/canvas-assets` | An Email with a `Canvas` or an `Svg` rendered without `assets`: each is a picture, a PNG file the email links to (see [Email](/docs/outputs/email#a-canvas)) |
+| `render/assets` | An `assets` option `render()` can't use: a `baseUrl` that isn't an http or https URL, or a `draw` that isn't `emailImages()`'s |
+| `email/canvas-merge-tag` | A `MergeTag` in a picture: it would be drawn as written, never filled in |
+| `email/canvas-draw` | A picture that couldn't be drawn: the message says why |
 | `document/page-number` | A `PageNumber` in a Page or a Canvas, which have no pages |
 | `element/not-supported` | An element under a root that doesn't take it. The message names the roots that do |
 | `prop/not-supported` | A prop for some roots only (a `defineElement()`'s, made with `roots`), under another |
@@ -152,6 +156,16 @@ try {
 | `email/unsupported` | warning | A style or prop email can't show. The message says what it shows instead: `justifyContent: "space-between"` starts children at the left |
 | `email/degraded` | info | Not quite as the Email writer can write it: a wrapped Row's gap between its lines, or `overflow: "hidden"` on a Column or Grid without a box of its own |
 | `email/video-thumbnail` | warning | A Vimeo Video with no `thumbnail`, which can't be found without the network |
+| `email/canvas-merge-tag` | warning | Text in a picture that reads as a merge tag (`{{name}}`, `*\|FNAME\|*`): it's drawn as written |
+| `email/canvas-link` | warning | A link in a picture, which can't be clicked: put the picture in a `Link` instead |
+| `email/canvas-alt` | warning | A picture with text and no `alt` (an Svg's `title`): where images don't load, its text is lost |
+| `email/canvas-background` | warning | A picture with text and no `backgroundColor`: transparent, its text can be dark on dark in a dark mode |
+| `email/canvas-width` | warning | A picture wider than its column: classic Outlook shows it at its width, past the column |
+| `email/canvas-mobile` | warning | An Svg's phone styles: its picture is the same on phones |
+| `image/engine-version` | warning | Satori's or resvg's installed version can't be read (an app bundled into one file): the pictures' file names don't change with it |
+| `image/font-family` | warning | Text in a picture whose font stack names no font given to `emailImages()`: it's drawn in the first font given |
+| `image/direction` | error | Text in a picture in a script written right to left (Hebrew, Arabic): an image draws it left to right. Put it in a `Text` beside or over the picture |
+| `email/canvas-text` | info | A picture holding body copy, which is best as `Text` |
 | `email/more-checks` | info | An Email checked without email-clients' plugin: where the email client checks are (`plugins: []` leaves it out) |
 | `email/clients-moved` | info | `emailClients` passed: the option moved to email-clients' plugin (until 0.5) |
 | `plugin/invalid` | warning | An entry of `plugins` that isn't a plugin (a Promise: `emailClients()` not awaited), or diagnostics a plugin returned that don't fit |
@@ -204,7 +218,7 @@ Before it writes, an agent can ask what a root takes. `@hyper-elements/react/ins
 ```tsx
 import { describeElement, inspect } from "@hyper-elements/react/inspect";
 
-describeElement("Svg", { root: "Email" });   // undefined: an Email doesn't take one
+describeElement("PageHeader", { root: "Email" });   // undefined: an Email doesn't take one
 inspect(<Welcome />).nodes.filter((node) => !node.allowed || node.problems.length);   // what's wrong, and where
 ```
 

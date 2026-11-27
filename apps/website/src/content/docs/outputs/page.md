@@ -54,7 +54,7 @@ The HTML above, shortened where it says `…`:
 
 The content is centered and as wide as the Page's `width` at most, 1200px by default. A `Section`'s background spans the window, with its content at that width. On phones, at 480px and narrower, Rows stack and `mobile` styles apply.
 
-A `Video` is its player on a page: YouTube's or Vimeo's embed, in a 16:9 box. Web fonts in `fonts` are `@font-face` rules with `font-display: swap`.
+A `Video` is its player on a page: YouTube's or Vimeo's embed, in a 16:9 box. An `Svg` is inline SVG, and each shape's and group's (`G`) `id` is its element's, so your page's CSS can find it, to animate a group's `transform`, say, with no matching on its path data. Web fonts in `fonts` are `@font-face` rules with `font-display: swap`.
 
 ## Embed it in your own page
 

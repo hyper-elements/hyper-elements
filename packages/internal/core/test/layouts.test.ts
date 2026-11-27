@@ -76,9 +76,7 @@ describe("Grid", () => {
       "root.children[0].children[1].children[0]",
       "root.children[0]",
     ]);
-    // What an email can't show, and what a custom component in a Grid renders, at their places in the template too.
-    const svg = { type: "Svg", props: { width: 10, height: 10 } };
-    expect(checkTarget(parseDocument(email({ type: "Grid", children: [text("a"), svg] })), "email").map((d) => d.path)).toEqual(["root.children[0].children[1]"]);
+    // What a custom component in a Grid renders, at its place in the template too.
     const Card = defineCustomComponent({ type: "acme.Card", label: "Card", props: {}, expand: () => ({ type: "Text", style: { margin: 1 } }) });
     const card = parseDocument(email({ type: "Grid", children: [text("a"), { type: "acme.Card" }] }), { components: [Card] });
     expect(expandDocument(card, { components: [Card] }).diagnostics.map((d) => d.path)).toEqual(["root.children[0].children[1](acme.Card).style.margin"]);

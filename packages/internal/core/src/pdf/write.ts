@@ -259,12 +259,19 @@ class Writer {
     const { width, height, viewBox } = node.props as { width: number; height: number; viewBox?: string };
     const paint = (value: unknown) => (value === "transparent" ? "none" : (value as string | undefined));
     const KINDS: Record<string, Shape["kind"]> = { Rect: "rect", Circle: "circle", Ellipse: "ellipse", Line: "line", Polygon: "polygon", Path: "path" };
-    const shapes = nodes(node)
-      .filter((shape) => KINDS[shape.type])
-      .map((shape): Shape => ({
-        kind: KINDS[shape.type],
-        attributes: { ...(shape.props as Record<string, string | number>), fill: paint(shape.style.fill), stroke: paint(shape.style.stroke), strokeWidth: shape.style.strokeWidth as number | undefined, opacity: shape.style.opacity as number | undefined },
-      }));
+    // A group with what it holds; a shape with its geometry, transform and paint.
+    const drawn = (shape: ResolvedNode): Shape[] =>
+      shape.type === "G"
+        ? [{ kind: "g", attributes: { transform: shape.props.transform as string | undefined }, children: nodes(shape).flatMap(drawn) }]
+        : KINDS[shape.type]
+          ? [
+              {
+                kind: KINDS[shape.type]!,
+                attributes: { ...(shape.props as Record<string, string | number>), fill: paint(shape.style.fill), stroke: paint(shape.style.stroke), strokeWidth: shape.style.strokeWidth as number | undefined, opacity: shape.style.opacity as number | undefined },
+              },
+            ]
+          : [];
+    const shapes = nodes(node).flatMap(drawn);
     return {
       kind: "box",
       style: { ...boxStyle(node), ...placed, width: undefined },

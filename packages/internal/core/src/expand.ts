@@ -4,7 +4,7 @@
  * each; only what's rendered is expanded.
  */
 import { blockOf, CONDITIONS } from "./conditions";
-import type { ComponentDefinition, SupportByTarget, Target } from "./define";
+import { rootInside, type ComponentDefinition, type SupportByTarget, type Target } from "./define";
 import { Diagnostics, type Diagnostic } from "./diagnostics";
 import { isNode, type ElementsDocument, type Json, type Node } from "./model";
 import { checkFragment } from "./normalize";
@@ -54,8 +54,8 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     node.children?.forEach((child) => isNode(child) && collect(child));
   };
   collect(document.root);
+  // Each node is expanded under its root's rules: the template's, or one inside it (a Canvas in an Email): `under`.
   const rootDefinition = registry.get(document.root.type);
-  const responsive = !!rootDefinition?.responsive;
   // The tokens each place sees: the theme's, with every enclosing scope's over them. A Page writes them as CSS custom
   // properties: its root every token, a scope those that differ there.
   const themed = document.theme !== undefined ? ThemeEnvironment.of(document.theme, "root.theme") : undefined;
@@ -85,30 +85,31 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
 
   /**
    * A node at `path` (its children's paths start from it), arranged first if its component arranges; it's at `self` in
-   * the template. `around`: the tokens where it is.
+   * the template. `around`: the tokens where it is; `under`: the root whose rules it's under.
    */
-  const visit = (given: Node, path: string, depth: number, self = path, around = themed): Node => {
+  const visit = (given: Node, path: string, depth: number, under: ComponentDefinition | undefined, self = path, around = themed): Node => {
     unshown(given, path);
     const environment = given.tokens ? (around ?? ThemeEnvironment.empty()).with(given.tokens, `${path}.tokens`) : around;
     const own = environment && (path === "root" ? properties(environment) : given.tokens ? properties(environment, around) : undefined);
     const arrange = registry.get(given.type)?.arrange;
-    if (!arrange) return walk(given, path, self, depth, environment, undefined, own);
+    if (!arrange) return walk(given, path, self, depth, under, environment, undefined, own);
     // Its own children keep their places in the template, wherever it puts them.
     const origins = new Map<Node, string>();
     given.children?.forEach((child, index) => isNode(child) && origins.set(child, `${path}.children[${index}]`));
-    return walk(arrange(given), path, self, depth, environment, origins, own);
+    return walk(arrange(given), path, self, depth, under, environment, origins, own);
   };
 
   /** A node's children expanded; inside an arranged node, what it adds around the children it was given is it (`self`). */
-  const walk = (node: Node, path: string, self: string, depth: number, environment: ThemeEnvironment | undefined, origins?: Map<Node, string>, own?: Record<string, string>): Node => {
+  const walk = (node: Node, path: string, self: string, depth: number, under: ComponentDefinition | undefined, environment: ThemeEnvironment | undefined, origins?: Map<Node, string>, own?: Record<string, string>): Node => {
     const definition = registry.get(node.type)!;
+    const inside = rootInside(definition, under, node !== document.root);
     const children = node.children?.map((child, index) => {
       if (!isNode(child)) return child;
       const at = origins ? (origins.get(child) ?? self) : `${path}.children[${index}]`;
       const childDefinition = registry.get(child.type);
-      if (childDefinition && isCustom(childDefinition)) return expandOne(child, childDefinition, definition, at, depth, at, environment) ?? null;
-      if (origins && !origins.has(child)) return walk(child, self, self, depth, environment, origins);
-      return visit(child, at, depth, at, environment);
+      if (childDefinition && isCustom(childDefinition)) return expandOne(child, childDefinition, definition, at, depth, inside, at, environment) ?? null;
+      if (origins && !origins.has(child)) return walk(child, self, self, depth, inside, environment, origins);
+      return visit(child, at, depth, inside, at, environment);
     });
     const { tokens: _, ...rest } = node;
     const out: Node = children?.length ? { ...rest, children: children.filter((child): child is NonNullable<typeof child> => child !== null) } : node.tokens ? rest : node;
@@ -117,8 +118,11 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
     return out;
   };
 
-  /** A custom node at `path` expanded; what it renders is at `self` (its own path, or the custom node's that rendered it). */
-  const expandOne = (node: Node, definition: CustomDefinition, parent: ComponentDefinition, path: string, depth: number, self = path, environment = themed): Node | undefined => {
+  /**
+   * A custom node at `path` expanded, under the rules of `under`; what it renders is at `self` (its own path, or the
+   * custom node's that rendered it).
+   */
+  const expandOne = (node: Node, definition: CustomDefinition, parent: ComponentDefinition, path: string, depth: number, under: ComponentDefinition | undefined, self = path, environment = themed): Node | undefined => {
     if (depth >= MAX_DEPTH) {
       d.error("custom/depth", `${node.type} expands into custom elements ${MAX_DEPTH} deep: does it contain itself?`, path, node.id);
       return undefined;
@@ -130,7 +134,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       raw = definition.expand(propsWithDefaults(definition, node.props) as never, {
         register: (custom) => registry.add(custom),
         style,
-        responsive,
+        responsive: !!under?.responsive,
         report: (diagnostic) => reported.push(diagnostic),
         theme: environment?.view() ?? {},
       });
@@ -145,7 +149,7 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       d.error("custom/render", `${node.type} renders one element (a Column, a Section, …), not ${Array.isArray(raw) ? "several" : JSON.stringify(raw)}`, path, node.id);
       return undefined;
     }
-    const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: rootDefinition, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})`, environment });
+    const { node: expanded, diagnostics } = checkFragment(raw, { parent, root: under, idPrefix: node.id ?? null, taken, registry, path: `${path}(${node.type})`, environment });
     for (const diagnostic of diagnostics) d.list.push(diagnostic);
     if (!expanded) return undefined;
     collectIds(expanded);
@@ -165,8 +169,8 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
       }
     }
     const inner = registry.get(expanded.type)!;
-    if (isCustom(inner)) return expandOne(expanded, inner, parent, `${path}(${node.type})`, depth + 1, self, environment);
-    return visit(expanded, `${path}(${node.type})`, depth + 1, self, environment);
+    if (isCustom(inner)) return expandOne(expanded, inner, parent, `${path}(${node.type})`, depth + 1, under, self, environment);
+    return visit(expanded, `${path}(${node.type})`, depth + 1, under, self, environment);
   };
 
   const collectIds = (node: Node) => {
@@ -175,5 +179,5 @@ export function expandDocument(document: ElementsDocument, options?: ComponentsO
   };
 
   const { theme: _, merged: __, ...rest } = document;
-  return { document: { ...rest, root: visit(document.root, "root", 0) }, diagnostics: d.list, paths };
+  return { document: { ...rest, root: visit(document.root, "root", 0, rootDefinition) }, diagnostics: d.list, paths };
 }

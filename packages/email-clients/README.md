@@ -63,7 +63,8 @@ to 80 characters of it.
   none of them, keeping every other line where it is.
 - A `<style>` for the clients that remove every `<style>` (the Gmail apps with another account, and some webmail), one in
   the `<body>` for those that remove that one (Gmail), and an `@media` for those that apply none (classic Outlook).
-- A web font (`@font-face`, or a font service's stylesheet `<link>`), and each image in a format some clients don't show.
+- A web font (`@font-face`, or a font service's stylesheet `<link>`), each image in a format some clients don't show,
+  and each image whose file is in the email as a `data:` URI (every Gmail drops it).
 - Gmail's limits as Gmail applies them: each `<style>` in the `<head>` over 16 KB on its own, and the whole email over
   102 KB.
 - With `@hyper-elements/email-client-models` 1.8.0 or later, the checks only captures found, too. Without them, or where
@@ -86,7 +87,7 @@ validate(<Welcome />, { plugins: [await emailClients({ clients: ["gmail", "outlo
 - **Where they come from:** caniemail's tables ([caniemail.com](https://www.caniemail.com), MIT, © Rémi Parmentier),
   for every client, and captures of the four measured clients, for what only captures found. Each diagnostic with a
   caniemail source links its page (`see`).
-- **What's checked:** an Html block's CSS a client removes (inline and in a `<style>`), image formats, web fonts and
+- **What's checked:** an Html block's CSS a client removes (inline and in a `<style>`), image formats and `data:` images, web fonts and
   their fallbacks, phone styles where a client doesn't apply them, classic Outlook's layout (a box in a Row without a
   width, an Image without one, a Row kept side by side), styles a client draws otherwise (font weights, corners,
   letter spacing), hover styles, and Gmail's size limits (`render()` only: they're measured on the written email).

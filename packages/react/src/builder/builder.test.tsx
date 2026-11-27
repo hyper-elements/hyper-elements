@@ -1,6 +1,6 @@
 /** toDesign(): a template as the builder's design JSON, every block a tool where one shows it, and what it can't hold said. */
 import { describe, expect, it } from "vitest";
-import { Button, Canvas, Column, component, Document, Email, Grid, Heading, Html, Image, Layer, LineBreak, Link, List, ListItem, Page, PageBreak, PageFooter, PageHeader, PageNumber, Text, prop, Rect, Row, Span, Section, Svg, Table, TableCell, TableRow } from "../primitives";
+import { Button, Canvas, Column, component, defineElement, Document, Email, Grid, Heading, Html, Image, Layer, LineBreak, Link, List, ListItem, Page, PageBreak, PageFooter, PageHeader, PageNumber, Text, prop, Rect, Row, Span, Section, Svg, Table, TableCell, TableRow } from "../primitives";
 import { airbnb, stripe } from "../primitives/testing/codemod-examples";
 import { collectTemplate } from "../primitives/collect";
 import { withParagraphMargin } from "./text";
@@ -49,6 +49,232 @@ describe("toDesign", () => {
     expect(String(contents[2].values.html)).toContain("<svg");
     expect(String(contents[4].values.html)).toContain("Mine");
     expect(report.filter((line) => line.includes("it's an HTML block")).map((line) => line.split(":")[0])).toEqual(["root.children[1]", "root.children[2]", "root.children[3].children[0].children[0]", "root.children[4]"]);
+  });
+
+  describe("an Email's pictures", () => {
+    // A drawer never called: toDesign() names each picture's file, render() draws it.
+    const draw = { key: "k", suffix: "2x", extension: "png" as const, contentType: "image/png" as const, draw: async () => ({ bytes: Uint8Array.of(1), diagnostics: [] }) };
+    const assets = { baseUrl: "https://cdn.example.com/email/", draw };
+    const launch = (
+      <Email>
+        <Text>Tonight</Text>
+        <Link href="https://example.com/launch">
+          <Canvas width={300} height={100} alt="Launch night" style={{ backgroundColor: "#1e1b4b" }}>
+            <Text>Launch night</Text>
+          </Canvas>
+        </Link>
+        <Svg width={40} height={20} title="The moon">
+          <Rect width={40} height={20} style={{ fill: "#1e1b4b" }} />
+        </Svg>
+      </Email>
+    );
+
+    it("go to the builder as images of the files render() returns, at their size, linked where they're in a Link", async () => {
+      const { design, report } = toDesign(launch, { assets });
+      const { files, html } = await (await import("../primitives")).render(launch, { assets });
+      const images = blocks(design).filter((content) => content.type === "image");
+      // The same files: the builder's images link to what render() wrote and returned.
+      expect(images.map((image) => (image.values.src as { url: string }).url)).toEqual(files!.map((file) => `${assets.baseUrl}${file.name}`));
+      for (const file of files!) expect(html).toContain(`${assets.baseUrl}${file.name}`);
+      expect(images.map((image) => [(image.values.src as { width: number }).width, (image.values.src as { height: number }).height, image.values.altText])).toEqual([
+        [300, 100, "Launch night"],
+        [40, 20, "The moon"],
+      ]);
+      expect((images[0]!.values.action as { values: { href: string } }).values.href).toBe("https://example.com/launch");
+      expect(report.filter((line) => line.includes("is a picture")).map((line) => line.split(":")[0])).toEqual(["root.children[1].children[0]", "root.children[2]"]);
+    });
+
+    it("link the same files with a baseUrl written without its last slash", async () => {
+      const bare = { ...assets, baseUrl: "https://cdn.example.com/email" };
+      const { files } = await (await import("../primitives")).render(launch, { assets: bare });
+      const images = blocks(toDesign(launch, { assets: bare }).design).filter((content) => content.type === "image");
+      expect(images.map((image) => (image.values.src as { url: string }).url)).toEqual(files!.map((file) => `https://cdn.example.com/email/${file.name}`));
+    });
+
+    it("need the assets render() takes, and say so", () => {
+      expect(() => toDesign(launch)).toThrow("toDesign(email, { assets }) with the assets render() takes");
+      expect(() => toDesign(launch, { assets: { baseUrl: "cdn", draw } })).toThrow("assets.baseUrl");
+    });
+
+    it("in a block the builder holds as HTML (a custom element's) link the files render() returns", async () => {
+      const Promo = defineElement({
+        type: "acme.Promo",
+        label: "Promo",
+        props: { title: prop.text({ label: "Title", required: true }) },
+        render: ({ title }) => (
+          <Column>
+            <Canvas width={300} height={100} alt={title} style={{ backgroundColor: "#1e1b4b" }}>
+              <Text>{title}</Text>
+            </Canvas>
+            <Canvas width={200} height={50} alt="Second" style={{ backgroundColor: "#000000" }}>
+              <Text>Second</Text>
+            </Canvas>
+          </Column>
+        ),
+      });
+      // In a Section with its own text color and font, which the block drawn on its own has around it otherwise.
+      const email = (
+        <Email lang="fr">
+          <Section style={{ color: "#ff0000", fontFamily: "Georgia, serif" }}>
+            <Promo title="Sale" />
+          </Section>
+        </Email>
+      );
+      const { files } = await (await import("../primitives")).render(email, { assets });
+      const { design } = toDesign(email, { assets });
+      const html = blocks(design).filter((content) => content.type === "html").map((content) => String(content.values.html)).join("");
+      const linked = [...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((m) => m[1]);
+      expect(linked).toEqual(files!.map((file) => `${assets.baseUrl}${file.name}`));
+    });
+
+    it("in a block the builder draws as HTML for its own reasons (a Layer, a box in a column) link the files render() returns", async () => {
+      const card = (
+        <Canvas width={300} height={100} alt="Launch night" style={{ backgroundColor: "#1e1b4b" }}>
+          <Text>Launch night</Text>
+        </Canvas>
+      );
+      for (const email of [
+        <Email>
+          <Layer>
+            <Image src={{ src: "https://img.example.com/bg.png", width: 600, height: 200 }} alt="" />
+            {card}
+          </Layer>
+        </Email>,
+        <Email>
+          <Row>
+            <Column>
+              <Column style={{ backgroundColor: "#eeeeee", padding: 10 }}>{card}</Column>
+            </Column>
+            <Column>
+              <Text>Beside</Text>
+            </Column>
+          </Row>
+        </Email>,
+      ]) {
+        const { files } = await (await import("../primitives")).render(email, { assets });
+        const html = blocks(toDesign(email, { assets }).design).filter((content) => content.type === "html").map((content) => String(content.values.html)).join("");
+        expect([...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((m) => m[1]).filter((src) => src!.startsWith(assets.baseUrl))).toEqual(files!.map((file) => `${assets.baseUrl}${file.name}`));
+      }
+    });
+
+    it("link the files render() returns under a baseUrl with an & in it, in a block drawn as HTML too", async () => {
+      const Logo = defineElement({
+        type: "acme.Logo",
+        label: "Logo",
+        props: {},
+        render: () => (
+          <Svg width={20} height={20}>
+            <Rect width={20} height={20} style={{ fill: "#ff0000" }} />
+          </Svg>
+        ),
+      });
+      // (Its language is the picture's, which the block drawn on its own doesn't have: its file is named otherwise there.)
+      const email = (
+        <Email lang="en">
+          <Logo />
+        </Email>
+      );
+      const amp = { ...assets, baseUrl: "https://cdn.example.com/R&D/" };
+      const { files, html } = await (await import("../primitives")).render(email, { assets: amp });
+      // The HTML writes the & as &amp;: the builder's block links the same file.
+      expect(html).toContain(`src="https://cdn.example.com/R&amp;D/${files![0]!.name}"`);
+      expect(JSON.stringify(toDesign(email, { assets: amp }).design)).toContain(`https://cdn.example.com/R&amp;D/${files![0]!.name}`);
+    });
+
+    it("in a block drawn as HTML link each its own file, the one render() returns for it there", async () => {
+      // Two pictures in a custom element, its block drawn on its own: each named otherwise there (no language).
+      const Badges = defineElement({
+        type: "acme.Badges",
+        label: "Badges",
+        props: {},
+        render: () => (
+          <Column>
+            <Svg width={20} height={20}>
+              <Rect width={20} height={20} style={{ fill: "#ff0000" }} />
+            </Svg>
+            <Column style={{ padding: 4 }}>
+              <Svg width={30} height={20}>
+                <Rect width={30} height={20} style={{ fill: "#0000ff" }} />
+              </Svg>
+            </Column>
+          </Column>
+        ),
+      });
+      const email = (
+        <Email lang="en">
+          <Badges />
+        </Email>
+      );
+      const { files } = await (await import("../primitives")).render(email, { assets });
+      expect(files!.map((file) => file.width)).toEqual([20, 30]);
+      const html = blocks(toDesign(email, { assets }).design).filter((content) => content.type === "html").map((content) => String(content.values.html)).join("");
+      expect([...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((m) => m[1])).toEqual(files!.map((file) => `${assets.baseUrl}${file.name}`));
+    });
+
+    it("in custom elements in a Grid link the files render() returns, each its own", async () => {
+      // A Grid's cells are its Rows' as laid out: the builder finds each card's picture by its place there.
+      const Card = defineElement({
+        type: "acme.PictureCard",
+        label: "Picture card",
+        props: { title: prop.text({ label: "Title", required: true }) },
+        render: ({ title }) => (
+          <Column>
+            <Canvas width={250} height={100} alt={title} style={{ backgroundColor: "#1e1b4b" }}>
+              <Text>{title}</Text>
+            </Canvas>
+            <Text>Below</Text>
+          </Column>
+        ),
+      });
+      const email = (
+        <Email lang="en">
+          <Grid columns={2}>
+            <Card title="One" />
+            <Card title="Two" />
+            <Card title="Three" />
+          </Grid>
+        </Email>
+      );
+      const { files } = await (await import("../primitives")).render(email, { assets });
+      expect(files!.length).toBe(3);
+      const html = blocks(toDesign(email, { assets }).design).filter((content) => content.type === "html").map((content) => String(content.values.html)).join("");
+      expect([...html.matchAll(/<img[^>]*src="([^"]+)"/g)].map((m) => m[1])).toEqual(files!.map((file) => `${assets.baseUrl}${file.name}`));
+    });
+
+    it("of no size are nothing in the builder, where they are and in a Section", () => {
+      const { design } = toDesign(
+        <Email>
+          <Svg width={0} height={20} />
+          <Text>After</Text>
+        </Email>
+      );
+      expect(blocks(design).map((content) => content.type)).toEqual(["paragraph"]);
+      // In a Section, between two blocks: no row of its own, and the block after it is the Text it is.
+      const inSection = toDesign(
+        <Email>
+          <Section>
+            <Text>Before</Text>
+            <Svg width={0} height={20} />
+            <Text>After</Text>
+          </Section>
+        </Email>
+      ).design;
+      expect(inSection.body.rows.map((row: any) => row.columns.flatMap((c: any) => c.contents.map((x: any) => x.type)))).toEqual([["paragraph", "paragraph"]]);
+      expect(JSON.stringify(inSection)).toContain("After");
+    });
+
+    it("come back from the builder as images", () => {
+      const { design } = toDesign(launch, { assets });
+      const { element } = fromDesign(design);
+      const types: string[] = [];
+      const walk = (node: { type: string; children?: unknown[] }) => {
+        types.push(node.type);
+        for (const child of node.children ?? []) if (child && typeof child === "object") walk(child as never);
+      };
+      walk(collectTemplate(element).document!.root as never);
+      expect(types.filter((type) => type === "Image").length).toBe(2);
+      expect(types).not.toContain("Canvas");
+    });
   });
 
   it("writes an HTML block of the new engine's markup without the root's background, which the builder draws behind it", () => {

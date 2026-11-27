@@ -30,6 +30,58 @@ the root from the map's first entry.
   whose host is a tag, an inline `data:` image and a relative one. It's off unless given, so templates without it
   check as before. `describe()` lists it in `rules.images`.
 
+### A Canvas in an Email
+
+A `Canvas` goes in an Email now, as a picture: a banner, a chart or a badge, laid out as any Canvas is and drawn as a
+PNG file the email links to. An `Svg` on its own in an Email is a picture too (it was an error before). Email clients
+drop inline SVG and `data:` images, and classic Outlook shows a hosted SVG as a broken image, so every client gets the
+same PNG, at twice its size. `render()`'s new `assets` option says where the files are hosted and what draws them, and
+`render()` returns them in `files` to upload there.
+
+```tsx
+import { emailImages } from "@hyper-elements/react/image";
+
+const { html, files } = await render(<Launch />, {
+  assets: { baseUrl: "https://cdn.example.com/email/", draw: emailImages({ fonts: [{ family: "Inter", src: inter }] }) },
+});
+```
+
+- The email gets an ordinary `<img>` of each picture, at its size and fluid on phones, with its `alt`. Where images
+  don't load, it shows the alt on the picture's background color, in a color that reads on it: `Image` takes a
+  `backgroundColor` for this too.
+- A picture is drawn as a Canvas, its text in the text styles and fonts of where it is in the email.
+  `emailImages()` draws with Satori and resvg (the image entry's optional peers). A web font the email loads that a
+  picture's text is in, without its file there, or a character no font given has, is an error; text in another family
+  whose file isn't given is drawn in the first font given, with a warning (`image/font-family`). Text in a script
+  written right to left (Hebrew, Arabic) is an error too (`image/direction`): an image draws it left to right.
+- Each file is named by the SHA-256 of what's drawn and what draws it (the scale, the fonts' and images' bytes, the
+  template's theme, and the versions of this package, Satori and resvg), so the same picture is the same HTML and the
+  same file everywhere, on Node and Bun, and a name never changes what it shows. Where a version can't be read (an app
+  bundled into one file), that's a warning (`image/engine-version`). The hash is written in: the package still has no
+  dependencies.
+- `render()` rejects an Email with a picture and no `assets` (`email/canvas-assets`), saying what to pass, and an
+  `assets` it can't use (`render/assets`). A picture that can't be drawn rejects it too: no HTML is returned that links
+  to a file that isn't there. `validate()` doesn't need `assets`.
+- It says what a picture can't do, where it is: a `MergeTag` in one (an error: it's drawn as written), text that reads
+  as a merge tag, a link in one (it can't be clicked: put the picture in a `Link`), text with no `alt` or no
+  background, one wider than its column (classic Outlook shows it at its width), and body copy that's best as `Text`.
+- A `Link` takes a `Canvas` in an Email, and a `Canvas` takes `alt`. A Canvas's width and height can be any px from
+  1, and it has no phone styles.
+- `toDesign(element, { assets })` takes the same `assets`: each picture goes to the Unlayer builder as an image of its
+  file, linking the file `render()` returns.
+
+### Groups and transforms in an Svg
+
+A shape takes a `transform`, as SVG's (`"translate(40 0) rotate(45 20 20)"`), and `G` groups shapes (and groups) to
+move, turn or scale them together. A transform SVG doesn't take is an error, saying the forms it takes. They're drawn
+on a page, in an image, in a PDF and in an Email's pictures. On a page, a shape's or group's `id` is written as its
+element's id, so CSS can find it (to animate it) rather than matching its path data.
+
+### A Canvas's Svg is drawn as a page draws it
+
+An `Svg` whose `viewBox` is another shape than its box is drawn at one scale, centered, as a browser draws it, in an
+image (`renderImage()`) too. It was stretched to fill its box before.
+
 ### GUIDE.md: where an image comes from, and an id to compare
 
 - The guide says an image's `src` is a public URL the reader's email client can fetch, never a made-up one

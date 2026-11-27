@@ -1,7 +1,7 @@
 # Writing designs with the new elements (`@hyper-elements/react`)
 
 <!-- Written from the element definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
-<!-- hyper-elements guide f82a37d3 -->
+<!-- hyper-elements guide 72b19e22 -->
 
 Everything needed to write a design, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).
 
@@ -150,7 +150,7 @@ const { image, diagnostics } = await renderImage(
 - **Email**: An email. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), previewText (text), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: text, gap.
 - **Page**: A web page. Its children are stacked down the content width, centered in the window. Holds sections, layout, blocks. Props: width (a length (a number of px)), description (text), breakpoints (breakpoints), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch). Phones: gap.
 - **Document**: A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf. Holds sections, layout, blocks, Document.Page, PageBreak, PageHeader, PageFooter. Props: size (A3|A4|A5|Letter|Legal|Tabloid), orientation (portrait|landscape), margin (insets), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch).
-- **Canvas**: An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image. Holds sections, layout, blocks. Props: width (a length (a number of px)), height (a length (a number of px)), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch), padding, justifyContent (start|center|end|space-between).
+- **Canvas**: An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image; in an Email, a linked PNG (render()'s assets). Holds sections, layout, blocks. Props: width (a length (a number of px)), height (a length (a number of px)), alt (text), title (text), lang (text), dir (ltr|rtl|auto), fonts (fontFaces). Style: text, backgroundColor, gap, alignItems (start|center|end|stretch), padding, justifyContent (start|center|end|space-between).
 
 ### Sections and layout
 
@@ -162,11 +162,11 @@ const { image, diagnostics } = await renderImage(
 
 ### Blocks
 
-- **Svg**: Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. Not in an Email. Holds shapes. Props: width* (a number from 0), height* (a number from 0), viewBox (text), title (text). Style: padding, backgroundColor, border, borderRadius, flex. Phones: padding, border.
+- **Svg**: Shapes (Rect, Circle, Ellipse, Line, Polygon, Path, and groups of them: G) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. In an Email, a linked PNG (render()'s assets). Holds shapes. Props: width* (a number from 0), height* (a number from 0), viewBox (text), title (text). Style: padding, backgroundColor, border, borderRadius, flex. Phones: padding, border.
 - **Text**: A paragraph of text. Holds text, inline, Image. Props: dir (ltr|rtl|auto), fit ({ sizes, maxLines }). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
 - **Heading**: A heading, from level 1 (the page's title) to 6. Holds text, inline. Props: level (1|2|3|4|5|6), dir (ltr|rtl|auto), fit ({ sizes, maxLines }). Style: text, box, textDecoration (none|underline|line-through), flex. Phones: text, width, maxWidth, padding, border.
 - **Button**: A link drawn as a button. Holds text, Span, MergeTag, LineBreak. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: text, box, textDecoration (none|underline|line-through), boxSizing (border-box|content-box), alignSelf (start|center|end), flex. Hover: color, backgroundColor. Phones: text, width, maxWidth, padding, border, alignSelf.
-- **Image**: An image in the content. Without a width it takes its own size, no wider than its parent. Props: src* (asset), alt (text), title (text). Style: width, maxWidth, height, border, borderRadius, flex, alignSelf (start|center|end), verticalAlign (top|middle). Phones: width, maxWidth, border, alignSelf.
+- **Image**: An image in the content. Without a width it takes its own size, no wider than its parent. Props: src* (asset), alt (text), title (text). Style: width, maxWidth, height, border, borderRadius, backgroundColor, flex, alignSelf (start|center|end), verticalAlign (top|middle). Phones: width, maxWidth, border, alignSelf.
 - **Divider**: A horizontal line. Style: borderTop, width, padding. Phones: width, padding.
 - **List**: A bulleted or numbered list of ListItems. Its markers sit in a column of their own (indent) before the items. Holds ListItem. Props: type (bullet|number), start (an integer from 0). Style: text, width, maxWidth, padding, backgroundColor, border, gap, indent, flex. Phones: text, width, maxWidth, padding, border, gap.
 - **Table**: A table of data: TableRows of TableCells. Columns take their cells' widths; the rest share what's left. Holds TableRow. Style: text, width, maxWidth, backgroundColor, border, cellPadding, rowBorder, borderCollapse (separate|collapse), flex. Phones: text, width, maxWidth, border.
@@ -179,7 +179,7 @@ const { image, diagnostics } = await renderImage(
 
 - **PageNumber**: In a Document's text: the number of the page it's on, or (total) how many pages there are. Only in a Document. Props: total (true or false).
 - **Span**: Styled text inside text; raised or lowered (superscript, subscript) with verticalAlign. Holds text, inline. Style: color, fontFamily, fontSize, fontWeight, fontStyle (normal|italic), letterSpacing, textTransform (none|uppercase|lowercase|capitalize), textDecoration (none|underline|line-through), backgroundColor, verticalAlign (baseline|super|sub). Phones: fontSize, letterSpacing.
-- **Link**: A link: text inside text, or around an Image. Holds text, inline, Image. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: color, fontFamily, fontSize, fontWeight, fontStyle (normal|italic), letterSpacing, textTransform (none|uppercase|lowercase|capitalize), textDecoration (none|underline|line-through), backgroundColor, flex. Hover: color, textDecoration, backgroundColor. Phones: fontSize, letterSpacing.
+- **Link**: A link: text inside text, or around an Image (or an Email's Canvas). Holds text, inline, Image, Canvas. Props: href* (link), title (text), aria-label (text), attrs (attributes). Style: color, fontFamily, fontSize, fontWeight, fontStyle (normal|italic), letterSpacing, textTransform (none|uppercase|lowercase|capitalize), textDecoration (none|underline|line-through), backgroundColor, flex. Hover: color, textDecoration, backgroundColor. Phones: fontSize, letterSpacing.
 - **LineBreak**: Starts a new line inside text.
 - **MergeTag**: A value the sending service fills in (a name, a link), written in the service's own syntax. Props: name* (text).
 
@@ -195,12 +195,13 @@ const { image, diagnostics } = await renderImage(
 
 ### Shapes
 
-- **Rect**: A rectangle at x, y in its Svg, rounded by rx. Props: x (a number), y (a number), width* (a number from 0), height* (a number from 0), rx (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Circle**: A circle centered at cx, cy in its Svg. Props: cx (a number), cy (a number), r* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Ellipse**: An ellipse centered at cx, cy in its Svg. Props: cx (a number), cy (a number), rx* (a number from 0), ry* (a number from 0). Style: fill, stroke, strokeWidth, opacity.
-- **Line**: A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke). Props: x1 (a number), y1 (a number), x2 (a number), y2 (a number). Style: fill, stroke, strokeWidth, opacity.
-- **Polygon**: A closed shape through its points ("0,0 40,0 20,30"), in its Svg. Props: points* (text). Style: fill, stroke, strokeWidth, opacity.
-- **Path**: A shape drawn by an SVG path (d), in its Svg. Props: d* (text). Style: fill, stroke, strokeWidth, opacity.
+- **Rect**: A rectangle at x, y in its Svg, rounded by rx. Props: x (a number), y (a number), width* (a number from 0), height* (a number from 0), rx (a number from 0), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **Circle**: A circle centered at cx, cy in its Svg. Props: cx (a number), cy (a number), r* (a number from 0), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **Ellipse**: An ellipse centered at cx, cy in its Svg. Props: cx (a number), cy (a number), rx* (a number from 0), ry* (a number from 0), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **Line**: A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke). Props: x1 (a number), y1 (a number), x2 (a number), y2 (a number), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **Polygon**: A closed shape through its points ("0,0 40,0 20,30"), in its Svg. Props: points* (text), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **Path**: A shape drawn by an SVG path (d), in its Svg. Props: d* (text), transform (text). Style: fill, stroke, strokeWidth, opacity.
+- **G**: Shapes (and groups) moved, turned or scaled together, in its Svg: its transform applies to all it holds, each shape's own inside it. Holds shapes. Props: transform (text).
 
 ## Values
 

@@ -4,6 +4,7 @@
  * tool has no field for is a hidden property of that tool (manifest.ts), kept in the design with no editor yet. What
  * the builder can't arrange comes back as the builder holds it: the same look, flatter.
  */
+import type { EmailAssetsOption } from "@hyper-elements/core";
 import type React from "react";
 import { printTemplate, toElement } from "./print";
 import { readDesign, type DisplayMode } from "./read";
@@ -13,9 +14,24 @@ import { writeDesign, type Design, type DesignResult } from "./write";
 
 export type { Design, DesignResult, DisplayMode };
 
+export interface ToDesignOptions {
+  /**
+   * For an Email with a Canvas (or an Svg): where its pictures' files are hosted, and what draws them, as render()
+   * takes them. Each picture goes to the builder as an image linking the file render() returns for it.
+   */
+  assets?: EmailAssetsOption;
+}
+
+/**
+ * A template in the new components (an `<Email>`, a `<Page>` or a `<Document>`) as the builder's design JSON; with
+ * `assets`, an Email's pictures linking the files render() returns for them.
+ */
+export function toDesign(element: React.ReactElement, options: ToDesignOptions): DesignResult;
 /** A template in the new components (an `<Email>`, a `<Page>` or a `<Document>`) as the builder's design JSON. */
-export function toDesign(element: React.ReactElement): DesignResult {
-  return writeDesign(element);
+export function toDesign(element: React.ReactElement): DesignResult;
+export function toDesign(element: React.ReactElement, options?: ToDesignOptions): DesignResult {
+  // As a callback (emails.map(toDesign)), it's given an index: that's no options.
+  return writeDesign(element, typeof options === "object" && options !== null ? options : {});
 }
 
 export interface TemplateResult {

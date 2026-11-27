@@ -2,16 +2,17 @@
 "title": "Canvas"
 "group": "Roots"
 "order": 4
-"summary": "An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image."
+"summary": "An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image; in an Email, a linked PNG (render()'s assets)."
 ---
 
-An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
+An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image; in an Email, a linked PNG (render()'s assets).
 
 Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The image's width, in px.
 - `height`: a length (a number of px) (default `630`). The image's height, in px: what's past it is cut.
+- `alt`: text (only in Email). In an Email: what it shows, read out by screen readers and shown where images don't load.
 - `title`: text. The document's title (shown in a browser tab, and by some email clients).
 - `lang`: text. Its language, as a BCP 47 tag ("en", "ar").
 - `dir`: one of "ltr", "rtl", "auto"

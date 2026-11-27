@@ -4,11 +4,22 @@ import { join } from "node:path";
 import { contrast, hex, luminance, namedColors, over, parseColor } from "../src/color";
 
 describe("colors", () => {
-  it("has a value for every name core takes, and no other", () => {
+  it("has core's value for every name core takes, and no other", () => {
+    // Core's names and values ("name:rrggbb"), and transparent, which has none.
     const kinds = readFileSync(join(__dirname, "../../internal/core/src/kinds.ts"), "utf8");
-    const list = /const NAMED_COLORS = new Set\(\s*\(([\s\S]*?)\)\.split/.exec(kinds)![1]!;
-    const core = list.match(/"([^"]*)"/g)!.map((s) => s.slice(1, -1)).join(" ").split(/\s+/).filter(Boolean);
-    expect([...namedColors().keys(), "transparent"].sort()).toEqual([...new Set(core)].sort());
+    const list = /const NAMED_COLOR_VALUES[^=]*= new Map\(\s*\(([\s\S]*?)\)\s*\.split/.exec(kinds)![1]!;
+    const core = new Map(
+      list
+        .match(/"([^"]*)"/g)!
+        .map((s) => s.slice(1, -1))
+        .join(" ")
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((entry) => entry.split(":") as [string, string])
+    );
+    expect(kinds).toContain('new Set([...NAMED_COLOR_VALUES.keys(), "transparent"])');
+    expect([...namedColors().keys()].sort()).toEqual([...core.keys()].sort());
+    for (const [name, value] of core) expect(namedColors().get(name), name).toBe(value);
     expect(namedColors().get("rebeccapurple")).toBe("663399");
   });
 

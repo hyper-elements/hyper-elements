@@ -2,12 +2,12 @@
 "title": "Link"
 "group": "Inline"
 "order": 24
-"summary": "A link: text inside text, or around an Image."
+"summary": "A link: text inside text, or around an Image (or an Email's Canvas)."
 ---
 
-A link: text inside text, or around an Image.
+A link: text inside text, or around an Image (or an Email's Canvas).
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image, Canvas (in Email).
 
 Props:
 - `href`: *link* (required)

@@ -181,9 +181,12 @@ function nodeOf(type: string, style: Record<string, Json>, props: Record<string,
   }
 }
 
+/** Where an Email's pictures' files go: an Email with a Canvas or an Svg needs it (a drawer never called: render() draws). */
+const ASSETS = { baseUrl: "https://sample.test/files/", draw: { key: "sample", suffix: "2x", extension: "png" as const, contentType: "image/png" as const, draw: async () => ({ bytes: new Uint8Array(1), diagnostics: [] }) } };
+
 function render(root: string, type: string, style: Record<string, Json>, props: Record<string, Json>, key: string, blocks: Record<string, Record<string, Json>> = {}) {
   try {
-    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props, blocks), key));
+    const { html, text, diagnostics } = renderTemplate(host(root, type, nodeOf(type, style, props, blocks), key), root === "Email" ? { assets: ASSETS } : {});
     return { html, text, diagnostics };
   } catch (error) {
     return { html: "", text: "", diagnostics: [], error: String(error) };
@@ -244,6 +247,9 @@ for (const { target, root } of OUTPUTS) {
     for (const definition of components) {
       const type = definition.type;
       for (const { where, key, spec } of entries(definition)) {
+        // A root's prop for where it's nested (a Canvas's alt, in an Email): tried there.
+        const roots = (spec as unknown as { roots?: readonly string[] }).roots;
+        if (type === root && roots && !roots.includes(root)) continue;
         const base = render(root, type, {}, {}, key);
         const current = inEffect(root, type, where, key);
         // Only values its kind takes (a root's width is px only).
@@ -363,10 +369,11 @@ describe("roots", () => {
   });
 
   it("are each root itself for a root, and every root for what all of them render", () => {
-    for (const root of ROOT_NAMES) expect(componentRoots(COMPONENTS[root])).toEqual([root]);
+    for (const root of ROOT_NAMES) if (root !== "Canvas") expect(componentRoots(COMPONENTS[root])).toEqual([root]);
+    // A Canvas is a root, and a picture in an Email; so is an Svg there.
+    expect(componentRoots(COMPONENTS.Canvas)).toEqual(["Email", "Canvas"]);
     expect(componentRoots(COMPONENTS.Text)).toEqual(["Email", "Page", "Document", "Canvas"]);
-    // The web's: an Svg isn't drawn in an email.
-    expect(componentRoots(COMPONENTS.Svg)).toEqual(["Page", "Document", "Canvas"]);
+    expect(componentRoots(COMPONENTS.Svg)).toEqual(["Email", "Page", "Document", "Canvas"]);
   });
 
   it("narrow a description to one root: what it holds, and phone styles only where it has phones", () => {
@@ -375,7 +382,8 @@ describe("roots", () => {
     expect(document.map((c) => c.type)).toContain("PageHeader");
     expect(document.flatMap((c) => c.properties).some((p) => p.mobile)).toBe(false);
     const email = describeComponents({ root: "Email" });
-    expect(email.map((c) => c.type)).not.toContain("Svg");
+    expect(email.map((c) => c.type)).toContain("Svg");
+    expect(email.map((c) => c.type)).toContain("Canvas");
     expect(email.map((c) => c.type)).not.toContain("PageNumber");
     expect(email.find((c) => c.type === "Text")!.properties.find((p) => p.path === "style.fontSize")).toMatchObject({ mobile: true, roots: ["Email"], group: "Typography" });
   });

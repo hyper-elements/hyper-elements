@@ -7,7 +7,7 @@
 import { readFileSync } from "node:fs";
 import { EMAIL_CLIENTS, type EmailClient } from "../src/email-clients";
 import { HTML_CSS } from "../src/html";
-import { HOVER_LIMIT, IMAGE_FORMATS, NO_MEDIA_QUERIES, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, STYLE_REMOVED, type Limit } from "../src/limits";
+import { DATA_IMAGES, HOVER_LIMIT, IMAGE_FORMATS, NO_MEDIA_QUERIES, NO_PHONE_STYLES, NO_WEB_FONTS, ROOT_LIMITS, STYLE_LIMITS, STYLE_REMOVED, type Limit } from "../src/limits";
 
 interface Feature {
   title: string;
@@ -270,6 +270,7 @@ describe("email clients from caniemail's tables", () => {
     expect(sorted(NO_WEB_FONTS)).toEqual(expected("css-at-font-face"));
     expect(sorted(NO_PHONE_STYLES)).toEqual(expected("css-at-media", "html-style@head"));
     for (const [format, { clients, feature }] of Object.entries(IMAGE_FORMATS)) expect([format, sorted(clients)]).toEqual([format, expected(feature)]);
+    expect(sorted(DATA_IMAGES.clients)).toEqual(expected(DATA_IMAGES.feature));
     for (const { removes, clients, feature, use } of HTML_CSS) if (feature) expect([removes, sorted(clients)]).toEqual([removes, expected(use ? `${feature}@${use}` : feature)]);
   });
 

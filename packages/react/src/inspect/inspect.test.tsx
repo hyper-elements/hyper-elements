@@ -22,7 +22,8 @@ describe("describeElements()", () => {
     expect(email.root).toBe("Email");
     const types = email.elements.map((c) => c.type);
     expect(types).toContain("Row");
-    expect(types).not.toContain("Svg");
+    // An Svg in an email is an image file it links to (render()'s assets).
+    expect(types).toContain("Svg");
     expect(types).not.toContain("PageHeader");
     expect(types).not.toContain("Page");
     const document = describeElements({ root: "Document" });
@@ -33,8 +34,9 @@ describe("describeElements()", () => {
   });
 
   it("describes one element, and a custom one with the built-in ones", () => {
-    expect(describeElement("Svg", { root: "Email" })).toBeUndefined();
+    expect(describeElement("PageHeader", { root: "Email" })).toBeUndefined();
     expect(describeElement("Svg", { root: "Canvas" })).toMatchObject({ version: INSPECT_VERSION, type: "Svg", roots: ["Canvas"] });
+    expect(describeElement("Svg", { root: "Email" })).toMatchObject({ type: "Svg", roots: ["Email"] });
     expect(describeElement("Nope")).toBeUndefined();
     const Card = defineElement({ type: "acme.Card", label: "Card", props: { title: prop.text({ label: "Title", required: true }) }, render: ({ title }) => <Column><Heading>{title}</Heading></Column> });
     expect(describeElements({ elements: [Card] }).elements.map((c) => c.type)).toContain("acme.Card");
@@ -157,15 +159,17 @@ describe("inspect()", () => {
       </Canvas>
     );
     expect(canvas.root).toBe("Canvas");
-    expect(canvas.nodes[1]).toMatchObject({ type: "Svg", roots: ["Page", "Document", "Canvas"], allowed: true });
+    expect(canvas.nodes[1]).toMatchObject({ type: "Svg", roots: ["Email", "Page", "Document", "Canvas"], allowed: true });
     const email = inspect(
       <Email>
         <Svg width={10} height={10} viewBox="0 0 10 10" />
+        <PageNumber />
       </Email>
     );
     expect(email.valid).toBe(false);
-    expect(email.nodes[1]).toMatchObject({ type: "Svg", allowed: false });
-    expect(email.nodes[1].problems.map((d) => d.code)).toEqual(["target/unsupported"]);
+    expect(email.nodes[1]).toMatchObject({ type: "Svg", allowed: true });
+    expect(email.nodes[2]).toMatchObject({ type: "PageNumber", allowed: false });
+    expect(email.nodes[2].problems.map((d) => d.code)).toEqual(["children/not-allowed"]);
   });
 
   it("finds what validate() finds", () => {

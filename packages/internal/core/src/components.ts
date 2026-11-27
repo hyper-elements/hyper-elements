@@ -263,7 +263,7 @@ export const Link = defineComponent({
   type: "Link",
   roles: { color: "colors.primary" },
   label: "Link",
-  description: "A link: text inside text, or around an Image.",
+  description: "A link: text inside text, or around an Image (or an Email's Canvas).",
   categories: ["inline", "block"],
   props: {
     href: prop(link(), { support: WRITTEN, label: "Link", required: true }),
@@ -274,7 +274,8 @@ export const Link = defineComponent({
   style: { ...RUN_STYLE, ...placementStyle },
   defaultStyle: { color: "#0000ee", textDecoration: "underline" },
   hover: ["color", "textDecoration", "backgroundColor"],
-  children: { text: true, categories: ["inline"], types: ["Image"] },
+  // Around a Canvas in an Email: the picture it is links there.
+  children: { text: true, categories: ["inline"], types: ["Image", "Canvas"] },
   sizing: "shrink",
   targets: { email: {}, web: {} },
   editor: { groups: [{ title: "Link", paths: ["props.href", "style.color", "style.textDecoration", "hover.color"] }] },
@@ -352,6 +353,10 @@ export const Image = defineComponent({
   },
   style: {
     ...pick(boxStyle, "width", "maxWidth", "height", "border", "borderRadius"),
+    backgroundColor: {
+      ...boxStyle.backgroundColor,
+      description: "Behind the image, and in its place where it doesn't load (images turned off): its alternate text is then in the text's color and font.",
+    },
     ...placementStyle,
     alignSelf: { kind: enumOf(["start", "center", "end"]), label: "Place", description: "Where it sits in its stack on phones, where that's another place than on desktop.", mobile: true, support: { email: { level: "full", source: "writer" }, web: css } },
     verticalAlign: { kind: enumOf(["top", "middle"]), label: "Place in its line", description: "Where it sits in a line of text it's in.", support: { email: { level: "full", source: "writer" }, web: css } },

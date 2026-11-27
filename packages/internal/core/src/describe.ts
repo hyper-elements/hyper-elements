@@ -117,7 +117,13 @@ function reachable(registry: Registry): Map<string, Set<string>> {
     while (queue.length) {
       const parent = queue.shift()!;
       for (const child of all) {
-        if (seen.has(child.type) || child.categories.includes("root") || !holds(parent, child)) continue;
+        if (seen.has(child.type) || !holds(parent, child)) continue;
+        // A root goes in another only where its `roots` say (a Canvas in an Email): what's in it is its own root's
+        // (rootInside, in define.ts).
+        if (child.categories.includes("root")) {
+          if (child.roots?.includes(root.type as RootName)) seen.add(child.type);
+          continue;
+        }
         seen.add(child.type);
         queue.push(child);
       }
@@ -133,7 +139,7 @@ export function componentRoots(definition: ComponentDefinition, options?: Compon
   return rootDefinitions(registry)
     .filter((root) => reach.get(root.type)?.has(definition.type))
     .filter((root) => Object.keys(definition.targets).some((target) => target in root.targets))
-    .filter((root) => !definition.roots || definition.roots.includes(root.type as RootName))
+    .filter((root) => !definition.roots || definition.roots.includes(root.type as RootName) || root.type === definition.type)
     .map((root) => root.type as RootName);
 }
 

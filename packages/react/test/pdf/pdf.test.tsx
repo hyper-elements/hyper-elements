@@ -33,6 +33,7 @@ import {
   Text,
   prepare,
   Rect,
+  G,
   Row,
   Section,
   Social,
@@ -456,6 +457,24 @@ describe("renderPdf", () => {
     expect(Buffer.from(again.pdf).equals(Buffer.from(regular.pdf))).toBe(true);
   });
 
+  it("draws a group's transform over what it holds, and a shape's own", async () => {
+    const { pdf } = await renderPdf(
+      <Document>
+        <Svg width={100} height={100}>
+          {/* Spelled as SVG takes it and react-pdf alone wouldn't read (two spaces, an exponent): kept in one spelling. */}
+          <G transform="translate(50  50) rotate(9e1)">
+            <Rect width={40} height={20} style={{ fill: "#ff0000" }} />
+          </G>
+          <Rect width={10} height={10} transform="translate(85 5)" style={{ fill: "#0000ff" }} />
+        </Svg>
+      </Document>
+    );
+    // The transforms the page sets, as pdf.js reads its drawing operators: the group's move and turn, the square's move.
+    const { fnArray, argsArray } = await (await (await getDocument({ data: pdf.slice(), verbosity: 0 }).promise).getPage(1)).getOperatorList();
+    const transforms = fnArray.flatMap((fn, i) => (fn === OPS.transform ? [(argsArray[i] as number[]).map((n) => Math.round(n * 100) / 100 || 0).join(" ")] : []));
+    expect(transforms.slice(-3)).toEqual(["1 0 0 1 50 50", "0 1 -1 0 0 0", "1 0 0 1 85 5"]);
+  });
+
   it("draws an Svg's shapes as vectors, in the drawing's box", async () => {
     const { pdf } = await renderPdf(
       <Document>
@@ -644,7 +663,8 @@ describe("renderPdf", () => {
 
     it("has a sample of each (a new block needs its case in the writer, and one here)", () => {
       const takes = new Set(COMPONENTS.Document.children.categories);
-      const blocks = Object.values(COMPONENTS).filter((definition) => definition.categories.some((category) => takes.has(category)));
+      // A root isn't a block in it (a Canvas is one only in an Email, as a picture).
+      const blocks = Object.values(COMPONENTS).filter((definition) => !definition.categories.includes("root") && definition.categories.some((category) => takes.has(category)));
       expect(Object.keys(SAMPLES).sort()).toEqual(blocks.map((definition) => definition.type).sort());
     });
 

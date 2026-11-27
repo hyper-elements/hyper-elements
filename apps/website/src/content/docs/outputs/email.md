@@ -73,11 +73,54 @@ Gmail clips a message after about 100 KB of HTML, and reads 16 KB of a `<style>`
 
 The email client emulator, `renderInEmailClients()` from `@hyper-elements/email-clients`, shows the email as each email client shows it, as HTML files you open in a browser, with what each client changed listed. Nothing is sent or uploaded. See [Email client emulator](/docs/email-client-emulator).
 
+## A Canvas
+
+A `Canvas` in an email is a picture: a banner, a chart or a badge, laid out as any Canvas is, drawn as a PNG file the email links to. An `Svg` on its own in an email is a picture too. Email clients drop inline SVG (Gmail, Outlook, Yahoo) and images given in the email as `data:` URIs (every Gmail), and classic Outlook shows a hosted SVG as a broken image, so every client gets the same PNG, at twice its size. Say where the files are hosted, and give the fonts its text is in, with `render()`'s `assets` option. Upload the files it returns before you send:
+
+```tsx
+import { render } from "@hyper-elements/react";
+import { emailImages } from "@hyper-elements/react/image";
+
+const { html, files } = await render(<Launch />, {
+  assets: {
+    baseUrl: "https://cdn.example.com/email/",
+    draw: emailImages({
+      fonts: [
+        { family: "Inter", src: interRegular },
+        { family: "Inter", src: interBold, weight: 700 },
+      ],
+    }),
+  },
+});
+for (const file of files ?? []) await upload(`email/${file.name}`, file.bytes, file.contentType);
+```
+
+```tsx
+<Section>
+  <Link href="https://example.com/launch">
+    <Canvas width={552} height={240} alt="Launch night: doors at 8" style={{ backgroundColor: "#1e1b4b", color: "#ffffff", fontFamily: "Inter", padding: 32 }}>
+      <Heading>Launch night</Heading>
+      <Text>Doors at 8</Text>
+    </Canvas>
+  </Link>
+  <Text>Bring a friend: tickets are at the door.</Text>
+</Section>
+```
+
+- **It's drawn as a Canvas.** Its text takes the text styles and fonts of where it is in the email. `emailImages()` draws with Satori and resvg: install the image entry's optional peers, `satori` and `@resvg/resvg-js`, as for `renderImage()`. Nothing is fetched: give the file of each font its text is in (`fonts`: TTF, OTF or WOFF) and of each image in it (`images`, by URL). A web font the email loads (its `fonts`) that the picture's text is in, without its file here, or a character no font given has, is an error (a picture with no text in it, as an icon, needs no font's file). Text in another family whose file isn't given (a system font, as Georgia) is drawn in the first font given, with a warning. Text in a script written right to left (Hebrew, Arabic) is an error: an image draws it left to right, so keep it in a `Text` beside or over the picture. Text that runs past the picture is a warning, as for any Canvas.
+- **Each file is named by what's drawn and what draws it**: the scale, the fonts and images, and the versions of Elements, Satori and resvg. The same picture is the same file, and a name never changes what it shows, so cache the files for good.
+- **Where images don't load** (classic Outlook doesn't load them by default), it shows its `alt` on its background color, in a color that reads on it. Give a Canvas with text an `alt` that says what it says, and a `backgroundColor`: a transparent picture's dark text can vanish in a dark mode.
+- **Put it in a `Link` to link it** (an Svg, in a Canvas in the Link). A link inside it is part of the picture, and can't be clicked.
+- **Keep body copy in `Text`.** Text in a picture doesn't show where images don't load, can't be selected or found, and scores worse with spam filters. A `MergeTag` in a picture would be drawn as written, never filled in: that's an error.
+- **Make it no wider than its column.** Phones and most clients shrink it to fit, but classic Outlook shows it at its width.
+
+Without `assets`, `render()` rejects an Email with a Canvas or an Svg (`email/canvas-assets`), saying what to pass. `validate()` doesn't need them. In the Unlayer builder, `toDesign()` takes the same `assets`: each picture is an image linking the same file (see [Visual editor](/docs/guides/visual-editor#what-the-builder-holds)).
+
 ## What email can't do
 
 `validate()` tells you each of these for your design, with the path; the ones about particular clients come from `@hyper-elements/email-clients`' plugin:
 
-- **Svg.** The Email writer has no inline SVG (Gmail and classic Outlook drop it), so an `Svg` in an email is an error. Use an `Image` of it, a PNG.
+- **An image in the email as a `data:` URI.** Every Gmail drops it. Host the file and link to it. The plugin warns (`email/image-data`).
 - **Layer.** An email draws one shape of it: an Image as wide as the Layer, with one child over it. The image is the cell's background, with VML for Outlook.
 - **`justifyContent: "space-between"`.** The children start at the left.
 - **Rounded corners and letter spacing in classic Outlook.** Corners are square, and letter spacing is normal. The plugin notes it (`email/outlook-degraded`).

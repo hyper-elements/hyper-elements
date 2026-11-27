@@ -36,6 +36,16 @@ const aligned = (style: Style): Style => {
   return justify ? { ...style, justifyContent: justify } : style;
 };
 
+/**
+ * The text a node draws in an image, as the writer draws it: its own words; an Html's plain text, a Video's title
+ * (drawn from their props). What the image entry's checks of its text read (its fonts, its direction).
+ */
+export function drawnText(node: ResolvedNode): string[] {
+  if (node.type === "Html") return [htmlText(node)];
+  if (node.type === "Video") return [String(node.props.title ?? "Video")];
+  return node.children.filter((child): child is string => typeof child === "string");
+}
+
 export function writeCanvas(root: ResolvedNode, context: WriteContext): DrawnCanvas {
   const write = new Writer(context);
   return {
@@ -165,10 +175,10 @@ class Writer {
         return this.table(node, placed);
       case "Html":
         // An image can't draw markup: its plain text (validate() says so).
-        return { kind: "text", style: aligned({ display: "flex", ...this.text(node), ...placed }), runs: [htmlText(node)] };
+        return { kind: "text", style: aligned({ display: "flex", ...this.text(node), ...placed }), runs: drawnText(node) };
       case "Video":
         // An image can't play a video: its title, as an email or a PDF without its thumbnail shows it.
-        return { kind: "text", style: aligned({ display: "flex", ...this.text(node), ...this.box(node), ...placed }), runs: [String(node.props.title ?? "Video")] };
+        return { kind: "text", style: aligned({ display: "flex", ...this.text(node), ...this.box(node), ...placed }), runs: drawnText(node) };
       case "Section":
       case "Column":
         return {
@@ -332,10 +342,30 @@ class Writer {
     const { width, height, viewBox } = node.props as { width: number; height: number; viewBox?: string };
     const paint = (value: unknown) => (value === "transparent" ? "none" : (value as string | undefined));
     const KINDS: Record<string, Shape["kind"]> = { Rect: "rect", Circle: "circle", Ellipse: "ellipse", Line: "line", Polygon: "polygon", Path: "path" };
-    const shapes = nodes(node).map((shape): Shape => ({
-      kind: KINDS[shape.type],
-      attributes: { ...shape.props, fill: paint(shape.style.fill), stroke: paint(shape.style.stroke), strokeWidth: shape.style.strokeWidth, opacity: shape.style.opacity },
-    }));
-    return { kind: "box", style: { display: "flex", ...this.box(node), ...placed, width: undefined }, children: [{ kind: "drawing", key: `${node.path}/drawing`, width, height, viewBox: viewBox ?? `0 0 ${width} ${height}`, shapes }] };
+    // A group with what it holds; a shape with its geometry, transform and paint.
+    const drawn = (shape: ResolvedNode): Shape =>
+      shape.type === "G"
+        ? { kind: "g", attributes: { transform: shape.props.transform }, children: nodes(shape).map(drawn) }
+        : {
+            kind: KINDS[shape.type]!,
+            attributes: { ...shape.props, fill: paint(shape.style.fill), stroke: paint(shape.style.stroke), strokeWidth: shape.style.strokeWidth, opacity: shape.style.opacity },
+          };
+    const shapes = nodes(node).map(drawn);
+    return { kind: "box", style: { display: "flex", ...this.box(node), ...placed, width: undefined }, children: [{ kind: "drawing", key: `${node.path}/drawing`, width, height, viewBox: fitted(viewBox, width, height), shapes }] };
   }
+}
+
+/**
+ * A viewBox shown in a drawing of another shape, as a browser shows it (preserveAspectRatio's default, xMidYMid meet):
+ * at one scale, centered, what's beside it shown in the margins. Widened to the drawing's shape here, as an engine may
+ * stretch a viewBox to fill its drawing (Satori draws one as an image of that size).
+ */
+export function fitted(viewBox: string | undefined, width: number, height: number): string {
+  const box = (viewBox ?? "").trim().split(/[\s,]+/).filter(Boolean).map(Number);
+  if (box.length !== 4 || !box.every(Number.isFinite) || !(box[2]! > 0) || !(box[3]! > 0) || !(width > 0) || !(height > 0)) return viewBox ?? `0 0 ${width} ${height}`;
+  const [x, y, w, h] = box as [number, number, number, number];
+  const scale = Math.min(width / w, height / h);
+  const [shownW, shownH] = [width / scale, height / scale];
+  const round = (n: number) => Math.round(n * 1e6) / 1e6;
+  return [x - (shownW - w) / 2, y - (shownH - h) / 2, shownW, shownH].map(round).join(" ");
 }

@@ -8,6 +8,11 @@ Each release records the models package it was tested with.
   core gives every root a block map: it reads the root from the map's first entry, where it went by there being no
   map. An earlier 0.5.x of this package with the core that maps every root would preview such a design as an email
   instead of refusing it: update both together.
+- **An image whose file is in the email, as a `data:` URI, is a warning** (`email/image-data`): every Gmail drops it,
+  HEY, SFR and La Poste too, classic Outlook shows no GIF so, and GMX and WEB.DE only a PNG (caniemail's image-base64).
+  On an Image's `src` and a Video's `thumbnail`, and on each `<img>` of HTML given as a string. A Canvas or an Svg in
+  an Email is a PNG file the email links to (`render()`'s `assets`), never a `data:` one.
+
 - **This is the line for Elements 0.5.** It takes `@hyper-elements/react` `^0.5.0`, as 0.4.x takes `^0.4.0`. Nothing
   else changes with the number: a project on Elements 0.4 stays on 0.4.x of this package.
 - **A preview's header says what it's drawn with:** a model of the client, reverse-engineered by testing thousands of

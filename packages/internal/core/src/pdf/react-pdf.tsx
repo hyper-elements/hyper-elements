@@ -5,7 +5,7 @@
  * react-pdf lays out the boxes (Yoga's flexbox) at the widths the writer gives them and breaks the lines.
  */
 import { createHash } from "node:crypto";
-import { Circle, Document, Ellipse, Font, Image, Line, Link, Page, Path, Polygon, Rect, Svg, Text, View, renderToBuffer } from "@react-pdf/renderer";
+import { Circle, Document, Ellipse, Font, G, Image, Line, Link, Page, Path, Polygon, Rect, Svg, Text, View, renderToBuffer } from "@react-pdf/renderer";
 import { createElement, type ReactElement, type ReactNode } from "react";
 import type { Block, Engine, Font as FontFile, Run, Shape, Style } from "./model";
 
@@ -70,10 +70,13 @@ async function load(name: string, files: ReadonlyArray<{ weight: number; style: 
   }
 }
 
-const SHAPES: Record<Shape["kind"], unknown> = { rect: Rect, circle: Circle, ellipse: Ellipse, line: Line, polygon: Polygon, path: Path };
+const SHAPES: Record<Shape["kind"], unknown> = { rect: Rect, circle: Circle, ellipse: Ellipse, line: Line, polygon: Polygon, path: Path, g: G };
 
 /** An element of react-pdf's, from the model's plain props (react-pdf's own types are closed unions of its style keys). */
 const el = (type: unknown, props: Record<string, unknown>, ...children: ReactNode[]): ReactElement => createElement(type as never, props as never, ...children);
+
+/** A shape as react-pdf's; a group with what it holds. */
+const drawn = (shape: Shape, key: number): ReactElement => el(SHAPES[shape.kind], { key, ...shape.attributes }, ...(shape.children ?? []).map(drawn));
 
 export const reactPdf: Engine = async (document) => {
   const names = register(document.fonts);
@@ -111,7 +114,7 @@ export const reactPdf: Engine = async (document) => {
         return el(
           Svg,
           { key, width: item.width, height: item.height, viewBox: item.viewBox },
-          item.shapes.map((shape, i) => el(SHAPES[shape.kind], { key: i, ...shape.attributes }))
+          item.shapes.map(drawn)
         );
     }
   };

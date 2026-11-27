@@ -7,7 +7,7 @@
 
 Its children in columns of equal width, row after row; on phones, one under another.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `columns`: an integer from 1 to 12 (default `2`). How many children to a row.

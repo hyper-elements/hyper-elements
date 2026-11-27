@@ -10,12 +10,13 @@
  * by URL, or data: URIs). An image needs at least one font: its text is drawn with the fonts it's given.
  * templateAssets() lists the fonts and images a template names, for a tool that loads them.
  */
-import { assetParts, fontStack, LAYOUT_VERSION, satoriResvg, writeCanvas, type Asset, type Font } from "@hyper-elements/core/image";
+import { assetParts, drawnText, fontStack, LAYOUT_VERSION, satoriResvg, sha256Hex, utf8Encode, writeCanvas, type Asset, type Font } from "@hyper-elements/core/image";
+import { installedVersion } from "./engines";
 import { measure, type ImageLayout } from "./layout";
 
 export type { FitResult, GlyphResult, ImageLayout, LaidOutNode } from "./layout";
 import type { FontFace } from "@hyper-elements/core";
-import { ElementsError, prepare, type Diagnostic, type ResolvedNode, type Snapshot } from "@hyper-elements/react";
+import { ElementsError, prepare, type Diagnostic, type PictureDrawer, type ResolvedNode, type Snapshot } from "@hyper-elements/react";
 import type { ReactElement } from "react";
 
 export interface ImageFont {
@@ -93,15 +94,110 @@ export async function layoutImage(element: ReactElement | Snapshot, options: Omi
 function canvasFor(element: ReactElement | Snapshot, options: Omit<ImageOptions, "format">) {
   const { root, diagnostics, pending } = canvasOf(element);
   const strict = options.strict === true || pending.template !== undefined;
+  return { ...readied(root, diagnostics, options, strict), pending };
+}
+
+/** A laid-out Canvas read with its fonts and images, ready to measure (canvasFor's, and each of an Email's pictures'). */
+/** `used`: say a font face with no file only where text names its family (an Email's picture: its file isn't drawn else). */
+function readied(root: ResolvedNode, diagnostics: Diagnostic[], options: Omit<ImageOptions, "format">, strict: boolean, used = false) {
   const found: Diagnostic[] = [];
-  const fonts = fontsOf(root, options.fonts ?? [], found, strict);
+  const fonts = fontsOf(root, options.fonts ?? [], found, strict, used ? textFamilies(root) : undefined);
   const images = imageSources(root, options.images ?? {}, found);
   // What can't be drawn at all stops it here (an image with no file, no font at all); what strict makes an error is
   // measured with the rest, so every finding is said at once.
   if (found.some((d) => d.severity === "error" && (d.code === "image/image" || d.path === "root"))) throw new ElementsError([...diagnostics, ...found]);
   found.push(...missingFaces(root, fonts, strict));
   const families = new Set(fonts.map((font) => font.family.toLowerCase()));
-  return { context: { root, fonts, families, fallback: fonts[0]?.family ?? "", image: (src: string) => images.get(src) }, diagnostics, found, pending, strict };
+  return { context: { root, fonts, families, fallback: fonts[0]?.family ?? "", image: (src: string) => images.get(src) }, diagnostics, found, strict };
+}
+
+export interface EmailImagesOptions {
+  /** Font files, by the family the Email's text names: a picture's text is drawn with these, and needs its family's. */
+  fonts?: ImageFont[];
+  /** Image files (PNG, JPEG, GIF, SVG), by the URL an Image in a Canvas gives: nothing is fetched. */
+  images?: Record<string, Uint8Array | ArrayBuffer>;
+  /** Pixels per px: 2, the default, is sharp on a phone's screen. In each file's name (`<hash>-2x.png`). */
+  scale?: number;
+}
+
+/**
+ * Draws the pictures of an Email (each Canvas in it, and each Svg on its own) as PNGs, for render()'s `assets`:
+ *
+ *   const { html, files } = await render(<Launch />, {
+ *     assets: { baseUrl: "https://cdn.example.com/email/", draw: emailImages({ fonts: [{ family: "Inter", src: inter }] }) },
+ *   });
+ *   // upload each of files to baseUrl, then send html
+ *
+ * A font its text names and isn't given is an error, not a fallback: the picture would be in another type than the
+ * email around it. Its key, in each file's name, is what it draws with: the scale, the fonts' and images' bytes, and
+ * the versions of this package, Satori and resvg, so another of any is another file (one cached for good stays right).
+ */
+export function emailImages(options: EmailImagesOptions = {}): PictureDrawer {
+  const scale = options.scale ?? 2;
+  if (!Number.isInteger(scale) || scale < 1 || scale > 4) throw new TypeError(`[Elements] emailImages({ scale }) takes a whole number from 1 to 4, not ${String(options.scale)}`);
+  // Copies, so the bytes the key names are the bytes drawn, whatever the caller does with its own later.
+  const copy = (bytes: Uint8Array | ArrayBuffer) => new Uint8Array(buffer(bytes).slice(0));
+  // Each field read as given (a getter of a class's too), not spread.
+  const fonts: ImageFont[] = (options.fonts ?? []).map((font) => ({
+    family: font.family,
+    src: copy(font.src),
+    ...(font.weight !== undefined ? { weight: font.weight } : {}),
+    ...(font.style !== undefined ? { style: font.style } : {}),
+  }));
+  const images = Object.fromEntries(Object.entries(options.images ?? {}).map(([url, bytes]) => [url, copy(bytes)]));
+  const digest = (bytes: Uint8Array | ArrayBuffer) => sha256Hex(new Uint8Array(buffer(bytes)));
+  const versions = { "@hyper-elements/react": installedVersion("@hyper-elements/react"), satori: installedVersion("satori"), "@resvg/resvg-js": installedVersion("@resvg/resvg-js") };
+  const unread = Object.keys(versions).filter((name) => versions[name as keyof typeof versions] === "unknown");
+  // Where a version can't be read (an app bundled into one file), names don't follow it: said in each render.
+  const notes: Diagnostic[] = unread.length
+    ? [
+        {
+          code: "image/engine-version",
+          severity: "warning",
+          message: `${unread.join(" and ")}'s installed version can't be read here (an app bundled into one file): the pictures' file names don't change with it, so a file cached for good may be another version's drawing`,
+          fix: `keep ${unread.join(" and ")} in node_modules beside the app, unbundled`,
+          path: "root",
+        },
+      ]
+    : [];
+  const key = sha256Hex(
+    utf8Encode(
+      JSON.stringify({
+        drawer: 1,
+        elements: versions["@hyper-elements/react"],
+        satori: versions.satori,
+        resvg: versions["@resvg/resvg-js"],
+        scale,
+        fonts: fonts.map((font) => [font.family, font.weight ?? 400, font.style ?? "normal", digest(font.src)]),
+        images: Object.keys(images)
+          .sort()
+          .map((url) => [url, digest(images[url]!)]),
+      })
+    )
+  );
+  return {
+    key,
+    notes,
+    suffix: `${scale}x`,
+    extension: "png",
+    contentType: "image/png",
+    async draw({ root, layout }) {
+      readable(layout, "image");
+      // The Email's fonts are the picture's: one with no file is an error only where the picture's text names it.
+      const { context, diagnostics, found, strict } = readied(root, [], { fonts, images, scale }, false, true);
+      const { layout: measured, sizes } = await measure(context, { strict, scale });
+      // A font or a character with no file is an error: the picture would be in another type than the email around it,
+      // or show boxes. What runs past it is a warning, as for any Canvas. Fonts are given to emailImages() here.
+      const all = [...diagnostics, ...found, ...otherFamilies(root, context.fonts), ...rightToLeft(root), ...measured.diagnostics].map((d) => ({
+        ...d,
+        ...(d.code === "image/font" || d.code === "image/glyph" ? { severity: "error" as const } : {}),
+        message: d.message.replace(/renderImage's fonts option/g, "emailImages({ fonts })"),
+      }));
+      if (all.some((d) => d.severity === "error")) throw new ElementsError(all);
+      const canvas = writeCanvas(root, { families: context.families, fallback: context.fallback, fonts: context.fonts, image: context.image, sizes });
+      return { bytes: await satoriResvg(canvas, { format: "png", scale }), diagnostics: all };
+    },
+  };
 }
 
 /** Given to prepare(): this entry decides a template's measured rules, so they're handed over, not refused. */
@@ -189,7 +285,7 @@ const woff2 = (bytes: ArrayBuffer | Uint8Array) => String.fromCharCode(...new Ui
 /** The Canvas's own font faces (its `fonts` prop): the files renderImage's fonts option gives, or data: URIs. */
 const facesOf = (root: ResolvedNode): FontFace[] => (root.props.fonts as FontFace[] | undefined) ?? [];
 
-function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[], strict = false): Font[] {
+function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[], strict = false, used?: Set<string>): Font[] {
   const level = strict ? ("error" as const) : ("warning" as const);
   const drawn = (family: string, bytes: ArrayBuffer | Uint8Array) => {
     if (!woff2(bytes)) return true;
@@ -206,6 +302,7 @@ function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[], st
       out.push({ family: face.family, data: buffer(Uint8Array.from(Buffer.from(data, "base64"))), weight: weight(Array.isArray(face.weight) ? face.weight[0] : face.weight), style: face.style ?? "normal" });
       continue;
     }
+    if (used && !used.has(face.family.toLowerCase())) continue;
     found.push({ code: "image/font", severity: level, message: `Image output loads no fonts: give ${face.family}'s file in renderImage's fonts option. Its text is drawn in another font meanwhile`, path: "root.props.fonts" });
   }
   if (!out.length && hasText(root)) {
@@ -215,6 +312,34 @@ function fontsOf(root: ResolvedNode, given: ImageFont[], found: Diagnostic[], st
 }
 
 /** Text in a weight or style of a family that isn't given: drawn in the nearest given (a browser would fake it). */
+/**
+ * Text whose font stack names no family given: drawn in the first font given, another type than the email around it
+ * shows. Said once for each stack (an Email's pictures: emailImages()).
+ */
+function otherFamilies(root: ResolvedNode, fonts: Font[]): Diagnostic[] {
+  const given = new Set(fonts.map((font) => font.family.toLowerCase()));
+  const fallback = fonts[0]?.family;
+  const out = new Map<string, Diagnostic>();
+  const visit = (node: ResolvedNode) => {
+    if (node.hidden?.desktop) return;
+    if (fallback && node.children.some((child) => typeof child === "string" && child.trim())) {
+      const stack = String(node.text.fontFamily);
+      if (!fontStack(stack).some((name) => given.has(name.toLowerCase())) && !out.has(stack)) {
+        out.set(stack, {
+          code: "image/font-family",
+          severity: "warning",
+          message: `Text in ${stack} is drawn in ${fallback}: none of its fonts is given. Give its file in emailImages({ fonts })`,
+          path: node.path,
+          ...(node.id ? { nodeId: node.id } : {}),
+        });
+      }
+    }
+    for (const child of node.children) if (typeof child !== "string") visit(child);
+  };
+  visit(root);
+  return [...out.values()];
+}
+
 function missingFaces(root: ResolvedNode, fonts: Font[], strict = false): Diagnostic[] {
   const out = new Map<string, Diagnostic>();
   const given = new Map<string, Font[]>();
@@ -245,6 +370,47 @@ function missingFaces(root: ResolvedNode, fonts: Font[], strict = false): Diagno
   };
   visit(root);
   return [...out.values()];
+}
+
+/** A letter of a script written right to left (Hebrew, Arabic, Syriac, Thaana, N'Ko and their forms). */
+const RIGHT_TO_LEFT = /[\u0590-\u08ff\ufb1d-\ufdff\ufe70-\ufefc]/;
+
+/**
+ * Text in a right-to-left script, which the engine draws left to right (its letters reversed, Arabic's unjoined): an
+ * error in an Email's picture, the email's own text being right. Said once for each place.
+ */
+function rightToLeft(root: ResolvedNode): Diagnostic[] {
+  const out: Diagnostic[] = [];
+  const visit = (node: ResolvedNode) => {
+    if (node.hidden?.desktop) return;
+    const found = drawnText(node).find((text) => RIGHT_TO_LEFT.test(text));
+    if (found) {
+      out.push({
+        code: "image/direction",
+        severity: "error",
+        message: `"${found.trim().slice(0, 40)}" is in a script written right to left, which a picture draws left to right, its letters reversed`,
+        fix: "put that text in a Text beside or over the picture",
+        path: node.path,
+        ...(node.id ? { nodeId: node.id } : {}),
+      });
+      return;
+    }
+    for (const child of node.children) if (typeof child !== "string") visit(child);
+  };
+  visit(root);
+  return out;
+}
+
+/** The families the font stacks of its text (shown on desktop) name, lowercased: the text the image writer draws. */
+function textFamilies(root: ResolvedNode): Set<string> {
+  const out = new Set<string>();
+  const visit = (node: ResolvedNode) => {
+    if (node.hidden?.desktop) return;
+    if (drawnText(node).some((text) => text.trim())) for (const name of fontStack(String(node.text.fontFamily))) out.add(name.toLowerCase());
+    for (const child of node.children) if (typeof child !== "string") visit(child);
+  };
+  visit(root);
+  return out;
 }
 
 /** Whether it draws any text (shown on desktop). */

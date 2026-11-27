@@ -40,7 +40,7 @@ A design is one of these, and the root decides the output: `render()` writes an 
 
 An email. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Grid, Layer, Canvas, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `600`)
@@ -128,13 +128,14 @@ Props:
 
 ### Canvas
 
-An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
+An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image; in an Email, a linked PNG (render()'s assets).
 
 Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The image's width, in px.
 - `height`: a length (a number of px) (default `630`). The image's height, in px: what's past it is cut.
+- `alt`: text (only in Email). In an Email: what it shows, read out by screen readers and shown where images don't load.
 - `title`: text. The document's title (shown in a browser tab, and by some email clients).
 - `lang`: text. Its language, as a BCP 47 tag ("en", "ar").
 - `dir`: one of "ltr", "rtl", "auto"
@@ -164,7 +165,7 @@ Bands and boxes that arrange blocks. None is required: a root stacks its childre
 
 A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -188,7 +189,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `stackOnMobile`: true or false (default `true`). Its children stack full-width on phones (in an Email or a Page).
@@ -225,7 +226,7 @@ Props:
 
 Stacks its children vertically, with its own spacing and box.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -257,7 +258,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Its children in columns of equal width, row after row; on phones, one under another.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 Props:
 - `columns`: an integer from 1 to 12 (default `2`). How many children to a row.
@@ -293,7 +294,7 @@ Props:
 
 Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Canvas (in Email), Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -324,9 +325,9 @@ Content, stacked down whatever holds it.
 
 ### Svg
 
-Shapes (Rect, Circle, Ellipse, Line, Polygon, Path) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them.
+Shapes (Rect, Circle, Ellipse, Line, Polygon, Path, and groups of them: G) drawn in a box of its own: its width and height, and the coordinates its viewBox gives them. In an Email, a linked PNG (render()'s assets).
 
-Holds: Rect, Circle, Ellipse, Line, Polygon, Path. Not in an Email.
+Holds: Rect, Circle, Ellipse, Line, Polygon, Path, G.
 
 Props:
 - `width`: a number from 0 (required)
@@ -460,6 +461,7 @@ Props:
 - `height`: a length (a number of px) (Size)
 - `border`: *border* (Border)
 - `borderRadius`: *radius* (Border)
+- `backgroundColor`: *color* (Background). Behind the image, and in its place where it doesn't load (images turned off): its alternate text is then in the text's color and font.
 - `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
 - `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack on phones, where that's another place than on desktop.
 - `verticalAlign`: one of "top", "middle" (Layout). Where it sits in a line of text it's in.
@@ -644,9 +646,9 @@ Holds: text; PageNumber, Span, Link, LineBreak, MergeTag.
 
 ### Link
 
-A link: text inside text, or around an Image.
+A link: text inside text, or around an Image (or an Email's Canvas).
 
-Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image.
+Holds: text; PageNumber, Span, Link, LineBreak, MergeTag, Image, Canvas (in Email).
 
 Props:
 - `href`: *link* (required)
@@ -844,7 +846,7 @@ Only inside an Svg, in its viewBox's units.
 
 A rectangle at x, y in its Svg, rounded by rx.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `x`: a number (default `0`)
@@ -852,6 +854,7 @@ Props:
 - `width`: a number from 0 (required)
 - `height`: a number from 0 (required)
 - `rx`: a number from 0
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
@@ -863,12 +866,13 @@ Props:
 
 A circle centered at cx, cy in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `cx`: a number (default `0`)
 - `cy`: a number (default `0`)
 - `r`: a number from 0 (required)
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
@@ -880,13 +884,14 @@ Props:
 
 An ellipse centered at cx, cy in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `cx`: a number (default `0`)
 - `cy`: a number (default `0`)
 - `rx`: a number from 0 (required)
 - `ry`: a number from 0 (required)
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
@@ -898,13 +903,14 @@ Props:
 
 A straight line from x1, y1 to x2, y2 in its Svg (drawn by its stroke).
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `x1`: a number (default `0`)
 - `y1`: a number (default `0`)
 - `x2`: a number (default `0`)
 - `y2`: a number (default `0`)
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
@@ -916,10 +922,11 @@ Props:
 
 A closed shape through its points ("0,0 40,0 20,30"), in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `points`: text (required)
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
@@ -931,16 +938,26 @@ Props:
 
 A shape drawn by an SVG path (d), in its Svg.
 
-Holds: nothing. Not in an Email.
+Holds: nothing.
 
 Props:
 - `d`: text (required). SVG path data ("M0 0 L40 0 L20 30 Z").
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 `style`:
 - `fill`: *color* (default `"#000000"`, Background). Its inside ("transparent" for none).
 - `stroke`: *color* (Border). Its outline's color.
 - `strokeWidth`: a number from 0 (Border)
 - `opacity`: a number from 0 to 1 (Effects)
+
+### G
+
+Shapes (and groups) moved, turned or scaled together, in its Svg: its transform applies to all it holds, each shape's own inside it.
+
+Holds: Rect, Circle, Ellipse, Line, Polygon, Path, G.
+
+Props:
+- `transform`: text. Moves, turns, scales or skews it in its Svg, as SVG's transform ("translate(40 0) rotate(45 20 20)"): in its Svg's units, about its origin unless rotate names a center.
 
 ## For tools: where each block is in the HTML
 

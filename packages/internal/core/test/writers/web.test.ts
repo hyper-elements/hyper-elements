@@ -374,6 +374,34 @@ describe("web HTML", () => {
     expect(text).toBe("[Logo]");
   });
 
+  it("writes an Svg's groups and transforms as SVG's, and each shape's and group's id, which CSS finds it by", () => {
+    const { body } = web(
+      page([
+        {
+          type: "Svg",
+          props: { width: 100, height: 100 },
+          children: [
+            { type: "G", id: "jelly", props: { transform: "translate(50 50) rotate(90)" }, children: [{ type: "Rect", id: "bell", props: { width: 40, height: 20 }, style: { fill: "#ff0000" } }] },
+            { type: "Rect", props: { width: 10, height: 10, transform: "translate(85 5)" } },
+          ],
+        },
+      ])
+    );
+    expect(body).toContain(
+      '<g id="jelly" transform="translate(50 50) rotate(90)"><rect id="bell" x="0" y="0" width="40" height="20" fill="#ff0000"></rect></g>' +
+        '<rect x="0" y="0" width="10" height="10" transform="translate(85 5)" fill="#000000"></rect></svg>'
+    );
+    // Any way SVG spells one, kept in one spelling, which every output reads alike.
+    const spelled = (transform: string) => /transform="([^"]*)"/.exec(web(page([{ type: "Svg", props: { width: 10, height: 10 }, children: [{ type: "Rect", props: { width: 5, height: 5, transform } }] }])).body)?.[1];
+    expect(spelled("rotate(+9e1, 30 30)")).toBe("rotate(90 30 30)");
+    expect(spelled("translate (30,\t10)  scale(.5)")).toBe("translate(30 10) scale(0.5)");
+    expect(spelled("translate(30-4)")).toBe("translate(30 -4)");
+    // A transform SVG doesn't take: refused where it's written, with the forms it takes.
+    const wrong = validateTemplate(page([{ type: "Svg", props: { width: 10, height: 10 }, children: [{ type: "G", props: { transform: "rotate(45deg)" }, children: [] }] }]));
+    expect(wrong.diagnostics.map((d) => [d.severity, d.path])).toEqual([["error", "root.children[0].children[0].props.transform"]]);
+    expect(wrong.diagnostics[0]!.message).toContain("translate(x y), rotate(angle cx cy)");
+  });
+
   it("writes a Canvas as a box of its size, its content laid out in it, what's past it cut", () => {
     const { body } = web({ root: { type: "Canvas", props: { width: 600, height: 315 }, style: { padding: 40, backgroundColor: "#0f172a" }, children: [{ type: "Text", children: ["Launch week"] }] } });
     expect(body).toMatch(/^<main style="width:600px;height:315px;overflow:hidden;[^"]*padding:40px;background-color:#0f172a/);

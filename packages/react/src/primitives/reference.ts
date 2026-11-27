@@ -89,8 +89,19 @@ function property(p: PropertyDescription, named: Map<string, string>, c: Compone
 }
 
 function component(c: ComponentDescription, all: ComponentDescription[], named: Map<string, string>): string {
-  const inCategory = (category: string) => all.filter((other) => other.categories.includes(category as never)).map((other) => name(other.type));
-  const holds = [...new Set([...c.children.categories.flatMap(inCategory), ...c.children.types.map(name)])];
+  // A root it holds goes in only some roots (a Canvas in an Email, as a picture): named where it does, if not all of its.
+  const under: readonly string[] = c.categories.includes("root" as never) ? [c.type] : c.roots;
+  const placed = (other: ComponentDescription): string[] => {
+    if (!other.categories.includes("root" as never)) return [name(other.type)];
+    const where = other.roots.filter((root) => root !== other.type && under.includes(root));
+    return where.length ? [`${name(other.type)}${where.length < under.length ? ` (in ${where.join(", ")})` : ""}`] : [];
+  };
+  const inCategory = (category: string) => all.filter((other) => other.categories.includes(category as never)).flatMap(placed);
+  const typed = (type: string) => {
+    const other = all.find((d) => d.type === type);
+    return other ? placed(other) : [name(type)];
+  };
+  const holds = [...new Set([...c.children.categories.flatMap(inCategory), ...c.children.types.flatMap(typed)])];
   const children = [c.children.text ? "text" : "", holds.join(", ")].filter(Boolean).join("; ");
   const props = c.properties.filter((p) => p.path.startsWith("props."));
   const style = c.properties.filter((p) => p.path.startsWith("style."));

@@ -182,12 +182,25 @@ export interface ComponentDefinition<P extends PropSpecs = PropSpecs, S extends 
    * The roots it may go in, of those whose output it renders to (default: every one whose children reach it). Under
    * another such root it's the `notAllowed` error, by default `element/not-supported` naming these; under a root
    * whose output it doesn't render to, it's `target/unsupported`, as for any component.
+   *
+   * A root that names roots here goes in them as a nested root (a Canvas in an Email): what's in it is under its rules,
+   * not the outer root's. `rootInside` says which root's rules a node's children are under; every walk that reads
+   * nodes by their root's rules asks it.
    */
   roots?: readonly RootName[];
   notAllowed?: { code: string; message: (root: string) => string };
-  /** Why a target it doesn't render can't, and what to do instead (in the diagnostic). */
-  unsupported?: Partial<Record<Target, string>>;
   editor?: { groups: readonly EditorGroup[] };
+}
+
+/**
+ * The root whose rules a node's children are under: the node's own definition where the node is a root inside
+ * another (a Canvas in an Email: see `roots`), else `around`, the root the node is under. `nested`: the node isn't
+ * the template's root. Asked as a template is read (normalize.ts) and expanded (expand.ts). describe.ts lists a nested
+ * root among the components of the roots it names, and what's in it among its own root's. The email writer cuts each
+ * nested Canvas out as a picture (writers/email/pictures.ts).
+ */
+export function rootInside(definition: ComponentDefinition, around: ComponentDefinition | undefined, nested: boolean): ComponentDefinition | undefined {
+  return nested && definition.categories.includes("root") ? definition : around;
 }
 
 /** Keeps the literal types of a definition's props and styles, for the derived TypeScript types. */

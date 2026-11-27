@@ -10,6 +10,7 @@
   "ElementsError",
   "Ellipse",
   "Email",
+  "G",
   "Grid",
   "Heading",
   "Html",
@@ -66,6 +67,7 @@
   "templateAssets"
  ],
  "./image": [
+  "emailImages",
   "layoutImage",
   "renderImage",
   "templateAssets"

@@ -96,6 +96,26 @@ const INITIAL_TEXT: Omit<ResolvedText, "lineHeightPx"> = {
 
 const INHERITED = Object.keys(INITIAL_TEXT) as Array<keyof typeof INITIAL_TEXT>;
 
+/** What a root's text is worked out from. */
+const ROOT_TEXT: ResolvedText = { ...INITIAL_TEXT, lineHeightPx: 24 };
+
+/**
+ * The text a node gives what's in it, from its parent's (the root's, from nothing): its component's defaults and its
+ * own styles over its parent's, and its direction. What the resolver gives each node; a picture cut out of an Email
+ * starts from its place's (writers/email/pictures.ts).
+ */
+export function passedText(node: Node, registry: Registry, parent: ResolvedText = ROOT_TEXT): ResolvedText {
+  const definition = registry.get(node.type)!;
+  const props = propsWithDefaults(definition, node.props);
+  return directed(textOf(parent, styleOf(node, definition, props)), props.dir, node.style?.textAlign);
+}
+
+/** A node's text as the styles that give it (a Canvas root's, for a picture). */
+export function stylesOfText(text: ResolvedText): Record<string, Json> {
+  const { lineHeightPx: _, ...style } = text;
+  return style as unknown as Record<string, Json>;
+}
+
 /** A length in px, given the width a percentage is of. */
 export function toPx(value: Json | undefined, of: number | null): number | null {
   const length = readLength(value);
@@ -156,7 +176,7 @@ export function resolveExpanded(document: ElementsDocument, options?: Components
   const d = new Diagnostics();
   const definition = registry.get(document.root.type)!;
   const context: Context = { d, registry, responsive: !!definition.responsive, root: document.root.type };
-  const root = resolveNode(document.root, "root", { ...INITIAL_TEXT, lineHeightPx: 24 }, null, context);
+  const root = resolveNode(document.root, "root", ROOT_TEXT, null, context);
   // A Document's content is as wide as its page inside the margins; a Canvas's, as it inside its padding.
   const width = root.type === "Document" ? pageBox(root.props).contentWidth : toPx(root.props.width, null);
   root.width = width;
@@ -166,7 +186,7 @@ export function resolveExpanded(document: ElementsDocument, options?: Components
   return { root, diagnostics: d.list.map((diagnostic) => ({ ...diagnostic, path: templatePath(diagnostic.path) })), templatePath };
 }
 
-function styleOf(node: Node, definition: ComponentDefinition, props: Record<string, Json>, context: Context): Record<string, Json> {
+function styleOf(node: Node, definition: ComponentDefinition, props: Record<string, Json>): Record<string, Json> {
   const style: Record<string, Json> = { ...((definition.defaultStyle ?? {}) as Record<string, Json>) };
   const by = definition.defaultStyleBy;
   if (by) Object.assign(style, by.values[String(props[by.prop])] ?? {});
@@ -184,7 +204,7 @@ function textOf(parent: ResolvedText, style: Record<string, Json>): ResolvedText
 }
 
 /** A direction of its own (a block's, or the root's) sets where its text starts, unless its author aligned it. */
-function directed(text: ResolvedText, dir: Json | undefined, ownAlign: Json | undefined): ResolvedText {
+export function directed(text: ResolvedText, dir: Json | undefined, ownAlign: Json | undefined): ResolvedText {
   if (ownAlign !== undefined || (dir !== "rtl" && dir !== "ltr")) return text;
   return { ...text, textAlign: dir === "rtl" ? "right" : "left" };
 }
@@ -193,7 +213,7 @@ function directed(text: ResolvedText, dir: Json | undefined, ownAlign: Json | un
 function resolveNode(node: Node, path: string, parentText: ResolvedText, available: number | null, context: Context): ResolvedNode {
   const definition = context.registry.get(node.type)!;
   const props = propsWithDefaults(definition, node.props);
-  const style = styleOf(node, definition, props, context);
+  const style = styleOf(node, definition, props);
   return {
     ...(node.id ? { id: node.id } : {}),
     ...(node.field ? { field: node.field } : {}),
@@ -562,8 +582,7 @@ export function checkTargetExpanded(document: ElementsDocument, target: Target, 
   const visit = (node: Node, path: string) => {
     const definition = registry.get(node.type);
     if (definition && !definition.targets[target]) {
-      const why = definition.unsupported?.[target];
-      d.error("target/unsupported", `A ${node.type} can't be rendered to ${target}${why ? `: ${why}` : ""}`, path, node.id);
+      d.error("target/unsupported", `A ${node.type} can't be rendered to ${target}`, path, node.id);
       // What's in it goes with it: one error.
       return;
     }

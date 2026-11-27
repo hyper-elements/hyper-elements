@@ -4,7 +4,7 @@
  * checked).
  */
 import { CONDITION_NAMES, CONDITIONS, shownAnywhere } from "./conditions";
-import type { ComponentDefinition, RootName, StyleSpecs } from "./define";
+import { rootInside, type ComponentDefinition, type RootName, type StyleSpecs } from "./define";
 import { Diagnostics, ElementsError, type Diagnostic } from "./diagnostics";
 import { type Child, type ElementsDocument, type Json, type Node } from "./model";
 import { CUSTOM_TYPE, propsWithDefaults, registryOf, type ComponentsOption, type Registry } from "./registry";
@@ -261,7 +261,8 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     return null;
   }
   const root = context.root;
-  if (root && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
+  // A root's `roots` are where it may go in another (a Canvas in an Email): as the template's root, it's its own.
+  if (root && parent && !rootTakes(definition.roots, root) && sharesOutput(definition, root)) {
     const { code, message } = definition.notAllowed ?? {
       code: "element/not-supported",
       message: (under: string) => `${a(definition.type)} goes in ${rootList(definition.roots ?? [])}, not in ${a(under).replace(/^A/, "a")}`,
@@ -463,7 +464,11 @@ function readNode(input: unknown, path: string, parent: ComponentDefinition | nu
     if (hidden) node.hidden = hidden;
   }
 
+  // What's in a root inside another (a Canvas in an Email) is read under its rules (rootInside).
+  const outer = context.root;
+  context.root = rootInside(definition, outer, parent !== null);
   const children = readChildren(input.children, definition, `${path}.children`, id, context);
+  context.root = outer;
   if (children.length) node.children = children;
   context.environment = saved.environment;
   context.inherited = saved.inherited;

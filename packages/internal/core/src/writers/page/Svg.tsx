@@ -1,4 +1,4 @@
-/** An Svg as inline SVG, and its shapes as SVG's: "transparent" paint as SVG's none. */
+/** An Svg as inline SVG, and its shapes and groups as SVG's, each with its id (what CSS finds it by): "transparent" paint as SVG's none. */
 import type { ResolvedNode } from "../../resolve";
 import { h } from "../jsx";
 import { isNode, type Component } from "./context";
@@ -20,6 +20,12 @@ export function shapeAttributes(node: ResolvedNode): Record<string, string | num
 
 const TAGS: Record<string, string> = { Rect: "rect", Circle: "circle", Ellipse: "ellipse", Line: "line", Polygon: "polygon", Path: "path" };
 
+/** A shape, or a group with what it holds, as SVG. */
+const drawn = (node: ResolvedNode): ReturnType<typeof h> =>
+  node.type === "G"
+    ? h("g", { id: node.id, transform: node.props.transform as string | undefined }, ...node.children.filter(isNode).map(drawn))
+    : h(TAGS[node.type]!, { id: node.id, ...shapeAttributes(node) });
+
 export const Svg: Component = ({ node, parent, placement, classes }) => {
   const { width, height, viewBox, title } = node.props as { width: number; height: number; viewBox?: string; title?: string };
   return (
@@ -36,7 +42,7 @@ export const Svg: Component = ({ node, parent, placement, classes }) => {
       // Its padding and border around the drawing, as the resolver counts them (a framed box is border-box elsewhere).
       style={[placement, { display: "block", flex: "none" }, { ...box(node, parent.type !== "Row"), boxSizing: undefined }]}
     >
-      {node.children.filter(isNode).map((shape) => h(TAGS[shape.type], shapeAttributes(shape)))}
+      {node.children.filter(isNode).map(drawn)}
     </svg>
   );
 };

@@ -6,7 +6,7 @@
 import { Resvg } from "@resvg/resvg-js";
 import { createElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import satori from "satori";
-import type { Block, DrawnCanvas, Engine, Picture, Run, Style } from "./model";
+import type { Block, DrawnCanvas, Engine, Picture, Run, Shape, Style } from "./model";
 
 /** The tree without styles left undefined (Satori reads every key it's given) and empty children. */
 function clean(node: ReactNode): ReactNode {
@@ -26,6 +26,9 @@ const run = (item: Run, key: number): ReactNode => {
   return picture(item, key);
 };
 
+/** A shape as an SVG element; a group with what it holds. */
+const drawn = (shape: Shape, key: number): ReactElement => createElement(shape.kind, { key, ...shape.attributes }, ...(shape.children ?? []).map(drawn));
+
 /** Each block as a Satori element, keyed by its node's path where it has one (what a layout reads back its box by). */
 const block = (item: Block, index?: number): ReactElement => {
   const key = item.key ?? index;
@@ -37,11 +40,7 @@ const block = (item: Block, index?: number): ReactElement => {
     case "image":
       return picture(item, index);
     case "drawing":
-      return createElement(
-        "svg",
-        { key, width: item.width, height: item.height, viewBox: item.viewBox, xmlns: "http://www.w3.org/2000/svg" },
-        ...item.shapes.map((shape, i) => createElement(shape.kind, { key: i, ...shape.attributes }))
-      );
+      return createElement("svg", { key, width: item.width, height: item.height, viewBox: item.viewBox, xmlns: "http://www.w3.org/2000/svg" }, ...item.shapes.map(drawn));
   }
 };
 

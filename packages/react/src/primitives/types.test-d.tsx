@@ -6,6 +6,7 @@ import { Button, Column, Email, Heading, Image, Link, Menu, Rect, Text, Row, Sec
 import type { ParagraphProps, TextProps } from "./index";
 import { BLOCK_MAP_VERSION, PLUGIN_API, prepare, render, validate } from "./index";
 import type { BlockMap, BlockMapEntry, Diagnostic, ElementsPlugin, PluginDiagnostic, PluginInput, PluginOutput, ValidateOptions } from "./index";
+import { toDesign } from "../builder";
 
 // A block of text's props, by its name, and by 0.2's that a migrated module may still import.
 export const textProps: TextProps = { style: { fontSize: 14, mobile: { fontSize: 12 } }, children: "Hi" };
@@ -221,3 +222,6 @@ export const slotDesign = <WithSlot body={<Column><Text>Hi</Text></Column>} sect
 export const slotText = <WithSlot body="text" />;
 // @ts-expect-error a block's type is one of its types
 export const badBlock = <WithSlot body={<Column />} sections={[{ type: "video", title: "x" }]} />;
+
+// toDesign() as a callback, as before it took options: map's index isn't an option.
+export const designs = [<Email key="a" />, <Email key="b" />].map(toDesign);

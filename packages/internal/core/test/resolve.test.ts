@@ -153,14 +153,16 @@ describe("text styles", () => {
 });
 
 describe("checkTarget", () => {
-  it("reports a component a target doesn't render once, what's in it with it, and why where its definition says", () => {
+  it("reports a component a target doesn't render once, what's in it with it", () => {
+    // (An Email's root in a PDF: everything in it is reported with it.)
     const document = parseDocument({ root: { type: "Email", children: [{ type: "Text", children: ["x"] }] } });
     expect(checkTarget(document, "email")).toEqual([]);
     expect(checkTarget(document, "pdf").map((d) => d.path)).toEqual(["root"]);
+    // An Svg and its shapes, and a Canvas and what's in it, render to email: each is a picture, a file the email links to.
     const drawing = parseDocument({ root: { type: "Email", children: [{ type: "Svg", props: { width: 40, height: 40 }, children: [{ type: "Circle", props: { r: 10 } }, { type: "Rect", props: { width: 4, height: 4 } }] }] } });
-    expect(checkTarget(drawing, "email").map((d) => [d.path, d.message])).toEqual([
-      ["root.children[0]", "A Svg can't be rendered to email: the Email writer has no inline SVG; use an Image of it (a PNG) instead"],
-    ]);
+    expect(checkTarget(drawing, "email")).toEqual([]);
+    const card = parseDocument({ root: { type: "Email", children: [{ type: "Canvas", props: { width: 300, height: 100 }, children: [{ type: "Text", children: ["x"] }] }] } });
+    expect(checkTarget(card, "email")).toEqual([]);
   });
 });
 
