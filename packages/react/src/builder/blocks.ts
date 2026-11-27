@@ -6,7 +6,7 @@
  * they, and so the builder, draw), and a tool that isn't one of Elements' is left out, and said.
  */
 import { Button as ButtonDefinition, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type Node } from "@hyper-elements/core";
-import { ButtonDefaults, DividerDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TableDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
+import { ButtonDefaults, DividerDefaults, FormDefaults, HeadingDefaults, HtmlDefaults, ImageDefaults, MenuDefaults, ParagraphDefaults, SocialDefaults, TableDefaults, TextDefaults, VideoDefaults } from "./tool-defaults";
 import { parseRuns } from "./read-runs";
 import { readTable } from "./read-table";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, letterSpacing, px, serviceTag, sides, some, webLink, type Values } from "./read-values";
@@ -233,6 +233,31 @@ function html(values: Values, context: Context): Node[] {
   return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), { ...hiddenOn(values), ...hidden.hidden })];
 }
 
+function form(values: Values, context: Context): Node[] {
+  const hidden = readHidden("form", "Form", values, context.say);
+  const rawFields = Array.isArray(values.fields) ? values.fields : [];
+  const fields = rawFields.map((f: any) => ({
+    name: str(f.name) ?? "",
+    type: str(f.type) ?? "text",
+    label: str(f.label) ?? "",
+    ...(f.placeholder_text !== undefined ? { placeholder: str(f.placeholder_text) } : f.placeholder !== undefined ? { placeholder: str(f.placeholder) } : {}),
+    ...(f.required !== undefined ? { required: Boolean(f.required) } : {}),
+    ...(f.showLabel !== undefined ? { showLabel: Boolean(f.showLabel) } : {}),
+    ...(Array.isArray(f.options) ? { options: f.options.map(str) } : {}),
+    ...(f.value !== undefined ? { value: str(f.value) } : {}),
+  }));
+  const action = str(values.action) ?? "";
+  const method = str(values.method) === "POST" ? "POST" : "GET";
+  const buttonText = str(values.buttonText) ?? "Submit";
+  const node = make("Form", {
+    id: givenId(values),
+    props: { action, method, fields, buttonText, ...hidden.props },
+    style: hidden.style,
+    mobile: hidden.mobile,
+  });
+  return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), { ...hiddenOn(values), ...hidden.hidden })];
+}
+
 /** Each tool's reader. */
 const READERS = new Map<string, (values: Values, context: Context, slot?: Slot) => Node[]>([
   ["text", (values, context) => textTool("paragraph", values, context, "text")],
@@ -246,6 +271,7 @@ const READERS = new Map<string, (values: Values, context: Context, slot?: Slot) 
   ["video", video],
   ["html", html],
   ["table", readTable],
+  ["form", form],
 ]);
 
 /** Each tool's defaults, which the builder gives a value its item doesn't have. */
@@ -261,6 +287,7 @@ const DEFAULTS = new Map<string, Values>([
   ["video", VideoDefaults],
   ["html", HtmlDefaults],
   ["table", TableDefaults],
+  ["form", FormDefaults],
 ]);
 
 /** A builder block as nodes: its component, in a Column for its place where it needs one; none for a tool Elements has no component for. */

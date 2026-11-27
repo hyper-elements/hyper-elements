@@ -10,6 +10,7 @@ import {
   ButtonDefaults,
   ColumnDefaults,
   DividerDefaults,
+  FormDefaults,
   HeadingDefaults,
   HtmlDefaults,
   ImageDefaults,
@@ -25,7 +26,7 @@ import { merge } from "./hide";
 import type { Values } from "./values";
 
 /** The builder's tools toDesign() writes blocks as, by their type in the design. */
-export type Tool = "heading" | "paragraph" | "button" | "image" | "divider" | "menu" | "social" | "video" | "html" | "page_break" | "table";
+export type Tool = "heading" | "paragraph" | "button" | "image" | "divider" | "menu" | "social" | "video" | "html" | "page_break" | "table" | "form";
 
 /** Where a row or a block is hidden: the builder's `_override.mobile.hideMobile` and `_override.desktop.hideDesktop`. */
 export interface Hiding {
@@ -129,6 +130,7 @@ const TOOLS: Record<Tool, Values> = {
   html: HtmlDefaults,
   page_break: { color: "#6b7280" },
   table: TableDefaults,
+  form: FormDefaults,
 };
 
 /** What the builder lets a user do with a row or a block. */

@@ -55,6 +55,7 @@ export const HIDDEN: Readonly<Record<string, readonly Hidden[]>> = {
     { path: "style.border", key: "tableBorder", prefixed: "the builder's table border is around every cell; a Table's is around the table" },
     ...own("style.width", "style.maxWidth", "style.borderCollapse", "style.rowBorder"),
   ],
+  form: own("style.width", "style.maxWidth", "style.gap", "style.alignSelf", "props.fieldStyle", "props.labelStyle", "props.buttonStyle"),
 };
 
 /** What every content item has in the builder. */
@@ -93,6 +94,7 @@ export const BUILDER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "contentFontFamily", "contentBackgroundColor", "contentFontWeight", "contentFontSize", "contentColor", "contentTextAlign", "contentVerticalAlign", "contentLineHeight", "contentLetterSpacing", "contentPadding",
     "enableFooter", "repeatFooterOnEachPage", "footerFontFamily", "footerBackgroundColor", "footerFontWeight", "footerFontSize", "footerColor", "footerTextAlign", "footerVerticalAlign", "footerPadding",
   ],
+  form: [...CONTENT, "action", "method", "fields", "buttonText"],
 };
 
 /** The phone values the builder has (in `_override.mobile`), by tool. */
@@ -111,4 +113,5 @@ export const BUILDER_PHONE_KEYS: Readonly<Record<string, readonly string[]>> = {
   html: ["containerPadding", "hideMobile"],
   page_break: ["hideMobile"],
   table: ["containerPadding", "hideMobile"],
+  form: ["containerPadding", "hideMobile"],
 };

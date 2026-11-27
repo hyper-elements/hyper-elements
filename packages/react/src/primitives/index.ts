@@ -41,6 +41,7 @@ export {
   Path,
   Video,
   Html,
+  Form,
 } from "./components";
 export type {
   PrimitiveProps,
@@ -84,6 +85,8 @@ export type {
   PathProps,
   VideoProps,
   HtmlProps,
+  FormProps,
+  FormStyle,
 } from "./components";
 export {
   defineElement,

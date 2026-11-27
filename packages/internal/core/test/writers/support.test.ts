@@ -68,6 +68,10 @@ function samples(key: string, kindName: string, schema: { enum?: Json[] }, fallb
     d: ["M1 1 L29 1 L15 19 Z"],
     viewBox: ["0 0 50 30"],
     breakpoints: [{ mobile: 600 }],
+    fields: [[{ name: "message", label: "Message", type: "textarea" }]],
+    fieldStyle: [{ backgroundColor: "#fafafa" }],
+    labelStyle: [{ color: "#222222" }],
+    buttonStyle: [{ backgroundColor: "#0055ff" }],
   };
   if (byKey[key]) return byKey[key];
   const byKind: Record<string, Json[]> = {
@@ -176,6 +180,8 @@ function nodeOf(type: string, style: Record<string, Json>, props: Record<string,
       return node({ props: { icons: [{ name: "Instagram", href: "https://instagram.com/acme" }, { name: "X", href: "https://x.com/acme" }] } });
     case "Html":
       return node({ props: { html: "<p>raw</p>" } });
+    case "Form":
+      return node({ props: { action: "https://example.com/submit", fields: [{ name: "email", label: "Email", type: "email" }] } });
     default:
       return node({ children: ["words"] });
   }
@@ -367,6 +373,7 @@ describe("roots", () => {
     expect(componentRoots(COMPONENTS.Text)).toEqual(["Email", "Page", "Document", "Canvas"]);
     // The web's: an Svg isn't drawn in an email.
     expect(componentRoots(COMPONENTS.Svg)).toEqual(["Page", "Document", "Canvas"]);
+    expect(componentRoots(COMPONENTS.Form)).toEqual(["Page"]);
   });
 
   it("narrow a description to one root: what it holds, and phone styles only where it has phones", () => {

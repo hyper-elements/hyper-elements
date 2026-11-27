@@ -121,6 +121,14 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
           const words = htmlText(child);
           return words ? [words] : [];
         }
+        case "Form": {
+          const formFields = ((child.props.fields as Array<Record<string, unknown>>) ?? [])
+            .filter((f) => f.type !== "hidden")
+            .map((f) => String(f.label || f.name || ""));
+          const btn = String(child.props.buttonText ?? "Submit");
+          const items = [...formFields.filter(Boolean), `[${btn}]`];
+          return [items.join("\n")];
+        }
         default:
           return blocks(child);
       }

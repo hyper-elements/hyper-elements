@@ -43,6 +43,7 @@ import {
   Table as TableDefinition,
   TableCell as TableCellDefinition,
   TableRow as TableRowDefinition,
+  Form as FormDefinition,
   type ComponentDefinition,
   type PropsInput,
   type InputOf,
@@ -165,6 +166,7 @@ export const Path: React.FC<PathProps> = createPrimitive(PathDefinition);
 export const Video: React.FC<VideoProps> = createPrimitive(VideoDefinition);
 /** Markup written as it is (the builder's HTML block), given as `html` or as JSX in it. */
 export const Html = createPrimitive(HtmlDefinition) as unknown as React.FC<HtmlProps>;
+export const Form: React.FC<FormProps> = createPrimitive(FormDefinition);
 
 export interface EmailStyle extends StyleOf<typeof EmailDefinition> {}
 export interface EmailProps extends PropsOf<typeof EmailDefinition, EmailStyle>, Themed {}
@@ -248,3 +250,5 @@ export interface HtmlStyle extends StyleOf<typeof HtmlDefinition> {}
 export type HtmlProps = Omit<PropsOf<typeof HtmlDefinition, HtmlStyle>, "html" | "children"> &
   // As a string, or as JSX, which React writes.
   ({ html: string; children?: undefined } | { html?: undefined; children: React.ReactNode });
+export interface FormStyle extends StyleOf<typeof FormDefinition> {}
+export interface FormProps extends PropsOf<typeof FormDefinition, FormStyle>, Variant<"Form"> {}

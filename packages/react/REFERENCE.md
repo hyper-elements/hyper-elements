@@ -31,6 +31,7 @@ What a property takes, where it says *kind*:
 - *asset*: an image URL (http, https or a data:image URI), or { src, width, height }
 - *line*: "1px solid #ccc" or { width, style, color }
 - *video*: a YouTube or Vimeo video's https link
+- *list*: a list of an object of name, type, label, placeholder, required, showLabel, options, value
 
 ## Roots
 
@@ -40,7 +41,7 @@ A design is one of these, and the root decides the output: `render()` writes an 
 
 An email. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 Props:
 - `width`: a length (a number of px) (default `600`)
@@ -70,7 +71,7 @@ Props:
 
 A web page. Its children are stacked down the content width, centered in the window.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The widest the content gets.
@@ -101,7 +102,7 @@ Props:
 
 A printed document: its children on pages of its size (Document.Page, or split by PageBreaks), a PageHeader and a PageFooter on each. Renders to print HTML, and to PDF with @hyper-elements/react/pdf.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Document.Page, PageBreak, PageHeader, PageFooter.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form, Document.Page, PageBreak, PageHeader, PageFooter.
 
 Props:
 - `size`: one of "A3", "A4", "A5", "Letter", "Legal", "Tabloid" (default `"A4"`)
@@ -130,7 +131,7 @@ Props:
 
 An image of a fixed size (a social card, a banner): its children laid out in it as on a page. Written as PNG or SVG with @hyper-elements/react/image.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 Props:
 - `width`: a length (a number of px) (default `1200`). The image's width, in px.
@@ -164,7 +165,7 @@ Bands and boxes that arrange blocks. None is required: a root stacks its childre
 
 A band across the whole window, directly in an Email or Page: its background spans the window, its children are stacked at the content width.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -188,7 +189,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Lays its children out side by side. A child takes its width, or a share of what's left (its flex, 1 by default).
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 Props:
 - `stackOnMobile`: true or false (default `true`). Its children stack full-width on phones (in an Email or a Page).
@@ -225,7 +226,7 @@ Props:
 
 Stacks its children vertically, with its own spacing and box.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -257,7 +258,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 Its children in columns of equal width, row after row; on phones, one under another.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 Props:
 - `columns`: an integer from 1 to 12 (default `2`). How many children to a row.
@@ -293,7 +294,7 @@ Props:
 
 Its children over each other, in one box as tall as the tallest: words on an image (a background image, its first child). In an email, an Image with one child over it.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -609,6 +610,30 @@ Props:
 - `html`: text (required). The markup, written as it is: only markup you trust. Or give it as JSX inside the block, which React writes.
 - `text`: text. What it reads as in the plain-text version, and in a PDF or an image (its markup's words where there's none).
 
+### Form
+
+An interactive form for a Page: fields, labels and a submit button.
+
+Holds: nothing. Only in a Page.
+
+Props:
+- `action`: *link* (required). Where the form submits to (a URL or { href, target }).
+- `method`: one of "GET", "POST" (default `"GET"`). HTTP method used to submit the form.
+- `fields`: *list* (default `[]`). Form fields (inputs, textareas, selects, checkboxes).
+- `buttonText`: text (default `"Submit"`). Label of the submit button.
+- `fieldStyle`: an object of backgroundColor, border, borderRadius, padding, color, fontSize, fontFamily. Styles for form input fields.
+- `labelStyle`: an object of color, fontSize, fontWeight, fontFamily. Styles for field labels.
+- `buttonStyle`: an object of backgroundColor, color, fontSize, fontWeight, padding, border, borderRadius, hover. Styles for the submit button.
+
+`style`:
+- `width`: a length (a number of px, %) (Size)
+- `maxWidth`: a length (a number of px, %) (Size)
+- `gap`: a length (a number of px) (default `16`, Spacing). Space between children.
+- `alignSelf`: one of "start", "center", "end" (Layout). Where it sits in its stack, whatever the stack's alignItems.
+- `flex`: *flex* (Layout). In a Row: its share of the width left after children with a width (default 1); "none" takes its own size.
+
+`style.mobile` (on phones): `width`, `maxWidth`, `gap`, `alignSelf`.
+
 ## Inline
 
 Inside text: a styled run, a link, a line break, a merge tag.
@@ -693,7 +718,7 @@ Only inside the element named: a list's items, a table's rows and cells, a docum
 
 One page of a Document (Document.Page in JSX): its children stacked down it, inside the Document's margins.
 
-Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Section, Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -719,7 +744,7 @@ Holds: nothing. Only in a Document.
 
 In a Document: drawn at the top of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)
@@ -741,7 +766,7 @@ Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divide
 
 In a Document: drawn at the bottom of every page, inside its margins.
 
-Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html. Only in a Document.
+Holds: Row, Column, Grid, Layer, Svg, Text, Heading, Link, Button, Image, Divider, List, Table, Video, Social, Menu, Html, Form. Only in a Document.
 
 `style`:
 - `color`: *color* (inherited, Typography)

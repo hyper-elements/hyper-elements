@@ -598,17 +598,29 @@ export function list<K extends Kind<any, Json>>(item: K, options: { min?: number
 }
 
 /** A field of an object: its kind, and whether it must be given (one with a `default` takes it where it isn't). */
-export interface ObjectField {
-  kind: Kind<any, Json>;
+export interface ObjectField<K extends Kind<any, Json> = Kind<any, Json>> {
+  kind: K;
   required?: boolean;
   default?: Json;
 }
+
+export type ObjectInput<F extends Record<string, ObjectField>> = {
+  [K in keyof F as F[K]["required"] extends true ? K : never]: InputOf<F[K]["kind"]>;
+} & {
+  [K in keyof F as F[K]["required"] extends true ? never : K]?: InputOf<F[K]["kind"]>;
+};
+
+export type ObjectOutput<F extends Record<string, ObjectField>> = {
+  [K in keyof F as F[K]["required"] extends true ? K : never]: OutputOf<F[K]["kind"]>;
+} & {
+  [K in keyof F as F[K]["required"] extends true ? never : K]?: OutputOf<F[K]["kind"]>;
+} & { [key: string]: Json };
 
 /**
  * An object of named fields (a story's title, link and image), each parsed by its kind: a required one must be given,
  * one with a default takes it where it isn't, and a key that isn't a field is refused.
  */
-export function object<const F extends Record<string, ObjectField>>(given: F): Kind<Record<string, unknown>, { [key: string]: Json }> {
+export function object<const F extends Record<string, ObjectField>>(given: F): Kind<ObjectInput<F>, ObjectOutput<F>> {
   // Its own copies, frozen: a field's default or required flag can't change after it's made.
   const fields = Object.freeze(
     Object.fromEntries(Object.entries(given).map(([name, field]) => [name, Object.freeze({ kind: field.kind, ...(field.required ? { required: true } : {}), ...(field.default !== undefined ? { default: deepFrozen(field.default) } : {}) })]))
@@ -636,7 +648,7 @@ export function object<const F extends Record<string, ObjectField>>(given: F): K
         if (!parsed.ok) return fail(`${name}: ${parsed.message}`);
         out[name] = parsed.value;
       }
-      return ok(out);
+      return ok(out as ObjectOutput<F>);
     },
     jsonSchema: () => ({
       type: "object",

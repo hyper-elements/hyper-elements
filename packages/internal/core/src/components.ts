@@ -4,7 +4,7 @@
  * canvases and shapes follow in their own steps.
  */
 import { defineComponent, prop, type ComponentDefinition, type CompositeEditor, type SupportByTarget } from "./define";
-import { attributes, asset, boolean, breakpoints, enumOf, fit, insets, length, line, link, number, text, video } from "./kinds";
+import { attributes, asset, boolean, border, breakpoints, color, enumOf, fit, fontFamily, fontWeight, insets, length, line, link, list, number, object, radius, text, video } from "./kinds";
 import type { Json } from "./model";
 import { blockOverflow, boxStyle, css, inheritedTextStyle, layoutStyle, pick, placementStyle, textStyle } from "./styles";
 import { Menu, Social } from "./composites";
@@ -545,9 +545,95 @@ export const Html = defineComponent({
   editor: { groups: [{ title: "HTML", paths: ["props.html", "props.text"] }] },
 });
 
+export const FormFieldTypes = ["text", "textarea", "email", "dropdown", "checkbox", "hidden", "password", "phone"] as const;
+
+export const formField = object({
+  name: { kind: text({ maxLength: 100 }), required: true },
+  type: { kind: enumOf(FormFieldTypes), default: "text" },
+  label: { kind: text({ maxLength: 200 }), default: "" },
+  placeholder: { kind: text({ maxLength: 200 }) },
+  required: { kind: boolean(), default: false },
+  showLabel: { kind: boolean(), default: true },
+  options: { kind: list(text({ maxLength: 200 })) },
+  value: { kind: text({ maxLength: 500 }) },
+});
+
+export const formFieldStyle = object({
+  backgroundColor: { kind: color() },
+  border: { kind: border() },
+  borderRadius: { kind: radius() },
+  padding: { kind: insets() },
+  color: { kind: color() },
+  fontSize: { kind: length(["px"], { min: 1 }) },
+  fontFamily: { kind: fontFamily() },
+});
+
+export const formLabelStyle = object({
+  color: { kind: color() },
+  fontSize: { kind: length(["px"], { min: 1 }) },
+  fontWeight: { kind: fontWeight() },
+  fontFamily: { kind: fontFamily() },
+});
+
+export const formButtonHoverStyle = object({
+  color: { kind: color() },
+  backgroundColor: { kind: color() },
+});
+
+export const formButtonStyle = object({
+  backgroundColor: { kind: color() },
+  color: { kind: color() },
+  fontSize: { kind: length(["px"], { min: 1 }) },
+  fontWeight: { kind: fontWeight() },
+  padding: { kind: insets() },
+  border: { kind: border() },
+  borderRadius: { kind: radius() },
+  hover: { kind: formButtonHoverStyle },
+});
+
+export const Form = defineComponent({
+  type: "Form",
+  label: "Form",
+  description: "An interactive form for a Page: fields, labels and a submit button.",
+  categories: ["block"],
+  roots: ["Page"],
+  targets: { web: {} },
+  props: {
+    action: prop(link(), { support: WRITTEN, label: "Action", required: true, description: "Where the form submits to (a URL or { href, target })." }),
+    method: prop(enumOf(["GET", "POST"]), { support: WRITTEN, label: "Method", default: "GET", description: "HTTP method used to submit the form." }),
+    fields: prop(list(formField), { support: WRITTEN, label: "Fields", default: [], description: "Form fields (inputs, textareas, selects, checkboxes)." }),
+    buttonText: prop(text({ maxLength: 200 }), { support: WRITTEN, label: "Button text", default: "Submit", description: "Label of the submit button." }),
+    fieldStyle: prop(formFieldStyle, { support: WRITTEN, label: "Field style", description: "Styles for form input fields." }),
+    labelStyle: prop(formLabelStyle, { support: WRITTEN, label: "Label style", description: "Styles for field labels." }),
+    buttonStyle: prop(formButtonStyle, { support: WRITTEN, label: "Button style", description: "Styles for the submit button." }),
+  },
+  style: {
+    ...pick(boxStyle, "width", "maxWidth"),
+    gap: layoutStyle.gap,
+    alignSelf: {
+      kind: enumOf(["start", "center", "end"]),
+      label: "Place",
+      description: "Where it sits in its stack, whatever the stack's alignItems.",
+      mobile: true,
+      support: { web: css },
+    },
+    ...placementStyle,
+  },
+  defaultStyle: {
+    gap: 16,
+  },
+  children: {},
+  sizing: "shrink",
+  editor: {
+    groups: [
+      { title: "Form", paths: ["props.action", "props.method", "props.buttonText", "style.width", "style.maxWidth", "style.gap"] },
+    ],
+  },
+});
+
 export const COMPONENTS: Readonly<Record<string, ComponentDefinition>> = Object.freeze(
   Object.fromEntries(
-    [Email, Page, Document, DocumentPage, PageBreak, PageHeader, PageFooter, PageNumber, Canvas, Svg, ...SHAPES, Section, Row, Column, Grid, Layer, Text, Heading, Span, Link, Button, Image, Divider, LineBreak, MergeTag, List, ListItem, Table, TableRow, TableCell, Video, Social, Menu, Html].map((d) => [
+    [Email, Page, Document, DocumentPage, PageBreak, PageHeader, PageFooter, PageNumber, Canvas, Svg, ...SHAPES, Section, Row, Column, Grid, Layer, Text, Heading, Span, Link, Button, Image, Divider, LineBreak, MergeTag, List, ListItem, Table, TableRow, TableCell, Video, Social, Menu, Html, Form].map((d) => [
       d.type,
       d as unknown as ComponentDefinition,
     ])

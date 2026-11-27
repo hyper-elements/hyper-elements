@@ -43,6 +43,7 @@ import { Table } from "./Table";
 import { TableCell } from "./TableCell";
 import { TableRow } from "./TableRow";
 import { Video } from "./Video";
+import { Form } from "./Form";
 
 export type { PageOptions } from "./context";
 
@@ -111,6 +112,7 @@ const COMPONENTS: Record<string, Component> = {
   TableCell,
   Video,
   Html: HtmlBlock,
+  Form,
 };
 
 /** What a node's component gets. `inRtl`: its parent's text runs right to left. */

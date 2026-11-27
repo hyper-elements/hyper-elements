@@ -288,3 +288,14 @@ export const TextDefaults: Record<string, any> = {
 export const VideoDefaults: Record<string, any> = {
   video: {}
 };
+
+export const FormDefaults: Record<string, any> = {
+  action: "",
+  method: "GET",
+  fields: [
+    { name: "name", label: "Name", type: "text", required: false, showLabel: true, placeholder_text: "" },
+    { name: "email", label: "Email", type: "email", required: true, showLabel: true, placeholder_text: "" },
+  ],
+  buttonText: "Submit",
+  containerPadding: "10px",
+};

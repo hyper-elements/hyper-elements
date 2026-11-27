@@ -103,7 +103,7 @@ function pieces(children: Child, out: Html[] = []): Html[] {
   return out;
 }
 
-const VOID = new Set(["img", "br", "hr", "meta", "link", "col", "wbr"]);
+const VOID = new Set(["img", "br", "hr", "meta", "link", "col", "wbr", "input"]);
 const UNITLESS = new Set(["fontWeight", "lineHeight", "flex", "flexGrow", "flexShrink", "opacity", "zIndex", "order"]);
 const kebab = (key: string) => key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 

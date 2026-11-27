@@ -1,7 +1,7 @@
 # Writing designs with the new elements (`@hyper-elements/react`)
 
 <!-- Written from the element definitions by src/primitives/reference.ts: don't edit by hand. Regenerate with UPDATE_REFERENCE=1 pnpm --filter @hyper-elements/react test reference -->
-<!-- hyper-elements guide f82a37d3 -->
+<!-- hyper-elements guide b6b518be -->
 
 Everything needed to write a design, in short. Every prop's and style's details: [REFERENCE.md](./REFERENCE.md).
 
@@ -174,6 +174,7 @@ const { image, diagnostics } = await renderImage(
 - **Social**: Links to social profiles: a line of the networks' icons, each linked to its profile. Props: icons* (a list of icons, each { name, href }), iconType (circle|rounded|squared), size (an integer from 1). Style: gap, justifyContent (start|center|end), flex. Phones: gap.
 - **Menu**: A line of links (a site's sections, a footer's), onto more lines where they don't fit, with a separator between them on desktop; or links down a column. Props: items* (a list of items, each { text, href }), separator (text), layout (horizontal|vertical). Style: color, fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, textTransform (none|uppercase|lowercase|capitalize), separatorColor, padding, justifyContent (start|center|end), flex. Phones: fontSize, lineHeight, letterSpacing.
 - **Html**: Markup written as it is, for what no element says (the builder's HTML block): in an email and on a page as given, nothing in it checked or escaped. A Document's PDF and a Canvas's image draw its plain text. Props: html* (text), text (text).
+- **Form**: An interactive form for a Page: fields, labels and a submit button. Only in a Page. Props: action* (link), method (GET|POST), fields (list), buttonText (text), fieldStyle (an object of backgroundColor, border, borderRadius, padding, color, fontSize, fontFamily), labelStyle (an object of color, fontSize, fontWeight, fontFamily), buttonStyle (an object of backgroundColor, color, fontSize, fontWeight, padding, border, borderRadius, hover). Style: width, maxWidth, gap, alignSelf (start|center|end), flex. Phones: width, maxWidth, gap, alignSelf.
 
 ### Inline
 
@@ -219,3 +220,4 @@ const { image, diagnostics } = await renderImage(
 - *asset*: an image URL (http, https or a data:image URI), or { src, width, height }
 - *line*: "1px solid #ccc" or { width, style, color }
 - *video*: a YouTube or Vimeo video's https link
+- *list*: a list of an object of name, type, label, placeholder, required, showLabel, options, value

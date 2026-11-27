@@ -85,9 +85,9 @@ describe("GUIDE.md, REFERENCE.md and the skill", () => {
     // command line's line beside the render example: 22,500 and 24,500 before. The skill's by what an agent does
     // before writing (install the package, compare the guide's id): 24,750 before. Both by where an image's src comes
     // from (agents made one up, and the email showed broken images): 22,800 and 25,500 before. Then by the line
-    // pointing to templates: 23,400 and 26,100 before.
-    expect(read("GUIDE.md").length).toBeLessThan(23_520);
-    expect(read(SKILL).length).toBeLessThan(26_220);
+    // pointing to templates: 23,400 and 26,100 before. Then by Form: 24,500 and 27,200.
+    expect(read("GUIDE.md").length).toBeLessThan(24_500);
+    expect(read(SKILL).length).toBeLessThan(27_200);
   });
 });
 

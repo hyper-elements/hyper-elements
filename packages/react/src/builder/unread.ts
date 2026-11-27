@@ -43,6 +43,10 @@ const READ: Record<string, { values: string[]; phone: string[] }> = {
     ],
     phone: ["containerPadding", "hideMobile"],
   },
+  form: {
+    values: ["action", "method", "fields", "buttonText", "containerPadding"],
+    phone: ["containerPadding", "hideMobile"],
+  },
 };
 
 /** The builder's defaults for a frame (a tool's are merged in before it's read). */

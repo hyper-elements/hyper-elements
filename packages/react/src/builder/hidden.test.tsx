@@ -6,7 +6,7 @@
 import type { Node } from "@hyper-elements/core";
 import React from "react";
 import { describe, expect, it } from "vitest";
-import { Button, Column, Document, Email, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Table, TableCell, TableRow, Video } from "../primitives";
+import { Button, Column, Document, Email, Form, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Table, TableCell, TableRow, Video } from "../primitives";
 import { collectTemplate } from "../primitives/collect";
 import { fromDesign, toDesign } from "./index";
 import { BUILDER_KEYS, BUILDER_PHONE_KEYS, HIDDEN } from "./manifest";
@@ -77,6 +77,16 @@ const everyHidden = [
   </Email>,
   <Page key="page" description="A page">
     <Text>Page</Text>
+    <Form
+      action="https://api.example.com/submit"
+      method="POST"
+      fields={[{ name: "email", label: "Email", type: "email" }]}
+      buttonText="Send"
+      style={{ width: 400, maxWidth: 500, gap: 16, alignSelf: "center" }}
+      fieldStyle={{ backgroundColor: "#f9f9f9" }}
+      labelStyle={{ color: "#333333" }}
+      buttonStyle={{ backgroundColor: "#0070f3" }}
+    />
   </Page>,
   <Document key="document" margin={[10, 20, 30, 40]}>
     <Text>Document</Text>
