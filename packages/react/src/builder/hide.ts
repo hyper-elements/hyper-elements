@@ -8,11 +8,11 @@ import type { Json, Node } from "@hyper-elements/core";
 import { HIDDEN } from "./manifest";
 import { decode, encode, kindOf, type Values } from "./values";
 
-/** Values merged: `_override`'s devices key by key. */
+/** Values merged: `_override`'s devices key by key, where both are objects (a hand-edited design's may not be). */
 export function merge(into: Values, more: Values): Values {
   const out: Values = { ...into };
   for (const [key, value] of Object.entries(more)) {
-    if (key === "_override" && out._override && typeof value === "object") {
+    if (key === "_override" && out._override && typeof out._override === "object" && value && typeof value === "object") {
       const override: Values = { ...out._override };
       for (const [device, values] of Object.entries(value as Values)) override[device] = { ...override[device], ...(values as Values) };
       out._override = override;

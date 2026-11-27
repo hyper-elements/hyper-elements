@@ -949,6 +949,12 @@ export function videoParts(url: string): { provider: VideoProvider; id: string; 
   return undefined;
 }
 
+/**
+ * What a video is called where it's drawn (a link's words, a thumbnail's alternate text, a player's title): its title,
+ * or "Video" where it's empty, so a link or a player always has a name a screen reader can say.
+ */
+export const videoTitle = (title: unknown): string => (typeof title === "string" && title.trim() ? title : "Video");
+
 export function video(): Kind<string, string> {
   const accepts = "a YouTube or Vimeo video's https link";
   return kind<string, string>({

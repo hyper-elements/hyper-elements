@@ -170,13 +170,18 @@ jobs:
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
       # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (844 bytes more, 522,115 measured).
+      # every root, in the writers it shares (844 bytes more, 522,115 measured). 524,900 bytes for a Document's Menu and
+      # Video as HTML blocks, every Video in a Document's HTML blocks its thumbnail linked to it with a play icon over
+      # it, placed as its parent aligns it, and the editor version said for a Document's HTML blocks (2,528 bytes more,
+      # 524,643 measured). 528,200 bytes for a Document's Menu and Video read back as themselves, by the builder's
+      # values their HTML block carries, and clicks through the play icon to its link (3,342 bytes more, 527,985
+      # measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=522500
+          MAX_SIZE=528200
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

@@ -6,6 +6,7 @@
   id, the roots it reports under, whether it's `enabled` (false where it's `"off"`, and for `unsubscribe` without
   `kind: "marketing"`), its summary and its fix. `enabled` and the checks read the same settings, so a rule reports
   only where it's enabled. Findings, codes and options are unchanged.
+- **`video-title`** reports a Video whose title is empty too, which every output draws as the default, "Video".
 - Works with `@hyper-elements/react` 0.4 and 0.5.
 
 ## 0.1.0

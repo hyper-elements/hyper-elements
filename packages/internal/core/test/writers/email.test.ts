@@ -706,6 +706,11 @@ describe("email HTML", () => {
     expect(own.diagnostics.filter((d) => d.code === "email/video-thumbnail")).toEqual([]);
     const vimeo = render(email([{ type: "Video", props: { src: "https://vimeo.com/76979871" } }]));
     expect(vimeo.body).toContain('<a href="https://vimeo.com/76979871">Video</a>');
+    // An empty title is "Video" too, so the link has words a screen reader can say.
+    const untitled = render(email([{ type: "Video", props: { src: "https://vimeo.com/76979871", title: "" } }]));
+    expect(untitled.body).toContain('<a href="https://vimeo.com/76979871">Video</a>');
+    expect(untitled.text).toBe("Video (https://vimeo.com/76979871)");
+    expect(render(email([{ type: "Video", props: { src: "https://youtu.be/dQw4w9WgXcQ", title: "  " } }])).body).toMatch(/<a href="https:\/\/youtu\.be\/dQw4w9WgXcQ" title="Video"><img [^>]*alt="Video"/);
     expect(vimeo.diagnostics.map((d) => [d.code, d.path])).toContainEqual(["email/video-thumbnail", "root.children[0].props.thumbnail"]);
     // In a Grid, at its place in the template, not in the Rows the Grid lays it out in.
     const text = { type: "Text", children: ["a"] };

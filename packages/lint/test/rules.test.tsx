@@ -309,6 +309,8 @@ describe("merge syntax and videos", () => {
 
   it("video-title: a Video with the default title", () => {
     expect(only("video-title", email(<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />))).toHaveLength(1);
+    // An empty one is drawn as the default.
+    expect(only("video-title", email(<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title=" " />))).toHaveLength(1);
     expect(only("video-title", email(<Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" title="How we glaze a bowl" />))).toEqual([]);
   });
 });

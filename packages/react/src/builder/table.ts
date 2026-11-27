@@ -12,8 +12,8 @@
  *
  * An Email's or a Page's Table is the builder's table only where the builder draws it as it is: an HTML block of its
  * markup draws it exactly there, so a table the builder would draw otherwise stays one, and the report says why. A
- * Document's is always the builder's table (the builder doesn't draw an HTML block in a document), what it draws
- * otherwise said.
+ * Document's is always the builder's table (editors before 1.544.0 don't draw an HTML block in a document), what
+ * it draws otherwise said.
  */
 import type { Border, BorderSide, Json, Node, ResolvedNode } from "@hyper-elements/core";
 import { leftOut } from "./hide";

@@ -37,8 +37,11 @@ const trip = (element: React.ReactElement) => {
   const { design, report } = toDesign(element);
   return { ...fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: modeOf(element) }), locked: lockedPaths(report) };
 };
-/** Where toDesign() wrote an HTML block of the new engine's markup (what no tool shows), by toDesign()'s report. */
-const lockedPaths = (report: string[]) => new Set(report.flatMap((line) => /^(root[^:]*): .*it's an HTML block/.exec(line)?.[1] ?? []));
+/**
+ * Where toDesign() wrote an HTML block of the new engine's markup (what no tool shows), by toDesign()'s report: but a
+ * Document's Menu or Video, which comes back as itself, by its tool's values in the block (drawn-from.ts).
+ */
+const lockedPaths = (report: string[]) => new Set(report.flatMap((line) => /^(root[^:]*): (?!an? (Menu|Video) isn't a tool of the builder's document mode).*it's an HTML block/.exec(line)?.[1] ?? []));
 
 /** Numbers within a px of each other (a width as a percentage of its column), anything else equal. */
 function close(a: unknown, b: unknown): boolean {

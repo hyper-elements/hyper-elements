@@ -466,6 +466,8 @@ describe("web HTML", () => {
       '<div style="align-self:flex-start;width:100%;max-width:400px"><div style="position:relative;height:0;padding-bottom:56.25%;overflow:hidden"><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Launch" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen="" loading="lazy" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0"></iframe></div></div>'
     );
     expect(web(page([{ type: "Video", props: { src: "https://player.vimeo.com/video/76979871" } }])).body).toContain('src="https://player.vimeo.com/video/76979871"');
+    // An empty title is "Video", so the player has a name a screen reader can say.
+    expect(web(page([{ type: "Video", props: { src: "https://vimeo.com/76979871", title: "" } }])).body).toContain('title="Video"');
   });
 
   it("writes an Html block's markup as it is, in one div, with its id, classes and place in a Row on it", () => {

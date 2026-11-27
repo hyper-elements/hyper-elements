@@ -11,8 +11,9 @@ import { parseRuns } from "./read-runs";
 import { readTable } from "./read-table";
 import { color, fontWeight, font, givenId, hidden as hiddenOn, letterSpacing, px, serviceTag, sides, some, webLink, type Values } from "./read-values";
 import { contentSlotWidth } from "./image-sizing";
+import { readDrawnFrom } from "./drawn-from";
 import { readHidden } from "./hide";
-import { alignOf, defined, make, obj, phoneText, placed, readRadius, str, textStyle, unless, type Context, type Slot } from "./reading";
+import { alignOf, defined, make, obj, phoneText, placed, readRadius, str, textStyle, unless, videoUrl, type Context, type Slot } from "./reading";
 import { DEEPEST, mergeTags, richText, tooDeep, withParagraphMargin } from "./text";
 import { textTool } from "./text-tool";
 import { sayUnread } from "./unread";
@@ -191,11 +192,9 @@ function social(values: Values, context: Context): Node[] {
   return [placed(node, sides(values.containerPadding ?? "10px"), undefined, sides(obj(obj(values._override).mobile).containerPadding), { ...hiddenOn(values), ...hidden.hidden })];
 }
 
-const VIDEO_URLS: Record<string, (id: string) => string> = { youtube: (id) => `https://www.youtube.com/watch?v=${id}`, vimeo: (id) => `https://vimeo.com/${id}` };
-
 function video(values: Values, context: Context): Node[] {
   const value = obj(values.video);
-  const url = typeof value.videoId === "string" && /^[\w-]+$/.test(value.videoId) ? (typeof value.type === "string" && Object.hasOwn(VIDEO_URLS, value.type) ? VIDEO_URLS[value.type](value.videoId) : undefined) : str(value.url);
+  const url = videoUrl(values.video);
   if (!url) {
     context.say("a video with no YouTube or Vimeo URL in the builder: left out");
     return [];
@@ -265,6 +264,9 @@ const DEFAULTS = new Map<string, Values>([
 
 /** A builder block as nodes: its component, in a Column for its place where it needs one; none for a tool Elements has no component for. */
 export function readBlock(type: unknown, values: Values, context: Context, slot?: Slot): Node[] {
+  // A Document's Menu or Video, an HTML block in the builder: read by its tool's values while its markup isn't edited.
+  const drawn = type === "html" ? readDrawnFrom(values, context, (tool, carried, quiet) => readBlock(tool, carried, quiet, slot)) : undefined;
+  if (drawn) return drawn;
   const read = typeof type === "string" ? READERS.get(type) : undefined;
   if (!read) {
     context.say(`a ${typeof type === "string" ? type : "block"} of the builder's has no element in Elements: left out`);

@@ -101,7 +101,7 @@ export const rules: readonly Rule[] = Object.freeze([
     'A marketing email (kind: "marketing") has no unsubscribe link.',
     "add a link to unsubscribe or manage preferences, or the service's MergeTag for one"
   ),
-  rule("video-title", "info", BOTH, null, 'A video\'s title is the default, "Video": the alternate text of its thumbnail in an email.', "give it a title that says what the video is"),
+  rule("video-title", "info", BOTH, null, 'A video\'s title is the default, "Video", or empty, which is drawn as the default: the alternate text of its thumbnail in an email.', "give it a title that says what the video is"),
   rule("role-button", "warning", [], "both", 'A link has role="button": screen readers announce a button, which a link in an email isn\'t.', 'take the role off: a link is a link, however it looks'),
 ]);
 

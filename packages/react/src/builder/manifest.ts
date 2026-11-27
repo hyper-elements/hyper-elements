@@ -58,7 +58,7 @@ export const HIDDEN: Readonly<Record<string, readonly Hidden[]>> = {
 };
 
 /** What every content item has in the builder. */
-const CONTENT = ["containerPadding", "anchor", "displayCondition", "_styleGuide", "_meta", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked", "hideDesktop", "hideMobile", "_override", "synced", "suggestions", "ai_banner"];
+export const CONTENT = ["containerPadding", "anchor", "displayCondition", "_styleGuide", "_meta", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked", "hideDesktop", "hideMobile", "_override", "synced", "suggestions", "ai_banner"];
 
 /** The builder's own keys, by tool (its fields, and what it writes for its own use). */
 export const BUILDER_KEYS: Readonly<Record<string, readonly string[]>> = {
@@ -94,6 +94,12 @@ export const BUILDER_KEYS: Readonly<Record<string, readonly string[]>> = {
     "enableFooter", "repeatFooterOnEachPage", "footerFontFamily", "footerBackgroundColor", "footerFontWeight", "footerFontSize", "footerColor", "footerTextAlign", "footerVerticalAlign", "footerPadding",
   ],
 };
+
+/**
+ * What toDesign() writes in an item's values for fromDesign() alone, by tool: the builder keeps it and draws nothing
+ * by it. A Document's Menu or Video is an HTML block holding its tool's values (drawn-from.ts).
+ */
+export const ELEMENTS_KEYS: Readonly<Record<string, readonly string[]>> = { html: ["_drawnFrom"] };
 
 /** The phone values the builder has (in `_override.mobile`), by tool. */
 export const BUILDER_PHONE_KEYS: Readonly<Record<string, readonly string[]>> = {

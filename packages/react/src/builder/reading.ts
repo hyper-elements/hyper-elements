@@ -30,6 +30,14 @@ export interface Context {
 export const ZERO: Sides = { top: 0, right: 0, bottom: 0, left: 0 };
 export const obj = (value: unknown): Values => (value && typeof value === "object" && !Array.isArray(value) ? (value as Values) : {});
 export const str = (value: unknown) => (typeof value === "string" ? value : undefined);
+
+const VIDEO_URLS: Record<string, (id: string) => string> = { youtube: (id) => `https://www.youtube.com/watch?v=${id}`, vimeo: (id) => `https://vimeo.com/${id}` };
+/** A builder video's URL, from its `video` value: its YouTube or Vimeo id's, else the URL it holds. */
+export function videoUrl(video: unknown): string | undefined {
+  const value = obj(video);
+  if (typeof value.videoId === "string" && /^[\w-]+$/.test(value.videoId)) return typeof value.type === "string" && Object.hasOwn(VIDEO_URLS, value.type) ? VIDEO_URLS[value.type](value.videoId) : undefined;
+  return str(value.url);
+}
 /** Two values the same, colors in either case ("#BBBBBB" is "#bbbbbb"). */
 export const same = (a: unknown, b: unknown) => JSON.stringify(a)?.toLowerCase() === JSON.stringify(b)?.toLowerCase();
 /** A style set where it isn't what the node takes anyway. */

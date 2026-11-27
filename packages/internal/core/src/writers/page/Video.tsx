@@ -1,5 +1,5 @@
 /** A Video: its player, as wide as its place (its width and maximum where it has them), 16:9. */
-import { videoParts } from "../../kinds";
+import { videoParts, videoTitle } from "../../kinds";
 import { h } from "../jsx";
 import type { Component } from "./context";
 
@@ -12,7 +12,7 @@ export const Video: Component = ({ node, style, placement, classes }) => (
     <div style={{ position: "relative", height: "0", paddingBottom: "56.25%", overflow: "hidden" }}>
       <iframe
         src={videoParts(String(node.props.src))?.embed}
-        title={String(node.props.title)}
+        title={videoTitle(node.props.title)}
         allow="autoplay; encrypted-media; picture-in-picture"
         allowfullscreen=""
         loading="lazy"

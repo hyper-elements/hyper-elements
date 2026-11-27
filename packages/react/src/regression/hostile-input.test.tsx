@@ -192,17 +192,25 @@ describe("the builder's design", () => {
     return out;
   };
 
-  // (An image's, a menu's, a social icon's and a video's values are data the builder writes as it writes its own.)
+  // (An image's, a menu's, a social icon's and a video's values are data the builder writes as it writes its own. In a
+  // Document, whose builder mode has no menu or video, a Menu and a Video are markup: an HTML block.)
   it.each(Object.keys(CASES))("%s: holds the text as text where the builder reads HTML", (name) => {
-    for (const payload of PAYLOADS) {
-      let design: unknown;
-      try {
-        design = toDesign(<Email>{CASES[name](payload)}</Email>).design;
-      } catch {
-        continue;
+    for (const Root of [Email, Document]) {
+      for (const payload of PAYLOADS) {
+        let design: unknown;
+        try {
+          design = toDesign(<Root>{CASES[name](payload)}</Root>).design;
+        } catch {
+          continue;
+        }
+        for (const html of markupIn(design)) expect(injected(html), `${Root.name}: ${payload}`).toEqual([]);
       }
-      for (const html of markupIn(design)) expect(injected(html), payload).toEqual([]);
     }
+  });
+
+  it("is checked in a Document's Menu and Video, which are markup there", () => {
+    const design = toDesign(<Document>{CASES["Menu items"](PAYLOADS[0])}{CASES["Video title and thumbnail"](PAYLOADS[0])}</Document>).design;
+    expect(markupIn(design).filter((html) => html.includes("&lt;x-pwn&gt;")).length).toBe(2);
   });
 
   it("is checked where the builder reads HTML: texts, headings, buttons, and what's locked as markup", () => {

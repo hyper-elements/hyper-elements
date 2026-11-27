@@ -187,7 +187,7 @@ A warning by default, on a Email. **Fix:** add a link to unsubscribe or manage p
 
 ### `video-title`
 
-A video's title is the default, "Video": the alternate text of its thumbnail in an email.
+A video's title is the default, "Video", or empty, which is drawn as the default: the alternate text of its thumbnail in an email.
 
 A note by default, on an Email and a Page. **Fix:** give it a title that says what the video is.
 

@@ -4,7 +4,7 @@
  * link or a drawing, at the width the resolver gave it, so the PDF is laid out as the print HTML is. No engine is
  * named here: an engine's adapter draws what this writes (react-pdf.tsx).
  */
-import { assetParts, documentPages, htmlText, linkParts, pageBox, videoParts, type Asset, type BorderSide, type LinkValue, type ResolvedNode } from "../index";
+import { assetParts, documentPages, htmlText, linkParts, pageBox, videoParts, videoTitle, type Asset, type BorderSide, type LinkValue, type ResolvedNode } from "../index";
 import type { Block, DrawnDocument, Font, Page, Picture, Run, Shape, Style } from "./model";
 import { alignSelf, borderStyle, boxStyle, flex, pt, runStyle, textStyle } from "./styles";
 
@@ -281,7 +281,7 @@ class Writer {
       kind: "link",
       href: src,
       style: { ...placed, textDecoration: "none" },
-      children: [image ? { kind: "image", src: image, style: { width: node.width !== null ? pt(node.width) : undefined } } : { kind: "text", style: textStyle(node, this.context.families), runs: [String(node.props.title ?? "Video")] }],
+      children: [image ? { kind: "image", src: image, style: { width: node.width !== null ? pt(node.width) : undefined } } : { kind: "text", style: textStyle(node, this.context.families), runs: [videoTitle(node.props.title)] }],
     };
   }
 }

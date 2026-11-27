@@ -654,6 +654,13 @@ describe("renderPdf", () => {
       expect(words(writeDocument(root!, { families: new Set(), fonts: [], image: (src) => src, date: new Date(0) }))).toBe(drawn);
     });
 
+    it("draws a Video with an empty title as a link named \"Video\", not one with no words", () => {
+      for (const title of ["", "  "]) {
+        const { root } = prepare(<Document><Video src="https://vimeo.com/76979871" title={title} /></Document>);
+        expect(words(writeDocument(root!, { families: new Set(), fonts: [], image: (src) => src, date: new Date(0) }))).toBe("Video");
+      }
+    });
+
     it("paints a Table row's background", async () => {
       // The fill colors the page sets, as pdf.js reads its drawing operators: the header row's red among them.
       const { pdf } = await renderPdf(<Document>{SAMPLES.Table[0]}</Document>);

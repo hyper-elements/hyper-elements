@@ -9,8 +9,11 @@ import type { Values } from "./read-values";
 import { HIDDEN } from "./manifest";
 import { same } from "./reading";
 
-/** What draws nothing: the editor's own flags, and the earlier adapter's payload (`_elements`). */
-const NOTHING = ["_meta", "_styleGuide", "_elements", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked", "synced", "sync", "suggestions", "ai_banner", "hideDesktop", "hideMobile", "_override"];
+/**
+ * What draws nothing: the editor's own flags, the earlier adapter's payload (`_elements`), and what a Document's Menu or
+ * Video carries in its HTML block (`_drawnFrom`, drawn-from.ts), said where it isn't read.
+ */
+const NOTHING = ["_meta", "_styleGuide", "_elements", "_drawnFrom", "selectable", "draggable", "duplicatable", "deletable", "hideable", "locked", "synced", "sync", "suggestions", "ai_banner", "hideDesktop", "hideMobile", "_override"];
 const TEXT = ["text", "textJson", "color", "textAlign", "fontFamily", "fontWeight", "fontSize", "lineHeight", "letterSpacing", "linkStyle", "textDirection", "containerPadding"];
 const TEXT_PHONE = ["containerPadding", "fontSize", "lineHeight", "textAlign", "letterSpacing", "hideMobile"];
 

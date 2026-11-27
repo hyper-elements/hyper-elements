@@ -84,6 +84,13 @@ function checkChildren(children: Child[], path: string, report: string[], inText
   });
 }
 
+/** What checking a node would leave out or change, said: none where it's kept as it is. */
+export function problemsOf(node: Node): string[] {
+  const report: string[] = [];
+  checkNode(node, "", report);
+  return report;
+}
+
 export function checkTemplate(root: Node, report: string[]): Node {
   // A Document has no phones: its phone values and hiding (a design made for email, a Grid's empty cells) aren't its.
   const checked = checkNode(root.type === "Document" ? withoutPhones(root) : root, "root", report);

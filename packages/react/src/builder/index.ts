@@ -37,8 +37,9 @@ export interface FromDesignOptions {
   name?: string;
   /**
    * Your sanitizer for a design's markup, as today's exporters take it in their config: every builder `html` block's
-   * markup, and every text's (before it's read, as theirs is), goes through it. Without one, a design's markup is
-   * kept as it is: give one where a design can hold untrusted content.
+   * markup, and every text's (before it's read, as theirs is), goes through it. A Document's Menu or Video that comes
+   * back as itself is read from the builder's values, as a menu or video block is, not from its markup. Without one,
+   * a design's markup is kept as it is: give one where a design can hold untrusted content.
    */
   toSafeHtml?: (html: string) => string;
 }

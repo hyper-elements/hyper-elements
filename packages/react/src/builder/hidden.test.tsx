@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 import { Button, Column, Document, Email, Heading, Html, Image, List, ListItem, Menu, Page, Text, Row, Section, Table, TableCell, TableRow, Video } from "../primitives";
 import { collectTemplate } from "../primitives/collect";
 import { fromDesign, toDesign } from "./index";
-import { BUILDER_KEYS, BUILDER_PHONE_KEYS, HIDDEN } from "./manifest";
+import { BUILDER_KEYS, BUILDER_PHONE_KEYS, ELEMENTS_KEYS, HIDDEN } from "./manifest";
 import { outOfMarkup } from "./paint";
 import { textJsonHtml } from "./text-json";
 
@@ -20,7 +20,10 @@ const tree = (element: React.ReactElement): Node => collectTemplate(element).doc
 const designOf = (element: React.ReactElement) => JSON.parse(JSON.stringify(toDesign(element).design));
 const back = (design: unknown, displayMode?: "email" | "web" | "document") => tree(fromDesign(design, { displayMode }).element);
 
-/** Every item of a design, by its tool (the body, rows, columns and blocks). */
+/**
+ * Every item of a design, by its tool (the body, rows, columns and blocks), and what a Document's Menu or Video carries
+ * in its HTML block (drawn-from.ts), by the tool it's the values of.
+ */
 function items(design: any): Item[] {
   const out: Item[] = [{ tool: "body", values: design.body.values }];
   for (const rows of [design.body.rows, design.body.headers ?? [], design.body.footers ?? []]) {
@@ -28,7 +31,11 @@ function items(design: any): Item[] {
       out.push({ tool: "row", values: row.values });
       for (const column of row.columns) {
         out.push({ tool: "column", values: column.values });
-        for (const content of column.contents) out.push({ tool: content.type, values: content.values });
+        for (const content of column.contents) {
+          out.push({ tool: content.type, values: content.values });
+          const carried = content.values._drawnFrom;
+          if (carried) out.push({ tool: carried.tool, values: carried.values });
+        }
       }
     }
   }
@@ -80,6 +87,8 @@ const everyHidden = [
   </Page>,
   <Document key="document" margin={[10, 20, 30, 40]}>
     <Text>Document</Text>
+    <Menu items={[{ text: "A", href: "https://a.test" }]} style={{ lineHeight: 2, textTransform: "uppercase" }} />
+    <Video src="https://www.youtube.com/watch?v=dQw4w9WgXcQ" thumbnail="https://x.test/thumb.png" title="Launch" style={{ width: 500, maxWidth: 400 }} />
     <Table style={{ width: 400, maxWidth: 500, border: "2px solid #000000", borderCollapse: "collapse", rowBorder: "1px solid #cccccc" }}>
       <TableRow>
         <TableCell>Cell</TableCell>
@@ -97,7 +106,7 @@ describe("hidden properties", () => {
   it("are only what the manifest lists: toDesign() writes the builder's own keys and the manifest's, nothing else", () => {
     const unknown = written.flatMap(({ tool, values }) => {
       const hidden = new Set((HIDDEN[tool] ?? []).map((entry) => entry.key));
-      const keys = Object.keys(values).filter((key) => !BUILDER_KEYS[tool]?.includes(key) && !hidden.has(key)).map((key) => `${tool}.${key}`);
+      const keys = Object.keys(values).filter((key) => !BUILDER_KEYS[tool]?.includes(key) && !hidden.has(key) && !ELEMENTS_KEYS[tool]?.includes(key)).map((key) => `${tool}.${key}`);
       const phone = Object.keys(values._override?.mobile ?? {}).filter((key) => !BUILDER_PHONE_KEYS[tool]?.includes(key) && !hidden.has(key)).map((key) => `${tool}._override.mobile.${key}`);
       return [...keys, ...phone];
     });

@@ -9,7 +9,7 @@
  */
 import { shownAnywhere } from "../conditions";
 import { htmlText } from "../markup";
-import { linkParts, type LinkValue } from "../kinds";
+import { linkParts, videoTitle, type LinkValue } from "../kinds";
 import type { ResolvedDocument, ResolvedNode } from "../resolve";
 
 export interface TextOptions {
@@ -105,7 +105,7 @@ export function renderText(resolved: ResolvedDocument, options: TextOptions = {}
         case "Table":
           return [table(child)];
         case "Video":
-          return [`${tidy(String(child.props.title))} (${child.props.src})`];
+          return [`${tidy(videoTitle(child.props.title))} (${child.props.src})`];
         case "Svg":
           return child.props.title ? [`[${tidy(String(child.props.title))}]`] : [];
         case "Row": {

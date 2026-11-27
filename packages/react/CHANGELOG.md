@@ -4,6 +4,27 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### A Document's HTML blocks, Menu and Video in the builder
+
+The Unlayer editor's document mode draws and exports HTML blocks from version 1.544.0, so `toDesign()`'s `report` no
+longer says it doesn't. For what `toDesign()` writes as an HTML block in a `Document`, `report` says an editor user can
+move it, not edit it, and that editor versions before 1.544.0 keep it but don't draw or export it. For an `Html` block,
+it says only the second. Code that matches `report`'s lines needs the new wording.
+
+The editor's document mode has no menu or video tool, so a `Document`'s `Menu` and `Video` were blocks the editor kept
+but didn't show, and `report` said nothing. They're now HTML blocks of their own markup, and `report` says so: a `Menu`
+its links, and a `Video` its thumbnail linked to it with a play icon over it (a link with its title where it has no
+thumbnail), with its width and alignment. Elements' own PDF of a `Document` draws the thumbnail without the icon. A
+`Video` inside another HTML block of a `Document` (a box in a column, a `Layer`) is its thumbnail too, not a player;
+one your own `defineElement()` renders is still its player there. An `Email`'s and a `Page`'s are unchanged.
+
+`fromDesign()` reads a `Document`'s `Menu` and `Video` back as a `Menu` and a `Video`, as before: their HTML block
+holds the values the builder's menu or video would (`_drawnFrom`), which the editor keeps, and they're read while its
+markup is the one `toDesign()` drew. Once its markup is edited, it's an `Html` block, and `report` says so.
+
+A `Video` whose title is empty is named "Video", as one without a title is: its link's words, its thumbnail's alternate
+text and its player's title, in an `Email`, a `Page`, a PDF and the builder.
+
 ### A block map for every root
 
 `render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),
@@ -73,7 +94,8 @@ rows, each cell's words and each column's share go in, with what its rows share 
 the table's fields and each cell's own styles. A table with an image in a cell, or a row, a cell or words in a cell
 hidden on phones or desktops, is still an HTML block.
 
-- In a `Document`, the builder's document mode keeps an HTML block but doesn't draw or export it, so a Document's
+- In a `Document`, the builder's document mode before editor 1.544.0 keeps an HTML block but doesn't draw or export
+  it, so a Document's
   tables were missing from the builder's page and its PDF. A Document's `Table` is the builder's table all the same,
   and `report` says what it draws otherwise: the builder draws one border around every cell, so a line between rows
   is drawn above the first row and below the last too, a cell spanning columns is a cell for each column, a header

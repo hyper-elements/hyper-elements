@@ -147,7 +147,8 @@ export function checkTree(tree: Tree, on: (id: string, html?: boolean) => boolea
         break;
       }
       case "Video":
-        if (node.props.title === "Video") add("video-title", node, 'The video\'s title is the default, "Video"', "props.title");
+        // An empty title is drawn as the default.
+        if (typeof node.props.title !== "string" || !node.props.title.trim() || node.props.title === "Video") add("video-title", node, 'The video\'s title is the default, "Video"', "props.title");
         break;
     }
     // Merge syntax typed into text: on the block that holds it, once.

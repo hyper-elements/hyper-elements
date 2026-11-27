@@ -5,9 +5,9 @@
  * full-width row, a Row a row of its children as columns (their shares and gap as the columns' widths and padding), a
  * box directly in the root or a Section a row of its own, content directly in the root a one-column row, a text block
  * its HTML, a Table the builder's table (table.ts). What a tool has no field for is a hidden property of it
- * (hide.ts); what no tool shows (a Layer, an Svg, a box nested in a column, a custom element), or a table
- * the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new engine's own markup,
- * and said.
+ * (hide.ts); what no tool shows (a Layer, an Svg, a box nested in a column, a custom element, a Document's Menu or
+ * Video), or a table the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new
+ * engine's own markup, and said.
  */
 import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
@@ -16,7 +16,7 @@ import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowO
 import { block, columnWith, rowWith, type Block, type Body, type BodyFields, type Row } from "./design";
 import { hiddenOf, leftOut, merge } from "./hide";
 import { lockedHtml } from "./locked";
-import { blockTool, NOT_IN_DOCUMENTS, type Place } from "./tools";
+import { blockTool, LOCKED, NOT_DRAWN_BY_OLDER_EDITORS, type Place } from "./tools";
 import { builderBorder, builderFont, cssPx, cssSides, type Values } from "./values";
 
 export interface Raised {
@@ -104,10 +104,15 @@ export function raise(element: React.ReactElement): Raised {
     report,
     put,
     sayLeftOut,
-    locked: (node, path, why, around) => {
-      report.push(`${path}: ${why}: ${root.type === "Document" ? `it's an HTML block of its own markup in the design: ${NOT_IN_DOCUMENTS}` : "it's an HTML block of its own markup in the builder (it can be moved, not edited)"}`);
+    locked: (node, path, why, around, parent) => {
+      report.push(`${path}: ${why}: ${LOCKED}${root.type === "Document" ? `; ${NOT_DRAWN_BY_OLDER_EDITORS}` : ""}`);
       const own = at(path);
-      return put(lockedHtml(node, own.width ?? own.available ?? Number(resolvedRoot.width), root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
+      // In its place. A Row's child is its column, its width and share spent on it there: it fills it. A stack's is as
+      // wide as the stack, in a Column aligned as its parent (its text alignment comes with `inheritedText`).
+      const stacked = parent !== undefined && parent.type !== "Row";
+      const placed: Node = !parent ? node : stacked ? { type: "Column", style: parent.style.alignItems !== undefined ? { alignItems: parent.style.alignItems } : {}, children: [node] } : withoutSize(node);
+      const width = (stacked ? own.available ?? own.width : own.width ?? own.available) ?? Number(resolvedRoot.width);
+      return put(lockedHtml(placed, width, root, components, around, inheritedText(path), { theme: document.theme, scopes: enclosing.get(node) }));
     },
     stack: (node, path, around) => stack(node, path, at(path), around),
     textAround,
@@ -315,6 +320,12 @@ export function raise(element: React.ReactElement): Raised {
   }
   const previewText = root.type === "Email" && root.props?.previewText ? { previewText: String(root.props.previewText) } : {};
   return { body: { root: root.type, fields: common, ...previewText, values: bodyHidden, rows: body }, report };
+}
+
+/** A node without its width, maximum width and share: what a Row spent on its column. */
+function withoutSize(node: Node): Node {
+  const { width: _width, maxWidth: _maxWidth, flex: _flex, ...style } = node.style ?? {};
+  return { ...node, style };
 }
 
 /** How many rows of the builder's children make (a Grid's rows each, runs of blocks one). */
