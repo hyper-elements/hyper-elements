@@ -4,7 +4,7 @@
  * never throws: what can't be read is left out and said.
  */
 import type { Child, Json, Node } from "@hyper-elements/core";
-import { BodyDefaults } from "./tool-defaults";
+import { BodyDefaults, PageMargins } from "./tool-defaults";
 import { color, fontWeight, font, px, serviceTag, type Sides, type Values } from "./read-values";
 import type { Context } from "./blocks";
 import { readHidden } from "./hide";
@@ -96,7 +96,7 @@ function rootOf(mode: DisplayMode, values: Values, say: (message: string) => voi
     if (SIZES.has(values.documentSize) && values.documentSize !== "A4") props.size = values.documentSize;
     if (values.documentOrientation === "landscape") props.orientation = "landscape";
     // One margin for every side (the builder's preset for the size where it's "auto"), or the template's own sides.
-    const preset = values.documentSize === "A5" ? 48 : 96;
+    const preset = SIZES.has(values.documentSize) ? PageMargins[values.documentSize] : PageMargins.A4;
     const one = values.documentMargin === "auto" || values.documentMargin === undefined ? preset : px(values.documentMargin);
     const own = hidden.props.margin as Sides | undefined;
     const margin = own && one === Math.max(own.top, own.right, own.bottom, own.left) ? own : one !== undefined ? { top: one, right: one, bottom: one, left: one } : undefined;

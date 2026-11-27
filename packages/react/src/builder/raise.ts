@@ -9,7 +9,7 @@
  * the builder's table doesn't draw as it is in an Email or a Page, is an HTML block of the new engine's own markup,
  * and said.
  */
-import { prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
+import { pageBox, prepareTemplate, type Json, type Node, type ResolvedNode } from "@hyper-elements/core";
 import type React from "react";
 import { collectTemplate, snapshotData } from "../primitives/collect";
 import { add, boxRowOf, builderId, gapOf, hasBox, hiding, linesOf, padding, rowOf, TEXT_FOLDED, ZERO, type Sides, type Writer } from "./columns";
@@ -17,7 +17,8 @@ import { block, columnWith, rowWith, type Block, type Body, type BodyFields, typ
 import { hiddenOf, leftOut, merge } from "./hide";
 import { lockedHtml } from "./locked";
 import { blockTool, NOT_IN_DOCUMENTS, type Place } from "./tools";
-import { builderBorder, builderFont, cssPx, cssSides, type Values } from "./values";
+import { MAX_EMAIL_WIDTH, MAX_PAGE_MARGIN, PageMargins } from "./tool-defaults";
+import { builderBorder, builderFont, cssPx, cssSides, writtenPx, type Values } from "./values";
 
 export interface Raised {
   /** The template as the builder's parts, each with its hidden properties in its values. */
@@ -29,6 +30,39 @@ export interface Raised {
 type Child = { child: Node; path: string };
 
 const holdsPageNumber = (node: Node): boolean => node.type === "PageNumber" || (node.children ?? []).some((child) => typeof child !== "string" && holdsPageNumber(child));
+
+/** A Document's margin where it sets none (its definition's default). */
+const DOCUMENT_MARGIN: Sides = { top: 48, right: 48, bottom: 48, left: 48 };
+
+/**
+ * How the builder draws a Document's page, where that isn't as the template has it. It has one margin for every side,
+ * the widest as written (design.ts), which it reads in whole px and draws at most a quarter of the page's shorter side
+ * wide, and 250px at most. A plan without page format controls draws the page A4 portrait with the builder's A4 margin,
+ * or with none where the margin is 0.
+ */
+function pageAsDrawn(props: Node["props"]): string | undefined {
+  const size = (props?.size as string | undefined) ?? "A4";
+  const orientation = (props?.orientation as string | undefined) ?? "portrait";
+  const sides = (props?.margin as Sides | undefined) ?? DOCUMENT_MARGIN;
+  const read = [sides.top, sides.right, sides.bottom, sides.left].map((side) => Math.round(writtenPx(side)));
+  const { width, height } = pageBox({ size, orientation });
+  const most = Math.min(MAX_PAGE_MARGIN, Math.floor(Math.min(width, height) / 4));
+  const widest = Math.max(...read);
+  const margin = Math.min(widest, most);
+  const plain = widest === 0 ? 0 : PageMargins.A4;
+  const even = read.every((side) => side === widest);
+  const said = `root: the page (${size} ${orientation}, margin ${cssSides(sides)}): the builder draws it as`;
+  const other = `A4 portrait, margin ${cssPx(plain)}`;
+  // With page format controls: as the template has it where its sides are the same and no wider than the page allows.
+  if (even && widest <= most) {
+    if (size === "A4" && orientation === "portrait" && widest === plain) return undefined;
+    return `${said} it is on plans with page format controls, and as ${other} on other plans`;
+  }
+  const why = ` (${[...(even ? [] : ["one margin for every side: the widest"]), ...(widest > most ? [`${cssPx(most)} at most on ${size}`] : [])].join("; ")})`;
+  const drawn = `${size} ${orientation}, margin ${cssPx(margin)}`;
+  if (drawn === other) return `${said} ${drawn} on every plan${why}`;
+  return `${said} ${drawn} on plans with page format controls${why}, and as ${other} on other plans`;
+}
 
 /** What shows a box's edges: where these are set, space around it can't move inside it. */
 const PAINT = ["backgroundColor", "border", "borderRadius"];
@@ -296,8 +330,17 @@ export function raise(element: React.ReactElement): Raised {
     "props.width", "props.previewText", "props.dir", "props.title", "props.size", "props.orientation",
     "style.backgroundColor", "style.color", "style.fontFamily", "style.fontWeight", "style.gap", "style.alignItems", ...TEXT_FOLDED,
   ]);
+  // What the builder changes when it loads the design.
+  const width = Number(resolvedRoot.width);
+  if (root.type === "Email" && writtenPx(width) > MAX_EMAIL_WIDTH) report.push(`root: an email ${cssPx(width)} wide: the builder makes an email ${MAX_EMAIL_WIDTH}px wide at most, so it becomes ${MAX_EMAIL_WIDTH}px`);
+  if (root.type === "Document") {
+    const page = pageAsDrawn(root.props);
+    if (page) report.push(page);
+    const bands = [...(headers.length ? ["header"] : []), ...(footers.length ? ["footer"] : [])];
+    if (bands.length) report.push(`root: its ${bands.join(" and ")}: the builder draws and exports a document's header and footer only on plans with headers and footers`);
+  }
   const common: BodyFields = {
-    contentWidth: cssPx(Number(resolvedRoot.width)),
+    contentWidth: cssPx(width),
     textColor: text.color,
     fontFamily: builderFont(String(text.fontFamily)),
     ...(text.fontWeight !== 400 ? { fontWeight: text.fontWeight } : {}),
@@ -306,7 +349,7 @@ export function raise(element: React.ReactElement): Raised {
   // Its title, the builder's accessibility title (which its export writes as the page's <title>).
   const title = typeof root.props?.title === "string" && root.props.title ? { accessibilityTitle: root.props.title } : {};
   // A Document's margin: the builder has one for every side (design.ts), the template's sides kept where they differ.
-  const margin = root.type === "Document" ? { margin: cssSides((root.props?.margin as Sides | undefined) ?? { top: 48, right: 48, bottom: 48, left: 48 }) } : {};
+  const margin = root.type === "Document" ? { margin: cssSides((root.props?.margin as Sides | undefined) ?? DOCUMENT_MARGIN) } : {};
   // No background is none (the builder's own default is a grey).
   const bodyHidden = { ...hiddenOf("body", root, ["props.margin"]), ...margin, ...title, backgroundColor: (style.backgroundColor as string | undefined) ?? "" };
   if (root.type === "Document") {

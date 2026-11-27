@@ -4,6 +4,19 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### toDesign(): `report` says what the builder changes when it loads a design
+
+- An `Email` wider than 900px: the builder makes it 900px wide.
+- A `Document`'s page, where the builder doesn't draw it as it is: the line says what plans with page format controls
+  draw and what other plans draw. The builder has one margin for every side, the widest, and draws it at most a quarter
+  of the page's shorter side wide and 250px at most (198px on A4). Plans without page format controls draw the page A4
+  portrait, with a 96px margin unless its margin is 0. A `Document` that sets no margin has 48px, so it gets this line
+  too.
+- A `Document`'s `PageHeader` and `PageFooter`: the builder draws and exports them only on plans with headers and
+  footers.
+
+The builder design `toDesign()` writes is the same as before; only `report` has the new lines.
+
 ### A block map for every root
 
 `render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),

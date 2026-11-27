@@ -1064,7 +1064,9 @@
   "report": [
    "root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet",
    "root.children[1].children[2]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row",
-   "root.children[4]: the builder's row has no place for style.backgroundColor: left out"
+   "root.children[4]: the builder's row has no place for style.backgroundColor: left out",
+   "root: the page (A5 portrait, margin 44px 40px): the builder draws it as A5 portrait, margin 44px on plans with page format controls (one margin for every side: the widest), and as A4 portrait, margin 96px on other plans",
+   "root: its header and footer: the builder draws and exports a document's header and footer only on plans with headers and footers"
   ]
  },
  "pdf": {

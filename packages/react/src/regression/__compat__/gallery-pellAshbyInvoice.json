@@ -4320,7 +4320,9 @@
    "root.children[1].children[2].children[1].children[3].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
    "root.children[1].children[2].children[1].children[4].children[1]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
    "root.children[1].children[3].children[1].children[0]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the design: the builder's document mode keeps it but doesn't draw or export it, so what's in it isn't in the builder's PDF",
-   "root.children[1].children[4].children[1]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row"
+   "root.children[1].children[4].children[1]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row",
+   "root: the page (A4 portrait, margin 56px 64px 44px): the builder draws it as A4 portrait, margin 64px on plans with page format controls (one margin for every side: the widest), and as A4 portrait, margin 96px on other plans",
+   "root: its footer: the builder draws and exports a document's header and footer only on plans with headers and footers"
   ]
  },
  "pdf": {

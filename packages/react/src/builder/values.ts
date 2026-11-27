@@ -12,6 +12,8 @@ export type { Values };
 
 const round = (n: number) => Math.round(n * 100) / 100;
 export const cssPx = (n: number) => `${round(n)}px`;
+/** A length in px as the builder design holds it (cssPx's number). */
+export const writtenPx = (n: number) => round(n);
 
 /** Sides as CSS, in as few values as say them ("10px", "10px 20px"). */
 export function cssSides(s: Insets): string {
