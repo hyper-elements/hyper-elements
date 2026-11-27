@@ -6,9 +6,12 @@
  * What a part's rows share is the table's fields for that part (its header's, its content's, its footer's): their text
  * styles, background, padding and vertical alignment, from the part's first row (the content's from the Table). A
  * cell's own, where it differs: its color, alignment, padding and background in its cell's fields; its other text
- * styles in its rich text, its line height in its paragraph's style. The builder draws its border around every cell,
- * so cells that all have the same lines around them, or a line between rows, are that border; other borders are left
- * out, and said.
+ * styles in its rich text, its line height in its paragraph's style. A cell across columns is one cell of the
+ * builder's, with its `colSpan`; a row's and a cell's id are theirs in the builder's too.
+ *
+ * Its lines are the builder's as it draws them: the same lines around every cell are its border, the line between
+ * rows its `rowBorder`, any other line a cell has its cell's own border, and the border around the Table its
+ * `tableBorder`. Its width and max width are the builder's too.
  *
  * An Email's or a Page's Table is the builder's table only where the builder draws it as it is: an HTML block of its
  * markup draws it exactly there, so a table the builder would draw otherwise stays one, and the report says why. A
@@ -101,17 +104,63 @@ interface Said {
   why: string;
 }
 
-/** What of a node isn't in `fields`: its id (the builder's rows and cells have none), props, styles, phone and hover values. */
+/** What of a node isn't in `fields`: props, styles, phone and hover values. */
 function unheld(node: Node, fields: readonly string[]): string[] {
-  const parts = (["props", "style", "mobile", "hover"] as const).flatMap((part) => Object.keys(node[part] ?? {}).map((key) => `${part}.${key}`)).filter((path) => !fields.includes(path));
-  return node.id ? ["id", ...parts] : parts;
+  return (["props", "style", "mobile", "hover"] as const).flatMap((part) => Object.keys(node[part] ?? {}).map((key) => `${part}.${key}`)).filter((path) => !fields.includes(path));
+}
+
+/** An id the builder's table writes in its HTML: one that isn't like the builder's own, which start with `u_`. */
+export const writtenId = (id: string) => !id.startsWith("u_");
+
+/** Whether a side of a border draws a line: a width, in a style that isn't none or hidden. */
+export const drawsLine = (line: BorderSide | undefined) => !!line && line.width > 0 && line.style !== "none" && (line.style as string) !== "hidden";
+
+/** A width or a max width in px, in a place `room` px wide; undefined for one in another unit. */
+const pxIn = (value: Json | undefined, room: number) => {
+  if (typeof value === "number") return value;
+  const text = typeof value === "string" ? value.trim() : "";
+  if (/^\d+(\.\d+)?px$/.test(text)) return parseFloat(text);
+  if (/^\d+(\.\d+)?%$/.test(text)) return (room * parseFloat(text)) / 100;
+  return undefined;
+};
+
+/** A width or a max width the builder's table draws: px, or a percentage of its place. */
+const drawn = (value: Json | undefined) => (typeof value === "number" ? value > 0 : typeof value === "string" && /^\d+(\.\d+)?(px|%)$/.test(value.trim()) && parseFloat(value) > 0);
+
+/**
+ * The Table as the builder's table takes it, and what it draws otherwise (`note`). In a Row its width is its
+ * column's share, as Elements draws it, not the table's own too; so is a max width in %, which Elements takes of the
+ * row: the column has it, and the table fills the column. A Document's row doesn't narrow, so there it's px of the
+ * row; an Email's or a Page's columns stack on phones, where Elements' table keeps that share of the screen and the
+ * builder's fills its column (an HTML block in the column would too). A border that draws no line is no border.
+ */
+export function builderTableNode(node: Node, path: string, place: TablePlace, parent: ResolvedNode): { node: Node; note?: string } {
+  const style = { ...node.style };
+  let note: string | undefined;
+  if (parent.type === "Row") {
+    delete style.width;
+    const max = style.maxWidth;
+    if (typeof max === "string" && /^\d+(\.\d+)?%$/.test(max.trim()) && parseFloat(max) < 100) {
+      const row = parent.contentWidth ?? parent.available;
+      if (place.at("root").type === "Document" && row !== null) style.maxWidth = Math.round(((row * parseFloat(max)) / 100) * 100) / 100;
+      else {
+        delete style.maxWidth;
+        // (A Row that doesn't stack keeps its columns side by side on phones too, so the share is the same there.)
+        if (parent.props.stackOnMobile !== false) note = "a max width in % of a Table in a Row is its column's in the builder's table: on phones, where the columns stack, the table fills its column";
+      }
+    }
+  }
+  const border = place.at(path).style.border as Border | undefined;
+  if (style.border !== undefined && !SIDES.some((side) => drawsLine(border?.[side]))) delete style.border;
+  return { node: { ...node, style }, note };
 }
 
 /**
  * A Table's values for the builder's table, or why it can't be one (it's an HTML block then): no rows, an image in a
  * cell, a row or a cell hidden on a device, or, in an Email or a Page, anything the builder would draw otherwise.
+ * `align` is where a block narrower than its place sits in it.
  */
-export function tableValues(node: Node, path: string, place: TablePlace): Values | string {
+export function tableValues(node: Node, path: string, place: TablePlace, align: "left" | "center" | "right" | "justify" = "left"): Values | string {
   const own = place.at(path);
   const exact = place.at("root").type !== "Document";
   const partsOf = (parent: Node, at: string): Part[] =>
@@ -200,12 +249,22 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
   const lost: string[] = [];
   let spanned = false;
   let ragged = false;
+  const lines = cellBorders(rows, cellsOf, own);
+  /** A row's or a cell's id, where it has one: said where the builder keeps it and doesn't write it. */
+  const idOf = (part: Part, what: string): Values => {
+    const id = part.node.id;
+    if (id === undefined) return {};
+    if (!writtenId(id)) say(part.path, `the builder's table writes no id that starts with u_, as its own ids do: ${what}'s is kept in the design, and isn't in the builder's HTML`, `${what}'s id the builder doesn't write`);
+    return { id };
+  };
 
   /**
    * A row as the builder's: each cell (one per column it spans), its height the least its words need. `spacedInCells`
    * where its part has no line height or letter spacing field (a header, a footer): they're its cells' own.
    */
   const rowOf = (row: Part, shared: Shared, spacedInCells: boolean): Values => {
+    const last = row === rows[rows.length - 1];
+    const id = idOf(row, "a row");
     const background = (cell?: ResolvedNode) => opaque(cell?.style.backgroundColor) ?? paintOf(row);
     const paint = (cell?: ResolvedNode): Values => {
       const out: Values = {};
@@ -218,7 +277,8 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
       return out;
     };
     let column = 0;
-    const written = cellsOf(row).flatMap(({ node: cellNode, own: cell }) => {
+    const cells = cellsOf(row).map((part) => {
+      const { node: cellNode, own: cell } = part;
       const text = cell.text;
       // Its own size is its paragraph's, so its lines are as tall as its words', not its part's size's.
       const fontSize = text.fontSize !== shared.text.fontSize ? text.fontSize : undefined;
@@ -235,19 +295,23 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
       // each one's size multiplies, as Elements' does.
       const sized = fontSize !== undefined || holdsSize(cellNode);
       const lineHeight = spacedInCells || sized || !same(text.lineHeight, shared.text.lineHeight) ? cssLineHeightOf(text.lineHeight) : undefined;
-      const values: Values = { textJson: cellJson(cellNode, lost, around, { fontSize, lineHeight, dir: cell.props.dir as string | undefined }), width: widthOf(column), ...paint(cell) };
+      const span = spanOf(cell);
+      // A cell across columns is as wide as they are together.
+      const width = share(Array.from({ length: span }, (_, i) => widthOf(column + i)).reduce((sum, w) => sum + w, 0));
+      const values: Values = { textJson: cellJson(cellNode, lost, around, { fontSize, lineHeight, dir: cell.props.dir as string | undefined }), width, ...paint(cell), ...idOf(part, "a cell") };
+      if (span > 1) values.colSpan = span;
+      if (span > 1000) say(part.path, "a cell across more than 1000 columns is across 1000 in the builder's table, which has no more", "a cell across more than 1000 columns");
       if (text.color !== shared.text.color) values.color = text.color;
       if (text.textAlign !== shared.text.textAlign) values.textAlign = text.textAlign;
-      const span = spanOf(cell);
-      // The builder's cells span no columns: the columns this one spans after its first are empty cells.
-      const after = Array.from({ length: span - 1 }, (_, i) => ({ textJson: cellJson({ type: "TableCell" }, lost, {}), width: widthOf(column + 1 + i), ...paint(cell) }));
+      const border = lines.of(cell, last);
+      if (border) values.border = border;
       if (span > 1) spanned = true;
       column += span;
-      return [values, ...after];
+      return values;
     });
     if (column < count) ragged = true;
     // A row with fewer cells than the table's columns: the builder's has a cell for each.
-    for (; column < count; column++) written.push({ textJson: cellJson({ type: "TableCell" }, lost, {}), width: widthOf(column), ...paint() });
+    for (; column < count; column++) cells.push({ textJson: cellJson({ type: "TableCell" }, lost, {}), width: widthOf(column), ...paint() });
     // Its cells' line and padding; a row with no cells, its part's line.
     const pad = (cell: ResolvedNode) => paddingOf(cell).top + paddingOf(cell).bottom;
     // The builder's row is a line tall in each cell, words or not; the Table's empty cell is as tall as its padding.
@@ -263,7 +327,7 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
     if (least > Math.max(typeof given === "number" ? given : 0, real)) {
       say(row.path, "an empty cell is a line tall in the builder's table and as tall as its padding in the Table, so the row is taller in the builder's", "an empty cell, a line tall in the builder's");
     }
-    return { cells: written, height };
+    return { cells, height, ...id };
   };
 
   for (const row of rows) {
@@ -275,16 +339,43 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
     }
   }
 
-  const { border, borderCollapse } = cellBorders(rows, cellsOf, own, path, say);
-  const table = { headers: header.map((row) => rowOf(row, heading, true)), rows: body.map((row) => rowOf(row, content, false)), footers: footer.map((row) => rowOf(row, ending, true)) };
-  if (spanned) say(path, "a cell spanning columns is a cell for each column in the builder's table, its words in the first: the builder's table has no cells across columns", "a cell spanning columns");
+  const table: Values = { headers: header.map((row) => rowOf(row, heading, true)), rows: body.map((row) => rowOf(row, content, false)), footers: footer.map((row) => rowOf(row, ending, true)) };
+  // With a cell across columns, its cells alone don't say where the columns divide: the builder keeps each column's share.
+  if (spanned && sum > 0) table.columnWidths = Array.from({ length: count }, (_, column) => widthOf(column));
+  // The builder draws the border around a table outside its cells' lines. So do an Email's Tables; a Page's and a
+  // Document's, where their borders collapse, draw the two as one line.
+  const around = (own.style.border as Border | undefined) ?? {};
+  const edges = { top: cellsOf(rows[0]), bottom: cellsOf(rows[rows.length - 1]), left: rows.flatMap((row) => cellsOf(row).slice(0, 1)), right: rows.flatMap((row) => cellsOf(row).slice(-1)) };
+  if (place.at("root").type !== "Email" && own.style.borderCollapse === "collapse" && SIDES.some((side) => drawsLine(around[side]) && edges[side].some((cell) => drawsLine((cell.own.style.border as Border | undefined)?.[side])))) {
+    say(path, "the border around it and the lines of its cells at its edges are one line where a Table's borders collapse, two in the builder's table, which draws its border outside its cells'", "a border around it that collapses with its cells' lines");
+  }
+  // The builder's table sits at the left of its place: one narrower than its place sits elsewhere in a Table.
+  const narrow = ["width", "maxWidth"].filter((key) => node.style?.[key] !== undefined && node.style[key] !== "100%");
+  // (It fills its place only where it does at the widest its place gets: the root's width, where columns stack on phones.)
+  const widest = Math.max(own.available ?? 0, place.at("root").contentWidth ?? 0);
+  const fills =
+    own.available !== null &&
+    narrow.every((key) => {
+      const value = node.style?.[key];
+      if (typeof value === "string" && value.trim().endsWith("%")) return parseFloat(value) >= 100;
+      return (pxIn(value, own.available!) ?? 0) >= widest - 0.5;
+    });
+  if (narrow.length && !fills && (align === "center" || align === "right")) say(path, `a table narrower than its place is at its left in the builder's, not ${align === "center" ? "in its middle" : "at its right"}`, "a width, away from the left of its place");
+  // It's never wider than its place either, where a Table of a width past it runs out of it.
+  const wide = node.style?.width;
+  if (typeof wide === "number" ? own.available !== null && wide > own.available : typeof wide === "string" && wide.trim().endsWith("%") && parseFloat(wide) > 100) {
+    say(path, "a table wider than its place is as wide as its place in the builder's, which doesn't let it run out of it", "a width wider than its place");
+  } else if (place.at("root").type === "Page" && (typeof wide === "number" || (typeof wide === "string" && wide.trim().endsWith("px"))) && node.style?.maxWidth === undefined) {
+    // A Page's Table keeps its px width in a narrower window, where the builder's, at most 100% wide, shrinks to fit. (An
+    // Email's writes its width as a max width, and a Document's page doesn't narrow.)
+    say(path, "a table of a px width shrinks to fit a narrower window in the builder's, and keeps its width in a Page's Table (a maxWidth of 100% makes them the same)", "a px width with no max width");
+  }
   if (ragged) say(path, "a row with fewer cells than the table's columns has empty cells in the builder's table, to make up its columns", "a row with fewer cells than its columns");
   if (lost.length) say(path, `the builder's text holds no ${[...new Set(lost)].join(", ")}: left out`, [...new Set(lost)].join(", "));
   if (exact) {
     // What's kept for Elements but not drawn by the builder (hidden properties), or drawn otherwise, unsaid in a Document.
     const why = [...said.map((entry) => entry.why), ...leftOut("table", node, TABLE_FIELDS).map((key) => `its ${key}`)];
-    if (SIDES.some((side) => (own.style.border as Border | undefined)?.[side])) why.push("a border around it");
-    for (const key of ["width", "maxWidth"]) if (node.style?.[key] !== undefined && node.style[key] !== "100%") why.push(`its ${key}`);
+    for (const key of narrow) if (!drawn(node.style?.[key])) why.push(`its ${key}`);
     for (const key of ["width", "maxWidth", "border"]) if (node.mobile?.[key] !== undefined) why.push(`its mobile.${key}`);
     // A column of its own px beside a free one keeps its width in a narrower window, as Elements lays it out; the
     // builder's columns are shares of the table. (Where every column has a width, Elements draws them as shares too.)
@@ -298,7 +389,7 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
     table,
     columns: count,
     rows: body.length,
-    border,
+    border: lines.border,
     stripedRows: false,
     enableHeader: header.length > 0,
     // A Document's header and footer rows are printed on every page a table runs to. (An Email and a Page have no pages:
@@ -309,34 +400,42 @@ export function tableValues(node: Node, path: string, place: TablePlace): Values
     enableFooter: footer.length > 0,
     repeatFooterOnEachPage: true,
     ...fields("footer", ending),
-    ...(borderCollapse ? { borderCollapse } : {}),
+    ...(lines.borderCollapse ? { borderCollapse: lines.borderCollapse } : {}),
   };
 }
 
+/** A table's lines as the builder's: its border, how its cells' borders meet, and a cell's own border. */
+interface Lines {
+  border: Values;
+  borderCollapse?: string;
+  /** A cell's own border: the lines it has that the table's border and its line between rows don't give it. */
+  of(cell: ResolvedNode, last: boolean): Values | undefined;
+}
+
 /**
- * The builder's border, drawn around every cell, from the lines around the Table's cells as laid out: lines the same
- * on every side of every cell are it; the line between rows (and none of the cells' own) is it above and below each
- * row, which draws a line above the first row and below the last too, said; none is none. Any other lines are left
- * out, and said.
+ * The builder's lines from the lines around the Table's cells as laid out. Lines the same on every side of every cell
+ * are the builder's border, which it draws around every cell. Any others are each cell's own border, but the line
+ * between rows under it, which the builder draws from the table's `rowBorder` as Elements does: under every row but
+ * the last, where a cell has no bottom line of its own. Cells side by side draw a line each unless the Table collapses
+ * them, the builder's one unless it's told they're separate.
  */
-function cellBorders(rows: Part[], cellsOf: (row: Part) => Part[], own: ResolvedNode, path: string, say: (at: string, what: string, why: string) => void): { border: Values; borderCollapse?: string } {
+function cellBorders(rows: Part[], cellsOf: (row: Part) => Part[], own: ResolvedNode): Lines {
   const cells = rows.flatMap(cellsOf);
   const lines = cells.map(({ own: cell }) => (cell.style.border as Border | undefined) ?? {});
-  if (lines.every((line) => SIDES.every((side) => !line[side]))) return { border: NO_BORDER };
+  if (lines.every((line) => SIDES.every((side) => !line[side]))) return { border: NO_BORDER, of: () => undefined };
+  const separate = own.style.borderCollapse === "collapse" ? {} : { borderCollapse: "separate" };
+  const between = own.style.rowBorder as BorderSide | undefined;
   const first = lines[0][SIDES[0]];
   const around = (line: Border) => SIDES.every((side) => line[side] && same(line[side], first));
-  if (first && lines.every(around)) {
-    if (own.style.borderCollapse === "collapse") return { border: builderBorder({ top: first, right: first, bottom: first, left: first }) };
-    say(path, "the lines of cells side by side are one line in the builder's table, two in the Table (its borderCollapse isn't collapse)", "two lines between cells side by side");
-    // Kept as the hidden property it is, so the Table read back draws its two lines as it did.
-    return { border: builderBorder({ top: first, right: first, bottom: first, left: first }), borderCollapse: "separate" };
-  }
-  const between = own.style.rowBorder as BorderSide | undefined;
-  const ownLines = cells.some(({ node }) => node.style?.border !== undefined);
-  if (between && !ownLines) {
-    say(path, "the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row", "a line between rows only");
-    return { border: { ...NO_BORDER, ...builderBorder({ top: between, bottom: between }) } };
-  }
-  say(path, "its cells' borders aren't one border around every cell, the only one the builder's table draws: left out", "lines on some sides of its cells only");
-  return { border: NO_BORDER };
+  // (With a line between rows that's another line, the builder would draw it under each row over its border: the
+  // cells' own borders are over it, as a Table's are.)
+  if (first && lines.every(around) && (!between || same(between, first))) return { border: builderBorder({ top: first, right: first, bottom: first, left: first }), ...separate, of: () => undefined };
+  const of = (cell: ResolvedNode, last: boolean) => {
+    const line = (cell.style.border as Border | undefined) ?? {};
+    const mine = Object.fromEntries(SIDES.filter((side) => line[side] && !(side === "bottom" && between && !last && same(line.bottom, between))).map((side) => [side, line[side]]));
+    return Object.keys(mine).length ? builderBorder(mine as Border) : undefined;
+  };
+  // A line between rows only is drawn the same whether cells share their lines or not.
+  const ownLines = rows.some((row, index) => cellsOf(row).some((cell) => of(cell.own, index === rows.length - 1)));
+  return { border: NO_BORDER, ...(ownLines ? separate : {}), of };
 }

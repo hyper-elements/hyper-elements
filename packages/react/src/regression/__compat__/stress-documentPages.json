@@ -187,19 +187,21 @@
            },
            "columns": 2,
            "rows": 3,
+           "width": "100%",
+           "maxWidth": "100%",
            "border": {
-            "borderTopWidth": "1px",
+            "borderTopWidth": "0px",
             "borderTopStyle": "solid",
-            "borderTopColor": "#d2cfc3",
+            "borderTopColor": "transparent",
             "borderLeftWidth": "0px",
             "borderLeftStyle": "solid",
             "borderLeftColor": "transparent",
             "borderRightWidth": "0px",
             "borderRightStyle": "solid",
             "borderRightColor": "transparent",
-            "borderBottomWidth": "1px",
+            "borderBottomWidth": "0px",
             "borderBottomStyle": "solid",
-            "borderBottomColor": "#d2cfc3"
+            "borderBottomColor": "transparent"
            },
            "stripedRows": false,
            "stripedRowsBackgroundColor": "#CCC",
@@ -1063,7 +1065,6 @@
   },
   "report": [
    "root: a PageNumber goes to the builder as its token ({{page_number}}), which the editor's PDF prints as it is: the builder has no page numbers yet",
-   "root.children[1].children[2]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row",
    "root.children[4]: the builder's row has no place for style.backgroundColor: left out"
   ]
  },

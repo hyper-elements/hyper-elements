@@ -777,7 +777,7 @@
   },
   "report": [
    "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
-   "root.children[0].children[3].children[1]: the builder's table doesn't draw it as it is (lines on some sides of its cells only; a border around it; a column of a fixed width): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
+   "root.children[0].children[3].children[1]: the builder's table doesn't draw it as it is (a column of a fixed width): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
    "root.children[0].children[4]: the builder draws a Row's border on its columns, which fill the row: the 24px around the Row goes inside the line, so the line is as wide as the row"
   ]
  }

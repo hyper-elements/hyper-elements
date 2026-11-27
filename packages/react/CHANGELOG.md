@@ -73,18 +73,27 @@ rows, each cell's words and each column's share go in, with what its rows share 
 the table's fields and each cell's own styles. A table with an image in a cell, or a row, a cell or words in a cell
 hidden on phones or desktops, is still an HTML block.
 
+- A table's lines are the builder's: the same lines around every cell are its border, a line between rows
+  (`rowBorder`) the builder's line between rows, and any other line a cell has is that cell's own border. Cells side
+  by side keep a line each unless the Table collapses them (`borderCollapse`).
+- A cell across columns (`colSpan`) is one merged cell of the builder's, as wide as its columns. A border around the
+  table, its `width` and its `maxWidth` are the builder's, and a row's and a cell's `id` are kept. The builder writes
+  no id that starts with `u_`, as its own do, so `report` says where one is kept and not written.
+- These need an Unlayer editor whose table has them. An older one ignores the fields it doesn't know.
 - In a `Document`, the builder's document mode keeps an HTML block but doesn't draw or export it, so a Document's
   tables were missing from the builder's page and its PDF. A Document's `Table` is the builder's table all the same,
-  and `report` says what it draws otherwise: the builder draws one border around every cell, so a line between rows
-  is drawn above the first row and below the last too, a cell spanning columns is a cell for each column, a header
-  row below the table's first rows is a row in bold, and other borders are left out.
+  and `report` says what it draws otherwise: a header row below the table's first rows is a row in bold, a row with
+  fewer cells than the table's columns has empty cells, a table narrower than its place sits at its left, one wider
+  than its place stops at its edge, and a border around it that collapses with its cells' lines is drawn outside them.
 - In an `Email` or a `Page`, an HTML block draws a table exactly, so a `Table` is the builder's table only where the
-  builder draws it as it is. One it would draw otherwise (a line between rows only, a cell spanning columns, a border
-  around the table, a width, a column of a fixed width, phone values, a half-transparent background) stays an HTML
-  block, as before, and `report` says why.
+  builder draws it as it is. One it would draw otherwise (a column of a fixed width, a row with fewer cells than its
+  columns, phone values, a half-transparent background, a width away from the left of its place or wider than it, in a
+  `Page` a px width with no `maxWidth`, which the builder's shrinks in a narrow window, or a border that collapses with
+  its cells' lines) stays an HTML block, as before, and `report` says why.
 
 `fromDesign()` reads the builder's table back as a `Table`, one made in the builder too, where it was left out before;
-a cell's paragraphs are its lines.
+a cell's paragraphs are its lines. Its lines are what the builder draws, and a px width keeps the builder's `maxWidth`
+of 100%. A row's or a cell's id that starts with `u_` is left out, as a block's is.
 
 ### An HTML block shows what's behind it
 

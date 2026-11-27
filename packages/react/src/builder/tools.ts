@@ -8,7 +8,7 @@ import { block, type Block } from "./design";
 import { hiddenOf, merge } from "./hide";
 import { listJson, paragraphJson, runsHtml } from "./runs";
 import { intoMarkup } from "./paint";
-import { TABLE_FIELDS, tableValues } from "./table";
+import { builderTableNode, TABLE_FIELDS, tableValues } from "./table";
 import { withParagraphMargin } from "./text";
 import { builderBorder, builderFont, builderLink, cssLineHeight, cssPx, cssSides, encode, fieldLineHeight, type Values } from "./values";
 
@@ -259,10 +259,12 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
     case "PageBreak":
       return place.put(block("page_break"));
     case "Table": {
-      const values = tableValues(node, path, place);
+      const { node: table, note } = builderTableNode(node, path, place, parent);
+      const values = tableValues(table, path, place, alignIn(parent));
       if (typeof values === "string") return place.locked(node, path, values, around);
-      place.sayLeftOut("table", node, path, TABLE_FIELDS);
-      return place.put(block("table", hiding), merge({ ...values, containerPadding: cssSides(around), ...id }, hiddenOf("table", node)));
+      place.sayLeftOut("table", table, path, TABLE_FIELDS);
+      if (note) place.report.push(`${path}: ${note}`);
+      return place.put(block("table", hiding), merge({ ...values, containerPadding: cssSides(around), ...id }, hiddenOf("table", table)));
     }
     default:
       // A plain stack (a Column without a box of its own) is its blocks, in the same column.

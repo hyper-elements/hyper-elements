@@ -56,7 +56,7 @@ describe("toDesign", () => {
       const { design } = toDesign(
         <Root style={{ backgroundColor: "#f3f4f6" }}>
           <Section style={{ backgroundColor: "#ffffff" }}>
-            <Table style={{ rowBorder: "1px solid #e5e7eb" }}>
+            <Table style={{ rowBorder: "1px solid #e5e7eb", mobile: { fontSize: 12 } }}>
               <TableRow>
                 <TableCell>Ships</TableCell>
               </TableRow>
@@ -516,6 +516,397 @@ describe("a Table", () => {
     expect(fromDesign(JSON.parse(JSON.stringify(spaced.design)), { displayMode: "document" }).code).not.toContain("height:");
   });
 
+  it("is the builder's table in an Email or a Page with a line between rows only, which is its rowBorder and no border around its cells", () => {
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(
+        <Root>
+          <Table style={{ rowBorder: "1px solid #e5e7eb" }}>
+            <TableRow>
+              <TableCell>A</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>B</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      expect(report).toEqual([]);
+      const [lined] = tables(design);
+      expect(lined.values.rowBorder).toEqual({ borderTopWidth: "1px", borderTopStyle: "solid", borderTopColor: "#e5e7eb" });
+      expect(Object.entries(lined.values.border).filter(([key]) => key.endsWith("Width"))).toEqual([["borderTopWidth", "0px"], ["borderLeftWidth", "0px"], ["borderRightWidth", "0px"], ["borderBottomWidth", "0px"]]);
+      // The line is the table's, not each cell's: no cell has a border of its own, and the lines are drawn the same shared or not.
+      expect(lined.values.table.rows.flatMap((row: Values) => row.cells).some((cell: Values) => "border" in cell)).toBe(false);
+      expect(lined.values).not.toHaveProperty("borderCollapse");
+    }
+  });
+
+  it("is the builder's table with lines on some sides of some cells: each cell's own border, and not the line between rows it sits on", () => {
+    const line = "2px solid #111827";
+    const between = "1px solid #e5e7eb";
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(
+        <Root>
+          <Table style={{ rowBorder: between, borderCollapse: "collapse" }}>
+            <TableRow>
+              <TableCell style={{ border: { top: line } }}>A</TableCell>
+              <TableCell style={{ border: { bottom: "none" } }}>B</TableCell>
+              <TableCell>C</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell style={{ border: { left: line, bottom: line } }}>D</TableCell>
+              <TableCell>E</TableCell>
+              <TableCell>F</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      expect(report).toEqual([]);
+      const [lined] = tables(design);
+      const side = (name: string, width = "2px", color = "#111827") => ({ [`border${name}Width`]: width, [`border${name}Style`]: "solid", [`border${name}Color`]: color });
+      expect(lined.values.table.rows.map((row: Values) => row.cells.map((cell: Values) => cell.border))).toEqual([
+        // A's bottom is the line between rows, the table's: not its own. B has none, which it says, or the builder would
+        // draw that line under it.
+        [side("Top"), side("Bottom", "0px", "#000000"), undefined],
+        [{ ...side("Left"), ...side("Bottom") }, undefined, undefined],
+      ]);
+      expect(lined.values.rowBorder).toEqual({ borderTopWidth: "1px", borderTopStyle: "solid", borderTopColor: "#e5e7eb" });
+      expect(lined.values.borderCollapse).toBe("collapse");
+    }
+  });
+
+  it("gives every cell its own border where they all have the same lines and the line between rows is another: the builder draws that line over its border, a Table under its cells'", () => {
+    const { design, report } = toDesign(
+      <Email>
+        <Table style={{ rowBorder: "3px solid #ff0000", borderCollapse: "collapse" }}>
+          <TableRow>
+            <TableCell style={{ border: "1px solid #000000" }}>A</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell style={{ border: "1px solid #000000" }}>B</TableCell>
+          </TableRow>
+        </Table>
+      </Email>
+    );
+    expect(report).toEqual([]);
+    const [lined] = tables(design);
+    expect(lined.values.border.borderBottomWidth).toBe("0px");
+    expect(lined.values.table.rows.map((row: Values) => row.cells[0].border.borderBottomWidth)).toEqual(["1px", "1px"]);
+  });
+
+  it("is the builder's table where cells side by side draw a line each: its cell borders are separate", () => {
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(
+        <Root>
+          <Table>
+            <TableRow>
+              <TableCell style={{ border: "1px solid #9ca3af" }}>A</TableCell>
+              <TableCell style={{ border: "1px solid #9ca3af" }}>B</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      expect(report).toEqual([]);
+      const [grid] = tables(design);
+      expect(grid.values.border).toMatchObject({ borderTopWidth: "1px", borderLeftWidth: "1px", borderRightWidth: "1px", borderBottomWidth: "1px" });
+      expect(grid.values.borderCollapse).toBe("separate");
+    }
+  });
+
+  it("is the builder's table with a cell across columns: one cell with its colSpan, as wide as its columns, and each column's share kept", () => {
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(
+        <Root>
+          <Table>
+            <TableRow>
+              <TableCell style={{ width: "50%" }}>Item</TableCell>
+              <TableCell style={{ width: "20%" }}>Qty</TableCell>
+              <TableCell style={{ width: "30%" }}>Price</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={2}>Total</TableCell>
+              <TableCell>$20</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      expect(report).toEqual([]);
+      const [wide] = tables(design);
+      expect(wide.values.columns).toBe(3);
+      expect(wide.values.table.columnWidths).toEqual([50, 20, 30]);
+      expect(wide.values.table.rows.map((row: Values) => row.cells.map((cell: Values) => [words(cell), cell.colSpan, cell.width]))).toEqual([
+        [["Item", undefined, 50], ["Qty", undefined, 20], ["Price", undefined, 30]],
+        [["Total", 2, 70], ["$20", undefined, 30]],
+      ]);
+    }
+    // The builder's table has no cell across more than 1000 columns.
+    const endless = (
+      <Table>
+        <TableRow>
+          <TableCell colSpan={1001}>Wide</TableCell>
+        </TableRow>
+      </Table>
+    );
+    expect(toDesign(<Page>{endless}</Page>).report).toEqual([
+      "root.children[0]: the builder's table doesn't draw it as it is (a cell across more than 1000 columns): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
+    ]);
+    expect(toDesign(<Document>{endless}</Document>).report).toEqual(["root.children[0].children[0].children[0]: a cell across more than 1000 columns is across 1000 in the builder's table, which has no more"]);
+    // Without one, the builder's table keeps no widths but its cells'.
+    expect(tables(toDesign(<Email>{table}</Email>).design)[0].values.table).not.toHaveProperty("columnWidths");
+  });
+
+  it("is the builder's table with a border around it and a width, which the builder draws: its tableBorder, width and maxWidth", () => {
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(
+        <Root>
+          <Table style={{ border: "2px solid #111827", width: 300, maxWidth: "80%" }}>
+            <TableRow>
+              <TableCell style={{ border: "1px solid #9ca3af" }}>A</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      expect(report).toEqual([]);
+      const [framed] = tables(design);
+      expect(framed.values.tableBorder).toMatchObject({ borderTopWidth: "2px", borderTopColor: "#111827", borderLeftWidth: "2px", borderRightWidth: "2px", borderBottomWidth: "2px" });
+      expect(framed.values.width).toBe("300px");
+      expect(framed.values.maxWidth).toBe("80%");
+    }
+  });
+
+  it("is the builder's table where its width or max width fills its place, wherever its place puts it", () => {
+    const lined = (style: Record<string, unknown>) => (
+      <Table style={style}>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const style of [{ maxWidth: 600 }, { width: 600 }, { width: "100%", maxWidth: 800 }]) {
+      const { design, report } = toDesign(
+        <Email width={600}>
+          <Section style={{ alignItems: "center" }}>{lined(style)}</Section>
+        </Email>,
+      );
+      expect(report, JSON.stringify(style)).toEqual([]);
+      expect(blocks(design)[0].type, JSON.stringify(style)).toBe("table");
+    }
+    // One that fills its column only while the columns are side by side: on a phone they stack, and it doesn't.
+    const stacked = toDesign(
+      <Email width={600}>
+        <Row>
+          <Column style={{ alignItems: "center" }}>{lined({ maxWidth: 300 })}</Column>
+          <Column>
+            <Text>Beside</Text>
+          </Column>
+        </Row>
+      </Email>,
+    );
+    expect(stacked.report).toHaveLength(1);
+    expect(stacked.report[0]).toContain("a width, away from the left of its place");
+    // One narrower than its place is still at its left in the builder's.
+    expect(
+      toDesign(
+        <Email width={600}>
+          <Section style={{ alignItems: "center" }}>{lined({ maxWidth: 300 })}</Section>
+        </Email>,
+      ).report,
+    ).toEqual(["root.children[0].children[0]: the builder's table doesn't draw it as it is (a width, away from the left of its place): it's an HTML block of its own markup in the builder (it can be moved, not edited)"]);
+  });
+
+  it("counts a border of none around a Table as no border, which draws no line", () => {
+    const table = (
+      <Table style={{ border: "none", borderCollapse: "collapse" }}>
+        <TableRow>
+          <TableCell style={{ border: "1px solid #000000" }}>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    const page = toDesign(<Page>{table}</Page>);
+    expect(page.report).toEqual([]);
+    expect(blocks(page.design)[0].type).toBe("table");
+    expect(toDesign(<Document>{table}</Document>).report).toEqual([]);
+    // And back, with nothing to say about a border that isn't there.
+    for (const [Root, displayMode] of [[Email, "email"], [Page, "web"], [Document, "document"]] as const) {
+      const { design } = toDesign(<Root>{table}</Root>);
+      expect(fromDesign(JSON.parse(JSON.stringify(design)), { displayMode }).report, displayMode).toEqual([]);
+    }
+  });
+
+  it("leaves out a Table's own width in a Row, which is its column's share there as Elements draws it", () => {
+    for (const Root of [Email, Page]) {
+      const template = (
+        <Root width={600}>
+          <Row>
+            <Table style={{ width: "50%" }}>
+              <TableRow>
+                <TableCell>A</TableCell>
+              </TableRow>
+            </Table>
+            <Text>Beside</Text>
+          </Row>
+        </Root>
+      );
+      const { design, report } = toDesign(template);
+      expect(report, Root.name).toEqual([]);
+      const [table] = tables(design);
+      // The column is half the row, and the table fills it.
+      expect(design.body.rows[0].cells, Root.name).toEqual([300, 300]);
+      expect(table.values.width, Root.name).toBe("100%");
+      expect(table.values.maxWidth, Root.name).toBe("100%");
+    }
+  });
+
+  it("gives a Table in a Row with a max width in % its column, and says a phone draws it otherwise, but in a Document", () => {
+    const inRow = (Root: typeof Email | typeof Page | typeof Document, row: Record<string, unknown> = {}, stackOnMobile = true) => (
+      <Root>
+        <Row style={row} stackOnMobile={stackOnMobile}>
+          <Table style={{ width: "50%", maxWidth: "50%" }}>
+            <TableRow>
+              <TableCell>A</TableCell>
+            </TableRow>
+          </Table>
+          <Text>Beside</Text>
+        </Row>
+      </Root>
+    );
+    for (const Root of [Email, Page]) {
+      const { design, report } = toDesign(inRow(Root));
+      // The column is half the row, and the table fills it.
+      const [table] = tables(design);
+      expect(table.values.width, Root.name).toBe("100%");
+      expect(table.values.maxWidth, Root.name).toBe("100%");
+      expect(report, Root.name).toEqual(["root.children[0].children[0]: a max width in % of a Table in a Row is its column's in the builder's table: on phones, where the columns stack, the table fills its column"]);
+      // A Row that doesn't stack keeps the share on phones too: nothing to say.
+      expect(toDesign(inRow(Root, {}, false)).report, Root.name).toEqual([]);
+    }
+    // A Document's row doesn't narrow: half of it, in px, of the row's own width.
+    for (const [row, half] of [[{}, "349px"], [{ width: 1000 }, "500px"]] as const) {
+      const { design, report } = toDesign(inRow(Document, row));
+      expect(report, JSON.stringify(row)).toEqual([]);
+      expect(tables(design)[0].values.maxWidth, JSON.stringify(row)).toBe(half);
+    }
+  });
+
+  it("is the builder's table at its default width and max width of 100% where it has none, and comes back with none", () => {
+    for (const Root of [Email, Page]) {
+      const template = (
+        <Root>
+          <Table>
+            <TableRow>
+              <TableCell>A</TableCell>
+            </TableRow>
+          </Table>
+        </Root>
+      );
+      const { design, report } = toDesign(template);
+      expect(report).toEqual([]);
+      // What the builder fills in itself when it opens a table: written here, so its save changes nothing.
+      const [plain] = tables(design);
+      expect(plain.values.width).toBe("100%");
+      expect(plain.values.maxWidth).toBe("100%");
+      const back = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: Root === Email ? "email" : "web" });
+      expect(back.code).toContain("<Table>");
+      expect(back.code).not.toContain("width");
+      // One the builder narrowed keeps what it was given.
+      plain.values.width = "60%";
+      const narrowed = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: Root === Email ? "email" : "web" });
+      expect(narrowed.code).toContain('<Table style={{ width: "60%" }}>');
+    }
+  });
+
+  it("stays an HTML block in a Page where its border and its cells' lines at its edges collapse into one line: the builder draws the two, as an Email's Table does", () => {
+    const framed = (
+      <Table style={{ border: "3px solid #111827", borderCollapse: "collapse" }}>
+        <TableRow>
+          <TableCell style={{ border: "1px solid #9ca3af" }}>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    expect(toDesign(<Page>{framed}</Page>).report).toEqual([
+      "root.children[0]: the builder's table doesn't draw it as it is (a border around it that collapses with its cells' lines): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
+    ]);
+    const email = toDesign(<Email>{framed}</Email>);
+    expect(email.report).toEqual([]);
+    expect(blocks(email.design).map((content) => content.type)).toEqual(["table"]);
+    // A Document's is the builder's table all the same, and says so.
+    expect(toDesign(<Document>{framed}</Document>).report).toEqual([
+      "root.children[0]: the border around it and the lines of its cells at its edges are one line where a Table's borders collapse, two in the builder's table, which draws its border outside its cells'",
+    ]);
+    // Cells with no line at the table's edge leave its border alone.
+    const inner = (
+      <Table style={{ border: "3px solid #111827", borderCollapse: "collapse", rowBorder: "1px solid #9ca3af" }}>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+        <TableRow>
+          <TableCell>B</TableCell>
+        </TableRow>
+      </Table>
+    );
+    expect(toDesign(<Page>{inner}</Page>).report).toEqual([]);
+  });
+
+  it("stays an HTML block where a table narrower than its place isn't at its left, where the builder's sits", () => {
+    // (A max width of 100%, so a Page's Table shrinks in a narrow window as the builder's does.)
+    const narrow = (
+      <Table style={{ width: 300, maxWidth: "100%" }}>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const [style, where] of [[{ alignItems: "center" }, "in its middle"], [{ textAlign: "right" }, "at its right"]] as const) {
+      for (const Root of [Email, Page]) {
+        expect(toDesign(<Root><Column style={style}>{narrow}</Column></Root>).report, where).toEqual([
+          "root.children[0].children[0]: the builder's table doesn't draw it as it is (a width, away from the left of its place): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
+        ]);
+      }
+      expect(toDesign(<Document><Column style={style}>{narrow}</Column></Document>).report).toEqual([`root.children[0].children[0]: a table narrower than its place is at its left in the builder's, not ${where}`]);
+    }
+    // One wider than its place runs out of it, where the builder's stops at its place's edge.
+    const wide = (width: number | string, more: Record<string, unknown> = {}) => (
+      <Table style={{ width, ...more }}>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const width of [800, "120%"]) {
+      expect(toDesign(<Page width={600}>{wide(width)}</Page>).report, String(width)).toEqual([
+        "root.children[0]: the builder's table doesn't draw it as it is (a width wider than its place): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
+      ]);
+    }
+    expect(toDesign(<Document>{wide("120%")}</Document>).report).toEqual(["root.children[0]: a table wider than its place is as wide as its place in the builder's, which doesn't let it run out of it"]);
+    expect(toDesign(<Page width={600}>{wide(600, { maxWidth: "100%" })}</Page>).report).toEqual([]);
+    // At its left, and one that fills its place wherever it is, are drawn as they are.
+    expect(toDesign(<Email><Column style={{ alignItems: "start" }}>{narrow}</Column></Email>).report).toEqual([]);
+    expect(toDesign(<Email><Column style={{ alignItems: "center" }}>{table}</Column></Email>).report).toEqual([]);
+  });
+
+  it("stays an HTML block in a Page where its px width has no max width, which the builder's table shrinks in a narrow window", () => {
+    const sized = (style: Record<string, unknown>) => (
+      <Table style={style}>
+        <TableRow>
+          <TableCell>A</TableCell>
+        </TableRow>
+      </Table>
+    );
+    for (const width of [500, "500px"]) {
+      const { design, report } = toDesign(<Page width={600}>{sized({ width })}</Page>);
+      expect(report, String(width)).toEqual(["root.children[0]: the builder's table doesn't draw it as it is (a px width with no max width): it's an HTML block of its own markup in the builder (it can be moved, not edited)"]);
+      expect(blocks(design)[0].type).toBe("html");
+    }
+    // With a max width, or a percentage, it shrinks as the builder's does.
+    for (const style of [{ width: 500, maxWidth: "100%" }, { width: 500, maxWidth: "90%" }, { width: 500, maxWidth: 400 }, { width: "80%" }]) {
+      const { design, report } = toDesign(<Page width={600}>{sized(style)}</Page>);
+      expect(report, JSON.stringify(style)).toEqual([]);
+      expect(blocks(design)[0].type).toBe("table");
+    }
+    // An Email writes its width as a max width, and a Document's page doesn't narrow.
+    expect(toDesign(<Email>{sized({ width: 500 })}</Email>).report).toEqual([]);
+    expect(toDesign(<Document>{sized({ width: 500 })}</Document>).report).toEqual([]);
+  });
+
   it("stays an HTML block in an Email or a Page where the builder's table doesn't draw it as it is, and says why", () => {
     const line = "1px solid #e5e7eb";
     const row = (a: string, b: string, props: Record<string, unknown> = {}) => (
@@ -524,30 +915,18 @@ describe("a Table", () => {
         <TableCell>{b}</TableCell>
       </TableRow>
     );
-    const lined = (border: Record<string, unknown> | string) => (
-      <TableRow>
-        <TableCell style={{ border }}>A</TableCell>
-        <TableCell style={{ border }}>1</TableCell>
-      </TableRow>
-    );
     const cases: Array<[string, React.ReactElement]> = [
-      ["a line between rows only", <Table style={{ rowBorder: line }}>{row("A", "1")}{row("B", "2")}</Table>],
-      ["lines on some sides of its cells only", <Table>{lined({ bottom: line })}{row("B", "2")}</Table>],
-      ["two lines between cells side by side", <Table>{lined(line)}</Table>],
-      ["a border around it", <Table style={{ border: line }}>{row("A", "1")}</Table>],
-      ["its width", <Table style={{ width: 300 }}>{row("A", "1")}</Table>],
-      ["its maxWidth", <Table style={{ maxWidth: 300 }}>{row("A", "1")}</Table>],
       ["its mobile.width", <Table style={{ mobile: { width: 300 } }}>{row("A", "1")}</Table>],
       ["its mobile.maxWidth", <Table style={{ mobile: { maxWidth: 300 } }}>{row("A", "1")}</Table>],
       ["its mobile.border", <Table style={{ mobile: { border: line } }}>{row("A", "1")}</Table>],
       ["a column of a fixed width", <Table><TableRow><TableCell style={{ width: 100 }}>A</TableCell><TableCell>1</TableCell></TableRow></Table>],
-      ["a cell spanning columns", <Table>{row("A", "1")}<TableRow><TableCell colSpan={2}>Both</TableCell></TableRow></Table>],
       ["a row with fewer cells than its columns", <Table>{row("A", "1")}<TableRow><TableCell>One</TableCell></TableRow></Table>],
       ["a header row below its first rows", <Table>{row("A", "1")}{row("Sub", "head", { header: true })}</Table>],
       ["a cell's mobile.padding", <Table><TableRow><TableCell style={{ mobile: { padding: 4 } }}>A</TableCell></TableRow></Table>],
       ["its mobile.fontSize", <Table style={{ mobile: { fontSize: 12 } }}>{row("A", "1")}</Table>],
       ["a link's hover", <Table><TableRow><TableCell><Link href="https://example.com" style={{ hover: { color: "#ff0000" } }}>Link</Link></TableCell></TableRow></Table>],
-      ["a row's id", <Table><TableRow id="first">{[<TableCell key="a">A</TableCell>]}</TableRow></Table>],
+      ["a row's id the builder doesn't write", <Table><TableRow id="u_first">{[<TableCell key="a">A</TableCell>]}</TableRow></Table>],
+      ["a cell's id the builder doesn't write", <Table><TableRow><TableCell id="u_total">A</TableCell></TableRow></Table>],
       ["an empty cell, a line tall in the builder's", <Table>{row("A", "1")}<TableRow><TableCell /><TableCell> </TableCell></TableRow></Table>],
       ["an empty cell, a line tall in the builder's", <Table><TableRow><TableCell style={{ fontSize: 80, padding: 10 }} /><TableCell>A</TableCell></TableRow></Table>],
       ["a half-transparent background", <Table style={{ backgroundColor: "#ffffff" }}>{row("A", "1", { style: { backgroundColor: "rgba(0, 0, 0, 0.05)" } })}</Table>],
@@ -693,11 +1072,12 @@ describe("a Table", () => {
     expect(JSON.parse(plain.textJson).root.children[0].style).toBeUndefined();
   });
 
-  it("writes the line between rows as the builder's border, which it says the builder draws above and below the table too", () => {
+  it("writes the line between rows as the builder's rowBorder, with no border around its cells", () => {
     const { design, report } = toDesign(lineItems);
     const [items] = tables(design);
-    expect(items.values.border).toMatchObject({ borderTopWidth: "1px", borderTopColor: "#e5e7eb", borderBottomWidth: "1px", borderLeftWidth: "0px", borderRightWidth: "0px" });
-    expect(report).toContain("root.children[1]: the line between rows is drawn above the first row and below the last one too in the builder's table, which draws its lines around each row");
+    expect(items.values.rowBorder).toEqual({ borderTopWidth: "1px", borderTopStyle: "solid", borderTopColor: "#e5e7eb" });
+    expect(items.values.border).toMatchObject({ borderTopWidth: "0px", borderBottomWidth: "0px", borderLeftWidth: "0px", borderRightWidth: "0px" });
+    expect(report.filter((line) => line.includes("line between rows"))).toEqual([]);
   });
 
   it("writes cells with the same lines all round as the builder's border, their padding and background each cell's", () => {
@@ -707,7 +1087,7 @@ describe("a Table", () => {
     expect(due.values.table.rows[0].cells).toMatchObject([{ padding: "4px" }, { padding: "4px", backgroundColor: "#fef3c7" }]);
   });
 
-  it("says cells' lines side by side are one line in the builder's table, two in a Table that doesn't collapse them, and keeps them two read back", () => {
+  it("keeps cells' lines side by side two in a Table that doesn't collapse them, as the builder's separate cell borders, and two read back", () => {
     const line = "1px solid #9ca3af";
     const { design, report } = toDesign(
       <Document>
@@ -722,7 +1102,7 @@ describe("a Table", () => {
     const [grid] = tables(design);
     expect(grid.values.border).toMatchObject({ borderTopWidth: "1px", borderLeftWidth: "1px", borderRightWidth: "1px", borderBottomWidth: "1px" });
     expect(grid.values.borderCollapse).toBe("separate");
-    expect(report).toEqual(["root.children[0]: the lines of cells side by side are one line in the builder's table, two in the Table (its borderCollapse isn't collapse)"]);
+    expect(report).toEqual([]);
     expect(fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "document" }).code).toContain('borderCollapse: "separate"');
   });
 
@@ -743,7 +1123,7 @@ describe("a Table", () => {
     expect(report).toEqual([]);
   });
 
-  it("says what the builder's table can't hold: a cell across columns, a row short of cells, lines on some cells only", () => {
+  it("says a row short of cells has empty cells in the builder's table; a cell across columns and lines on some cells only are held", () => {
     const { design, report } = toDesign(
       <Document>
         <Table>
@@ -762,14 +1142,14 @@ describe("a Table", () => {
     );
     const [wide] = tables(design);
     expect(wide.values.table.rows.map((row: Values) => row.cells.map(words))).toEqual([
-      ["Wide", "", ""],
+      ["Wide", ""],
       ["A", "B", "C"],
     ]);
-    expect(report).toEqual([
-      "root.children[0]: its cells' borders aren't one border around every cell, the only one the builder's table draws: left out",
-      "root.children[0]: a cell spanning columns is a cell for each column in the builder's table, its words in the first: the builder's table has no cells across columns",
-      "root.children[0]: a row with fewer cells than the table's columns has empty cells in the builder's table, to make up its columns",
-    ]);
+    const [across, made] = wide.values.table.rows[0].cells;
+    expect(across).toMatchObject({ colSpan: 2, border: { borderTopWidth: "1px", borderRightWidth: "1px", borderBottomWidth: "1px", borderLeftWidth: "1px" } });
+    expect(made).not.toHaveProperty("colSpan");
+    expect(made).not.toHaveProperty("border");
+    expect(report).toEqual(["root.children[0]: a row with fewer cells than the table's columns has empty cells in the builder's table, to make up its columns"]);
   });
 
   it("keeps a table with an image in a cell, linked or not, as an HTML block, and says why", () => {
@@ -834,20 +1214,41 @@ describe("a Table", () => {
     }
   });
 
-  it("says a row's and a cell's id, which the builder's table has no place for, are left out", () => {
-    const { report } = toDesign(
+  it("writes a row's and a cell's id as the builder's row's and cell's, and reads them back", () => {
+    const { design, report } = toDesign(
       <Document>
         <Table>
           <TableRow id="details">
             <TableCell id="first">Words</TableCell>
+            <TableCell>More</TableCell>
+          </TableRow>
+        </Table>
+      </Document>
+    );
+    expect(report).toEqual([]);
+    const [row] = tables(design)[0].values.table.rows;
+    expect(row.id).toBe("details");
+    expect(row.cells.map((cell: Values) => cell.id)).toEqual(["first", undefined]);
+    const { code } = fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "document" });
+    expect(code).toContain('<TableRow id="details"');
+    expect(code).toContain('<TableCell id="first"');
+  });
+
+  it("says an id the builder keeps and doesn't write in its HTML: one that starts with u_, as its own do", () => {
+    const { design, report } = toDesign(
+      <Document>
+        <Table>
+          <TableRow id="u_details">
+            <TableCell id="u_first">Words</TableCell>
           </TableRow>
         </Table>
       </Document>
     );
     expect(report).toEqual([
-      "root.children[0].children[0]: the builder's table has no place for a row's id: left out",
-      "root.children[0].children[0].children[0]: the builder's table has no place for a cell's id: left out",
+      "root.children[0].children[0]: the builder's table writes no id that starts with u_, as its own ids do: a row's is kept in the design, and isn't in the builder's HTML",
+      "root.children[0].children[0].children[0]: the builder's table writes no id that starts with u_, as its own ids do: a cell's is kept in the design, and isn't in the builder's HTML",
     ]);
+    expect(tables(design)[0].values.table.rows[0]).toMatchObject({ id: "u_details", cells: [{ id: "u_first" }] });
   });
 
   it("gives a table's fonts the root has their stylesheet, as the builder loads one, and says one it hasn't", () => {
@@ -872,6 +1273,224 @@ describe("a Table", () => {
     // Its background is the table's again, under the header's own.
     expect(code).toMatch(/<Table style=\{\{[^}]*backgroundColor: "#ffffff"/);
     expect(code).not.toContain("height:");
+  });
+
+  it("comes back with its line between rows, its cells' own lines, a cell across columns, its border and its width", () => {
+    const template = (
+      <Email>
+        <Table style={{ rowBorder: "1px solid #e5e7eb", border: "2px solid #111827", width: 300, borderCollapse: "collapse" }}>
+          <TableRow>
+            <TableCell style={{ width: "50%" }}>Item</TableCell>
+            <TableCell style={{ width: "20%" }}>Qty</TableCell>
+            <TableCell style={{ width: "30%", border: { left: "1px dashed #9ca3af" } }}>Price</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell colSpan={2} style={{ border: { top: "2px solid #111827" } }}>
+              Total
+            </TableCell>
+            <TableCell>$20</TableCell>
+          </TableRow>
+        </Table>
+      </Email>
+    );
+    const first = toDesign(template);
+    expect(first.report).toEqual([]);
+    const back = fromDesign(JSON.parse(JSON.stringify(first.design)), { displayMode: "email" });
+    expect(back.report).toEqual([]);
+    expect(back.code).toContain('rowBorder: "1px solid #e5e7eb"');
+    expect(back.code).toContain('border: "2px solid #111827"');
+    expect(back.code).toContain("width: 300");
+    expect(back.code).toContain('borderCollapse: "collapse"');
+    expect(back.code).toContain("colSpan={2}");
+    expect(back.code).toMatch(/<TableCell style=\{\{ border: \{ left: "1px dashed #9ca3af" \}, width: "30%" \}\}>Price/);
+    expect(back.code).toMatch(/<TableCell colSpan=\{2\} style=\{\{ border: \{ top: "2px solid #111827" \} \}\}>\s*Total/);
+    // The line between rows is the Table's again: no cell has it as a bottom line of its own.
+    expect(back.code).not.toContain("bottom:");
+  });
+
+  it("reads the builder's own table: its border around every cell, its line between rows under all but the last, a cell's own border over both", () => {
+    const design = JSON.parse(JSON.stringify(toDesign(<Email>{table}</Email>).design));
+    const content = blocks(design)[0];
+    const cellOf = (text: string, more: Values = {}) => ({ text: `<p>${text}</p>`, width: 50, ...more });
+    const sides = (width: string, color: string) => Object.fromEntries(["Top", "Left", "Right", "Bottom"].flatMap((side) => [[`border${side}Width`, width], [`border${side}Style`, "solid"], [`border${side}Color`, color]]));
+    content.values = {
+      ...JSON.parse(JSON.stringify(TableDefaults)),
+      _meta: content.values._meta,
+      enableHeader: false,
+      border: sides("1px", "#cccccc"),
+      rowBorder: { borderTopWidth: "3px", borderTopStyle: "solid", borderTopColor: "#ff0000" },
+      table: {
+        headers: [],
+        rows: [
+          { id: "first", cells: [cellOf("A"), cellOf("B", { border: { borderBottomWidth: "0px", borderBottomStyle: "solid", borderBottomColor: "#000000" } })], height: 30 },
+          { cells: [cellOf("Total", { colSpan: 2, width: 100, id: "total" })], height: 30 },
+        ],
+        footers: [],
+        columnWidths: [70, 30],
+      },
+    };
+    const { code, report } = fromDesign(design, { displayMode: "email" });
+    expect(report).toEqual([]);
+    expect(code).toContain('rowBorder: "3px solid #ff0000"');
+    expect(code).toContain('borderCollapse: "collapse"');
+    expect(code).toContain('<TableRow id="first"');
+    // A: the table's border on three sides, the line between rows its bottom (the Table's own, so not said).
+    expect(code).toMatch(/<TableCell style=\{\{[^}]*border: \{ top: "1px solid #cccccc", right: "1px solid #cccccc", left: "1px solid #cccccc" \}, width: "70%" \}\}>A/);
+    // B: no bottom line of its own, which a Table has to say, or it would draw the line between rows there.
+    expect(code).toMatch(/border: \{ top: "1px solid #cccccc", right: "1px solid #cccccc", left: "1px solid #cccccc", bottom: "0px none #000000" \}, width: "30%" \}\}>B/);
+    // The last row: the table's border all round.
+    expect(code).toMatch(/<TableCell id="total" colSpan=\{2\} style=\{\{[^}]*border: "1px solid #cccccc" \}\}>Total/);
+  });
+
+  /** The builder's own table with these rows, as a design. */
+  const builders = (rowsOf: Values[], more: Values = {}) => {
+    const design = JSON.parse(JSON.stringify(toDesign(<Email>{table}</Email>).design));
+    const content = blocks(design)[0];
+    content.values = { ...JSON.parse(JSON.stringify(TableDefaults)), _meta: content.values._meta, enableHeader: false, ...more, table: { headers: [], rows: rowsOf, footers: [], ...more.table } };
+    return design;
+  };
+  const cellOf = (text: string, more: Values = {}) => ({ text: `<p>${text}</p>`, ...more });
+  const widths = (code: string) => [...code.matchAll(/width: "([\d.]+)%"[^>]*>(\w+)/g)].map((match) => [match[2], Number(match[1])]);
+
+  it("reads the columns of a table with a cell across columns as the builder draws them: a cell with no width takes what a cell across it leaves", () => {
+    // The first row's middle cell has no width: the cell across the first two columns says they're 80 together.
+    const design = builders([
+      { cells: [cellOf("A", { width: 20 }), cellOf("B"), cellOf("C", { width: 20 })], height: 30 },
+      { cells: [cellOf("Wide", { colSpan: 2, width: 80 }), cellOf("D", { width: 20 })], height: 30 },
+    ]);
+    // 20, an equal part of 80 (40), 20: shares of their total.
+    expect(widths(fromDesign(design, { displayMode: "email" }).code)).toEqual([["A", 25], ["B", 50], ["C", 25]]);
+  });
+
+  it("reads the widths the builder keeps for a table with a cell across columns, and not ones it wouldn't use", () => {
+    const rowsOf = [
+      { cells: [cellOf("A", { width: 20 }), cellOf("B", { width: 30 }), cellOf("C", { width: 50 })], height: 30 },
+      { cells: [cellOf("Wide", { colSpan: 3, width: 100 })], height: 30 },
+    ];
+    expect(widths(fromDesign(builders(rowsOf, { table: { columnWidths: [60, 30, 10] } }), { displayMode: "email" }).code)).toEqual([["A", 60], ["B", 30], ["C", 10]]);
+    // Too few, not numbers, or past any width a table has: the cells' own, as the builder falls back to.
+    for (const columnWidths of [[60, 40], [60, "30", 10], [1e308, 1e308, 20], [0, 0, 0]]) {
+      expect(widths(fromDesign(builders(rowsOf, { table: { columnWidths } }), { displayMode: "email" }).code), JSON.stringify(columnWidths)).toEqual([["A", 20], ["B", 30], ["C", 50]]);
+    }
+  });
+
+  it("reads the columns of a table with a cell across columns from every row the builder keeps, a header's that's off too", () => {
+    const design = builders(
+      [
+        { cells: [cellOf("A", { width: 50 }), cellOf("B", { width: 50 })], height: 30 },
+        { cells: [cellOf("Wide", { colSpan: 2, width: 100 })], height: 30 },
+      ],
+      // Its header is off, and still where the builder takes its columns from: rows that reach every column, in order.
+      { enableHeader: false, table: { headers: [{ cells: [cellOf("H1", { width: 80 }), cellOf("H2", { width: 20 })], height: 30 }] } }
+    );
+    const { code } = fromDesign(design, { displayMode: "email" });
+    expect(code).not.toContain("H1");
+    expect(widths(code)).toEqual([["A", 80], ["B", 20]]);
+  });
+
+  it("reads a cell's own border as the builder draws it: a side with no color is the color of its words, a width it doesn't read leaves the line there, and 0 takes it away", () => {
+    const sides = (width: string, color: string) => Object.fromEntries(["Top", "Left", "Right", "Bottom"].flatMap((side) => [[`border${side}Width`, width], [`border${side}Style`, "solid"], [`border${side}Color`, color]]));
+    const line = { borderBottomWidth: "4px", borderBottomStyle: "solid", borderBottomColor: "#ff0000" };
+    const design = builders(
+      [
+        {
+          cells: [
+            cellOf("Green", { width: 25, color: "#00aa00", border: { borderTopWidth: "2px", borderTopStyle: "solid" } }),
+            cellOf("Taken", { width: 25, border: { borderTopWidth: "2px", borderTopStyle: "solid" } }),
+            cellOf("Junk", { width: 25, border: { borderBottomWidth: "junk" } }),
+            cellOf("Zero", { width: 25, border: { borderBottomWidth: "0px" } }),
+          ],
+          height: 30,
+        },
+      ],
+      { border: { ...sides("0px", "#000000"), ...line }, contentColor: "#0000ff" }
+    );
+    const { code, report } = fromDesign(design, { displayMode: "email" });
+    expect(report).toEqual([]);
+    const border = (text: string) => new RegExp(`border: (\\{[^}]*\\}|"[^"]*")[^>]*>${text}<`).exec(code)?.[1];
+    // Its own color, then the content's.
+    expect(border("Green")).toBe('{ bottom: "4px solid #ff0000", top: "2px solid #00aa00" }');
+    expect(border("Taken")).toBe('{ bottom: "4px solid #ff0000", top: "2px solid #0000ff" }');
+    // A width that isn't one leaves the table's line; 0 takes it away.
+    expect(border("Junk")).toBe('{ bottom: "4px solid #ff0000" }');
+    expect(code).toMatch(/<TableCell style=\{\{[^}]*\}\}>Zero</);
+    expect(border("Zero")).toBeUndefined();
+  });
+
+  it("reads the line between rows as the builder draws it: none at a width of 0 or one it doesn't read, and the color of the content's words where it has none", () => {
+    const two = [{ cells: [cellOf("A", { width: 100 })], height: 30 }, { cells: [cellOf("B", { width: 100 })], height: 30 }];
+    const noBorder = Object.fromEntries(["Top", "Left", "Right", "Bottom"].flatMap((side) => [[`border${side}Width`, "0px"], [`border${side}Style`, "solid"], [`border${side}Color`, "#000000"]]));
+    const read = (rowBorder: unknown, more: Values = {}) => fromDesign(builders(two, { border: noBorder, rowBorder, ...more }), { displayMode: "email" });
+    expect(read({ borderTopWidth: "3px", borderTopStyle: "solid", borderTopColor: "#ff0000" }).code).toContain('rowBorder: "3px solid #ff0000"');
+    // No color: the content's words'.
+    expect(read({ borderTopWidth: "3px", borderTopStyle: "solid" }, { contentColor: "#00aa00" }).code).toContain('rowBorder: "3px solid #00aa00"');
+    for (const none of [{ borderTopWidth: "0px", borderTopStyle: "solid", borderTopColor: "#ff0000" }, { borderTopWidth: 3, borderTopStyle: "solid", borderTopColor: "#ff0000" }, { borderTopWidth: "thick" }]) {
+      const { code, report } = read(none);
+      expect(report, JSON.stringify(none)).toEqual([]);
+      expect(code, JSON.stringify(none)).not.toContain("rowBorder");
+    }
+    // A Table with no line between its rows, said so ("none"), goes to the builder and back without a word.
+    const first = toDesign(<Email><Table style={{ rowBorder: "none" }}><TableRow><TableCell>A</TableCell></TableRow><TableRow><TableCell>B</TableCell></TableRow></Table></Email>);
+    expect(first.report).toEqual([]);
+    expect(fromDesign(JSON.parse(JSON.stringify(first.design)), { displayMode: "email" }).report).toEqual([]);
+  });
+
+  it("reads a border above and below each row that is the line between rows as the builder draws it: above the first row and below the last too", () => {
+    const sides = (top: string, side: string) => ({ ...Object.fromEntries(["Top", "Bottom"].flatMap((at) => [[`border${at}Width`, top], [`border${at}Style`, "solid"], [`border${at}Color`, "#cccccc"]])), ...Object.fromEntries(["Left", "Right"].flatMap((at) => [[`border${at}Width`, side], [`border${at}Style`, "solid"], [`border${at}Color`, "#cccccc"]])) });
+    const rowBorder = { borderTopWidth: "1px", borderTopStyle: "solid", borderTopColor: "#cccccc" };
+    const border = (code: string, text: string) => new RegExp(`border: (\\{[^}]*\\}|"[^"]*")[^>]*>${text}<`).exec(code)?.[1];
+    const three = ["A", "B", "C"].map((text) => ({ cells: [cellOf(text, { width: 100 })], height: 30 }));
+    const { code, report } = fromDesign(builders(three, { border: sides("1px", "0px"), rowBorder }), { displayMode: "email" });
+    expect(report).toEqual([]);
+    expect(code).toContain('rowBorder: "1px solid #cccccc"');
+    // The line between rows is the Table's; the first row's line above and the last's below are the cells'.
+    expect(border(code, "A")).toBe('{ top: "1px solid #cccccc" }');
+    expect(border(code, "B")).toBe('{ top: "1px solid #cccccc" }');
+    expect(border(code, "C")).toBe('{ top: "1px solid #cccccc", bottom: "1px solid #cccccc" }');
+    // One row: both lines.
+    const one = fromDesign(builders(three.slice(0, 1), { border: sides("1px", "0px"), rowBorder }), { displayMode: "email" }).code;
+    expect(border(one, "A")).toBe('{ top: "1px solid #cccccc", bottom: "1px solid #cccccc" }');
+    // A line between rows with no color takes the content's words' color, and still leaves the cells their lines.
+    const dark = { ...sides("1px", "0px"), borderTopColor: "#333333", borderBottomColor: "#333333" };
+    const colored = fromDesign(builders(three, { border: dark, rowBorder: { borderTopWidth: "1px", borderTopStyle: "solid" }, contentColor: "#333333" }), { displayMode: "email" }).code;
+    expect(border(colored, "A")).toBe('{ top: "1px solid #333333" }');
+  });
+
+  it("reads a px width with the builder's max width of 100% as both, which shrink in a narrower place, and drops what fills its place", () => {
+    const one = [{ cells: [cellOf("A", { width: 100 })], height: 30 }];
+    const tableStyle = (more: Values) => /<Table style=\{\{([^}]*)\}\}>/.exec(fromDesign(builders(one, more), { displayMode: "web" }).code)?.[1] ?? "";
+    expect(tableStyle({ width: "500px", maxWidth: "100%" })).toContain('width: 500, maxWidth: "100%"');
+    expect(tableStyle({ width: "80%", maxWidth: "100%" })).toContain('width: "80%"');
+    expect(tableStyle({ width: "80%", maxWidth: "100%" })).not.toContain("maxWidth");
+    expect(tableStyle({ width: "100%", maxWidth: "100%" })).not.toMatch(/width/i);
+    // A Page's, so read, goes back to the builder as its table.
+    const page = toDesign(<Page width={600}><Table style={{ width: 500, maxWidth: "100%" }}><TableRow><TableCell>A</TableCell></TableRow></Table></Page>);
+    const back = fromDesign(JSON.parse(JSON.stringify(page.design)), { displayMode: "web" });
+    expect(blocks(toDesign(back.element).design)[0].type).toBe("table");
+  });
+
+  it("reads a row's or a cell's id that starts with u_, as the builder's own do, as no id: the builder doesn't write it", () => {
+    const { code, report } = fromDesign(builders([{ id: "u_row_9", cells: [cellOf("A", { width: 50, id: "u_content_x" }), cellOf("B", { width: 50, id: "total" })], height: 30 }]), { displayMode: "email" });
+    expect(report).toEqual([]);
+    expect(code).not.toContain("u_");
+    expect(code).toContain('id="total"');
+    const again = toDesign(fromDesign(builders([{ id: "u_row_9", cells: [cellOf("A", { width: 100, id: "u_content_x" })], height: 30 }]), { displayMode: "email" }).element);
+    expect(again.report).toEqual([]);
+    expect(blocks(again.design)[0].type).toBe("table");
+  });
+
+  it("says a Page's or a Document's Table draws the builder's border around the table and its edge cells' lines as one line, where its borders collapse", () => {
+    const sides = (width: string, color: string) => Object.fromEntries(["Top", "Left", "Right", "Bottom"].flatMap((side) => [[`border${side}Width`, width], [`border${side}Style`, "solid"], [`border${side}Color`, color]]));
+    const none = sides("0px", "#000000");
+    const framed = (more: Values = {}) => builders([{ cells: [cellOf("A", { width: 100, border: { borderTopWidth: "2px", borderTopStyle: "solid", borderTopColor: "#ff0000" } })], height: 30 }], { border: none, tableBorder: sides("3px", "#000000"), ...more });
+    const said = "rows[0].columns[0].contents[0]: the border around it and the lines of its cells at its edges are two lines in the builder's table, one in a Table whose borders collapse";
+    expect(fromDesign(framed(), { displayMode: "web" }).report).toEqual([said]);
+    expect(fromDesign(framed(), { displayMode: "document" }).report).toEqual([said]);
+    // An Email's Table draws both, and so does one whose cells keep a line each.
+    expect(fromDesign(framed(), { displayMode: "email" }).report).toEqual([]);
+    expect(fromDesign(framed({ borderCollapse: "separate" }), { displayMode: "web" }).report).toEqual([]);
+    // No line of a cell's at the table's edge: nothing to merge.
+    expect(fromDesign(builders([{ cells: [cellOf("A", { width: 100 })], height: 30 }], { border: none, tableBorder: sides("3px", "#000000") }), { displayMode: "web" }).report).toEqual([]);
   });
 
   it("reads a header's or a footer's words with no line height of their own at the page's, as the builder draws them, not the content's", () => {

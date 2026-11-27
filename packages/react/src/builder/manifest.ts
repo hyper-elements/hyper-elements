@@ -49,8 +49,10 @@ export const HIDDEN: Readonly<Record<string, readonly Hidden[]>> = {
   video: own("props.thumbnail", "props.title", "style.width", "style.maxWidth"),
   html: own("props.text"),
   page_break: [],
-  // A Table: its width (the builder's fills its column), how its cells' borders meet, and its line between
-  // rows, which the builder's border draws around every row (it's read back as that line only while the border is it).
+  // A Table: the border around it, its width, how its cells' borders meet and its line between rows. The builder's table
+  // has had a field for each since its line between rows, so they're drawn there too, under these same keys; their phone
+  // values still have no field. (A design written before that held the line between rows as the border above and below
+  // each row, which is still read back as that line.)
   table: [
     { path: "style.border", key: "tableBorder", prefixed: "the builder's table border is around every cell; a Table's is around the table" },
     ...own("style.width", "style.maxWidth", "style.borderCollapse", "style.rowBorder"),

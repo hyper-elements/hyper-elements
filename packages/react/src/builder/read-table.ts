@@ -3,15 +3,16 @@
  * is on) TableRows with `footer`, the rest TableRows; each cell's rich text its words. Its content's fields are the
  * Table's text styles, background and cell padding, its header's and footer's their rows' (a style the row would take
  * anyway left out), a cell's own fields and rich text its TableCell's. Each column's width is its first row's cells'
- * share, where they aren't equal. The builder's border, drawn around every cell, is each cell's border with the Table's
- * borders collapsed, as the builder draws them; above and below each row only, it's the line between rows. Its stripes
- * are every other row's background.
+ * share, where they aren't equal: with a cell across columns, each column's first cell of its own. A cell's lines are
+ * what the builder draws around it: the table's border, the line between rows under every row but the last, and the
+ * cell's own border over them. The line between rows is the Table's `rowBorder`; the rest is each cell's border, the
+ * Table's borders collapsed unless the builder's are separate. Its stripes are every other row's background.
  */
 import type { Json, Node } from "@hyper-elements/core";
 import { readHidden } from "./hide";
 import { border as readBorderSides, color, font, fontWeight, givenId, hidden as hiddenOn, px, sides, type Sides, type Values } from "./read-values";
 import { defined, lineHeight, make, obj, placed, same, str, textStyle, unless, ZERO, type Context } from "./reading";
-import { holdsWords, opaque } from "./table";
+import { holdsWords, opaque, writtenId } from "./table";
 import { readText } from "./text";
 import { textJsonHtml } from "./text-json";
 
@@ -44,11 +45,23 @@ const emptyParagraph = (json: string): boolean => {
     return false;
   }
 };
+/** How many columns a cell of the builder's is across. */
+const spanOf = (cell: Values) => (typeof cell.colSpan === "number" && Number.isInteger(cell.colSpan) && cell.colSpan > 1 ? Math.min(cell.colSpan, 1000) : 1);
+/** A row's or a cell's id as the builder writes it: none that starts with `u_`, as its own ids do (only the API gives one). */
+const idOf = (value: unknown) => {
+  const id = str(value);
+  return id !== undefined && writtenId(id) ? id : undefined;
+};
 /** A text color: any given one, transparent too (words drawn invisible are still words drawn so). */
 const textColor = (value: unknown) => (typeof value === "string" && value.trim() ? value : undefined);
 
 export function readTable(values: Values, context: Context): Node[] {
-  const hidden = readHidden("table", "Table", values, context.say);
+  // The line between rows as the builder reads it: a width in px (0, or one it doesn't read, is no line), its color the
+  // content's words' where it has none.
+  const line = obj(values.rowBorder);
+  const drawn = typeof line.borderTopWidth === "string" && /^\d+(\.\d+)?px$/.test(line.borderTopWidth) && parseFloat(line.borderTopWidth) > 0;
+  const between = drawn ? { ...line, borderTopColor: str(line.borderTopColor) ?? textColor(values.contentColor) ?? context.inherited.color } : undefined;
+  const hidden = readHidden("table", "Table", values.rowBorder === undefined ? values : { ...values, rowBorder: between }, context.say);
   const data = obj(values.table);
   const headers = values.enableHeader === false ? [] : rows(data.headers);
   const body = rows(data.rows);
@@ -107,7 +120,7 @@ export function readTable(values: Values, context: Context): Node[] {
 
   const stripe = values.stripedRows === true ? opaque(values.stripedRowsBackgroundColor) : undefined;
   /** A row of a part as a TableRow: its styles where they aren't the Table's, its cells. */
-  const rowOf = (row: Values, part: Part, kind: "header" | "body" | "footer", index: number): Node => {
+  const rowOf = (row: Values, part: Part, kind: "header" | "body" | "footer", index: number, last: boolean): Node => {
     // The builder's stripes are on the first row of each two.
     const paint = (kind === "body" && stripe && index % 2 === 0 ? stripe : part.background) ?? undefined;
     const weightTaken = kind === "header" ? 700 : table.fontWeight;
@@ -122,7 +135,7 @@ export function readTable(values: Values, context: Context): Node[] {
       backgroundColor: unless(paint, background),
     });
     const rowLine = lineHeightPx(table.lineHeight, part.text.fontSize);
-    const read = rows(row.cells).map((cell) => cellOf(cell, part, rowLine));
+    const read = rows(row.cells).map((cell) => cellOf(cell, part, rowLine, last));
     // Words at the page's line height (`unset`): the row's, where it's all its worded cells', else each one's.
     const worded = read.filter((cell) => holdsWords(cell.node));
     const unset = worded.length > 0 && worded.every((cell) => cell.unset);
@@ -137,11 +150,11 @@ export function readTable(values: Values, context: Context): Node[] {
     const least = Math.max(0, ...cells.map((cell, i) => (holdsWords(cell.node) ? cell.line : 0) + pads[i]));
     const height = px(row.height);
     if (height !== undefined && height > Math.max(1, Math.ceil(least))) style.height = height;
-    return make("TableRow", { props: defined({ header: kind === "header" || undefined, footer: kind === "footer" || undefined }), style, children: cells.map((cell) => cell.node) });
+    return make("TableRow", { id: idOf(row.id), props: defined({ header: kind === "header" || undefined, footer: kind === "footer" || undefined }), style, children: cells.map((cell) => cell.node) });
   };
 
   /** A cell as a TableCell (its words, and its own fields and line height where they aren't its row's), and its line's height. */
-  const cellOf = (cell: Values, part: Part, rowLine: number): { node: Node; line: number; unset: boolean } => {
+  const cellOf = (cell: Values, part: Part, rowLine: number, last: boolean): { node: Node; line: number; unset: boolean } => {
     const json = str(cell.textJson);
     const read = json === undefined ? { html: str(cell.text) ?? "", unread: [] as string[] } : textJsonHtml(json);
     if (read.unread.length) context.say(`a table cell's rich text has nodes Elements doesn't read (${read.unread.join(", ")}): left out`);
@@ -184,37 +197,134 @@ export function readTable(values: Values, context: Context): Node[] {
       verticalAlign: unless(str(cell.verticalAlign) ?? part.verticalAlign, "top"),
       padding: unless((sides(cell.padding) ?? part.padding) as Json, padding as Json),
       backgroundColor: opaque(cell.backgroundColor),
-      border: cellBorder,
+      border: borderOf(cell, last, textColor(cell.color) ?? part.text.color),
     });
-    return { node: make("TableCell", { props: defined({ dir }), style, children }), line: linePx, unset };
+    return { node: make("TableCell", { id: idOf(cell.id), props: defined({ dir, colSpan: spanOf(cell) > 1 ? spanOf(cell) : undefined }), style, children }), line: linePx, unset };
   };
 
-  // The builder's border is each cell's, collapsed, as it draws it; the line between rows of a Table toDesign() wrote
-  // (its hidden rowBorder) while the border above and below each row is still that line.
-  const { rowBorder: written, ...hiddenStyle } = hidden.style;
-  const lines = readBorderSides(obj(values.border), "#000000") as Record<string, Json> | undefined;
-  const between = written !== undefined && lines && !lines.left && !lines.right && same(lines.top, written) && same(lines.bottom, written) ? written : undefined;
-  const cellBorder = lines && !between ? (lines as Json) : undefined;
+  // The table's border, around every cell, as the builder draws it with its line between rows. (A border above and
+  // below each row that is the line between rows is drawn above the first row and below the last too, whoever wrote it.)
+  const { rowBorder: rowLine, ...hiddenStyle } = hidden.style;
+  // The builder's table fills its place unless told otherwise, and saves that as a width and a max width of 100% (its
+  // defaults): no width of the Table's. A px width with a max width of 100% shrinks to fit a narrower place, so that
+  // max width is kept with it.
+  const fixed = typeof hiddenStyle.width === "number" || (typeof hiddenStyle.width === "string" && hiddenStyle.width.trim().endsWith("px"));
+  if (hiddenStyle.width === "100%") delete hiddenStyle.width;
+  if (hiddenStyle.maxWidth === "100%" && !fixed) delete hiddenStyle.maxWidth;
+  const base = readBorderSides(obj(values.border), "#000000") as Record<string, Json> | undefined;
+  /**
+   * A cell's lines as the builder draws them: the table's border, the line rowLine rows, its own border over both. A
+   * side of its own counts where its width is one the builder reads (px): 0 takes the line away, and one with no color
+   * is the color of the cell's words (`color`).
+   */
+  const borderOf = (cell: Values, last: boolean, color: string): Json | undefined => {
+    const mine = obj(cell.border);
+    const lines: Record<string, Json> = { ...base };
+    if (rowLine !== undefined && !last) lines.bottom = rowLine;
+    let none = false;
+    for (const side of ["top", "right", "bottom", "left"]) {
+      const name = side[0].toUpperCase() + side.slice(1);
+      const given = mine[`border${name}Width`];
+      if (typeof given !== "string" || !/^\d+(\.\d+)?px$/.test(given)) continue;
+      const line = (readBorderSides({ [`border${name}Width`]: given, [`border${name}Style`]: mine[`border${name}Style`], [`border${name}Color`]: mine[`border${name}Color`] }, color) as Record<string, Json> | undefined)?.[side];
+      if (line !== undefined) lines[side] = line;
+      else {
+        delete lines[side];
+        if (side === "bottom") none = true;
+      }
+    }
+    if (rowLine !== undefined && !last) {
+      // The line rowLine rows is the Table's: a cell's bottom line that's it is left to it, and none is said, or it
+      // would be drawn there.
+      if (same(lines.bottom, rowLine)) delete lines.bottom;
+      else if (none) lines.bottom = { width: 0, style: "none", color: "#000000" };
+    }
+    return Object.keys(lines).length ? lines : undefined;
+  };
 
-  const children = [
-    ...headers.map((row, i) => rowOf(row, header, "header", i)),
-    ...body.map((row, i) => rowOf(row, content, "body", i)),
-    ...footers.map((row, i) => rowOf(row, footer, "footer", i)),
-  ];
-  // Each column's share, on the first row's cells, where they aren't equal (the share a column without one takes) or
-  // are all none.
-  const shares = rows(obj(headers[0] ?? body[0] ?? footers[0]).cells).map((cell) => (typeof cell.width === "number" && Number.isFinite(cell.width) && cell.width >= 0 ? cell.width : 50));
-  const total = shares.reduce((sum, w) => sum + w, 0) || 1;
+  const all = [...headers.map((row, i) => [row, header, "header", i] as const), ...body.map((row, i) => [row, content, "body", i] as const), ...footers.map((row, i) => [row, footer, "footer", i] as const)];
+  const children = all.map(([row, part, kind, i], at) => rowOf(row, part, kind, i, at === all.length - 1));
+  // Each column's share, as the builder draws them. With no cell across columns, they're its first row's cells'. With
+  // one, they're what the builder keeps for the table (`columnWidths`), else each column's first cell of one column's
+  // (rows that reach every column first), else an equal part of the first cell across it, else the average of the rest.
+  // A share is that first cell's width, where the shares aren't equal (the share a column without one takes) or are
+  // all none.
+  const share = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 1_000_000;
+  const across = (cells: Values[]) => cells.reduce((sum, cell) => sum + spanOf(cell), 0);
+  const grid = all.map(([row]) => rows(row.cells));
+  // (The builder works its columns out from every row it keeps, those of a header or a footer that's off too.)
+  const kept = [...rows(data.headers), ...rows(data.rows), ...rows(data.footers)].map((row) => rows(row.cells));
+  const shown = Math.max(0, ...grid.map(across));
+  const count = Math.max(shown, ...kept.map(across));
+  const firsts = new Array<[number, number] | undefined>(shown).fill(undefined);
+  let columns: number[];
+  if (!kept.some((cells) => cells.some((cell) => spanOf(cell) > 1))) {
+    columns = (grid[0] ?? []).map((cell) => (typeof cell.width === "number" && Number.isFinite(cell.width) && cell.width >= 0 ? cell.width : 50));
+    columns.forEach((_, column) => (firsts[column] = [0, column]));
+  } else {
+    grid.forEach((cells, r) => {
+      let column = 0;
+      cells.forEach((cell, c) => {
+        if (spanOf(cell) === 1) firsts[column] ??= [r, c];
+        column += spanOf(cell);
+      });
+    });
+    const stored = Array.isArray(data.columnWidths) ? Array.from(data.columnWidths as unknown[]) : [];
+    const given = new Array<number | undefined>(count).fill(undefined);
+    if (stored.length === count && stored.every(share) && stored.some((w) => w > 0)) stored.forEach((w, column) => (given[column] = w));
+    else {
+      const full = (cells: Values[]) => across(cells) === count;
+      const ordered = [...kept.filter(full), ...kept.filter((cells) => !full(cells))];
+      for (const pass of ["one", "across"] as const) {
+        for (const cells of ordered) {
+          let column = 0;
+          for (const cell of cells) {
+            const span = spanOf(cell);
+            if (share(cell.width) && (span === 1) === (pass === "one")) for (let i = column; i < column + span; i++) given[i] ??= cell.width / span;
+            column += span;
+          }
+        }
+      }
+    }
+    const known = given.filter((w): w is number => w !== undefined);
+    const average = known.length ? known.reduce((sum, w) => sum + w, 0) / known.length : 1;
+    // (Shares with no usable total are equal ones. Only the columns its shown rows reach are a Table's.)
+    const whole = given.map((w) => w ?? average);
+    const sum = whole.reduce((all, w) => all + w, 0);
+    columns = (!Number.isFinite(sum) || sum <= 0 ? whole.map(() => 1) : whole).slice(0, shown);
+  }
+  const total = columns.reduce((sum, w) => sum + w, 0) || 1;
   // (Shares are written to a hundredth: any larger difference is a column's own width.)
-  if (children[0] && (shares.some((w) => Math.abs(w - shares[0]) > 0.01) || shares.every((w) => w === 0))) {
-    children[0] = { ...children[0], children: (children[0].children ?? []).map((cell, i) => (typeof cell === "string" ? cell : { ...cell, style: { ...cell.style, width: `${Math.round((shares[i] / total) * 10000) / 100}%` } })) };
+  if (columns.some((w) => Math.abs(w - columns[0]) > 0.01) || (columns.length > 0 && columns.every((w) => w === 0))) {
+    if (firsts.some((first) => !first)) context.say("a column with no cell of its own (every cell in it is across columns) has no width of its own in a Table: it shares what's left");
+    firsts.forEach((first, column) => {
+      if (!first) return;
+      const [r, c] = first;
+      if (!children[r]) return;
+      const cells = [...(children[r].children ?? [])];
+      const cell = cells[c];
+      if (cell === undefined || typeof cell === "string") return;
+      cells[c] = { ...cell, style: { ...cell.style, width: `${Math.round((columns[column] / total) * 10000) / 100}%` } };
+      children[r] = { ...children[r], children: cells };
+    });
+  }
+  // Cells side by side share their lines in the builder's table unless it's told they're separate (a hidden style then,
+  // below). A line rowLine rows only is drawn the same either way, and is left as a Table has it.
+  const lined = base !== undefined || grid.some((cells) => cells.some((cell) => readBorderSides(obj(cell.border), "#000000") !== undefined));
+  // The builder draws the border around a table outside its cells' lines. A Page's or a Document's Table whose borders
+  // collapse draws the two as one line (an Email's draws both, as the builder does).
+  const frame = obj(hiddenStyle.border);
+  const edge = (cells: Node["children"], side: string) => (cells ?? []).some((cell) => typeof cell !== "string" && obj(cell.style?.border)[side] !== undefined);
+  const edges: Record<string, Node["children"]> = { top: children[0]?.children, bottom: children[children.length - 1]?.children, left: children.flatMap((row) => (row.children ?? []).slice(0, 1)), right: children.flatMap((row) => (row.children ?? []).slice(-1)) };
+  if (context.mode !== "email" && lined && hiddenStyle.borderCollapse !== "separate" && Object.keys(edges).some((side) => frame[side] !== undefined && edge(edges[side], side))) {
+    context.say("the border around it and the lines of its cells at its edges are two lines in the builder's table, one in a Table whose borders collapse");
   }
   const style = defined({
     ...own,
     backgroundColor: background,
     cellPadding: unless(padding as Json, ZERO as Json),
-    rowBorder: between,
-    borderCollapse: cellBorder ? "collapse" : undefined,
+    rowBorder: rowLine,
+    borderCollapse: lined ? "collapse" : undefined,
     ...hiddenStyle,
   });
   const node = make("Table", { id: givenId(values), props: hidden.props, style, mobile: hidden.mobile, children });

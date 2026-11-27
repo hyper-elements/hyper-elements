@@ -225,6 +225,8 @@ export const TableDefaults: Record<string, any> = {
   },
   columns: 2,
   rows: 2,
+  width: "100%",
+  maxWidth: "100%",
   border: {
     borderTopWidth: "1px",
     borderTopStyle: "solid",
