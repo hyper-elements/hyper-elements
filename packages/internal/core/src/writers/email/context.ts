@@ -9,6 +9,7 @@ import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
 import type { Html } from "../jsx";
 import type { Declarations } from "../shared/css";
+import type { PartOptions } from "../shared/part";
 
 export interface EmailOptions {
   /** How a merge tag is written (default `{{name}}`): into the HTML as it is, the name in it escaped. */
@@ -18,6 +19,18 @@ export interface EmailOptions {
   /** The window's width in px at and below which what's hidden on phones is (default: where its phone styles start). */
   hideBelow?: number;
 }
+
+/** An email is on a phone below its content width plus this. */
+export const EMAIL_PHONE_MARGIN = 20;
+
+/** An email's content width: its root's, or 600. */
+export const emailWidth = (root: ResolvedNode) => root.width ?? 600;
+
+/** The window's width in px at and below which an email of a content width is on a phone: `phoneBelow`, or its width and the margin. */
+export const emailPhoneWidth = (width: number, options: PartOptions = {}) => options.phoneBelow ?? width + EMAIL_PHONE_MARGIN;
+
+/** On phones, past its content width: an email on a phone where a wider one is (`phoneBelow`) fills the window there. */
+export const phoneFill = (width: number, options: PartOptions) => (emailPhoneWidth(width, options) > width + EMAIL_PHONE_MARGIN ? { maxWidth: "none" } : undefined);
 
 export interface Props {
   node: ResolvedNode;
@@ -38,7 +51,7 @@ export interface Props {
   rtl: boolean;
   /** Writes a child: a block (with `fill` where its cell is exactly its width), or with `inline`, a run inside text. */
   render(child: ResolvedNode, how?: { fill?: boolean; inline?: boolean }): Html;
-  options: EmailOptions;
+  options: EmailOptions & PartOptions;
 }
 
 /** A component's markup in this output, from its props. */

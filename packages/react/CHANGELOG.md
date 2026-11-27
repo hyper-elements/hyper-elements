@@ -4,6 +4,56 @@ Versions before 0.3.0 were published as `@unlayer/react-elements`.
 
 ## Unreleased
 
+### The builder keeps what's hidden on phones or desktops
+
+- A `Grid` with `hidden` hides each of the builder's rows it's written as, there. Before, `toDesign()` wrote its rows
+  shown everywhere, with nothing in `report`, and `fromDesign()` read them back shown.
+- A `Text`, `Heading`, `List`, `Link` or `Button` with part of it hidden on phones or desktops (a `Span`, a `Link` or
+  a `ListItem` with `hidden`) is an HTML block, which keeps those words hidden there, and `report` says why: the
+  builder hides whole blocks only. Before, its words were written as plain text and showed everywhere, with nothing in
+  `report`. An editor user can move the block, not edit it. A block hidden as a whole is still the builder's own.
+- What's hidden on phones or desktops in a `Section`, in the root's content or in a Row's `Column` (a block, a `Row`,
+  a `Grid`, part of a plain `Column`) leaves the space around what shows there as Elements draws it: the padding
+  around what shows, and a gap only between children that show. A builder row or block whose space isn't the same on
+  desktops and phones gets a phone padding of its own. Where everything in a Section is hidden on a device, a row of
+  its own, shown there only, keeps its band. Before, a hidden first or last one took the Section's padding with it, so
+  on that device the next one sat against the Section's edge, and a gap could show next to nothing.
+- A `Section`'s or a plain `Column`'s own padding and gap on phones (`mobile.padding`, `mobile.gap`), and a `Row`'s
+  phone padding, are held there, as their padding and gap are: the padding at its top and bottom. Before, they were
+  left out, and `report` said so; it still says so for a phone padding that differs at the sides, which the builder
+  has no place for on phones.
+- `fromDesign()` reads a one-column row whose blocks include one hidden on a device, or one with a phone padding of its
+  own, as a `Column` around them that holds the row's and the column's space. Before, it folded that space into the
+  first and the last block, where a device that hid them, or their phone padding, dropped it.
+
+Every HTML block `toDesign()` writes (a Table the builder's table can't hold, a Layer, an Svg, your own
+`defineElement()`, and the blocks above) is now drawn closer to the way the design draws it, wherever it sits:
+
+- It's on a phone where its root is, an `Email`'s width and 20px or a `Page`'s breakpoint: its phone styles apply and
+  what it hides on phones or desktops switches there, and, narrower than that (in a column), it fills its column
+  there, as the column does when the columns stack. Before, an HTML block in a 300px column of a 600px Email switched
+  below 320px instead of 620px, so on most phones it showed what the Email hides there, kept its desktop styles, and
+  stayed 300px wide.
+- It's drawn as wide as the stack it's in gives it (its Section's or Column's width inside their padding), and placed
+  across it by the stack's `alignItems`, as Elements places it. A Row's own child fills its column, as it fills its
+  cell in Elements (a Button too, and what your own element renders): its width and flex, and a limit that's a share
+  of the Row, are the Row's, taken already. Where its Row stays side by side on phones, so is its phone width, which a
+  builder column has none of: `report` says it's left out. Its phone `maxWidth` is its own there too and stays, but in
+  a Page, where it's its cell, one that's a share of the Row is the Row's: left out, and said. Before, it was drawn at
+  its own width and centered: a 320px Svg in a Section that starts what it holds was in the middle, and a Text half as
+  wide as its Email or its Row was a quarter as wide. One case still differs: in a Page, a Row's child with a share of
+  the Row as its `maxWidth`, which Elements keeps on phones and the HTML block doesn't.
+- It runs in its root's direction: in an Email or a Page with `dir="rtl"`, its text is aligned and ordered right to
+  left. Before, it was drawn left to right.
+- Where what it's drawn from is hidden on phones or desktops, the builder's block is hidden there too, with its own
+  space; the Section's padding and gaps stay around what shows, as above. Before, only its markup was hidden, and its
+  space showed.
+
+This changes the builder design of an HTML block in a column, narrower than the stack it's in, hidden on a device, or
+in a right-to-left design; of what's hidden on a device in a Section; and of a Section, a Row or a plain Column with a
+phone padding or gap. It changes what `fromDesign()` reads from a one-column row with a block hidden on a device or a
+phone padding of its own. What Elements renders from a design is the same.
+
 ### A block map for every root
 
 `render(design, { blockMap: true })` now returns `blocks` for a Page, a Document (its print HTML) and a Canvas (as HTML),

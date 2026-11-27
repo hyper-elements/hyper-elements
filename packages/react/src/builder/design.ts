@@ -5,6 +5,7 @@
  * it's the design Elements 0.2's renderToJson() wrote for the same parts, which designs saved in the builder since
  * then hold.
  */
+import type { Given } from "./spacing";
 import {
   BodyDefaults,
   ButtonDefaults,
@@ -38,6 +39,8 @@ export interface Block {
   tool: Tool;
   hiding: Hiding;
   values: Values;
+  /** The space its stack put in its padding, for spacing it on each device (spacing.ts). */
+  given?: Given;
 }
 
 /** A block of a tool, hidden where `hiding` says, its values to come. */
@@ -75,6 +78,10 @@ export interface Row {
   fields: RowFields;
   values: Values;
   columns: Column[];
+  /** The space its stack put in its padding, for spacing it on each device (spacing.ts); a run's row has none, its blocks do. */
+  given?: Given;
+  /** A row of a run of blocks. */
+  run?: boolean;
 }
 
 /** A row of these columns, `cells` their widths, its values to come. */

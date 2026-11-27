@@ -129,14 +129,16 @@ jobs:
       # grammar and limits), the blocks kind, and frozen kinds and definitions; 348,700 bytes (3,554 more) for fitted
       # text in a Canvas: the fit kind and prop, style/fit, and a fitted node laid out at its largest size; 349,800
       # bytes for the two together, templates and the `elements` key (349,212 measured); 350,800 bytes for a block
-      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured).
+      # map of every root, the page writer marking its blocks as the email writer does (829 bytes more, 350,381 measured);
+      # 352,600 bytes for a design drawn as part of a wider one (the builder's HTML blocks), on a phone where that one
+      # is and filling its column there, and a Row's child in it drawn as its cell (2,005 bytes more, 352,386 measured).
       - name: Check main entry bundle size
         run: |
           BUNDLE="packages/react/dist/primitives.js"
           # A bundle that wasn't built (or came out empty) fails here rather than passing the checks below.
           test -s "$BUNDLE" && test -s "packages/react/dist/primitives.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=350800
+          MAX_SIZE=352600
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::Main entry bundle size $SIZE exceeds budget of $MAX_SIZE bytes"
@@ -170,13 +172,19 @@ jobs:
       # 511,000 for its columns' percentages as given, a header's or a footer's background shared only where all its rows
       # have it, its words read at the page's line height, and a row below a footer row said (1,927 bytes measured).
       # 521,700 bytes for templates and the builder's table together (521,210 measured); 522,500 bytes for a block map of
-      # every root, in the writers it shares (844 bytes more, 522,115 measured).
+      # every root, in the writers it shares (844 bytes more, 522,115 measured); 539,800 bytes for a Grid's hiding on
+      # each of its rows, a text or a button with part of it hidden on a device as an HTML block, its reason said, and an
+      # HTML block drawn as wide as its stack gives it (a Row's child filling its cell), placed by the stack's
+      # alignItems, in its root's direction, hidden where it is, and on a phone where its root is, filling its column
+      # there, in the writers it shares, and the space between a Section's rows and blocks on each device, around what
+      # shows there, with a Section's, a Row's and a plain Column's phone padding and gap (17,341 bytes more, 539,456
+      # measured).
       - name: Check /builder bundle size
         run: |
           BUNDLE="packages/react/dist/builder.js"
           test -s "$BUNDLE" && test -s "packages/react/dist/builder.cjs" || { echo "::error::$BUNDLE wasn't built"; exit 1; }
           SIZE=$(wc -c < "$BUNDLE" | tr -d ' ')
-          MAX_SIZE=522500
+          MAX_SIZE=539800
           echo "Size: $SIZE bytes (budget: $MAX_SIZE bytes)"
           if [ "$SIZE" -gt "$MAX_SIZE" ]; then
             echo "::error::/builder bundle size $SIZE exceeds budget of $MAX_SIZE bytes"

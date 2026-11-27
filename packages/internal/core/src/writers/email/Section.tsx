@@ -5,15 +5,16 @@
  */
 import { h, NotOutlook } from "../jsx";
 import { px } from "../shared/css";
-import type { Component } from "./context";
+import { emailWidth, phoneFill, type Component } from "./context";
 import { Stack } from "./layout";
 import { bgcolor, OutlookWidth, Table } from "./markup";
 import { hiding } from "./styles";
 
 type Sides = { top: number; right: number; bottom: number; left: number };
 
-export const Section: Component = ({ node, style, mobile, parent: root, rtl, render }) => {
-  const width = root.width ?? 600;
+export const Section: Component = ({ node, style, mobile, parent: root, rtl, render, options }) => {
+  const width = emailWidth(root);
+  const fill = phoneFill(width, options);
   const padding = (style.padding as Sides | undefined) ?? { top: 0, right: 0, bottom: 0, left: 0 };
   const phonePadding = mobile.padding as Sides | undefined;
   // The sides phones set, where they're other than desktop's: on the cell that holds the side padding.
@@ -33,7 +34,7 @@ export const Section: Component = ({ node, style, mobile, parent: root, rtl, ren
         <OutlookWidth width={width}>
           {padding.left || padding.right || phoneSides ? (
             // The side padding on a cell around the content, and phones' own sides on it.
-            <Table width="100%" style={{ maxWidth: width }}>
+            <Table width="100%" style={{ maxWidth: width }} phone={fill}>
               <tr>
                 <td phone={phoneSides} style={padding.left || padding.right ? { padding: `0 ${px(padding.right)} 0 ${px(padding.left)}` } : undefined}>
                   <Stack node={node} rtl={rtl} render={render} />
@@ -41,7 +42,7 @@ export const Section: Component = ({ node, style, mobile, parent: root, rtl, ren
               </tr>
             </Table>
           ) : (
-            <Stack node={node} rtl={rtl} render={render} style={{ maxWidth: width }} />
+            <Stack node={node} rtl={rtl} render={render} style={{ maxWidth: width }} phone={fill} />
           )}
         </OutlookWidth>
       </td>

@@ -159,7 +159,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -279,7 +280,12 @@
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 0px"
+            }
+           }
           }
          }
         ],
@@ -504,7 +510,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "16px 0px 0px"
         }
        },
        "cells": [
@@ -556,7 +563,8 @@
              "src": {
               "autoWidth": true,
               "maxWidth": "100%"
-             }
+             },
+             "containerPadding": "16px 32px 28px"
             }
            }
           }
@@ -667,7 +675,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
+   "root.children[0]: the builder's row has no place for mobile.padding at its sides: left out",
    "root.children[0].children[3]: the builder's image has no place for style.alignSelf, mobile.alignSelf: left out"
   ]
  }

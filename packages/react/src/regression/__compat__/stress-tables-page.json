@@ -159,7 +159,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -286,7 +287,8 @@
            "letterSpacing": "-0.6px",
            "_override": {
             "mobile": {
-             "fontSize": "28px"
+             "fontSize": "28px",
+             "containerPadding": "16px 32px 0px"
             }
            }
           }
@@ -304,7 +306,12 @@
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 28px"
+            }
+           }
           }
          }
         ],
@@ -413,7 +420,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
+   "root.children[0]: the builder's row has no place for mobile.padding at its sides: left out",
    "root.children[0].children[2]: the builder's table doesn't draw it as it is (a line between rows only; a cell spanning columns; a border around it; a column of a fixed width): it's an HTML block of its own markup in the builder (it can be moved, not edited)"
   ]
  }

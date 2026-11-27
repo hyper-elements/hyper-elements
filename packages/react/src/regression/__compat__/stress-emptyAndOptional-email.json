@@ -135,7 +135,12 @@
             "label": "Helvetica Neue",
             "value": "'Helvetica Neue', Helvetica, Arial, sans-serif"
            },
-           "letterSpacing": "0px"
+           "letterSpacing": "0px",
+           "_override": {
+            "mobile": {
+             "containerPadding": "24px 28px 0px"
+            }
+           }
           }
          },
          {
@@ -819,7 +824,12 @@
        "cells": [
         300,
         300
-       ]
+       ],
+       "_override": {
+        "mobile": {
+         "padding": "14px 0px 24px"
+        }
+       }
       }
      },
      {
@@ -950,7 +960,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[1]: the builder's row has no place for mobile.padding: left out",
+   "root.children[1]: the builder's row has no place for mobile.padding at its sides: left out",
    "root.children[1].children[11]: an image without its size (its src's width and height) takes its own size, and in the builder its column's width"
   ]
  }

@@ -36,7 +36,8 @@ import { utf8Bytes } from "../shared/bytes";
 import { Stylesheet } from "../shared/classes";
 import { attrs, css, escapeText, styleAttr } from "../shared/css";
 import { fontFaces } from "../shared/fonts";
-import { shown, type EmailOptions, type Props, type Component } from "./context";
+import { emailPhoneWidth, emailWidth, shown, type EmailOptions, type Props, type Component } from "./context";
+import type { PartOptions } from "../shared/part";
 import { Button } from "./Button";
 import { Column } from "./Column";
 import { Divider } from "./Divider";
@@ -101,7 +102,7 @@ interface Place {
 }
 
 /** What a node's component gets. */
-function propsOf(node: ResolvedNode, place: Place, options: EmailOptions): Props {
+function propsOf(node: ResolvedNode, place: Place, options: EmailOptions & PartOptions): Props {
   const mobileText = mobileTextOf(node, place.mobile);
   // Inside text, CSS carries the text's phone styles down to its runs: a run writes only its own, its line
   // height from the text's phone line height where it has one (as on desktop, the run's size times the text's).
@@ -127,7 +128,7 @@ function propsOf(node: ResolvedNode, place: Place, options: EmailOptions): Props
 /** What writes no element of its own, so has no place in the block map: a line break, and a merge tag (its markup is the template's). */
 const UNMAPPED = new Set(["LineBreak", "MergeTag"]);
 
-function write(node: ResolvedNode, place: Place, options: EmailOptions): Html {
+function write(node: ResolvedNode, place: Place, options: EmailOptions & PartOptions): Html {
   if (place.inline) {
     if (!shown(node)) return raw("");
     const component = INLINES[node.type];
@@ -157,16 +158,15 @@ export interface EmailHtml {
   blocks?: BlockMap;
 }
 
-/** An email is on a phone below its content width plus this. */
-export const EMAIL_PHONE_MARGIN = 20;
+export { EMAIL_PHONE_MARGIN } from "./context";
 
-export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & { blockMap?: boolean } = {}): EmailHtml {
+export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & PartOptions & { blockMap?: boolean } = {}): EmailHtml {
   const root = resolved.root;
   // What email can't do as asked is found before writing (prepareTemplate: emailSupport); here, only what needs the written
   // email (nothing today: email clients' size limits are the email-clients plugin's checkOutput).
   const d = new Diagnostics();
   const fonts = fontFaces(root, { swap: false });
-  const width = root.width ?? 600;
+  const width = emailWidth(root);
   const write = (marks: BlockMarks | null) => {
     const sheet = new Stylesheet(options.classPrefix);
     const markup = withStylesheet(sheet, () => withBlockMarks(marks, () => String(markBlock(Email(propsOf(root, { parent: root, fill: false, mobile: {}, inline: false, rtl: false }, options)), root))));
@@ -184,8 +184,9 @@ export function renderEmail(resolved: ResolvedDocument, options: EmailOptions & 
 
   const resets =
     "table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}";
-  const phoneQuery = `@media (max-width: ${width + EMAIL_PHONE_MARGIN}px)`;
-  const stylesheet = resets + sheet.css(phoneQuery, `@media (min-width: ${width + EMAIL_PHONE_MARGIN + 1}px)`, options.hideBelow ? `@media (max-width: ${options.hideBelow}px)` : phoneQuery);
+  const phone = emailPhoneWidth(width, options);
+  const phoneQuery = `@media (max-width: ${phone}px)`;
+  const stylesheet = resets + sheet.css(phoneQuery, `@media (min-width: ${phone + 1}px)`, options.hideBelow ? `@media (max-width: ${options.hideBelow}px)` : phoneQuery);
   const head = [
     '<meta http-equiv="Content-Type" content="text/html; charset=utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',

@@ -47,9 +47,14 @@ function blocksOf(column: Values, where: string, at: Where, slot: Omit<Slot, "co
   });
 }
 
-/** Space folded into blocks: above the first, below the last, at the sides of each. */
+/**
+ * Space folded into blocks: above the first, below the last, at the sides of each. Where one is hidden on a device or
+ * has a padding of its own on phones, the space isn't the same block's on desktops and phones: a Column around them
+ * holds it, as the builder's column does.
+ */
 function fold(blocks: Node[], space: Sides): Node[] {
   if (!some(space)) return blocks;
+  if (blocks.some((block) => block.hidden?.mobile || block.hidden?.desktop || block.mobile?.padding !== undefined)) return [{ type: "Column", style: { padding: space }, children: blocks }];
   return blocks.map((block, i) => {
     const s = { top: i === 0 ? space.top : 0, right: space.right, bottom: i === blocks.length - 1 ? space.bottom : 0, left: space.left };
     if (!some(s)) return block;

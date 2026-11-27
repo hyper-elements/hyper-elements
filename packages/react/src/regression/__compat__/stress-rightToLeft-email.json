@@ -179,7 +179,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -306,7 +307,8 @@
            "letterSpacing": "0px",
            "_override": {
             "mobile": {
-             "fontSize": "28px"
+             "fontSize": "28px",
+             "containerPadding": "16px 32px 0px"
             }
            }
           }
@@ -342,7 +344,12 @@
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"شكراً لحجزك. تبحر رحلتك رقم \"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:700\",\"text\":\"10482\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\" يوم الاثنين.\"}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"شكراً لحجزك. تبحر رحلتك رقم \"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"font-weight:700\",\"text\":\"10482\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\" يوم الاثنين.\"}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 0px"
+            }
+           }
           }
          },
          {
@@ -377,7 +384,12 @@
            "fontWeight": 400,
            "letterSpacing": "0px",
            "textDirection": "ltr",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"MV Selkie, deck 4: an English sentence inside an Arabic email, left to right.\"}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"MV Selkie, deck 4: an English sentence inside an Arabic email, left to right.\"}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 0px"
+            }
+           }
           }
          }
         ],
@@ -640,7 +652,12 @@
        "cells": [
         300,
         300
-       ]
+       ],
+       "_override": {
+        "mobile": {
+         "padding": "16px 0px 0px"
+        }
+       }
       }
      },
      {
@@ -683,7 +700,12 @@
            "letterSpacing": "0px",
            "indent": "24px",
            "gap": "0px",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-list\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"listType\":\"number\",\"tag\":\"ol\",\"start\":1,\"children\":[{\"type\":\"extended-listitem\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"value\":1,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"احضر قبل الإبحار بساعة\"}]},{\"type\":\"extended-listitem\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"value\":2,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"أظهر رمز الحجز عند البوابة\"}]}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-list\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"listType\":\"number\",\"tag\":\"ol\",\"start\":1,\"children\":[{\"type\":\"extended-listitem\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"value\":1,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"احضر قبل الإبحار بساعة\"}]},{\"type\":\"extended-listitem\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"value\":2,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"أظهر رمز الحجز عند البوابة\"}]}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 0px"
+            }
+           }
           }
          },
          {
@@ -729,7 +751,12 @@
             "url": "data:text/css;charset=utf-8,%40font-face%7Bfont-family%3A'Familjen%20Grotesk'%3Bsrc%3Aurl(https%3A%2F%2Ffonts.gstatic.com%2Fs%2Ffamiljengrotesk%2Fv11%2FQw3GZR9ZHiDnImG6-NEMQ41wby8WbHoEj7E49PA.woff2)%20format('woff2')%3Bfont-weight%3A400%20700%3Bfont-style%3Anormal%7D"
            },
            "fontWeight": 600,
-           "letterSpacing": "0px"
+           "letterSpacing": "0px",
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 28px"
+            }
+           }
           }
          }
         ],
@@ -840,7 +867,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out"
+   "root.children[0]: the builder's row has no place for mobile.padding at its sides: left out"
   ]
  }
 }

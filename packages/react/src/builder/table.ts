@@ -17,7 +17,7 @@
  */
 import type { Border, BorderSide, Json, Node, ResolvedNode } from "@hyper-elements/core";
 import { leftOut } from "./hide";
-import { cellJson } from "./runs";
+import { cellJson, hides, holdsImage } from "./runs";
 import { builderBorder, builderFont, cssPx, cssSides, fieldLineHeight, type Values } from "./values";
 
 type Sides = { top: number; right: number; bottom: number; left: number };
@@ -53,12 +53,6 @@ const share = (n: number) => Math.round(n * 100) / 100;
 /** What a row or a cell has that the builder's table holds, by path. */
 const ROW_FIELDS = ["props.header", "props.footer", "style.backgroundColor", "style.height", "style.color", "style.fontFamily", "style.fontSize", "style.fontWeight", "style.fontStyle", "style.lineHeight", "style.letterSpacing", "style.textAlign", "style.textTransform"];
 const CELL_FIELDS = [...ROW_FIELDS.slice(2), "props.colSpan", "props.dir", "style.padding", "style.border", "style.width", "style.verticalAlign", "style.textDecoration"];
-
-/** Whether a node holds an Image anywhere in it (a linked one too). */
-const holdsImage = (node: Node): boolean => (node.children ?? []).some((child) => typeof child !== "string" && (child.type === "Image" || holdsImage(child)));
-
-/** Whether a node, or anything in it, is hidden on phones or on desktops. */
-const hides = (node: Node): boolean => Boolean(node.hidden?.mobile || node.hidden?.desktop) || (node.children ?? []).some((child) => typeof child !== "string" && hides(child));
 
 /**
  * Whether a node holds words: text that isn't only spaces that collapse (a non-breaking space doesn't: it's a word), a

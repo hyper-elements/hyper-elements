@@ -366,7 +366,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -773,7 +774,7 @@
          {
           "type": "image",
           "values": {
-           "containerPadding": "16px 32px 0px",
+           "containerPadding": "16px 32px 36px",
            "src": {
             "url": "gallery/saltworks/low-water.png",
             "width": 1200,
@@ -848,7 +849,7 @@
          {
           "type": "button",
           "values": {
-           "containerPadding": "16px 32px 36px",
+           "containerPadding": "16px 32px 28px",
            "href": {
             "name": "web",
             "values": {
@@ -1008,7 +1009,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[2]: the builder's row has no place for mobile.padding: left out"
+   "root.children[2]: the builder's row has no place for mobile.padding at its sides: left out"
   ]
  }
 }

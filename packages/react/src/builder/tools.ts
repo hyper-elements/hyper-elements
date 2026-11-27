@@ -3,10 +3,11 @@
  * defaults, design.ts), what the tool has no field for as hidden properties, its place's spacing in its
  * `containerPadding` and its place's alignment in its `textAlign`.
  */
+import { phoneSidesDiffer } from "./spacing";
 import { linkParts, Menu as MenuDefinition, Social as SocialDefinition, videoParts, type Json, type LinkValue, type Node, type ResolvedNode } from "@hyper-elements/core";
 import { block, type Block } from "./design";
 import { hiddenOf, merge } from "./hide";
-import { listJson, paragraphJson, runsHtml } from "./runs";
+import { hidesPart, holdsImage, listJson, paragraphJson, runsHtml } from "./runs";
 import { intoMarkup } from "./paint";
 import { TABLE_FIELDS, tableValues } from "./table";
 import { withParagraphMargin } from "./text";
@@ -40,7 +41,8 @@ const length = (value: Json | undefined) => (value === undefined ? undefined : t
 
 /** A text block with a box of its own: its padding is inside the box, apart from its place's spacing. */
 const TEXT_BOX = ["backgroundColor", "border", "borderRadius", "width", "maxWidth"];
-const holdsImage = (node: Node): boolean => (node.children ?? []).some((child) => typeof child !== "string" && (child.type === "Image" || holdsImage(child)));
+/** Why a text block with part of it hidden on a device is an HTML block (runs.ts, `hidesPart`). */
+const HIDDEN_PART = "part of a text hidden on phones or on desktops (words, a link, a list item) isn't something the builder's text holds";
 const boxed = (node: Node) => TEXT_BOX.some((key) => node.style?.[key] !== undefined);
 
 /** A block's text styles as the builder's fields, from its node as resolved (inherited ones too). */
@@ -90,6 +92,7 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
     case "Text":
     case "List": {
       if (holdsImage(node)) return place.locked(node, path, "an Image in a run of text isn't something the builder's text holds", around);
+      if (hidesPart(node)) return place.locked(node, path, HIDDEN_PART, around);
       const box = boxed(node);
       const containerPadding = box ? around : add(padding(node), around);
       const tool = node.type === "Heading" ? "heading" : "paragraph";
@@ -116,6 +119,7 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
       return place.put(block(tool, hiding), { ...rest, ...written });
     }
     case "Button": {
+      if (hidesPart(node)) return place.locked(node, path, "part of a button's label hidden on phones or on desktops isn't something the builder's button holds", around);
       const style = own.style;
       const { href, target } = linkParts(own.props.href as LinkValue);
       const color = own.text.color;
@@ -151,6 +155,7 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
       const linked = node.type === "Link";
       const images = linked ? (node.children ?? []).filter((c): c is Node => typeof c !== "string") : [];
       if (linked && !images.some((child) => child.type === "Image")) {
+        if (hidesPart(node)) return place.locked(node, path, HIDDEN_PART, around);
         // A Link of words on its own: a text block holding it, placed where the Link sits.
         const holder: Node = { type: "Text", children: [node] };
         place.sayLeftOut("paragraph", { type: "Link", style: { ...node.style, color: undefined, textDecoration: undefined } as never, props: {} }, path, ["style.flex"]);
@@ -267,7 +272,8 @@ export function blockTool(node: Node, path: string, parent: ResolvedNode, around
     default:
       // A plain stack (a Column without a box of its own) is its blocks, in the same column.
       if ((node.type === "Column" || node.type === "Section") && !Object.keys(node.style ?? {}).some((key) => !["padding", "gap", "alignItems", ...TEXT_STYLES].includes(key)) && !node.hidden) {
-        const phone = Object.keys(node.mobile ?? {});
+        // Its phone padding and gap are held where its padding and gap are, on phones (spacing.ts), but its padding's sides.
+        const phone = Object.keys(node.mobile ?? {}).flatMap((key) => (key === "gap" ? [] : key !== "padding" ? [key] : phoneSidesDiffer(node) ? ["padding at its sides"] : []));
         if (phone.length) place.report.push(`${path}: the builder has no phone values for a plain ${node.type} (${phone.join(", ")}): left out`);
         return place.stack(node, path, around);
       }

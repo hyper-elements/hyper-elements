@@ -16,6 +16,7 @@ import { Stylesheet } from "../shared/classes";
 import { attrs, css, escapeText, styleAttr, type Declarations } from "../shared/css";
 import { fontFaces } from "../shared/fonts";
 import { isNode, type PageOptions, type Props, type Component } from "./context";
+import type { PartOptions } from "../shared/part";
 import { alignSelf, layerPlacement, rowPlacement } from "./layout";
 import { classesFor } from "./styles";
 import { Button } from "./Button";
@@ -114,7 +115,7 @@ const COMPONENTS: Record<string, Component> = {
 };
 
 /** What a node's component gets. `inRtl`: its parent's text runs right to left. */
-function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl = false): Props {
+function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions & PartOptions, inRtl = false): Props {
   const rtl = node.props.dir === "rtl" || (inRtl && node.props.dir !== "ltr");
   const render: Props["render"] = (child, childPlacement) => write(child, node, childPlacement, options, rtl);
   return {
@@ -138,14 +139,14 @@ function propsOf(node: ResolvedNode, parent: ResolvedNode, placement: Declaratio
 /** What writes no element of its own, so has no place in the block map: a line break, a merge tag (its markup is the template's), a page number. */
 const UNMAPPED = new Set(["LineBreak", "MergeTag", "PageNumber"]);
 
-function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions, inRtl: boolean): Html {
+function write(node: ResolvedNode, parent: ResolvedNode, placement: Declarations, options: PageOptions & PartOptions, inRtl: boolean): Html {
   const component = COMPONENTS[node.type];
   if (!component) throw new Error(`[Elements] The page exporter can't render a ${node.type}`);
   const html = component(propsOf(node, parent, placement, options, inRtl));
   return UNMAPPED.has(node.type) ? html : markBlock(html, node);
 }
 
-export function renderPage(resolved: ResolvedDocument, options: PageOptions & { blockMap?: boolean } = {}): PageHtml {
+export function renderPage(resolved: ResolvedDocument, options: PageOptions & PartOptions & { blockMap?: boolean } = {}): PageHtml {
   const root = resolved.root;
   const fonts = fontFaces(root, { swap: true });
   const document = root.type === "Document";
@@ -161,7 +162,7 @@ export function renderPage(resolved: ResolvedDocument, options: PageOptions & { 
 
   // A Canvas and a Document are of a fixed size, whatever the window: no phone layout.
   const fixed = !root.definition.responsive;
-  const phoneWidth = pagePhoneWidth(root);
+  const phoneWidth = options.phoneBelow ?? pagePhoneWidth(root);
   const stylesheet = [...fonts, sheet.css(fixed ? null : `@media (max-width: ${phoneWidth}px)`, fixed ? null : `@media (min-width: ${phoneWidth + 1}px)`), document ? documentCss(root) : ""].join("");
   const head = [
     '<meta charset="utf-8">',

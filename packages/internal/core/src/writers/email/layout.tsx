@@ -153,11 +153,11 @@ export function gapBelow(node: ResolvedNode, at: GapAt): { style: Style; phone?:
 }
 
 /** A node's children stacked down a table, one row each, its `gap` as the cells' bottom padding. */
-export function Stack({ node, rtl, render, style }: { node: ResolvedNode; rtl: boolean; render: Props["render"]; style?: StyleValue }): Html {
+export function Stack({ node, rtl, render, style, phone }: { node: ResolvedNode; rtl: boolean; render: Props["render"]; style?: StyleValue; phone?: StyleValue }): Html {
   const children = node.children.filter(isNode).filter(shown);
   const gaps = gapsAfter(children);
   return (
-    <Table width="100%" style={style}>
+    <Table width="100%" style={style} phone={phone}>
       {children.map((child, index) => {
         const hidden = hiding(child, "table-row");
         const below = gapBelow(node, gaps[index]);

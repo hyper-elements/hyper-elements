@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { ElementsError } from "../../src";
-import { renderTemplate, validateTemplate } from "../../src/writers";
+import { phoneWidth, prepareTemplate, renderTemplate, validateTemplate } from "../../src/writers";
 
 const page = (children: unknown[], extra: Record<string, unknown> = {}) => ({ root: { type: "Page", props: { width: 600 }, children, ...extra } });
 const web = (input: unknown, options: Record<string, unknown> = {}) => renderTemplate(input, options);
@@ -105,6 +105,46 @@ describe("web HTML", () => {
     // A prefix of the embedder's own.
     expect(web(page([{ type: "Text", hidden: { mobile: true }, children: ["x"] }]), { classPrefix: "acme-" }).body).toMatch(/class="acme-[0-9a-z]{5}"/);
     expect(() => web(page([]), { classPrefix: "1x" })).toThrow(/class prefix/);
+  });
+
+  it("is on a phone where a wider page is when it's drawn as part of one (phoneBelow), and fills the window there past its width", () => {
+    const words = [{ type: "Text", hidden: { mobile: true }, mobile: { fontSize: 20 }, children: ["Words"] }];
+    const part = (children: unknown[], width: number) => ({ root: { type: "Page", props: { width, breakpoints: { mobile: 360 } }, children } });
+    // Its phone styles and hiding at the wider page's phone width, not its own breakpoint.
+    const { head, body } = web(part(words, 300), { phoneBelow: 480 });
+    expect(head).toMatch(/@media \(max-width: 480px\)\{[^@]*font-size:20px!important[^@]*display:none!important/);
+    expect(head).not.toContain("360px");
+    const main = /<main class="(\w+)"[^>]*style="max-width:300px;/.exec(body)?.[1];
+    expect(head).toMatch(new RegExp(`@media \\(max-width: 480px\\)\\{[^@]*\\.${main}\\{max-width:none!important\\}`));
+    // Its runs between Sections too.
+    const sections = web(part([...words, { type: "Section", children: [{ type: "Text", children: ["Band"] }] }], 300), { phoneBelow: 480 });
+    const run = /<div class="(?:\w+ )?(\w+)" style="width:100%;max-width:300px;/.exec(sections.body)?.[1];
+    expect(sections.head).toContain(`.${run}{max-width:none!important}`);
+    // As wide as a phone's window or wider, or not told: nothing to fill.
+    for (const [width, options] of [[480, { phoneBelow: 480 }], [300, {}]] as const) expect(web(part(words, width), options).head).not.toContain("max-width:none");
+  });
+
+  it("says where each root is on a phone (phoneWidth), as its writer puts its phone styles", () => {
+    const rootOf = (type: string, props: Record<string, unknown> = {}) => prepareTemplate({ root: { type, props, children: [{ type: "Text", children: ["Words"] }] } }).resolved!.root;
+    // An Email's width and 20px, a Page's breakpoint, none for a Document.
+    expect(phoneWidth(rootOf("Email"))).toBe(620);
+    expect(phoneWidth(rootOf("Email", { width: 480 }))).toBe(500);
+    expect(phoneWidth(rootOf("Page"))).toBe(480);
+    expect(phoneWidth(rootOf("Page", { breakpoints: { mobile: 360 } }))).toBe(360);
+    expect(phoneWidth(rootOf("Document"))).toBeUndefined();
+    // Where the writers put them.
+    expect(renderTemplate({ root: { type: "Email", props: { width: 480 }, children: [{ type: "Text", hidden: { mobile: true }, children: ["x"] }] } }).html).toContain("@media (max-width: 500px)");
+    expect(renderTemplate({ root: { type: "Page", props: { breakpoints: { mobile: 360 } }, children: [{ type: "Text", hidden: { mobile: true }, children: ["x"] }] } }).html).toContain("@media (max-width: 360px)");
+  });
+
+  it("leaves out a Row child's phone limit that's a share of the Row where it's drawn as its cell (cell) in a Row side by side on phones", () => {
+    // In a Page a Row's child is its cell, so a share of it is of the Row; a limit in px is its own.
+    const row = (mobile: Record<string, unknown>) => ({ root: { type: "Page", props: { width: 300 }, children: [{ type: "Row", children: [{ type: "Text", mobile, children: ["Words"] }] }] } });
+    const cell = (stacksOnPhones: boolean) => ({ cell: { path: "root.children[0].children[0]", stacksOnPhones } });
+    expect(web(row({ maxWidth: "50%" })).head).toContain("max-width:50%!important");
+    expect(web(row({ maxWidth: "50%" }), cell(false)).head).not.toContain("50%");
+    expect(web(row({ maxWidth: "50%" }), cell(true)).head).toContain("max-width:50%!important");
+    expect(web(row({ maxWidth: 120 }), cell(false)).head).toContain("max-width:120px!important");
   });
 
   it("writes links, images, dividers, line breaks and merge tags", () => {

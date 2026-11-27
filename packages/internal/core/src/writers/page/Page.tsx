@@ -11,13 +11,15 @@ import { isNode, type Component } from "./context";
 import { alignSelf } from "./layout";
 import { hidingClasses } from "./styles";
 
-export const Page: Component = ({ node: root, style, rtl, render }) => {
+export const Page: Component = ({ node: root, style, rtl, render, options }) => {
   const width = root.width ?? 0;
   // A word too long for its line (a long link) breaks onto the next rather than widening the page past a phone's screen.
   const stack: Style = { display: "flex", flexDirection: "column", gap: style.gap };
   const wrap: Style = { overflowWrap: "break-word" };
-  // The root's phone gap, between its children and in each run of them.
-  const phone = root.mobile?.gap !== undefined ? { gap: root.mobile.gap } : undefined;
+  // The root's phone gap, between its children and in each run of them; and its content filling the window, where
+  // it's on a phone as a wider page is and narrower than that (`phoneBelow`).
+  const fill = options.phoneBelow !== undefined && width < options.phoneBelow ? { maxWidth: "none" } : undefined;
+  const phone = root.mobile?.gap !== undefined || fill ? { ...(root.mobile?.gap !== undefined ? { gap: root.mobile.gap } : {}), ...fill } : undefined;
   const content = (children: ResolvedNode[]) => children.map((child) => render(child, alignSelf(child, root, rtl)));
   // The theme's tokens, as CSS custom properties for the page's own CSS and Html blocks.
   const tokens = customPropertiesClass(root.customProperties);

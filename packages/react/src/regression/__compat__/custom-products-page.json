@@ -130,7 +130,7 @@
           "type": "html",
           "values": {
            "containerPadding": "0px",
-           "html": "<style>.ep3xid:hover,.ep3xid:focus-visible{background-color:#111827!important}@media (max-width: 480px){.ebr0gu{font-size:14px!important}}</style><main style=\"width:100%;max-width:288px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#000;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding:16px;background-color:#fff;border:1px solid #e5e7eb;border-radius:8px\"><img src=\"https://example.com/shoe.png\" alt=\"Trail runner\" style=\"align-self:flex-start;display:block;max-width:100%;width:100%;height:auto\"><h3 style=\"margin:0;font-size:18px;font-weight:700;line-height:1.25\">Trail runner</h3><p class=\"ebr0gu\" style=\"margin:0;color:#4b5563\">$120</p><a class=\"ep3xid\" href=\"https://example.com/trail\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:14px;line-height:1.2;text-align:center;box-sizing:border-box;padding:10px 20px;background-color:#0f766e;border-radius:4px\">Buy Trail runner</a></div></main>",
+           "html": "<style>.ep3xid:hover,.ep3xid:focus-visible{background-color:#111827!important}@media (max-width: 480px){.emfqa6{flex-direction:column!important;align-items:stretch!important}.emfqa6>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}.ebr0gu{font-size:14px!important}.eqnyfh{max-width:none!important}}</style><main class=\"eqnyfh\" style=\"width:100%;max-width:288px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#000;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div class=\"emfqa6\" style=\"display:flex\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding:16px;background-color:#fff;border:1px solid #e5e7eb;border-radius:8px\"><img src=\"https://example.com/shoe.png\" alt=\"Trail runner\" style=\"align-self:flex-start;display:block;max-width:100%;width:100%;height:auto\"><h3 style=\"margin:0;font-size:18px;font-weight:700;line-height:1.25\">Trail runner</h3><p class=\"ebr0gu\" style=\"margin:0;color:#4b5563\">$120</p><a class=\"ep3xid\" href=\"https://example.com/trail\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:14px;line-height:1.2;text-align:center;box-sizing:border-box;padding:10px 20px;background-color:#0f766e;border-radius:4px\">Buy Trail runner</a></div></div></main>",
            "_meta": {
             "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
@@ -167,7 +167,7 @@
           "type": "html",
           "values": {
            "containerPadding": "0px",
-           "html": "<style>.ep3xid:hover,.ep3xid:focus-visible{background-color:#111827!important}@media (max-width: 480px){.ebr0gu{font-size:14px!important}}</style><main style=\"width:100%;max-width:288px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#000;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding:16px;background-color:#fff;border:1px solid #e5e7eb;border-radius:8px\"><img src=\"https://example.com/shoe.png\" alt=\"City walker\" style=\"align-self:flex-start;display:block;max-width:100%;width:100%;height:auto\"><h3 style=\"margin:0;font-size:18px;font-weight:700;line-height:1.25\">City walker</h3><p class=\"ebr0gu\" style=\"margin:0;color:#4b5563\">$95</p><a class=\"ep3xid\" href=\"https://example.com/city\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:14px;line-height:1.2;text-align:center;box-sizing:border-box;padding:10px 20px;background-color:#7c3aed;border-radius:4px\">Buy City walker</a></div></main>",
+           "html": "<style>.ep3xid:hover,.ep3xid:focus-visible{background-color:#111827!important}@media (max-width: 480px){.emfqa6{flex-direction:column!important;align-items:stretch!important}.emfqa6>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}.ebr0gu{font-size:14px!important}.eqnyfh{max-width:none!important}}</style><main class=\"eqnyfh\" style=\"width:100%;max-width:288px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#000;font-family:Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div class=\"emfqa6\" style=\"display:flex\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:8px;box-sizing:border-box;padding:16px;background-color:#fff;border:1px solid #e5e7eb;border-radius:8px\"><img src=\"https://example.com/shoe.png\" alt=\"City walker\" style=\"align-self:flex-start;display:block;max-width:100%;width:100%;height:auto\"><h3 style=\"margin:0;font-size:18px;font-weight:700;line-height:1.25\">City walker</h3><p class=\"ebr0gu\" style=\"margin:0;color:#4b5563\">$95</p><a class=\"ep3xid\" href=\"https://example.com/city\" style=\"align-self:flex-start;display:inline-block;text-decoration:none;color:#fff;font-size:14px;line-height:1.2;text-align:center;box-sizing:border-box;padding:10px 20px;background-color:#7c3aed;border-radius:4px\">Buy City walker</a></div></div></main>",
            "_meta": {
             "htmlID": "u_content_html_2",
             "htmlClassNames": "u_content_html"
@@ -228,7 +228,12 @@
        "cells": [
         320,
         320
-       ]
+       ],
+       "_override": {
+        "mobile": {
+         "padding": "24px 0px 32px"
+        }
+       }
       }
      },
      {

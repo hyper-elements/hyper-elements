@@ -7,6 +7,18 @@
 import { linkParts, type Json, type LinkValue, type Node } from "@hyper-elements/core";
 import { cssPx } from "./values";
 
+/** Whether a node holds an Image anywhere in it (a linked one too). */
+export const holdsImage = (node: Node): boolean => (node.children ?? []).some((child) => typeof child !== "string" && (child.type === "Image" || holdsImage(child)));
+
+/** Whether a node, or anything in it, is hidden on phones or on desktops. */
+export const hides = (node: Node): boolean => Boolean(node.hidden?.mobile || node.hidden?.desktop) || (node.children ?? []).some((child) => typeof child !== "string" && hides(child));
+
+/**
+ * Whether part of a block's text (words, a link, a list item) is hidden on phones or on desktops. The builder's rich
+ * text has no hiding for part of a text, so a block holding one is an HTML block, which draws it exactly.
+ */
+export const hidesPart = (node: Node): boolean => (node.children ?? []).some((child) => typeof child !== "string" && hides(child));
+
 const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 /** CSS of a run's style, in the properties a Span or a Link takes. */

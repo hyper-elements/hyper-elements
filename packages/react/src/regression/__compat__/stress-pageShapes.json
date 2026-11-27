@@ -159,7 +159,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -295,7 +296,7 @@
           "type": "html",
           "values": {
            "containerPadding": "16px 32px 36px",
-           "html": "<main style=\"width:100%;max-width:320px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"168\" viewBox=\"0 0 320 168\" role=\"img\" aria-label=\"A ferry with a red funnel on the waves, under a low sun, drawn in six kinds of shape\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"320\" height=\"168\" fill=\"#e6e3d8\"></rect><circle cx=\"254\" cy=\"54\" r=\"26\" fill=\"#c93a25\" opacity=\"0.85\"></circle><ellipse cx=\"92\" cy=\"24\" rx=\"24\" ry=\"9\" fill=\"none\" stroke=\"#55636b\" stroke-width=\"2\"></ellipse><line x1=\"178\" y1=\"30\" x2=\"178\" y2=\"82\" fill=\"#000000\" stroke=\"#12242e\" stroke-width=\"3\"></line><rect x=\"78\" y=\"44\" width=\"22\" height=\"40\" fill=\"#c93a25\"></rect><rect x=\"62\" y=\"80\" width=\"150\" height=\"24\" rx=\"2\" fill=\"#f3f1ea\" stroke=\"#12242e\" stroke-width=\"2\"></rect><circle cx=\"84\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><circle cx=\"104\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><circle cx=\"124\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><polygon points=\"32,104 280,104 258,136 54,136\" fill=\"#12242e\"></polygon><path d=\"M0 144 Q40 132 80 144 T160 144 T240 144 T320 144\" fill=\"none\" stroke=\"#12242e\" stroke-width=\"2\"></path><path d=\"M0 156 Q40 146 80 156 T160 156 T240 156 T320 156\" fill=\"none\" stroke=\"#55636b\" stroke-width=\"2\"></path></svg></main>",
+           "html": "<main style=\"width:100%;max-width:536px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"320\" height=\"168\" viewBox=\"0 0 320 168\" role=\"img\" aria-label=\"A ferry with a red funnel on the waves, under a low sun, drawn in six kinds of shape\" style=\"align-self:flex-start;display:block;flex:none\"><rect x=\"0\" y=\"0\" width=\"320\" height=\"168\" fill=\"#e6e3d8\"></rect><circle cx=\"254\" cy=\"54\" r=\"26\" fill=\"#c93a25\" opacity=\"0.85\"></circle><ellipse cx=\"92\" cy=\"24\" rx=\"24\" ry=\"9\" fill=\"none\" stroke=\"#55636b\" stroke-width=\"2\"></ellipse><line x1=\"178\" y1=\"30\" x2=\"178\" y2=\"82\" fill=\"#000000\" stroke=\"#12242e\" stroke-width=\"3\"></line><rect x=\"78\" y=\"44\" width=\"22\" height=\"40\" fill=\"#c93a25\"></rect><rect x=\"62\" y=\"80\" width=\"150\" height=\"24\" rx=\"2\" fill=\"#f3f1ea\" stroke=\"#12242e\" stroke-width=\"2\"></rect><circle cx=\"84\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><circle cx=\"104\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><circle cx=\"124\" cy=\"92\" r=\"4\" fill=\"#12242e\"></circle><polygon points=\"32,104 280,104 258,136 54,136\" fill=\"#12242e\"></polygon><path d=\"M0 144 Q40 132 80 144 T160 144 T240 144 T320 144\" fill=\"none\" stroke=\"#12242e\" stroke-width=\"2\"></path><path d=\"M0 156 Q40 146 80 156 T160 156 T240 156 T320 156\" fill=\"none\" stroke=\"#55636b\" stroke-width=\"2\"></path></svg></main>",
            "_meta": {
             "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
@@ -304,7 +305,12 @@
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 28px"
+            }
+           }
           }
          }
         ],
@@ -413,7 +419,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding: left out",
+   "root.children[0]: the builder's row has no place for mobile.padding at its sides: left out",
    "root.children[0].children[2]: a Svg isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)"
   ]
  }

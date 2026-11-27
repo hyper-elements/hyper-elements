@@ -158,7 +158,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "20px 0px 10px"
         }
        },
        "cells": [
@@ -289,7 +290,7 @@
           "type": "html",
           "values": {
            "containerPadding": "8px 0px 0px",
-           "html": "<main style=\"width:100%;max-width:295px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:10px;background-color:#e6e3d8\"><p style=\"margin:0\">Deck 4</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#e6e3d8\"><div style=\"display:flex;gap:4px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#f3f1ea\"><p style=\"margin:0;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Row B</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#f3f1ea\"><p style=\"margin:0;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Seat 2</p></div></div></div></div></main>",
+           "html": "<style>@media (max-width: 480px){.eqnyfh{max-width:none!important}}</style><main class=\"eqnyfh\" style=\"width:100%;max-width:295px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:10px;background-color:#e6e3d8\"><p style=\"margin:0\">Deck 4</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#e6e3d8\"><div style=\"display:flex;gap:4px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#f3f1ea\"><p style=\"margin:0;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Row B</p></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;box-sizing:border-box;padding:6px;background-color:#f3f1ea\"><p style=\"margin:0;font-family:&#39;DM Mono&#39;, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px\">Seat 2</p></div></div></div></div></main>",
            "_meta": {
             "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
@@ -336,7 +337,7 @@
           "type": "html",
           "values": {
            "containerPadding": "0px",
-           "html": "<style>@media (max-width: 480px){.emfqa6{flex-direction:column!important;align-items:stretch!important}.emfqa6>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}}</style><main style=\"width:100%;max-width:200px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div style=\"align-self:flex-start;display:flex;flex-direction:column;box-sizing:border-box;width:197px\"><div style=\"display:flex;flex-direction:column;gap:6px\"><div class=\"emfqa6\" style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One car</p></div></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">Two bikes</p></div></div></div><div class=\"emfqa6\" style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One dog</p></div></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One cabin</p></div></div></div></div></div></main>",
+           "html": "<style>@media (max-width: 480px){.emfqa6{flex-direction:column!important;align-items:stretch!important}.emfqa6>*{flex:0 0 auto!important;width:auto!important;max-width:100%!important;align-self:stretch!important}.e9lbgm{width:100%!important}.eqnyfh{max-width:none!important}}</style><main class=\"eqnyfh\" style=\"width:100%;max-width:200px;margin:0 auto;display:flex;flex-direction:column;overflow-wrap:break-word;color:#12242e;font-family:&#39;Familjen Grotesk&#39;, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif;font-size:16px;font-weight:400;font-style:normal;line-height:1.5;letter-spacing:0;text-align:left;text-transform:none\"><div class=\"e9lbgm\" style=\"align-self:flex-start;display:flex;flex-direction:column;box-sizing:border-box;width:197px\"><div class=\"emfqa6\" style=\"display:flex\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column;gap:6px\"><div class=\"emfqa6\" style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One car</p></div></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">Two bikes</p></div></div></div><div class=\"emfqa6\" style=\"display:flex;gap:6px\"><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One dog</p></div></div><div style=\"flex:1 1 0%;min-width:0;display:flex;flex-direction:column\"><div style=\"display:flex;flex-direction:column;box-sizing:border-box;padding:8px;background-color:#e6e3d8\"><p style=\"margin:0;font-size:14px\">One cabin</p></div></div></div></div></div></div></main>",
            "_meta": {
             "htmlID": "u_content_html_2",
             "htmlClassNames": "u_content_html"
@@ -407,7 +408,12 @@
        "cells": [
         348,
         250
-       ]
+       ],
+       "_override": {
+        "mobile": {
+         "padding": "30px 0px 14px"
+        }
+       }
       }
      },
      {
@@ -430,7 +436,12 @@
            "draggable": true,
            "duplicatable": true,
            "deletable": true,
-           "hideable": true
+           "hideable": true,
+           "_override": {
+            "mobile": {
+             "containerPadding": "16px 32px 28px"
+            }
+           }
           }
          }
         ],
@@ -539,7 +550,7 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
+   "root.children[0]: the builder's row has no place for mobile.padding at its sides: left out",
    "root.children[0].children[1]: the builder draws a Row's border on its columns, which fill the row: the 32px around the Row goes inside the line, so the line is as wide as the row",
    "root.children[0].children[1].children[0].children[1]: a Row isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)",
    "root.children[0].children[1].children[1]: a Grid isn't a tool of the builder's: it's an HTML block of its own markup in the builder (it can be moved, not edited)",

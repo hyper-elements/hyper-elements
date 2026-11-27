@@ -7,6 +7,7 @@ import type { Json } from "../../model";
 import type { ResolvedNode } from "../../resolve";
 import type { Html } from "../jsx";
 import type { Declarations } from "../shared/css";
+import type { PartOptions } from "../shared/part";
 
 export interface PageOptions {
   /** How a merge tag is written (default `{{name}}`): into the HTML as it is, the name in it escaped. */
@@ -30,7 +31,7 @@ export interface Props {
   rtl: boolean;
   /** Writes a child with what this node's layout adds to it. */
   render(child: ResolvedNode, placement: Declarations): Html;
-  options: PageOptions;
+  options: PageOptions & PartOptions;
 }
 
 /** A component's markup in this output, from its props. */

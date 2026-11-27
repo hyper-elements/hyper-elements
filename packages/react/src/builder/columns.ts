@@ -6,11 +6,13 @@
 import type { Json, Node, ResolvedNode } from "@hyper-elements/core";
 import { block, columnWith, rowWith, type Block, type Row, type RowFields } from "./design";
 import { hiddenOf, merge } from "./hide";
+import { phonePadOf, phoneSidesDiffer, spaceBlocks } from "./spacing";
 import { blockTool, type Place } from "./tools";
 import { builderBorder, cssPx, cssSides, encode, type Values } from "./values";
 
 export type Sides = { top: number; right: number; bottom: number; left: number };
-type Child = { child: Node; path: string };
+/** A template node and its place in the template. */
+export type Child = { child: Node; path: string };
 
 export const ZERO: Sides = { top: 0, right: 0, bottom: 0, left: 0 };
 export const add = (a: Sides, b: Partial<Sides>): Sides => ({ top: a.top + (b.top ?? 0), right: a.right + (b.right ?? 0), bottom: a.bottom + (b.bottom ?? 0), left: a.left + (b.left ?? 0) });
@@ -26,6 +28,8 @@ export const linesOf = (border: unknown): { top?: Json; bottom?: Json } | undefi
 };
 /** A builder row's hiding, from the node it's made of. */
 export const hiding = (node: Node) => ({ hideOnMobile: node.hidden?.mobile || undefined, hideOnDesktop: node.hidden?.desktop || undefined });
+/** Only where a node is hidden, for the rows inside it: one shown everywhere leaves their own hiding as it is. */
+export const hiddenWhere = (node: Node) => Object.fromEntries(Object.entries(hiding(node)).filter(([, hidden]) => hidden));
 
 /** What a row needs from the template it's in (raise.tsx). */
 export interface Writer {
@@ -48,7 +52,11 @@ export function rowOf({ at, put, sayLeftOut, place, childrenOf, stack }: Writer,
   const all = childrenOf(node, path);
   const n = all.length;
   if (!arranged && node.mobile?.border !== undefined) place.report.push(`${path}: the builder's row has no border on phones: left out`);
-  if (!arranged) sayLeftOut("row", node, path, ["style.padding", "style.gap", "mobile.gap", "style.backgroundColor", "style.border", "mobile.border", "style.alignItems", "props.stackOnMobile", ...TEXT_FOLDED]);
+  if (!arranged) sayLeftOut("row", node, path, ["style.padding", "mobile.padding", "style.gap", "mobile.gap", "style.backgroundColor", "style.border", "mobile.border", "style.alignItems", "props.stackOnMobile", ...TEXT_FOLDED]);
+  if (!arranged && phoneSidesDiffer(node)) place.report.push(`${path}: the builder's row has no place for mobile.padding at its sides: left out`);
+  // Its own padding on phones, at its top and bottom, is its row's there, with the space around it.
+  const phonePad = phonePadOf(node);
+  const phoneRow = phonePad && (phonePad.top !== padding(node).top || phonePad.bottom !== padding(node).bottom) ? `${cssPx(phonePad.top + outer.top)} 0px ${cssPx(phonePad.bottom + outer.bottom)} 0px` : undefined;
   const stacks = node.props?.stackOnMobile !== false;
   const rowBorder = (!arranged && linesOf(own.style.border) ? undefined : (own.style.border as Record<string, Json> | undefined)) ?? {};
   // A Row's border is its columns' in the builder (below), which fill the row and move with its alignItems.
@@ -89,7 +97,10 @@ export function rowOf({ at, put, sayLeftOut, place, childrenOf, stack }: Writer,
     );
     // Its phone padding (where the columns stack, the Row's sides and gap in it) and border, as the builder's phone values.
     const phone = { ...(phonePadding && cssSides(phonePadding) !== cssSides(columnPadding) ? { padding: cssSides(phonePadding) } : {}), ...(isColumn && child.mobile?.border ? { border: builderBorder(child.mobile.border as never) } : {}) };
-    return { share, element: put(element, merge(merge(isColumn ? hiddenOf("column", child) : {}, isColumn ? builderId(child.id, "u_column") : {}), Object.keys(phone).length ? { _override: { mobile: phone } } : {})) };
+    const made = put(element, merge(merge(isColumn ? hiddenOf("column", child) : {}, isColumn ? builderId(child.id, "u_column") : {}), Object.keys(phone).length ? { _override: { mobile: phone } } : {}));
+    // A Column's blocks spaced on each device where some are hidden (its padding is its column's).
+    if (isColumn) spaceBlocks(contents, { children: childrenOf(child, childPath), pad: ZERO, gap: gapOf(columnOwn), hidden: columnOwn.hidden }, { at, childrenOf }, made);
+    return { share, element: made };
   });
   const alignItems = own.style.alignItems as string | undefined;
   // The band's (a Section's background and hiding) over the Row's own.
@@ -105,7 +116,7 @@ export function rowOf({ at, put, sayLeftOut, place, childrenOf, stack }: Writer,
     fields,
     columns.map((c) => c.element)
   );
-  const values: Values = { ...(alignItems && alignItems !== "start" ? { alignItems: ALIGN_ITEMS[alignItems] } : {}), ...builderId(node.id, "u_row") };
+  const values: Values = { ...(alignItems && alignItems !== "start" ? { alignItems: ALIGN_ITEMS[alignItems] } : {}), ...builderId(node.id, "u_row"), ...(phoneRow ? { _override: { mobile: { padding: phoneRow } } } : {}) };
   return put(made, merge(merge(values, arranged ? {} : hiddenOf("row", node, ["style.border"])), bandHidden));
 }
 
@@ -118,7 +129,7 @@ const spacer = ({ put }: Writer) =>
  * sides, so a painted box kept in from them (`inset`) has a column of space either side, which stay beside it on phones.
  */
 export function boxRowOf(writer: Writer, node: Node, path: string, band: Values, outer: Sides, bandHidden: Values, inset: { left: number; right: number } = { left: 0, right: 0 }): Row {
-  const { at, put, sayLeftOut, stack } = writer;
+  const { at, put, sayLeftOut, stack, childrenOf } = writer;
   const own = at(path);
   sayLeftOut("column", node, path, ["style.padding", "mobile.padding", "style.backgroundColor", "style.border", "mobile.border", "style.borderRadius", "style.gap", "style.alignItems", ...TEXT_FOLDED]);
   const style = node.style ?? {};
@@ -133,6 +144,7 @@ export function boxRowOf(writer: Writer, node: Node, path: string, band: Values,
   );
   const { hidden: _, ...visible } = node;
   const box = put(column, merge(merge(hiddenOf("column", visible as Node), builderId(node.id, "u_column")), phoneBox(node)));
+  spaceBlocks(box.contents, { children: childrenOf(node, path), pad: ZERO, gap: gapOf(own), hidden: own.hidden }, { at, childrenOf }, box);
   const fields = { padding: cssSides(outer), ...hiding(node), ...band };
   const beside = (share: number) => (share ? [{ share, element: spacer(writer) }] : []);
   const parts = [...beside(inset.left), { share: own.width ?? 0, element: box }, ...beside(inset.right)];

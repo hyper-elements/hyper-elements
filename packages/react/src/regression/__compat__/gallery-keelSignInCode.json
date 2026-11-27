@@ -77,7 +77,12 @@
            },
            "fontWeight": 700,
            "letterSpacing": "-0.6px",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-link\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"url\":\"https://keel.example\",\"target\":null,\"rel\":null,\"style\":\"color:#0b0d0c;text-decoration:none\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"keel\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color:#0f5c45\",\"text\":\".\"}]}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-link\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"url\":\"https://keel.example\",\"target\":null,\"rel\":null,\"style\":\"color:#0b0d0c;text-decoration:none\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"keel\"},{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"color:#0f5c45\",\"text\":\".\"}]}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "32px 24px 0px"
+            }
+           }
           }
          },
          {
@@ -111,7 +116,12 @@
             "label": "-apple-system",
             "value": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
            },
-           "letterSpacing": "-0.4px"
+           "letterSpacing": "-0.4px",
+           "_override": {
+            "mobile": {
+             "containerPadding": "28px 24px 0px"
+            }
+           }
           }
          },
          {
@@ -399,7 +409,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "28px 0px 0px"
         }
        },
        "cells": [
@@ -446,14 +457,19 @@
            },
            "fontWeight": 600,
            "letterSpacing": "0px",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Who asked for it\"}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"Who asked for it\"}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "28px 24px 0px"
+            }
+           }
           }
          },
          {
           "type": "html",
           "values": {
            "containerPadding": "8px 24px 0px",
-           "html": "<style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}</style><div role=\"article\" aria-roledescription=\"email\" style=\"overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"432\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"max-width:432px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:separate\"><tr><td style=\"border-top:1px solid #e2e4e2;border-bottom:1px solid #e2e4e2\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"table-layout:fixed;border-collapse:separate\"><colgroup><col width=\"96\" style=\"width:96px\"><!--[if mso]><col width=\"336\"><![endif]--><!--[if !mso]><!--><col width=\"336\" style=\"width:auto\"><!--<![endif]--></colgroup><tbody><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0;border-bottom:1px solid #e2e4e2\">Device</td><!--[if mso]><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\"><![endif]--><!--[if !mso]><!--><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:auto;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\"><!--<![endif]-->Safari on a Mac</td></tr><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0;border-bottom:1px solid #e2e4e2\">Near</td><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\">Lisbon, Portugal</td></tr><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0\">When</td><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0\">06:42 GMT, Friday 6 November</td></tr></tbody></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div>",
+           "html": "<style>table,td{mso-table-lspace:0pt;mso-table-rspace:0pt;border-collapse:collapse}img{-ms-interpolation-mode:bicubic}a[x-apple-data-detectors]{color:inherit!important;text-decoration:none!important}@media (max-width: 500px){.eqnyfh{max-width:none!important}}</style><div role=\"article\" aria-roledescription=\"email\" style=\"overflow-wrap:break-word;word-break:break-word\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\"><tr><td align=\"center\"><!--[if mso]><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"432\" align=\"center\"><tr><td><![endif]--><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" class=\"eqnyfh\" style=\"max-width:432px\"><tr><td><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:separate\"><tr><td style=\"border-top:1px solid #e2e4e2;border-bottom:1px solid #e2e4e2\"><table cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"table-layout:fixed;border-collapse:separate\"><colgroup><col width=\"96\" style=\"width:96px\"><!--[if mso]><col width=\"336\"><![endif]--><!--[if !mso]><!--><col width=\"336\" style=\"width:auto\"><!--<![endif]--></colgroup><tbody><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0;border-bottom:1px solid #e2e4e2\">Device</td><!--[if mso]><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\"><![endif]--><!--[if !mso]><!--><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:auto;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\"><!--<![endif]-->Safari on a Mac</td></tr><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0;border-bottom:1px solid #e2e4e2\">Near</td><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0;border-bottom:1px solid #e2e4e2\">Lisbon, Portugal</td></tr><tr><td width=\"96\" valign=\"top\" style=\"color:#5a5f5c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;width:96px;box-sizing:border-box;padding:10px 12px 10px 0\">When</td><td width=\"336\" valign=\"top\" style=\"color:#0b0d0c;font-family:-apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, Helvetica, Arial, sans-serif;font-size:15px;line-height:21.75px;mso-line-height-rule:exactly;text-align:left;box-sizing:border-box;padding:10px 0\">06:42 GMT, Friday 6 November</td></tr></tbody></table></td></tr></table></td></tr></table><!--[if mso]></td></tr></table><![endif]--></td></tr></table></div>",
            "_meta": {
             "htmlID": "u_content_html_1",
             "htmlClassNames": "u_content_html"
@@ -631,7 +647,8 @@
        "locked": false,
        "_override": {
         "mobile": {
-         "noStackMobile": true
+         "noStackMobile": true,
+         "padding": "28px 0px 0px"
         }
        },
        "cells": [
@@ -676,7 +693,12 @@
            },
            "fontWeight": 400,
            "letterSpacing": "0px",
-           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"padding:24px 0px 0px;border-top:1px solid #e2e4e2\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"We’ll never ask for this code by phone, email or text. Keel Bank Ltd, 12 Lantern Yard, London E1 6QL.\"}]}]}}"
+           "textJson": "{\"root\":{\"type\":\"root\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"children\":[{\"type\":\"extended-paragraph\",\"version\":1,\"format\":\"\",\"indent\":0,\"direction\":null,\"textFormat\":0,\"textStyle\":\"\",\"isInlineTool\":false,\"style\":\"padding:24px 0px 0px;border-top:1px solid #e2e4e2\",\"children\":[{\"type\":\"extended-text\",\"version\":1,\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\"We’ll never ask for this code by phone, email or text. Keel Bank Ltd, 12 Lantern Yard, London E1 6QL.\"}]}]}}",
+           "_override": {
+            "mobile": {
+             "containerPadding": "28px 24px 40px"
+            }
+           }
           }
          }
         ],
@@ -776,7 +798,6 @@
    "schemaVersion": 27
   },
   "report": [
-   "root.children[0]: the builder's row has no place for mobile.padding, mobile.gap: left out",
    "root.children[0].children[3].children[1]: the builder's table doesn't draw it as it is (lines on some sides of its cells only; a border around it; a column of a fixed width): it's an HTML block of its own markup in the builder (it can be moved, not edited)",
    "root.children[0].children[4]: the builder draws a Row's border on its columns, which fill the row: the 24px around the Row goes inside the line, so the line is as wide as the row"
   ]

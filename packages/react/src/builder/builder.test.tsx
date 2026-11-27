@@ -1,4 +1,5 @@
 /** toDesign(): a template as the builder's design JSON, every block a tool where one shows it, and what it can't hold said. */
+import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 import { Button, Canvas, Column, component, Document, Email, Grid, Heading, Html, Image, Layer, LineBreak, Link, List, ListItem, Page, PageBreak, PageFooter, PageHeader, PageNumber, Text, prop, Rect, Row, Span, Section, Svg, Table, TableCell, TableRow } from "../primitives";
 import { airbnb, stripe } from "../primitives/testing/codemod-examples";
@@ -11,6 +12,37 @@ import { TableDefaults } from "./tool-defaults";
 
 type Values = Record<string, any>;
 const blocks = (design: any): Array<{ type: string; values: Values }> => design.body.rows.flatMap((row: any) => row.columns.flatMap((column: any) => column.contents));
+
+/** Each `@media` rule's query and the display it gives elements of a class. */
+function mediaDisplays(html: string, className: string): Array<[string, string]> {
+  const out: Array<[string, string]> = [];
+  for (const [, query, rules] of html.matchAll(/@media \(([^)]*)\)\{((?:[^{}]*\{[^{}]*\})*)\}/g)) {
+    const display = new RegExp(`\\.${className}\\{display:([\\w-]+)!important\\}`).exec(rules)?.[1];
+    if (display) out.push([query, display]);
+  }
+  return out;
+}
+
+/**
+ * Whether markup hides some words on a device, as Elements writes it, with phones up to `phone` px wide: an element
+ * they're in, by its class, is `display:none` up to that width, or `display:none` and shown up to it (or hidden above
+ * it, in a Page).
+ */
+function hidesOn(html: string, words: string, device: "mobile" | "desktop", phone: number): boolean {
+  const { document } = new JSDOM(html).window;
+  // The innermost element holding them: in document order, the last of those whose text does.
+  const holder = [...document.body.querySelectorAll("*")].filter((element) => element.textContent?.includes(words)).pop();
+  const onPhones = ([query]: [string, string]) => query === `max-width: ${phone}px`;
+  for (let element = holder; element; element = element.parentElement ?? undefined) {
+    const hiddenFirst = /display:\s*none/.test(element.getAttribute("style") ?? "");
+    for (const name of element.classList) {
+      const rules = mediaDisplays(html, name);
+      if (device === "mobile" && !hiddenFirst && rules.some((rule) => onPhones(rule) && rule[1] === "none")) return true;
+      if (device === "desktop" && ((hiddenFirst && rules.some((rule) => onPhones(rule) && rule[1] !== "none")) || rules.some((rule) => rule[0] === `min-width: ${phone + 1}px` && rule[1] === "none"))) return true;
+    }
+  }
+  return false;
+}
 
 describe("toDesign", () => {
   for (const [name, template] of [["StripeReceipt", <stripe.StripeReceipt key="s" />], ["AirbnbConfirmation", <airbnb.AirbnbConfirmation key="a" />]] as const) {
@@ -918,6 +950,17 @@ describe("a custom component that's a band of its own", () => {
     expect(JSON.stringify(design)).toContain("Launch");
     expect(report.join("\n")).toContain("HTML block");
   });
+
+  it("goes as one in a root that places what it holds across it, which a band spans", () => {
+    const Band = component({ type: "acme.Band", label: "Band", props: {}, render: () => <Section><Text>Band words</Text></Section> });
+    for (const alignItems of ["start", "center", "end", "stretch"] as const) {
+      for (const root of [<Email key="e" style={{ alignItems }}><Band /></Email>, <Page key="p" style={{ alignItems }}><Band /></Page>]) {
+        const { design } = toDesign(root);
+        expect(blocks(design).map((content) => content.type), alignItems).toEqual(["html"]);
+        expect(String(blocks(design)[0].values.html), alignItems).toContain("Band words");
+      }
+    }
+  });
 });
 
 describe("what the builder can't hold", () => {
@@ -927,6 +970,183 @@ describe("what the builder can't hold", () => {
     const { design, report } = toDesign(<Email><Text>Rated <Image src={{ src: "https://x.test/s.png", width: 80, height: 16 }} alt="five stars" /> by customers</Text></Email>);
     expect(report.join("\n")).toContain("an Image in a run of text");
     expect(JSON.stringify(design)).toContain("five stars");
+  });
+
+  it("keeps a text, a heading, a list, a link or a button with part of it hidden on phones or on desktops as an HTML block that still hides it, and says so", () => {
+    const html = (design: any) => String(blocks(design)[0].values.html);
+    const why = (tool: "text" | "button") => (tool === "button" ? "part of a button's label hidden on phones or on desktops isn't something the builder's button holds" : "part of a text hidden on phones or on desktops (words, a link, a list item) isn't something the builder's text holds");
+    for (const [device, other] of [["mobile", "desktops"], ["desktop", "phones"]] as const) {
+      const hidden = { [device]: true };
+      const words = `on ${other} only`;
+      const parts: Array<[string, React.ReactElement, "text" | "button"]> = [
+        ["words in a Text", <Text key="t">Shown <Span hidden={hidden}>{words}</Span></Text>, "text"],
+        ["a link in a Text", <Text key="t">Shown <Link href="https://x.test" hidden={hidden}>{words}</Link></Text>, "text"],
+        ["words in a Heading", <Heading key="t">Shown <Span hidden={hidden}>{words}</Span></Heading>, "text"],
+        ["a list item", <List key="t"><ListItem>Shown</ListItem><ListItem hidden={hidden}>{words}</ListItem></List>, "text"],
+        ["words in a list item", <List key="t"><ListItem>Shown <Span hidden={hidden}>{words}</Span></ListItem></List>, "text"],
+        ["words in a Link of its own", <Link key="t" href="https://x.test">Shown <Span hidden={hidden}>{words}</Span></Link>, "text"],
+        ["words in a Button's label", <Button key="t" href="https://x.test">Shown <Span hidden={hidden}>{words}</Span></Button>, "button"],
+      ];
+      for (const [name, part, tool] of parts) {
+        // On its own, and in a column narrower than its root (the first of two), where it's drawn at its own width:
+        // it's hidden where its root hides things all the same, an Email's width and 20px (600px wide here), a Page's 480px.
+        const places: Array<[string, (block: React.ReactElement) => React.ReactElement, string]> = [
+          ["", (block) => block, "root.children[0]"],
+          [" in a column", (block) => <Row><Column>{block}</Column><Column><Text>Beside it</Text></Column></Row>, "root.children[0].children[0].children[0]"],
+        ];
+        for (const [where, placed, path] of places) {
+          for (const [root, rootName, phone] of [[<Email key="e">{placed(part)}</Email>, "Email", 620], [<Page key="p">{placed(part)}</Page>, "Page", 480]] as const) {
+            const at = `${name} hidden on ${device}${where}, in a ${rootName}`;
+            const { design, report } = toDesign(root);
+            expect(blocks(design)[0].type, at).toEqual("html");
+            expect(hidesOn(html(design), words, device, phone), at).toBe(true);
+            expect(report, at).toEqual([`${path}: ${why(tool)}: it's an HTML block of its own markup in the builder (it can be moved, not edited)`]);
+          }
+        }
+      }
+    }
+    // The check reads where words are hidden: an HTML block's words shown everywhere aren't hidden anywhere.
+    const shown = toDesign(<Email><Text>Rated <Image src={{ src: "https://x.test/s.png", width: 80, height: 16 }} alt="five stars" /> by customers</Text></Email>).design;
+    expect([hidesOn(html(shown), "by customers", "mobile", 620), hidesOn(html(shown), "by customers", "desktop", 620)]).toEqual([false, false]);
+    // And what's hidden is what holds them, not something before them.
+    expect(hidesOn('<style>@media (max-width: 620px){.ehide1{display:none!important}}</style><p><span class="ehide1"></span>secret</p>', "secret", "mobile", 620)).toBe(false);
+  });
+
+  it("hides what a table holds where its Email does, in a column narrower than the Email", () => {
+    const table = (
+      <Table>
+        <TableRow>
+          <TableCell>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></TableCell>
+        </TableRow>
+      </Table>
+    );
+    const { design } = toDesign(<Email width={640}><Row><Column>{table}</Column><Column><Text>Beside it</Text></Column></Row></Email>);
+    expect(hidesOn(String(blocks(design)[0].values.html), "on desktops only", "mobile", 660)).toBe(true);
+  });
+
+  it("draws an HTML block as wide as its stack gives it, so a share of it the block takes is taken once", () => {
+    for (const [root, name] of [[Email, "Email"], [Page, "Page"]] as const) {
+      const Root = root as React.FC<{ width: number; children: React.ReactNode }>;
+      const html = String(blocks(toDesign(<Root width={600}><Text style={{ width: "50%" }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text></Root>).design)[0].values.html);
+      // Half of the 600px the root gives it, as Elements draws it: in 600px, not in its own 300px.
+      expect(html, name).toContain("max-width:600px");
+      expect(html, name).toMatch(/width(="|:)50%/);
+      expect(html, name).not.toContain("max-width:300px");
+      // A Row's child is its cell, which it fills, as Elements draws it: its half is the Row's, taken already.
+      const cell = String(blocks(toDesign(<Root width={600}><Row><Text style={{ width: "50%" }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text><Text>Beside it</Text></Row></Root>).design)[0].values.html);
+      expect(cell, name).toContain("max-width:300px");
+      expect(cell, name).not.toContain("50%");
+      // A Button there fills its cell too, as it does in a Row, not as wide as its label, as it would be in a stack.
+      const button = String(blocks(toDesign(<Root width={600}><Row><Button href="https://x.test" style={{ width: "50%" }}>Buy <Span hidden={{ mobile: true }}>now</Span></Button><Text>Beside it</Text></Row></Root>).design)[0].values.html);
+      expect(button, name).toMatch(name === "Email" ? /<table [^>]*width="100%"[^>]*><tr><td align="center" bgcolor/ : /<a [^>]*style="flex:1 1 0%;/);
+      // Where its Row stays side by side on phones, its phone width is its cell's there, which a builder column has
+      // none of: not taken again inside it, and said.
+      const sideBySide = toDesign(<Root width={600}><Row stackOnMobile={false}><Text style={{ width: "50%", mobile: { width: "25%" } }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text><Text>Beside it</Text></Row></Root>);
+      const kept = String(blocks(sideBySide.design)[0].values.html);
+      expect(kept, name).not.toMatch(/50%|25%/);
+      expect(sideBySide.report, name).toContain("root.children[0].children[0]: the builder's column has no place for mobile.width: left out");
+      // A phone limit is its own there, in its cell, as Elements draws it: kept, and not said.
+      const limited = toDesign(<Root width={600}><Row stackOnMobile={false}><Text style={{ flex: 2, mobile: { maxWidth: 120 } }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text><Text>Beside it</Text></Row></Root>);
+      expect(String(blocks(limited.design)[0].values.html), name).toContain("max-width:120px!important");
+      expect(limited.report.join("\n"), name).not.toContain("left out");
+      // One that's a share: in an Email, of its cell, kept; in a Page, where it's its cell, of the Row: left out, and said.
+      const share = toDesign(<Root width={600}><Row stackOnMobile={false}><Text style={{ mobile: { maxWidth: "50%" } }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text><Text>Beside it</Text></Row></Root>);
+      const shared = String(blocks(share.design)[0].values.html);
+      if (name === "Email") {
+        expect(shared).toContain("50%!important");
+        expect(share.report.join("\n")).not.toContain("left out");
+      } else {
+        expect(shared).not.toContain("50%");
+        expect(share.report).toContain("root.children[0].children[0]: the builder's column has no place for mobile.maxWidth: left out");
+      }
+      // Where its Row stacks on phones, they're its own there, in its full-width cell, as Elements draws it; a limit in
+      // px is its own on desktop too, and one that's a share of the Row is the Row's.
+      const stacking = toDesign(<Root width={600}><Row><Text style={{ maxWidth: "50%", mobile: { maxWidth: 80 } }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text><Text>Beside it</Text></Row></Root>);
+      const own = String(blocks(stacking.design)[0].values.html);
+      expect(own, name).toContain("max-width:80px!important");
+      expect(own, name).not.toContain("50%");
+      expect(stacking.report.join("\n"), name).not.toContain("left out");
+      // Your own element there is what it renders, which takes its share of the Row where it renders it: the Row's too,
+      // and said where it's its phone width in a Row that stays side by side.
+      const Half = component({ type: "acme.Half", label: "Half", props: {}, render: () => <Text style={{ width: "50%", mobile: { width: "25%" } }}>Half of the row</Text> });
+      const custom = toDesign(<Root width={600}><Row stackOnMobile={false}><Half /><Text>Beside it</Text></Row></Root>);
+      const drawn = String(blocks(custom.design)[0].values.html);
+      expect(drawn, name).toContain("Half of the row");
+      expect(drawn, name).toContain("max-width:300px");
+      expect(drawn, name).not.toMatch(/50%|25%|max-width:150px/);
+      expect(custom.report, name).toContain("root.children[0].children[0]: the builder's column has no place for mobile.width: left out");
+    }
+  });
+
+  it("draws an HTML block in its root's direction", () => {
+    const text = <Text>مرحبا <Span hidden={{ mobile: true }}>بالعالم</Span></Text>;
+    const lockedHtml = (root: React.ReactElement) => String(blocks(toDesign(root).design)[0].values.html);
+    const email = lockedHtml(<Email dir="rtl">{text}</Email>);
+    expect(email).toMatch(/<div [^>]*dir="rtl"/);
+    expect(email).toContain("text-align:right");
+    expect(lockedHtml(<Page dir="rtl">{text}</Page>)).toContain("text-align:right");
+  });
+
+  it("switches an HTML block in a column to phones where its root does, and fills its column there", () => {
+    const text = <Text style={{ mobile: { fontSize: 30 } }}>Shown <Span hidden={{ mobile: true }}>on desktops only</Span></Text>;
+    const columns = <Row><Column>{text}</Column><Column><Text>Beside it</Text></Column></Row>;
+    for (const [root, phone] of [[<Email key="e" width={600}>{columns}</Email>, 620], [<Page key="p" width={600}>{columns}</Page>, 480]] as const) {
+      const html = String(blocks(toDesign(root).design)[0].values.html);
+      const onPhones = [...html.matchAll(/@media \(([^)]*)\)\{((?:[^{}]*\{[^{}]*\})*)\}/g)].filter(([, query]) => query === `max-width: ${phone}px`).map(([, , rules]) => rules).join("");
+      // Its phone size where its root's phone styles start, not at its own 300px.
+      expect(onPhones, `${phone}`).toMatch(/\{font-size:30px!important/);
+      expect(html, `${phone}`).not.toMatch(/@media \(max-width: 3\d\dpx\)/);
+      // Its 300px content as wide as its column there, where the columns stack.
+      const capped = /(?:<table|<main)[^>]*class="(\w+)"[^>]*style="(?:width:100%;)?max-width:300px/.exec(html)?.[1];
+      expect(onPhones, `${phone}`).toContain(`.${capped}{max-width:none!important}`);
+    }
+    // In a column narrower than a page can be (100px), the box it's drawn in fills its column there too.
+    for (const [Root, phone] of [[Email, 620], [Page, 480]] as const) {
+      const R = Root as React.FC<{ width: number; children: React.ReactNode }>;
+      const html = String(blocks(toDesign(<R width={600}><Row><Column style={{ width: 100 }}>{text}</Column><Column><Text>Beside it</Text></Column></Row></R>).design)[0].values.html);
+      const onPhones = [...html.matchAll(/@media \(([^)]*)\)\{((?:[^{}]*\{[^{}]*\})*)\}/g)].filter(([, query]) => query === `max-width: ${phone}px`).map(([, , rules]) => rules).join("");
+      const box = /class="(\w+)"[^>]*style="[^"]*width:100px/.exec(html)?.[1];
+      expect(onPhones, `${phone}`).toMatch(new RegExp(`\\.${box}\\{width:100%!important`));
+    }
+  });
+
+  it("places a block of its own width in its HTML block where its stack does, and not by a Row's alignItems, which is up and down", () => {
+    const button = <Button href="https://x.test">Buy <Span hidden={{ mobile: true }}>now</Span></Button>;
+    const lockedHtml = (root: React.ReactElement) => String(blocks(toDesign(root).design)[0].values.html);
+    // As Elements places it: in an Email, a cell aligned to that side around it; in a Page, its align-self.
+    expect(lockedHtml(<Email><Column style={{ alignItems: "end" }}>{button}</Column></Email>)).toContain('<td align="right">');
+    expect(lockedHtml(<Page><Column style={{ alignItems: "center" }}>{button}</Column></Page>)).toMatch(/<a [^>]*style="align-self:center;/);
+    expect(lockedHtml(<Page><Row style={{ alignItems: "center" }}>{button}<Text>Beside it</Text></Row></Page>)).not.toMatch(/align-self:center|align-items:center/);
+    // A stack that starts what it holds, in a root that ends what it holds: its own place, not the root's.
+    expect(lockedHtml(<Page style={{ alignItems: "end" }}><Column style={{ alignItems: "start" }}>{button}</Column></Page>)).toMatch(/<a [^>]*style="align-self:flex-start;/);
+    expect(lockedHtml(<Email style={{ alignItems: "end" }}><Column style={{ alignItems: "start" }}>{button}</Column></Email>)).not.toContain('<td align="right">');
+  });
+
+  it("keeps a text hidden on phones or on desktops as a whole as the builder's text, hidden there", () => {
+    const { design, report } = toDesign(<Email><Text hidden={{ mobile: true }}>Shown <Span style={{ fontWeight: 700 }}>on desktops</Span></Text></Email>);
+    expect(blocks(design).map((content) => [content.type, content.values._override?.mobile?.hideMobile])).toEqual([["paragraph", true]]);
+    expect(report).toEqual([]);
+  });
+
+  it("hides an HTML block where what it's drawn from is hidden, as the builder's block, so the space around it goes too", () => {
+    for (const [name, hidden, key] of [["phones", { mobile: true }, "mobile.hideMobile"], ["desktops", { desktop: true }, "desktop.hideDesktop"]] as const) {
+      const other = name === "phones" ? { desktop: true } : { mobile: true };
+      // A custom element hidden where what it renders is.
+      const Card = component({ type: "acme.HiddenCard", label: "Card", props: {}, render: () => <Text hidden={hidden}>A card</Text> });
+      const parts: Array<[string, React.ReactElement]> = [
+        ["Text", <Text key="t" hidden={hidden}>Shown <Span hidden={other}>at times</Span></Text>],
+        ["Layer", <Layer key="l" hidden={hidden} style={{ height: 40 }}><Text>Over it</Text></Layer>],
+        ["custom element", <Card key="c" />],
+      ];
+      for (const [what, part] of parts) {
+        const { design } = toDesign(<Page style={{ gap: 24 }}><Text>Before</Text>{part}<Text>After</Text></Page>);
+        const [, locked] = blocks(JSON.parse(JSON.stringify(design)));
+        const [device, flag] = key.split(".");
+        expect([locked.type, locked.values._override?.[device]?.[flag]], `${what} on ${name}`).toEqual(["html", true]);
+        // Read back hidden there, the space before it with it.
+        expect(JSON.stringify(collectTemplate(fromDesign(JSON.parse(JSON.stringify(design)), { displayMode: "web" }).element).document!.root)).toContain(`"hidden":${JSON.stringify(hidden)}`);
+      }
+    }
   });
 
   it("says what it leaves out of text", () => {
